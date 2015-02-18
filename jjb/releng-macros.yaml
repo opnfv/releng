@@ -1,0 +1,145 @@
+# OLD Releng macros
+
+- parameter:
+    name: project-parameter
+    parameters:
+        - string:
+            name: PROJECT
+            default: '{project}'
+            description: "JJB configured PROJECT parameter to identify an opnfv Gerrit project"
+
+- parameter:
+    name: gerrit-parameter
+    parameters:
+        - string:
+            name: GERRIT_BRANCH
+            default: '{branch}'
+            description: "JJB configured GERRIT_BRANCH parameter"
+
+- scm:
+    name: git-scm
+    scm:
+        - git:
+            credentials-id: '{credentials-id}'
+            url: '$GIT_BASE'
+            refspec: ''
+            branches:
+                - 'origin/{branch}'
+            skip-tag: true
+            wipe-workspace: true
+
+- scm:
+    name: gerrit-trigger-scm
+    scm:
+        - git:
+            credentials-id: '{credentials-id}'
+            url: '$GIT_BASE'
+            refspec: '{refspec}'
+            branches:
+                - 'origin/$GERRIT_BRANCH'
+            skip-tag: true
+            choosing-strategy: '{choosing-strategy}'
+
+- wrapper:
+    name: build-timeout
+    wrappers:
+        - timeout:
+            type: absolute
+            timeout: 360
+            fail: true
+
+- trigger:
+    name: gerrit-trigger-patch-submitted
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{name}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+
+- trigger:
+    name: gerrit-trigger-patch-merged
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{name}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+
+- publisher:
+    name: archive-artifacts
+    publishers:
+        - archive:
+            artifacts: '{artifacts}'
+            allow-empty: true
+            fingerprint: true
+            latest-only: true
+
+- publisher:
+    name: email-notification
+    publishers:
+        - email-ext:
+            recipients: 'jenkins@lists.opnfv.org'
+            reply-to:
+            content-type: default
+            subject: '{email-prefix} $PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!'
+            body: |
+                $PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
+
+                Check console output at $BUILD_URL to view the results.
+            unstable: true
+            fixed: true
+            send-to:
+                - developers
+                - recipients
+
+- publisher:
+        name: jacoco-report
+        publishers:
+            - jacoco:
+                exec-pattern: "**/**.exec"
+                class-pattern: "**/classes"
+                source-pattern: "**/src/main/java"
+                exclusion-pattern: "**/gen/**,**/generated-sources/**,**/yang-gen**"
+                status-update: true
+                targets:
+                  - branch:
+                      healthy: 10
+                      unhealthy: 20
+                  - method:
+                      healthy: 50
+                      unhealthy: 40
+
+
+- builder:
+    name: test-macro
+    builders:
+        - shell: 'echo testing macro "test-macro"'
+
+- builder:
+    name: wipe-org-opendaylight-repo
+    builders:
+        - shell: 'if [ -d /tmp/r/org/opendaylight ]; then rm -rf /tmp/r/org/opendaylight; fi'
+
+- builder:
+    name: jacoco-nojava-workaround
+    builders:
+        - shell: 'mkdir -p $WORKSPACE/target/classes'

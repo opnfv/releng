@@ -1,0 +1,66 @@
+- project:
+    name: promise
+    jobs:
+        - 'promise-test'
+        - 'promise-daily-master'
+
+    # stream:    branch with - in place of / (eg. stable-helium)
+    # branch:    branch (eg. stable/helium)
+    stream:
+        - master:
+            branch: 'master'
+
+    project: 'promise'
+    somevar: 'foo'
+
+- job-template:
+    name: promise-test
+
+    project-type: freestyle
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+            echo "Hello world from promise"
+
+- job-template:
+    name: 'promise-daily-master'
+
+    # Job template for daily builders
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+
+    project-type: freestyle
+    varsetabove: '{somevar}'
+
+    logrotate:
+        daysToKeep: '{build-days-to-keep}'
+        numToKeep: '{build-num-to-keep}'
+        artifactDaysToKeep: '{build-artifact-days-to-keep}'
+        artifactNumToKeep: '{build-artifact-num-to-keep}'
+
+    wrappers:
+        - ssh-agent-credentials:
+            user: '{ssh-credentials}'
+
+    triggers:
+        - timed: 'H H * * *'
+
+    prebuilders:
+        - test-macro
+
+    builders:
+        - shell: |
+            echo "Hello world from promise {somevar} daily"
+        - test-macro
+
+    postbuilders:
+        - test-macro
+
