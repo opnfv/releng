@@ -182,5 +182,6 @@
             make clean
             make
             cd ..
+            sed -i -Ee 's,docker\ run,docker run --privileged=true --rm -i -e HOME=$HOME -u $USER -w $PWD -v ${HOME}/.ssh:${HOME}/.ssh -v $GITROOT:$GITROOT $CID "$@",' docker/runcontext
             make clean
             make all
