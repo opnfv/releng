@@ -117,13 +117,20 @@
 
     builders:
         - shell: |
-            echo foo
-            echo bar
             hostname
-            ls -la
+            whoami
             docker --version
-
-
+            cd fuel-build/docker
+            pwd
+            echo foo
+            make clean || true
+            make
+            cd ..
+            echo foo
+            make clean || true
+            sed -i -Ee 's,\ \-t,,g' docker/runcontext
+            make all
+  
 - job-template:
     name: 'genesis-merge'
 
@@ -179,9 +186,11 @@
             docker --version
             cd fuel-build/docker
             pwd
-            make clean
+            echo foo
+            make clean || true
             make
             cd ..
-            sed -i -Ee 's,docker\ run,docker run --privileged=true --rm -i -e HOME=$HOME -u $USER -w $PWD -v ${HOME}/.ssh:${HOME}/.ssh -v $GITROOT:$GITROOT $CID "$@",' docker/runcontext
-            make clean
+            echo foo
+            make clean || true
+            sed -i -Ee 's,\ \-t,,g' docker/runcontext
             make all
