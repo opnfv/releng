@@ -12,7 +12,6 @@
             branch: 'master'
 
     project: 'genesis'
-    somevar: 'foo'
 
 - job-template:
     name: 'genesis-daily-master'
@@ -25,7 +24,6 @@
 
     project-type: freestyle
     node: fuel
-    varsetabove: '{somevar}'
 
     logrotate:
         daysToKeep: '{build-days-to-keep}'
@@ -50,9 +48,6 @@
     triggers:
         - timed: 'H H * * *'
 
-    prebuilders:
-        - test-macro
-
     builders:
         - shell: |
             hostname
@@ -68,11 +63,8 @@
             make clean || true
             sed -i -Ee 's,\ \-t,,g' docker/runcontext
             make all
-
-    postbuilders:
-        - shell: |
-            rm /var/www/release
-            ln -s /home/jenkins-ci/workspace/genesis-daily/fuel-build/release/ /var/www/
+            sudo rm /var/www/release
+            sudo ln -s /home/jenkins-ci/workspace/genesis-daily/fuel-build/release/ /var/www/
 
 - job-template:
     name: 'genesis-verify'
