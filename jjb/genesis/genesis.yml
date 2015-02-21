@@ -1,7 +1,6 @@
 - project:
     name: genesis
     jobs:
-        - 'genesis-test'
         - 'genesis-daily-master'
         - 'genesis-merge'
         - 'genesis-verify'
@@ -14,21 +13,6 @@
 
     project: 'genesis'
     somevar: 'foo'
-
-- job-template:
-    name: genesis-test
-
-    project-type: freestyle
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    builders:
-        - shell: |
-            echo "Hello world from genesis"
 
 - job-template:
     name: 'genesis-daily-master'
@@ -48,6 +32,16 @@
         artifactDaysToKeep: '{build-artifact-days-to-keep}'
         artifactNumToKeep: '{build-artifact-num-to-keep}'
 
+    parameters:
+        - project-parameter:
+            project: '{project}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
     wrappers:
         - ssh-agent-credentials:
             user: '{ssh-credentials}'
@@ -60,11 +54,24 @@
 
     builders:
         - shell: |
-            echo "Hello world from genesis {somevar} daily"
-        - test-macro
+            hostname
+            whoami
+            docker --version
+            cd fuel-build/docker
+            pwd
+            echo foo
+            make clean || true
+            make
+            cd ..
+            echo foo
+            make clean || true
+            sed -i -Ee 's,\ \-t,,g' docker/runcontext
+            make all
 
     postbuilders:
-        - test-macro
+        - shell: |
+            rm /var/www/release
+            ln -s /home/jenkins-ci/workspace/genesis-daily/fuel-build/release/ /var/www/
 
 - job-template:
     name: 'genesis-verify'
@@ -125,11 +132,7 @@
             echo foo
             make clean || true
             make
-            cd ..
-            echo foo
-            make clean || true
-            sed -i -Ee 's,\ \-t,,g' docker/runcontext
-            make all
+            echo "what tests can we run here?"
   
 - job-template:
     name: 'genesis-merge'
