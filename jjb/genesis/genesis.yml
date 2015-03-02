@@ -62,8 +62,8 @@
             echo foo
             make clean || true
             make all
-            sudo rm /var/www/genesis-fuel/daily
-            ln -s /home/jenkins-ci/workspace/genesis-daily-master/fuel-build/release/ /var/www/genesis-fuel/daily
+            if [[ -d /var/www/genesis-fuel/daily ]]; then sudo rm /var/www/genesis-fuel/daily; fi
+            sudo ln -s /home/jenkins-ci/workspace/genesis-daily-master/fuel-build/release/ /var/www/genesis-fuel/daily
 
 - job-template:
     name: 'genesis-verify'
