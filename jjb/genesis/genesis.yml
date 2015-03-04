@@ -4,9 +4,9 @@
         - 'genesis-daily-master'
         - 'genesis-merge'
         - 'genesis-verify'
-        - 'genesis-foreman-daily'
-        - 'genesis-fuel-daily'
-        - 'genesis-opensteak-daily'
+        - 'genesis-foreman-daily-master'
+        - 'genesis-fuel-daily-master'
+        - 'genesis-opensteak-daily-master'
         - 'genesis-build'
         - 'genesis-deploy'
         - 'genesis-test'
@@ -190,7 +190,7 @@
             make all
 
 - job-template:
-    name: genesis-foreman-daily
+    name: genesis-foreman-daily-master
 
     project-type: freestyle
 
@@ -233,27 +233,27 @@
         - trigger-builds:
             - project: genesis-build
               current-parameters: true
-              git-revision: true
+              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
               same-node: true
               block: true
             - project: genesis-deploy
               current-parameters: true
-              git-revision: true
+              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
               same-node: true
               block: true
             - project: genesis-test
               current-parameters: true
-              git-revision: true
+              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
               same-node: true
               block: true
 - job-template:
-    name: genesis-fuel-daily
+    name: genesis-fuel-daily-master
 
     project-type: freestyle
 
-    disabled: true
+    disabled: false
 
-    node: foreman
+    node: fuel
 
     parameters:
         - string:
@@ -290,21 +290,21 @@
         - trigger-builds:
             - project: genesis-build
               current-parameters: true
-              git-revision: true
-              same-node: true
+              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
+              same-node: false
               block: true
             - project: genesis-deploy
               current-parameters: true
-              git-revision: true
-              same-node: true
+              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
+              same-node: false
               block: true
             - project: genesis-test
               current-parameters: true
-              git-revision: true
-              same-node: true
+              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
+              same-node: false
               block: true
 - job-template:
-    name: genesis-opensteak-daily
+    name: genesis-opensteak-daily-master
 
     project-type: freestyle
 
@@ -347,26 +347,28 @@
         - trigger-builds:
             - project: genesis-build
               current-parameters: true
-              git-revision: true
+              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
               same-node: true
               block: true
             - project: genesis-deploy
               current-parameters: true
-              git-revision: true
+              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
               same-node: true
               block: true
             - project: genesis-test
               current-parameters: true
-              git-revision: true
+              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
               same-node: true
               block: true
 
 - job-template:
     name: genesis-build
 
+    node: ericsson-build
+
     project-type: freestyle
 
-    disabled: true
+    disabled: false
 
     logrotate:
         daysToKeep: 30
@@ -403,15 +405,27 @@
             set -o nounset
             set -o pipefail
 
-            echo cd $WORKSPACE/$INSTALLER/ci
-            echo ./build.sh
+            hostname
+            whoami
+            docker --version
+            cd $WORKSPACE/fuel-build/docker
+            pwd
+            echo foo
+            make clean || true
+            make
+            cd ..
+            echo foo
+            make clean || true
+            make all
 
 - job-template:
     name: genesis-deploy
 
+    node: ericsson-build
+
     project-type: freestyle
 
-    disabled: true
+    disabled: false
 
     logrotate:
         daysToKeep: 30
@@ -454,9 +468,11 @@
 - job-template:
     name: genesis-test
 
+    node: ericsson-build
+
     project-type: freestyle
 
-    disabled: true
+    disabled: false
 
     logrotate:
         daysToKeep: 30
