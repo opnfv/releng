@@ -3,6 +3,8 @@
     jobs:
         - 'vswitchperf-test'
         - 'vswitchperf-daily-master'
+        - 'vswitchperf-merge'
+        - 'vswitchperf-verify'
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
@@ -46,6 +48,16 @@
         artifactDaysToKeep: '{build-artifact-days-to-keep}'
         artifactNumToKeep: '{build-artifact-num-to-keep}'
 
+    parameters:
+        - project-parameter:
+            project: '{project}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
     wrappers:
         - ssh-agent-credentials:
             user: '{ssh-credentials}'
@@ -58,9 +70,116 @@
 
     builders:
         - shell: |
+            pwd
+            find .
             echo "Hello world from vswitchperf {somevar} daily"
-        - test-macro
 
     postbuilders:
         - test-macro
+
+- job-template:
+    name: 'vswitchperf-verify'
+
+    project-type: freestyle
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: 'master'
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            user: '{ssh-credentials}'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'vswitchperf'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/master'
+
+    builders:
+        - shell: |
+            pwd
+            find .
+            echo "verify logic goes here"
+
+- job-template:
+    name: 'vswitchperf-merge'
+
+    # builder-merge job to run JJB update
+    #
+    # This job's purpose is to update all the JJB
+
+    project-type: freestyle
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 40
+        artifactDaysToKeep: -1
+        artifactNumToKeep: 5
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: 'master'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    wrappers:
+        - ssh-agent-credentials:
+            user: '{ssh-credentials}'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'vswitchperf'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/master'
+
+    builders:
+        - shell: |
+            pwd
+            find .
+            echo "merge logic goes here"
+
+
+
+
+
 
