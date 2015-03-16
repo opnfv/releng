@@ -71,8 +71,10 @@
     builders:
         - shell: |
             pwd
-            find .
-            echo "Hello world from vswitchperf {somevar} daily"
+            cd src
+            make
+            # run basic sanity test
+            make sanity
 
     postbuilders:
         - test-macro
@@ -125,8 +127,10 @@
     builders:
         - shell: |
             pwd
-            find .
-            echo "verify logic goes here"
+            cd src
+            make
+            # run basic sanity test
+            make sanity
 
 - job-template:
     name: 'vswitchperf-merge'
@@ -175,11 +179,5 @@
     builders:
         - shell: |
             pwd
-            find .
-            echo "merge logic goes here"
-
-
-
-
-
-
+            cd src
+            make
