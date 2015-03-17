@@ -1,7 +1,6 @@
 - project:
     name: genesis
     jobs:
-        - 'genesis-daily-master'
         - 'genesis-merge'
         - 'genesis-verify'
         - 'genesis-foreman-daily-master'
@@ -18,58 +17,6 @@
             branch: 'master'
 
     project: 'genesis'
-
-- job-template:
-    name: 'genesis-daily-master'
-
-    # Job template for daily builders
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-
-    project-type: freestyle
-    node: fuel
-
-    logrotate:
-        daysToKeep: '{build-days-to-keep}'
-        numToKeep: '{build-num-to-keep}'
-        artifactDaysToKeep: '{build-artifact-days-to-keep}'
-        artifactNumToKeep: '{build-artifact-num-to-keep}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    wrappers:
-        - ssh-agent-credentials:
-            user: '{ssh-credentials}'
-
-    triggers:
-        - timed: 'H H * * *'
-
-    builders:
-        - shell: |
-            hostname
-            whoami
-            docker --version
-            cd fuel-build/docker
-            pwd
-            echo foo
-            make clean || true
-            make
-            cd ..
-            echo foo
-            make clean || true
-            make all
-            if [[ -d /var/www/genesis-fuel/daily ]]; then sudo rm /var/www/genesis-fuel/daily; fi
-            sudo ln -s /home/jenkins-ci/workspace/genesis-daily-master/fuel-build/release/ /var/www/genesis-fuel/daily
 
 - job-template:
     name: 'genesis-verify'
@@ -388,6 +335,10 @@
             name: GERRIT_REFSPEC
             default: refs/heads/master
             description: "Refspec to retrieve."
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "The directory where the artifact will be placed upon completion of the build."
 
     scm:
         - git:
@@ -405,18 +356,9 @@
             set -o nounset
             set -o pipefail
 
-            hostname
-            whoami
-            docker --version
-            cd $WORKSPACE/fuel-build/docker
-            pwd
-            echo foo
-            make clean || true
-            make
-            cd ..
-            echo foo
-            make clean || true
-            make all
+            cd $WORKSPACE/fuel/ci
+            ./build.sh $BUILD_DIRECTORY
+            ls -al $BUILD_DIRECTORY
 
 - job-template:
     name: genesis-deploy
