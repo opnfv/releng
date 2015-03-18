@@ -1,0 +1,124 @@
+- job:
+    name: 'fuel-build'
+
+    project-type: freestyle
+
+    parameters:
+        - string:
+            name: INSTALLER
+            default: fuel
+            description: "Installer to use."
+        - string:
+            name: GERRIT_BRANCH
+            default: master
+            description: "Branch to build, deploy and test."
+        - string:
+            name: GERRIT_REFSPEC
+            default: refs/heads/master
+            description: "Refspec to retrieve."
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "The directory where the artifact will be placed upon completion of the build."
+
+    scm:
+        - git:
+            skip-tag: true
+            url: https://gerrit.opnfv.org/gerrit/genesis
+            branches:
+                - $GERRIT_BRANCH
+            refspec: $GERRIT_REFSPEC
+
+    builders:
+        - shell: |
+            echo "Running fuel build"
+            cd $WORKSPACE/$INSTALLER
+
+- job:
+    name: 'fuel-deploy'
+
+    project-type: freestyle
+
+    parameters:
+        - string:
+            name: INSTALLER
+            default: fuel
+            description: "Installer to use."
+        - string:
+            name: GERRIT_BRANCH
+            default: master
+            description: "Branch to build, deploy and test."
+        - string:
+            name: GERRIT_REFSPEC
+            default: refs/heads/master
+            description: "Refspec to retrieve."
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "The directory where the artifact will be placed upon completion of the build."
+
+    scm:
+        - git:
+            skip-tag: true
+            url: https://gerrit.opnfv.org/gerrit/genesis
+            branches:
+                - $GERRIT_BRANCH
+            refspec: $GERRIT_REFSPEC
+
+    builders:
+        - shell: |
+            echo "Running fuel deploy"
+            cd $WORKSPACE/$INSTALLER
+
+- job:
+    name: 'fuel-test'
+
+    project-type: freestyle
+
+    parameters:
+        - string:
+            name: INSTALLER
+            default: fuel
+            description: "Installer to use."
+        - string:
+            name: GERRIT_BRANCH
+            default: master
+            description: "Branch to build, deploy and test."
+        - string:
+            name: GERRIT_REFSPEC
+            default: refs/heads/master
+            description: "Refspec to retrieve."
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "The directory where the artifact will be placed upon completion of the build."
+
+    scm:
+       - git:
+            skip-tag: true
+            url: https://gerrit.opnfv.org/gerrit/genesis
+            branches:
+                - $GERRIT_BRANCH
+            refspec: $GERRIT_REFSPEC
+
+    builders:
+        - shell: |
+            echo "Running fuel test"
+            cd $WORKSPACE/$INSTALLER
+
+- builder:
+    name: fuel-master
+    builders:
+        - trigger-builds:
+            - project: fuel-build
+              current-parameters: true
+              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
+              block: true
+            - project: fuel-deploy
+              current-parameters: true
+              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
+              block: true
+            - project: fuel-test
+              current-parameters: true
+              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
+              block: true

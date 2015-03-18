@@ -1,0 +1,46 @@
+- project:
+    name: master
+
+    installer:
+        - foreman
+        - fuel
+        - opensteak
+
+    jobs:
+        - 'genesis-{installer}-{name}'
+
+    logrotate:
+       daysToKeep: 30
+       numToKeep: 10
+       artifactDaysToKeep: -1
+       artifactNumToKeep: -1
+
+- job-template:
+    name: 'genesis-{installer}-{name}'
+
+    project-type: freestyle
+
+    parameters:
+        - string:
+            name: INSTALLER
+            default: '{installer}'
+            description: "Installer to use."
+        - string:
+            name: GERRIT_BRANCH
+            default: origin/master
+            description: "Branch to build, deploy and test."
+        - string:
+            name: GERRIT_REFSPEC
+            default: refs/heads/master
+            description: "Refspec to retrieve."
+
+    scm:
+        - git:
+            skip-tag: true
+            url: https://gerrit.opnfv.org/gerrit/genesis
+            branches:
+                - $GERRIT_BRANCH
+            refspec: $GERRIT_REFSPEC
+
+    builders:
+        - '{installer}-master'
