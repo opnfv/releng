@@ -66,16 +66,26 @@
         - timed: 'H H * * *'
 
     prebuilders:
-        - test-macro
+        #- test-macro
+        - shell: |
+            mkdir src && cd src
+            git clone git://dpdk.org/dpdk && cd dpdk
+            setenv RTE_SDK $PWD
+            setenv RTE_TARGET x86_64-native-linuxapp-gcc
+            git checkout master
 
     builders:
         - shell: |
-            pwd
-            find .
             echo "Hello world from fastpathmetrics {somevar} daily"
+            echo "Building DPDK"
+            make install T=$RTE_TARGET
+            cd app/test && make test
+            cd -
 
     postbuilders:
-        - test-macro
+        #- test-macro
+        - cd ../../
+        - rm -rf src
 
 - job-template:
     name: 'fastpathmetrics-verify'
@@ -127,6 +137,17 @@
             pwd
             find .
             echo "verify logic goes here"
+            mkdir src && cd src
+            git clone git://dpdk.org/dpdk && cd dpdk
+            setenv RTE_SDK $PWD
+            setenv RTE_TARGET x86_64-native-linuxapp-gcc
+            git checkout master
+            echo "Building DPDK"
+            make install T=$RTE_TARGET
+            cd app/test && make test
+            cd -
+            - cd ../../
+            - rm -rf src
 
 - job-template:
     name: 'fastpathmetrics-merge'
