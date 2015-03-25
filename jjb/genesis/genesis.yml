@@ -1,14 +1,15 @@
 - project:
+
     name: genesis
+
+    installer:
+        - foreman
+        - fuel
+        - opensteak
     jobs:
-        - 'genesis-merge'
-        - 'genesis-verify'
-        - 'genesis-foreman-daily-master'
-        - 'genesis-fuel-daily-master'
-        - 'genesis-opensteak-daily-master'
-        - 'genesis-build'
-        - 'genesis-deploy'
-        - 'genesis-test'
+        - 'genesis-{installer}-verify'
+        - 'genesis-{installer}-merge'
+        - 'genesis-{installer}-daily-master'
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
@@ -18,10 +19,15 @@
 
     project: 'genesis'
 
+########################
+# job templates
+########################
+
 - job-template:
-    name: 'genesis-verify'
+    name: 'genesis-{installer}-verify'
 
     project-type: freestyle
+
     node: fuel
 
     logrotate:
@@ -31,10 +37,14 @@
         artifactNumToKeep: -1
 
     parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
             branch: 'master'
+
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
@@ -63,21 +73,18 @@
                 branches:
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/master'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'common/**'
+                  - compare-type: ANT
+                    pattern: '{installer}/**'
+
 
     builders:
-        - shell: |
-            hostname
-            whoami
-            docker --version
-            cd fuel/build/docker
-            pwd
-            echo foo
-            make clean || true
-            make
-            echo "what tests can we run here?"
+        - '{installer}-verify'
 
 - job-template:
-    name: 'genesis-merge'
+    name: 'genesis-{installer}-merge'
 
     # builder-merge job to run JJB update
     #
@@ -93,6 +100,9 @@
         artifactNumToKeep: 5
 
     parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
@@ -120,225 +130,40 @@
                 branches:
                     - branch-compare-type: 'ANT'
                       branch-pattern: '**/master'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'common/**'
+                  - compare-type: ANT
+                    pattern: '{installer}/**'
 
     builders:
-        - shell: |
-            hostname
-            whoami
-            docker --version
-            cd fuel-build/docker
-            pwd
-            echo foo
-            make clean || true
-            make
-            cd ..
-            echo foo
-            make clean || true
-            make all
+        - '{installer}-merge'
 
 - job-template:
-    name: genesis-foreman-daily-master
+    name: 'genesis-{installer}-daily-master'
 
     project-type: freestyle
 
     disabled: true
-
-    node: foreman
-
-    parameters:
-        - string:
-            name: INSTALLER
-            default: foreman
-            description: "Installer to use."
-        - string:
-            name: GERRIT_BRANCH
-            default: origin/master
-            description: "Branch to build, deploy and test."
-        - string:
-            name: GERRIT_REFSPEC
-            default: refs/heads/master
-            description: "Refspec to retrieve."
-
-    scm:
-        - git:
-            skip-tag: true
-            url: https://gerrit.opnfv.org/gerrit/genesis
-            branches:
-                - $GERRIT_BRANCH
-            refspec: $GERRIT_REFSPEC
-
-    triggers:
-        - pollscm: '@midnight'
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    builders:
-        - trigger-builds:
-            - project: genesis-build
-              current-parameters: true
-              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
-              same-node: true
-              block: true
-            - project: genesis-deploy
-              current-parameters: true
-              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
-              same-node: true
-              block: true
-            - project: genesis-test
-              current-parameters: true
-              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
-              same-node: true
-              block: true
-- job-template:
-    name: genesis-fuel-daily-master
-
-    project-type: freestyle
-
-    disabled: false
 
     node: fuel
 
     parameters:
         - string:
-            name: INSTALLER
-            default: fuel
-            description: "Installer to use."
-        - string:
-            name: GERRIT_BRANCH
-            default: origin/master
-            description: "Branch to build, deploy and test."
-        - string:
-            name: GERRIT_REFSPEC
-            default: refs/heads/master
-            description: "Refspec to retrieve."
-
-    scm:
-        - git:
-            skip-tag: true
-            url: https://gerrit.opnfv.org/gerrit/genesis
-            branches:
-                - $GERRIT_BRANCH
-            refspec: $GERRIT_REFSPEC
-
-    triggers:
-        - pollscm: '@midnight'
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    builders:
-        - trigger-builds:
-            - project: genesis-build
-              current-parameters: true
-              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
-              same-node: false
-              block: true
-            - project: genesis-deploy
-              current-parameters: true
-              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
-              same-node: false
-              block: true
-            - project: genesis-test
-              current-parameters: true
-              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
-              same-node: false
-              block: true
-- job-template:
-    name: genesis-opensteak-daily-master
-
-    project-type: freestyle
-
-    disabled: true
-
-    node: opensteak
-
-    parameters:
-        - string:
-            name: INSTALLER
-            default: opensteak
-            description: "Installer to use."
-        - string:
-            name: GERRIT_BRANCH
-            default: origin/master
-            description: "Branch to build, deploy and test."
-        - string:
-            name: GERRIT_REFSPEC
-            default: refs/heads/master
-            description: "Refspec to retrieve."
-
-    scm:
-        - git:
-            skip-tag: true
-            url: https://gerrit.opnfv.org/gerrit/genesis
-            branches:
-                - $GERRIT_BRANCH
-            refspec: $GERRIT_REFSPEC
-
-    triggers:
-        - pollscm: '@midnight'
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    builders:
-        - trigger-builds:
-            - project: genesis-build
-              current-parameters: true
-              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
-              same-node: true
-              block: true
-            - project: genesis-deploy
-              current-parameters: true
-              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
-              same-node: true
-              block: true
-            - project: genesis-test
-              current-parameters: true
-              predefined-parameters: GERRIT_BRANCH=$GIT_COMMIT
-              same-node: true
-              block: true
-
-- job-template:
-    name: genesis-build
-
-    node: ericsson-build
-
-    project-type: freestyle
-
-    disabled: false
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    parameters:
-        - string:
-            name: INSTALLER
-            description: "Installer to use. Mandatory parameter."
-        - string:
-            name: GERRIT_BRANCH
-            default: master
-            description: "Branch to build, deploy and test."
-        - string:
-            name: GERRIT_REFSPEC
-            default: refs/heads/master
-            description: "Refspec to retrieve."
-        - string:
             name: BUILD_DIRECTORY
             default: $WORKSPACE/build_output
-            description: "The directory where the artifact will be placed upon completion of the build."
+        - string:
+            name: INSTALLER
+            default: '{installer}'
+            description: "Installer to use."
+        - string:
+            name: GERRIT_BRANCH
+            default: origin/master
+            description: "Branch to build, deploy and test."
+        - string:
+            name: GERRIT_REFSPEC
+            default: refs/heads/master
+            description: "Refspec to retrieve."
 
     scm:
         - git:
@@ -348,10 +173,50 @@
                 - $GERRIT_BRANCH
             refspec: $GERRIT_REFSPEC
 
+    triggers:
+        - pollscm: '@midnight'
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - '{installer}-daily-master'
+
+########################
+# builder macros
+########################
+- builder:
+    name: foreman-verify
     builders:
         - shell: |
             #!/bin/bash
 
+            echo "Hello World!"
+
+- builder:
+    name: foreman-merge
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Hello World!"
+
+- builder:
+    name: foreman-daily-master
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Hello World!"
+
+- builder:
+    name: fuel-verify
+    builders:
+        - shell: |
+            #!/bin/bash
             set -o errexit
             set -o nounset
             set -o pipefail
@@ -360,96 +225,52 @@
             ./build.sh $BUILD_DIRECTORY
             ls -al $BUILD_DIRECTORY
 
-- job-template:
-    name: genesis-deploy
-
-    node: ericsson-build
-
-    project-type: freestyle
-
-    disabled: false
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    parameters:
-        - string:
-            name: INSTALLER
-            description: "Installer to use. Mandatory parameter."
-        - string:
-            name: GERRIT_BRANCH
-            default: master
-            description: "Branch to build, deploy and test."
-        - string:
-            name: GERRIT_REFSPEC
-            default: refs/heads/master
-            description: "Refspec to retrieve."
-
-    scm:
-        - git:
-            skip-tag: true
-            url: https://gerrit.opnfv.org/gerrit/genesis
-            branches:
-                - $GERRIT_BRANCH
-            refspec: $GERRIT_REFSPEC
-
+- builder:
+    name: fuel-merge
     builders:
         - shell: |
             #!/bin/bash
-
             set -o errexit
             set -o nounset
             set -o pipefail
 
-            echo cd $WORKSPACE/$INSTALLER/ci
-            echo ./build.sh
+            cd $WORKSPACE/fuel/ci
+            ./build.sh -f t $BUILD_DIRECTORY
+            ls -al $BUILD_DIRECTORY
 
-- job-template:
-    name: genesis-test
-
-    node: ericsson-build
-
-    project-type: freestyle
-
-    disabled: false
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    parameters:
-        - string:
-            name: INSTALLER
-            description: "Installer to use. Mandatory parameter."
-        - string:
-            name: GERRIT_BRANCH
-            default: master
-            description: "Branch to build, deploy and test."
-        - string:
-            name: GERRIT_REFSPEC
-            default: refs/heads/master
-            description: "Refspec to retrieve."
-
-    scm:
-        - git:
-            skip-tag: true
-            url: https://gerrit.opnfv.org/gerrit/genesis
-            branches:
-                - $GERRIT_BRANCH
-            refspec: $GERRIT_REFSPEC
-
+- builder:
+    name: fuel-daily-master
     builders:
         - shell: |
             #!/bin/bash
-
             set -o errexit
             set -o nounset
             set -o pipefail
 
-            echo cd $WORKSPACE/$INSTALLER/ci
-            echo ./test.sh
+            cd $WORKSPACE/fuel/ci
+            ./build.sh -f t $BUILD_DIRECTORY
+            ls -al $BUILD_DIRECTORY
+
+- builder:
+    name: opensteak-verify
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Hello World!"
+
+- builder:
+    name: opensteak-merge
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Hello World!"
+
+- builder:
+    name: opensteak-daily-master
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Hello World!"
