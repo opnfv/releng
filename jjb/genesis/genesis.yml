@@ -40,6 +40,9 @@
         - string:
             name: BUILD_DIRECTORY
             default: $WORKSPACE/build_output
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/genesis
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
@@ -48,7 +51,6 @@
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
-            url: https://gerrit.opnfv.org/gerrit/genesis
             refspec: '$GERRIT_REFSPEC'
             choosing-strategy: 'gerrit'
 
@@ -105,6 +107,9 @@
         - string:
             name: BUILD_DIRECTORY
             default: $WORKSPACE/build_output
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/genesis
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
@@ -113,7 +118,6 @@
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
-            url: https://gerrit.opnfv.org/gerrit/genesis
             refspec: ''
             choosing-strategy: 'default'
 
@@ -160,6 +164,9 @@
             default: '{installer}'
             description: "Installer to use."
         - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/genesis
+        - string:
             name: GERRIT_BRANCH
             default: origin/master
             description: "Branch to build, deploy and test."
@@ -171,7 +178,7 @@
     scm:
         - git:
             skip-tag: true
-            url: https://gerrit.opnfv.org/gerrit/genesis
+            url: $GIT_BASE
             branches:
                 - $GERRIT_BRANCH
             refspec: $GERRIT_REFSPEC
