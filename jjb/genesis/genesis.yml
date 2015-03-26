@@ -151,8 +151,6 @@
 
     project-type: freestyle
 
-    disabled: true
-
     node: ericsson-build
 
     parameters:
@@ -232,8 +230,15 @@
             set -o pipefail
             set -x
 
+            # set/create the cache location
+            OPNFV_FUEL_CACHE="$(dirname $WORKSPACE)/opnfv_fuel_cache/$JOB_NAME"
+            [[ -d $OPNFV_FUEL_CACHE ]] || mkdir -p $OPNFV_FUEL_CACHE
+
+            # do the build
             cd $WORKSPACE/fuel/ci
-            ./build.sh $BUILD_DIRECTORY
+            ./build.sh -c file://$OPNFV_FUEL_CACHE $BUILD_DIRECTORY
+
+            # list the build artifacts
             ls -al $BUILD_DIRECTORY
 
 - builder:
@@ -246,8 +251,15 @@
             set -o pipefail
             set -x
 
+            # set/create the cache location
+            OPNFV_FUEL_CACHE="$(dirname $WORKSPACE)/opnfv_fuel_cache/$JOB_NAME"
+            [[ -d $OPNFV_FUEL_CACHE ]] || mkdir -p $OPNFV_FUEL_CACHE
+
+            # do the build
             cd $WORKSPACE/fuel/ci
-            ./build.sh -f t $BUILD_DIRECTORY
+            ./build.sh -c file://$OPNFV_FUEL_CACHE $BUILD_DIRECTORY
+
+            # list the build artifacts
             ls -al $BUILD_DIRECTORY
 
 - builder:
@@ -260,8 +272,15 @@
             set -o pipefail
             set -x
 
+            # set/create the cache location
+            OPNFV_FUEL_CACHE="$(dirname $WORKSPACE)/opnfv_fuel_cache/$JOB_NAME"
+            [[ -d $OPNFV_FUEL_CACHE ]] || mkdir -p $OPNFV_FUEL_CACHE
+
+            # do the build
             cd $WORKSPACE/fuel/ci
-            ./build.sh -f t $BUILD_DIRECTORY
+            ./build.sh -f t -c file://$OPNFV_FUEL_CACHE $BUILD_DIRECTORY
+
+            # list the build artifacts
             ls -al $BUILD_DIRECTORY
 
 - builder:
