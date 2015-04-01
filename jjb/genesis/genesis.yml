@@ -317,6 +317,31 @@
             gsutil cp opnfv-$BUILD_ID.properties gs://$GS_URL/opnfv-$BUILD_ID.properties
             gsutil cp latest.properties gs://$GS_URL/latest.properties
 
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
+
+            # get the latest.properties file in order to get info regarding latest artifact
+            gsutil cp gs://$GS_URL/latest.properties latest.properties
+
+            # check if we got the file
+            [[ -f latest.properties ]] || exit 1
+
+            # source the file so we get OPNFV vars
+            source latest.properties
+
+            # list OPNFV env vars for info
+            env | grep '^OPNFV'
+
+            # download the file
+            gsutil cp gs://$OPNFV_ARTIFACT_URL $WORKSPACE/opnfv.iso
+
+            # list the file
+            ls -al $WORKSPACE/opnfv.iso
+
 - builder:
     name: opensteak-verify
     builders:
