@@ -159,6 +159,11 @@
         - string:
             name: BUILD_DIRECTORY
             default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: GS_URL
+            default: 'artifacts.opnfv.org/genesis/{installer}'
+            description: "URL to Google Storage."
         - string:
             name: INSTALLER
             default: '{installer}'
@@ -280,10 +285,37 @@
 
             # do the build
             cd $WORKSPACE/fuel/ci
-            ./build.sh -f t -c file://$OPNFV_FUEL_CACHE $BUILD_DIRECTORY
+            ./build.sh -f t -v $BUILD_ID -c file://$OPNFV_FUEL_CACHE $BUILD_DIRECTORY
+
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
 
             # list the build artifacts
             ls -al $BUILD_DIRECTORY
+
+            cd $BUILD_DIRECTORY
+
+            # save information regarding artifact into file
+            (
+                echo "GIT_URL=$(git config --get remote.origin.url)"
+                echo "SHA1=$(git rev-parse HEAD)"
+                echo "ARTIFACT_URL=$GS_URL/opnfv-$BUILD_ID.iso"
+                echo "BUILD_URL=$BUILD_URL"
+                echo "BUILD=OK"
+            ) > opnfv-$BUILD_ID.properties
+
+            # copy artifact property file as latest.properties
+            # so we can directly get info regarding latest artifact
+            /bin/cp -f opnfv-$BUILD_ID.properties latest.properties
+
+            # upload artifact and additional files to google storage
+            gsutil cp opnfv-$BUILD_ID.iso gs://$GS_URL/opnfv-$BUILD_ID.iso
+            gsutil cp opnfv-$BUILD_ID.properties gs://$GS_URL/opnfv-$BUILD_ID.properties
+            gsutil cp latest.properties gs://$GS_URL/latest.properties
 
 - builder:
     name: opensteak-verify
