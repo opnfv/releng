@@ -243,8 +243,76 @@
     builders:
         - shell: |
             #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
 
-            echo "Hello World!"
+            # get the dependencies - temporary fix for RC0
+            [[ -d $WORKSPACE/foreman/build ]] || mkdir -p $WORKSPACE/foreman/build
+            cp /home/jenkins/Downloads/opnfv_iso/* $WORKSPACE/foreman/build/
+
+            # below lines perhaps need to be enabled in order to fetch images from internet
+            # as we are having disk space issues on ericsson-build slave
+            #wget http://ftp.riken.jp/Linux/centos/7.0.1406/isos/x86_64/CentOS-7.0-1406-x86_64-Minimal.iso
+            #wget http://download.virtualbox.org/virtualbox/rpm/fedora/20/x86_64/VirtualBox-4.3-4.3.26_98988_fedora18-1.x86_64.rpm
+            #wget http://repos.duss-janser.ch/vagrant/vagrant_1.7.2_x86_64.rpm
+
+            # do the build
+            cd $WORKSPACE/foreman/ci
+            ./build.sh $BUILD_DIRECTORY
+
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
+
+            # list the build artifacts
+            ls -al $BUILD_DIRECTORY
+
+            cd $BUILD_DIRECTORY
+
+            # save information regarding artifact into file
+            (
+                echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
+                echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
+                echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$BUILD_ID.iso"
+                echo "OPNFV_BUILD_URL=$BUILD_URL"
+                echo "OPNFV_BUILD=OK"
+            ) > opnfv-$BUILD_ID.properties
+
+            # copy artifact property file as latest.properties
+            # so we can directly get info regarding latest artifact
+            /bin/cp -f opnfv-$BUILD_ID.properties latest.properties
+
+            # upload artifact and additional files to google storage
+            gsutil cp OPNFV-CentOS-7-x86_64-$BUILD_ID.iso gs://$GS_URL/opnfv-$BUILD_ID.iso
+            gsutil cp opnfv-$BUILD_ID.properties gs://$GS_URL/opnfv-$BUILD_ID.properties
+            gsutil cp latest.properties gs://$GS_URL/latest.properties
+
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
+
+            # get the latest.properties file in order to get info regarding latest artifact
+            gsutil cp gs://$GS_URL/latest.properties latest.properties
+
+            # check if we got the file
+            [[ -f latest.properties ]] || exit 1
+
+            # source the file so we get OPNFV vars
+            source latest.properties
+
+            # download the file
+            gsutil cp gs://$OPNFV_ARTIFACT_URL $WORKSPACE/opnfv.iso
+
+            # list the file
+            ls -al $WORKSPACE/opnfv.iso
 
 - builder:
     name: fuel-verify
