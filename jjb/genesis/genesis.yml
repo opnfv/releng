@@ -208,8 +208,27 @@
     builders:
         - shell: |
             #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
 
-            echo "Hello World!"
+            # get the dependencies - temporary fix for RC0
+            [[ -d $WORKSPACE/foreman/build ]] || mkdir -p $WORKSPACE/foreman/build
+            cp /home/jenkins/Downloads/opnfv_iso/* $WORKSPACE/foreman/build/
+
+            # below lines perhaps need to be enabled in order to fetch images from internet
+            # as we are having disk space issues on ericsson-build slave
+            #wget http://ftp.riken.jp/Linux/centos/7.0.1406/isos/x86_64/CentOS-7.0-1406-x86_64-Minimal.iso
+            #wget http://download.virtualbox.org/virtualbox/rpm/fedora/20/x86_64/VirtualBox-4.3-4.3.26_98988_fedora18-1.x86_64.rpm
+            #wget http://repos.duss-janser.ch/vagrant/vagrant_1.7.2_x86_64.rpm
+
+            # do the build
+            cd $WORKSPACE/foreman/ci
+            ./build.sh $BUILD_DIRECTORY
+
+            # list the build artifacts
+            ls -al $BUILD_DIRECTORY
 
 - builder:
     name: foreman-merge
