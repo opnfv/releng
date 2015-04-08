@@ -5,6 +5,7 @@
         - 'opnfvdocs-daily-master'
         - 'opnfvdocs-merge'
         - 'opnfvdocs-verify'
+        - 'opnfvdocs-build-docs'
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
@@ -180,6 +181,57 @@
 
 
 
+- job-template:
+    name: 'opnfvdocs-build-docs'
 
+    project-type: freestyle
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 40
+        artifactDaysToKeep: -1
+        artifactNumToKeep: 5
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: 'master'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    wrappers:
+        - ssh-agent-credentials:
+            user: '{ssh-credentials}'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'opnfvdocs'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/master'
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            for file in $(find . -type f -iname '*.rst' ); do
+                file_cut=$(echo ${file%.*})
+                html_file=$file_cut".html"
+                pdf_file=$file_cut".pdf"
+                rst2html $file > $html_file
+                rst2pdf $file -o $pdf_file ;
+                sleep 1
+            done
+            echo "Documentation done.."
 
 
