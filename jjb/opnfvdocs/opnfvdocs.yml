@@ -5,6 +5,7 @@
         - 'opnfvdocs-daily-master'
         - 'opnfvdocs-merge'
         - 'opnfvdocs-verify'
+        - 'opnfvdocs-build-docs'
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
@@ -180,6 +181,49 @@
 
 
 
+- job-template:
+    name: 'opnfvdocs-build-docs'
 
+    project-type: freestyle
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 40
+        artifactDaysToKeep: -1
+        artifactNumToKeep: 5
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: 'master'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    wrappers:
+        - ssh-agent-credentials:
+            user: '{ssh-credentials}'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'opnfvdocs'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/master'
+
+    builders:
+        - shell: |
+            !include-raw include-raw001-build-docu.sh
+            echo "Documentation done.."
 
 
