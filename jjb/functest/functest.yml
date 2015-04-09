@@ -1,7 +1,8 @@
 - project:
     name: functest
+    
     jobs:
-        - 'functest-test'
+        - 'functest-vim_bench-test'
         - 'functest-daily-{stream}'
         - 'functest-merge'
         - 'functest-verify'
@@ -17,9 +18,11 @@
     somevar: 'foo'
 
 - job-template:
-    name: functest-test
+    name: functest-vim_bench-test
 
     project-type: freestyle
+    
+    node: orange-build
 
     logrotate:
         daysToKeep: 30
@@ -29,7 +32,7 @@
 
     builders:
         - shell: |
-            echo "Hello world from functest"
+            rally task start /home/ubuntu/rally/samples/tasks/scenario/opnfv/opnfv-keystone.json
 
 - job-template:
     name: 'functest-daily-{stream}'
@@ -222,8 +225,4 @@
     builders:
         - shell: 
             !include-raw build-docu.sh
-
-
-
-
 
