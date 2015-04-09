@@ -1,7 +1,14 @@
 - project:
     name: functest
+    
+    testcase:
+		- controller
+		- vim_bench
+		- vim_tempest
+		- vPing
+		- vIMS
     jobs:
-        - 'functest-test'
+        - 'functest-{testcase}-test'
         - 'functest-daily-{stream}'
         - 'functest-merge'
         - 'functest-verify'
@@ -17,9 +24,11 @@
     somevar: 'foo'
 
 - job-template:
-    name: functest-test
+    name: functest-{testcase}-test
 
     project-type: freestyle
+    
+    node: orange-build
 
     logrotate:
         daysToKeep: 30
@@ -27,9 +36,20 @@
         artifactDaysToKeep: -1
         artifactNumToKeep: -1
 
+    parameters:
+        - string:
+            name: TEST_DIRECTORY
+            default: $WORKSPACE/test_output
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/functest
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: 'master'
+
     builders:
-        - shell: |
-            echo "Hello world from functest"
+        - '{testcase}-test'
 
 - job-template:
     name: 'functest-daily-{stream}'
@@ -223,7 +243,12 @@
         - shell: 
             !include-raw build-docu.sh
 
-
-
-
+########################
+# builder macros
+########################
+- builder:
+    name: vim_bench-test
+    builders:
+        - shell: |
+            rally task start /home/ubuntu/rally/samples/tasks/scenario/opnfv/opnfv-keystone.json
 
