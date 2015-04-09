@@ -33,7 +33,9 @@
 
 - job-template:
     name: 'functest-daily-{stream}'
-
+    
+    node: orange-build
+    
     # Job template for daily builders
     #
     # Required Variables:
@@ -71,9 +73,7 @@
 
     builders:
         - shell: |
-            pwd
-            find .
-            echo "Hello world from functest {somevar} daily"
+            rally task start /home/ubuntu/rally/samples/tasks/scenarios/opnfv/opnfv-keystone.json --deployment bfec708a-bce4-4d8e-a49f-e50609341cbapwd
 
     postbuilders:
         - test-macro
