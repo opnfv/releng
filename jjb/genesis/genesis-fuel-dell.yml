@@ -1,0 +1,154 @@
+# this is the job configuration for bgs
+- project:
+    name: genesis-dell
+    installer:
+      - fuel
+    jobs:
+      - 'genesis-{installer}-daily-dell-{stream}'
+
+    # stream:    branch with - in place of / (eg. stable-helium)
+    # branch:    branch (eg. stable/helium)
+    stream:
+        - master:
+            branch: 'master'
+
+    project: 'genesis'
+
+########################
+# job templates
+########################
+
+- job-template:
+    name: 'genesis-{installer}-daily-dell-{stream}'
+
+    project-type: freestyle
+
+    node: dell-build
+
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: GS_URL
+            default: 'artifacts.opnfv.org/genesis/{installer}'
+            description: "URL to Google Storage."
+        - string:
+            name: INSTALLER
+            default: '{installer}'
+            description: "Installer to use."
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/genesis
+        - string:
+            name: GERRIT_BRANCH
+            default: origin/master
+            description: "Branch to build, deploy and test."
+        - string:
+            name: GERRIT_REFSPEC
+            default: refs/heads/master
+            description: "Refspec to retrieve."
+
+    scm:
+        - git:
+            skip-tag: true
+            url: $GIT_BASE
+            branches:
+                - $GERRIT_BRANCH
+            refspec: $GERRIT_REFSPEC
+
+    triggers:
+        - pollscm: '@midnight'
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+      - '{installer}-daily-master-dell'
+
+
+
+########################
+# builder macros
+########################
+
+
+- builder:
+  name: fuel-daily-master-dell
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
+
+            # set/create the cache location
+            OPNFV_FUEL_CACHE="$(dirname $WORKSPACE)/opnfv_fuel_cache"
+            [[ -d $OPNFV_FUEL_CACHE ]] || mkdir -p $OPNFV_FUEL_CACHE
+
+            # do the build
+            cd $WORKSPACE/fuel/ci
+            ./build.sh -f t -v $BUILD_ID -c file://$OPNFV_FUEL_CACHE $BUILD_DIRECTORY
+
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
+
+            # list the build artifacts
+            ls -al $BUILD_DIRECTORY
+
+            cd $BUILD_DIRECTORY
+
+            # save information regarding artifact into file
+            (
+                echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
+                echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
+                echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$BUILD_ID.iso"
+                echo "OPNFV_BUILD_URL=$BUILD_URL"
+                echo "OPNFV_BUILD=OK"
+            ) > opnfv-$BUILD_ID.properties
+
+            # copy artifact property file as latest.properties
+            # so we can directly get info regarding latest artifact
+            /bin/cp -f opnfv-$BUILD_ID.properties latest.properties
+
+            # upload artifact and additional files to google storage
+            #gsutil cp opnfv-$BUILD_ID.iso gs://$GS_URL/opnfv-$BUILD_ID.iso
+            #gsutil cp opnfv-$BUILD_ID.properties gs://$GS_URL/opnfv-$BUILD_ID.properties
+            #gsutil cp latest.properties gs://$GS_URL/latest.properties
+
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
+
+            # get the latest.properties file in order to get info regarding latest artifact
+            #gsutil cp gs://$GS_URL/latest.properties latest.properties
+
+            # check if we got the file
+            [[ -f latest.properties ]] || exit 1
+
+            # source the file so we get OPNFV vars
+            source latest.properties
+
+            #download the file
+            #gsutil not setup on this builder
+            #gsutil cp gs://$OPNFV_ARTIFACT_URL $WORKSPACE/opnfv.iso
+
+            # list the file
+            ls -al $WORKSPACE/opnfv.iso
+
+            # remove the BUILD_DIRECTORY and downlaoded artifact to reclaim some space
+            /bin/rm -rf $BUILD_DIRECTORY
+            /bin/rm -rf $WORKSPACE/opnfv.iso
+
