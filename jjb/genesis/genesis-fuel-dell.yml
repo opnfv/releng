@@ -1,0 +1,96 @@
+# this is the job configuration for bgs
+- project:
+    name: genesis-dell
+    installer:
+      - fuel
+    jobs:
+      - 'genesis-{installer}-daily-dell-{stream}'
+
+    # stream:    branch with - in place of / (eg. stable-helium)
+    # branch:    branch (eg. stable/helium)
+    stream:
+        - master:
+            branch: 'master'
+
+    project: 'genesis'
+
+########################
+# job templates
+########################
+
+- job-template:
+    name: 'genesis-{installer}-daily-dell-{stream}'
+
+    project-type: freestyle
+
+    node: dell-build
+
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: GS_URL
+            default: 'artifacts.opnfv.org/genesis/{installer}'
+            description: "URL to Google Storage."
+        - string:
+            name: INSTALLER
+            default: '{installer}'
+            description: "Installer to use."
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/genesis
+        - string:
+            name: GERRIT_BRANCH
+            default: origin/master
+            description: "Branch to build, deploy and test."
+        - string:
+            name: GERRIT_REFSPEC
+            default: refs/heads/master
+            description: "Refspec to retrieve."
+
+    scm:
+        - git:
+            skip-tag: true
+            url: $GIT_BASE
+            branches:
+                - $GERRIT_BRANCH
+            refspec: $GERRIT_REFSPEC
+
+    triggers:
+        - pollscm: '@midnight'
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+      - '{installer}-daily-master-dell'
+
+
+
+########################
+# builder macros
+########################
+
+
+- builder:
+      name: fuel-daily-master-dell
+      builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
+
+            # set/create the cache location
+            OPNFV_FUEL_CACHE="$(dirname $WORKSPACE)/opnfv_fuel_cache"
+            [[ -d $OPNFV_FUEL_CACHE ]] || mkdir -p $OPNFV_FUEL_CACHE
+
+            # do the build
+            cd $WORKSPACE/fuel/ci
+            ./build.sh -f t -v $BUILD_ID -c file://$OPNFV_FUEL_CACHE $BUILD_DIRECTORY
