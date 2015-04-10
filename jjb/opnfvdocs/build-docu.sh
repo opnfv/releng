@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 for file in $(find . -type f -iname '*.rst'); do
 	file_cut="${{file%.*}}"
         html_file=$file_cut".html"
