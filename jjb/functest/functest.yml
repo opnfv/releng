@@ -3,6 +3,10 @@
     
     jobs:
         - 'functest-vim_bench-test'
+        - 'functest-vim_tempest-test'
+        - 'functest-odl-test'
+        - 'functest-vims-test'
+        - 'functest-vping-test'
         - 'functest-daily-{stream}'
         - 'functest-merge'
         - 'functest-verify'
@@ -32,7 +36,75 @@
 
     builders:
         - shell: |
-            rally task start /home/ubuntu/rally/samples/tasks/scenario/opnfv/opnfv-keystone.json
+        python run_rally.py keystone
+
+- job-template:
+    name: functest-vim_tempest-test
+
+    project-type: freestyle
+    
+    node: orange-build
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+        rally verify start
+
+- job-template:
+    name: functest-odl-test
+
+    project-type: freestyle
+    
+    node: ericsson-build
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+        echo "put your CI scenario here"
+
+- job-template:
+    name: functest-vims-test
+
+    project-type: freestyle
+    
+    node: ericsson-build
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+        echo "put your CI scenario here"
+
+- job-template:
+    name: functest-vping-test
+
+    project-type: freestyle
+    
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+            echo "put your CI scenario here"
+
+
 
 - job-template:
     name: 'functest-daily-{stream}'
