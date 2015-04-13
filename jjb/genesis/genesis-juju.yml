@@ -1,0 +1,219 @@
+# this is the job configuration for bgs
+- project:
+
+    name: genesis-juju
+
+    installer:
+        - juju
+    jobs:
+        - 'genesis-juju-verify'
+        - 'genesis-juju-merge'
+        - 'genesis-juju-daily-{stream}'
+
+    # stream:    branch with - in place of / (eg. stable-helium)
+    # branch:    branch (eg. stable/helium)
+    stream:
+        - master:
+            branch: 'master'
+
+    project: 'genesis'
+
+########################
+# job templates
+########################
+
+- job-template:
+    name: 'genesis-juju-verify'
+
+    project-type: freestyle
+
+    node: ericsson-build
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/genesis
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: 'master'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            user: '{ssh-credentials}'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'genesis'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/master'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'common/**'
+                  - compare-type: ANT
+                    pattern: 'juju/**'
+
+
+    builders:
+        - 'juju-verify'
+
+- job-template:
+    name: 'genesis-juju-merge'
+
+    # builder-merge job to run JJB update
+    #
+    # This job's purpose is to update all the JJB
+
+    project-type: freestyle
+
+    node: ericsson-build
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 40
+        artifactDaysToKeep: -1
+        artifactNumToKeep: 5
+
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/genesis
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: 'master'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    wrappers:
+        - ssh-agent-credentials:
+            user: '{ssh-credentials}'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'genesis'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/master'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'common/**'
+                  - compare-type: ANT
+                    pattern: 'juju/**'
+
+    builders:
+        - 'juju-merge'
+
+- job-template:
+    name: 'genesis-juju-daily-{stream}'
+
+    project-type: freestyle
+
+    node: ericsson-build
+
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: GS_URL
+            default: 'artifacts.opnfv.org/genesis/juju'
+            description: "URL to Google Storage."
+        - string:
+            name: INSTALLER
+            default: 'juju'
+            description: "Installer to use."
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/genesis
+        - string:
+            name: GERRIT_BRANCH
+            default: origin/master
+            description: "Branch to build, deploy and test."
+        - string:
+            name: GERRIT_REFSPEC
+            default: refs/heads/master
+            description: "Refspec to retrieve."
+
+    scm:
+        - git:
+            skip-tag: true
+            url: $GIT_BASE
+            branches:
+                - $GERRIT_BRANCH
+            refspec: $GERRIT_REFSPEC
+
+    triggers:
+        - pollscm: '@midnight'
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - 'juju-daily-master'
+
+- builder:
+    name: juju-verify
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Hello World!"
+
+- builder:
+    name: juju-merge
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Hello World!"
+
+- builder:
+    name: juju-daily-master
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Hello World!"
