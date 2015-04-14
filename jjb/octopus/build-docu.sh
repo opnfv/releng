@@ -6,6 +6,4 @@ for file in $(find . -type f -iname '*.rst'); do
          rst2html $file > $html_file
          rst2pdf $file -o $pdf_file
 done
-v
-v
 
