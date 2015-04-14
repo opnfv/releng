@@ -1,11 +1,9 @@
 - project:
     name: opnfvdocs
     jobs:
-        - 'opnfvdocs-test'
         - 'opnfvdocs-daily-{stream}'
         - 'opnfvdocs-merge'
         - 'opnfvdocs-verify'
-        - 'opnfvdocs-build-docs'
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
@@ -14,22 +12,6 @@
             branch: 'master'
 
     project: 'opnfvdocs'
-    somevar: 'foo'
-
-- job-template:
-    name: opnfvdocs-test
-
-    project-type: freestyle
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    builders:
-        - shell: |
-            echo "Hello world from opnfvdocs"
 
 - job-template:
     name: 'opnfvdocs-daily-{stream}'
@@ -41,7 +23,6 @@
     #     branch:    branch (eg. stable)
 
     project-type: freestyle
-    varsetabove: '{somevar}'
 
     logrotate:
         daysToKeep: '{build-days-to-keep}'
@@ -66,17 +47,11 @@
     triggers:
         - timed: 'H H * * *'
 
-    prebuilders:
-        - test-macro
-
     builders:
         - shell: |
             pwd
             find .
-            echo "Hello world from opnfvdocs {somevar} daily"
-
-    postbuilders:
-        - test-macro
+            !include-raw build-docu.sh
 
 - job-template:
     name: 'opnfvdocs-verify'
@@ -127,7 +102,7 @@
         - shell: |
             pwd
             find .
-            echo "verify logic goes here"
+            !include-raw build-docu.sh
 
 - job-template:
     name: 'opnfvdocs-merge'
@@ -177,51 +152,4 @@
         - shell: |
             pwd
             find .
-            echo "merge logic goes here"
-
-
-
-- job-template:
-    name: 'opnfvdocs-build-docs'
-
-    project-type: freestyle
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 40
-        artifactDaysToKeep: -1
-        artifactNumToKeep: 5
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: 'master'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
-
-    wrappers:
-        - ssh-agent-credentials:
-            user: '{ssh-credentials}'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'opnfvdocs'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
-
-    builders:
-        - shell: 
             !include-raw build-docu.sh
-
