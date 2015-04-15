@@ -10,7 +10,6 @@
         - 'functest-daily-{stream}'
         - 'functest-merge'
         - 'functest-verify'
-        - 'functest-build-docs'
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
@@ -146,10 +145,11 @@
         - test-macro
 
     builders:
+        - shell:
+            !include-raw build-docu.sh
         - shell: |
-            pwd
-            find .
-            echo "Hello world from functest {somevar} daily"
+           gsutil cp docs/*.pdf gs://artifacts.opnfv.org/functest/docs/
+           gsutil cp docs/*.html gs://artifacts.opnfv.org/functest/docs/
 
     postbuilders:
         - test-macro
@@ -200,10 +200,8 @@
                     branch-pattern: '**/master'
 
     builders:
-        - shell: |
-            pwd
-            find .
-            echo "verify logic goes here"
+        - shell:
+            !include-raw build-docu.sh
 
 - job-template:
     name: 'functest-merge'
@@ -250,52 +248,10 @@
                       branch-pattern: '**/master'
 
     builders:
-        - shell: |
-            pwd
-            find .
-            echo "merge logic goes here"
-
-- job-template:
-    name: 'functest-build-docs'
-
-    project-type: freestyle
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 40
-        artifactDaysToKeep: -1
-        artifactNumToKeep: 5
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: 'master'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
-
-    wrappers:
-        - ssh-agent-credentials:
-            user: '{ssh-credentials}'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'functest'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
-
-    builders:
         - shell: 
             !include-raw build-docu.sh
+        - shell: |
+           gsutil cp docs/*.pdf gs://artifacts.opnfv.org/functest/docs/
+           gsutil cp docs/*.html gs://artifacts.opnfv.org/functest/docs/
+
 
