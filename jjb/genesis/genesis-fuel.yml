@@ -207,6 +207,10 @@
             name: ARTIFACT_VERSION
             default: $BUILD_ID
             description: "Version number to append to resulting ISO."
+        - string:
+            name: SKIP_BUILD
+            default: 0
+            description: "Temporary parameter for deployment testing to skip the build and run deployment only."
 
     scm:
         - git:
@@ -239,6 +243,14 @@
             set -o pipefail
             set -x
 
+            # this is here for quick tries with deployment
+            if [ "$SKIP_BUILD" == "1" ]; then
+                echo "Skipping build for deployment testing!"
+                exit 0
+            else
+                echo "Proceeding with build first!"
+            fi
+
             # set/create the cache location
             [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
 
@@ -261,7 +273,7 @@
 
             # this is just a quick fix to execute the deployment in a messy way
             # will be fixed later on
-            ssh cideploy@10.118.34.205 ./cideploy.sh
+            ssh -o BatchMode=yes -o TCPKeepAlive=yes cideploy@10.118.34.205 ./cideploy.sh
 
 - builder:
     name: installer-test
