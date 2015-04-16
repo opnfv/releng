@@ -227,12 +227,7 @@
 
     builders:
         - 'installer-build'
-        - 'installer-upload-artifact'
-        - 'installer-download-artifact'
-        - 'installer-deploy'
-        - 'installer-test'
-        - 'installer-cleanup'
-
+        - 'installer-deploy-quick-fix'
 
 - builder:
     name: installer-build
@@ -255,7 +250,7 @@
             ls -al $BUILD_DIRECTORY
 
 - builder:
-    name: installer-deploy
+    name: installer-deploy-quick-fix
     builders:
         - shell: |
             #!/bin/bash
@@ -264,36 +259,9 @@
             set -o pipefail
             set -x
 
-            # we should have the artifact itself downloaded by now
-            # look if it is there
-            if [ -f $WORKSPACE/opnfv.iso ]; then
-                echo "Artifact fetched!"
-                ls -al $WORKSPACE/opnfv.iso
-            else
-                echo "Artifact does not exist!"
-                exit 1
-            fi
-
-            # we should have the artifact properties file downloaded by now
-            # look if it is there
-            if [ -f $WORKSPACE/latest.properties ]; then
-                echo "Artifact properties file fetched!"
-                ls -al $WORKSPACE/latest.properties
-            else
-                echo "Artifact properties file does not exist!"
-                exit 1
-            fi
-
-            # source the file so we get OPNFV vars
-            source $WORKSPACE/latest.properties
-
-            # log the info
-            echo "Proceeding with deployment using ISO downloaded from below URL"
-            echo "$OPNFV_ARTIFACT_URL"
-            echo "This artifact was built using $OPNFV_GIT_SHA1 version of repo $OPNFV_GIT_URL"
-
-            # execute deploy.sh
-            echo "Here is where we are supposed to issue deploy.sh"
+            # this is just a quick fix to execute the deployment in a messy way
+            # will be fixed later on
+            ssh cideploy@10.118.34.205 ./cideploy.sh
 
 - builder:
     name: installer-test
@@ -326,6 +294,7 @@
                 echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
                 echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
                 echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$ARTIFACT_VERSION.iso"
+                echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum opnfv-$ARTIFACT_VERSION.iso | cut -d' ' -f1)"
                 echo "OPNFV_BUILD_URL=$BUILD_URL"
                 echo "OPNFV_BUILD=OK"
             ) > opnfv-$ARTIFACT_VERSION.properties
