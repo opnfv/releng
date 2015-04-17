@@ -21,6 +21,7 @@ for file in "${{files[@]}}"; do
                    -h "Cache-Control:private, max-age=0, no-transform" \
                    gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder"/$(basename "$html_file")
     cat gsoutput.txt
+    rm -f gsoutput.txt
 
   pdf_file="$file_cut"".pdf"
 
@@ -31,7 +32,7 @@ for file in "${{files[@]}}"; do
                    -h "Cache-Control:private, max-age=0, no-transform" \
                    gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder"/$(basename "$pdf_file")
     cat gsoutput.txt
+    rm -f gsoutput.txt
 
 done
 
-rm -f gsoutput.txt

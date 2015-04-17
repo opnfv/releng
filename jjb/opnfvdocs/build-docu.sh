@@ -27,15 +27,16 @@ for file in "${{files[@]}}"; do
                    -h "Cache-Control:private, max-age=0, no-transform" \
                    gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".html
     cat gsoutput.txt
+    rm -f gsoutput.txt
 
     echo "rst2pdf $file"
-    rst2pdf $fle -o - | gsutil cp -L gsoutput.txt - \
+    rst2pdf $file -o - | gsutil cp -L gsoutput.txt - \
     gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".html
     gsutil setmeta -h "Content-Type:application/pdf" \
                    -h "Cache-Control:private, max-age=0, no-transform" \
                    gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".pdf
     cat gsoutput.txt
+    rm -f gsoutput.txt
 
 done
 
-rm -f gsoutput.txt
