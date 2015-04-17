@@ -10,7 +10,7 @@ done < <(find . -type f -iname '*.rst' -print0)
 for file in "${{files[@]}}"; do
 
   file_cut="${{file%.*}}"
-  gs_cp_folder="${{dirname "${{file}}"}}"
+  gs_cp_folder="${{dirname "${file}"}}"
 
   html_file=$file_cut".html"
 
