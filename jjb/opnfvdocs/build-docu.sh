@@ -16,8 +16,8 @@ for file in "${{files[@]}}"; do
   gs_cp_folder="${{file_cut}}"
 
     # sed part
-    sed -i "s/_sha1_/$git_sha1/g" $full_file_clean
-    sed -i "s/_date_/$git_date/g" $full_file_clean
+    sed -i "s/_sha1_/$git_sha1/g" $file
+    sed -i "s/_date_/$git_date/g" $file
 
     # rst2html part
     echo "rst2html $file"
