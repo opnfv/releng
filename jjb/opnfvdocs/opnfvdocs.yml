@@ -16,6 +16,8 @@
 - job-template:
     name: 'opnfvdocs-daily-{stream}'
 
+    node: 'master'
+
     # Job template for daily builders
     #
     # Required Variables:
@@ -50,19 +52,11 @@
     builders:
         - shell:
             !include-raw build-docu.sh
-        - shell: |
-            echo $PATH
-            /usr/local/bin/gsutil cp docs/*.pdf gs://artifacts.opnfv.org/opnfvdocs/docs/
-            /usr/local/bin/gsutil cp docs/*.html gs://artifacts.opnfv.org/opnfvdocs/docs/
-            /usr/local/bin/gsutil cp docs/release/*.pdf gs://artifacts.opnfv.org/opnfvdocs/docs/release/
-            /usr/local/bin/gsutil cp docs/release/*.html gs://artifacts.opnfv.org/opnfvdocs/docs/release/
-            /usr/local/bin/gsutil cp requirements/*.pdf gs://artifacts.opnfv.org/opnfvdocs/requirements/
-            /usr/local/bin/gsutil cp requirements/*.html gs://artifacts.opnfv.org/opnfvdocs/requirements/
-            /usr/local/bin/gsutil cp design_docs/*.pdf gs://artifacts.opnfv.org/opnfvdocs/design_docs/
-            /usr/local/bin/gsutil cp design_docs/*.html gs://artifacts.opnfv.org/opnfvdocs/design_docs/
 
 - job-template:
     name: 'opnfvdocs-verify'
+
+    mode: 'master'
 
     project-type: freestyle
 
@@ -113,6 +107,8 @@
 - job-template:
     name: 'opnfvdocs-merge'
 
+    node: 'master'
+
     # builder-merge job to run JJB update
     #
     # This job's purpose is to update all the JJB
@@ -157,14 +153,3 @@
     builders:
         - shell:
             !include-raw build-docu.sh
-        - shell: |
-           /usr/local/bin/gsutil cp docs/*.pdf gs://artifacts.opnfv.org/opnfvdocs/docs/
-           /usr/local/bin/gsutil cp docs/*.html gs://artifacts.opnfv.org/opnfvdocs/docs/
-           /usr/local/bin/gsutil cp docs/release/*.pdf gs://artifacts.opnfv.org/opnfvdocs/docs/release/
-           /usr/local/bin/gsutil cp docs/release/*.html gs://artifacts.opnfv.org/opnfvdocs/docs/release/
-           /usr/local/bin/gsutil cp requirements/*.pdf gs://artifacts.opnfv.org/opnfvdocs/requirements/
-           /usr/local/bin/gsutil cp requirements/*.html gs://artifacts.opnfv.org/opnfvdocs/requirements/
-           /usr/local/bin/gsutil cp design_docs/*.pdf gs://artifacts.opnfv.org/opnfvdocs/design_docs/
-           /usr/local/bin/gsutil cp design_docs/*.html gs://artifacts.opnfv.org/opnfvdocs/design_docs/
-
-
