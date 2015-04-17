@@ -31,7 +31,7 @@ for file in "${{files[@]}}"; do
 
     echo "rst2pdf $file"
     rst2pdf $file -o - | gsutil cp -L gsoutput.txt - \
-    gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".html
+    gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".pdf
     gsutil setmeta -h "Content-Type:application/pdf" \
                    -h "Cache-Control:private, max-age=0, no-transform" \
                    gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".pdf
