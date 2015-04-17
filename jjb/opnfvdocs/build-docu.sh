@@ -10,7 +10,7 @@ done < <(find . -type f -iname '*.rst' -print0)
 for file in "${{files[@]}}"; do
 
   file_cut="${{file%.*}}"
-  gs_cp_folder="${{file_cut}}"
+  gs_cp_folder="${{file_cut#/}}"
 
     echo "rst2html $file"
     rst2html $file | gsutil cp -L gsoutput.txt - \
