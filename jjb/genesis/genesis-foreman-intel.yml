@@ -6,8 +6,8 @@
     installer:
         - foreman
     jobs:
-        - 'genesis-foreman-verify'
-        - 'genesis-foreman-merge'
+        - 'genesis-foreman-intel-verify'
+        - 'genesis-foreman-intel-merge'
         - 'genesis-foreman-daily-intel-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-helium)
@@ -23,11 +23,11 @@
 ########################
 
 - job-template:
-    name: 'genesis-foreman-verify'
+    name: 'genesis-foreman-intel-verify'
 
     project-type: freestyle
 
-    node: ericsson-build
+    node: intel-build
 
     logrotate:
         daysToKeep: 30
@@ -83,10 +83,10 @@
 
 
     builders:
-        - 'foreman-verify'
+        - 'foreman-intel-verify'
 
 - job-template:
-    name: 'genesis-foreman-merge'
+    name: 'genesis-foreman-intel-merge'
 
     # builder-merge job to run JJB update
     #
@@ -94,7 +94,7 @@
 
     project-type: freestyle
 
-    node: ericsson-build
+    node: intel-build
 
     logrotate:
         daysToKeep: 30
@@ -143,7 +143,7 @@
                     pattern: 'foreman/**'
 
     builders:
-        - 'foreman-merge'
+        - 'foreman-intel-merge'
 
 - job-template:
     name: 'genesis-foreman-daily-intel-{stream}'
@@ -195,14 +195,14 @@
         artifactNumToKeep: -1
 
     builders:
-        - 'foreman-daily-master'
+        - 'foreman-daily-master-intel'
 
 
 ########################
 # builder macros
 ########################
 - builder:
-    name: foreman-verify
+    name: foreman-intel-verify
     builders:
         - shell: |
             #!/bin/bash
@@ -232,7 +232,7 @@
             /bin/rm -rf $BUILD_DIRECTORY
 
 - builder:
-    name: foreman-merge
+    name: foreman-intel-merge
     builders:
         - shell: |
             #!/bin/bash
