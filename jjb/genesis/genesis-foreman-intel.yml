@@ -1,14 +1,14 @@
 # this is the job configuration for bgs
 - project:
 
-    name: genesis-foreman
+    name: genesis-foreman-intel
 
     installer:
         - foreman
     jobs:
         - 'genesis-foreman-verify'
         - 'genesis-foreman-merge'
-        - 'genesis-foreman-daily-{stream}'
+        - 'genesis-foreman-daily-intel-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
@@ -146,11 +146,11 @@
         - 'foreman-merge'
 
 - job-template:
-    name: 'genesis-foreman-daily-{stream}'
+    name: 'genesis-foreman-daily-intel-{stream}'
 
     project-type: freestyle
 
-    node: ericsson-build
+    node: intel-build
 
     parameters:
         - string:
@@ -262,7 +262,7 @@
             /bin/rm -rf $BUILD_DIRECTORY
 
 - builder:
-    name: foreman-daily-master
+    name: foreman-daily-master-intel
     builders:
         - shell: |
             #!/bin/bash
@@ -337,3 +337,7 @@
 
             # list the file
             ls -al $WORKSPACE/opnfv.iso
+
+            # remove the BUILD_DIRECTORY and downlaoded artifact to reclaim some space
+            # /bin/rm -rf $BUILD_DIRECTORY
+            # /bin/rm -rf $WORKSPACE/opnfv.iso
