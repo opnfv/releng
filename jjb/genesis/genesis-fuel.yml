@@ -9,6 +9,9 @@
         - 'genesis-fuel-verify'
         - 'genesis-fuel-merge'
         - 'genesis-fuel-daily-{stream}'
+        - 'genesis-fuel-build'
+        - 'genesis-fuel-deploy'
+        - 'genesis-fuel-test'
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
@@ -247,6 +250,207 @@
         - 'installer-build'
         - 'installer-upload-artifact'
         - 'installer-deploy-quick-fix'
+
+- job-template:
+    name: 'genesis-fuel-build'
+
+    project-type: freestyle
+
+    disabled: true
+
+    node: ericsson-build
+
+    parameters:
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/genesis
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+        - string:
+            name: GERRIT_BRANCH
+            default: origin/master
+            description: "Branch to build, deploy and test."
+        - string:
+            name: GERRIT_REFSPEC
+            default: refs/heads/master
+            description: "Refspec to retrieve."
+        - string:
+            name: GS_URL
+            default: 'artifacts.opnfv.org/genesis/fuel'
+            description: "URL to Google Storage."
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache/genesis-fuel
+            description: "Cache location that is where the cache is populated and used during builds to reduce the build time."
+        - string:
+            name: ARTIFACT_VERSION
+            default: $BUILD_ID
+            description: "Version number to append to resulting ISO."
+        - string:
+            name: SKIP_BUILD
+            default: 0
+            description: "Temporary parameter for deployment testing to skip the build and run deployment only."
+
+    scm:
+        - git:
+            skip-tag: true
+            url: $GIT_BASE
+            branches:
+                - $GERRIT_BRANCH
+            refspec: $GERRIT_REFSPEC
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
+
+            echo "Hello World!"
+
+- job-template:
+    name: 'genesis-fuel-deploy'
+
+    project-type: freestyle
+
+    disabled: true
+
+    node: opnfv-jump-1
+
+    parameters:
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/genesis
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+        - string:
+            name: GERRIT_BRANCH
+            default: origin/master
+            description: "Branch to build, deploy and test."
+        - string:
+            name: GERRIT_REFSPEC
+            default: refs/heads/master
+            description: "Refspec to retrieve."
+        - string:
+            name: GS_URL
+            default: 'artifacts.opnfv.org/genesis/fuel'
+            description: "URL to Google Storage."
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache/genesis-fuel
+            description: "Cache location that is where the cache is populated and used during builds to reduce the build time."
+        - string:
+            name: ARTIFACT_VERSION
+            default: $BUILD_ID
+            description: "Version number to append to resulting ISO."
+        - string:
+            name: SKIP_BUILD
+            default: 0
+            description: "Temporary parameter for deployment testing to skip the build and run deployment only."
+
+    scm:
+        - git:
+            skip-tag: true
+            url: $GIT_BASE
+            branches:
+                - $GERRIT_BRANCH
+            refspec: $GERRIT_REFSPEC
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
+
+            echo "Hello World!"
+
+- job-template:
+    name: 'genesis-fuel-test'
+
+    project-type: freestyle
+
+    disabled: false
+
+    node: ericsson-test
+
+    parameters:
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/genesis
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+        - string:
+            name: GERRIT_BRANCH
+            default: origin/master
+            description: "Branch to build, deploy and test."
+        - string:
+            name: GERRIT_REFSPEC
+            default: refs/heads/master
+            description: "Refspec to retrieve."
+        - string:
+            name: GS_URL
+            default: 'artifacts.opnfv.org/genesis/fuel'
+            description: "URL to Google Storage."
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache/genesis-fuel
+            description: "Cache location that is where the cache is populated and used during builds to reduce the build time."
+        - string:
+            name: ARTIFACT_VERSION
+            default: $BUILD_ID
+            description: "Version number to append to resulting ISO."
+        - string:
+            name: SKIP_BUILD
+            default: 0
+            description: "Temporary parameter for deployment testing to skip the build and run deployment only."
+
+    scm:
+        - git:
+            skip-tag: true
+            url: $GIT_BASE
+            branches:
+                - $GERRIT_BRANCH
+            refspec: $GERRIT_REFSPEC
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
+
+            echo "Hello World!"
 
 - builder:
     name: installer-build
