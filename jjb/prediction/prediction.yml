@@ -43,10 +43,10 @@
     varsetabove: '{somevar}'
 
     logrotate:
-        daysToKeep: '{build-days-to-keep}'
-        numToKeep: '{build-num-to-keep}'
-        artifactDaysToKeep: '{build-artifact-days-to-keep}'
-        artifactNumToKeep: '{build-artifact-num-to-keep}'
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
 
     parameters:
         - project-parameter:
@@ -69,10 +69,8 @@
         - test-macro
 
     builders:
-        - shell: |
-            pwd
-            find .
-            echo "Hello world from prediction {somevar} daily"
+        - shell:
+            !include-raw build-upload-docu.sh
 
     postbuilders:
         - test-macro
@@ -123,10 +121,8 @@
                     branch-pattern: '**/master'
 
     builders:
-        - shell: |
-            pwd
-            find .
-            echo "verify logic goes here"
+        - shell:
+            !include-raw build-docu-verify.sh
 
 - job-template:
     name: 'prediction-merge'
@@ -173,7 +169,6 @@
                       branch-pattern: '**/master'
 
     builders:
-        - shell: |
-            pwd
-            find .
-            echo "merge logic goes here"
+        - shell:
+            !include-raw build-upload-docu.sh
+
