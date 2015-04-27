@@ -40,3 +40,22 @@ for file in "${{files[@]}}"; do
 
 done
 
+
+images=()
+
+while read -r -d ''; do
+        files+=("$REPLY")
+done < <(find * -type f \( -iname \*.jpg -o -iname \*.png \) -print0)
+
+for img in "${{images[@]}}"; do
+
+	# uploading found images
+	echo "uploading $img"
+        gs://artifacts.opnfv.org/"$project"/"$img"
+        gsutil setmeta -h "Content-Type:text/html" \
+                        -h "Cache-Control:private, max-age=0, no-transform" \
+                        gs://artifacts.opnfv.org/"$project"/"$img"
+        cat gsoutput.txt
+        rm -f gsoutput.txt
+
+done
