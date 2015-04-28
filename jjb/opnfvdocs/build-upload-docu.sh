@@ -49,11 +49,12 @@ for img in "${{images[@]}}"; do
 
 	# uploading found images
 	echo "uploading $img"
+        echo "$img" | gsutil cp -L gsoutputimg.txt - \
         gs://artifacts.opnfv.org/"$project"/"$img"
         gsutil setmeta -h "Content-Type:text/html" \
                         -h "Cache-Control:private, max-age=0, no-transform" \
                         gs://artifacts.opnfv.org/"$project"/"$img"
-        cat gsoutput.txt
-        rm -f gsoutput.txt
+        cat gsoutputimg.txt
+        rm -f gsoutputimg.txt
 
 done
