@@ -1,4 +1,7 @@
 #!/bin/bash
+set -e
+set -o pipefail
+
 project="opnfvdocs"
 export PATH=$PATH:/usr/local/bin/
 

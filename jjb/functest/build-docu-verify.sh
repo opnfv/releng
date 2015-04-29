@@ -1,4 +1,7 @@
 #!/bin/bash
+set -e
+set -o pipefail
+
 project="functest"
 export PATH=$PATH:/usr/local/bin/
 
