@@ -2,7 +2,7 @@
 set -e
 set -o pipefail
 
-project="pharos"
+project="genesis"
 export PATH=$PATH:/usr/local/bin/
 
 git_sha1="$(git rev-parse HEAD)"
