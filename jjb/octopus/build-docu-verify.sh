@@ -1,4 +1,7 @@
 #!/bin/bash
+set -e
+set -o pipefail
+
 project="octopus"
 export PATH=$PATH:/usr/local/bin/
 
