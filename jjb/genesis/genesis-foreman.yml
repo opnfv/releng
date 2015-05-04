@@ -405,7 +405,7 @@
             ls -al $WORKSPACE/lf_settings
 
             # cleanup first
-            $WORKSPACE/clean.sh -base_config $WORKSPACE/lf_settings/lf_pod2_ksgen_settings.yml
+            ssh -t -t jenkins-ci@localhost "sudo $WORKSPACE/clean.sh -base_config $WORKSPACE/lf_settings/lf_pod2_ksgen_settings.yml"
 
             # and then initiate deployment
-            $WORKSPACE/deploy.sh -base_config $WORKSPACE/lf_settings/lf_pod2_ksgen_settings.yml
+            ssh -t -t jenkins-ci@localhost "sudo $WORKSPACE/deploy.sh -base_config $WORKSPACE/lf_settings/lf_pod2_ksgen_settings.yml"
