@@ -9,6 +9,7 @@
         - 'genesis-foreman-verify'
         - 'genesis-foreman-merge'
         - 'genesis-foreman-daily-{stream}'
+        - 'genesis-foreman-deploy'
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
@@ -198,6 +199,51 @@
         - 'foreman-daily-master'
 
 
+- job-template:
+    name: 'genesis-foreman-deploy'
+
+    project-type: freestyle
+
+    node: opnfv-jump-2
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+        - string:
+            name: GIT_BASE
+            default: https://github.com/trozet/bgs_vagrant.git
+            description: "This is a temporary location to clone the needed scripts. Will be replaced with OPNFV Git URL."
+        - string:
+            name: GERRIT_BRANCH
+            default: origin/master
+            description: "Branch to build, deploy and test."
+        - string:
+            name: GERRIT_REFSPEC
+            default: refs/heads/master
+            description: "Refspec to retrieve."
+
+    scm:
+        - git:
+            skip-tag: true
+            url: $GIT_BASE
+            branches:
+                - $GERRIT_BRANCH
+            refspec: $GERRIT_REFSPEC
+
+    wrappers:
+        - ssh-agent-credentials:
+            user: '{ssh-credentials}'
+
+    builders:
+        - 'foreman-deploy'
+
 ########################
 # builder macros
 ########################
@@ -341,3 +387,16 @@
             # remove the BUILD_DIRECTORY and downlaoded artifact to reclaim some space
             /bin/rm -rf $BUILD_DIRECTORY
             /bin/rm -rf $WORKSPACE/opnfv.iso
+
+- builder:
+    name: foreman-deploy
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
+
+            cd $WORKSPACE
+            ls -al
