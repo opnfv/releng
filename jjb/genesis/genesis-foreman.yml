@@ -400,8 +400,12 @@
 
             cd $WORKSPACE
 
+            # messy workaround
+            git clone https://gist.github.com/4f2eb87d8c9937ee19f0.git lf_settings
+            ls -al $WORKSPACE/lf_settings
+
             # cleanup first
-            $WORKSPACE/clean.sh
+            $WORKSPACE/clean.sh -base_config $WORKSPACE/lf_settings/lf_pod2_ksgen_settings.yml
 
             # and then initiate deployment
-            $WORKSPACE/deploy.sh
+            $WORKSPACE/deploy.sh -base_config $WORKSPACE/lf_settings/lf_pod2_ksgen_settings.yml
