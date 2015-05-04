@@ -2,7 +2,7 @@
 set -e
 set -o pipefail
 
-project="functest"
+project="$(git remote -v | head -n1 | awk '{{print $2}}' | sed -e 's,.*:\(.*/\)\?,,' -e 's/\.git$//')"
 export PATH=$PATH:/usr/local/bin/
 
 git_sha1="$(git rev-parse HEAD)"
@@ -50,8 +50,8 @@ done < <(find * -type f \( -iname \*.jpg -o -iname \*.png \) -print0)
 
 for img in "${{images[@]}}"; do
 
-        # uploading found images
-        echo "uploading $img"
+	# uploading found images
+	echo "uploading $img"
         cat "$img" | gsutil cp -L gsoutput.txt - \
         gs://artifacts.opnfv.org/"$project"/"$img"
         gsutil setmeta -h "Content-Type:image/jpeg" \
@@ -61,4 +61,3 @@ for img in "${{images[@]}}"; do
         rm -f gsoutput.txt
 
 done
-

@@ -2,7 +2,7 @@
 set -e
 set -o pipefail
 
-project="pharos"
+project="$(git remote -v | head -n1 | awk '{{print $2}}' | sed -e 's,.*:\(.*/\)\?,,' -e 's/\.git$//')"
 export PATH=$PATH:/usr/local/bin/
 
 git_sha1="$(git rev-parse HEAD)"
