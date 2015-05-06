@@ -35,7 +35,7 @@
 
     builders:
         - shell: |
-            python .functest/run_rally.py all
+            python $HOME/.functest/run_rally.py all
 
 - job-template:
     name: functest-openstack-tempest-smoke-test
@@ -54,7 +54,6 @@
         - shell: |
             rally verify start smoke
             rally verify list
-            
 
 - job-template:
     name: functest-odl-test
@@ -95,7 +94,7 @@
     name: functest-vping-test
 
     project-type: freestyle
-    
+
     node: opnfv-jump-2
 
     logrotate:
@@ -106,9 +105,7 @@
 
     builders:
         - shell: |
-            python ./.functest/vPing/vPing.py
-
-
+            python $HOME/.functest/vPing/vPing.py
 
 - job-template:
     name: 'functest-daily-{stream}'
