@@ -2,8 +2,8 @@
     name: functest
 
     jobs:
-        - 'functest-vim_bench-test'
-        - 'functest-vim_tempest-test'
+        - 'functest-openstack-bench-test'
+        - 'functest-openstack-tempest-smoke-test'
         - 'functest-odl-test'
         - 'functest-vims-test'
         - 'functest-vping-test'
@@ -21,11 +21,11 @@
     somevar: 'foo'
 
 - job-template:
-    name: functest-vim_bench-test
+    name: functest-openstack-bench-test
 
     project-type: freestyle
 
-    node: orange-build
+    node: opnfv-jump-2
 
     logrotate:
         daysToKeep: 30
@@ -35,14 +35,14 @@
 
     builders:
         - shell: |
-            python run_rally.py keystone
+            python .functest/run_rally.py all
 
 - job-template:
-    name: functest-vim_tempest-test
+    name: functest-openstack-tempest-smoke-test
 
     project-type: freestyle
 
-    node: ericsson-test
+    node: opnfv-jump-2
 
     logrotate:
         daysToKeep: 30
@@ -52,14 +52,16 @@
 
     builders:
         - shell: |
-            rally verify start
+            rally verify start smoke
+            rally verify list
+            
 
 - job-template:
     name: functest-odl-test
 
     project-type: freestyle
 
-    node: ericsson-build
+    node: opnfv-jump-2
 
     logrotate:
         daysToKeep: 30
@@ -76,7 +78,7 @@
 
     project-type: freestyle
 
-    node: ericsson-build
+    node: opnfv-jump-2
 
     logrotate:
         daysToKeep: 30
@@ -93,6 +95,8 @@
     name: functest-vping-test
 
     project-type: freestyle
+    
+    node: opnfv-jump-2
 
     logrotate:
         daysToKeep: 30
@@ -102,7 +106,7 @@
 
     builders:
         - shell: |
-            echo "put your CI scenario here"
+            python ./.functest/vPing/vPing.py
 
 
 
