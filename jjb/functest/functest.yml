@@ -1,12 +1,15 @@
 - project:
     name: functest
 
+    installer:
+        - 'fuel'
+        - 'foreman'
     jobs:
-        - 'functest-openstack-bench-test'
-        - 'functest-openstack-tempest-smoke-test'
-        - 'functest-odl-test'
-        - 'functest-vims-test'
-        - 'functest-vping-test'
+        - 'functest-{installer}-openstack-bench-test'
+        - 'functest-{installer}-openstack-tempest-smoke-test'
+        - 'functest-{installer}-odl-test'
+        - 'functest-{installer}-vims-test'
+        - 'functest-{installer}-vping-test'
         - 'functest-daily-{stream}'
         - 'functest-merge'
         - 'functest-verify'
@@ -21,11 +24,11 @@
     somevar: 'foo'
 
 - job-template:
-    name: functest-openstack-bench-test
+    name: functest-{installer}-openstack-bench-test
 
     project-type: freestyle
 
-    node: opnfv-jump-2
+    node: '{installer}'
 
     logrotate:
         daysToKeep: 30
@@ -34,15 +37,14 @@
         artifactNumToKeep: -1
 
     builders:
-        - shell: |
-            python $HOME/.functest/run_rally.py all
+        - 'openstack-bench-test'
 
 - job-template:
-    name: functest-openstack-tempest-smoke-test
+    name: functest-{installer}-openstack-tempest-smoke-test
 
     project-type: freestyle
 
-    node: opnfv-jump-2
+    node: '{installer}'
 
     logrotate:
         daysToKeep: 30
@@ -51,16 +53,14 @@
         artifactNumToKeep: -1
 
     builders:
-        - shell: |
-            rally verify start smoke
-            rally verify list
+        - 'openstack-tempest-smoke-test'
 
 - job-template:
-    name: functest-odl-test
+    name: functest-{installer}-odl-test
 
     project-type: freestyle
 
-    node: opnfv-jump-2
+    node: '{installer}'
 
     logrotate:
         daysToKeep: 30
@@ -69,15 +69,14 @@
         artifactNumToKeep: -1
 
     builders:
-        - shell: |
-            echo "put your CI scenario here"
+        - 'odl-test'
 
 - job-template:
-    name: functest-vims-test
+    name: functest-{installer}-vims-test
 
     project-type: freestyle
 
-    node: opnfv-jump-2
+    node: '{installer}'
 
     logrotate:
         daysToKeep: 30
@@ -86,16 +85,14 @@
         artifactNumToKeep: -1
 
     builders:
-        - shell: |
-            echo "put your CI scenario here"
-
+        - 'vims-test'
 
 - job-template:
-    name: functest-vping-test
+    name: functest-{installer}-vping-test
 
     project-type: freestyle
 
-    node: opnfv-jump-2
+    node: '{installer}'
 
     logrotate:
         daysToKeep: 30
@@ -104,8 +101,7 @@
         artifactNumToKeep: -1
 
     builders:
-        - shell: |
-            python $HOME/.functest/vPing/vPing.py
+        - 'vping-test'
 
 - job-template:
     name: 'functest-daily-{stream}'
@@ -255,3 +251,49 @@
         - shell:
             !include-raw docu-build.sh
 
+# macros
+- builder:
+    name: openstack-bench-test
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -x
+
+            python $HOME/.functest/run_rally.py all
+
+- builder:
+    name: openstack-tempest-smoke-test
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -x
+
+            rally verify start smoke
+            rally verify list
+
+- builder:
+    name: odl-test
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -x
+
+            echo "put your CI scenario here"
+
+- builder:
+    name: vims-test
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -x
+
+            echo "put your CI scenario here"
+
+- builder:
+    name: vping-test
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -x
+
+            python $HOME/.functest/vPing/vPing.py
