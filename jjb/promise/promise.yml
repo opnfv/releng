@@ -18,6 +18,8 @@
 - job-template:
     name: promise-test
 
+    node: master
+
     project-type: freestyle
 
     logrotate:
@@ -32,6 +34,8 @@
 
 - job-template:
     name: 'promise-daily-{stream}'
+
+    node: master
 
     # Job template for daily builders
     #
@@ -69,16 +73,16 @@
         - test-macro
 
     builders:
-        - shell: |
-            pwd
-            find .
-            echo "Hello world from promise {somevar} daily"
+        - shell:
+            !include-raw docu-build.sh
 
     postbuilders:
         - test-macro
 
 - job-template:
     name: 'promise-verify'
+
+    node: master
 
     project-type: freestyle
 
@@ -123,10 +127,8 @@
                     branch-pattern: '**/master'
 
     builders:
-        - shell: |
-            pwd
-            find .
-            echo "verify logic goes here"
+        - shell:
+            !include-raw docu-verify.sh
 
 - job-template:
     name: 'promise-merge'
@@ -173,13 +175,6 @@
                       branch-pattern: '**/master'
 
     builders:
-        - shell: |
-            pwd
-            find .
-            echo "merge logic goes here"
-
-
-
-
-
+        - shell:
+            !include-raw docu-build.sh
 
