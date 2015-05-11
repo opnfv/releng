@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 set -o pipefail
+
 project="$(git remote -v | head -n1 | awk '{{print $2}}' | sed -e 's,.*:\(.*/\)\?,,' -e 's/\.git$//')"
 export PATH=$PATH:/usr/local/bin/
 
@@ -44,7 +45,7 @@ done
 
 images=()
 while read -r -d ''; do
-        images+=("$REPLY)
+        images+=("$REPLY")
 done < <(find * -type f \( -iname \*.jpg -o -iname \*.png \) -print0)
 
 for img in "${{images[@]}}"; do
