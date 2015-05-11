@@ -1,7 +1,11 @@
 - project:
     name: functest
-
+    
+    pod:
+        - 'opnfv-jump-1'
+        - 'opnfv-jump-2'    
     jobs:
+        - 'functest-{pod}'
         - 'functest-openstack-bench-test'
         - 'functest-openstack-tempest-smoke-test'
         - 'functest-odl-test'
@@ -106,6 +110,22 @@
     builders:
         - shell: |
             python $HOME/.functest/vPing/vPing.py
+            
+- job-template:
+    name: functest-{pod}
+
+    project-type: freestyle
+
+    node: {pod}
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - 'functest-all'
 
 - job-template:
     name: 'functest-daily-{stream}'
@@ -255,3 +275,13 @@
         - shell:
             !include-raw docu-build.sh
 
+# macros
+- builder:
+    name: functest-all
+    builders:
+        - shell: |
+            echo "Functest: run Functest suites"
+            python $HOME/.functest/run_rally.py all
+            python $HOME/.functest/run_rally.py smoke
+            python $HOME/.functest/vPing/vPing.py
+            $HOME/.functest/ODL/start_tests.sh
