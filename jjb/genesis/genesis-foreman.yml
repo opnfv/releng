@@ -213,13 +213,11 @@
         artifactNumToKeep: -1
 
     parameters:
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
+    parameters:
         - string:
             name: GIT_BASE
-            default: https://github.com/trozet/bgs_vagrant.git
-            description: "This is a temporary location to clone the needed scripts. Will be replaced with OPNFV Git URL."
+            default: https://gerrit.opnfv.org/gerrit/genesis
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
         - string:
             name: GERRIT_BRANCH
             default: origin/master
@@ -228,6 +226,14 @@
             name: GERRIT_REFSPEC
             default: refs/heads/master
             description: "Refspec to retrieve."
+        - string:
+            name: GS_URL
+            default: 'artifacts.opnfv.org/genesis/fuel'
+            description: "URL to Google Storage."
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
 
     scm:
         - git:
@@ -236,10 +242,6 @@
             branches:
                 - $GERRIT_BRANCH
             refspec: $GERRIT_REFSPEC
-
-    wrappers:
-        - ssh-agent-credentials:
-            user: '{ssh-credentials}'
 
     builders:
         - 'foreman-deploy'
@@ -400,16 +402,8 @@
 
             cd $WORKSPACE
 
-            # fix PATH
-            export PATH=/usr/sbin:$PATH
-            echo $PATH
-
-            # messy workaround
-            git clone https://gist.github.com/4f2eb87d8c9937ee19f0.git lf_settings
-            ls -al $WORKSPACE/lf_settings
-
             # cleanup first
-            sudo $WORKSPACE/clean.sh -base_config $WORKSPACE/lf_settings/lf_pod2_ksgen_settings.yml
+            sudo $WORKSPACE/foreman/ci/clean.sh -base_config $WORKSPACE/foreman/ci/inventory/lf_pod2_ksgen_settings.yml
 
             # and then initiate deployment
-            sudo $WORKSPACE/deploy.sh -base_config $WORKSPACE/lf_settings/lf_pod2_ksgen_settings.yml
+            sudo $WORKSPACE/foreman/ci/deploy.sh -base_config $WORKSPACE/foreman/ci/inventory/lf_pod2_ksgen_settings.yml
