@@ -44,7 +44,7 @@ done
 
 images=()
 while read -r -d ''; do
-        images+=("$REPLY)
+        images+=("$REPLY")
 done < <(find * -type f \( -iname \*.jpg -o -iname \*.png \) -print0)
 
 for img in "${{images[@]}}"; do
