@@ -18,6 +18,8 @@
 - job-template:
     name: doctor-test
 
+    node: master
+
     project-type: freestyle
 
     logrotate:
@@ -32,6 +34,8 @@
 
 - job-template:
     name: 'doctor-daily-{stream}'
+
+    node: master
 
     # Job template for daily builders
     #
@@ -74,15 +78,15 @@
 
     builders:
         - shell: |
-            pwd
-            find .
-            echo "Hello world from doctor {somevar} daily"
+            !include-raw docu-build.sh
 
     postbuilders:
         - test-macro
 
 - job-template:
     name: 'doctor-verify'
+
+    node: master
 
     project-type: freestyle
 
@@ -132,12 +136,12 @@
 
     builders:
         - shell: |
-            pwd
-            find .
-            echo "verify logic goes here"
+            !include-raw docu-verify.sh
 
 - job-template:
     name: 'doctor-merge'
+
+    node: master
 
     # builder-merge job to run JJB update
     #
@@ -186,9 +190,7 @@
 
     builders:
         - shell: |
-            pwd
-            find .
-            echo "merge logic goes here"
+            !include-raw docu-build.sh
 
 
 
