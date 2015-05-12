@@ -5,11 +5,12 @@
 
     installer:
         - foreman
+
     jobs:
-        - 'genesis-foreman-verify'
-        - 'genesis-foreman-merge'
-        - 'genesis-foreman-daily-{stream}'
-        - 'genesis-foreman-deploy'
+        - 'genesis-{installer}-verify'
+        - 'genesis-{installer}-merge'
+        - 'genesis-{installer}-daily-{stream}'
+        - 'genesis-{installer}-deploy'
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
@@ -24,7 +25,7 @@
 ########################
 
 - job-template:
-    name: 'genesis-foreman-verify'
+    name: 'genesis-{installer}-verify'
 
     project-type: freestyle
 
@@ -37,6 +38,10 @@
         artifactNumToKeep: -1
 
     parameters:
+        - string:
+            name: INSTALLER
+            default: '{installer}'
+            description: "Installer to use."
         - string:
             name: BUILD_DIRECTORY
             default: $WORKSPACE/build_output
@@ -80,14 +85,14 @@
                   - compare-type: ANT
                     pattern: 'common/**'
                   - compare-type: ANT
-                    pattern: 'foreman/**'
+                    pattern: '{installer}/**'
 
 
     builders:
-        - 'foreman-verify'
+        - 'verify'
 
 - job-template:
-    name: 'genesis-foreman-merge'
+    name: 'genesis-{installer}-merge'
 
     # builder-merge job to run JJB update
     #
@@ -104,6 +109,10 @@
         artifactNumToKeep: 5
 
     parameters:
+        - string:
+            name: INSTALLER
+            default: '{installer}'
+            description: "Installer to use."
         - string:
             name: BUILD_DIRECTORY
             default: $WORKSPACE/build_output
@@ -141,13 +150,13 @@
                   - compare-type: ANT
                     pattern: 'common/**'
                   - compare-type: ANT
-                    pattern: 'foreman/**'
+                    pattern: '{installer}/**'
 
     builders:
-        - 'foreman-merge'
+        - 'merge'
 
 - job-template:
-    name: 'genesis-foreman-daily-{stream}'
+    name: 'genesis-{installer}-daily-{stream}'
 
     project-type: freestyle
 
@@ -155,17 +164,17 @@
 
     parameters:
         - string:
+            name: INSTALLER
+            default: '{installer}'
+            description: "Installer to use."
+        - string:
             name: BUILD_DIRECTORY
             default: $WORKSPACE/build_output
             description: "Directory where the build artifact will be located upon the completion of the build."
         - string:
             name: GS_URL
-            default: 'artifacts.opnfv.org/genesis/foreman'
+            default: 'artifacts.opnfv.org/genesis/{installer}'
             description: "URL to Google Storage."
-        - string:
-            name: INSTALLER
-            default: 'foreman'
-            description: "Installer to use."
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/genesis
@@ -196,11 +205,11 @@
         artifactNumToKeep: -1
 
     builders:
-        - 'foreman-daily-master'
+        - 'daily-master'
 
 
 - job-template:
-    name: 'genesis-foreman-deploy'
+    name: 'genesis-{installer}-deploy'
 
     project-type: freestyle
 
@@ -213,7 +222,10 @@
         artifactNumToKeep: -1
 
     parameters:
-    parameters:
+        - string:
+            name: INSTALLER
+            default: '{installer}'
+            description: "Installer to use."
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/genesis
@@ -244,13 +256,13 @@
             refspec: $GERRIT_REFSPEC
 
     builders:
-        - 'foreman-deploy'
+        - 'deploy'
 
 ########################
 # builder macros
 ########################
 - builder:
-    name: foreman-verify
+    name: 'verify'
     builders:
         - shell: |
             #!/bin/bash
@@ -260,8 +272,8 @@
             set -x
 
             # get the dependencies - temporary fix for RC0
-            [[ -d $WORKSPACE/foreman/build ]] || mkdir -p $WORKSPACE/foreman/build
-            cp /home/jenkins/Downloads/opnfv_iso/* $WORKSPACE/foreman/build/
+            [[ -d $WORKSPACE/$INSTALLER/build ]] || mkdir -p $WORKSPACE/$INSTALLER/build
+            cp /home/jenkins/Downloads/opnfv_iso/* $WORKSPACE/$INSTALLER/build/
 
             # below lines perhaps need to be enabled in order to fetch images from internet
             # as we are having disk space issues on ericsson-build slave
@@ -270,7 +282,7 @@
             #wget http://repos.duss-janser.ch/vagrant/vagrant_1.7.2_x86_64.rpm
 
             # do the build
-            cd $WORKSPACE/foreman/ci
+            cd $WORKSPACE/$INSTALLER/ci
             ./build.sh $BUILD_DIRECTORY
 
             # list the build artifacts
@@ -280,7 +292,7 @@
             /bin/rm -rf $BUILD_DIRECTORY
 
 - builder:
-    name: foreman-merge
+    name: 'merge'
     builders:
         - shell: |
             #!/bin/bash
@@ -290,8 +302,8 @@
             set -x
 
             # get the dependencies - temporary fix for RC0
-            [[ -d $WORKSPACE/foreman/build ]] || mkdir -p $WORKSPACE/foreman/build
-            cp /home/jenkins/Downloads/opnfv_iso/* $WORKSPACE/foreman/build/
+            [[ -d $WORKSPACE/$INSTALLER/build ]] || mkdir -p $WORKSPACE/$INSTALLER/build
+            cp /home/jenkins/Downloads/opnfv_iso/* $WORKSPACE/$INSTALLER/build/
 
             # below lines perhaps need to be enabled in order to fetch images from internet
             # as we are having disk space issues on ericsson-build slave
@@ -300,7 +312,7 @@
             #wget http://repos.duss-janser.ch/vagrant/vagrant_1.7.2_x86_64.rpm
 
             # do the build
-            cd $WORKSPACE/foreman/ci
+            cd $WORKSPACE/$INSTALLER/ci
             ./build.sh $BUILD_DIRECTORY
 
             # list the build artifacts
@@ -310,7 +322,7 @@
             /bin/rm -rf $BUILD_DIRECTORY
 
 - builder:
-    name: foreman-daily-master
+    name: 'daily-master'
     builders:
         - shell: |
             #!/bin/bash
@@ -320,8 +332,8 @@
             set -x
 
             # get the dependencies - temporary fix for RC0
-            [[ -d $WORKSPACE/foreman/build ]] || mkdir -p $WORKSPACE/foreman/build
-            cp /home/jenkins/Downloads/opnfv_iso/* $WORKSPACE/foreman/build/
+            [[ -d $WORKSPACE/$INSTALLER/build ]] || mkdir -p $WORKSPACE/$INSTALLER/build
+            cp /home/jenkins/Downloads/opnfv_iso/* $WORKSPACE/$INSTALLER/build/
 
             # below lines perhaps need to be enabled in order to fetch images from internet
             # as we are having disk space issues on ericsson-build slave
@@ -330,7 +342,7 @@
             #wget http://repos.duss-janser.ch/vagrant/vagrant_1.7.2_x86_64.rpm
 
             # do the build
-            cd $WORKSPACE/foreman/ci
+            cd $WORKSPACE/$INSTALLER/ci
             ./build.sh -v $BUILD_ID $BUILD_DIRECTORY
 
         - shell: |
@@ -391,7 +403,7 @@
             /bin/rm -rf $WORKSPACE/opnfv.iso
 
 - builder:
-    name: foreman-deploy
+    name: 'deploy'
     builders:
         - shell: |
             #!/bin/bash
@@ -403,7 +415,7 @@
             cd $WORKSPACE
 
             # cleanup first
-            sudo $WORKSPACE/foreman/ci/clean.sh -base_config $WORKSPACE/foreman/ci/inventory/lf_pod2_ksgen_settings.yml
+            sudo $WORKSPACE/$INSTALLER/ci/clean.sh -base_config $WORKSPACE/$INSTALLER/ci/inventory/lf_pod2_ksgen_settings.yml
 
             # and then initiate deployment
-            sudo $WORKSPACE/foreman/ci/deploy.sh -base_config $WORKSPACE/foreman/ci/inventory/lf_pod2_ksgen_settings.yml
+            sudo $WORKSPACE/$INSTALLER/ci/deploy.sh -base_config $WORKSPACE/$INSTALLER/ci/inventory/lf_pod2_ksgen_settings.yml
