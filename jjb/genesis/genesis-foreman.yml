@@ -293,6 +293,7 @@
         - string:
             name: CACHE_DIRECTORY
             default: '$HOME/opnfv/cache/genesis-{installer}'
+            description: "Directory where the cache to be used during the build is located."
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/genesis
@@ -391,20 +392,20 @@
             # create the cache directory if it doesn't exist
             [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
 
-            # set ARTIFACT_VERSION
-            export ARTIFACT_VERSION=$(date +"%Y-%m-%d_%H-%M-%S")
+            # set OPNFV_ARTIFACT_VERSION
+            export OPNFV_ARTIFACT_VERSION=$(date +"%Y-%m-%d_%H-%M-%S")
 
             # start the build
             cd $WORKSPACE/$INSTALLER/ci
-            ./build.sh -v $ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
+            ./build.sh -v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
 
             # save information regarding artifact into file
             (
-                echo "OPNFV_ARTIFACT_VERSION=$ARTIFACT_VERSION"
+                echo "OPNFV_ARTIFACT_VERSION=$OPNFV_ARTIFACT_VERSION"
                 echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
                 echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
-                echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$ARTIFACT_VERSION.iso"
-                echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum opnfv-$ARTIFACT_VERSION.iso | cut -d' ' -f1)"
+                echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
+                echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso | cut -d' ' -f1)"
                 echo "OPNFV_BUILD_URL=$BUILD_URL"
                 echo "OPNFV_BUILD=OK"
             ) > $WORKSPACE/opnfv.properties
@@ -439,8 +440,8 @@
             /bin/cp -f $WORKSPACE/opnfv.properties $WORKSPACE/latest.properties
 
             # upload artifact and additional files to google storage
-            echo "gsutil cp $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$ARTIFACT_VERSION.iso"
-            echo "gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/opnfv-$ARTIFACT_VERSION.properties"
+            echo "gsutil cp $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
+            echo "gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties"
             echo "gsutil cp $WORKSPACE/latest.properties gs://$GS_URL/latest.properties"
 
             echo
