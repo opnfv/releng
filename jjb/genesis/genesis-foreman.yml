@@ -171,32 +171,8 @@
     node: ericsson-build
 
     parameters:
-        - string:
-            name: INSTALLER
-            default: '{installer}'
-            description: "Installer to use."
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-            description: "Directory where the build artifact will be located upon the completion of the build."
-        - string:
-            name: CACHE_DIRECTORY
-            default: '$HOME/opnfv/cache/genesis-{installer}'
-        - string:
-            name: GS_URL
-            default: 'artifacts.opnfv.org/genesis/{installer}'
-            description: "URL to Google Storage."
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/genesis
-        - string:
-            name: GERRIT_BRANCH
-            default: origin/master
-            description: "Branch to build, deploy and test."
-        - string:
-            name: GERRIT_REFSPEC
-            default: refs/heads/master
-            description: "Refspec to retrieve."
+        - genesis-parameters:
+            installer: '{installer}'
 
     scm:
         - git:
@@ -216,8 +192,10 @@
         artifactNumToKeep: -1
 
     builders:
-        - 'daily-master'
-
+        - trigger-builds:
+          - project: 'genesis-{installer}-build'
+            git-revision: true
+            block: true
 
 - job-template:
     name: 'genesis-{installer}-build'
@@ -396,87 +374,6 @@
             /bin/rm -rf $BUILD_DIRECTORY
 
 - builder:
-    name: 'daily-master'
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-            set -x
-
-            # get the dependencies - temporary fix for RC0
-            [[ -d $WORKSPACE/$INSTALLER/build ]] || mkdir -p $WORKSPACE/$INSTALLER/build
-            cp /home/jenkins/Downloads/opnfv_iso/* $WORKSPACE/$INSTALLER/build/
-
-            # below lines perhaps need to be enabled in order to fetch images from internet
-            # as we are having disk space issues on ericsson-build slave
-            #wget http://ftp.riken.jp/Linux/centos/7.0.1406/isos/x86_64/CentOS-7.0-1406-x86_64-Minimal.iso
-            #wget http://download.virtualbox.org/virtualbox/rpm/fedora/20/x86_64/VirtualBox-4.3-4.3.26_98988_fedora18-1.x86_64.rpm
-            #wget http://repos.duss-janser.ch/vagrant/vagrant_1.7.2_x86_64.rpm
-
-            # do the build
-            cd $WORKSPACE/$INSTALLER/ci
-            ./build.sh -v $BUILD_ID $BUILD_DIRECTORY
-
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-            set -x
-
-            # list the build artifacts
-            ls -al $BUILD_DIRECTORY
-
-            cd $BUILD_DIRECTORY
-
-            # save information regarding artifact into file
-            (
-                echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
-                echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
-                echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$BUILD_ID.iso"
-                echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum opnfv-$ARTIFACT_VERSION.iso | cut -d' ' -f1)"
-                echo "OPNFV_BUILD_URL=$BUILD_URL"
-                echo "OPNFV_BUILD=OK"
-            ) > opnfv-$BUILD_ID.properties
-
-            # copy artifact property file as latest.properties
-            # so we can directly get info regarding latest artifact
-            /bin/cp -f opnfv-$BUILD_ID.properties latest.properties
-
-            # upload artifact and additional files to google storage
-            gsutil cp OPNFV-CentOS-7-x86_64-$BUILD_ID.iso gs://$GS_URL/opnfv-$BUILD_ID.iso
-            gsutil cp opnfv-$BUILD_ID.properties gs://$GS_URL/opnfv-$BUILD_ID.properties
-            gsutil cp latest.properties gs://$GS_URL/latest.properties
-
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-            set -x
-
-            # get the latest.properties file in order to get info regarding latest artifact
-            gsutil cp gs://$GS_URL/latest.properties latest.properties
-
-            # check if we got the file
-            [[ -f latest.properties ]] || exit 1
-
-            # source the file so we get OPNFV vars
-            source latest.properties
-
-            # download the file
-            gsutil cp gs://$OPNFV_ARTIFACT_URL $WORKSPACE/opnfv.iso
-
-            # list the file
-            ls -al $WORKSPACE/opnfv.iso
-
-            # remove the BUILD_DIRECTORY and downlaoded artifact to reclaim some space
-            /bin/rm -rf $BUILD_DIRECTORY
-            /bin/rm -rf $WORKSPACE/opnfv.iso
-
-- builder:
     name: 'build'
     builders:
         - shell: |
@@ -485,6 +382,11 @@
             set -o nounset
             set -o pipefail
             set -x
+
+            # log info to console
+            echo "Starting build of $INSTALLER. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
 
             # create the cache directory if it doesn't exist
             [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
@@ -496,6 +398,21 @@
             cd $WORKSPACE/$INSTALLER/ci
             ./build.sh -v $ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
 
+            # save information regarding artifact into file
+            (
+                echo "OPNFV_ARTIFACT_VERSION=$ARTIFACT_VERSION"
+                echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
+                echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
+                echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$ARTIFACT_VERSION.iso"
+                echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum opnfv-$ARTIFACT_VERSION.iso | cut -d' ' -f1)"
+                echo "OPNFV_BUILD_URL=$BUILD_URL"
+                echo "OPNFV_BUILD=OK"
+            ) > $WORKSPACE/opnfv.properties
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
 - builder:
     name: 'upload-artifact'
     builders:
@@ -506,8 +423,29 @@
             set -o pipefail
             set -x
 
+            # log info to console
+            echo "Uploading artifact. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
+
             # list the build output
             ls -al $BUILD_DIRECTORY
+
+            # source the opnfv.properties to get ARTIFACT_VERSION
+            source $WORKSPACE/opnfv.properties
+
+            # copy artifact property file as latest.properties
+            # so we can directly get info regarding latest artifact
+            /bin/cp -f $WORKSPACE/opnfv.properties latest.properties
+
+            # upload artifact and additional files to google storage
+            echo "gsutil cp $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$ARTIFACT_VERSION.iso gs://$OPNFV_ARTIFACT_URL"
+            echo "gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/opnfv-$ARTIFACT_VERSION.properties"
+            echo "gsutil cp latest.properties gs://$GS_URL/latest.properties"
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
 
 - builder:
     name: 'deploy'
