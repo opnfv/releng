@@ -171,32 +171,8 @@
     node: ericsson-build
 
     parameters:
-        - string:
-            name: INSTALLER
-            default: '{installer}'
-            description: "Installer to use."
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-            description: "Directory where the build artifact will be located upon the completion of the build."
-        - string:
-            name: CACHE_DIRECTORY
-            default: '$HOME/opnfv/cache/genesis-{installer}'
-        - string:
-            name: GS_URL
-            default: 'artifacts.opnfv.org/genesis/{installer}'
-            description: "URL to Google Storage."
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/genesis
-        - string:
-            name: GERRIT_BRANCH
-            default: origin/master
-            description: "Branch to build, deploy and test."
-        - string:
-            name: GERRIT_REFSPEC
-            default: refs/heads/master
-            description: "Refspec to retrieve."
+        - genesis-parameters:
+            installer: '{installer}'
 
     scm:
         - git:
@@ -216,8 +192,10 @@
         artifactNumToKeep: -1
 
     builders:
-        - 'daily-master'
-
+        - trigger-build:
+          - project: 'genesis-{installer}-build'
+            git-revision: true
+            block: true
 
 - job-template:
     name: 'genesis-{installer}-build'
