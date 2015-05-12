@@ -24,7 +24,7 @@ for file in "${{files[@]}}"; do
 
 	# rst2html part
 	echo "rst2html $file"
-	rst2html $file > $file_cut".html"
+	rst2html --exit-status=2 $file > $file_cut".html"
 
 	echo "rst2pdf $file"
 	rst2pdf $file -o $file_cut".pdf"

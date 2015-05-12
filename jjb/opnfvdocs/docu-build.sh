@@ -24,7 +24,7 @@ for file in "${{files[@]}}"; do
 
 	# rst2html part
 	echo "rst2html $file"
-	rst2html $file | gsutil cp -L gsoutput.txt - \
+	rst2html --halt=2 $file | gsutil cp -L gsoutput.txt - \
 	gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".html
 	gsutil setmeta -h "Content-Type:text/html" \
 			-h "Cache-Control:private, max-age=0, no-transform" \
