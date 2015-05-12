@@ -3,6 +3,8 @@
 
     name: genesis-foreman
 
+    project: 'genesis'
+
     installer:
         - foreman
 
@@ -10,6 +12,7 @@
         - 'genesis-{installer}-verify'
         - 'genesis-{installer}-merge'
         - 'genesis-{installer}-daily-{stream}'
+        - 'genesis-{installer}-build'
         - 'genesis-{installer}-deploy'
 
     # stream:    branch with - in place of / (eg. stable-helium)
@@ -18,7 +21,6 @@
         - master:
             branch: 'master'
 
-    project: 'genesis'
 
 ########################
 # job templates
@@ -45,6 +47,9 @@
         - string:
             name: BUILD_DIRECTORY
             default: $WORKSPACE/build_output
+        - string:
+            name: CACHE_DIRECTORY
+            default: '$HOME/opnfv/cache/genesis-{installer}'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/genesis
@@ -117,6 +122,9 @@
             name: BUILD_DIRECTORY
             default: $WORKSPACE/build_output
         - string:
+            name: CACHE_DIRECTORY
+            default: '$HOME/opnfv/cache/genesis-{installer}'
+        - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/genesis
         - project-parameter:
@@ -172,6 +180,9 @@
             default: $WORKSPACE/build_output
             description: "Directory where the build artifact will be located upon the completion of the build."
         - string:
+            name: CACHE_DIRECTORY
+            default: '$HOME/opnfv/cache/genesis-{installer}'
+        - string:
             name: GS_URL
             default: 'artifacts.opnfv.org/genesis/{installer}'
             description: "URL to Google Storage."
@@ -209,6 +220,41 @@
 
 
 - job-template:
+    name: 'genesis-{installer}-build'
+
+    project-type: freestyle
+
+    node: ericsson-build
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    parameters:
+        - genesis-parameters
+        - string:
+            name: EXTRA_PARAM
+            default: 'extra_value'
+            description: "Installer to use."
+        - string:
+            name: INSTALLER
+            default: 'overriden_value'
+            description: "Installer to use."
+
+    scm:
+        - git:
+            skip-tag: true
+            url: $GIT_BASE
+            branches:
+                - $GERRIT_BRANCH
+            refspec: $GERRIT_REFSPEC
+
+    builders:
+        - 'build'
+
+- job-template:
     name: 'genesis-{installer}-deploy'
 
     project-type: freestyle
@@ -240,7 +286,7 @@
             description: "Refspec to retrieve."
         - string:
             name: GS_URL
-            default: 'artifacts.opnfv.org/genesis/fuel'
+            default: 'artifacts.opnfv.org/genesis/{installer}'
             description: "URL to Google Storage."
         - string:
             name: BUILD_DIRECTORY
@@ -257,6 +303,40 @@
 
     builders:
         - 'deploy'
+
+########################
+# parameter macros
+########################
+- parameter:
+    name: genesis-parameters
+    parameters:
+        - string:
+            name: INSTALLER
+            default: '{installer}'
+            description: "Installer to use."
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: '$HOME/opnfv/cache/genesis-{installer}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/genesis
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+        - string:
+            name: GERRIT_BRANCH
+            default: origin/master
+            description: "Branch to build, deploy and test."
+        - string:
+            name: GERRIT_REFSPEC
+            default: refs/heads/master
+            description: "Refspec to retrieve."
+        - string:
+            name: GS_URL
+            default: 'artifacts.opnfv.org/genesis/{installer}'
+            description: "URL to Google Storage."
 
 ########################
 # builder macros
@@ -403,7 +483,7 @@
             /bin/rm -rf $WORKSPACE/opnfv.iso
 
 - builder:
-    name: 'deploy'
+    name: 'build'
     builders:
         - shell: |
             #!/bin/bash
@@ -412,7 +492,18 @@
             set -o pipefail
             set -x
 
-            cd $WORKSPACE
+            echo "Hello World"
+            env
+
+- builder:
+    name: 'deploy'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
 
             # cleanup first
             sudo $WORKSPACE/$INSTALLER/ci/clean.sh -base_config $WORKSPACE/$INSTALLER/ci/inventory/lf_pod2_ksgen_settings.yml
