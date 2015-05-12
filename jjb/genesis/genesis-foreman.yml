@@ -235,14 +235,6 @@
     parameters:
         - genesis-parameters:
             installer: '{installer}'
-        - string:
-            name: EXTRA_PARAM
-            default: 'extra_value'
-            description: "Installer to use."
-        - string:
-            name: INSTALLER
-            default: 'overriden_value'
-            description: "Installer to use."
 
     scm:
         - git:
@@ -254,6 +246,7 @@
 
     builders:
         - 'build'
+        - 'artifact-upload'
 
 - job-template:
     name: 'genesis-{installer}-deploy'
@@ -493,8 +486,28 @@
             set -o pipefail
             set -x
 
-            echo "Hello World"
-            env
+            # create the cache directory if it doesn't exist
+            [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
+
+            # set ARTIFACT_VERSION
+            export ARTIFACT_VERSION=$(date +"%Y-%m-%d_%H-%M-%S")
+
+            # start the build
+            cd $WORKSPACE/$INSTALLER/ci
+            ./build.sh -v $ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
+
+- builder:
+    name: 'artifact-upload'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
+
+            # start the build
+            ls -al $BUILD_DIRECTORY
 
 - builder:
     name: 'deploy'
