@@ -196,6 +196,11 @@
           - project: 'genesis-{installer}-build'
             git-revision: true
             block: true
+          - project: 'genesis-{installer}-deploy'
+            git-revision: true
+            block: true
+          - project: 'functest-opnfv-jump-2'
+            block: true
 
 - job-template:
     name: 'genesis-{installer}-build'
@@ -240,30 +245,8 @@
         artifactNumToKeep: -1
 
     parameters:
-        - string:
-            name: INSTALLER
-            default: '{installer}'
-            description: "Installer to use."
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/genesis
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
-        - string:
-            name: GERRIT_BRANCH
-            default: origin/master
-            description: "Branch to build, deploy and test."
-        - string:
-            name: GERRIT_REFSPEC
-            default: refs/heads/master
-            description: "Refspec to retrieve."
-        - string:
-            name: GS_URL
-            default: 'artifacts.opnfv.org/genesis/{installer}'
-            description: "URL to Google Storage."
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-            description: "Directory where the build artifact will be located upon the completion of the build."
+        - genesis-parameters:
+            installer: '{installer}'
 
     scm:
         - git:
@@ -382,7 +365,6 @@
             set -o errexit
             set -o nounset
             set -o pipefail
-            set -x
 
             # log info to console
             echo "Starting build of $INSTALLER. This could take some time..."
@@ -393,7 +375,7 @@
             [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
 
             # set OPNFV_ARTIFACT_VERSION
-            export OPNFV_ARTIFACT_VERSION=$(date +"%Y-%m-%d_%H-%M-%S")
+            export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
 
             # start the build
             cd $WORKSPACE/$INSTALLER/ci
@@ -415,6 +397,30 @@
             echo "Done!"
 
 - builder:
+    name: 'deploy'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Startint the deployment. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
+
+            # cleanup first
+            sudo $WORKSPACE/$INSTALLER/ci/clean.sh -base_config $WORKSPACE/$INSTALLER/ci/inventory/lf_pod2_ksgen_settings.yml
+
+            # and then initiate deployment
+            sudo $WORKSPACE/$INSTALLER/ci/deploy.sh -base_config $WORKSPACE/$INSTALLER/ci/inventory/lf_pod2_ksgen_settings.yml
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
+- builder:
     name: 'upload-artifact'
     builders:
         - shell: |
@@ -422,7 +428,6 @@
             set -o errexit
             set -o nounset
             set -o pipefail
-            set -x
 
             # log info to console
             echo "Uploading artifact. This could take some time..."
@@ -440,26 +445,10 @@
             /bin/cp -f $WORKSPACE/opnfv.properties $WORKSPACE/latest.properties
 
             # upload artifact and additional files to google storage
-            echo "gsutil cp $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
-            echo "gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties"
-            echo "gsutil cp $WORKSPACE/latest.properties gs://$GS_URL/latest.properties"
+            gsutil cp $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso
+            gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties
+            gsutil cp $WORKSPACE/latest.properties gs://$GS_URL/latest.properties
 
             echo
             echo "--------------------------------------------------------"
             echo "Done!"
-
-- builder:
-    name: 'deploy'
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-            set -x
-
-            # cleanup first
-            sudo $WORKSPACE/$INSTALLER/ci/clean.sh -base_config $WORKSPACE/$INSTALLER/ci/inventory/lf_pod2_ksgen_settings.yml
-
-            # and then initiate deployment
-            sudo $WORKSPACE/$INSTALLER/ci/deploy.sh -base_config $WORKSPACE/$INSTALLER/ci/inventory/lf_pod2_ksgen_settings.yml
