@@ -11,7 +11,6 @@
         - 'genesis-fuel-daily-{stream}'
         - 'genesis-fuel-build'
         - 'genesis-fuel-deploy'
-        - 'genesis-fuel-test'
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
@@ -323,7 +322,7 @@
 
     project-type: freestyle
 
-    disabled: true
+    disabled: false
 
     node: opnfv-jump-1
 
@@ -376,81 +375,8 @@
         artifactNumToKeep: -1
 
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-            set -x
-
-            echo "Hello World!"
-
-- job-template:
-    name: 'genesis-fuel-test'
-
-    project-type: freestyle
-
-    disabled: false
-
-    node: ericsson-test
-
-    parameters:
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/genesis
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
-        - string:
-            name: GERRIT_BRANCH
-            default: origin/master
-            description: "Branch to build, deploy and test."
-        - string:
-            name: GERRIT_REFSPEC
-            default: refs/heads/master
-            description: "Refspec to retrieve."
-        - string:
-            name: GS_URL
-            default: 'artifacts.opnfv.org/genesis/fuel'
-            description: "URL to Google Storage."
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-            description: "Directory where the build artifact will be located upon the completion of the build."
-        - string:
-            name: CACHE_DIRECTORY
-            default: $HOME/opnfv/cache/genesis-fuel
-            description: "Cache location that is where the cache is populated and used during builds to reduce the build time."
-        - string:
-            name: ARTIFACT_VERSION
-            default: $BUILD_ID
-            description: "Version number to append to resulting ISO."
-        - string:
-            name: SKIP_BUILD
-            default: 0
-            description: "Temporary parameter for deployment testing to skip the build and run deployment only."
-
-    scm:
-        - git:
-            skip-tag: true
-            url: $GIT_BASE
-            branches:
-                - $GERRIT_BRANCH
-            refspec: $GERRIT_REFSPEC
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-            set -x
-
-            echo "Hello World!"
+        - 'installer-download-artifact'
+        - 'installer-deploy'
 
 - builder:
     name: installer-build
@@ -482,6 +408,37 @@
             ls -al $BUILD_DIRECTORY
 
 - builder:
+    name: installer-deploy
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            set -x
+
+            # source the file so we get OPNFV vars
+            source latest.properties
+
+            # echo the info about artifact that is used during the deployment
+            echo "Using $(echo $OPNFV_ARTIFACT_URL | cut -d'/' -f4) for deployment"
+
+            # set TOPDIR
+            export TOPDIR=$WORKSPACE/fuel/prototypes/auto-deploy
+
+            # log info to console
+            echo "Startint the deployment. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
+
+            # start the deployment
+            echo "sudo  ${TOPDIR}/deploy/deploy.sh $WORKSPACE/opnfv.iso ${TOPDIR}/configs/lf_pod1/dea.yaml ${TOPDIR}/configs/lf_pod1/dha.yaml"
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
+- builder:
     name: installer-deploy-quick-fix
     builders:
         - shell: |
@@ -494,19 +451,6 @@
             # this is just a quick fix to execute the deployment in a messy way
             # will be fixed later on
             ssh -o BatchMode=yes -o TCPKeepAlive=yes cideploy@10.118.34.205 ./cideploy.sh
-
-- builder:
-    name: installer-test
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-            set -x
-
-            # run FuncTest
-            echo "Here is where we are supposed to run FuncTest"
 
 - builder:
     name: installer-upload-artifact
