@@ -2,32 +2,32 @@
 set -e
 set -o pipefail
 
+design_docs_dir="design_docs"
+build_dir="build"
 project="$(git remote -v | head -n1 | awk '{{print $2}}' | sed -e 's,.*:\(.*/\)\?,,' -e 's/\.git$//')"
 export PATH=$PATH:/usr/local/bin/
 
-git_sha1="$(git rev-parse HEAD)"
-docu_build_date="$(date)"
+# build requirement HTML file
+sphinx-build -b html -d "$build_dir"/doctrees requirements "$build_dir"/requirements/html
 
+# build requirement PDF file
+sphinx-build -b latex -d "$build_dir"/doctrees requirements "$build_dir"/requirements/latex
+make -C "$build_dir"/requirements/latex all-pdf
+
+
+# build design docs
 files=()
 while read -r -d ''; do
 	files+=("$REPLY")
-done < <(find * -type f -iname '*.rst' -print0)
+done < <(find * -type f -wholename $design_docs_dir/'*.rst' -print0)
 
+mkdir -p "$build_dir"/"$design_docs_dir"
 for file in "${{files[@]}}"; do
 
 	file_cut="${{file%.*}}"
-	gs_cp_folder="${{file_cut}}"
-
-	# sed part
-	sed -i "s/_sha1_/$git_sha1/g" $file
-	sed -i "s/_date_/$docu_build_date/g" $file
 
 	# rst2html part
 	echo "rst2html $file"
-	rst2html $file > $file_cut".html"
-
-	echo "rst2pdf $file"
-	rst2pdf $file -o $file_cut".pdf"
+	rst2html.py --halt=2 "$file" "$build_dir"/"$file_cut".html
 
 done
-
