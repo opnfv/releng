@@ -2,62 +2,48 @@
 set -e
 set -o pipefail
 
+design_docs_dir="design_docs"
+build_dir="build"
 project="$(git remote -v | head -n1 | awk '{{print $2}}' | sed -e 's,.*:\(.*/\)\?,,' -e 's/\.git$//')"
 export PATH=$PATH:/usr/local/bin/
 
-git_sha1="$(git rev-parse HEAD)"
-docu_build_date="$(date)"
+# build requirement HTML file
+sphinx-build -b html -d "$build_dir"/requirements/doctrees requirements \
+    "$build_dir"/requirements/html
 
+# build requirement PDF file
+sphinx-build -b latex -d "$build_dir"/requirements/doctrees requirements \
+    "$build_dir"/requirements/latex
+make -C "$build_dir"/requirements/latex all-pdf
+
+
+# build design docs
 files=()
 while read -r -d ''; do
 	files+=("$REPLY")
-done < <(find * -type f -iname '*.rst' -print0)
+done < <(find * -type f -wholename $design_docs_dir/'*.rst' -print0)
 
+mkdir -p "$build_dir"/"$design_docs_dir"
 for file in "${{files[@]}}"; do
 
-	file_cut="${{file%.*}}"
-	gs_cp_folder="${{file_cut}}"
-
-	# sed part
-	sed -i "s/_sha1_/$git_sha1/g" $file
-	sed -i "s/_date_/$docu_build_date/g" $file
+	file_cut="${file%.*}"
 
 	# rst2html part
 	echo "rst2html $file"
-	rst2html $file | gsutil cp -L gsoutput.txt - \
-	gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".html
-	gsutil setmeta -h "Content-Type:text/html" \
-			-h "Cache-Control:private, max-age=0, no-transform" \
-			gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".html
-	cat gsoutput.txt
-	rm -f gsoutput.txt
+	rst2html --halt=2 "$file" "$build_dir"/"$file_cut".html
 
-	echo "rst2pdf $file"
-	rst2pdf $file -o - | gsutil cp -L gsoutput.txt - \
-	gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".pdf
-	gsutil setmeta -h "Content-Type:application/pdf" \
-			-h "Cache-Control:private, max-age=0, no-transform" \
-			gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".pdf
+done
+
+# upload all built files
+for file in "$build_dir"/{$"$design_docs_dir",requirements/html,requirements/latex/*.pdf}; do
+
+	gsutil cp -L gsoutput.txt $file gs://artifacts.opnfv.org/$project/
+	gsutil setmeta -h "Cache-Control:private, max-age=0, no-transform" \
+			gs://artifacts.opnfv.org/$project/$file
 	cat gsoutput.txt
 	rm -f gsoutput.txt
 
 done
 
-images=()
-while read -r -d ''; do
-        images+=("$REPLY")
-done < <(find * -type f \( -iname \*.jpg -o -iname \*.png \) -print0)
-
-for img in "${{images[@]}}"; do
-
-        # uploading found images
-        echo "uploading $img"
-        cat "$img" | gsutil cp -L gsoutput.txt - \
-        gs://artifacts.opnfv.org/"$project"/"$img"
-        gsutil setmeta -h "Content-Type:image/jpeg" \
-                        -h "Cache-Control:private, max-age=0, no-transform" \
-                        gs://artifacts.opnfv.org/"$project"/"$img"
-        cat gsoutput.txt
-        rm -f gsoutput.txt
-
-done
+# clean up
+rm -rf build
