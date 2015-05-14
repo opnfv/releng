@@ -170,6 +170,8 @@
 
     node: ericsson-build
 
+    disabled: true
+
     parameters:
         - genesis-parameters:
             installer: '{installer}'
@@ -237,6 +239,8 @@
     name: 'genesis-{installer}-deploy'
 
     project-type: freestyle
+
+    disabled: true
 
     node: opnfv-jump-2
 
@@ -449,7 +453,7 @@
             # upload artifact and additional files to google storage
             gsutil cp $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
             gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
-            gsutil cp $WORKSPACE/latest.properties gs://$GS_URL/latest.properties gsutil.latest.log 2>&1
+            gsutil cp $WORKSPACE/latest.properties gs://$GS_URL/latest.properties > gsutil.latest.log 2>&1
 
             echo
             echo "--------------------------------------------------------"
