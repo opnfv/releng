@@ -280,8 +280,14 @@
     name: functest-all
     builders:
         - shell: |
+            echo "Functest: prepare Functest environment"
+            source $HOME/functest/opnfv-openrc.sh
+            python $HOME/functest/config_functest.py start
             echo "Functest: run Functest suites"
-            python $HOME/.functest/run_rally.py all
-            python $HOME/.functest/run_rally.py smoke
+            python $HOME/.functest/Rally_test/run_rally.py all
+            python $HOME/.functest/Rally_test/run_rally.py tempest smoke
             python $HOME/.functest/vPing/vPing.py
             $HOME/.functest/ODL/start_tests.sh
+            echo "Functest: clean Functest environment"
+            python $HOME/functest/config_functest.py clean
+
