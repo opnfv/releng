@@ -88,6 +88,7 @@
 
     builders:
         - 'foreman-build'
+        - 'foreman-workspace-cleanup'
 
 - job-template:
     name: 'genesis-foreman-merge'
@@ -95,6 +96,13 @@
     project-type: freestyle
 
     node: ericsson-build
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 2
 
     logrotate:
         daysToKeep: 30
@@ -140,6 +148,7 @@
 
     builders:
         - 'foreman-build'
+        - 'foreman-workspace-cleanup'
 
 - job-template:
     name: 'genesis-foreman-daily-{stream}'
@@ -363,3 +372,16 @@
             echo
             echo "--------------------------------------------------------"
             echo "Done!"
+
+- builder:
+    name: 'foreman-workspace-cleanup'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # delete everything that is in $WORKSPACE
+            /bin/rm -rf $WORKSPACE
+

@@ -1,10 +1,14 @@
-# this is the job configuration for bgs
+########################
+# Job configuration for genesis/fuel
+########################
 - project:
 
     name: genesis-fuel
 
-    installer:
-        - fuel
+    project: 'genesis'
+
+    installer: 'fuel'
+
     jobs:
         - 'genesis-fuel-verify'
         - 'genesis-fuel-merge'
@@ -12,13 +16,9 @@
         - 'genesis-fuel-build'
         - 'genesis-fuel-deploy'
 
-    # stream:    branch with - in place of / (eg. stable-helium)
-    # branch:    branch (eg. stable/helium)
     stream:
         - master:
             branch: 'master'
-
-    project: 'genesis'
 
 ########################
 # job templates
@@ -45,28 +45,12 @@
         artifactNumToKeep: -1
 
     parameters:
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/genesis
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
-        - string:
-            name: GS_URL
-            default: 'artifacts.opnfv.org/genesis/fuel'
-            description: "URL to Google Storage."
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-            description: "Directory where the build artifact will be located upon the completion of the build."
-        - string:
-            name: CACHE_DIRECTORY
-            default: $HOME/opnfv/cache/genesis-fuel
-            description: "Cache location that is where the cache is populated and used during builds to reduce the build time."
-        - string:
-            name: ARTIFACT_VERSION
-            default: $BUILD_ID
-            description: "Version number to append to resulting ISO."
+        - project-parameter:
+            project: '{project}'
         - gerrit-parameter:
             branch: 'master'
+        - fuel-parameter:
+            installer: '{installer}'
 
     scm:
         - gerrit-trigger-scm:
@@ -100,19 +84,14 @@
                   - compare-type: ANT
                     pattern: 'common/**'
                   - compare-type: ANT
-                    pattern: 'fuel/**'
-
+                    pattern: '{installer}/**'
 
     builders:
-        - 'installer-build'
-        - 'installer-cleanup'
+        - 'fuel-build'
+        - 'fuel-workspace-cleanup'
 
 - job-template:
     name: 'genesis-fuel-merge'
-
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
 
     project-type: freestyle
 
@@ -132,28 +111,12 @@
         artifactNumToKeep: 5
 
     parameters:
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/genesis
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
-        - string:
-            name: GS_URL
-            default: 'artifacts.opnfv.org/genesis/fuel'
-            description: "URL to Google Storage."
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-            description: "Directory where the build artifact will be located upon the completion of the build."
-        - string:
-            name: CACHE_DIRECTORY
-            default: $HOME/opnfv/cache/genesis-fuel
-            description: "Cache location that is where the cache is populated and used during builds to reduce the build time."
-        - string:
-            name: ARTIFACT_VERSION
-            default: $BUILD_ID
-            description: "Version number to append to resulting ISO."
+        - project-parameter:
+            project: '{project}'
         - gerrit-parameter:
             branch: 'master'
+        - fuel-parameter:
+            installer: '{installer}'
 
     scm:
         - gerrit-trigger-scm:
@@ -181,11 +144,11 @@
                   - compare-type: ANT
                     pattern: 'common/**'
                   - compare-type: ANT
-                    pattern: 'fuel/**'
+                    pattern: '{installer}/**'
 
     builders:
-        - 'installer-build'
-        - 'installer-cleanup'
+        - 'fuel-build'
+        - 'fuel-workspace-cleanup'
 
 - job-template:
     name: 'genesis-fuel-daily-{stream}'
@@ -194,50 +157,22 @@
 
     node: ericsson-build
 
+    disabled: false
+
     parameters:
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/genesis
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
-        - string:
-            name: GERRIT_BRANCH
-            default: origin/master
-            description: "Branch to build, deploy and test."
-        - string:
-            name: GERRIT_REFSPEC
-            default: refs/heads/master
-            description: "Refspec to retrieve."
-        - string:
-            name: GS_URL
-            default: 'artifacts.opnfv.org/genesis/fuel'
-            description: "URL to Google Storage."
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-            description: "Directory where the build artifact will be located upon the completion of the build."
-        - string:
-            name: CACHE_DIRECTORY
-            default: $HOME/opnfv/cache/genesis-fuel
-            description: "Cache location that is where the cache is populated and used during builds to reduce the build time."
-        - string:
-            name: ARTIFACT_VERSION
-            default: $BUILD_ID
-            description: "Version number to append to resulting ISO."
-        - string:
-            name: SKIP_BUILD
-            default: 0
-            description: "Temporary parameter for deployment testing to skip the build and run deployment only."
+        - project-parameter:
+            project: '{project}'
+        - fuel-parameter:
+            installer: '{installer}'
 
     scm:
-        - git:
-            skip-tag: true
-            url: $GIT_BASE
-            branches:
-                - $GERRIT_BRANCH
-            refspec: $GERRIT_REFSPEC
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: master
 
     triggers:
-        - pollscm: '@midnight'
+        - timed: '@midnight'
 
     logrotate:
         daysToKeep: 30
@@ -246,60 +181,21 @@
         artifactNumToKeep: -1
 
     builders:
-        - 'installer-build'
-        - 'installer-upload-artifact'
-        - 'installer-deploy-quick-fix'
+        - trigger-builds:
+          - project: 'genesis-fuel-build'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'genesis-fuel-deploy-virtual'
+            git-revision: true
+            block: false
 
 - job-template:
     name: 'genesis-fuel-build'
 
     project-type: freestyle
 
-    disabled: true
-
     node: ericsson-build
-
-    parameters:
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/genesis
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
-        - string:
-            name: GERRIT_BRANCH
-            default: origin/master
-            description: "Branch to build, deploy and test."
-        - string:
-            name: GERRIT_REFSPEC
-            default: refs/heads/master
-            description: "Refspec to retrieve."
-        - string:
-            name: GS_URL
-            default: 'artifacts.opnfv.org/genesis/fuel'
-            description: "URL to Google Storage."
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-            description: "Directory where the build artifact will be located upon the completion of the build."
-        - string:
-            name: CACHE_DIRECTORY
-            default: $HOME/opnfv/cache/genesis-fuel
-            description: "Cache location that is where the cache is populated and used during builds to reduce the build time."
-        - string:
-            name: ARTIFACT_VERSION
-            default: $BUILD_ID
-            description: "Version number to append to resulting ISO."
-        - string:
-            name: SKIP_BUILD
-            default: 0
-            description: "Temporary parameter for deployment testing to skip the build and run deployment only."
-
-    scm:
-        - git:
-            skip-tag: true
-            url: $GIT_BASE
-            branches:
-                - $GERRIT_BRANCH
-            refspec: $GERRIT_REFSPEC
 
     logrotate:
         daysToKeep: 30
@@ -307,66 +203,64 @@
         artifactDaysToKeep: -1
         artifactNumToKeep: -1
 
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-            set -x
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - fuel-parameter:
+            installer: '{installer}'
 
-            echo "Hello World!"
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: master
+
+    builders:
+        - 'fuel-build'
+        - 'fuel-upload-artifact'
+        - 'fuel-workspace-cleanup'
 
 - job-template:
     name: 'genesis-fuel-deploy'
 
     project-type: freestyle
 
-    disabled: false
+    disabled: true
 
     node: opnfv-jump-1
 
     parameters:
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/genesis
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
-        - string:
-            name: GERRIT_BRANCH
-            default: origin/master
-            description: "Branch to build, deploy and test."
-        - string:
-            name: GERRIT_REFSPEC
-            default: refs/heads/master
-            description: "Refspec to retrieve."
-        - string:
-            name: GS_URL
-            default: 'artifacts.opnfv.org/genesis/fuel'
-            description: "URL to Google Storage."
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-            description: "Directory where the build artifact will be located upon the completion of the build."
-        - string:
-            name: CACHE_DIRECTORY
-            default: $HOME/opnfv/cache/genesis-fuel
-            description: "Cache location that is where the cache is populated and used during builds to reduce the build time."
-        - string:
-            name: ARTIFACT_VERSION
-            default: $BUILD_ID
-            description: "Version number to append to resulting ISO."
-        - string:
-            name: SKIP_BUILD
-            default: 0
-            description: "Temporary parameter for deployment testing to skip the build and run deployment only."
+        - project-parameter:
+            project: '{project}'
+        - fuel-parameter:
+            installer: '{installer}'
 
     scm:
-        - git:
-            skip-tag: true
-            url: $GIT_BASE
-            branches:
-                - $GERRIT_BRANCH
-            refspec: $GERRIT_REFSPEC
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: master
+
+- job-template:
+    name: 'genesis-fuel-deploy-virtual'
+
+    project-type: freestyle
+
+    disabled: false
+
+    node: ericsson-build
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - fuel-parameter:
+            installer: '{installer}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: master
 
     logrotate:
         daysToKeep: 30
@@ -375,47 +269,91 @@
         artifactNumToKeep: -1
 
     builders:
-        - 'installer-download-artifact'
-        - 'installer-deploy'
+        - 'fuel-download-artifact'
+        - 'fuel-deploy-virtual'
 
+########################
+# parameter macros
+########################
+- parameter:
+    name: fuel-parameter
+    parameters:
+        - string:
+            name: INSTALLER
+            default: '{installer}'
+            description: "Installer to use."
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache/genesis-$INSTALLER
+            description: "Directory where the cache to be used during the build is located."
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+        - string:
+            name: GS_URL
+            default: artifacts.opnfv.org/$PROJECT/$INSTALLER
+            description: "URL to Google Storage."
+
+########################
+# builder macros
+########################
 - builder:
-    name: installer-build
+    name: 'fuel-build'
     builders:
         - shell: |
             #!/bin/bash
             set -o errexit
             set -o nounset
             set -o pipefail
-            set -x
 
-            # this is here for quick tries with deployment
-            SKIP_BUILD=${SKIP_BUILD-0}
-            if [ "$SKIP_BUILD" == "1" ]; then
-                echo "Skipping build for deployment testing!"
-                exit 0
-            else
-                echo "Proceeding with build first!"
-            fi
+            # log info to console
+            echo "Starting the build of $INSTALLER. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
 
-            # set/create the cache location
+            # create the cache directory if it doesn't exist
             [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
 
-            # do the build
-            cd $WORKSPACE/fuel/ci
-            ./build.sh -v $ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
+            # set OPNFV_ARTIFACT_VERSION
+            export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
+
+            # start the build
+            cd $WORKSPACE/$INSTALLER/ci
+            ./build.sh -v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
 
             # list the build artifacts
             ls -al $BUILD_DIRECTORY
 
+            # list the contents of BUILD_OUTPUT directory
+            ls -al $BUILD_DIRECTORY
+
+            # save information regarding artifact into file
+            (
+                echo "OPNFV_ARTIFACT_VERSION=$OPNFV_ARTIFACT_VERSION"
+                echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
+                echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
+                echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
+                echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $BUILD_DIRECTORY/opnfv-$OPNFV_ARTIFACT_VERSION.iso | cut -d' ' -f1)"
+                echo "OPNFV_BUILD_URL=$BUILD_URL"
+            ) > $WORKSPACE/opnfv.properties
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
 - builder:
-    name: installer-deploy
+    name: 'fuel-deploy'
     builders:
         - shell: |
             #!/bin/bash
             set -o errexit
             set -o nounset
             set -o pipefail
-            set -x
 
             # source the file so we get OPNFV vars
             source latest.properties
@@ -427,7 +365,7 @@
             export TOPDIR=$WORKSPACE/fuel/prototypes/auto-deploy
 
             # log info to console
-            echo "Startint the deployment. This could take some time..."
+            echo "Startint the deployment using $INSTALLER. This could take some time..."
             echo "--------------------------------------------------------"
             echo
 
@@ -439,60 +377,64 @@
             echo "Done!"
 
 - builder:
-    name: installer-deploy-quick-fix
+    name: 'fuel-deploy-virtual'
     builders:
         - shell: |
             #!/bin/bash
             set -o errexit
             set -o nounset
             set -o pipefail
-            set -x
 
-            # this is just a quick fix to execute the deployment in a messy way
-            # will be fixed later on
+            # log info to console
+            echo "Startint the deployment on VM using $INSTALLER. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
+
             ssh -o BatchMode=yes -o TCPKeepAlive=yes cideploy@10.118.34.205 ./cideploy.sh
 
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
 - builder:
-    name: installer-upload-artifact
+    name: 'fuel-upload-artifact'
     builders:
         - shell: |
             #!/bin/bash
             set -o errexit
             set -o nounset
             set -o pipefail
-            set -x
 
-            # change the build directory where ISO is created
-            cd $BUILD_DIRECTORY
+            # log info to console
+            echo "Uploading the $INSTALLER artifact. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
 
-            # save information regarding artifact into file
-            (
-                echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
-                echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
-                echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$ARTIFACT_VERSION.iso"
-                echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum opnfv-$ARTIFACT_VERSION.iso | cut -d' ' -f1)"
-                echo "OPNFV_BUILD_URL=$BUILD_URL"
-                echo "OPNFV_BUILD=OK"
-            ) > opnfv-$ARTIFACT_VERSION.properties
-
-            # copy artifact property file as latest.properties
-            # so we can directly get info regarding latest artifact
-            /bin/cp -f opnfv-$ARTIFACT_VERSION.properties latest.properties
+            # source the opnfv.properties to get ARTIFACT_VERSION
+            source $WORKSPACE/opnfv.properties
 
             # upload artifact and additional files to google storage
-            gsutil cp opnfv-$ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
-            gsutil cp opnfv-$ARTIFACT_VERSION.properties gs://$GS_URL/opnfv-$ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
-            gsutil cp latest.properties gs://$GS_URL/latest.properties > gsutil.latest.log 2>&1
+            gsutil cp $BUILD_DIRECTORY/opnfv-$OPNFV_ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
+            gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
+            gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/latest.properties > gsutil.latest.log 2>&1
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
 
 - builder:
-    name: installer-download-artifact
+    name: 'fuel-download-artifact'
     builders:
         - shell: |
             #!/bin/bash
             set -o errexit
             set -o nounset
             set -o pipefail
-            set -x
+
+            # log info to console
+            echo "Downloading the $INSTALLER artifact. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
 
             # get the latest.properties file in order to get info regarding latest artifact
             gsutil cp gs://$GS_URL/latest.properties $WORKSPACE/latest.properties
@@ -509,15 +451,18 @@
             # list the file
             ls -al $WORKSPACE/opnfv.iso
 
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
 - builder:
-    name: installer-cleanup
+    name: 'fuel-workspace-cleanup'
     builders:
         - shell: |
             #!/bin/bash
             set -o errexit
             set -o nounset
             set -o pipefail
-            set -x
 
             # delete everything that is in $WORKSPACE
             /bin/rm -rf $WORKSPACE
