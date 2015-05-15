@@ -1,37 +1,42 @@
-# this is the job configuration for bgs
+########################
+# Job configuration for genesis/foreman
+########################
 - project:
 
     name: genesis-foreman
 
     project: 'genesis'
 
-    installer:
-        - foreman
+    installer: 'foreman'
 
     jobs:
-        - 'genesis-{installer}-verify'
-        - 'genesis-{installer}-merge'
-        - 'genesis-{installer}-daily-{stream}'
-        - 'genesis-{installer}-build'
-        - 'genesis-{installer}-deploy'
+        - 'genesis-foreman-verify'
+        - 'genesis-foreman-merge'
+        - 'genesis-foreman-daily-{stream}'
+        - 'genesis-foreman-build'
+        - 'genesis-foreman-deploy'
 
-    # stream:    branch with - in place of / (eg. stable-helium)
-    # branch:    branch (eg. stable/helium)
     stream:
         - master:
             branch: 'master'
-
 
 ########################
 # job templates
 ########################
 
 - job-template:
-    name: 'genesis-{installer}-verify'
+    name: 'genesis-foreman-verify'
 
     project-type: freestyle
 
     node: ericsson-build
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 2
 
     logrotate:
         daysToKeep: 30
@@ -40,21 +45,10 @@
         artifactNumToKeep: -1
 
     parameters:
-        - string:
-            name: INSTALLER
-            default: '{installer}'
-            description: "Installer to use."
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-        - string:
-            name: CACHE_DIRECTORY
-            default: '$HOME/opnfv/cache/genesis-{installer}'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/genesis
         - project-parameter:
             project: '{project}'
+        - foreman-parameters:
+            installer: '{installer}'
         - gerrit-parameter:
             branch: 'master'
 
@@ -92,16 +86,11 @@
                   - compare-type: ANT
                     pattern: '{installer}/**'
 
-
     builders:
-        - 'verify'
+        - 'foreman-build'
 
 - job-template:
-    name: 'genesis-{installer}-merge'
-
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
+    name: 'genesis-foreman-merge'
 
     project-type: freestyle
 
@@ -114,21 +103,10 @@
         artifactNumToKeep: 5
 
     parameters:
-        - string:
-            name: INSTALLER
-            default: '{installer}'
-            description: "Installer to use."
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-        - string:
-            name: CACHE_DIRECTORY
-            default: '$HOME/opnfv/cache/genesis-{installer}'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/genesis
         - project-parameter:
             project: '{project}'
+        - foreman-parameters:
+            installer: '{installer}'
         - gerrit-parameter:
             branch: 'master'
 
@@ -161,19 +139,21 @@
                     pattern: '{installer}/**'
 
     builders:
-        - 'merge'
+        - 'foreman-build'
 
 - job-template:
-    name: 'genesis-{installer}-daily-{stream}'
+    name: 'genesis-foreman-daily-{stream}'
 
     project-type: freestyle
 
     node: ericsson-build
 
-    disabled: true
+    disabled: false
 
     parameters:
-        - genesis-parameters:
+        - project-parameter:
+            project: '{project}'
+        - foreman-parameters:
             installer: '{installer}'
 
     scm:
@@ -195,11 +175,11 @@
 
     builders:
         - trigger-builds:
-          - project: 'genesis-{installer}-build'
+          - project: 'genesis-foreman-build'
             git-revision: true
             block: true
         - trigger-builds:
-          - project: 'genesis-{installer}-deploy'
+          - project: 'genesis-foreman-deploy'
             git-revision: true
             block: true
         - trigger-builds:
@@ -207,7 +187,7 @@
             block: true
 
 - job-template:
-    name: 'genesis-{installer}-build'
+    name: 'genesis-foreman-build'
 
     project-type: freestyle
 
@@ -220,7 +200,9 @@
         artifactNumToKeep: -1
 
     parameters:
-        - genesis-parameters:
+        - project-parameter:
+            project: '{project}'
+        - foreman-parameters:
             installer: '{installer}'
 
     scm:
@@ -232,15 +214,15 @@
             refspec: $GERRIT_REFSPEC
 
     builders:
-        - 'build'
-        - 'upload-artifact'
+        - 'foreman-build'
+        - 'foreman-upload-artifact'
 
 - job-template:
-    name: 'genesis-{installer}-deploy'
+    name: 'genesis-foreman-deploy'
 
     project-type: freestyle
 
-    disabled: true
+    disabled: false
 
     node: opnfv-jump-2
 
@@ -251,7 +233,9 @@
         artifactNumToKeep: -1
 
     parameters:
-        - genesis-parameters:
+        - project-parameter:
+            project: '{project}'
+        - foreman-parameters:
             installer: '{installer}'
 
     scm:
@@ -263,13 +247,13 @@
             refspec: $GERRIT_REFSPEC
 
     builders:
-        - 'deploy'
+        - 'foreman-deploy'
 
 ########################
 # parameter macros
 ########################
 - parameter:
-    name: genesis-parameters
+    name: foreman-parameters
     parameters:
         - string:
             name: INSTALLER
@@ -281,11 +265,11 @@
             description: "Directory where the build artifact will be located upon the completion of the build."
         - string:
             name: CACHE_DIRECTORY
-            default: '$HOME/opnfv/cache/genesis-{installer}'
+            default: $HOME/opnfv/cache/genesis-$INSTALLER
             description: "Directory where the cache to be used during the build is located."
         - string:
             name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/genesis
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
         - string:
             name: GERRIT_BRANCH
@@ -297,74 +281,14 @@
             description: "Refspec to retrieve."
         - string:
             name: GS_URL
-            default: 'artifacts.opnfv.org/genesis/{installer}'
+            default: artifacts.opnfv.org/$PROJECT/$INSTALLER
             description: "URL to Google Storage."
 
 ########################
 # builder macros
 ########################
 - builder:
-    name: 'verify'
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-            set -x
-
-            # get the dependencies - temporary fix for RC0
-            [[ -d $WORKSPACE/$INSTALLER/build ]] || mkdir -p $WORKSPACE/$INSTALLER/build
-            cp /home/jenkins/Downloads/opnfv_iso/* $WORKSPACE/$INSTALLER/build/
-
-            # below lines perhaps need to be enabled in order to fetch images from internet
-            # as we are having disk space issues on ericsson-build slave
-            #wget http://ftp.riken.jp/Linux/centos/7.0.1406/isos/x86_64/CentOS-7.0-1406-x86_64-Minimal.iso
-            #wget http://download.virtualbox.org/virtualbox/rpm/fedora/20/x86_64/VirtualBox-4.3-4.3.26_98988_fedora18-1.x86_64.rpm
-            #wget http://repos.duss-janser.ch/vagrant/vagrant_1.7.2_x86_64.rpm
-
-            # do the build
-            cd $WORKSPACE/$INSTALLER/ci
-            ./build.sh $BUILD_DIRECTORY
-
-            # list the build artifacts
-            ls -al $BUILD_DIRECTORY
-
-            # remove the BUILD_DIRECTORY to reclaim some space
-            /bin/rm -rf $BUILD_DIRECTORY
-
-- builder:
-    name: 'merge'
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-            set -x
-
-            # get the dependencies - temporary fix for RC0
-            [[ -d $WORKSPACE/$INSTALLER/build ]] || mkdir -p $WORKSPACE/$INSTALLER/build
-            cp /home/jenkins/Downloads/opnfv_iso/* $WORKSPACE/$INSTALLER/build/
-
-            # below lines perhaps need to be enabled in order to fetch images from internet
-            # as we are having disk space issues on ericsson-build slave
-            #wget http://ftp.riken.jp/Linux/centos/7.0.1406/isos/x86_64/CentOS-7.0-1406-x86_64-Minimal.iso
-            #wget http://download.virtualbox.org/virtualbox/rpm/fedora/20/x86_64/VirtualBox-4.3-4.3.26_98988_fedora18-1.x86_64.rpm
-            #wget http://repos.duss-janser.ch/vagrant/vagrant_1.7.2_x86_64.rpm
-
-            # do the build
-            cd $WORKSPACE/$INSTALLER/ci
-            ./build.sh $BUILD_DIRECTORY
-
-            # list the build artifacts
-            ls -al $BUILD_DIRECTORY
-
-            # remove the BUILD_DIRECTORY to reclaim some space
-            /bin/rm -rf $BUILD_DIRECTORY
-
-- builder:
-    name: 'build'
+    name: 'foreman-build'
     builders:
         - shell: |
             #!/bin/bash
@@ -373,7 +297,7 @@
             set -o pipefail
 
             # log info to console
-            echo "Starting build of $INSTALLER. This could take some time..."
+            echo "Starting the build of $INSTALLER. This could take some time..."
             echo "--------------------------------------------------------"
             echo
 
@@ -387,6 +311,9 @@
             cd $WORKSPACE/$INSTALLER/ci
             ./build.sh -v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
 
+            # list the contents of BUILD_OUTPUT directory
+            ls -al $BUILD_DIRECTORY
+
             # save information regarding artifact into file
             (
                 echo "OPNFV_ARTIFACT_VERSION=$OPNFV_ARTIFACT_VERSION"
@@ -395,7 +322,6 @@
                 echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
                 echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso | cut -d' ' -f1)"
                 echo "OPNFV_BUILD_URL=$BUILD_URL"
-                echo "OPNFV_BUILD=OK"
             ) > $WORKSPACE/opnfv.properties
 
             echo
@@ -403,7 +329,7 @@
             echo "Done!"
 
 - builder:
-    name: 'deploy'
+    name: 'foreman-deploy'
     builders:
         - shell: |
             #!/bin/bash
@@ -412,7 +338,7 @@
             set -o pipefail
 
             # log info to console
-            echo "Startint the deployment. This could take some time..."
+            echo "Starting the deployment using $INSTALLER. This could take some time..."
             echo "--------------------------------------------------------"
             echo
 
@@ -427,7 +353,7 @@
             echo "Done!"
 
 - builder:
-    name: 'upload-artifact'
+    name: 'foreman-upload-artifact'
     builders:
         - shell: |
             #!/bin/bash
@@ -436,24 +362,17 @@
             set -o pipefail
 
             # log info to console
-            echo "Uploading artifact. This could take some time..."
+            echo "Uploading the $INSTALLER artifact. This could take some time..."
             echo "--------------------------------------------------------"
             echo
-
-            # list the build output
-            ls -al $BUILD_DIRECTORY
 
             # source the opnfv.properties to get ARTIFACT_VERSION
             source $WORKSPACE/opnfv.properties
 
-            # copy artifact property file as latest.properties
-            # so we can directly get info regarding latest artifact
-            /bin/cp -f $WORKSPACE/opnfv.properties $WORKSPACE/latest.properties
-
             # upload artifact and additional files to google storage
             gsutil cp $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
             gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
-            gsutil cp $WORKSPACE/latest.properties gs://$GS_URL/latest.properties > gsutil.latest.log 2>&1
+            gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/latest.properties > gsutil.latest.log 2>&1
 
             echo
             echo "--------------------------------------------------------"
