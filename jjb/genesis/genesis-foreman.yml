@@ -47,10 +47,10 @@
     parameters:
         - project-parameter:
             project: '{project}'
-        - foreman-parameters:
-            installer: '{installer}'
         - gerrit-parameter:
             branch: 'master'
+        - foreman-parameter:
+            installer: '{installer}'
 
     scm:
         - gerrit-trigger-scm:
@@ -105,10 +105,10 @@
     parameters:
         - project-parameter:
             project: '{project}'
-        - foreman-parameters:
-            installer: '{installer}'
         - gerrit-parameter:
             branch: 'master'
+        - foreman-parameter:
+            installer: '{installer}'
 
     scm:
         - gerrit-trigger-scm:
@@ -153,19 +153,17 @@
     parameters:
         - project-parameter:
             project: '{project}'
-        - foreman-parameters:
+        - foreman-parameter:
             installer: '{installer}'
 
     scm:
-        - git:
-            skip-tag: true
-            url: $GIT_BASE
-            branches:
-                - $GERRIT_BRANCH
-            refspec: $GERRIT_REFSPEC
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: master
 
     triggers:
-        - pollscm: '@midnight'
+        - timed: '@midnight'
 
     logrotate:
         daysToKeep: 30
@@ -202,16 +200,14 @@
     parameters:
         - project-parameter:
             project: '{project}'
-        - foreman-parameters:
+        - foreman-parameter:
             installer: '{installer}'
 
     scm:
-        - git:
-            skip-tag: true
-            url: $GIT_BASE
-            branches:
-                - $GERRIT_BRANCH
-            refspec: $GERRIT_REFSPEC
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: master
 
     builders:
         - 'foreman-build'
@@ -235,16 +231,14 @@
     parameters:
         - project-parameter:
             project: '{project}'
-        - foreman-parameters:
+        - foreman-parameter:
             installer: '{installer}'
 
     scm:
-        - git:
-            skip-tag: true
-            url: $GIT_BASE
-            branches:
-                - $GERRIT_BRANCH
-            refspec: $GERRIT_REFSPEC
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: master
 
     builders:
         - 'foreman-deploy'
@@ -253,7 +247,7 @@
 # parameter macros
 ########################
 - parameter:
-    name: foreman-parameters
+    name: foreman-parameter
     parameters:
         - string:
             name: INSTALLER
@@ -271,14 +265,6 @@
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
-        - string:
-            name: GERRIT_BRANCH
-            default: origin/master
-            description: "Branch to build, deploy and test."
-        - string:
-            name: GERRIT_REFSPEC
-            default: refs/heads/master
-            description: "Refspec to retrieve."
         - string:
             name: GS_URL
             default: artifacts.opnfv.org/$PROJECT/$INSTALLER
