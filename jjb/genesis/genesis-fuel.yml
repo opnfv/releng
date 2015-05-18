@@ -244,7 +244,7 @@
             installer: '{installer}'
         - string:
             name: GIT_BASE
-            default: ssh://gerrit.opnfv.org/gerrit/$PROJECT
+            default: ssh://gerrit.opnfv.org:29418/$PROJECT
             description: "POD1 has some issues with cloning using https so that's why GIT_BASE is overriden here again."
 
     scm:
@@ -458,7 +458,7 @@
             echo
 
             # get the latest.properties file in order to get info regarding latest artifact
-            gsutil cp gs://$GS_URL/latest.properties $WORKSPACE/latest.properties
+            curl -s -o $WORKSPACE/latest.properties http://$GS_URL/latest.properties
 
             # check if we got the file
             [[ -f latest.properties ]] || exit 1
@@ -467,7 +467,7 @@
             source latest.properties
 
             # download the file
-            gsutil cp gs://$OPNFV_ARTIFACT_URL $WORKSPACE/opnfv.iso > gsutil.iso.log 2>&1
+            curl -s -o $WORKSPACE/opnfv.iso http://$OPNFV_ARTIFACT_URL > gsutil.iso.log 2>&1
 
             # list the file
             ls -al $WORKSPACE/opnfv.iso
