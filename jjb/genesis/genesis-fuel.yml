@@ -190,6 +190,13 @@
           - project: 'genesis-fuel-deploy-virtual'
             git-revision: true
             block: false
+        - trigger-builds:
+          - project: 'genesis-fuel-deploy'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'functest-opnfv-jump-1'
+            block: true
 
 - job-template:
     name: 'genesis-fuel-build'
@@ -226,7 +233,7 @@
 
     project-type: freestyle
 
-    disabled: true
+    disabled: false
 
     node: opnfv-jump-1
 
@@ -235,6 +242,10 @@
             project: '{project}'
         - fuel-parameter:
             installer: '{installer}'
+        - string:
+            name: GIT_BASE
+            default: ssh://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "POD1 has some issues with cloning using https so that's why GIT_BASE is overriden here again."
 
     scm:
         - git-scm:
@@ -280,7 +291,6 @@
         artifactNumToKeep: -1
 
     builders:
-        - 'fuel-download-artifact'
         - 'fuel-deploy-virtual'
 
 ########################
@@ -376,7 +386,7 @@
             export TOPDIR=$WORKSPACE/fuel/prototypes/auto-deploy
 
             # log info to console
-            echo "Startint the deployment using $INSTALLER. This could take some time..."
+            echo "Starting the deployment using $INSTALLER. This could take some time..."
             echo "--------------------------------------------------------"
             echo
 
@@ -397,7 +407,7 @@
             set -o pipefail
 
             # log info to console
-            echo "Startint the deployment on virtual environment using $INSTALLER. This could take some time..."
+            echo "Starting the deployment on virtual environment using $INSTALLER. This could take some time..."
             echo "--------------------------------------------------------"
             echo
 
@@ -457,7 +467,7 @@
             source latest.properties
 
             # download the file
-            gsutil cp gs://$OPNFV_ARTIFACT_URL $WORKSPACE/opnfv.iso
+            gsutil cp gs://$OPNFV_ARTIFACT_URL $WORKSPACE/opnfv.iso > gsutil.iso.log 2>&1
 
             # list the file
             ls -al $WORKSPACE/opnfv.iso
