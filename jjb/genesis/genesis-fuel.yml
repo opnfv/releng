@@ -350,9 +350,6 @@
             # list the build artifacts
             ls -al $BUILD_DIRECTORY
 
-            # list the contents of BUILD_OUTPUT directory
-            ls -al $BUILD_DIRECTORY
-
             # save information regarding artifact into file
             (
                 echo "OPNFV_ARTIFACT_VERSION=$OPNFV_ARTIFACT_VERSION"
@@ -376,6 +373,9 @@
             set -o nounset
             set -o pipefail
 
+            # remove the fuel master ssh key from $HOME/.ssh/known_hosts
+            ssh-keygen -R 172.30.200.206
+
             # source the file so we get OPNFV vars
             source latest.properties
 
@@ -391,7 +391,7 @@
             echo
 
             # start the deployment
-            echo "sudo  ${TOPDIR}/deploy/deploy.sh $WORKSPACE/opnfv.iso ${TOPDIR}/configs/lf_pod1/dea.yaml ${TOPDIR}/configs/lf_pod1/dha.yaml"
+            sudo  ${TOPDIR}/deploy/deploy.sh $WORKSPACE/opnfv.iso ${TOPDIR}/configs/lf_pod1/dea.yaml ${TOPDIR}/configs/lf_pod1/dha.yaml
 
             echo
             echo "--------------------------------------------------------"
