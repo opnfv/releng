@@ -281,6 +281,10 @@
     builders:
         - shell: |
             echo "Functest: prepare Functest environment"
+            rm $HOME/functest/config_functest.py 2&>/dev/null
+            rm $HOME/functest/functest.yaml 2&>/dev/null
+            wget https://git.opnfv.org/cgit/functest/plain/testcases/config_functest.py -P $HOME/functest/
+            wget https://git.opnfv.org/cgit/functest/plain/testcases/functest.yaml -P $HOME/functest/
             source $HOME/functest/opnfv-openrc.sh
             python $HOME/functest/config_functest.py -d start
             echo "Functest: run Functest Rally Bench suites"
