@@ -118,6 +118,12 @@
 
     node: '{pod}'
 
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: master
+
     logrotate:
         daysToKeep: 30
         numToKeep: 10
@@ -282,23 +288,37 @@
         - shell: |
             echo "Functest: prepare Functest environment"
             mkdir -p $HOME/functest/
-            rm -f $HOME/functest/config_functest.py
-            rm -f $HOME/functest/functest.yaml
-            wget https://git.opnfv.org/cgit/functest/plain/testcases/config_functest.py -P $HOME/functest/
-            wget https://git.opnfv.org/cgit/functest/plain/testcases/functest.yaml -P $HOME/functest/
             source $HOME/functest/opnfv-openrc.sh
-            python $HOME/functest/config_functest.py -d start
+
+            # WORKSPACE is the root of the functest repo
+            # go into WORKSPACE where the functest repo is cloned
+            cd $WORKSPACE
+
+            # prepare
+            echo "Functest: prepare Functest environment"
+            python $WORKSPACE/testcases/config_functest.py --debug --config-file $WORKSPACE/testcases/functest.yaml start
+
+            # tempest
             echo "Functest: run Tempest suite"
             rally verify start smoke
             rally verify list
+
+            # vPing
             echo "Functest: run vPing"
-            python $HOME/.functest/vPing/vPing.py -d
+            python $WORKSPACE/testcases/vPing/CI/libraries/vPing.py --debug --config-file $WORKSPACE/testcases/functest.yaml start
+
+            # rally
             echo "Functest: run Functest Rally Bench suites"
             python $HOME/.functest/Rally_test/run_rally.py -d all
+
+            # ODL
             echo "Functest: run ODL suite"
-            bash $HOME/.functest/ODL/start_tests.sh
+            $WORKSPACE/testcases/Controllers/ODL/CI/start_tests.sh
+
+            # collect results
             echo "Functest: copy results and clean Functest environment"
             mkdir -p $HOME/functest/results
             cp $HOME/.functest/Rally_test/results/* $HOME/functest/
-            python $HOME/functest/config_functest.py -d -f clean
 
+            # cleanup
+            python $WORKSPACE/testcases/config_functest.py --debug --force clean
