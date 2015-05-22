@@ -288,15 +288,15 @@
             wget https://git.opnfv.org/cgit/functest/plain/testcases/functest.yaml -P $HOME/functest/
             source $HOME/functest/opnfv-openrc.sh
             python $HOME/functest/config_functest.py -d start
-            echo "Functest: run Functest Rally Bench suites"
-            python $HOME/.functest/Rally_test/run_rally.py -d all
             echo "Functest: run Tempest suite"
             rally verify start smoke
             rally verify list
             echo "Functest: run vPing"
             python $HOME/.functest/vPing/vPing.py -d
+            echo "Functest: run Functest Rally Bench suites"
+            python $HOME/.functest/Rally_test/run_rally.py -d all
             echo "Functest: run ODL suite"
-            $HOME/.functest/ODL/start_tests.sh
+            bash $HOME/.functest/ODL/start_tests.sh
             echo "Functest: copy results and clean Functest environment"
             mkdir -p $HOME/functest/results
             cp $HOME/.functest/Rally_test/results/* $HOME/functest/
