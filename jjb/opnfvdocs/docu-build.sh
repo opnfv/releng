@@ -41,6 +41,9 @@ for file in "${{files[@]}}"; do
 	cat gsoutput.txt
 	rm -f gsoutput.txt
 
+  links+="http://artifacts.opnfv.org/"$project"/"$gs_cp_folder".html \n"
+  links+="http://artifacts.opnfv.org/"$project"/"$gs_cp_folder".pdf \n"
+
 done
 
 images=()
@@ -61,3 +64,5 @@ for img in "${{images[@]}}"; do
         rm -f gsoutput.txt
 
 done
+
+echo -e "$links"
