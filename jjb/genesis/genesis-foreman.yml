@@ -155,7 +155,7 @@
 
     project-type: freestyle
 
-    node: gce-opnfv-docker-1
+    node: ericsson-build
 
     disabled: false
 
@@ -181,6 +181,10 @@
         artifactNumToKeep: -1
 
     builders:
+        - trigger-builds:
+          - project: 'genesis-foreman-build'
+            git-revision: true
+            block: true
         - trigger-builds:
           - project: 'genesis-foreman-deploy'
             git-revision: true
@@ -238,6 +242,10 @@
             project: '{project}'
         - foreman-parameter:
             installer: '{installer}'
+        - string:
+            name: GIT_BASE
+            default: ssh://gerrit.opnfv.org:29418/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
 
     scm:
         - git-scm:
