@@ -8,6 +8,11 @@ export PATH=$PATH:/usr/local/bin/
 git_sha1="$(git rev-parse HEAD)"
 docu_build_date="$(date)"
 
+if $GERRIT_EVENT_TYPE="patchset-created"; then
+    patchset="/$GERRIT_CHANGE_NUMBER/"
+fi
+
+
 files=()
 while read -r -d ''; do
 	files+=("$REPLY")
@@ -28,7 +33,7 @@ for file in "${{files[@]}}"; do
 	gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".html
 	gsutil setmeta -h "Content-Type:text/html" \
 			-h "Cache-Control:private, max-age=0, no-transform" \
-			gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".html
+			gs://artifacts.opnfv.org/"$project""$patchset"/"$gs_cp_folder".html
 	cat gsoutput.txt
 	rm -f gsoutput.txt
 
@@ -37,9 +42,12 @@ for file in "${{files[@]}}"; do
 	gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".pdf
 	gsutil setmeta -h "Content-Type:application/pdf" \
 			-h "Cache-Control:private, max-age=0, no-transform" \
-			gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".pdf
+			gs://artifacts.opnfv.org/"$project""$patchset"/"$gs_cp_folder".pdf
 	cat gsoutput.txt
 	rm -f gsoutput.txt
+
+  links+="http://artifacts.opnfv.org/"$project""$patchset"/"$gs_cp_folder".html \n"
+  links+="http://artifacts.opnfv.org/"$project""$patchset"/"$gs_cp_folder".pdf \n"
 
 done
 
@@ -61,3 +69,5 @@ for img in "${{images[@]}}"; do
         rm -f gsoutput.txt
 
 done
+
+echo -e "$links"
