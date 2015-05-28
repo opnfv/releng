@@ -70,4 +70,12 @@ for img in "${{images[@]}}"; do
 
 done
 
+if [[ $GERRIT_EVENT_TYPE = "change-merged" ]] ; then
+    patchset="/$GERRIT_CHANGE_NUMBER"
+    if [ ! -z "$patchset" ]; then
+      gsutil rm gs://artifacts.opnfv.org/"$project""$patchset"/**
+    fi
+fi
+
 echo -e "$links"
+
