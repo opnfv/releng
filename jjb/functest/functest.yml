@@ -305,22 +305,22 @@
             echo "Functest: prepare Functest environment"
             python $WORKSPACE/testcases/config_functest.py --debug $WORKSPACE/ start
 
+            # vPing
+            echo "Functest: run vPing"
+            python $WORKSPACE/testcases/vPing/CI/libraries/vPing.py --debug $WORKSPACE/
+
+            # ODL
+            echo "Functest: run ODL suite"
+            $WORKSPACE/testcases/Controllers/ODL/CI/start_tests.sh
+
             # tempest
             echo "Functest: run Tempest suite"
             rally verify start smoke
             rally verify list
 
-            # vPing
-            echo "Functest: run vPing"
-            python $WORKSPACE/testcases/vPing/CI/libraries/vPing.py --debug $WORKSPACE/
-
             # rally
             echo "Functest: run Functest Rally Bench suites"
             python $WORKSPACE/testcases/VIM/OpenStack/CI/libraries/run_rally.py --debug $WORKSPACE/ all
-
-            # ODL
-            echo "Functest: run ODL suite"
-            $WORKSPACE/testcases/Controllers/ODL/CI/start_tests.sh
 
             # collect results
             echo "Functest: copy results and clean Functest environment"
