@@ -305,14 +305,14 @@
             echo "Functest: prepare Functest environment"
             python $WORKSPACE/testcases/config_functest.py --debug $WORKSPACE/ start
 
+            # vPing
+            echo "Functest: run vPing"
+            python $WORKSPACE/testcases/vPing/CI/libraries/vPing.py --debug $WORKSPACE/
+
             # tempest
             echo "Functest: run Tempest suite"
             rally verify start smoke
             rally verify list
-
-            # vPing
-            echo "Functest: run vPing"
-            python $WORKSPACE/testcases/vPing/CI/libraries/vPing.py --debug $WORKSPACE/
 
             # rally
             echo "Functest: run Functest Rally Bench suites"
