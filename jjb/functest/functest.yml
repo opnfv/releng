@@ -320,14 +320,14 @@
             echo "Functest: run ODL suite"
             $WORKSPACE/testcases/Controllers/ODL/CI/start_tests.sh
 
+            # rally
+            echo "Functest: run Functest Rally Bench suites"
+            python $WORKSPACE/testcases/VIM/OpenStack/CI/libraries/run_rally.py --debug $WORKSPACE/ all
+
             # tempest
             echo "Functest: run Tempest suite"
             rally verify start smoke
             rally verify list
-
-            # rally
-            echo "Functest: run Functest Rally Bench suites"
-            python $WORKSPACE/testcases/VIM/OpenStack/CI/libraries/run_rally.py --debug $WORKSPACE/ all
 
             # collect results
             echo "Functest: copy results and clean Functest environment"
