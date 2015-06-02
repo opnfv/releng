@@ -15,6 +15,7 @@
         - 'genesis-fuel-daily-{stream}'
         - 'genesis-fuel-build'
         - 'genesis-fuel-deploy'
+        - 'genesis-fuel-enable-odl'
         - 'genesis-fuel-deploy-virtual'
 
     stream:
@@ -191,6 +192,10 @@
             git-revision: true
             block: true
         - trigger-builds:
+          - project: 'genesis-fuel-enable-odl'
+            git-revision: true
+            block: true
+        - trigger-builds:
           - project: 'functest-opnfv-jump-1'
             block: true
 
@@ -258,6 +263,40 @@
     builders:
         - 'fuel-download-artifact'
         - 'fuel-deploy'
+
+- job-template:
+    name: 'genesis-fuel-enable-odl'
+
+    project-type: freestyle
+
+    disabled: false
+
+    node: opnfv-jump-1
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - fuel-parameter:
+            installer: '{installer}'
+        - string:
+            name: GIT_BASE
+            default: ssh://gerrit.opnfv.org:29418/$PROJECT
+            description: "POD1 has some issues with cloning using https so that's why GIT_BASE is overriden here again."
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: master
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - 'fuel-enable-odl'
 
 - job-template:
     name: 'genesis-fuel-deploy-virtual'
@@ -419,6 +458,24 @@
             echo
             echo "--------------------------------------------------------"
             echo "Done!"
+
+- builder:
+    name: 'fuel-enable-odl'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # execute the first script
+            echo "Hello World from first script"
+
+            # wait for odl to be enabled
+            sleep 600
+
+            # execute the second script
+            echo "Hello World from second script"
 
 - builder:
     name: 'fuel-upload-artifact'
