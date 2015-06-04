@@ -17,8 +17,8 @@ files=(
 
 for file in "${{files[@]}}"; do
     gsutil cp -r -L gsoutput.txt $build_dir/$file gs://artifacts.opnfv.org/$project/
-    gsutil setmeta -h "Cache-Control:private, max-age=0, no-transform" \
-	gs://artifacts.opnfv.org/$project/$file
+    #gsutil setmeta -h "Cache-Control:private, max-age=0, no-transform" \
+    #-R gs://artifacts.opnfv.org/$project/$file
     cat gsoutput.txt
     rm -f gsoutput.txt
 done
