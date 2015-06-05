@@ -10,22 +10,26 @@
     installer: 'foreman'
 
     jobs:
-        - 'genesis-foreman-verify'
+        - 'genesis-foreman-verify-{stream}'
         - 'genesis-foreman-merge'
-        - 'genesis-foreman-daily-{stream}'
+        - 'genesis-foreman-daily-master'
         - 'genesis-foreman-build'
         - 'genesis-foreman-deploy'
 
+    # stream:    branch with - in place of / (eg. stable-arno)
+    # branch:    branch (eg. stable/arno)
     stream:
         - master:
             branch: 'master'
+        - stable-arno:
+            branch: 'stable/arno'
 
 ########################
 # job templates
 ########################
 
 - job-template:
-    name: 'genesis-foreman-verify'
+    name: 'genesis-foreman-verify-{stream}'
 
     project-type: freestyle
 
@@ -48,7 +52,7 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{branch}'
         - foreman-parameter:
             installer: '{installer}'
 
@@ -79,7 +83,7 @@
                 project-pattern: 'genesis'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
+                    branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: ANT
                     pattern: 'common/**'
@@ -151,7 +155,7 @@
         - 'foreman-workspace-cleanup'
 
 - job-template:
-    name: 'genesis-foreman-daily-{stream}'
+    name: 'genesis-foreman-daily-master'
 
     project-type: freestyle
 
