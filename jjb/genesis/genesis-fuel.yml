@@ -10,23 +10,27 @@
     installer: 'fuel'
 
     jobs:
-        - 'genesis-fuel-verify'
+        - 'genesis-fuel-verify-{stream}'
         - 'genesis-fuel-merge'
-        - 'genesis-fuel-daily-{stream}'
+        - 'genesis-fuel-daily-master'
         - 'genesis-fuel-build'
         - 'genesis-fuel-deploy'
         - 'genesis-fuel-deploy-virtual'
 
+    # stream:    branch with - in place of / (eg. stable-arno)
+    # branch:    branch (eg. stable/arno)
     stream:
         - master:
             branch: 'master'
+        - stable-arno:
+            branch: 'stable/arno'
 
 ########################
 # job templates
 ########################
 
 - job-template:
-    name: 'genesis-fuel-verify'
+    name: 'genesis-fuel-verify-{stream}'
 
     project-type: freestyle
 
@@ -49,7 +53,7 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{branch}'
         - fuel-parameter:
             installer: '{installer}'
 
@@ -80,7 +84,7 @@
                 project-pattern: 'genesis'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
+                    branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: ANT
                     pattern: 'common/**'
@@ -152,7 +156,7 @@
         - 'fuel-workspace-cleanup'
 
 - job-template:
-    name: 'genesis-fuel-daily-{stream}'
+    name: 'genesis-fuel-daily-master'
 
     project-type: freestyle
 
