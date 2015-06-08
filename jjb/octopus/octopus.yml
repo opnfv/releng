@@ -1,19 +1,27 @@
+################################
+# job configuration for Octopus
+################################
 - project:
     name: octopus
     jobs:
         - 'octopus-test'
-        - 'octopus-daily-{stream}'
-        - 'octopus-merge'
-        - 'octopus-verify'
+        - 'octopus-daily-master'
+        - 'octopus-merge-{stream}'
+        - 'octopus-verify-{stream}'
 
-    # stream:    branch with - in place of / (eg. stable-helium)
-    # branch:    branch (eg. stable/helium)
+    # stream:    branch with - in place of / (eg. stable-arno)
+    # branch:    branch (eg. stable/arno)
     stream:
         - master:
             branch: 'master'
+        - stable-arno:
+            branch: 'stable/arno'
 
     project: 'octopus'
     somevar: 'foo'
+###############################
+# job templates
+###############################
 
 - job-template:
     name: octopus-test
@@ -31,7 +39,7 @@
             echo "Hello world from octopus"
 
 - job-template:
-    name: 'octopus-daily-{stream}'
+    name: 'octopus-daily-master'
 
     node: master
 
@@ -58,7 +66,7 @@
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: '{branch}'
+            branch: master
 
     wrappers:
         - ssh-agent-credentials:
@@ -78,7 +86,7 @@
         - test-macro
 
 - job-template:
-    name: 'octopus-verify'
+    name: 'octopus-verify-{stream}'
 
     node: master
 
@@ -94,7 +102,7 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{branch}'
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
@@ -122,14 +130,14 @@
                 project-pattern: 'octopus'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
+                    branch-pattern: '**/{branch}'
 
     builders:
         - shell:
             !include-raw docu-verify.sh
 
 - job-template:
-    name: 'octopus-merge'
+    name: 'octopus-merge-{stream}'
 
     node: master
 
@@ -149,7 +157,7 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{branch}'
 
     scm:
         - gerrit-trigger-scm:
@@ -172,7 +180,7 @@
                 project-pattern: 'octopus'
                 branches:
                     - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
+                      branch-pattern: '**/{branch}'
 
     builders:
         - shell:
