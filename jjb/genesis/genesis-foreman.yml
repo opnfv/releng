@@ -12,18 +12,19 @@
     jobs:
         - 'genesis-foreman-verify-{stream}'
         - 'genesis-foreman-merge'
-        - 'genesis-foreman-daily-master'
-        - 'genesis-foreman-build'
-        - 'genesis-foreman-deploy'
+        - 'genesis-foreman-daily-{stream}'
+        - 'genesis-foreman-build-{stream}'
+        - 'genesis-foreman-deploy-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
     stream:
         - master:
             branch: 'master'
+            gs-pathname: ''
         - stable-arno:
             branch: 'stable/arno'
-
+            gs-pathname: '/arno'
 ########################
 # job templates
 ########################
@@ -55,7 +56,7 @@
             branch: '{branch}'
         - foreman-parameter:
             installer: '{installer}'
-
+            gs-pathname: '{gs-pathname}'
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
@@ -121,7 +122,7 @@
             branch: 'master'
         - foreman-parameter:
             installer: '{installer}'
-
+            gs-pathname: ''
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
@@ -155,7 +156,7 @@
         - 'foreman-workspace-cleanup'
 
 - job-template:
-    name: 'genesis-foreman-daily-master'
+    name: 'genesis-foreman-daily-{stream}'
 
     project-type: freestyle
 
@@ -168,12 +169,15 @@
             project: '{project}'
         - foreman-parameter:
             installer: '{installer}'
-
+            gs-pathname: '{gs-pathname}'
     scm:
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: master
+            branch: '{branch}'
+
+    triggers:
+       - '{stream}'
 
     logrotate:
         daysToKeep: 30
@@ -195,7 +199,7 @@
             block: true
 
 - job-template:
-    name: 'genesis-foreman-build'
+    name: 'genesis-foreman-build-{stream}'
 
     project-type: freestyle
 
@@ -212,19 +216,19 @@
             project: '{project}'
         - foreman-parameter:
             installer: '{installer}'
-
+            gs-pathname: '{gs-pathname}'
     scm:
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: master
+            branch: '{branch}'
 
     builders:
         - 'foreman-build'
         - 'foreman-upload-artifact'
 
 - job-template:
-    name: 'genesis-foreman-deploy'
+    name: 'genesis-foreman-deploy-{stream}'
 
     project-type: freestyle
 
@@ -243,6 +247,7 @@
             project: '{project}'
         - foreman-parameter:
             installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
         - string:
             name: GIT_BASE
             default: ssh://gerrit.opnfv.org:29418/$PROJECT
@@ -252,7 +257,7 @@
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: master
+            branch: '{branch}'
 
     builders:
         - 'foreman-deploy'
@@ -273,7 +278,7 @@
             description: "Directory where the build artifact will be located upon the completion of the build."
         - string:
             name: CACHE_DIRECTORY
-            default: $HOME/opnfv/cache/genesis-$INSTALLER
+            default: $HOME/opnfv/cache/genesis-$INSTALLER{gs-pathname}
             description: "Directory where the cache to be used during the build is located."
         - string:
             name: GIT_BASE
@@ -281,7 +286,7 @@
             description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
         - string:
             name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT/$INSTALLER
+            default: artifacts.opnfv.org/$PROJECT/$INSTALLER{gs-pathname}
             description: "URL to Google Storage."
 
 ########################
@@ -390,3 +395,15 @@
             # delete everything that is in $WORKSPACE
             /bin/rm -rf $WORKSPACE
 
+########################
+# trigger macros
+########################
+- trigger:
+    name: 'master'
+    triggers:
+        - pollscm: "0 9 * * *"
+
+- trigger:
+    name: 'stable-arno'
+    triggers:
+        - pollscm: "0 21 * * *"
