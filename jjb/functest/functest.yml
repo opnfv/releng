@@ -9,11 +9,13 @@
         - 'opnfv-jump-2'
     jobs:
         - 'functest-{pod}'
-        - 'functest-openstack-bench-test'
-        - 'functest-openstack-tempest-smoke-test'
-        - 'functest-odl-test'
-        - 'functest-vims-test'
-        - 'functest-vping-test'
+        - 'set-functest-env-{pod}'
+        - 'clean-functest-env-{pod}'
+        - 'functest-openstack-bench-test-{pod}'
+        - 'functest-openstack-tempest-smoke-test-{pod}'
+        - 'functest-odl-test-{pod}'
+        - 'functest-vims-test-{pod}'
+        - 'functest-vping-test-{pod}'
         - 'functest-daily-master'
         - 'functest-merge'
         - 'functest-verify-{stream}'
@@ -32,11 +34,11 @@
 # job template
 ################################
 - job-template:
-    name: functest-openstack-bench-test
+    name: set-functest-env-{pod}
 
     project-type: freestyle
 
-    node: opnfv-jump-2
+    node: '{pod}'
 
     logrotate:
         daysToKeep: 30
@@ -46,14 +48,58 @@
 
     builders:
         - shell: |
-            python $HOME/.functest/run_rally.py all
+            #!/bin/bash
+            set +e
+
+            echo "Functest: prepare Functest environment"
+            mkdir -p $HOME/functest/
+            source $HOME/functest/opnfv-openrc.sh
+
+            # WORKSPACE is the root of the functest repo
+            # go into WORKSPACE where the functest repo is cloned
+            cd $WORKSPACE
+
+           # prepare
+           echo "Functest: prepare Functest environment"
+           python $WORKSPACE/testcases/config_functest.py --debug $WORKSPACE/ start
+            
+- job-template:
+    name: clean-functest-env-{pod}
+
+    project-type: freestyle
+
+    node: '{pod}'
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            set +e
+
+	    # collect results
+            echo "Functest: copy results and clean Functest environment"
+            mkdir -p $HOME/functest/results
+
+            # save ODL results
+            cp -Rf $WORSPACE/testcases/Controllers/ODL/CI/logs $HOME/functest/results/ODL
+
+            # save tempest.conf for further troubleshooting
+            cp $HOME/.rally/tempest/for-deployment-*/tempest.conf $HOME/functest/results
+
+            # cleanup
+            python $WORKSPACE/testcases/config_functest.py --debug --force $WORKSPACE/ clean
 
 - job-template:
-    name: functest-openstack-tempest-smoke-test
+    name: functest-openstack-bench-test-{pod}
 
     project-type: freestyle
 
-    node: opnfv-jump-2
+    node: '{pod}'
 
     logrotate:
         daysToKeep: 30
@@ -63,15 +109,62 @@
 
     builders:
         - shell: |
+            #!/bin/bash
+            set +e
+
+            echo "Functest: run Functest Rally Bench suites"
+            python $WORKSPACE/testcases/VIM/OpenStack/CI/libraries/run_rally.py --debug $WORKSPACE/ all
+
+- job-template:
+    name: functest-openstack-tempest-smoke-test-{pod}
+
+    project-type: freestyle
+
+    node: '{pod}'
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            set +e
+
+            # tempest
+            echo "Functest: run Tempest suite"
             rally verify start smoke
             rally verify list
 
 - job-template:
-    name: functest-odl-test
+    name: functest-odl-test-{pod}
 
     project-type: freestyle
 
-    node: opnfv-jump-2
+    node: '{pod}'
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            set +e
+
+            echo "Functest: run ODL suite"
+            $WORKSPACE/testcases/Controllers/ODL/CI/start_tests.sh
+
+- job-template:
+    name: functest-vims-test-{pod}
+
+    project-type: freestyle
+
+    node: '{pod}'
 
     logrotate:
         daysToKeep: 30
@@ -83,12 +176,13 @@
         - shell: |
             echo "put your CI scenario here"
 
+
 - job-template:
-    name: functest-vims-test
+    name: functest-vping-test-{pod}
 
     project-type: freestyle
 
-    node: opnfv-jump-2
+    node: '{pod}'
 
     logrotate:
         daysToKeep: 30
@@ -98,25 +192,12 @@
 
     builders:
         - shell: |
-            echo "put your CI scenario here"
+            #!/bin/bash
+            set +e
 
-
-- job-template:
-    name: functest-vping-test
-
-    project-type: freestyle
-
-    node: opnfv-jump-2
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    builders:
-        - shell: |
-            python $HOME/.functest/vPing/vPing.py
+            # vPing
+            echo "Functest: run vPing"
+            python $WORKSPACE/testcases/vPing/CI/libraries/vPing.py --debug $WORKSPACE/
 
 - job-template:
     name: functest-{pod}
@@ -333,8 +414,14 @@
             echo "Functest: copy results and clean Functest environment"
             mkdir -p $HOME/functest/results
 
+            # save ODL results
+            cp -Rf $WORSPACE/testcases/Controllers/ODL/CI/logs $HOME/functest/results/ODL
+
             # save tempest.conf for further troubleshooting
             cp $HOME/.rally/tempest/for-deployment-*/tempest.conf $HOME/functest/results
+            
+            # push results to artifact
+            !include-raw res-build.sh
 
             # cleanup
             python $WORKSPACE/testcases/config_functest.py --debug --force $WORKSPACE/ clean
