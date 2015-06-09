@@ -32,6 +32,7 @@
 
 - job-template:
     name: 'copper-daily-{stream}'
+    node: master
 
     # Job template for daily builders
     #
@@ -69,16 +70,14 @@
         - test-macro
 
     builders:
-        - shell: |
-            pwd
-            find .
-            echo "Hello world from copper {somevar} daily"
+        - shell: !include-raw ../opnfvdocs/docu-build.sh
 
     postbuilders:
         - test-macro
 
 - job-template:
     name: 'copper-verify'
+    node: master
 
     project-type: freestyle
 
@@ -123,13 +122,12 @@
                     branch-pattern: '**/master'
 
     builders:
-        - shell: |
-            pwd
-            find .
-            echo "verify logic goes here"
+        - shell: !include-raw ../opnfvdocs/docu-verify.sh
+
 
 - job-template:
     name: 'copper-merge'
+    node: master
 
     # builder-merge job to run JJB update
     #
@@ -173,13 +171,4 @@
                       branch-pattern: '**/master'
 
     builders:
-        - shell: |
-            pwd
-            find .
-            echo "merge logic goes here"
-
-
-
-
-
-
+        - shell: !include-raw ../opnfvdocs/docu-build.sh
