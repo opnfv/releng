@@ -8,6 +8,15 @@ export PATH=$PATH:/usr/local/bin/
 git_sha1="$(git rev-parse HEAD)"
 docu_build_date="$(date)"
 
+if [[ $GERRIT_EVENT_TYPE != "change-merged" ]] ; then
+	if [[ $GERRIT_BRANCH != "master" ]] ; then
+		gerrit_branch=`echo "$GERRIT_BRANCH" | awk -F'/' '{print $NF}'`
+		gs_path="$project/$gerrit_branch"
+	else
+		gs_path="$project"
+	fi
+fi
+
 files=()
 while read -r -d ''; do
 	files+=("$REPLY")
@@ -25,19 +34,19 @@ for file in "${{files[@]}}"; do
 	# rst2html part
 	echo "rst2html $file"
 	rst2html $file | gsutil cp -L gsoutput.txt - \
-	gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".html
+	gs://artifacts.opnfv.org/"$gs_path"/"$gs_cp_folder".html
 	gsutil setmeta -h "Content-Type:text/html" \
 			-h "Cache-Control:private, max-age=0, no-transform" \
-			gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".html
+			gs://artifacts.opnfv.org/"$gs_path"/"$gs_cp_folder".html
 	cat gsoutput.txt
 	rm -f gsoutput.txt
 
 	echo "rst2pdf $file"
 	rst2pdf $file -o - | gsutil cp -L gsoutput.txt - \
-	gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".pdf
+	gs://artifacts.opnfv.org/"$gs_path"/"$gs_cp_folder".pdf
 	gsutil setmeta -h "Content-Type:application/pdf" \
 			-h "Cache-Control:private, max-age=0, no-transform" \
-			gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder".pdf
+			gs://artifacts.opnfv.org/"$gs_path"/"$gs_cp_folder".pdf
 	cat gsoutput.txt
 	rm -f gsoutput.txt
 
@@ -53,10 +62,10 @@ for img in "${{images[@]}}"; do
 	# uploading found images
 	echo "uploading $img"
         cat "$img" | gsutil cp -L gsoutput.txt - \
-        gs://artifacts.opnfv.org/"$project"/"$img"
+        gs://artifacts.opnfv.org/"$gs_path"/"$img"
         gsutil setmeta -h "Content-Type:image/jpeg" \
                         -h "Cache-Control:private, max-age=0, no-transform" \
-                        gs://artifacts.opnfv.org/"$project"/"$img"
+                        gs://artifacts.opnfv.org/"$gs_path"/"$img"
         cat gsoutput.txt
         rm -f gsoutput.txt
 
