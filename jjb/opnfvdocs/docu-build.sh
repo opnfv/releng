@@ -8,10 +8,9 @@ export PATH=$PATH:/usr/local/bin/
 git_sha1="$(git rev-parse HEAD)"
 docu_build_date="$(date)"
 
-if [[ $GERRIT_EVENT_TYPE != "change-merged" ]] ; then
-    patchset="/$GERRIT_CHANGE_NUMBER"
+if [[ $JOB_NAME =~ "verify" ]] ; then
+      patchset="/$GERRIT_CHANGE_NUMBER"
 fi
-
 
 files=()
 while read -r -d ''; do
@@ -61,10 +60,10 @@ for img in "${{images[@]}}"; do
 	# uploading found images
 	echo "uploading $img"
         cat "$img" | gsutil cp -L gsoutput.txt - \
-        gs://artifacts.opnfv.org/"$project"/"$img"
+        gs://artifacts.opnfv.org/"$project""$patchset"/"$img"
         gsutil setmeta -h "Content-Type:image/jpeg" \
                         -h "Cache-Control:private, max-age=0, no-transform" \
-                        gs://artifacts.opnfv.org/"$project"/"$img"
+                        gs://artifacts.opnfv.org/"$project""$patchset"/"$img"
         cat gsoutput.txt
         rm -f gsoutput.txt
 
@@ -73,7 +72,10 @@ done
 if [[ $GERRIT_EVENT_TYPE = "change-merged" ]] ; then
     patchset="/$GERRIT_CHANGE_NUMBER"
     if [ ! -z "$patchset" ]; then
-      gsutil rm gs://artifacts.opnfv.org/"$project""$patchset"/**
+      gsutil rm gs://artifacts.opnfv.org/"$project""$patchset"/** || true
+      if [ ! -z "$img" ]; then
+        gs://artifacts.opnfv.org/"$project""$patchset"/"$img"/** || true
+      fi
     fi
 fi
 
