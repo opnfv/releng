@@ -8,9 +8,10 @@ export PATH=$PATH:/usr/local/bin/
 git_sha1="$(git rev-parse HEAD)"
 docu_build_date="$(date)"
 
-if [[ $JOB_NAME =~ "verify" ]] ; then
-      patchset="/$GERRIT_CHANGE_NUMBER"
+if [[ $GERRIT_EVENT_TYPE != "change-merged" ]] ; then
+    patchset="/$GERRIT_CHANGE_NUMBER"
 fi
+
 
 files=()
 while read -r -d ''; do
