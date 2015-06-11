@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a045101_fd791cfd",
+        "filename": "jjb/octopus/docu-build.sh",
+        "patchSetId": 5
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2015-06-11T07:37:21Z",
+      "side": 1,
+      "message": "I think this part of the code is problematic/buggy since docu-build.sh script is used by both merge and daily jobs. What happens when merge jobs get triggered by a change-merged event? gs_path remains unset causing the storage of generated documents in the root of artifacts.opnfv.org. \n\nApart from being problematic, checking GERRIT_EVENT_TYPE is unnecessary as well as we don\u0027t care why the job gets triggered since merge and daily jobs store documents by default in different paths. We just need to care about the directory where the documents should be stored.\n\nA more general comment: when I sent opnfvdocs docu-build.sh script as example, the idea was to do something similar: use one common script for verify, merge, and daily jobs and store generated documents correctly.\n\nIf you want to go an extra step; you can skip docu scripts from octopus and directly work with opnfvdocs docu-build.sh script - but this might be a bit stretching. If you go this way then you need to care about GERRIT_EVENT_TYPE.",
+      "revId": "7640d17ece37a02afe8d065c32cf952b1f851068",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
