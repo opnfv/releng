@@ -25,7 +25,7 @@
             gs-pathname: ''
         - stable-arno:
             branch: 'stable/arno'
-            gs-pathname: 'arno'
+            gs-pathname: '/arno'
 
 ########################
 # job templates
@@ -179,7 +179,7 @@
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: master
+            branch: '{branch}'
 
     logrotate:
         daysToKeep: 30
@@ -224,7 +224,7 @@
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: master
+            branch: '{branch}'
 
     builders:
         - 'fuel-build'
@@ -255,7 +255,7 @@
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: master
+            branch: '{branch}'
 
     logrotate:
         daysToKeep: 30
@@ -321,12 +321,8 @@
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
         - string:
-            name: GS_PATHNAME
-            default: '{gs-pathname}'
-            description: "Subdirectory to store artifacts for different branches."
-        - string:
             name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT/$INSTALLER/$GS_PATHNAME
+            default: artifacts.opnfv.org/$PROJECT/$INSTALLER{gs-pathname}
             description: "URL to Google Storage."
 
 ########################
@@ -439,6 +435,7 @@
         - shell: |
             #!/bin/bash
             set -o errexit
+            set -o nounset
             set -o pipefail
 
             # log info to console
@@ -464,6 +461,7 @@
         - shell: |
             #!/bin/bash
             set -o errexit
+            set -o nounset
             set -o pipefail
 
             # get the latest.properties file in order to get info regarding latest artifact
