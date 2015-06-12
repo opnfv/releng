@@ -12,9 +12,9 @@
     jobs:
         - 'genesis-fuel-verify-{stream}'
         - 'genesis-fuel-merge'
-        - 'genesis-fuel-daily-master'
-        - 'genesis-fuel-build'
-        - 'genesis-fuel-deploy'
+        - 'genesis-fuel-daily-{stream}'
+        - 'genesis-fuel-build-{stream}'
+        - 'genesis-fuel-deploy-{stream}'
         - 'genesis-fuel-deploy-virtual'
 
     # stream:    branch with - in place of / (eg. stable-arno)
@@ -22,8 +22,10 @@
     stream:
         - master:
             branch: 'master'
+            gs-pathname: ''
         - stable-arno:
             branch: 'stable/arno'
+            gs-pathname: 'arno'
 
 ########################
 # job templates
@@ -56,6 +58,7 @@
             branch: '{branch}'
         - fuel-parameter:
             installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
 
     scm:
         - gerrit-trigger-scm:
@@ -122,6 +125,7 @@
             branch: 'master'
         - fuel-parameter:
             installer: '{installer}'
+            gs-pathname: ''
 
     scm:
         - gerrit-trigger-scm:
@@ -156,7 +160,7 @@
         - 'fuel-workspace-cleanup'
 
 - job-template:
-    name: 'genesis-fuel-daily-master'
+    name: 'genesis-fuel-daily-{stream}'
 
     project-type: freestyle
 
@@ -169,6 +173,7 @@
             project: '{project}'
         - fuel-parameter:
             installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
 
     scm:
         - git-scm:
@@ -184,11 +189,11 @@
 
     builders:
         - trigger-builds:
-          - project: 'genesis-fuel-build'
+          - project: 'genesis-fuel-build-{stream}'
             git-revision: true
             block: true
         - trigger-builds:
-          - project: 'genesis-fuel-deploy'
+          - project: 'genesis-fuel-deploy-{stream}'
             git-revision: true
             block: true
         - trigger-builds:
@@ -196,7 +201,7 @@
             block: true
 
 - job-template:
-    name: 'genesis-fuel-build'
+    name: 'genesis-fuel-build-{stream}'
 
     project-type: freestyle
 
@@ -213,6 +218,7 @@
             project: '{project}'
         - fuel-parameter:
             installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
 
     scm:
         - git-scm:
@@ -226,7 +232,7 @@
         - 'fuel-workspace-cleanup'
 
 - job-template:
-    name: 'genesis-fuel-deploy'
+    name: 'genesis-fuel-deploy-{stream}'
 
     project-type: freestyle
 
@@ -239,6 +245,7 @@
             project: '{project}'
         - fuel-parameter:
             installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
         - string:
             name: GIT_BASE
             default: ssh://gerrit.opnfv.org:29418/$PROJECT
@@ -274,6 +281,7 @@
             project: '{project}'
         - fuel-parameter:
             installer: '{installer}'
+            gs-pathname: ''
 
     scm:
         - git-scm:
@@ -313,8 +321,12 @@
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
         - string:
+            name: GS_PATHNAME
+            default: '{gs-pathname}'
+            description: "Subdirectory to store artifacts for different branches."
+        - string:
             name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT/$INSTALLER
+            default: artifacts.opnfv.org/$PROJECT/$INSTALLER/$GS_PATHNAME
             description: "URL to Google Storage."
 
 ########################
@@ -456,11 +468,6 @@
             set -o nounset
             set -o pipefail
 
-            # log info to console
-            echo "Downloading the $INSTALLER artifact. This could take some time..."
-            echo "--------------------------------------------------------"
-            echo
-
             # get the latest.properties file in order to get info regarding latest artifact
             curl -s -o $WORKSPACE/latest.properties http://$GS_URL/latest.properties
 
@@ -469,6 +476,12 @@
 
             # source the file so we get OPNFV vars
             source latest.properties
+
+            # log info to console
+            echo "Downloading the $INSTALLER artifact using URL http://$OPNFV_ARTIFACT_URL"
+            echo "This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
 
             # download the file
             curl -s -o $WORKSPACE/opnfv.iso http://$OPNFV_ARTIFACT_URL > gsutil.iso.log 2>&1
