@@ -25,7 +25,7 @@
             gs-pathname: ''
         - stable-arno:
             branch: 'stable/arno'
-            gs-pathname: 'arno'
+            gs-pathname: '/arno'
 
 ########################
 # job templates
@@ -179,7 +179,7 @@
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: master
+            branch: '{branch}'
 
     logrotate:
         daysToKeep: 30
@@ -224,7 +224,7 @@
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: master
+            branch: '{branch}'
 
     builders:
         - 'fuel-build'
@@ -255,7 +255,7 @@
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: master
+            branch: '{branch}'
 
     logrotate:
         daysToKeep: 30
@@ -326,7 +326,7 @@
             description: "Subdirectory to store artifacts for different branches."
         - string:
             name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT/$INSTALLER/$GS_PATHNAME
+            default: artifacts.opnfv.org/$PROJECT/${INSTALLER}${GS_PATHNAME}
             description: "URL to Google Storage."
 
 ########################
