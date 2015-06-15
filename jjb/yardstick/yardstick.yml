@@ -191,7 +191,7 @@
 
     project-type: freestyle
 
-    disabled: true
+    disabled: false
 
     node: '{pod}'
 
@@ -226,5 +226,36 @@
              set -o nounset
              set -o pipefail
 
-             # TODO: will add real stuff here
-             echo "Hello world!"
+            echo "Yardstick: prepare Yardstick environment"
+
+            # source openstack vars
+            source $HOME/yardstick/opnfv-openrc.sh
+
+            # check if cirros-0.3.3 image is already available
+            # if not, create the image
+            echo "Yardstick: configure the image"
+            IMAGE_NAME=cirros-0.3.3
+            if [[ ! $(nova image-show $IMAGE_NAME > /dev/null 2>&1) ]]; then
+                echo "Image $IMAGE_NAME doesn't exist. Creating image $IMAGE_NAME"
+                glance image-create --name cirros-0.3.3 --is-public true --disk-format qcow2 --container-format bare --file $HOME/yardstick/cirros-0.3.3-x86_64-disk.img
+            else
+                echo "Image $IMAGE_NAME exists. Proceeding with yardstick."
+            fi
+
+            # set virtualenv
+            echo "Yardstick: setup virtualenv"
+            cd $WORKSPACE
+            virtualenv $WORKSPACE/yardstick_venv
+            source $WORKSPACE/yardstick_venv/bin/activate
+            python setup.py develop
+
+            # set virtualenv
+            echo "Yardstick: execute ping scenario"
+            yardstick -v -d samples/ping.yaml
+
+            # cleanup
+            echo "Yardstick: cleanup"
+            glance image-delete $IMAGE_NAME"
+
+            # done
+            echo "Yardstick: done!"
