@@ -223,7 +223,6 @@
         - shell: |
             #!/bin/bash
              set -o errexit
-             set -o nounset
              set -o pipefail
 
             echo "Yardstick: prepare Yardstick environment"
@@ -247,7 +246,7 @@
             cd $WORKSPACE
             virtualenv $WORKSPACE/yardstick_venv
             source $WORKSPACE/yardstick_venv/bin/activate
-            python setup.py develop
+            python setup.py develop > /dev/null 2>&1
 
             # set virtualenv
             echo "Yardstick: execute ping scenario"
@@ -255,7 +254,7 @@
 
             # cleanup
             echo "Yardstick: cleanup"
-            glance image-delete $IMAGE_NAME"
+            glance image-delete $IMAGE_NAME
 
             # done
             echo "Yardstick: done!"
