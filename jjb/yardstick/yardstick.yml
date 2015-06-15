@@ -226,5 +226,12 @@
              set -o nounset
              set -o pipefail
 
-             # TODO: will add real stuff here
-             echo "Hello world!"
+            echo "Yardstick: prepare Yardstick environment"
+            mkdir -p $HOME/functest/
+            source $HOME/functest/opnfv-openrc.sh
+
+            cd $WORKSPACE
+            virtualenv $WORKSPACE/yardstick_venv
+            source $WORKSPACE/yardstick_venv/bin/activate
+            python setup.py develop
+            yardstick -v -d samples/ping.yaml
