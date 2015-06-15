@@ -5,7 +5,7 @@
     name: octopus
     jobs:
         - 'octopus-test'
-        - 'octopus-daily-master'
+        - 'octopus-daily-{stream}'
         - 'octopus-merge'
         - 'octopus-verify-{stream}'
 
@@ -14,8 +14,10 @@
     stream:
         - master:
             branch: 'master'
+            gs-pathname: ''
         - stable-arno:
             branch: 'stable/arno'
+            gs-pathname: '/arno'
 
     project: 'octopus'
     somevar: 'foo'
@@ -39,7 +41,7 @@
             echo "Hello world from octopus"
 
 - job-template:
-    name: 'octopus-daily-master'
+    name: 'octopus-daily-{stream}'
 
     node: master
 
@@ -61,19 +63,21 @@
     parameters:
         - project-parameter:
             project: '{project}'
+        - octopus-parameter:
+            gs-pathname: '{gs-pathname}'
 
     scm:
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: master
+            branch: '{branch}'
 
     wrappers:
         - ssh-agent-credentials:
             user: '{ssh-credentials}'
 
     triggers:
-        - timed: 'H H * * *'
+        - 'octopus-{stream}'
 
     prebuilders:
         - test-macro
@@ -186,3 +190,27 @@
         - shell:
             !include-raw docu-build.sh
 
+
+########################
+## parameter macros
+#########################
+- parameter:
+    name: octopus-parameter
+    parameters:
+        - string:
+            name: GS_PATHNAME
+            default: '{gs-pathname}'
+            description: "Version directory where the octopus will be stored in gs repository"
+
+#########################
+## trigger macros
+#########################
+- trigger:
+    name: 'octopus-master'
+    triggers:
+        - pollscm: "H 7 * * *"
+
+- trigger:
+    name: 'octopus-stable-arno'
+    triggers:
+        - pollscm: "H 19 * * *"
