@@ -12,6 +12,10 @@ if [[ $JOB_NAME =~ "verify" ]] ; then
       patchset="/$GERRIT_CHANGE_NUMBER"
 fi
 
+if [[ $JOB_NAME =~ "daily" ]] ; then
+      patchset="$GS_PATHNAME"
+fi
+
 files=()
 while read -r -d ''; do
 	files+=("$REPLY")
