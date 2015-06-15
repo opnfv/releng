@@ -5,7 +5,7 @@
     name: octopus
     jobs:
         - 'octopus-test'
-        - 'octopus-daily-master'
+        - 'octopus-daily-{stream}'
         - 'octopus-merge'
         - 'octopus-verify-{stream}'
 
@@ -39,7 +39,7 @@
             echo "Hello world from octopus"
 
 - job-template:
-    name: 'octopus-daily-master'
+    name: 'octopus-daily-{stream}'
 
     node: master
 
@@ -66,14 +66,14 @@
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: master
+            branch: '{branch}'
 
     wrappers:
         - ssh-agent-credentials:
             user: '{ssh-credentials}'
 
     triggers:
-        - timed: 'H H * * *'
+        - 'octopus-{stream}'
 
     prebuilders:
         - test-macro
@@ -186,3 +186,15 @@
         - shell:
             !include-raw docu-build.sh
 
+########################
+# trigger macros
+########################
+- trigger:
+    name: 'octopus-master'
+    triggers:
+        - pollscm: "H 8 * * *"
+
+- trigger:
+    name: 'octopus-stable-arno'
+    triggers:
+        - pollscm: "H 20 * * *"
