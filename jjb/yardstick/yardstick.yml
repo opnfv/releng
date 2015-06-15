@@ -1,9 +1,14 @@
 - project:
     name: yardstick
     jobs:
+        - 'yardstick-{pod}'
         - 'yardstick-daily-{stream}'
         - 'yardstick-merge'
         - 'yardstick-verify'
+
+    pod:
+        - 'opnfv-jump-1'
+        - 'opnfv-jump-2'
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
@@ -180,3 +185,46 @@
             echo "Running unit tests..."
             cd $WORKSPACE
             ./run_tests.sh
+
+- job-template:
+    name: 'yardstick-{pod}'
+
+    project-type: freestyle
+
+    disabled: true
+
+    node: '{pod}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: master
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - 'yardstick-ping'
+
+########################
+# builder macros
+########################
+- builder:
+    name: yardstick-ping
+    builders:
+        - shell: |
+            #!/bin/bash
+             set -o errexit
+             set -o nounset
+             set -o pipefail
+
+             # TODO: will add real stuff here
+             echo "Hello world!"
