@@ -96,7 +96,6 @@
 
     builders:
         - 'fuel-build'
-        - 'fuel-workspace-cleanup'
 
 - job-template:
     name: 'genesis-fuel-merge'
@@ -157,7 +156,6 @@
 
     builders:
         - 'fuel-build'
-        - 'fuel-workspace-cleanup'
 
 - job-template:
     name: 'genesis-fuel-daily-{stream}'
@@ -167,6 +165,9 @@
     node: ericsson-build
 
     disabled: false
+
+    triggers:
+        - '{stream}'
 
     parameters:
         - project-parameter:
@@ -199,6 +200,9 @@
         - trigger-builds:
           - project: 'functest-opnfv-jump-1'
             block: true
+        - trigger-builds:
+          - project: 'yardstick-opnfv-jump-1'
+            block: true
 
 - job-template:
     name: 'genesis-fuel-build-{stream}'
@@ -229,7 +233,6 @@
     builders:
         - 'fuel-build'
         - 'fuel-upload-artifact'
-        - 'fuel-workspace-cleanup'
 
 - job-template:
     name: 'genesis-fuel-deploy-{stream}'
@@ -454,6 +457,7 @@
             echo
             echo "--------------------------------------------------------"
             echo "Done!"
+            echo "Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
 
 - builder:
     name: 'fuel-download-artifact'
@@ -500,3 +504,16 @@
 
             # delete everything that is in $WORKSPACE
             /bin/rm -rf $WORKSPACE
+
+########################
+# trigger macros
+########################
+- trigger:
+    name: 'master'
+    triggers:
+        - pollscm: '0 21 * * *'
+
+- trigger:
+    name: 'stable-arno'
+    triggers:
+        - pollscm: '0 3 * * *'
