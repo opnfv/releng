@@ -93,7 +93,6 @@
 
     builders:
         - 'foreman-build'
-        - 'foreman-workspace-cleanup'
 
 - job-template:
     name: 'genesis-foreman-merge'
@@ -153,7 +152,6 @@
 
     builders:
         - 'foreman-build'
-        - 'foreman-workspace-cleanup'
 
 - job-template:
     name: 'genesis-foreman-daily-{stream}'
@@ -163,6 +161,9 @@
     node: ericsson-build
 
     disabled: false
+
+    triggers:
+        - 'foreman-{stream}'
 
     parameters:
         - project-parameter:
@@ -193,6 +194,9 @@
             block: true
         - trigger-builds:
           - project: 'functest-opnfv-jump-2'
+            block: true
+        - trigger-builds:
+          - project: 'yardstick-opnfv-jump-2'
             block: true
 
 - job-template:
@@ -379,6 +383,7 @@
             echo
             echo "--------------------------------------------------------"
             echo "Done!"
+            echo "Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
 
 - builder:
     name: 'foreman-workspace-cleanup'
@@ -396,11 +401,11 @@
 # trigger macros
 ########################
 - trigger:
-    name: 'master'
+    name: 'foreman-master'
     triggers:
-        - pollscm: "0 9 * * *"
+        - pollscm: '0 21 * * *'
 
 - trigger:
-    name: 'stable-arno'
+    name: 'foreman-stable-arno'
     triggers:
-        - pollscm: "0 21 * * *"
+        - pollscm: '0 3 * * *'
