@@ -5,7 +5,7 @@
     name: pharos
     jobs:
         - 'pharos-test'
-        - 'pharos-daily-master'
+        - 'pharos-daily-{stream}'
         - 'pharos-merge'
         - 'pharos-verify-{stream}'
 
@@ -14,8 +14,10 @@
     stream:
         - master:
             branch: 'master'
+            gs-pathname: ''
         - stable-arno:
             branch: 'stable/arno'
+            gs-pathname: '/arno'
 
     project: 'pharos'
     somevar: 'foo'
@@ -38,7 +40,7 @@
             echo "Hello world from pharos"
 
 - job-template:
-    name: 'pharos-daily-master'
+    name: 'pharos-daily-{stream}'
 
     node: master
 
@@ -60,26 +62,28 @@
     parameters:
         - project-parameter:
             project: '{project}'
+        - pharos-parameter:
+            gs-pathname: '{gs-pathname}'
 
     scm:
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: master
+            branch: '{branch}'
 
     wrappers:
         - ssh-agent-credentials:
             user: '{ssh-credentials}'
 
     triggers:
-        - timed: 'H H * * *'
+        - 'pharos-{stream}'
 
     prebuilders:
         - test-macro
 
     builders:
         - shell:
-            !include-raw docu-build.sh
+            !include-raw ../opnfvdocs/docu-build.sh
 
     postbuilders:
         - test-macro
@@ -133,7 +137,7 @@
 
     builders:
         - shell:
-            !include-raw docu-build.sh
+            !include-raw ../opnfvdocs/docu-build.sh
 
 - job-template:
     name: 'pharos-merge'
@@ -183,5 +187,28 @@
 
     builders:
         - shell:
-            !include-raw docu-build.sh
+            !include-raw ../opnfvdocs/docu-build.sh
 
+########################
+# parameter macros
+########################
+- parameter:
+    name: pharos-parameter
+    parameters:
+        - string:
+            name: GS_PATHNAME
+            default: '{gs-pathname}'
+            description: "Version directory where the pharos documents will be stored in gs repository"
+
+########################
+## trigger macros
+#########################
+- trigger:
+    name: 'pharos-master'
+    triggers:
+       - pollscm: "H 6 * * *"
+
+- trigger:
+    name: 'pharos-stable-arno'
+    triggers:
+       - pollscm: "H 18 * * *"
