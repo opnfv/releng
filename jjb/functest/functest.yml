@@ -16,7 +16,7 @@
         - 'functest-odl-test-{pod}'
         - 'functest-vims-test-{pod}'
         - 'functest-vping-test-{pod}'
-        - 'functest-daily-master'
+        - 'functest-daily-{stream}'
         - 'functest-merge'
         - 'functest-verify-{stream}'
 
@@ -25,8 +25,10 @@
     stream:
         - master:
             branch: 'master'
+            gs-pathname: ''
         - stable-arno:
             branch: 'stable/arno'
+            gs-pathname: '/arno'
 
     project: 'functest'
     somevar: 'foo'
@@ -226,7 +228,7 @@
         - 'functest-all'
 
 - job-template:
-    name: 'functest-daily-master'
+    name: 'functest-daily-{stream}'
 
     node: master
 
@@ -248,26 +250,28 @@
     parameters:
         - project-parameter:
             project: '{project}'
+        - functest-parameter:
+            gs-pathname: '{gs-pathname}'
 
     scm:
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: master
+            branch: '{stream}'
 
     wrappers:
         - ssh-agent-credentials:
             user: '{ssh-credentials}'
 
     triggers:
-        - timed: 'H H * * *'
+        - 'functest-{stream}'
 
     prebuilders:
         - test-macro
 
     builders:
         - shell:
-            !include-raw docu-build.sh
+            !include-raw ../opnfvdocs/docu-build.sh
 
     postbuilders:
         - test-macro
@@ -321,7 +325,7 @@
 
     builders:
         - shell:
-            !include-raw docu-build.sh
+            !include-raw ../opnfvdocs/docu-build.sh
 
 - job-template:
     name: 'functest-merge'
@@ -371,7 +375,31 @@
 
     builders:
         - shell:
-            !include-raw docu-build.sh
+            !include-raw ../opnfvdocs/docu-build.sh
+
+########################
+# parameter macros
+########################
+- parameter:
+    name: functest-parameter
+    parameters:
+        - string:
+            name: GS_PATHNAME
+            default: '{gs-pathname}'
+            description: "Version directory where the opnfv documents will be stored in gs repository"
+
+########################
+# trigger macros
+########################
+- trigger:
+    name: 'functest-master'
+    triggers:
+        - pollscm: "H 9 * * *"
+
+- trigger:
+    name: 'functest-stable-arno'
+    triggers:
+        - pollscm: "H 21 * * *"
 
 # macros
 - builder:
