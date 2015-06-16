@@ -168,6 +168,9 @@
 
     disabled: false
 
+    triggers:
+        - '{stream}'
+
     parameters:
         - project-parameter:
             project: '{project}'
@@ -198,6 +201,9 @@
             block: true
         - trigger-builds:
           - project: 'functest-opnfv-jump-1'
+            block: true
+        - trigger-builds:
+          - project: 'yardstick-opnfv-jump-1'
             block: true
 
 - job-template:
@@ -500,3 +506,15 @@
 
             # delete everything that is in $WORKSPACE
             /bin/rm -rf $WORKSPACE
+########################
+# trigger macros
+########################
+- trigger:
+    name: 'master'
+    triggers:
+        - pollscm: "0 21 * * *"
+
+- trigger:
+    name: 'stable-arno'
+    triggers:
+        - pollscm: "0 3 * * *"

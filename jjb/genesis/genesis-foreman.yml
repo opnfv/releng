@@ -164,6 +164,9 @@
 
     disabled: false
 
+    triggers:
+        - '{stream}'
+
     parameters:
         - project-parameter:
             project: '{project}'
@@ -193,6 +196,9 @@
             block: true
         - trigger-builds:
           - project: 'functest-opnfv-jump-2'
+            block: true
+        - trigger-builds:
+          - project: 'yardstick-opnfv-jump-2'
             block: true
 
 - job-template:
@@ -398,9 +404,9 @@
 - trigger:
     name: 'master'
     triggers:
-        - pollscm: "0 9 * * *"
+        - pollscm: "0 21 * * *"
 
 - trigger:
     name: 'stable-arno'
     triggers:
-        - pollscm: "0 21 * * *"
+        - pollscm: "0 3 * * *"
