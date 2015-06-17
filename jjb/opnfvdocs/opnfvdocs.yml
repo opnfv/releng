@@ -10,6 +10,10 @@
     stream:
         - master:
             branch: 'master'
+            gs-pathname: ''
+        - stable-arno:
+            branch: 'stable/arno'
+            gs-pathname: '/arno'
 
     project: 'opnfvdocs'
 
@@ -35,6 +39,8 @@
     parameters:
         - project-parameter:
             project: '{project}'
+        - opnfvdocs-parameter:
+            gs-pathname: '{gs-pathname}'
 
     scm:
         - git-scm:
@@ -47,7 +53,7 @@
             user: '{ssh-credentials}'
 
     triggers:
-        - timed: 'H H * * *'
+        - 'opnfvdocs-{stream}'
 
     builders:
         - shell:
@@ -154,3 +160,26 @@
         - shell:
             !include-raw docu-build.sh
 
+########################
+# parameter macros
+########################
+- parameter:
+    name: opnfvdocs-parameter
+    parameters:
+        - string:
+            name: GS_PATHNAME
+            default: '{gs-pathname}'
+            description: "Version directory where the opnfv documents will be stored in gs repository"
+
+########################
+# trigger macros
+########################
+- trigger:
+    name: 'opnfvdocs-master'
+    triggers:
+        - pollscm: "H 9 * * *"
+
+- trigger:
+    name: 'opnfvdocs-stable-arno'
+    triggers:
+        - pollscm: "H 21 * * *"
