@@ -411,17 +411,20 @@
             rally verify list
 
             # collect results
-            echo "Functest: copy results and clean Functest environment"
+            echo "Functest: copy results"
             mkdir -p $HOME/functest/results
 
             # save ODL results
-            cp -Rf $WORSPACE/testcases/Controllers/ODL/CI/logs $HOME/functest/results/ODL
+            cp -Rf $WORKSPACE/testcases/Controllers/ODL/CI/logs $HOME/functest/results/ODL
 
             # save tempest.conf for further troubleshooting
-            cp $HOME/.rally/tempest/for-deployment-*/tempest.conf $HOME/functest/results
+            cp $HOME/.rally/tempest/for-deployment-*/tempest.conf $HOME/functest/results/Tempest
             
             # push results to artifact
+            echo "Functest: push results to artifact"
+            
             !include-raw res-build.sh
 
             # cleanup
+            echo "Functest: clean Functest environment"
             python $WORKSPACE/testcases/config_functest.py --debug --force $WORKSPACE/ clean
