@@ -226,6 +226,8 @@
 
     builders:
         - 'functest-all'
+        - 'functest-store-results'
+        - 'functest-cleanup'
 
 - job-template:
     name: 'functest-daily-{stream}'
@@ -447,9 +449,20 @@
 
             # save tempest.conf for further troubleshooting
             cp $HOME/.rally/tempest/for-deployment-*/tempest.conf $HOME/functest/results
-            
-            # push results to artifact
+
+- builder:
+    name: functest-store-results
+    builders:
+        - shell:
             !include-raw res-build.sh
+
+- builder:
+    name: functest-cleanup
+    builders:
+        - shell:
+        - shell: |
+            #!/bin/bash
+            set +e
 
             # cleanup
             python $WORKSPACE/testcases/config_functest.py --debug --force $WORKSPACE/ clean
