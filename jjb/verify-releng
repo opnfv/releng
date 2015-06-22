@@ -1,0 +1,17 @@
+#!/bin/bash
+
+source /opt/virtualenv/jenkins-job-builder/bin/activate
+jenkins-jobs test jjb/
+
+
+#test for non-ascii characters, these can pass the test and end up breaking things in production
+for x in $(find . -name *\.yml); do
+
+  if LC_ALL=C grep -q '[^[:print:][:space:]]' "$x"; then
+    echo "file "$x" contains non-ascii characters"
+    exit 1
+  fi
+
+done
+
+echo "all .yml files are ASCII only"
