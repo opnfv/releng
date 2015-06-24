@@ -212,6 +212,7 @@
     parameters:
         - project-parameter:
             project: '{project}'
+        - '{pod}'
 
     scm:
         - git-scm:
@@ -391,6 +392,29 @@
             default: '{gs-pathname}'
             description: "Version directory where the opnfv documents will be stored in gs repository"
 
+- parameter:
+    name: orange-build
+    parameters:
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Override GIT_BASE"
+
+- parameter:
+    name: opnfv-jump-1
+    parameters:
+        - string:
+            name: GIT_BASE
+            default: ssh://gerrit.opnfv.org:29418/$PROJECT
+            description: "Override GIT_BASE"
+
+- parameter:
+    name: opnfv-jump-2
+    parameters:
+        - string:
+            name: GIT_BASE
+            default: ssh://gerrit.opnfv.org:29418/$PROJECT
+            description: "Override GIT_BASE"
 ########################
 # trigger macros
 ########################
@@ -404,6 +428,9 @@
     triggers:
         - pollscm: "H 21 * * *"
 
+########################
+# builder macros
+########################
 # macros
 - builder:
     name: functest-all
