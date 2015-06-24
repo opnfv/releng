@@ -271,7 +271,7 @@
 
     builders:
         - 'fuel-download-artifact'
-        - 'fuel-deploy'
+        - 'fuel-deploy-{stream}'
 
 - job-template:
     name: 'genesis-fuel-deploy-virtual-master'
@@ -376,7 +376,7 @@
             echo "Done!"
 
 - builder:
-    name: 'fuel-deploy'
+    name: 'fuel-deploy-master'
     builders:
         - shell: |
             #!/bin/bash
@@ -411,6 +411,43 @@
             echo "sudo TMPDIR=${TMPDIR} ${TOPDIR}/deploy/deploy.sh ${WORKSPACE}/opnfv.iso ${TOPDIR}/configs/lf_pod1/dea_no-ha.yaml ${TOPDIR}/configs/lf_pod1/dha.yaml"
             sudo TMPDIR=${TMPDIR} ${TOPDIR}/deploy/deploy.sh ${WORKSPACE}/opnfv.iso ${TOPDIR}/configs/lf_pod1/dea_no-ha.yaml ${TOPDIR}/configs/lf_pod1/dha.yaml
 
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
+- builder:
+    name: 'fuel-deploy-stable-arno'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # source the file so we get OPNFV vars
+            source latest.properties
+
+            # echo the info about artifact that is used during the deployment
+            echo "Using $(echo $OPNFV_ARTIFACT_URL | cut -d'/' -f4) for deployment"
+
+            # create TMPDIR if it doesn't exist
+            export TMPDIR=$HOME/tmp/$JOB_NAME
+            [[ -d $TMPDIR ]] || mkdir -p $TMPDIR
+
+            # change permissions down to TMPDIR
+            chmod a+x $HOME
+            chmod a+x $TMPDIR
+
+            # log info to console
+            echo "Starting the deployment using $INSTALLER. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
+
+            # start the deployment
+            echo "Issuing command"
+            echo "sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso $WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/ha/dea.yaml $WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/ha/dha.yaml -s $TMPDIR"
+
+            sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso $WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/ha/dea.yaml $WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/ha/dha.yaml -s $TMPDIR
             echo
             echo "--------------------------------------------------------"
             echo "Done!"
