@@ -3,18 +3,29 @@
 
     name: genesis-compass
 
-    installer:
-        - compass
+    installer: 'compass'
+
     jobs:
         - 'genesis-compass-verify'
         - 'genesis-compass-merge'
         - 'genesis-compass-daily-{stream}'
+        - 'genesis-compass-deploy-virtual-{flavor}'
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
     stream:
         - master:
             branch: 'master'
+
+    flavor:
+        - five:
+            conf: 'five'
+            node: 'compass-build-deploy-02'
+        - cluster:
+            conf: 'cluster'
+            node: 'compass-build-deploy-03'
+
+
 
     project: 'genesis'
 
@@ -38,16 +49,12 @@
         artifactNumToKeep: -1
 
     parameters:
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/genesis
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
             branch: 'master'
+        - compass-parameter:
+            installer: '{installer}'
 
     scm:
         - gerrit-trigger-scm:
@@ -85,7 +92,8 @@
 
 
     builders:
-        - 'compass-verify'
+        - 'compass-build'
+        #- 'compass-workspace-cleanup'
 
 - job-template:
     name: 'genesis-compass-merge'
@@ -105,17 +113,12 @@
         artifactNumToKeep: 5
 
     parameters:
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/genesis
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
             branch: 'master'
-
+        - compass-parameter:
+            installer: '{installer}'
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
@@ -155,32 +158,16 @@
     node: compass-build-deploy-03
 
     parameters:
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-        - string:
-            name: INSTALLER
-            default: 'compass'
-            description: "Installer to use."
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/genesis
-        - string:
-            name: GERRIT_BRANCH
-            default: origin/master
-            description: "Branch to build, deploy and test."
-        - string:
-            name: GERRIT_REFSPEC
-            default: refs/heads/master
-            description: "Refspec to retrieve."
+        - project-parameter:
+            project: '{project}'
+        - compass-parameter:
+            installer: '{installer}'
 
     scm:
-        - git:
-            skip-tag: true
-            url: $GIT_BASE
-            branches:
-                - $GERRIT_BRANCH
-            refspec: $GERRIT_REFSPEC
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
 
     triggers:
         - pollscm: '@midnight'
@@ -192,14 +179,88 @@
         artifactNumToKeep: -1
 
     builders:
-        - 'compass-daily-master'
-
-- builder:
-    name: compass-verify
-    builders:
+        #- 'compass-build'
+        #- 'compass-upload-artifact'
+        #- 'compass-workspace-cleanup'
         - shell: |
-            #!/bin/bash
-            echo "Hello World!"
+            echo "Hello world!"
+            echo "genesis-compass-deploy-virtual job will be triggered!"
+
+    publishers:
+        - trigger:
+            project: 'genesis-compass-deploy-virtual-five'
+            threshold: SUCCESS
+        - trigger:
+            project: 'genesis-compass-deploy-virtual-cluster'
+            threshold: SUCCESS
+
+
+- job-template:
+    name: 'genesis-compass-deploy-virtual-{flavor}'
+
+    project-type: freestyle
+
+    disabled: false
+
+    node: '{node}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - compass-parameter:
+            installer: '{installer}'
+        - string:
+            name: FLAVOR_CONF
+            default: '{conf}'
+            description: ""
+
+    triggers:
+        - pollscm: "H/2 * * * *"
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - 'compass-ci-preclean-workspace'
+        - 'compass-deploy-virtual-flavor'
+
+########################
+# parameter macros
+########################
+- parameter:
+    name: compass-parameter
+    parameters:
+        - string:
+            name: INSTALLER
+            default: '{installer}'
+            description: "Installer to use."
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache/genesis-$INSTALLER
+            description: "Directory where the cache to be used during the build is located."
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+        - string:
+            name: GS_URL
+            default: artifacts.opnfv.org/$PROJECT/$INSTALLER
+            description: "URL to Google Storage."
+        - string:
+            name: INTERNAL_REPO
+            default: "root@192.168.121.12:~/kun/artifacts"
+            description: "Artifact Repository"
+########################
+# builder macros
+########################
+
 
 - builder:
     name: compass-merge
@@ -208,9 +269,134 @@
             #!/bin/bash
             echo "Hello World!"
 
+
 - builder:
-    name: compass-daily-master
+    name: 'compass-build'
     builders:
         - shell: |
             #!/bin/bash
-            echo "Hello World!"
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Hello world!"
+
+- builder:
+    name: 'compass-deploy'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Hello world!"
+
+- builder:
+    name: 'compass-deploy-virtual-flavor'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Starting the deployment on virtual environment using $INSTALLER. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
+
+            cd $WORKSPACE/compass
+            ./ci/deploy.sh $FLAVOR_CONF
+            # ssh -o BatchMode=yes -o TCPKeepAlive=yes cideploy@10.118.34.205 ./cideploy.sh
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
+- builder:
+    name: 'compass-upload-artifact'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Uploading the $INSTALLER artifact. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
+
+            # source the opnfv.properties to get ARTIFACT_VERSION
+            source $WORKSPACE/opnfv.properties
+
+            # upload artifact and additional files to google storage
+            gsutil cp $BUILD_DIRECTORY/opnfv-$OPNFV_ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
+            gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
+            gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/latest.properties > gsutil.latest.log 2>&1
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
+- builder:
+    name: 'compass-download-artifact'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Downloading the $INSTALLER artifact. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
+
+            # get the latest.properties file in order to get info regarding latest artifact
+            curl -s -o $WORKSPACE/latest.properties http://$GS_URL/latest.properties
+
+            # check if we got the file
+            [[ -f latest.properties ]] || exit 1
+
+            # source the file so we get OPNFV vars
+            source latest.properties
+
+            # download the file
+            curl -s -o $WORKSPACE/opnfv.iso http://$OPNFV_ARTIFACT_URL > gsutil.iso.log 2>&1
+
+            # list the file
+            ls -al $WORKSPACE/opnfv.iso
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
+- builder:
+    name: 'compass-workspace-cleanup'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # delete everything that is in $WORKSPACE
+            /bin/rm -rf $WORKSPACE
+
+- builder:
+    name: 'compass-ci-preclean-workspace'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            cd $WORKSPACE/..
+            sudo rm $WORKSPACE -rf
+            git clone $GIT_BASE  $WORKSPACE
+
