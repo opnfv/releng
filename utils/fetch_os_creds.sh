@@ -52,11 +52,15 @@ while getopts ":d:i:a:h:" optchar; do
     esac
 done
 
+# set vars from env if not provided by user as options
+dest_path=${dest_path:-$HOME/opnfv-openrc.sh}
+installer_type=${installer_type:-$INSTALLER_TYPE}
+installer_ip=${installer_ip:-$INSTALLER_IP}
+
 if [ -z $dest_path ] || [ -z $installer_type ] || [ -z $installer_ip ]; then
     usage
     exit 2
 fi
-
 
 # Checking if destination path is valid
 if [ -d $dest_path ]; then
