@@ -7,8 +7,14 @@
         - 'yardstick-verify'
 
     pod:
-        - 'opnfv-jump-1'
-        - 'opnfv-jump-2'
+        - opnfv-jump-1:
+            node: 'opnfv-jump-1'
+            installer_type: 'fuel'
+            installer_ip: '10.20.0.2'
+        - opnfv-jump-2:
+            node: 'opnfv-jump-2'
+            installer_type: 'foreman'
+            installer_ip: '172.30.10.73'
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
@@ -193,11 +199,19 @@
 
     disabled: false
 
-    node: '{pod}'
+    node: '{node}'
 
     parameters:
         - project-parameter:
             project: '{project}'
+        - string:
+            name: INSTALLER_TYPE
+            default: '{installer_type}'
+            description: "Installer name that is used for deployment."
+        - string:
+            name: INSTALLER_IP
+            default: '{installer_ip}'
+            description: "Installer IP."
 
     scm:
         - git-scm:
@@ -212,6 +226,7 @@
         artifactNumToKeep: -1
 
     builders:
+        - 'fetch-os-creds'
         - 'yardstick-ping'
 
 ########################
@@ -228,7 +243,11 @@
             echo "Yardstick: prepare Yardstick environment"
 
             # source openstack vars
-            source $HOME/yardstick/opnfv-openrc.sh
+            if [[ ! -f $HOME/opnfv-openrc.sh ]]; then
+                echo "Unable to access file $HOME/opnfv-openrc.sh"
+                exit 1
+            fi
+            source $HOME/opnfv-openrc.sh
 
             # check if cirros-0.3.3 image is already available
             # if not, create the image
@@ -258,3 +277,9 @@
 
             # done
             echo "Yardstick: done!"
+
+- builder:
+    name: fetch-os-creds
+    builders:
+        - shell: |
+            !include-raw ../utils/fetch_os_creds.sh
