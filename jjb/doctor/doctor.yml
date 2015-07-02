@@ -1,127 +1,40 @@
 - project:
     name: doctor
+    project: '{name}'
     jobs:
-        - 'doctor-test'
-        - 'doctor-daily-{stream}'
-        - 'doctor-merge'
-        - 'doctor-verify'
+        - '{project}-verify'
+        - '{project}-merge-{stream}'
 
-    # stream:    branch with - in place of / (eg. stable-helium)
-    # branch:    branch (eg. stable/helium)
+    # stream:    branch with - in place of / (eg. stable-arno)
+    # branch:    branch (eg. stable/arno)
     stream:
         - master:
             branch: 'master'
 
-    project: 'doctor'
-    somevar: 'foo'
-
-- job-template:
-    name: doctor-test
-
+- job_defaults: &job_defaults
     node: master
-
     project-type: freestyle
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    builders:
-        - shell: |
-            echo "Hello world from doctor"
-
-- job-template:
-    name: 'doctor-daily-{stream}'
-
-    node: master
-
-    # Job template for daily builders
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-
-    project-type: freestyle
-    varsetabove: '{somevar}'
-
     logrotate:
         daysToKeep: '{build-days-to-keep}'
         numToKeep: '{build-num-to-keep}'
         artifactDaysToKeep: '{build-artifact-days-to-keep}'
         artifactNumToKeep: '{build-artifact-num-to-keep}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - string:
-            name: GIT_BASE
-            default: 'https://gerrit.opnfv.org/gerrit/{project}'
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
     wrappers:
         - ssh-agent-credentials:
             user: '{ssh-credentials}'
 
-    triggers:
-        - timed: 'H H * * *'
-
-    prebuilders:
-        - test-macro
-
-    builders:
-        - shell:
-            !include-raw docu-build.sh
-
-    postbuilders:
-        - test-macro
-
 - job-template:
-    name: 'doctor-verify'
-
-    node: master
-
-    project-type: freestyle
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: 'master'
-        - string:
-            name: GIT_BASE
-            default: 'https://gerrit.opnfv.org/gerrit/{project}'
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+    name: '{project}-verify'
+    <<: *job_defaults
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
             refspec: '$GERRIT_REFSPEC'
             choosing-strategy: 'gerrit'
-
-    wrappers:
-        - ssh-agent-credentials:
-            user: '{ssh-credentials}'
-
     triggers:
         - gerrit:
             trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
+                - patchset-created-event
                 - draft-published-event
                 - comment-added-contains-event:
                     comment-contains-value: 'recheck'
@@ -129,52 +42,28 @@
                     comment-contains-value: 'reverify'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'doctor'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
-
+                project-pattern: '{project}'
     builders:
-        - shell:
-            !include-raw docu-verify.sh
+        - shell: "make"
+    publishers:
+        - shell: |
+            #!/bin/bash -xe
+            echo
+            echo "Upload"
+            echo "------"
+            echo
+            gsutil cp -r build/* "gs://artifacts.opnfv.org/{project}/verify/$BUILD_ID"
+            echo
+            echo "Document is available at http://artifacts.opnfv.org/{project}/verify/$BUILD_ID"
 
 - job-template:
-    name: 'doctor-merge'
-
-    node: master
-
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
-    project-type: freestyle
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 40
-        artifactDaysToKeep: -1
-        artifactNumToKeep: 5
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: 'master'
-        - string:
-            name: GIT_BASE
-            default: 'https://gerrit.opnfv.org/gerrit/{project}'
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
-
+    name: '{project}-merge-{stream}'
+    <<: *job_defaults
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
             choosing-strategy: 'default'
-
-    wrappers:
-        - ssh-agent-credentials:
-            user: '{ssh-credentials}'
-
     triggers:
         - gerrit:
             trigger-on:
@@ -183,17 +72,21 @@
                     comment-contains-value: 'remerge'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'doctor'
+                project-pattern: '{project}'
                 branches:
                     - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
-
+                      branch-pattern: '{branch}'
     builders:
-        - shell:
-            !include-raw docu-build.sh
-
-
-
-
-
-
+        - shell: "make"
+    publishers:
+        - shell: |
+            #!/bin/bash -xe
+            echo
+            echo "Upload Artifact"
+            echo "---------------"
+            echo
+            gsutil cp -r build/design_docs "gs://artifacts.opnfv.org/{project}/{stream}/"
+            gsutil cp -r build/html "gs://artifacts.opnfv.org/{project}/{stream}/"
+            gsutil cp -r build/latex/*.pdf "gs://artifacts.opnfv.org/{project}/{stream}/"
+            echo
+            echo "Document is available at http://artifacts.opnfv.org/{project}/{stream}"
