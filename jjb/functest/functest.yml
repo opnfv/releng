@@ -3,11 +3,19 @@
 ###################################
 - project:
     name: functest
-
     pod:
-        - 'opnfv-jump-1'
-        - 'opnfv-jump-2'
-        - 'orange-build'
+        - opnfv-jump-1:
+            node: 'opnfv-jump-1'
+            installer_type: 'fuel'
+            installer_ip: '10.20.0.2'
+        - opnfv-jump-2:
+            node: 'opnfv-jump-2'
+            installer_type: 'foreman'
+            installer_ip: '172.30.10.73'
+        - orange-build
+            node: 'orange-build'
+            installer_type: 'foreman'
+            installer_ip: '172.30.10.73'
     jobs:
         - 'functest-{pod}'
         - 'set-functest-env-{pod}'
@@ -56,7 +64,12 @@
 
             echo "Functest: prepare Functest environment"
             mkdir -p $HOME/functest/
-            source $HOME/functest/opnfv-openrc.sh
+            # source openstack vars
+            if [[ ! -f $HOME/opnfv-openrc.sh ]]; then
+                echo "Unable to access file $HOME/opnfv-openrc.sh"
+                exit 1
+            fi
+            source $HOME/opnfv-openrc.sh
 
             # WORKSPACE is the root of the functest repo
             # go into WORKSPACE where the functest repo is cloned
@@ -212,6 +225,14 @@
     parameters:
         - project-parameter:
             project: '{project}'
+        - string:
+            name: INSTALLER_TYPE
+            default: '{installer_type}'
+            description: "Installer name that is used for deployment."
+        - string:
+            name: INSTALLER_IP
+            default: '{installer_ip}'
+            description: "Installer IP."
         - '{pod}'
 
     scm:
@@ -227,6 +248,7 @@
         artifactNumToKeep: -1
 
     builders:
+        - 'fetch-os-creds'
         - 'functest-all'
         - 'functest-store-results'
         - 'functest-cleanup'
@@ -493,3 +515,9 @@
 
             # cleanup
             python $WORKSPACE/testcases/config_functest.py --debug --force $WORKSPACE/ clean
+
+- builder:
+    name: fetch-os-creds
+    builders:
+        - shell: |
+            !include-raw ../../utils/fetch_os_creds.sh
