@@ -7,8 +7,10 @@
 
     jobs:
         - 'genesis-compass-verify'
+        - 'genesis-compass-upload-iso'
         - 'genesis-compass-merge'
         - 'genesis-compass-daily-{stream}'
+        - 'genesis-compass-build'
         - 'genesis-compass-deploy-virtual-{flavor}'
 
     # stream:    branch with - in place of / (eg. stable-helium)
@@ -27,11 +29,37 @@
 
 
 
-    project: 'genesis'
+    project: 'compass4nfv'
 
 ########################
 # job templates
 ########################
+- job-template:
+    name: 'genesis-compass-upload-iso'
+    project-type: freestyle
+    disabled: false
+
+    node: master
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - compass-parameter:
+             installer: '{installer}'
+
+    wrappers:
+        - ssh-agent-credentials:
+            user: '{ssh-credentials}'
+
+    builders:
+        - 'compass-copy-artifact'
+        - 'compass-upload-artifact'
 
 - job-template:
     name: 'genesis-compass-verify'
@@ -194,6 +222,43 @@
             project: 'genesis-compass-deploy-virtual-cluster'
             threshold: SUCCESS
 
+- job-template:
+    name: 'genesis-compass-build'
+
+    project-type: freestyle
+
+    node: compass-build-deploy-01
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - compass-parameter:
+            installer: '{installer}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: 'master'
+
+    builders:
+        - 'compass-build'
+        - 'compass-workspace-cleanup'
+
+    publishers:
+        - archive:
+            artifacts: 'build_output/*.*'
+            allow-empty: 'true'
+            fingerprint: true
+        - trigger:
+            project: 'genesis-compass-upload-iso'
+            threshold: SUCCESS
 
 - job-template:
     name: 'genesis-compass-deploy-virtual-{flavor}'
@@ -255,11 +320,22 @@
             description: "URL to Google Storage."
         - string:
             name: INTERNAL_REPO
-            default: "root@192.168.121.12:~/kun/artifacts"
+            default: "root@192.168.127.11:~/xh/work/build/work"
             description: "Artifact Repository"
 ########################
 # builder macros
 ########################
+- builder:
+    name: compass-copy-artifact
+    builders:
+        - copyartifact:
+            project: "genesis-compass-build"
+            filter: "opnfv-.iso, opnfv.properties"
+            target: ./
+            which-build: upstream-build
+            optional: true
+            flatten: true
+            parameter-filters: PUBLISH=true
 
 
 - builder:
@@ -280,7 +356,43 @@
             set -o pipefail
 
             # log info to console
-            echo "Hello world!"
+            echo "Starting the build of $INSTALLER. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
+
+            # create the cache directory if it doesn't exist
+            [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
+
+            # set OPNFV_ARTIFACT_VERSION
+            export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
+
+            # start the build
+            cd $WORKSPACE/ci
+            #./build.sh -v "" -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
+            ./build.sh
+            mkdir $BUILD_DIRECTORY
+            mv $WORKSPACE/$INSTALLER/ci/work/compass.iso $BUILD_DIRECTORY/opnfv-.iso
+
+            # list the build artifacts
+            ls -al $BUILD_DIRECTORY
+
+            # save information regarding artifact into file
+            (
+                echo "OPNFV_ARTIFACT_VERSION=$OPNFV_ARTIFACT_VERSION"
+                echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
+                echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
+                echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
+                echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $BUILD_DIRECTORY/opnfv-.iso | cut -d' ' -f1)"
+                echo "OPNFV_BUILD_URL=$BUILD_URL"
+            ) > $BUILD_DIRECTORY/opnfv.properties
+
+            # upload iso to internal-repo as a temporary
+            scp $BUILD_DIRECTORY/opnfv-.iso $INTERNAL_REPO/
+            scp $BUILD_DIRECTORY/opnfv.properties $INTERNAL_REPO/
+            scp $BUILD_DIRECTORY/opnfv-.iso $INTERNAL_REPO/opnfv-$OPNFV_ARTIFACT_VERSION.iso
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
 
 - builder:
     name: 'compass-deploy'
@@ -334,13 +446,14 @@
             source $WORKSPACE/opnfv.properties
 
             # upload artifact and additional files to google storage
-            gsutil cp $BUILD_DIRECTORY/opnfv-$OPNFV_ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
+            gsutil cp $WORKSPACE/opnfv-.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
             gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
             gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/latest.properties > gsutil.latest.log 2>&1
 
             echo
             echo "--------------------------------------------------------"
             echo "Done!"
+            echo "Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
 
 - builder:
     name: 'compass-download-artifact'
