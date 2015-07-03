@@ -2,23 +2,48 @@
 set -e
 set -o pipefail
 
-build_dir="build"
-project="$(git remote -v | head -n1 | awk '{{print $2}}' | sed -e 's,.*:\(.*/\)\?,,' -e 's/\.git$//')"
 export PATH=$PATH:/usr/local/bin/
+
+echo
+echo "Build"
+echo "-----"
+echo
 
 make
 
-# upload all built files
-files=(
-    design_docs
-    requirements/html
-    requirements/latex/*.pdf
-)
+echo
+echo "Upload"
+echo "------"
+echo
 
-for file in "${{files[@]}}"; do
-    gsutil cp -r -L gsoutput.txt $build_dir/$file gs://artifacts.opnfv.org/$project/
-    #gsutil setmeta -h "Cache-Control:private, max-age=0, no-transform" \
-    #-R gs://artifacts.opnfv.org/$project/$file
-    cat gsoutput.txt
-    rm -f gsoutput.txt
-done
+# NOTE: make sure source parameters for GS paths are not empty.
+[[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
+[[ $GERRIT_PROJECT =~ .+ ]]
+[[ $GERRIT_BRANCH =~ .+ ]]
+
+gs_path_review="artifacts.opnfv.org/review/$GERRIT_CHANGE_NUMBER"
+if [[ $GERRIT_BRANCH = "master" ]] ; then
+    gs_path_branch="artifacts.opnfv.org/$GERRIT_PROJECT"
+else
+    gs_path_branch="artifacts.opnfv.org/$GERRIT_PROJECT/${{GERRIT_BRANCH##*/}}"
+fi
+
+if [[ $JOB_NAME =~ "verify" ]] ; then
+    gsutil cp -r build/* "gs://$gs_path_review/"
+    echo
+    echo "Document is available at http://$gs_path_review"
+else
+    gsutil cp -r build/design_docs "gs://$gs_path_branch/"
+    gsutil cp -r build/html "gs://$gs_path_branch/"
+    gsutil cp -r build/latex/*.pdf "gs://$gs_path_branch/"
+    echo
+    echo "Document is available at http://$gs_path_branch"
+fi
+
+if [[ $GERRIT_EVENT_TYPE = "change-merged" ]] ; then
+    echo
+    echo "Clean Out-of-dated Documents"
+    echo "----------------------------"
+    echo
+    gsutil rm -r "gs://$gs_path_review" || true
+fi
