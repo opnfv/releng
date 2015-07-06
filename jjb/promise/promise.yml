@@ -1,119 +1,45 @@
 - project:
     name: promise
+    project: '{name}'
     jobs:
-        - 'promise-test'
-        - 'promise-daily-{stream}'
-        - 'promise-merge'
-        - 'promise-verify'
+        - '{project}-verify'
+        - '{project}-merge-{stream}'
 
-    # stream:    branch with - in place of / (eg. stable-helium)
-    # branch:    branch (eg. stable/helium)
+    # stream:    branch with - in place of / (eg. stable-arno)
+    # branch:    branch (eg. stable/arno)
     stream:
         - master:
             branch: 'master'
 
-    project: 'promise'
-    somevar: 'foo'
-
-- job-template:
-    name: promise-test
-
+- promise_job_defaults: &promise_job_defaults
+    name: promise_job_defaults
     node: master
-
     project-type: freestyle
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    builders:
-        - shell: |
-            echo "Hello world from promise"
-
-- job-template:
-    name: 'promise-daily-{stream}'
-
-    node: master
-
-    # Job template for daily builders
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-
-    project-type: freestyle
-    varsetabove: '{somevar}'
-
     logrotate:
         daysToKeep: '{build-days-to-keep}'
         numToKeep: '{build-num-to-keep}'
         artifactDaysToKeep: '{build-artifact-days-to-keep}'
         artifactNumToKeep: '{build-artifact-num-to-keep}'
-
     parameters:
         - project-parameter:
             project: '{project}'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
     wrappers:
         - ssh-agent-credentials:
-            user: '{ssh-credentials}'
-
-    triggers:
-        - timed: 'H H * * *'
-
-    prebuilders:
-        - test-macro
-
-    builders:
-        - shell:
-            !include-raw docu-build.sh
-
-    postbuilders:
-        - test-macro
+            users:
+                - '{ssh-credentials}'
 
 - job-template:
-    name: 'promise-verify'
-
-    node: master
-
-    project-type: freestyle
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: 'master'
+    name: '{project}-verify'
+    <<: *promise_job_defaults
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
             refspec: '$GERRIT_REFSPEC'
             choosing-strategy: 'gerrit'
-
-    wrappers:
-        - ssh-agent-credentials:
-            user: '{ssh-credentials}'
-
     triggers:
         - gerrit:
             trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
+                - patchset-created-event
                 - draft-published-event
                 - comment-added-contains-event:
                     comment-contains-value: 'recheck'
@@ -121,48 +47,22 @@
                     comment-contains-value: 'reverify'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'promise'
+                project-pattern: '{project}'
                 branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
-
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**'
     builders:
         - shell:
-            !include-raw docu-verify.sh
+            !include-raw docu-build.sh
 
 - job-template:
-    name: 'promise-merge'
-
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
-    project-type: freestyle
-
-    node: master
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 40
-        artifactDaysToKeep: -1
-        artifactNumToKeep: 5
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: 'master'
-
+    name: '{project}-merge-{stream}'
+    <<: *promise_job_defaults
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
             choosing-strategy: 'default'
-
-    wrappers:
-        - ssh-agent-credentials:
-            user: '{ssh-credentials}'
-
     triggers:
         - gerrit:
             trigger-on:
@@ -171,12 +71,10 @@
                     comment-contains-value: 'remerge'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'promise'
+                project-pattern: '{project}'
                 branches:
                     - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
-
+                      branch-pattern: '**/{branch}'
     builders:
         - shell:
             !include-raw docu-build.sh
-
