@@ -34,8 +34,8 @@ if [[ $JOB_NAME =~ "verify" ]] ; then
     echo "Document is available at http://$gs_path_review"
 else
     gsutil cp -r build/design_docs "gs://$gs_path_branch/"
-    gsutil cp -r build/html "gs://$gs_path_branch/"
-    gsutil cp -r build/latex/*.pdf "gs://$gs_path_branch/"
+    gsutil cp -r build/requirements/html "gs://$gs_path_branch/"
+    gsutil cp -r build/requirements/latex/*.pdf "gs://$gs_path_branch/"
     echo
     echo "Document is available at http://$gs_path_branch"
 fi
