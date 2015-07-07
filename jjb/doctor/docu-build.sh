@@ -37,13 +37,11 @@ else
     gsutil cp -r build/requirements/html "gs://$gs_path_branch/"
     gsutil cp -r build/requirements/latex/*.pdf "gs://$gs_path_branch/"
     echo
-    echo "Document is available at http://$gs_path_branch"
-fi
+    echo "Latest document is available at http://$gs_path_branch"
 
-if [[ $GERRIT_EVENT_TYPE = "change-merged" ]] ; then
-    echo
-    echo "Clean Out-of-dated Documents"
-    echo "----------------------------"
-    echo
-    gsutil rm -r "gs://$gs_path_review" || true
+    if gsutil ls "gs://$gs_path_review" > /dev/null 2>&1 ; then
+        echo
+        echo "Deleting Out-of-dated Documents..."
+        gsutil rm -r "gs://$gs_path_review"
+    fi
 fi
