@@ -16,6 +16,7 @@
         - 'genesis-foreman-build-{stream}'
         - 'genesis-foreman-deploy-{stream}'
         - 'genesis-foreman-deploy-runner-{stream}'
+        - 'genesis-foreman-deploy-virtual-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
@@ -306,6 +307,41 @@
             git-revision: true
             block: true
 
+- job-template:
+    name: 'genesis-foreman-deploy-virtual-{stream}'
+
+    project-type: freestyle
+
+    disabled: false
+
+    node: opnfv-jump-1
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - foreman-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: GIT_BASE
+            default: ssh://gerrit.opnfv.org:29418/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - 'foreman-deploy-virtual'
+
 ########################
 # parameter macros
 ########################
@@ -473,6 +509,30 @@
 
             # and then initiate deployment
             sudo $WORKSPACE/$INSTALLER/ci/deploy.sh -base_config $WORKSPACE/$INSTALLER/ci/inventory/lf_pod2_ksgen_settings.yml
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
+- builder:
+    name: 'foreman-deploy-virtual'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Starting the virtual deployment using $INSTALLER. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
+
+            # cleanup baremetal first (in case baremetal was being used on pod2, remove when moved to isolated Virtual pod)
+            sudo $WORKSPACE/common/ci/clean.sh
+
+            # initiate virtual deployment
+            sudo $WORKSPACE/$INSTALLER/ci/deploy.sh -virtual
 
             echo
             echo "--------------------------------------------------------"
