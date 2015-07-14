@@ -2,7 +2,7 @@
     name: opnfvdocs
     jobs:
         - 'opnfvdocs-daily-{stream}'
-        - 'opnfvdocs-merge'
+        - 'opnfvdocs-merge-{stream}'
         - 'opnfvdocs-verify'
 
     # stream:    branch with - in place of / (eg. stable-helium)
@@ -111,7 +111,7 @@
             !include-raw docu-build.sh
 
 - job-template:
-    name: 'opnfvdocs-merge'
+    name: 'opnfvdocs-merge-{stream}'
 
     node: gce-opnfv-docker-1
 
@@ -131,7 +131,7 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{branch}'
 
     scm:
         - gerrit-trigger-scm:
@@ -154,7 +154,7 @@
                 project-pattern: 'opnfvdocs'
                 branches:
                     - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
+                      branch-pattern: '**/{branch}'
 
     builders:
         - shell:
