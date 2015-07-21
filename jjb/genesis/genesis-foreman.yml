@@ -262,8 +262,14 @@
             credentials-id: '{ssh-credentials}'
             refspec: ''
             branch: '{branch}'
+        - git:
+            url: ssh://gerrit.opnfv.org:29418/releng
+            branch: '{branch}'
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
 
     builders:
+        - 'foreman-lab-reconfig'
         - 'foreman-deploy'
 
 ########################
@@ -292,10 +298,36 @@
             name: GS_URL
             default: artifacts.opnfv.org/$PROJECT/$INSTALLER{gs-pathname}
             description: "URL to Google Storage."
+        !include ucs_info.yaml.inc
 
 ########################
 # builder macros
 ########################
+- builder:
+    name: 'foreman-lab-reconfig'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Starting the lab reconfiguration for $INSTALLER..."
+            echo "--------------------------------------------------------"
+            echo
+
+            # create venv
+            sudo $WORKSPACE/utils/lab-reconfiguration/create_venv.sh
+
+            # enter venv
+            source ./venv/bin/activate
+            sudo python $WORKSPACE/utils/lab-reconfiguration/reconfigUcsNet.py {ucs_host} -u {ucs_user} -p {ucs_password} -f foreman.yaml
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
 - builder:
     name: 'foreman-build'
     builders:
