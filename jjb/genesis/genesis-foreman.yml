@@ -264,6 +264,7 @@
             branch: '{branch}'
 
     builders:
+        - 'foreman-lab-reconfig'
         - 'foreman-deploy'
 
 ########################
@@ -296,6 +297,46 @@
 ########################
 # builder macros
 ########################
+- builder:
+    name: 'foreman-lab-reconfig'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # check to see if ucs login info file exists
+            if [ -e /home/jenkins-ci/.ssh/ucs_creds ];then
+              source /home/jenkins-ci/.ssh/ucs_creds
+            else
+              echo "Unable to find UCS credentials for LF lab reconfiguration...Exiting"
+              exit 1
+            fi
+
+            # clone releng
+            echo "Cloning releng repo..."
+            if ! GIT_SSL_NO_VERIFY=true git clone https://gerrit.opnfv.org/gerrit/releng; then
+              echo "Unable to clone releng repo...Exiting"
+              exit 1
+            fi
+
+            # log info to console
+            echo "Starting the lab reconfiguration for $INSTALLER..."
+            echo "--------------------------------------------------------"
+            echo
+
+            # create venv
+            sudo $WORKSPACE/releng/utils/lab-reconfiguration/create_venv.sh
+
+            # enter venv
+            source ./venv/bin/activate
+            sudo python $WORKSPACE/releng/utils/lab-reconfiguration/reconfigUcsNet.py $ucs_host -u $ucs_user -p $ucs_password -f $WORKSPACE/releng/utils/lab-reconfiguration/foreman.yaml
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
 - builder:
     name: 'foreman-build'
     builders:
