@@ -7,11 +7,11 @@ BASEDIR=`dirname $0`
 
 function venv_install() {
     if command -v virtualenv-2.7; then
-        virtualenv-2.7 $1
+        virtualenv-2.7 -p python2.7 $1
     elif command -v virtualenv2; then
-        virtualenv2 $1
+        virtualenv2 -p python2.7 $1
     elif command -v virtualenv; then
-        virtualenv $1
+        virtualenv -p python2.7 $1
     else
         echo Cannot find virtualenv command.
         return 1
@@ -23,6 +23,11 @@ set -e
 if [ ! -d "$BASEDIR/venv" ]; then
     venv_install $BASEDIR/venv
     echo "Virtualenv created."
+fi
+
+if [[ ! $(rpm -qa | grep python-2.7) ]]; then
+    echo "Python 2.7 not found, but required...attempting to install"
+    sudo yum install -y python-2.7*
 fi
 
 if [ ! -f "$BASEDIR/venv/updated" -o $BASEDIR/requirements.pip -nt $BASEDIR/venv/updated ]; then
