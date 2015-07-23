@@ -329,9 +329,13 @@
             # create venv
             sudo $WORKSPACE/releng/utils/lab-reconfiguration/create_venv.sh
 
+            # disable nounset because 'activate' script contains unbound variable(s)
+            set +o nounset
             # enter venv
             source $WORKSPACE/releng/utils/lab-reconfiguration/venv/bin/activate
-            sudo python $WORKSPACE/releng/utils/lab-reconfiguration/reconfigUcsNet.py $ucs_host -u $ucs_user -p $ucs_password -f $WORKSPACE/releng/utils/lab-reconfiguration/foreman.yaml
+            # set nounset back again
+            set -o nounset
+            sudo python $WORKSPACE/releng/utils/lab-reconfiguration/reconfigUcsNet.py -i $ucs_host -u $ucs_user -p $ucs_password -f $WORKSPACE/releng/utils/lab-reconfiguration/foreman.yaml
 
             echo
             echo "--------------------------------------------------------"
