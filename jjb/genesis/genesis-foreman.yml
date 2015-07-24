@@ -11,7 +11,7 @@
 
     jobs:
         - 'genesis-foreman-verify-{stream}'
-        - 'genesis-foreman-merge'
+        - 'genesis-foreman-merge-{stream}'
         - 'genesis-foreman-daily-{stream}'
         - 'genesis-foreman-build-{stream}'
         - 'genesis-foreman-deploy-{stream}'
@@ -97,7 +97,7 @@
         - 'foreman-workspace-cleanup'
 
 - job-template:
-    name: 'genesis-foreman-merge'
+    name: 'genesis-foreman-merge-{stream}'
 
     project-type: freestyle
 
@@ -120,7 +120,7 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{branch}'
         - foreman-parameter:
             installer: '{installer}'
             gs-pathname: ''
@@ -145,7 +145,7 @@
                 project-pattern: 'genesis'
                 branches:
                     - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
+                      branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: ANT
                     pattern: 'common/**'
