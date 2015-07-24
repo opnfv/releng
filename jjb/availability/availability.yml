@@ -6,8 +6,8 @@
         - 'availability-merge'
         - 'availability-verify'
 
-    # stream:    branch with - in place of / (eg. stable-helium)
-    # branch:    branch (eg. stable/helium)
+    # stream:    branch with - in place of / (eg. stable-arno)
+    # branch:    branch (eg. stable/arno)
     stream:
         - master:
             branch: 'master'
@@ -38,6 +38,7 @@
     # Required Variables:
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
+    node: master
 
     project-type: freestyle
     varsetabove: '{somevar}'
@@ -69,16 +70,16 @@
         - test-macro
 
     builders:
-        - shell: |
-            pwd
-            find .
-            echo "Hello world from availability {somevar} daily"
+        - shell:
+             !include-raw docu-build.sh
 
     postbuilders:
         - test-macro
 
 - job-template:
     name: 'availability-verify'
+
+    node: master
 
     project-type: freestyle
 
@@ -123,10 +124,8 @@
                     branch-pattern: '**/master'
 
     builders:
-        - shell: |
-            pwd
-            find .
-            echo "verify logic goes here"
+        - shell:
+             !include-raw docu-build.sh
 
 - job-template:
     name: 'availability-merge'
@@ -134,6 +133,8 @@
     # builder-merge job to run JJB update
     #
     # This job's purpose is to update all the JJB
+
+    node: master
 
     project-type: freestyle
 
@@ -173,10 +174,8 @@
                       branch-pattern: '**/master'
 
     builders:
-        - shell: |
-            pwd
-            find .
-            echo "merge logic goes here"
+        - shell:
+             !include-raw docu-build.sh
 
 
 
