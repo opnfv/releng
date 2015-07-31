@@ -11,7 +11,7 @@
 
     jobs:
         - 'genesis-fuel-verify-{stream}'
-        - 'genesis-fuel-merge'
+        - 'genesis-fuel-merge-{stream}'
         - 'genesis-fuel-daily-{stream}'
         - 'genesis-fuel-build-{stream}'
         - 'genesis-fuel-deploy-{stream}'
@@ -99,7 +99,7 @@
         - 'fuel-workspace-cleanup'
 
 - job-template:
-    name: 'genesis-fuel-merge'
+    name: 'genesis-fuel-merge-{stream}'
 
     project-type: freestyle
 
@@ -122,7 +122,7 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{branch}'
         - fuel-parameter:
             installer: '{installer}'
             gs-pathname: ''
@@ -148,7 +148,7 @@
                 project-pattern: 'genesis'
                 branches:
                     - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
+                      branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: ANT
                     pattern: 'common/**'
