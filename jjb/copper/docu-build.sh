@@ -2,79 +2,46 @@
 set -e
 set -o pipefail
 
-project="$(git remote -v | head -n1 | awk '{{print $2}}' | sed -e 's,.*:\(.*/\)\?,,' -e 's/\.git$//')"
 export PATH=$PATH:/usr/local/bin/
 
-git_sha1="$(git rev-parse HEAD)"
-docu_build_date="$(date)"
+echo
+echo "Build"
+echo "-----"
+echo
+
+make
+
+echo
+echo "Upload"
+echo "------"
+echo
+
+# NOTE: make sure source parameters for GS paths are not empty.
+[[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
+[[ $GERRIT_PROJECT =~ .+ ]]
+[[ $GERRIT_BRANCH =~ .+ ]]
+
+gs_path_review="artifacts.opnfv.org/review/$GERRIT_CHANGE_NUMBER"
+if [[ $GERRIT_BRANCH = "master" ]] ; then
+    gs_path_branch="artifacts.opnfv.org/$GERRIT_PROJECT"
+else
+    gs_path_branch="artifacts.opnfv.org/$GERRIT_PROJECT/${{GERRIT_BRANCH##*/}}"
+fi
 
 if [[ $JOB_NAME =~ "verify" ]] ; then
-      patchset="/$GERRIT_CHANGE_NUMBER"
-fi
+    gsutil cp -r build/* "gs://$gs_path_review/"
+    echo
+    echo "Document is available at http://$gs_path_review"
+else
+    gsutil cp -r build/design_docs "gs://$gs_path_branch/"
+    gsutil cp -r build/requirements/html "gs://$gs_path_branch/"
+    gsutil cp -r build/requirements/latex/*.pdf "gs://$gs_path_branch/"
+    echo
+    echo "Latest document is available at http://$gs_path_branch"
 
-files=()
-while read -r -d ''; do
-	files+=("$REPLY")
-done < <(find * -type f -iname '*.rst' -print0)
-
-for file in "${{files[@]}}"; do
-
-	file_cut="${{file%.*}}"
-	gs_cp_folder="${{file_cut}}"
-
-	# sed part
-	sed -i "s/_sha1_/$git_sha1/g" $file
-	sed -i "s/_date_/$docu_build_date/g" $file
-
-	# rst2html part
-	echo "rst2html $file"
-	rst2html $file | gsutil cp -L gsoutput.txt - \
-	gs://artifacts.opnfv.org/"$project""$patchset"/"$gs_cp_folder".html
-	gsutil setmeta -h "Content-Type:text/html" \
-			-h "Cache-Control:private, max-age=0, no-transform" \
-			gs://artifacts.opnfv.org/"$project""$patchset"/"$gs_cp_folder".html
-	cat gsoutput.txt
-	rm -f gsoutput.txt
-
-	echo "rst2pdf $file"
-	rst2pdf $file -o - | gsutil cp -L gsoutput.txt - \
-	gs://artifacts.opnfv.org/"$project""$patchset"/"$gs_cp_folder".pdf
-	gsutil setmeta -h "Content-Type:application/pdf" \
-			-h "Cache-Control:private, max-age=0, no-transform" \
-			gs://artifacts.opnfv.org/"$project""$patchset"/"$gs_cp_folder".pdf
-	cat gsoutput.txt
-	rm -f gsoutput.txt
-
-  links+="http://artifacts.opnfv.org/"$project""$patchset"/"$gs_cp_folder".html \n"
-  links+="http://artifacts.opnfv.org/"$project""$patchset"/"$gs_cp_folder".pdf \n"
-
-done
-
-images=()
-while read -r -d ''; do
-        images+=("$REPLY")
-done < <(find * -type f \( -iname \*.jpg -o -iname \*.png \) -print0)
-
-for img in "${{images[@]}}"; do
-
-	# uploading found images
-	echo "uploading $img"
-        cat "$img" | gsutil cp -L gsoutput.txt - \
-        gs://artifacts.opnfv.org/"$project""$patchset"/"$img"
-        gsutil setmeta -h "Content-Type:image/jpeg" \
-                        -h "Cache-Control:private, max-age=0, no-transform" \
-                        gs://artifacts.opnfv.org/"$project""$patchset"/"$img"
-        cat gsoutput.txt
-        rm -f gsoutput.txt
-
-done
-
-if [[ $GERRIT_EVENT_TYPE = "change-merged" ]] ; then
-    patchset="/$GERRIT_CHANGE_NUMBER"
-    if [ ! -z "$patchset" ]; then
-      gsutil rm gs://artifacts.opnfv.org/"$project""$patchset"/** || true
+    if gsutil ls "gs://$gs_path_review" > /dev/null 2>&1 ; then
+        echo
+        echo "Deleting Out-of-dated Documents..."
+        gsutil rm -r "gs://$gs_path_review"
     fi
 fi
-
-echo -e "$links"
-
