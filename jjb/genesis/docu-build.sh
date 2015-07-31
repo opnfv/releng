@@ -2,66 +2,46 @@
 set -e
 set -o pipefail
 
-project="$(git remote -v | head -n1 | awk '{{print $2}}' | sed -e 's,.*:\(.*/\)\?,,' -e 's/\.git$//')"
 export PATH=$PATH:/usr/local/bin/
 
-git_sha1="$(git rev-parse HEAD)"
-docu_build_date="$(date)"
+echo
+echo "Build"
+echo "-----"
+echo
 
-files=()
-while read -r -d ''; do
-	files+=("$REPLY")
-done < <(find . -type f -iname '*.rst' -print0)
+make
 
-for file in "${{files[@]}}"; do
+echo
+echo "Upload"
+echo "------"
+echo
 
-	file_cut="${{file%.*}}"
-	gs_cp_folder="$(echo "$file"| cut -d "/" -f2,3)"
+# NOTE: make sure source parameters for GS paths are not empty.
+[[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
+[[ $GERRIT_PROJECT =~ .+ ]]
+[[ $GERRIT_BRANCH =~ .+ ]]
 
-        # sed part
-        sed -i "s/_sha1_/$git_sha1/g" $file
-        sed -i "s/_date_/$docu_build_date/g" $file
+gs_path_review="artifacts.opnfv.org/review/$GERRIT_CHANGE_NUMBER"
+if [[ $GERRIT_BRANCH = "master" ]] ; then
+    gs_path_branch="artifacts.opnfv.org/$GERRIT_PROJECT"
+else
+    gs_path_branch="artifacts.opnfv.org/$GERRIT_PROJECT/${{GERRIT_BRANCH##*/}}"
+fi
 
-	# rst2html part
-	html_file=$file_cut".html"
-	echo "rst2html $file"
-	rst2html $file | gsutil cp -L gsoutput.txt - \
-	gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder"/$(basename "$html_file")
-	gsutil setmeta -h "Content-Type:text/html" \
-			-h "Cache-Control:private, max-age=0, no-transform" \
-			gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder"/$(basename "$html_file")
-	cat gsoutput.txt
-	rm -f gsoutput.txt
+if [[ $JOB_NAME =~ "verify" ]] ; then
+    gsutil cp -r build/* "gs://$gs_path_review/"
+    echo
+    echo "Document is available at http://$gs_path_review"
+else
+    gsutil cp -r build/design_docs "gs://$gs_path_branch/"
+    gsutil cp -r build/requirements/html "gs://$gs_path_branch/"
+    gsutil cp -r build/requirements/latex/*.pdf "gs://$gs_path_branch/"
+    echo
+    echo "Latest document is available at http://$gs_path_branch"
 
-	# rst2pdf part
-	pdf_file="$file_cut"".pdf"
-	echo "rst2pdf $file"
-	rst2pdf "$file" -o - | gsutil cp -L gsoutput.txt - \
-	gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder"/$(basename "$pdf_file")
-	gsutil setmeta -h "Content-Type:application/pdf" \
-			-h "Cache-Control:private, max-age=0, no-transform" \
-			gs://artifacts.opnfv.org/"$project"/"$gs_cp_folder"/$(basename "$pdf_file")
-	cat gsoutput.txt
-	rm -f gsoutput.txt
-
-done
-
-images=()
-while read -r -d ''; do
-        images+=("$REPLY")
-done < <(find * -type f \( -iname \*.jpg -o -iname \*.png \) -print0)
-
-for img in "${{images[@]}}"; do
-
-        # uploading found images
-        echo "uploading $img"
-        cat "$img" | gsutil cp -L gsoutput.txt - \
-        gs://artifacts.opnfv.org/"$project"/"$img"
-        gsutil setmeta -h "Content-Type:image/jpeg" \
-                        -h "Cache-Control:private, max-age=0, no-transform" \
-                        gs://artifacts.opnfv.org/"$project"/"$img"
-        cat gsoutput.txt
-        rm -f gsoutput.txt
-
-done
-
+    if gsutil ls "gs://$gs_path_review" > /dev/null 2>&1 ; then
+        echo
+        echo "Deleting Out-of-dated Documents..."
+        gsutil rm -r "gs://$gs_path_review"
+    fi
+fi
