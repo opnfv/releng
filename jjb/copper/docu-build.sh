@@ -9,7 +9,8 @@ echo "Build"
 echo "-----"
 echo
 
-make
+#make
+sphinx-build -b html -E -c etc/ design_docs/ build/
 
 echo
 echo "Upload"
@@ -31,13 +32,13 @@ fi
 if [[ $JOB_NAME =~ "verify" ]] ; then
     gsutil cp -r build/* "gs://$gs_path_review/"
     echo
-    echo "Document is available at http://$gs_path_review"
+    echo "Document is available at http://$gs_path_review/index.html"
 else
     gsutil cp -r build/design_docs "gs://$gs_path_branch/"
     gsutil cp -r build/requirements/html "gs://$gs_path_branch/"
     gsutil cp -r build/requirements/latex/*.pdf "gs://$gs_path_branch/"
     echo
-    echo "Latest document is available at http://$gs_path_branch"
+    echo "Latest document is available at http://$gs_path_branch/index.html"
 
     if gsutil ls "gs://$gs_path_review" > /dev/null 2>&1 ; then
         echo
