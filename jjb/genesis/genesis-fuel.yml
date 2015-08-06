@@ -16,6 +16,7 @@
         - 'genesis-fuel-build-{stream}'
         - 'genesis-fuel-deploy-{stream}'
         - 'genesis-fuel-deploy-virtual-master'
+        - 'genesis-fuel-deploy-runner-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
@@ -196,7 +197,7 @@
             git-revision: true
             block: true
         - trigger-builds:
-          - project: 'genesis-fuel-deploy-{stream}'
+          - project: 'genesis-fuel-deploy-runner-{stream}'
             git-revision: true
             block: true
         - trigger-builds:
@@ -244,7 +245,7 @@
 
     disabled: false
 
-    node: opnfv-jump-1
+    node: opnfv-jump-2
 
     parameters:
         - project-parameter:
@@ -272,6 +273,45 @@
     builders:
         - 'fuel-download-artifact'
         - 'fuel-deploy-{stream}'
+
+- job-template:
+    name: 'genesis-fuel-deploy-runner-{stream}'
+
+    project-type: freestyle
+
+    disabled: false
+
+    node: master
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - fuel-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: GIT_BASE
+            default: ssh://gerrit.opnfv.org:29418/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - 'fuel-lab-reconfig'
+        - trigger-builds:
+          - project: 'genesis-fuel-deploy-{stream}'
+            git-revision: true
+            block: true
 
 - job-template:
     name: 'genesis-fuel-deploy-virtual-master'
@@ -544,6 +584,83 @@
 
             # delete everything that is in $WORKSPACE
             /bin/rm -rf $WORKSPACE
+
+- builder:
+    name: 'fuel-lab-reconfig'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # check to see if ucs login info file exists
+            if [ -e ~/.ssh/ucs_creds ];then
+              source ~/.ssh/ucs_creds
+            else
+              echo "Unable to find UCS credentials for LF lab reconfiguration...Exiting"
+              exit 1
+            fi
+
+            # clone releng
+            echo "Cloning releng repo..."
+            if ! GIT_SSL_NO_VERIFY=true git clone https://gerrit.opnfv.org/gerrit/releng; then
+              echo "Unable to clone releng repo...Exiting"
+              exit 1
+            fi
+
+            # log info to console
+            echo "Starting the lab reconfiguration for $INSTALLER..."
+            echo "--------------------------------------------------------"
+            echo
+
+            # create venv
+            $WORKSPACE/releng/utils/lab-reconfiguration/create_venv.sh
+
+            # disable nounset because 'activate' script contains unbound variable(s)
+            set +o nounset
+            # enter venv
+            source $WORKSPACE/releng/utils/lab-reconfiguration/venv/bin/activate
+            # set nounset back again
+            set -o nounset
+
+            # verify we are in venv
+            if [[ ! $(which python | grep venv) ]]; then
+              echo "Unable to activate venv...Exiting"
+              exit 1
+            fi
+
+            python $WORKSPACE/releng/utils/lab-reconfiguration/reconfigUcsNet.py -i $ucs_host -u $ucs_user -p $ucs_password -f $WORKSPACE/releng/utils/lab-reconfiguration/fuel.yaml
+
+            # while undergoing reboot
+            sleep 30
+
+            # check to see if slave is back up
+            ping_counter=0
+            ping_flag=0
+            while [ "$ping_counter" -lt 20 ]; do
+              if [[ $(ping -c 5 172.30.10.72) ]]; then
+                ping_flag=1
+                break
+              fi
+              ((ping_counter++))
+              sleep 10
+            done
+
+            if [ "$ping_flag" -eq 1 ]; then
+              echo "Slave is pingable, now wait 60 seconds for services to start"
+              sleep 60
+            else
+              echo "Slave did not come back up after reboot: please check opnfv-jump-2"
+              exit 1
+            fi
+
+            set +o nounset
+            deactivate
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
 
 ########################
 # trigger macros
