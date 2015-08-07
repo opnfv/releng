@@ -17,6 +17,7 @@ parser.read('config.ini')
 mongo_url = parser.get('default', 'mongo_url')
 """
 
+
 def prepare_put_request(edit_request, key, new_value, old_value):
     """
     This function serves to prepare the elements in the update request.

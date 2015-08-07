@@ -38,10 +38,10 @@ class TestProject:
     """ Describes a test project"""
 
     def __init__(self):
-        self._id = ""
-        self.name = ""
-        self.description = ""
-        self.creation_date = ""
+        self._id = None
+        self.name = None
+        self.description = None
+        self.creation_date = None
 
     @staticmethod
     def testproject_from_dict(testproject_dict):
@@ -76,19 +76,96 @@ class TestProject:
 
 class TestCase:
     """ Describes a test case"""
+
     def __init__(self):
-        self._id = ""
-        self.name = ""
-        self.test_project = ""
-        self.description = ""
-        self.creation_date = ""
+        self._id = None
+        self.name = None
+        self.project_name = None
+        self.description = None
+        self.creation_date = None
+
+    @staticmethod
+    def test_case_from_dict(testcase_dict):
+
+        if testcase_dict is None:
+            return None
+
+        t = TestCase()
+        t._id = testcase_dict.get('_id')
+        t.project_name = testcase_dict.get('project_name')
+        t.creation_date = testcase_dict.get('creation_date')
+        t.name = testcase_dict.get('name')
+        t.description = testcase_dict.get('description')
+
+        return t
+
+    def format(self):
+        return {
+            "name": self.name,
+            "description": self.description,
+            "project_name": self.project_name,
+            "creation_date": str(self.creation_date)
+        }
+
+    def format_http(self, test_project=None):
+        res = {
+            "_id": str(self._id),
+            "name": self.name,
+            "description": self.description,
+            "creation_date": str(self.creation_date),
+        }
+        if not (test_project is None):
+            res["test_project"] = test_project
+
+        return res
 
 
 class TestResult:
     """ Describes a test result"""
+
     def __init__(self):
-        self._id = ""
-        self.name = ""
-        self.test_case = ""
-        self.description = ""
-        self.creation_date = ""
+        self._id = None
+        self.case_name = None
+        self.project_name = None
+        self.pod_id = None
+        self.description = None
+        self.creation_date = None
+        self.details = None
+
+    @staticmethod
+    def test_result_from_dict(test_result_dict):
+
+        if test_result_dict is None:
+            return None
+
+        t = TestResult()
+        t._id = test_result_dict.get('_id')
+        t.case_name = test_result_dict.get('case_name')
+        t.project_name = test_result_dict.get('project_name')
+        t.pod_id = test_result_dict.get('pod_id')
+        t.description = test_result_dict.get('description')
+        t.creation_date = str(test_result_dict.get('creation_date'))
+        t.details = test_result_dict.get('details')
+
+        return t
+
+    def format(self):
+        return {
+            "case_name": self.case_name,
+            "project_name": self.project_name,
+            "pod_id": self.pod_id,
+            "description": self.description,
+            "creation_date": self.creation_date,
+            "details": self.details,
+        }
+
+    def format_http(self):
+        return {
+            "_id": str(self._id),
+            "case_name": self.case_name,
+            "project_name": self.project_name,
+            "pod_id": self.pod_id,
+            "description": self.description,
+            "creation_date": self.creation_date,
+            "details": self.details,
+        }
