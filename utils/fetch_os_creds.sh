@@ -124,6 +124,39 @@ elif [ "$installer_type" == "foreman" ]; then
         'source keystonerc_admin;keystone endpoint-list'" \
         | grep http | head -1 | cut -d '|' -f 4 | sed 's/ //g') &> /dev/null
 
+elif [ "$installer_type" == "compass" ]; then
+    #ip_compass="10.1.0.12"
+    verify_connectivity $installer_ip
+
+    # Check if controller is alive (online='True')
+    #controller_ip=$(sshpass -p root ssh 2>/dev/null $ssh_options root@${installer_ip} \
+    #    'fuel node | grep controller | grep True | awk "{print \$10}" | tail -1') &> /dev/null
+    # controller_ip='10.1.0.222'
+    controller_ip=$(sshpass -p'root' ssh 2>/dev/null -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@10.1.0.12 \
+        'mysql -ucompass -pcompass -Dcompass -e"select package_config  from cluster;"' \
+        | awk -F"," '{for(i=1;i<NF;i++)if($i~/\"ha_proxy\": {\"vip\":/)print $i}' \
+        | grep -oP "\d+.\d+.\d+.\d+")
+    if [ -z $controller_ip ]; then
+        error "The controller $controller_ip is not up. Please check that the POD is correctly deployed."
+    fi
+
+    info "Fetching rc file from controller $controller_ip..."
+    sshpass -p root ssh 2>/dev/null $ssh_options root@${installer_ip} \
+        "scp $ssh_options ${controller_ip}:/opt/admin-openrc.sh ." &> /dev/null
+    sshpass -p root scp 2>/dev/null $ssh_options root@${installer_ip}:~/admin-openrc.sh $dest_path &> /dev/null
+    echo 'export OS_REGION_NAME=regionOne' >> $dest_path
+
+    info "This file contains the mgmt keystone API, we need the public one for our rc file"
+    admin_ip=$(cat $dest_path | grep "OS_AUTH_URL" | sed 's/^.*\=//' | sed "s/^\([\"']\)\(.*\)\1\$/\2/g" | sed s'/\/$//')
+    info "admin_ip: $admin_ip"
+    public_ip=$(sshpass -p root ssh $ssh_options root@${installer_ip} \
+        "ssh ${controller_ip} 'source /opt/admin-openrc.sh; keystone endpoint-list'" \
+        | grep $admin_ip | sed 's/ /\n/g' | grep ^http | head -1)
+        #| grep http | head -1 | cut -d '|' -f 4 | sed 's/v1\/.*/v1\//' | sed 's/ //g') &> /dev/null
+    info "public_ip: $public_ip"
+    #NOTE: this is super ugly sed 's/v1\/.*/v1\//'OS_AUTH_URL
+    # but sometimes the output of endpoint-list is like this: http://172.30.9.70:8004/v1/%(tenant_id)s
+
 else
     error "Installer $installer is not supported by this script"
 fi
