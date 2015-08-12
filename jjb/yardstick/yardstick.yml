@@ -134,7 +134,11 @@
         - shell: |
             echo "Running unit tests..."
             cd $WORKSPACE
+            virtualenv $WORKSPACE/yardstick_venv
+            source $WORKSPACE/yardstick_venv/bin/activate
+            python setup.py develop > /dev/null 2>&1
             ./run_tests.sh
+            deactivate
 
 - job-template:
     name: 'yardstick-merge'
@@ -190,7 +194,11 @@
         - shell: |
             echo "Running unit tests..."
             cd $WORKSPACE
+            virtualenv $WORKSPACE/yardstick_venv
+            source $WORKSPACE/yardstick_venv/bin/activate
+            python setup.py develop > /dev/null 2>&1
             ./run_tests.sh
+            deactivate
 
 - job-template:
     name: 'yardstick-{pod}'
