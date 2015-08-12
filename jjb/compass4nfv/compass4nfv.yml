@@ -1,17 +1,17 @@
 # this is the job configuration for bgs
 - project:
 
-    name: genesis-compass
+    name: compass
 
     installer: 'compass'
 
     jobs:
-        - 'genesis-compass-verify'
-        - 'genesis-compass-upload-iso'
-        - 'genesis-compass-merge'
-        - 'genesis-compass-daily-{stream}'
-        - 'genesis-compass-build'
-        - 'genesis-compass-deploy-virtual-{flavor}'
+        - 'compass-verify'
+        - 'compass-upload-iso'
+        - 'compass-merge'
+        - 'compass-daily-{stream}'
+        - 'compass-build'
+        - 'compass-deploy-virtual-{flavor}'
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
@@ -35,7 +35,7 @@
 # job templates
 ########################
 - job-template:
-    name: 'genesis-compass-upload-iso'
+    name: 'compass-upload-iso'
     project-type: freestyle
     disabled: false
 
@@ -62,7 +62,7 @@
         - 'compass-upload-artifact'
 
 - job-template:
-    name: 'genesis-compass-verify'
+    name: 'compass-verify'
 
     project-type: freestyle
 
@@ -112,19 +112,13 @@
                 branches:
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/master'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'common/**'
-                  - compare-type: ANT
-                    pattern: 'compass/**'
-
 
     builders:
         - 'compass-build'
         #- 'compass-workspace-cleanup'
 
 - job-template:
-    name: 'genesis-compass-merge'
+    name: 'compass-merge'
 
     # builder-merge job to run JJB update
     #
@@ -169,17 +163,11 @@
                 branches:
                     - branch-compare-type: 'ANT'
                       branch-pattern: '**/master'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'common/**'
-                  - compare-type: ANT
-                    pattern: 'compass/**'
-
     builders:
         - 'compass-merge'
 
 - job-template:
-    name: 'genesis-compass-daily-{stream}'
+    name: 'compass-daily-{stream}'
 
     project-type: freestyle
 
@@ -212,18 +200,18 @@
         #- 'compass-workspace-cleanup'
         - shell: |
             echo "Hello world!"
-            echo "genesis-compass-deploy-virtual job will be triggered!"
+            echo "compass-deploy-virtual job will be triggered!"
 
     publishers:
         - trigger:
-            project: 'genesis-compass-deploy-virtual-five'
+            project: 'compass-deploy-virtual-five'
             threshold: SUCCESS
         - trigger:
-            project: 'genesis-compass-deploy-virtual-cluster'
+            project: 'compass-deploy-virtual-cluster'
             threshold: SUCCESS
 
 - job-template:
-    name: 'genesis-compass-build'
+    name: 'compass-build'
 
     project-type: freestyle
 
@@ -257,11 +245,11 @@
             allow-empty: 'true'
             fingerprint: true
         - trigger:
-            project: 'genesis-compass-upload-iso'
+            project: 'compass-upload-iso'
             threshold: SUCCESS
 
 - job-template:
-    name: 'genesis-compass-deploy-virtual-{flavor}'
+    name: 'compass-deploy-virtual-{flavor}'
 
     project-type: freestyle
 
@@ -308,7 +296,7 @@
             description: "Directory where the build artifact will be located upon the completion of the build."
         - string:
             name: CACHE_DIRECTORY
-            default: $HOME/opnfv/cache/genesis-$INSTALLER
+            default: $HOME/opnfv/cache/$INSTALLER
             description: "Directory where the cache to be used during the build is located."
         - string:
             name: GIT_BASE
@@ -329,7 +317,7 @@
     name: compass-copy-artifact
     builders:
         - copyartifact:
-            project: "genesis-compass-build"
+            project: "compass-build"
             filter: "$BUILD_DIRECTORY/compass.iso, $BUILD_DIRECTORY/opnfv.properties"
             target: ./
             which-build: upstream-build
@@ -367,10 +355,10 @@
             export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
 
             # start the build
-            cd $WORKSPACE/$INSTALLER/ci
+            cd $WORKSPACE/ci
             ./build.sh
             mkdir $WORKSPACE/$BUILD_DIRECTORY
-            mv $WORKSPACE/$INSTALLER/ci/work/compass.iso $WORKSPACE/$BUILD_DIRECTORY/
+            mv $WORKSPACE/ci/work/compass.iso $WORKSPACE/$BUILD_DIRECTORY/
 
             # list the build artifacts
             ls -al $WORKSPACE/$BUILD_DIRECTORY
@@ -415,7 +403,7 @@
             echo "--------------------------------------------------------"
             echo
 
-            cd $WORKSPACE/compass
+            cd $WORKSPACE
             ./ci/deploy.sh $FLAVOR_CONF
             # ssh -o BatchMode=yes -o TCPKeepAlive=yes cideploy@10.118.34.205 ./cideploy.sh
 
