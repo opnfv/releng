@@ -112,12 +112,6 @@
                 branches:
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/master'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'common/**'
-                  - compare-type: ANT
-                    pattern: 'compass/**'
-
 
     builders:
         - 'compass-build'
@@ -169,12 +163,6 @@
                 branches:
                     - branch-compare-type: 'ANT'
                       branch-pattern: '**/master'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'common/**'
-                  - compare-type: ANT
-                    pattern: 'compass/**'
-
     builders:
         - 'compass-merge'
 
@@ -367,10 +355,10 @@
             export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
 
             # start the build
-            cd $WORKSPACE/$INSTALLER/ci
+            cd $WORKSPACE/ci
             ./build.sh
             mkdir $WORKSPACE/$BUILD_DIRECTORY
-            mv $WORKSPACE/$INSTALLER/ci/work/compass.iso $WORKSPACE/$BUILD_DIRECTORY/
+            mv $WORKSPACE/ci/work/compass.iso $WORKSPACE/$BUILD_DIRECTORY/
 
             # list the build artifacts
             ls -al $WORKSPACE/$BUILD_DIRECTORY
@@ -415,7 +403,7 @@
             echo "--------------------------------------------------------"
             echo
 
-            cd $WORKSPACE/compass
+            cd $WORKSPACE
             ./ci/deploy.sh $FLAVOR_CONF
             # ssh -o BatchMode=yes -o TCPKeepAlive=yes cideploy@10.118.34.205 ./cideploy.sh
 
