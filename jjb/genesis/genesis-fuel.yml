@@ -444,8 +444,12 @@
             chmod a+x $HOME
             chmod a+x $TMPDIR
 
-            # set TOPDIR
+            # set TOPDIR, CONFDIR
             export TOPDIR=$WORKSPACE/fuel/prototypes/auto-deploy
+            export CONFDIR=$WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/pod2/multinode
+
+            # cleanup first
+            sudo $WORKSPACE/common/ci/clean.sh -base_config $WORKSPACE/foreman/ci/inventory/lf_pod2_ksgen_settings.yml
 
             # log info to console
             echo "Starting the deployment using $INSTALLER. This could take some time..."
@@ -454,8 +458,8 @@
 
             # start the deployment
             echo "Issuing command"
-            echo "sudo TMPDIR=${TMPDIR} ${TOPDIR}/deploy/deploy.sh ${WORKSPACE}/opnfv.iso ${TOPDIR}/configs/lf_pod1/dea_no-ha.yaml ${TOPDIR}/configs/lf_pod1/dha.yaml"
-            sudo TMPDIR=${TMPDIR} ${TOPDIR}/deploy/deploy.sh ${WORKSPACE}/opnfv.iso ${TOPDIR}/configs/lf_pod1/dea_no-ha.yaml ${TOPDIR}/configs/lf_pod1/dha.yaml
+            echo "sudo TMPDIR=${TMPDIR} ${TOPDIR}/deploy/deploy.sh ${WORKSPACE}/opnfv.iso ${CONFDIR}/dea.yaml ${CONFDIR}/dha.yaml"
+            sudo TMPDIR=${TMPDIR} ${TOPDIR}/deploy/deploy.sh ${WORKSPACE}/opnfv.iso ${CONFDIR}/dea.yaml ${CONFDIR}/dha.yaml
 
             echo
             echo "--------------------------------------------------------"
@@ -484,6 +488,12 @@
             chmod a+x $HOME
             chmod a+x $TMPDIR
 
+            # set CONFDIR
+            export CONFDIR=$WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/pod2/ha
+
+            # cleanup first
+            sudo $WORKSPACE/common/ci/clean.sh -base_config $WORKSPACE/foreman/ci/inventory/lf_pod2_ksgen_settings.yml
+
             # log info to console
             echo "Starting the deployment using $INSTALLER. This could take some time..."
             echo "--------------------------------------------------------"
@@ -491,9 +501,9 @@
 
             # start the deployment
             echo "Issuing command"
-            echo "sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso $WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/ha/dea.yaml $WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/ha/dha.yaml -s $TMPDIR"
+            echo "sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso ${CONFDIR}/dea.yaml ${CONFDIR}/dha.yaml -s $TMPDIR"
 
-            sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso $WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/ha/dea.yaml $WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/ha/dha.yaml -s $TMPDIR
+            sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso ${CONFDIR}/dea.yaml ${CONFDIR}/dha.yaml -s $TMPDIR
             echo
             echo "--------------------------------------------------------"
             echo "Done!"
