@@ -444,18 +444,21 @@
             chmod a+x $HOME
             chmod a+x $TMPDIR
 
-            # set TOPDIR
-            export TOPDIR=$WORKSPACE/fuel/prototypes/auto-deploy
-
             # log info to console
             echo "Starting the deployment using $INSTALLER. This could take some time..."
             echo "--------------------------------------------------------"
             echo
 
+            # set parameters
+            ISO=$WORKSPACE/opnfv.iso
+            DEA=$WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/pod2/ha/dea.yaml
+            DHA=$WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/pod2/ha/dha.yaml
+            BRIDGE=pxebr
+
             # start the deployment
             echo "Issuing command"
-            echo "sudo TMPDIR=${TMPDIR} ${TOPDIR}/deploy/deploy.sh ${WORKSPACE}/opnfv.iso ${TOPDIR}/configs/lf_pod1/dea_no-ha.yaml ${TOPDIR}/configs/lf_pod1/dha.yaml"
-            sudo TMPDIR=${TMPDIR} ${TOPDIR}/deploy/deploy.sh ${WORKSPACE}/opnfv.iso ${TOPDIR}/configs/lf_pod1/dea_no-ha.yaml ${TOPDIR}/configs/lf_pod1/dha.yaml
+            echo "sudo $WORKSPACE/fuel/ci/deploy.sh $ISO $DEA $DHA -s $TMPDIR -b $BRIDGE"
+            sudo $WORKSPACE/fuel/ci/deploy.sh $ISO $DEA $DHA -s $TMPDIR -b $BRIDGE
 
             echo
             echo "--------------------------------------------------------"
