@@ -438,9 +438,9 @@
             chmod a+x $HOME
             chmod a+x $TMPDIR
 
-            # set TOPDIR, CONFDIR
-            export TOPDIR=$WORKSPACE/fuel/prototypes/auto-deploy
-            export CONFDIR=$WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/pod2/multinode
+            # set CONFDIR, BRIDGE
+            export CONFDIR=$WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/pod2/ha
+            export BRIDGE=pxebr
 
             # cleanup first
             sudo $WORKSPACE/common/ci/clean.sh -base_config $WORKSPACE/foreman/ci/inventory/lf_pod2_ksgen_settings.yml
@@ -452,8 +452,8 @@
 
             # start the deployment
             echo "Issuing command"
-            echo "sudo TMPDIR=${TMPDIR} ${TOPDIR}/deploy/deploy.sh ${WORKSPACE}/opnfv.iso ${CONFDIR}/dea.yaml ${CONFDIR}/dha.yaml"
-            sudo TMPDIR=${TMPDIR} ${TOPDIR}/deploy/deploy.sh ${WORKSPACE}/opnfv.iso ${CONFDIR}/dea.yaml ${CONFDIR}/dha.yaml
+            echo "sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso $CONFDIR/dea.yaml $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE"
+            sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso $CONFDIR/dea.yaml $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE
 
             echo
             echo "--------------------------------------------------------"
@@ -482,8 +482,9 @@
             chmod a+x $HOME
             chmod a+x $TMPDIR
 
-            # set CONFDIR
+            # set CONFDIR, BRIDGE
             export CONFDIR=$WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/pod2/ha
+            export BRIDGE=pxebr
 
             # cleanup first
             sudo $WORKSPACE/common/ci/clean.sh -base_config $WORKSPACE/foreman/ci/inventory/lf_pod2_ksgen_settings.yml
@@ -495,9 +496,9 @@
 
             # start the deployment
             echo "Issuing command"
-            echo "sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso ${CONFDIR}/dea.yaml ${CONFDIR}/dha.yaml -s $TMPDIR"
+            echo "sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso $CONFDIR/dea.yaml $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE"
+            sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso $CONFDIR/dea.yaml $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE
 
-            sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso ${CONFDIR}/dea.yaml ${CONFDIR}/dha.yaml -s $TMPDIR
             echo
             echo "--------------------------------------------------------"
             echo "Done!"
