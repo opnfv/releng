@@ -256,7 +256,7 @@
         - string:
             name: GIT_BASE
             default: ssh://gerrit.opnfv.org:29418/$PROJECT
-            description: "POD1 has some issues with cloning using https so that's why GIT_BASE is overriden here again."
+            description: "POD2 has some issues with cloning using https so that's why GIT_BASE is overriden here again."
 
     scm:
         - git-scm:
@@ -272,7 +272,7 @@
 
     builders:
         - 'fuel-download-artifact'
-        - 'fuel-deploy-{stream}'
+        - 'fuel-deploy'
 
 - job-template:
     name: 'genesis-fuel-deploy-runner-{stream}'
@@ -416,7 +416,7 @@
             echo "Done!"
 
 - builder:
-    name: 'fuel-deploy-master'
+    name: 'fuel-deploy'
     builders:
         - shell: |
             #!/bin/bash
@@ -438,55 +438,15 @@
             chmod a+x $HOME
             chmod a+x $TMPDIR
 
-            # set TOPDIR, CONFDIR
-            export TOPDIR=$WORKSPACE/fuel/prototypes/auto-deploy
-            export CONFDIR=$WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/pod2/multinode
-
-            # cleanup first
-            sudo $WORKSPACE/common/ci/clean.sh -base_config $WORKSPACE/foreman/ci/inventory/lf_pod2_ksgen_settings.yml
-
-            # log info to console
-            echo "Starting the deployment using $INSTALLER. This could take some time..."
-            echo "--------------------------------------------------------"
-            echo
-
-            # start the deployment
-            echo "Issuing command"
-            echo "sudo TMPDIR=${TMPDIR} ${TOPDIR}/deploy/deploy.sh ${WORKSPACE}/opnfv.iso ${CONFDIR}/dea.yaml ${CONFDIR}/dha.yaml"
-            sudo TMPDIR=${TMPDIR} ${TOPDIR}/deploy/deploy.sh ${WORKSPACE}/opnfv.iso ${CONFDIR}/dea.yaml ${CONFDIR}/dha.yaml
-
-            echo
-            echo "--------------------------------------------------------"
-            echo "Done!"
-
-- builder:
-    name: 'fuel-deploy-stable-arno'
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-
-            # source the file so we get OPNFV vars
-            source latest.properties
-
-            # echo the info about artifact that is used during the deployment
-            echo "Using $(echo $OPNFV_ARTIFACT_URL | cut -d'/' -f4) for deployment"
-
-            # create TMPDIR if it doesn't exist
-            export TMPDIR=$HOME/tmp/$JOB_NAME
-            [[ -d $TMPDIR ]] || mkdir -p $TMPDIR
-
-            # change permissions down to TMPDIR
-            chmod a+x $HOME
-            chmod a+x $TMPDIR
-
-            # set CONFDIR
+            # set CONFDIR, BRIDGE
             export CONFDIR=$WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/pod2/ha
+            export BRIDGE=pxebr
 
             # cleanup first
             sudo $WORKSPACE/common/ci/clean.sh -base_config $WORKSPACE/foreman/ci/inventory/lf_pod2_ksgen_settings.yml
+
+            # prepare for Fuel Deployment
+            sudo $WORKSPACE/common/ci/setup.sh
 
             # log info to console
             echo "Starting the deployment using $INSTALLER. This could take some time..."
@@ -495,9 +455,9 @@
 
             # start the deployment
             echo "Issuing command"
-            echo "sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso ${CONFDIR}/dea.yaml ${CONFDIR}/dha.yaml -s $TMPDIR"
+            echo "sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso $CONFDIR/dea.yaml $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE"
+            sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso $CONFDIR/dea.yaml $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE
 
-            sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso ${CONFDIR}/dea.yaml ${CONFDIR}/dha.yaml -s $TMPDIR
             echo
             echo "--------------------------------------------------------"
             echo "Done!"
