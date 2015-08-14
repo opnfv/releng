@@ -31,6 +31,7 @@ import optparse
 import platform
 import yaml
 import time
+import sys
 from UcsSdk import *
 from collections import defaultdict
 
@@ -237,3 +238,4 @@ if __name__ == "__main__":
         print '-'*60
         traceback.print_exc(file=sys.stdout)
         print '-'*60
+        sys.exit(1)
