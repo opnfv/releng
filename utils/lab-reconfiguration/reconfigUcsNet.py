@@ -82,6 +82,17 @@ def ack_pending(handle=None, server=None):
     print " Pending-reboot -> Acknowledged."
 
 
+def boot_server(handle=None, server=None):
+    """
+    Boot server (when is in power-off state)
+    """
+    obj = handle.GetManagedObject(None, LsServer.ClassId(), {LsServer.DN: server.Dn})
+    handle.AddManagedObject(obj, LsPower.ClassId(), {
+            LsPower.DN: server.Dn + "/power", 
+            LsPower.STATE:"admin-up"}, True)
+    print " Booting."
+
+
 def get_vnics(handle=None, server=None):
     """
     Return list of vnics for given server
@@ -216,6 +227,8 @@ if __name__ == "__main__":
         while True:
             list_of_states = []
             for server in get_servers(handle):
+                if server.OperState == "power-off":
+                    boot_server(handle,server)
                 if server.OperState == "pending-reboot":
                     ack_pending(handle,server)
                 list_of_states.append(server.OperState)
@@ -224,7 +237,7 @@ if __name__ == "__main__":
                 break
             if time.time() > timeout:
                 raise Exception("Timeout reached while waiting for OK status.")
-            time.sleep(5)
+            time.sleep(10)
 
         # Show current vnic MACs and VLANs
         get_network_config(handle)
