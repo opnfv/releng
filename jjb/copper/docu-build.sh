@@ -40,7 +40,7 @@ else
     #gsutil cp -r build/requirements/latex/*.pdf "gs://$gs_path_branch/"
     #echo
 
-    echo "Latest document is available at http://$gs_path_branch/index.html"
+    echo "Latest document is available at http://$gs_path_branch/design_docs/index.html"
 
     if gsutil ls "gs://$gs_path_review" > /dev/null 2>&1 ; then
         echo
