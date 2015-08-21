@@ -5,9 +5,21 @@
         - 'qtip-daily-{stream}'
         - 'qtip-merge'
         - 'qtip-verify'
+        - 'qtip-dhrystone-VM_vs_Baremetal'
+        - 'qtip_dhrystone-Baremetal_vs_Baremetal'
+
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
+
+
+    pod:
+        - dell-build:
+           node: 'dell-build'
+           installer_type: 'foreman'
+           installer_ip: '172.18.0.12'
+
+
     stream:
         - master:
             branch: 'master'
@@ -177,3 +189,127 @@
             pwd
             find .
             echo "merge logic goes here"
+
+- job-template:
+     name: 'qtip-dhrystone-VM_vs_Baremetal'
+
+     project-type: freestyle
+
+     disabled: false
+
+     node: '{node}'
+
+     logrotate:
+       daysToKeep: 30
+       numToKeep: 10
+       artifactDaysToKeep: -1
+       artifactNumToKeep: -1
+
+     parameters:
+       - project-parameter:
+           project: '{project}'
+       - string:
+           name: INSTALLER_TYPE
+           default: '{installer_type}'
+           description: "Installer name that is used for deployment."
+       - stirng:
+           name: INSTALLER_IP
+           default: '{Installer_ip}'
+           description: "Installer IP"
+
+     scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: master
+
+     builders:
+         - 'qtip-fetch-os-cred'
+         - 'qtip-dhrystone-VM_vs_BM'
+
+- job-template:
+     name: 'qtip-dhrystone-Baremetal_vs_Baremetal'
+
+     project-type: freestyle
+
+     disabled: false
+
+     node: '{node}'
+
+     logrotate:
+       daysToKeep: 30
+       numToKeep: 10
+       artifactDaysToKeep: -1
+       artifactNumToKeep: -1
+
+     parameters:
+       - project-parameter:
+           project: '{project}'
+       - string:
+           name: INSTALLER_TYPE
+           default: '{installer_type}'
+           description: "Installer name that is used for deployment."
+       - string:
+           name: INSTALLER_IP
+           default: '{installer_ip}'
+           description: "IP address of the installer"
+
+     scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: master
+
+     builders:
+       - 'qtip-fetch-os-cred'
+       - 'qtip-dhrystone-BM_vs_BM'
+
+
+###########################
+#biuilder macros
+###########################
+- builder:
+    name: qtip-dhrystone-VM_vs_BM
+
+    builders:
+        - shell: |
+            #! /bin/bash
+
+
+            if [[ ! -f $HOME/opnfv-openrc.sh]]; then
+               echo "Unable to access file $HOME/opnfv-openrc.sh"
+               exit 1
+            fi
+            source $HOME/opnfv-openrc.sh
+            cd $WORKSPACE
+
+
+            echo "Running QTIP dhrystone with First Test case"
+            ./QTIP.sh First dhrystone
+
+
+- builder:
+    name: qtip-dhrystone-BM_vs_BM
+
+    builders:
+        - shell: |
+            #!/bin/bash
+
+
+            if [[ ! -f $HOME/opnfv-openrc.sh]]; then
+               echo "Unable to access file $HOME/opnfv-openrc.sh"
+               exit 1
+            fi
+            source $HOME/opnfv-openrc.sh
+            cd $WORKSPACE
+
+
+            echo "Running QTIP dhrystone with Second Test case"
+            ./QTIP.sh Second dhrystone
+
+
+- builder:
+    name: qtip-fetch-os-cred
+    builders:
+        - shell: |
+            !include-raw ../../utils/fetch_os_creds.sh
