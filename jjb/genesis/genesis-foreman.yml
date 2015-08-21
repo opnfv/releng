@@ -15,6 +15,7 @@
         - 'genesis-foreman-daily-{stream}'
         - 'genesis-foreman-build-{stream}'
         - 'genesis-foreman-deploy-{stream}'
+        - 'genesis-foreman-lab-reconfig-{stream}'
         - 'genesis-foreman-deploy-runner-{stream}'
         - 'genesis-foreman-deploy-virtual-{stream}'
 
@@ -164,7 +165,7 @@
 
     node: ericsson-build
 
-    disabled: false
+    disabled: true
 
     triggers:
         - 'foreman-{stream}'
@@ -175,6 +176,7 @@
         - foreman-parameter:
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
+
     scm:
         - git-scm:
             credentials-id: '{ssh-credentials}'
@@ -192,16 +194,67 @@
           - project: 'genesis-foreman-build-{stream}'
             git-revision: true
             block: true
-#        - trigger-builds:
-#          - project: 'genesis-foreman-deploy-runner-{stream}'
-#            git-revision: true
-#            block: true
-#        - trigger-builds:
-#          - project: 'functest-opnfv-jump-2'
-#            block: true
-#        - trigger-builds:
-#          - project: 'yardstick-opnfv-jump-2'
-#            block: true
+        - trigger-builds:
+          - project: 'genesis-foreman-lab-reconfig-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'genesis-foreman-deploy-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'functest-opnfv-jump-2'
+            block: true
+        - trigger-builds:
+          - project: 'yardstick-opnfv-jump-2'
+            block: true
+
+- job-template:
+    name: 'genesis-foreman-deploy-runner-{stream}'
+
+    project-type: freestyle
+
+    disabled: false
+
+    node: master
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - foreman-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: GIT_BASE
+            default: ssh://gerrit.opnfv.org:29418/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - "genesis-fuel-daily.*"
+                - "genesis-fuel-deploy-runner-{stream}"
+                - "genesis-foreman-daily.*"
+
+    builders:
+        - 'foreman-lab-reconfig'
+        - trigger-builds:
+          - project: 'genesis-foreman-deploy-{stream}'
+            git-revision: true
+            block: true
 
 - job-template:
     name: 'genesis-foreman-build-{stream}'
@@ -269,7 +322,7 @@
         - 'foreman-deploy'
 
 - job-template:
-    name: 'genesis-foreman-deploy-runner-{stream}'
+    name: 'genesis-foreman-lab-reconfig-{stream}'
 
     project-type: freestyle
 
@@ -300,12 +353,14 @@
             refspec: ''
             branch: '{branch}'
 
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - "genesis-fuel-daily.*"
+
     builders:
         - 'foreman-lab-reconfig'
-        - trigger-builds:
-          - project: 'genesis-foreman-deploy-{stream}'
-            git-revision: true
-            block: true
 
 - job-template:
     name: 'genesis-foreman-deploy-virtual-{stream}'
@@ -435,8 +490,8 @@
             done
 
             if [ "$ping_flag" -eq 1 ]; then
-              echo "Slave is pingable, now wait 60 seconds for services to start"
-              sleep 60
+              echo "Slave is pingable, now wait 90 seconds for services to start"
+              sleep 90
             else
               echo "Slave did not come back up after reboot: please check opnfv-jump-2"
               exit 1
@@ -588,4 +643,4 @@
 - trigger:
     name: 'foreman-stable-arno'
     triggers:
-        - pollscm: '0 3 * * *'
+        - pollscm: '0 1 * * *'
