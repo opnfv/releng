@@ -15,7 +15,7 @@
         - 'genesis-foreman-daily-{stream}'
         - 'genesis-foreman-build-{stream}'
         - 'genesis-foreman-deploy-{stream}'
-        - 'genesis-foreman-deploy-runner-{stream}'
+        - 'genesis-foreman-lab-reconfig-{stream}'
         - 'genesis-foreman-deploy-virtual-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
@@ -164,7 +164,7 @@
 
     node: ericsson-build
 
-    disabled: false
+    disabled: true
 
     triggers:
         - 'foreman-{stream}'
@@ -175,6 +175,7 @@
         - foreman-parameter:
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
+
     scm:
         - git-scm:
             credentials-id: '{ssh-credentials}'
@@ -192,16 +193,20 @@
           - project: 'genesis-foreman-build-{stream}'
             git-revision: true
             block: true
-#        - trigger-builds:
-#          - project: 'genesis-foreman-deploy-runner-{stream}'
-#            git-revision: true
-#            block: true
-#        - trigger-builds:
-#          - project: 'functest-opnfv-jump-2'
-#            block: true
-#        - trigger-builds:
-#          - project: 'yardstick-opnfv-jump-2'
-#            block: true
+        - trigger-builds:
+          - project: 'genesis-foreman-lab-reconfig-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'genesis-foreman-deploy-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'functest-opnfv-jump-2'
+            block: true
+        - trigger-builds:
+          - project: 'yardstick-opnfv-jump-2'
+            block: true
 
 - job-template:
     name: 'genesis-foreman-build-{stream}'
@@ -269,7 +274,7 @@
         - 'foreman-deploy'
 
 - job-template:
-    name: 'genesis-foreman-deploy-runner-{stream}'
+    name: 'genesis-foreman-lab-reconfig-{stream}'
 
     project-type: freestyle
 
@@ -300,12 +305,14 @@
             refspec: ''
             branch: '{branch}'
 
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - "genesis-fuel-daily.*"
+
     builders:
         - 'foreman-lab-reconfig'
-        - trigger-builds:
-          - project: 'genesis-foreman-deploy-{stream}'
-            git-revision: true
-            block: true
 
 - job-template:
     name: 'genesis-foreman-deploy-virtual-{stream}'
@@ -588,4 +595,4 @@
 - trigger:
     name: 'foreman-stable-arno'
     triggers:
-        - pollscm: '0 3 * * *'
+        - pollscm: '0 1 * * *'
