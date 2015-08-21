@@ -15,8 +15,9 @@
         - 'genesis-fuel-daily-{stream}'
         - 'genesis-fuel-build-{stream}'
         - 'genesis-fuel-deploy-{stream}'
-        - 'genesis-fuel-deploy-virtual-master'
         - 'genesis-fuel-deploy-runner-{stream}'
+        - 'genesis-fuel-lab-reconfig-{stream}'
+        - 'genesis-fuel-deploy-virtual-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
@@ -167,7 +168,7 @@
 
     node: ericsson-build
 
-    disabled: false
+    disabled: true
 
     triggers:
         - 'fuel-{stream}'
@@ -196,16 +197,67 @@
           - project: 'genesis-fuel-build-{stream}'
             git-revision: true
             block: true
-#        - trigger-builds:
-#          - project: 'genesis-fuel-deploy-runner-{stream}'
-#            git-revision: true
-#            block: true
-#        - trigger-builds:
-#          - project: 'functest-opnfv-jump-1'
-#            block: true
-#        - trigger-builds:
-#          - project: 'yardstick-opnfv-jump-1'
-#            block: true
+        - trigger-builds:
+          - project: 'genesis-fuel-lab-reconfig-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'genesis-fuel-deploy-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'functest-opnfv-jump-1'
+            block: true
+        - trigger-builds:
+          - project: 'yardstick-opnfv-jump-1'
+            block: true
+
+- job-template:
+    name: 'genesis-fuel-deploy-runner-{stream}'
+
+    project-type: freestyle
+
+    disabled: false
+
+    node: master
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - foreman-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: GIT_BASE
+            default: ssh://gerrit.opnfv.org:29418/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - "genesis-foreman-daily.*"
+                - "genesis-foreman-deploy-runner-{stream}"
+                - "genesis-fuel-daily.*"
+
+    builders:
+        - 'fuel-lab-reconfig'
+        - trigger-builds:
+          - project: 'genesis-fuel-deploy-{stream}'
+            git-revision: true
+            block: true
 
 - job-template:
     name: 'genesis-fuel-build-{stream}'
@@ -275,7 +327,7 @@
         - 'fuel-deploy'
 
 - job-template:
-    name: 'genesis-fuel-deploy-runner-{stream}'
+    name: 'genesis-fuel-lab-reconfig-{stream}'
 
     project-type: freestyle
 
@@ -306,15 +358,17 @@
             refspec: ''
             branch: '{branch}'
 
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - "genesis-foreman-daily.*"
+
     builders:
         - 'fuel-lab-reconfig'
-        - trigger-builds:
-          - project: 'genesis-fuel-deploy-{stream}'
-            git-revision: true
-            block: true
 
 - job-template:
-    name: 'genesis-fuel-deploy-virtual-master'
+    name: 'genesis-fuel-deploy-virtual-{stream}'
 
     project-type: freestyle
 
@@ -333,7 +387,7 @@
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: master
+            branch: 'master'
 
     logrotate:
         daysToKeep: 30
@@ -618,8 +672,8 @@
             done
 
             if [ "$ping_flag" -eq 1 ]; then
-              echo "Slave is pingable, now wait 60 seconds for services to start"
-              sleep 60
+              echo "Slave is pingable, now wait 90 seconds for services to start"
+              sleep 90
             else
               echo "Slave did not come back up after reboot: please check opnfv-jump-2"
               exit 1
@@ -638,9 +692,9 @@
 - trigger:
     name: 'fuel-master'
     triggers:
-        - timed: '0 21 * * *'
+        - timed: '0 5 * * *'
 
 - trigger:
     name: 'fuel-stable-arno'
     triggers:
-        - timed: '0 3 * * *'
+        - timed: '0 9 * * *'
