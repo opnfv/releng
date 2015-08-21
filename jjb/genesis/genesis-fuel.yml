@@ -15,8 +15,8 @@
         - 'genesis-fuel-daily-{stream}'
         - 'genesis-fuel-build-{stream}'
         - 'genesis-fuel-deploy-{stream}'
-        - 'genesis-fuel-deploy-virtual-master'
-        - 'genesis-fuel-deploy-runner-{stream}'
+        - 'genesis-fuel-lab-reconfig'
+        - 'genesis-fuel-deploy-virtual-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
@@ -167,7 +167,7 @@
 
     node: ericsson-build
 
-    disabled: false
+    disabled: true
 
     triggers:
         - 'fuel-{stream}'
@@ -196,16 +196,20 @@
           - project: 'genesis-fuel-build-{stream}'
             git-revision: true
             block: true
-#        - trigger-builds:
-#          - project: 'genesis-fuel-deploy-runner-{stream}'
-#            git-revision: true
-#            block: true
-#        - trigger-builds:
-#          - project: 'functest-opnfv-jump-1'
-#            block: true
-#        - trigger-builds:
-#          - project: 'yardstick-opnfv-jump-1'
-#            block: true
+        - trigger-builds:
+          - project: 'genesis-fuel-lab-reconfig'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'genesis-fuel-deploy-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'functest-opnfv-jump-1'
+            block: true
+        - trigger-builds:
+          - project: 'yardstick-opnfv-jump-1'
+            block: true
 
 - job-template:
     name: 'genesis-fuel-build-{stream}'
@@ -275,7 +279,7 @@
         - 'fuel-deploy'
 
 - job-template:
-    name: 'genesis-fuel-deploy-runner-{stream}'
+    name: 'genesis-fuel-lab-reconfig'
 
     project-type: freestyle
 
@@ -306,15 +310,17 @@
             refspec: ''
             branch: '{branch}'
 
+   properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - "genesis-foreman-daily.*"
+
     builders:
         - 'fuel-lab-reconfig'
-        - trigger-builds:
-          - project: 'genesis-fuel-deploy-{stream}'
-            git-revision: true
-            block: true
 
 - job-template:
-    name: 'genesis-fuel-deploy-virtual-master'
+    name: 'genesis-fuel-deploy-virtual-{stream}'
 
     project-type: freestyle
 
@@ -638,9 +644,9 @@
 - trigger:
     name: 'fuel-master'
     triggers:
-        - timed: '0 21 * * *'
+        - timed: '0 4 * * *'
 
 - trigger:
     name: 'fuel-stable-arno'
     triggers:
-        - timed: '0 3 * * *'
+        - timed: '0 7 * * *'
