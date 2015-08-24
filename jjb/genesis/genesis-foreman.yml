@@ -97,9 +97,6 @@
     builders:
         - 'foreman-build'
         - 'foreman-workspace-cleanup'
-        - trigger-builds:
-          - project: 'genesis-foreman-deploy-virtual-{stream}'
-            git-revision: true
 
 - job-template:
     name: 'genesis-foreman-merge-{stream}'
@@ -370,8 +367,6 @@
 
     project-type: freestyle
 
-    disabled: false
-
     node: opnfv-jump-1
 
     logrotate:
@@ -383,19 +378,46 @@
     parameters:
         - project-parameter:
             project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
         - foreman-parameter:
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
-        - string:
-            name: GIT_BASE
-            default: ssh://gerrit.opnfv.org:29418/$PROJECT
-            description: "Used for overriding the GIT URL coming from parameters macro."
-
     scm:
-        - git-scm:
+        - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            user: '{ssh-credentials}'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'genesis'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'common/**'
+                  - compare-type: ANT
+                    pattern: '{installer}/**'
+            dependency-jobs: 'genesis-foreman-verify-{stream}'
+
 
     builders:
         - 'foreman-deploy-virtual'
