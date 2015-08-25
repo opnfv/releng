@@ -3,23 +3,29 @@
 ###################################
 - project:
     name: functest
-    pod:
-        - opnfv-jump-1:
-            node: 'opnfv-jump-1'
+
+    installer:
+        - fuel:
+            node: 'opnfv-jump-2'
             installer_type: 'fuel'
             installer_ip: '10.20.0.2'
-        - opnfv-jump-2:
+        - foreman:
             node: 'opnfv-jump-2'
             installer_type: 'foreman'
             installer_ip: '172.30.10.73'
+    pod:
         - orange-build:
             node: 'orange-build'
             installer_type: 'foreman'
             installer_ip: '172.30.10.73'
+
     jobs:
-        - 'functest-{pod}'
         - 'set-functest-env-{pod}'
+        - 'functest-{pod}'
         - 'clean-functest-env-{pod}'
+        - 'set-functest-env-{installer}-{stream}'
+        - 'functest-{installer}-{stream}'
+        - 'clean-functest-env-{installer}-{stream}'
         - 'functest-openstack-bench-test-{pod}'
         - 'functest-openstack-tempest-smoke-test-{pod}'
         - 'functest-odl-test-{pod}'
@@ -85,6 +91,72 @@
     project-type: freestyle
 
     node: '{pod}'
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            set +e
+
+            # collect results
+            echo "Functest: copy results and clean Functest environment"
+            mkdir -p $HOME/functest/results
+
+            # save ODL results
+            cp -Rf $WORSPACE/testcases/Controllers/ODL/CI/logs $HOME/functest/results/ODL
+
+            # save tempest.conf for further troubleshooting
+            cp $HOME/.rally/tempest/for-deployment-*/tempest.conf $HOME/functest/results
+
+            # cleanup
+            python $WORKSPACE/testcases/config_functest.py --debug --force $WORKSPACE/ clean
+
+- job-template:
+    name: set-functest-env-{installer}-{stream}
+
+    project-type: freestyle
+
+    node: '{node}'
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            set +e
+
+            echo "Functest: prepare Functest environment"
+            mkdir -p $HOME/functest/
+            # source openstack vars
+            if [[ ! -f $HOME/opnfv-openrc.sh ]]; then
+                echo "Unable to access file $HOME/opnfv-openrc.sh"
+                exit 1
+            fi
+            source $HOME/opnfv-openrc.sh
+
+            # WORKSPACE is the root of the functest repo
+            # go into WORKSPACE where the functest repo is cloned
+            cd $WORKSPACE
+
+            # prepare
+            echo "Functest: prepare Functest environment"
+            python $WORKSPACE/testcases/config_functest.py --debug $WORKSPACE/ start
+
+- job-template:
+    name: clean-functest-env-{installer}-{stream}
+
+    project-type: freestyle
+
+    node: '{node}'
 
     logrotate:
         daysToKeep: 30
@@ -234,6 +306,47 @@
             default: '{installer_ip}'
             description: "Installer IP."
         - '{pod}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: master
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - 'functest-fetch-os-creds'
+        - 'functest-all'
+        - 'functest-store-results'
+        - 'functest-cleanup'
+
+- job-template:
+    name: functest-{installer}-{stream}
+
+    project-type: freestyle
+
+    node: '{node}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - string:
+            name: INSTALLER_TYPE
+            default: '{installer_type}'
+            description: "Installer name that is used for deployment."
+        - string:
+            name: INSTALLER_IP
+            default: '{installer_ip}'
+            description: "Installer IP."
+        - string:
+            name: GIT_BASE
+            default: ssh://gerrit.opnfv.org:29418/$PROJECT
+            description: "Override GIT_BASE"
 
     scm:
         - git-scm:
