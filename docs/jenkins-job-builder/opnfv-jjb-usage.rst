@@ -36,9 +36,16 @@ The verify and merge jobs are retriggerable in Gerrit by simply leaving a commen
 
 You can add below persons as reviewers to your patch in order to get it reviewed and submitted.
 
-* Ulrich Kleber (Ulrich.Kleber@huawei.com)
-* Fatih Degirmenci (fatih.degirmenci@ericsson.com)
-* Xinyu Zhao(Jerry) (zhaoxinyu@huawei.com)
+* fatih.degirmenci@ericsson.com
+* agardner@linuxfoundation.org
+* trozet@redhat.com
+* morgan.richomme@orange.com
+* vlaza@cloudbasesolutions.com
+* matthew.lijun@huawei.com
+* pbandzi@cisco.com
+* jose.lausuch@ericsson.com
+* koffirodrigue@gmail.com
+* r-mibu@cq.jp.nec.com
 
 Or just email a request for submission to opnfv-helpdesk@rt.linuxfoundation.org
 
