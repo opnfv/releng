@@ -51,7 +51,6 @@ Or just email a request for submission to opnfv-helpdesk@rt.linuxfoundation.org
 
 The Current merge and verify jobs for jenkins job builder as pulled from the repo::
 
-
 **releng-jobs.yaml**:
 
 .. code-block:: bash
