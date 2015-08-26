@@ -51,9 +51,9 @@ fi
 if [[ $JOB_NAME =~ "verify" ]] ; then
     gsutil cp -r docs/output/"${{dir##*/}}/" "gs://$gs_path_review/"
     echo
-    echo "Document is available at http://$gs_path_review/index.html"
     # post link to gerrit as comment
-    gerrit_comment=$(echo '"Document is available at 'http://$gs_path_review/index.html' for review"')
+    gerrit_comment=$(echo '"Document is available at 'http://$gs_path_review/"${{dir##*/}}/"/index.html' for review"')
+    echo "$gerrit_comment"
     ssh -p 29418 gerrit.opnfv.org gerrit review -p $GERRIT_PROJECT -m \
     $gerrit_comment $GERRIT_PATCHSET_REVISION
 else
