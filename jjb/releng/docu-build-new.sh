@@ -19,17 +19,18 @@ while read -d $'\n'; do
 done < <(find docs/ -name 'index.rst' -printf '%h\n' | sort -u )
 
 for dir in "${{directories[@]}}"; do
-echo
-echo "#############################"
-echo "Building DOCS in ${{dir##*/}}"
-echo "#############################"
-echo
+  echo
+  echo "#############################"
+  echo "Building DOCS in ${{dir##*/}}"
+  echo "#############################"
+  echo
 
-if [[ ! -d docs/output/"${{dir##*/}}/" ]]; then
-  mkdir -p docs/output/"${{dir##*/}}/"
-fi
+  if [[ ! -d docs/output/"${{dir##*/}}/" ]]; then
+    mkdir -p docs/output/"${{dir##*/}}/"
+  fi
 
-sphinx-build -b html -E -c docs/etc/ ""$dir"/" docs/output/"${{dir##*/}}/"
+  sphinx-build -b html -E -c docs/etc/ ""$dir"/" docs/output/"${{dir##*/}}/"
+done
 
 # NOTE: make sure source parameters for GS paths are not empty.
 [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
@@ -75,5 +76,4 @@ while read -d $'\n'; do
           fi
 
 
-          done
 done
