@@ -44,127 +44,134 @@ Or just email a request for submission to opnfv-helpdesk@rt.linuxfoundation.org
 
 The Current merge and verify jobs for jenkins job builder as pulled from the repo::
 
+
+**releng-jobs.yaml**:
+
+.. code-block:: bash
+
  - project:
-    name: builder-jobs
-    jobs:
-        - 'builder-verify-jjb'
-        - 'builder-merge'
-
-    project: 'releng'
-
+     name: builder-jobs
+     jobs:
+         - 'builder-verify-jjb'
+         - 'builder-merge'
+ 
+     project: 'releng'
+ 
  - job-template:
-    name: builder-verify-jjb
-
-    project-type: freestyle
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: 'master'
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: '$GERRIT_REFSPEC'
-            choosing-strategy: 'gerrit'
-
-    wrappers:
-        - ssh-agent-credentials:
-            user: '{ssh-credentials}'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'releng'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
-                file-paths:
-                    - compare-type: ANT
-                      pattern: jjb/**
-                    - compare-type: ANT
-                      pattern: jjb-templates/**
-
-
-    builders:
-        - shell: |
-            source /opt/virtualenv/jenkins-job-builder/bin/activate
-            jenkins-jobs test /opt/jenkins-ci/builder/
-
+     name: builder-verify-jjb
+ 
+     node: master
+ 
+     project-type: freestyle
+ 
+     logrotate:
+         daysToKeep: 30
+         numToKeep: 10
+         artifactDaysToKeep: -1
+         artifactNumToKeep: -1
+ 
+     parameters:
+         - project-parameter:
+             project: '{project}'
+         - gerrit-parameter:
+             branch: 'master'
+     scm:
+         - gerrit-trigger-scm:
+             credentials-id: '{ssh-credentials}'
+             refspec: '$GERRIT_REFSPEC'
+             choosing-strategy: 'gerrit'
+ 
+     wrappers:
+         - ssh-agent-credentials:
+             user: '{ssh-credentials}'
+ 
+     triggers:
+         - gerrit:
+             trigger-on:
+                 - patchset-created-event:
+                     exclude-drafts: 'false'
+                     exclude-trivial-rebase: 'false'
+                     exclude-no-code-change: 'false'
+                 - draft-published-event
+                 - comment-added-contains-event:
+                     comment-contains-value: 'recheck'
+                 - comment-added-contains-event:
+                     comment-contains-value: 'reverify'
+             projects:
+               - project-compare-type: 'ANT'
+                 project-pattern: 'releng'
+                 branches:
+                   - branch-compare-type: 'ANT'
+                     branch-pattern: '**/master'
+                 file-paths:
+                     - compare-type: ANT
+                       pattern: jjb/**
+                     - compare-type: ANT
+                       pattern: jjb-templates/**
+ 
+ 
+     builders:
+         - shell:
+             !include-raw verify-releng
+ 
  - job-template:
-    name: 'builder-merge'
+     name: 'builder-merge'
+ 
+     node: master
+ 
+     # builder-merge job to run JJB update
+     #
+     # This job's purpose is to update all the JJB
+ 
+     project-type: freestyle
+ 
+     logrotate:
+         daysToKeep: 30
+         numToKeep: 40
+         artifactDaysToKeep: -1
+         artifactNumToKeep: 5
+ 
+     parameters:
+         - project-parameter:
+             project: '{project}'
+         - gerrit-parameter:
+             branch: 'master'
+ 
+     scm:
+         - gerrit-trigger-scm:
+             credentials-id: '{ssh-credentials}'
+             refspec: ''
+             choosing-strategy: 'default'
+ 
+     wrappers:
+         - ssh-agent-credentials:
+             user: '{ssh-credentials}'
+ 
+     triggers:
+         - gerrit:
+             trigger-on:
+                 - change-merged-event
+                 - comment-added-contains-event:
+                     comment-contains-value: 'remerge'
+             projects:
+               - project-compare-type: 'ANT'
+                 project-pattern: 'releng'
+                 branches:
+                     - branch-compare-type: 'ANT'
+                       branch-pattern: '**/master'
+                 file-paths:
+                     - compare-type: ANT
+                       pattern: jjb/**
+ 
+     builders:
+         - shell: |
+                 source /opt/virtualenv/jenkins-job-builder/bin/activate
+                 cd /opt/jenkins-ci/releng
+                 git pull
+                 jenkins-jobs update --delete-old jjb/
+ 
+ 
 
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
-    project-type: freestyle
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 40
-        artifactDaysToKeep: -1
-        artifactNumToKeep: 5
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: 'master'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
-
-    wrappers:
-        - ssh-agent-credentials:
-            user: '{ssh-credentials}'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'releng'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
-                file-paths:
-                    - compare-type: ANT
-                      pattern: jjb/**
-
-    builders:
-        - shell: |
-                source /opt/virtualenv/jenkins-job-builder/bin/activate
-                cd /opt/jenkins-ci/releng
-                git pull
-                jenkins-jobs update --delete-old jjb/
-
-
-
-**Documentation tracking**
 
 Revision: _sha1_
 
