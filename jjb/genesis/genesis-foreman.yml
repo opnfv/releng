@@ -10,14 +10,14 @@
     installer: 'foreman'
 
     jobs:
-        - 'genesis-foreman-verify-{stream}'
+        - 'genesis-foreman-verify-build-{stream}'
         - 'genesis-foreman-merge-{stream}'
         - 'genesis-foreman-daily-{stream}'
         - 'genesis-foreman-build-{stream}'
         - 'genesis-foreman-deploy-{stream}'
         - 'genesis-foreman-lab-reconfig-{stream}'
         - 'genesis-foreman-deploy-runner-{stream}'
-        - 'genesis-foreman-deploy-virtual-{stream}'
+        - 'genesis-foreman-verify-deploy-virtual-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
@@ -33,7 +33,7 @@
 ########################
 
 - job-template:
-    name: 'genesis-foreman-verify-{stream}'
+    name: 'genesis-foreman-verify-build-{stream}'
 
     project-type: freestyle
 
@@ -371,7 +371,7 @@
         - 'foreman-lab-reconfig'
 
 - job-template:
-    name: 'genesis-foreman-deploy-virtual-{stream}'
+    name: 'genesis-foreman-verify-deploy-virtual-{stream}'
 
     project-type: freestyle
 
@@ -428,7 +428,7 @@
                     pattern: 'common/**'
                   - compare-type: ANT
                     pattern: '{installer}/**'
-            dependency-jobs: 'genesis-foreman-verify-{stream}'
+            dependency-jobs: 'genesis-foreman-verify-build-{stream}'
 
 
     builders:
