@@ -166,5 +166,6 @@ sed -i  "/OS_AUTH_URL/c\export OS_AUTH_URL=\'$public_ip'" $dest_path
 
 echo "-------- Credentials: --------"
 cat $dest_path
+source $dest_path
 
 exit 0
