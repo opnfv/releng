@@ -114,6 +114,8 @@
             cp $HOME/.rally/tempest/for-deployment-*/tempest.conf $HOME/functest/results
 
             # cleanup
+            # source openstack vars
+            source $HOME/opnfv-openrc.sh
             python $WORKSPACE/testcases/config_functest.py --debug --force $WORKSPACE/ clean
 
 - job-template:
@@ -180,6 +182,8 @@
             cp $HOME/.rally/tempest/for-deployment-*/tempest.conf $HOME/functest/results
 
             # cleanup
+            # source openstack vars
+            source $HOME/opnfv-openrc.sh
             python $WORKSPACE/testcases/config_functest.py --debug --force $WORKSPACE/ clean
 
 - job-template:
@@ -576,6 +580,8 @@
 
             echo "Functest: prepare Functest environment"
             mkdir -p $HOME/functest/
+
+            # source openstack vars
             source $HOME/opnfv-openrc.sh
 
             # WORKSPACE is the root of the functest repo
@@ -627,6 +633,7 @@
             set +e
 
             # cleanup
+            source $HOME/opnfv-openrc.sh
             python $WORKSPACE/testcases/config_functest.py --debug --force $WORKSPACE/ clean
 
 - builder:
