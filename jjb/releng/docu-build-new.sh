@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 set -e
 set -o pipefail
 
@@ -9,13 +9,13 @@ if [[ -d docs/output ]]; then
 rm -rf docs/output
 echo "cleaning up output directory"
 fi
-}} 
+}}
 
 trap clean EXIT TERM INT SIGTERM SIGHUP
 
 directories=()
 while read -d $'\n'; do
-        directories+=("$REPLY")
+  directories+=("$REPLY")
 done < <(find docs/ -name 'index.rst' -printf '%h\n' | sort -u )
 
 for dir in "${{directories[@]}}"; do
@@ -36,44 +36,41 @@ done
 [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
 [[ $GERRIT_PROJECT =~ .+ ]]
 [[ $GERRIT_BRANCH =~ .+ ]]
+gs_path_review="artifacts.opnfv.org/review/$GERRIT_CHANGE_NUMBER"
 
-directories=()
-while read -d $'\n'; do
-          directories+=("$REPLY")
-        done < <(find docs/ -name 'index.rst' -printf '%h\n' | sort -u )
+for dir in "${{directories[@]}}"; do
+  echo
+  echo "#############################"
+  echo "UPLOADING DOCS in ${{dir##*/}}"
+  echo "#############################"
+  echo
 
-        for dir in "${{directories[@]}}"; do
-          echo
-          echo "#############################"
-          echo "UPLOADING DOCS in ${{dir##*/}}"
-          echo "#############################"
-          echo
+  if [[ $GERRIT_BRANCH = "master" ]] ; then
+    gs_path_branch="artifacts.opnfv.org/$GERRIT_PROJECT"
+  else
+    gs_path_branch="artifacts.opnfv.org/$GERRIT_PROJECT/${{GERRIT_BRANCH##*/}}"
+  fi
 
-          gs_path_review="artifacts.opnfv.org/review/$GERRIT_CHANGE_NUMBER"
-          if [[ $GERRIT_BRANCH = "master" ]] ; then
-              gs_path_branch="artifacts.opnfv.org/$GERRIT_PROJECT"
-          else
-              gs_path_branch="artifacts.opnfv.org/$GERRIT_PROJECT/${{GERRIT_BRANCH##*/}}"
-          fi
+  if [[ $JOB_NAME =~ "verify" ]] ; then
+    gsutil cp -r docs/output/"${{dir##*/}}/" "gs://$gs_path_review/"
+    # post link to gerrit as comment
+    gerrit_comment="$(echo '"Document is available at 'http://$gs_path_review/"${{dir##*/}}"/index.html' for review"')"
+    echo "$gerrit_comment"
+    ssh -p 29418 gerrit.opnfv.org gerrit review -p $GERRIT_PROJECT -m \
+    "$gerrit_comment" $GERRIT_PATCHSET_REVISION
 
-          if [[ $JOB_NAME =~ "verify" ]] ; then
-              gsutil cp -r docs/output/"${{dir##*/}}/" "gs://$gs_path_review/"
-              # post link to gerrit as comment
-              gerrit_comment="$(echo '"Document is available at 'http://$gs_path_review/"${{dir##*/}}"/index.html' for review"')"
-              echo "$gerrit_comment"
-              ssh -p 29418 gerrit.opnfv.org gerrit review -p $GERRIT_PROJECT -m \
-              "$gerrit_comment" $GERRIT_PATCHSET_REVISION
-          else
-              gsutil cp -r docs/output/"${{dir##*/}}/" "gs://$gs_path_branch/"
+  else
 
-              echo "Latest document is available at http://$gs_path_branch/index.html"
+    gsutil cp -r docs/output/"${{dir##*/}}/" "gs://$gs_path_branch/"
+    echo "Latest document is available at http://$gs_path_branch/index.html"
 
-              if gsutil ls "gs://$gs_path_review" > /dev/null 2>&1 ; then
-                  echo
-                  echo "Deleting Out-of-dated Documents..."
-                  gsutil rm -r "gs://$gs_path_review"
-              fi
-          fi
+    #Clean up review when merging
+    if gsutil ls "gs://$gs_path_review" > /dev/null 2>&1 ; then
+      echo
+      echo "Deleting Out-of-dated Documents..."
+      gsutil rm -r "gs://$gs_path_review"
+    fi
 
+  fi
 
 done
