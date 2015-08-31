@@ -1,3 +1,9 @@
+.. image:: opnfv-logo.png
+  :height: 40
+  :width: 200
+  :alt: OPNFV
+  :align: left
+
 Creating/Configuring/Verifying Jenkins Jobs
 ============================================
 
@@ -181,4 +187,4 @@ The Current merge and verify jobs for jenkins job builder as pulled from the rep
 
 Revision: _sha1_
 
-Build date:  _date_
+Build date: |today| 
