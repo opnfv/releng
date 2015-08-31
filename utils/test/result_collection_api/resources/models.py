@@ -155,7 +155,7 @@ class TestResult:
             "project_name": self.project_name,
             "pod_id": self.pod_id,
             "description": self.description,
-            "creation_date": self.creation_date,
+            "creation_date": str(self.creation_date),
             "details": self.details,
         }
 

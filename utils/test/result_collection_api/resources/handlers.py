@@ -450,8 +450,8 @@ class TestResultsHandler(GenericApiHandler):
         """
 
         project_arg = self.get_query_argument("project", None)
-        case_arg = self.get_query_arguments("case", None)
-        pod_arg = self.get_query_arguments("pod", None)
+        case_arg = self.get_query_argument("case", None)
+        pod_arg = self.get_query_argument("pod", None)
 
         # prepare request
         get_request = dict()
@@ -469,20 +469,19 @@ class TestResultsHandler(GenericApiHandler):
 
         res = []
         # fetching results
-        cursor = self.db.test_cases.find(get_request)
+        cursor = self.db.test_results.find(get_request)
         while (yield cursor.fetch_next):
-            test_case = TestCase.test_case_from_dict(cursor.next_object)
-            res.append(test_case.format_http())
+            test_result = TestResult.test_result_from_dict(cursor.next_object())
+            res.append(test_result.format_http())
 
         # building meta object
         meta = dict()
-        meta["total"] = res.count()
+        meta["total"] = len(res)
 
         # final response object
         answer = dict()
         answer["test_results"] = res
         answer["meta"] = meta
-
         self.finish_request(answer)
 
     @asynchronous
@@ -510,7 +509,7 @@ class TestResultsHandler(GenericApiHandler):
         # check for project
         mongo_dict = yield self.db.test_projects.find_one(
             {"name": self.json_args.get("project_name")})
-        if not (mongo_dict is None):
+        if mongo_dict is None:
             raise HTTPError(HTTP_NOT_FOUND,
                             "Could not find project [{}] "
                             .format(self.json_args.get("project_name")))
@@ -518,7 +517,7 @@ class TestResultsHandler(GenericApiHandler):
         # check for case
         mongo_dict = yield self.db.test_cases.find_one(
             {"name": self.json_args.get("case_name")})
-        if not (mongo_dict is None):
+        if mongo_dict is None:
             raise HTTPError(HTTP_NOT_FOUND,
                             "Could not find case [{}] "
                             .format(self.json_args.get("case_name")))
@@ -526,7 +525,7 @@ class TestResultsHandler(GenericApiHandler):
         # check for pod
         mongo_dict = yield self.db.pod.find_one(
             {"_id": self.json_args.get("pod_id")})
-        if not (mongo_dict is None):
+        if mongo_dict is None:
             raise HTTPError(HTTP_NOT_FOUND,
                             "Could not find POD [{}] "
                             .format(self.json_args.get("pod_id")))

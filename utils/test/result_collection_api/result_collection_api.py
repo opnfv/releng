@@ -7,23 +7,6 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-"""
-Pre-requisites:
-    pip install motor
-    pip install tornado
-
-We can launch the API with this file
-
-TODOS :
-  - json args validation with schemes
-  - count cases for GET on test_projects
-  - count results for GET on cases
-  - add meta object to json response
-  - provide filtering on requests
-  - include objects
-
-"""
-
 import tornado.ioloop
 import motor
 
@@ -66,6 +49,7 @@ def make_app():
             # POST /results =>
             # Push results with mandatory request payload parameters
             # (project, case, and pod_id)
+            (r"/results", TestResultsHandler),
             (r"/results([^/]*)", TestResultsHandler),
             (r"/results/([^/]*)", TestResultsHandler),
         ],
