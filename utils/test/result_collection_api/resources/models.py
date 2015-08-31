@@ -114,7 +114,7 @@ class TestCase:
             "description": self.description,
             "creation_date": str(self.creation_date),
         }
-        if not (test_project is None):
+        if test_project is not None:
             res["test_project"] = test_project
 
         return res
@@ -128,6 +128,8 @@ class TestResult:
         self.case_name = None
         self.project_name = None
         self.pod_id = None
+        self.installer = None
+        self.platform_version = None
         self.description = None
         self.creation_date = None
         self.details = None
@@ -155,7 +157,7 @@ class TestResult:
             "project_name": self.project_name,
             "pod_id": self.pod_id,
             "description": self.description,
-            "creation_date": self.creation_date,
+            "creation_date": str(self.creation_date),
             "details": self.details,
         }
 
@@ -166,6 +168,6 @@ class TestResult:
             "project_name": self.project_name,
             "pod_id": self.pod_id,
             "description": self.description,
-            "creation_date": self.creation_date,
+            "creation_date": str(self.creation_date),
             "details": self.details,
         }
