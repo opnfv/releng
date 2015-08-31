@@ -3,6 +3,7 @@ set -e
 set -o pipefail
 
 export PATH=$PATH:/usr/local/bin/
+git_sha1="$(git rev-parse HEAD)"
 
 clean() {{
 if [[ -d docs/output ]]; then
@@ -12,6 +13,15 @@ fi
 }}
 
 trap clean EXIT TERM INT SIGTERM SIGHUP
+
+#set git_sha1
+files=()
+while read -r -d ''; do
+  files+=("$REPLY")
+done < <(find docs/ -type f -iname '*.rst' -print0)
+for file in "${{files[@]}}"; do
+  sed -i "s/_sha1_/$git_sha1/g" $file
+done
 
 directories=()
 while read -d $'\n'; do
@@ -52,17 +62,37 @@ for dir in "${{directories[@]}}"; do
   fi
 
   if [[ $JOB_NAME =~ "verify" ]] ; then
+
+    #upload artifacts for verify job
     gsutil cp -r docs/output/"${{dir##*/}}/" "gs://$gs_path_review/"
+
     # post link to gerrit as comment
     gerrit_comment="$(echo '"Document is available at 'http://$gs_path_review/"${{dir##*/}}"/index.html' for review"')"
     echo "$gerrit_comment"
     ssh -p 29418 gerrit.opnfv.org gerrit review -p $GERRIT_PROJECT -m \
     "$gerrit_comment" $GERRIT_PATCHSET_REVISION
 
+    #set cache to 0
+    for x in $(gsutil ls gs://$gs_path_review/"${{dir##*/}}" | grep html);
+    do
+      gsutil setmeta -h "Content-Type:text/html" \
+      -h "Cache-Control:private, max-age=0, no-transform" \
+      "$x"
+    done
+
   else
 
+    #upload artifacts for merge job
     gsutil cp -r docs/output/"${{dir##*/}}/" "gs://$gs_path_branch/"
     echo "Latest document is available at http://$gs_path_branch/index.html"
+
+    #set cache to 0
+    for x in $(gsutil ls gs://$gs_path_branch/"${{dir}}" | grep html);
+    do
+      gsutil setmeta -h "Content-Type:text/html" \
+      -h "Cache-Control:private, max-age=0, no-transform" \
+      "$x"
+    done
 
     #Clean up review when merging
     if gsutil ls "gs://$gs_path_review" > /dev/null 2>&1 ; then
@@ -74,3 +104,6 @@ for dir in "${{directories[@]}}"; do
   fi
 
 done
+
+
+
