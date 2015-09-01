@@ -194,7 +194,7 @@
 
     builders:
         - 'yardstick-fetch-os-creds'
-        - 'yardstick-ping'
+        - 'yardstick-daily'
 
     publishers:
         - email:
@@ -204,7 +204,7 @@
 # builder macros
 ########################
 - builder:
-    name: yardstick-ping
+    name: yardstick-daily
     builders:
         - shell: |
             #!/bin/bash
@@ -220,14 +220,9 @@
             fi
             source $HOME/opnfv-openrc.sh
 
-            # check if cirros-0.3.3 image is already available
-            # if not, create the image
-            echo "Yardstick: configure the image"
-            IMAGE_NAME=cirros-0.3.3
-            if ! nova image-show $IMAGE_NAME > /dev/null 2>&1; then
-                echo "Image $IMAGE_NAME doesn't exist. Creating image $IMAGE_NAME"
-                glance image-create --name cirros-0.3.3 --is-public true --disk-format qcow2 --container-format bare --file $HOME/yardstick/cirros-0.3.3-x86_64-disk.img
-            fi
+            # Emergency fix for glance '--is-public' error.
+            # TODO: This should maybe go into openrc instead!?
+            export OS_IMAGE_API_VERSION=1
 
             # set virtualenv
             echo "Yardstick: setup virtualenv"
@@ -237,13 +232,34 @@
             easy_install -U setuptools
             python setup.py develop > /dev/null 2>&1
 
-            # set virtualenv
-            echo "Yardstick: execute ping scenario"
-            yardstick task start samples/ping.yaml -v -d
+            echo "Yardstick: configure the images"
+            # check if cirros-0.3.3 image is already available
+            # if not, create the image
+            IMAGE_NAMES[0]=cirros-0.3.3
+            if ! nova image-show ${IMAGE_NAMES[0]} > /dev/null 2>&1; then
+                echo "Image ${IMAGE_NAMES[0]} doesn't exist. Creating image ${IMAGE_NAMES[0]}"
+                glance image-create --name cirros-0.3.3 --is-public true --disk-format qcow2 --container-format bare --file $HOME/yardstick/cirros-0.3.3-x86_64-disk.img
+            fi
+
+            # check if yardstick-trusty image is already available
+            # if not, create the image to $WORKSPACE
+            IMAGE_NAMES[1]=yardstick-trusty-server
+            if ! nova image-show ${IMAGE_NAMES[1]} > /dev/null 2>&1; then
+                echo "Image ${IMAGE_NAMES[1]} doesn't exist. Creating image ${IMAGE_NAMES[1]}"
+                sudo yardstick-img-modify $WORKSPACE/tools/ubuntu-server-cloudimg-modify.sh
+                glance image-create --name yardstick-trusty-server --is-public true --disk-format qcow2 --container-format bare --file $WORKSPACE/yardstick-trusty-server.img
+            fi
+
+            # execute tasks
+            echo "Yardstick: execute scenarios"
+            ./ci/run_tasks.sh
 
             # cleanup
             echo "Yardstick: cleanup"
-            glance image-delete $IMAGE_NAME
+            for IMAGE_NAME in ${IMAGE_NAMES[@]}
+            do
+                glance image-delete $IMAGE_NAME
+            done
 
             # done
             echo "Yardstick: done!"
