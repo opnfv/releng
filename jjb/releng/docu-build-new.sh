@@ -83,8 +83,8 @@ for dir in "${{directories[@]}}"; do
   else
 
     #upload artifacts for merge job
-    gsutil cp -r docs/output/"${{dir##*/}}/" "gs://$gs_path_branch/"
-    echo "Latest document is available at http://$gs_path_branch/index.html"
+    gsutil cp -r docs/output/"${{dir##*/}}/" "gs://$gs_path_branch/"${{dir}}/""
+    echo "Latest document is available at http://$gs_path_branch/"${{dir}}/"index.html"
 
     #set cache to 0
     for x in $(gsutil ls gs://$gs_path_branch/"${{dir}}" | grep html);
