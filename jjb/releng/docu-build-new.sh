@@ -40,13 +40,21 @@ for dir in "${{directories[@]}}"; do
   fi
 
   sphinx-build -b html -E -c docs/etc/ ""$dir"/" docs/output/"${{dir##*/}}/"
+
 done
 
 # NOTE: make sure source parameters for GS paths are not empty.
 [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
 [[ $GERRIT_PROJECT =~ .+ ]]
 [[ $GERRIT_BRANCH =~ .+ ]]
+
 gs_path_review="artifacts.opnfv.org/review/$GERRIT_CHANGE_NUMBER"
+
+if [[ $GERRIT_BRANCH = "master" ]] ; then
+  gs_path_branch="artifacts.opnfv.org/$GERRIT_PROJECT"
+else
+  gs_path_branch="artifacts.opnfv.org/$GERRIT_PROJECT/${{GERRIT_BRANCH##*/}}"
+fi
 
 for dir in "${{directories[@]}}"; do
   echo
@@ -55,11 +63,6 @@ for dir in "${{directories[@]}}"; do
   echo "#############################"
   echo
 
-  if [[ $GERRIT_BRANCH = "master" ]] ; then
-    gs_path_branch="artifacts.opnfv.org/$GERRIT_PROJECT"
-  else
-    gs_path_branch="artifacts.opnfv.org/$GERRIT_PROJECT/${{GERRIT_BRANCH##*/}}"
-  fi
 
   if [[ $JOB_NAME =~ "verify" ]] ; then
 
@@ -83,7 +86,7 @@ for dir in "${{directories[@]}}"; do
   else
 
     #upload artifacts for merge job
-    gsutil cp -r docs/output/"${{dir##*/}}/" "gs://$gs_path_branch/"${{dir}}/""
+    gsutil cp -r docs/output/"${{dir##*/}}" "gs://$gs_path_branch/"${{dir}}/""
     echo "Latest document is available at http://$gs_path_branch/"${{dir}}/"index.html"
 
     #set cache to 0
