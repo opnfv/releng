@@ -41,7 +41,8 @@
 
     project-type: freestyle
     varsetabove: '{somevar}'
-    node: ericsson-build
+    #node: ericsson-build
+    node: master
 
     logrotate:
         daysToKeep: '{build-days-to-keep}'
@@ -74,6 +75,7 @@
 
     builders:
         - shell: |
+	   !include-raw ../vswitchperf/docu-build.sh 
             pwd
             cd src
             make
@@ -87,7 +89,8 @@
     name: 'vswitchperf-verify'
 
     project-type: freestyle
-    node: ericsson-build
+    #node: ericsson-build
+    node: master
 
     logrotate:
         daysToKeep: 30
@@ -134,6 +137,7 @@
 
     builders:
         - shell: |
+	    !include-raw ../vswitchperf/docu-verify.sh
             pwd
             cd src
             make
@@ -148,7 +152,8 @@
     # This job's purpose is to update all the JJB
 
     project-type: freestyle
-    node: ericsson-build
+    #node: ericsson-build
+    node: master
 
     logrotate:
         daysToKeep: 30
@@ -190,6 +195,7 @@
 
     builders:
         - shell: |
+	    !include-raw ../vswitchperf/docu-build.sh
             pwd
             cd src
             make
