@@ -14,13 +14,18 @@ Pre-requisites:
 
 We can launch the API with this file
 
-TODOS :
+TODOs :
   - json args validation with schemes
   - count cases for GET on test_projects
   - count results for GET on cases
-  - add meta object to json response
   - provide filtering on requests
   - include objects
+  - logging
+  - external configuration file
+  - setup file
+  - results pagination
+  - POST/PUT/DELETE for PODs
+  - POST/PUT/GET/DELETE for installers, platforms (enrich results info)
 
 """
 
@@ -66,6 +71,7 @@ def make_app():
             # POST /results =>
             # Push results with mandatory request payload parameters
             # (project, case, and pod_id)
+            (r"/results", TestResultsHandler),
             (r"/results([^/]*)", TestResultsHandler),
             (r"/results/([^/]*)", TestResultsHandler),
         ],
