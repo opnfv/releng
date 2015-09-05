@@ -15,29 +15,40 @@ Pre-requisites:
 We can launch the API with this file
 
 TODOs :
+  - use POD name instead of id
+  - logging
   - json args validation with schemes
+  - POST/PUT/DELETE for PODs
+  - POST/PUT/GET/DELETE for installers, platforms (enrich results info)
   - count cases for GET on test_projects
   - count results for GET on cases
   - provide filtering on requests
   - include objects
-  - logging
-  - external configuration file
+  - swagger documentation
   - setup file
   - results pagination
-  - POST/PUT/DELETE for PODs
-  - POST/PUT/GET/DELETE for installers, platforms (enrich results info)
+  - unit tests
 
 """
 
 import tornado.ioloop
 import motor
+import argparse
 
 from resources.handlers import VersionHandler, PodHandler, \
     TestProjectHandler, TestCasesHandler, TestResultsHandler
-from common.constants import API_LISTENING_PORT, MONGO_URL
+from common.config import APIConfig
+
+
+# optionally get config file from command line
+parser = argparse.ArgumentParser()
+parser.add_argument("-c", "--config-file", dest='config_file',
+                    help="Config file location")
+args = parser.parse_args()
+CONF = APIConfig().parse(args.config_file)
 
 # connecting to MongoDB server, and choosing database
-db = motor.MotorClient(MONGO_URL).test_results_collection
+db = motor.MotorClient(CONF.mongo_url)
 
 
 def make_app():
@@ -76,14 +87,15 @@ def make_app():
             (r"/results/([^/]*)", TestResultsHandler),
         ],
         db=db,
-        debug=True,
+        debug=CONF.api_debug_on,
     )
 
 
 def main():
     application = make_app()
-    application.listen(API_LISTENING_PORT)
+    application.listen(CONF.api_port)
     tornado.ioloop.IOLoop.current().start()
+
 
 if __name__ == "__main__":
     main()
