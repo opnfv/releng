@@ -8,10 +8,6 @@
 ##############################################################################
 
 
-API_LISTENING_PORT = 80
-
-MONGO_URL = "mongodb://127.0.0.1:27017/"
-
 DEFAULT_REPRESENTATION = "application/json"
 HTTP_BAD_REQUEST = 400
 HTTP_FORBIDDEN = 403
