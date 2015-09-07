@@ -33,9 +33,15 @@ if [[ $JOB_NAME =~ "verify" ]] ; then
     echo
     echo "Document is available at http://$gs_path_review"
 else
-    gsutil cp -r build/design_docs "gs://$gs_path_branch/"
-    gsutil cp -r build/requirements/html "gs://$gs_path_branch/"
-    gsutil cp -r build/requirements/latex/*.pdf "gs://$gs_path_branch/"
+    if [ -e build/design_docs ]; then
+        gsutil cp -r build/design_docs "gs://$gs_path_branch/"
+    fi
+    if [ -e build/requirements/html ]; then
+        gsutil cp -r build/requirements/html "gs://$gs_path_branch/"
+    fi
+    if [ -e build/requirements/latex ]; then
+        gsutil cp -r build/requirements/latex/*.pdf "gs://$gs_path_branch/"
+    fi
     echo
     echo "Latest document is available at http://$gs_path_branch"
 
