@@ -9,19 +9,16 @@
   :alt: OPNFV
   :align: left
 
-|
-|
-
-Release Engineering Project
-===========================
+Example Documentation table of contents
+=======================================
 
 Contents:
 
 .. toctree::
    :numbered:
-   :maxdepth: 8
+   :maxdepth: 4
 
-   opnfv-jjb-usage.rst
+   documentation-example.rst
 
 Indices and tables
 ==================

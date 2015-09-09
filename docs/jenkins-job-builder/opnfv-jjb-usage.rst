@@ -1,8 +1,11 @@
-.. image:: opnfv-logo.png
+.. image:: ../etc/opnfv-logo.png
   :height: 40
   :width: 200
   :alt: OPNFV
   :align: left
+
+|
+|
 
 Creating/Configuring/Verifying Jenkins Jobs
 ============================================
