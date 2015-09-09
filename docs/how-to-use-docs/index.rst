@@ -3,25 +3,22 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. image:: ../etc/opnfv-logo.png
+.. image:: opnfv-logo.png
   :height: 40
   :width: 200
   :alt: OPNFV
   :align: left
 
-|
-|
-
-Release Engineering Project
-===========================
+Example Documentation table of contents
+=======================================
 
 Contents:
 
 .. toctree::
    :numbered:
-   :maxdepth: 8
+   :maxdepth: 4
 
-   opnfv-jjb-usage.rst
+   documentation-example.rst
 
 Indices and tables
 ==================
