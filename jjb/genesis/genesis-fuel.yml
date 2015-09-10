@@ -501,7 +501,7 @@
             chmod a+x $TMPDIR
 
             # set CONFDIR, BRIDGE
-            export CONFDIR=$WORKSPACE/fuel/deploy/baremetal/conf/linux_foundation_lab/pod2/ha
+            export CONFDIR=$WORKSPACE/fuel/deploy/templates/hardware_environment/old_conf/linux_foundation_lab/pod2/ha
             export BRIDGE=pxebr
 
             # cleanup first
@@ -517,8 +517,8 @@
 
             # start the deployment
             echo "Issuing command"
-            echo "sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso $CONFDIR/dea.yaml $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE"
-            sudo $WORKSPACE/fuel/ci/deploy.sh $WORKSPACE/opnfv.iso $CONFDIR/dea.yaml $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE
+            echo "sudo $WORKSPACE/fuel/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE"
+            sudo $WORKSPACE/fuel/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE
 
             echo
             echo "--------------------------------------------------------"
