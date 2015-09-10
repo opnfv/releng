@@ -1,5 +1,5 @@
 .. two dots create a comment. please leave this logo at the top of each of your rst files.
-.. image:: ../etc/opnfv-logo.png 
+.. image:: ../etc/opnfv-logo.png
   :height: 40
   :width: 200
   :alt: OPNFV
