@@ -297,15 +297,8 @@
     builders:
         - 'compass-build'
         - 'compass-workspace-cleanup'
+        - 'compass-upload-artifact'
 
-    publishers:
-        - archive:
-            artifacts: '$BUILD_DIRECTORY/*.*'
-            allow-empty: 'true'
-            fingerprint: true
-        - trigger:
-            project: 'compass-upload-iso'
-            threshold: SUCCESS
 
 - job-template:
     name: 'compass-deploy-virtual-{flavor}'
@@ -421,11 +414,10 @@
 
             # start the build
             cd $WORKSPACE/
-            mkdir $WORKSPACE/$BUILD_DIRECTORY
-            ./build.sh  --iso-dir $WORKSPACE/$BUILD_DIRECTORY/ --iso-name compass.iso -c $CACHE_DIRECTORY
+            ./build.sh  --iso-dir $CACHE_DIRECTORY/ --iso-name compass.iso -c $CACHE_DIRECTORY
 
             # list the build artifacts
-            ls -al $WORKSPACE/$BUILD_DIRECTORY
+            ls -al $CACHE_DIRECTORY
 
             # save information regarding artifact into file
             (
@@ -433,14 +425,14 @@
                 echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
                 echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
                 echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
-                echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $WORKSPACE/$BUILD_DIRECTORY/compass.iso | cut -d' ' -f1)"
+                echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $CACHE_DIRECTORY/compass.iso | cut -d' ' -f1)"
                 echo "OPNFV_BUILD_URL=$BUILD_URL"
-            ) > $WORKSPACE/$BUILD_DIRECTORY/opnfv.properties
+            ) > $CACHE_DIRECTORY/opnfv.properties
             echo
             echo "--------------------------------------------------------"
             echo "Done!"
 
-            sudo rm -rf $WORKSPACE/work/
+            sudo rm -rf $WORKSPACE/work
 
 - builder:
     name: 'compass-deploy-virtual-flavor'
@@ -488,14 +480,15 @@
             # source the opnfv.properties to get ARTIFACT_VERSION
             source $WORKSPACE/$BUILD_DIRECTORY/opnfv.properties
 
-            scp $WORKSPACE/$BUILD_DIRECTORY/compass.iso $INTERNAL_REPO_XA/
-            scp $WORKSPACE/$BUILD_DIRECTORY/opnfv.properties $INTERNAL_REPO_XA/
-            scp $WORKSPACE/$BUILD_DIRECTORY/compass.iso $INTERNAL_REPO_XA/opnfv-$OPNFV_ARTIFACT_VERSION.iso
-
             # upload artifact and additional files to google storage
             gsutil cp $WORKSPACE/$BUILD_DIRECTORY/compass.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
             gsutil cp $WORKSPACE/$BUILD_DIRECTORY/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
             gsutil cp $WORKSPACE/$BUILD_DIRECTORY/opnfv.properties gs://$GS_URL/latest.properties > gsutil.latest.log 2>&1
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+            echo "Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
 
             echo
             echo "--------------------------------------------------------"
