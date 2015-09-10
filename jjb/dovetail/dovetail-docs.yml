@@ -1,15 +1,15 @@
 ########################
-# Job configuration for releng
+# Job configuration for dovetail-docs
 ########################
 - project:
 
-    name: releng
+    name: dovetail-docs
 
-    project: 'releng'
+    project: 'dovetail'
 
     jobs:
-        - 'releng-verify'
-        - 'releng-merge'
+        - 'dovetail-docs-verify'
+        - 'dovetail-docs-merge'
 
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
@@ -22,7 +22,7 @@
 ########################
 
 - job-template:
-    name: 'releng-verify'
+    name: 'dovetail-docs-verify'
 
     node: master
 
@@ -70,20 +70,15 @@
                     branch-pattern: '**/master'
                 file-paths:
                   - compare-type: ANT
-                    pattern: 'utils/**'
-                  - compare-type: ANT
                     pattern: 'docs/**'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'jjb/**'
 
     builders:
-       - shell: 
+       - shell:
            !include-raw ../../utils/docu-build-new.sh
 
 
 - job-template:
-    name: 'releng-merge'
+    name: 'dovetail-docs-merge'
 
     # builder-merge job to run JJB update
     #
@@ -123,18 +118,13 @@
                     comment-contains-value: 'remerge'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'releng'
+                project-pattern: '{project}'
                 branches:
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/master'
                 file-paths:
                   - compare-type: ANT
-                    pattern: 'utils/**'
-                  - compare-type: ANT
                     pattern: 'docs/**'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'jjb/**'
 
     builders:
         - shell:
