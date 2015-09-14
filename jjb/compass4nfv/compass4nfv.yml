@@ -88,6 +88,7 @@
 
     builders:
         - 'compass-build'
+        - 'compass-workspace-cleanup'
 
 - job-template:
     name: 'compass-verify'
@@ -270,6 +271,7 @@
     builders:
         - 'compass-build'
         - 'compass-upload-artifact'
+        - 'compass-workspace-cleanup'
 
 - job-template:
     name: 'compass-deploy-virtual-{flavor}'
@@ -486,7 +488,7 @@
             set -o pipefail
 
             # delete everything that is in $WORKSPACE
-            sudo /bin/rm -rf $WORKSPACE
+            /bin/rm -rf $WORKSPACE
 
 - builder:
     name: 'compass-ci-preclean-workspace'
