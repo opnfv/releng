@@ -591,6 +591,9 @@
             # prepare
             echo "Functest: prepare Functest environment"
             python $WORKSPACE/testcases/config_functest.py --debug $WORKSPACE/ start
+            if [ $? != 0 ]; then
+                exit 1
+            fi
 
             # vPing
             echo "Functest: run vPing"
