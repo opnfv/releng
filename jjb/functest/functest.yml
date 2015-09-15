@@ -582,6 +582,11 @@
             mkdir -p $HOME/functest/
 
             # source openstack vars
+            if [ ! -f $HOME/opnfv-openrc.sh ]; then
+                echo "Credentials file not found in "$HOME/opnfv-openrc.sh
+                exit 1
+            fi
+            echo "Sourcing the OpenStack credentials in"$HOME/opnfv-openrc.sh
             source $HOME/opnfv-openrc.sh
 
             # WORKSPACE is the root of the functest repo
@@ -592,6 +597,7 @@
             echo "Functest: prepare Functest environment"
             python $WORKSPACE/testcases/config_functest.py --debug $WORKSPACE/ start
             if [ $? != 0 ]; then
+                echo "Error when configuring Functest environment"
                 exit 1
             fi
 
