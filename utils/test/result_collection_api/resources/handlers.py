@@ -463,7 +463,7 @@ class TestResultsHandler(GenericApiHandler):
                 get_request["case_name"] = case_arg
 
             if pod_arg is not None:
-                get_request["pod_id"] = pod_arg
+                get_request["pod_id"] = int(pod_arg)
         else:
             get_request["_id"] = result_id
 
