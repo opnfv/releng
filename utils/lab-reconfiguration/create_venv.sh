@@ -30,6 +30,16 @@ if [[ ! $(rpm -qa | grep python-2.7) ]]; then
     sudo yum install -y python-2.7*
 fi
 
+if [[ ! $(rpm -qa | grep rubygems) ]]; then
+    echo "Rubygems not found, but required for Fuel Plugin build ... attempting to install"
+    sudo yum install -y rubygems ruby-devel
+fi
+
+if [[ ! $(gem list | grep fpm) ]]; then
+    echo "fpm gem not found, but required for Fuel Plugin build ... attempting to install"
+    sudo gem install fpm
+fi
+
 if [ ! -f "$BASEDIR/venv/updated" -o $BASEDIR/requirements.pip -nt $BASEDIR/venv/updated ]; then
     source $BASEDIR/venv/bin/activate
     pip install -r $BASEDIR/requirements.pip

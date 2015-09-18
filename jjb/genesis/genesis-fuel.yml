@@ -374,6 +374,7 @@
 
     builders:
         - 'fuel-download-artifact'
+        - 'fuel-opendaylight-plugin-build'
         - 'fuel-deploy'
 
     publishers:
@@ -524,6 +525,35 @@
             echo "Done!"
 
 - builder:
+    name: 'fuel-opendaylight-plugin-build'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Starting the build of Fuel Opendaylight Plugin. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
+
+            export ODL_PLUGIN_BRANCH="juno/lithium-sr1"
+
+            cd $WORKSPACE
+            git clone https://github.com/stackforge/fuel-plugin-opendaylight
+
+            pushd $WORKSPACE/fuel-plugin-opendaylight
+            git checkout $ODL_PLUGIN_BRANCH
+            popd
+
+            fpb --build fuel-plugin-opendaylight/
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
+- builder:
     name: 'fuel-deploy'
     builders:
         - shell: |
@@ -547,8 +577,9 @@
             chmod a+x $TMPDIR
 
             # set CONFDIR, BRIDGE
-            export CONFDIR=$WORKSPACE/fuel/deploy/templates/hardware_environment/old_conf/linux_foundation_lab/pod2/ha
+            export CONFDIR=$WORKSPACE/fuel/deploy/templates/hardware_environment/conf/linux_foundation_lab/pod2
             export BRIDGE=pxebr
+            export PLUGIN=$WORKSPACE/fuel-plugin-opendaylight
 
             # cleanup first
             sudo $WORKSPACE/common/ci/clean.sh -base_config $WORKSPACE/foreman/ci/inventory/lf_pod2_ksgen_settings.yml
@@ -563,8 +594,8 @@
 
             # start the deployment
             echo "Issuing command"
-            echo "sudo $WORKSPACE/fuel/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE"
-            sudo $WORKSPACE/fuel/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE
+            echo "sudo $WORKSPACE/fuel/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE -p $PLUGIN"
+            sudo $WORKSPACE/fuel/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE -p $PLUGIN
 
             echo
             echo "--------------------------------------------------------"
