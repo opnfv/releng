@@ -374,7 +374,7 @@
 
     builders:
         - 'fuel-download-artifact'
-        - 'fuel-opendaylight-plugin-build'
+        - 'fuel-odl-plugin-build'
         - 'fuel-deploy'
 
     publishers:
@@ -525,7 +525,7 @@
             echo "Done!"
 
 - builder:
-    name: 'fuel-opendaylight-plugin-build'
+    name: 'fuel-odl-plugin-build'
     builders:
         - shell: |
             #!/bin/bash
@@ -533,6 +533,7 @@
             set -o nounset
             set -o pipefail
 
+            # install dependencies if they are not available already
             if [[ ! $(rpm -qa | grep rubygems) ]]; then
                 echo "Rubygems not found, but required for Fuel Plugin build ... attempting to install"
                 sudo yum install -y rubygems ruby-devel
