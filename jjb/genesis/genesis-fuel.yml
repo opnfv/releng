@@ -533,6 +533,16 @@
             set -o nounset
             set -o pipefail
 
+            if [[ ! $(rpm -qa | grep rubygems) ]]; then
+                echo "Rubygems not found, but required for Fuel Plugin build ... attempting to install"
+                sudo yum install -y rubygems ruby-devel
+            fi
+
+            if [[ ! $(gem list | grep fpm) ]]; then
+                echo "fpm gem not found, but required for Fuel Plugin build ... attempting to install"
+                sudo gem install fpm
+            fi
+
             # log info to console
             echo "Starting the build of Fuel Opendaylight Plugin. This could take some time..."
             echo "--------------------------------------------------------"
