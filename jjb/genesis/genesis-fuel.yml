@@ -333,6 +333,7 @@
 
     builders:
         - 'fuel-build'
+        - 'fuel-generate-change-info'
         - 'fuel-upload-artifact'
         - 'fuel-workspace-cleanup'
 
@@ -519,6 +520,52 @@
                 echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $BUILD_DIRECTORY/opnfv-$OPNFV_ARTIFACT_VERSION.iso | cut -d' ' -f1)"
                 echo "OPNFV_BUILD_URL=$BUILD_URL"
             ) > $WORKSPACE/opnfv.properties
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
+- builder:
+    name: 'fuel-generate-change-info'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Generating the change info"
+            echo "--------------------------------------------------------"
+            echo
+
+            # get the latest.properties file that belongs to previous build
+            curl -s -o $WORKSPACE/latest.properties.prev http://$GS_URL/latest.properties
+
+            # source the file so OPNFV_GIT_SHA1 becomes available in env
+            source $WORKSPACE/latest.properties.prev
+
+            # sha1 that's used for building this iso
+            CURRENT_SHA1=$(git rev-parse HEAD)
+
+            # record the info into latest.properties file
+            (
+                echo
+                echo "# Change log"
+                echo "# This build is based on $CURRENT_SHA1"
+                echo "# Previous build was based on $OPNFV_GIT_SHA1"
+                echo "#-------------------------------------------------------"
+            ) >> $WORKSPACE/opnfv.properties
+
+            if [ "$CURRENT_SHA1" == "$OPNFV_GIT_SHA1" ]; then
+                echo "There is no diff!" >> $WORKSPACE/opnfv.properties
+                exit 0
+            fi
+
+            git whatchanged $OPNFV_GIT_SHA1..$CURRENT_SHA1 --oneline | while read line
+            do
+                echo "# $line" >> $WORKSPACE/opnfv.properties
+            done
 
             echo
             echo "--------------------------------------------------------"
