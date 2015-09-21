@@ -187,6 +187,8 @@ def set_network(handle=None, yamlFile=None):
 
 
 if __name__ == "__main__":
+    print "\n*** SKIPING RECONFIGURATION.***\n"
+    sys.exit(0)
     # Latest urllib2 validate certs by default
     # The process wide "revert to the old behaviour" hook is to monkeypatch the ssl module
     # https://bugs.python.org/issue22417
