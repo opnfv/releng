@@ -153,13 +153,13 @@
 
     builders:
         - 'compass-build'
-        - 'compass-deploy-virtual-flavor'
-        - 'compass-backup-logs'
-    publishers:
-        - archive:
-            artifacts: 'ansible.log'
-            allow-empty: 'true'
-            fingerprint: true
+#        - 'compass-deploy-virtual-flavor'
+#        - 'compass-backup-logs'
+#    publishers:
+#        - archive:
+#            artifacts: 'ansible.log'
+#            allow-empty: 'true'
+#            fingerprint: true
 
 - job-template:
     name: 'compass-merge'
@@ -491,10 +491,10 @@
             source latest.properties
 
             # download the file
-            curl -s -o $WORKSPACE/opnfv.iso http://$OPNFV_ARTIFACT_URL > gsutil.iso.log 2>&1
+            curl -s -o $WORKSPACE/compass.iso http://$OPNFV_ARTIFACT_URL > gsutil.iso.log 2>&1
 
             # list the file
-            ls -al $WORKSPACE/opnfv.iso
+            ls -al $WORKSPACE/compass.iso
 
             echo
             echo "--------------------------------------------------------"
