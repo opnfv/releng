@@ -154,6 +154,12 @@
     builders:
         - 'compass-build'
         - 'compass-deploy-virtual-flavor'
+        - 'compass-backup-logs'
+    publishers:
+        - archive:
+            artifacts: 'ansible.log'
+            allow-empty: 'true'
+            fingerprint: true
 
 - job-template:
     name: 'compass-merge'
@@ -311,6 +317,12 @@
         - 'compass-ci-preclean-workspace'
         - 'compass-download-artifact'
         - 'compass-deploy-virtual-flavor'
+        - 'compass-backup-logs'
+    publishers:
+        - archive:
+            artifacts: 'ansible.log'
+            allow-empty: 'true'
+            fingerprint: true
 
 ########################
 # parameter macros
@@ -347,6 +359,9 @@
             default: "root@192.168.127.11:~/xh/work/build/work"
             description: "Artifact Repository"
 
+        - string:
+            name: installer_ip
+            default: "10.1.0.12"
 
 ########################
 # builder macros
@@ -510,3 +525,9 @@
             sudo rm $WORKSPACE -rf
             git clone $GIT_BASE  $WORKSPACE
 
+- builder:
+    name: 'compass-backup-logs'
+    builders:
+        - shell: |
+            ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+            sshpass -p root scp 2>/dev/null $ssh_options root@${installer_ip}:/var/ansible/run/openstack_juno-opnfv2/ansible.log ./  &> /dev/null
