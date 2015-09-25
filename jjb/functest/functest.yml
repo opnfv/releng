@@ -607,6 +607,17 @@
 
             # ODL
             echo "Functest: run ODL suite"
+            public_ip=$(env | grep OS_AUTH_URL | cut -f3 -d"/" | cut -f1 -d":")
+            echo "Functest: public IP is ${public_ip}"
+            if [ $INSTALLER_TYPE == "fuel" ]; then
+                odl_port=8181
+            elif [ $INSTALLER_TYPE == "foreman" ]; then
+                odl_port=8081
+            else
+                echo "INSTALLER_TYPE not valid."
+                exit 1
+            fi
+            ODL_PORT=$odl_port ODL_IP=$public_ip NEUTRON_IP=$public_ip USR_NAME=admin PASS=admin \
             $WORKSPACE/testcases/Controllers/ODL/CI/start_tests.sh
 
             # rally
