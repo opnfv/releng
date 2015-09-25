@@ -90,24 +90,9 @@
                     branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: ANT
-                    pattern: 'common/ci/**'
+                    pattern: 'common/**'
                   - compare-type: ANT
-                    pattern: 'common/manifests/**'
-                  - compare-type: ANT
-                    pattern: 'common/puppet-opnfv/**'
-                  - compare-type: ANT
-                    pattern: 'common/tools/**'
-                  - compare-type: ANT
-                    pattern: '{installer}/build/**'
-                  - compare-type: ANT
-                    pattern: '{installer}/ci/**'
-                  - compare-type: ANT
-                    pattern: '{installer}/include/**'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'common/docs/**'
-                  - compare-type: ANT
-                    pattern: '{installer}/docs/**'
+                    pattern: '{installer}/**'
 
     builders:
         - 'foreman-build'
@@ -161,28 +146,13 @@
               - project-compare-type: 'ANT'
                 project-pattern: 'genesis'
                 branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: ANT
-                    pattern: 'common/ci/**'
+                    pattern: 'common/**'
                   - compare-type: ANT
-                    pattern: 'common/manifests/**'
-                  - compare-type: ANT
-                    pattern: 'common/puppet-opnfv/**'
-                  - compare-type: ANT
-                    pattern: 'common/tools/**'
-                  - compare-type: ANT
-                    pattern: '{installer}/build/**'
-                  - compare-type: ANT
-                    pattern: '{installer}/ci/**'
-                  - compare-type: ANT
-                    pattern: '{installer}/include/**'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'common/docs/**'
-                  - compare-type: ANT
-                    pattern: '{installer}/docs/**'
+                    pattern: '{installer}/**'
 
     builders:
         - 'foreman-build'
@@ -239,13 +209,13 @@
                 build-step-failure-threshold: 'never'
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
-        # - trigger-builds:
-          # - project: 'yardstick-foreman-{stream}'
-            # block: true
-            # block-thresholds:
-                # build-step-failure-threshold: 'never'
-                # failure-threshold: 'never'
-                # unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'yardstick-foreman-{stream}'
+            block: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
 
 - job-template:
     name: 'genesis-foreman-deploy-runner-{stream}'
@@ -455,24 +425,9 @@
                     branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: ANT
-                    pattern: 'common/ci/**'
+                    pattern: 'common/**'
                   - compare-type: ANT
-                    pattern: 'common/manifests/**'
-                  - compare-type: ANT
-                    pattern: 'common/puppet-opnfv/**'
-                  - compare-type: ANT
-                    pattern: 'common/tools/**'
-                  - compare-type: ANT
-                    pattern: '{installer}/build/**'
-                  - compare-type: ANT
-                    pattern: '{installer}/ci/**'
-                  - compare-type: ANT
-                    pattern: '{installer}/include/**'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'common/docs/**'
-                  - compare-type: ANT
-                    pattern: '{installer}/docs/**'
+                    pattern: '{installer}/**'
             dependency-jobs: 'genesis-foreman-verify-build-{stream}'
 
 
@@ -720,12 +675,12 @@
 ########################
 # trigger macros
 ########################
-- trigger:
-    name: 'foreman-master'
-    triggers:
-        - timed: '0 11 * * *'
+#- trigger:
+#    name: 'foreman-master'
+#    triggers:
+#        - timed: '0 11 * * *'
 
 - trigger:
     name: 'foreman-stable-arno'
     triggers:
-        - timed: '0 17 * * *'
+        - timed: '0 11 * * *'
