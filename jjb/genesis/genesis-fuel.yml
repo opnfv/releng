@@ -206,7 +206,7 @@
 
     node: ericsson-build
 
-    disabled: false
+    disabled: 'disabled-{stream}'
 
     triggers:
         - 'fuel-{stream}'
@@ -276,7 +276,7 @@
     parameters:
         - project-parameter:
             project: '{project}'
-        - foreman-parameter:
+        - fuel-parameter:
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
         - string:
@@ -799,3 +799,14 @@
     name: 'fuel-stable-arno'
     triggers:
         - timed: '0 7 * * *'
+
+########################
+# job disabled macros
+########################
+- disabled:
+    name: 'disabled-master'
+    disabled: 'false'
+
+- disabled:
+    name: 'disabled-stable-arno'
+    disabled: 'true'
