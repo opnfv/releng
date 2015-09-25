@@ -607,6 +607,8 @@
 
             # ODL
             echo "Functest: run ODL suite"
+            public_ip=$(env | grep OS_AUTH_URL | cut -f3 -d"/" | cut -f1 -d":")
+            ODL_PORT=8181 ODL_IP=$public_ip NEUTRON_IP=$public_ip USR_NAME=admin PASS=admin \
             $WORKSPACE/testcases/Controllers/ODL/CI/start_tests.sh
 
             # rally
