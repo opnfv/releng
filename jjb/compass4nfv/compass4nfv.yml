@@ -281,6 +281,7 @@
             branch: 'master'
 
     builders:
+        - 'compass-make-ppa'
         - 'compass-build'
         - 'compass-upload-artifact'
         - 'compass-workspace-cleanup'
@@ -362,6 +363,12 @@
         - string:
             name: installer_ip
             default: "10.1.0.12"
+        - string:
+            name: PPA_REPO
+            default: "http://58.251.166.184:9999"
+        - string:
+            name: PPA_CACHE
+            default: "$WORKSPACE/work/ppa/"
 
 ########################
 # builder macros
@@ -373,7 +380,30 @@
             #!/bin/bash
             echo "Hello World!"
 
-
+- builder:
+    name: 'compass-make-ppa'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -x
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            # make ppa
+            cd $WORKSPACE/
+            ./build/make_repo.sh
+            # calc MD5 of ppa
+            cd $PPA_CACHE
+            for i in `find *.gz *.iso *.img -type f`
+            do
+                md5="md5sum $i | cut -d ' ' -f1"
+                echo $md5 > $i.md5
+            done
+            # upload PPA
+            for i in `find *.* -type f`
+            do
+                curl -T $i $PPA_REPO
+            done
 
 - builder:
     name: 'compass-build'
@@ -397,6 +427,11 @@
             export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
 
             # start the build
+            if [ -d $PPA_CACHE ]
+            then
+                cp $PPA_CACHE/*.tar.gz $PPA_CACHE/*.iso $PPA_CACHE/*.img $CACHE_DIRECTORY/
+            fi
+
             cd $WORKSPACE/
             ./build.sh  --iso-dir $BUILD_DIRECTORY/ --iso-name compass.iso -c $CACHE_DIRECTORY
 
