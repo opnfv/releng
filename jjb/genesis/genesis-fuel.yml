@@ -25,9 +25,11 @@
         - master:
             branch: 'master'
             gs-pathname: ''
+            job-disabled: false
         - stable-arno:
             branch: 'stable/arno'
             gs-pathname: '/arno'
+            job-disabled: true
 
 ########################
 # job templates
@@ -206,7 +208,7 @@
 
     node: ericsson-build
 
-    disabled: 'fuel-disabled-{stream}'
+    disabled: '{job-disabled}'
 
     triggers:
         - 'fuel-{stream}'
@@ -799,14 +801,3 @@
     name: 'fuel-stable-arno'
     triggers:
         - timed: '0 7 * * *'
-
-########################
-# job disabled macros
-########################
-- disabled:
-    name: 'fuel-disabled-master'
-    disabled: 'false'
-
-- disabled:
-    name: 'fuel-disabled-stable-arno'
-    disabled: 'true'
