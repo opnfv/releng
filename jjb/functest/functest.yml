@@ -607,7 +607,10 @@
 
             # ODL
             echo "Functest: run ODL suite"
-            public_ip=$(env | grep OS_AUTH_URL | cut -f3 -d"/" | cut -f1 -d":")
+            odl_ip=$(keystone catalog --service network | grep publicURL | cut -f3 -d"/" | cut -f1 -d":")
+            neutron_ip=$(keystone catalog --service identity | grep publicURL | cut -f3 -d"/" | cut -f1 -d":")
+            usr_name=$(env | grep OS | grep OS_USERNAME | cut -f2 -d'=')
+            pass=$(env | grep OS | grep OS_PASSWORD | cut -f2 -d'=')
             echo "Functest: public IP is ${public_ip}"
             if [ $INSTALLER_TYPE == "fuel" ]; then
                 odl_port=8181
@@ -617,7 +620,7 @@
                 echo "INSTALLER_TYPE not valid."
                 exit 1
             fi
-            ODL_PORT=$odl_port ODL_IP=$public_ip NEUTRON_IP=$public_ip USR_NAME=admin PASS=admin \
+            ODL_PORT=$odl_port ODL_IP=$odl_ip NEUTRON_IP=$neutron_ip USR_NAME=$usr_name PASS=$pass \
             $WORKSPACE/testcases/Controllers/ODL/CI/start_tests.sh
 
             # rally
