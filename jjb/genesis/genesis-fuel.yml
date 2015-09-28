@@ -25,11 +25,11 @@
         - master:
             branch: 'master'
             gs-pathname: ''
-            disabled: false
+            disabled: true
         - stable-arno:
             branch: 'stable/arno'
             gs-pathname: '/arno'
-            disabled: true
+            disabled: false
 
 ########################
 # job templates
@@ -259,6 +259,10 @@
                 # build-step-failure-threshold: 'never'
                 # failure-threshold: 'never'
                 # unstable-threshold: 'FAILURE'
+
+    publishers:
+        - trigger-parameterized-builds:
+            - project: 'genesis-foreman-daily-{stream}'
 
 - job-template:
     name: 'genesis-fuel-deploy-runner-{stream}'
