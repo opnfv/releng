@@ -1,8 +1,8 @@
 - project:
     name: apex
     jobs:
-        - 'apex-verify'
-        - 'apex-merge'
+        - 'apex-verify-{stream}'
+        - 'apex-merge-{stream}'
         - 'apex-daily-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
@@ -10,13 +10,15 @@
     stream:
         - master:
             branch: 'master'
+            gs-pathname: ''
+            disabled: false
 
     project: 'apex'
 
 - job-template:
-    name: 'apex-verify'
+    name: 'apex-verify-{stream}'
 
-    node: ericsson-build
+    node: opnfv-jump-1
 
     project-type: freestyle
 
@@ -27,14 +29,16 @@
         artifactNumToKeep: -1
 
     parameters:
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{branch}'
         - string:
             name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+            default: ssh://gerrit.opnfv.org:29418/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
 
     scm:
         - gerrit-trigger-scm:
@@ -64,19 +68,22 @@
                 branches:
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/master'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**'
 
     builders:
-        - shell:
-            echo "Hello World"
+        - 'apex-build-{stream}'
+        - 'apex-workspace-cleanup'
 
 - job-template:
-    name: 'apex-merge'
+    name: 'apex-merge-{stream}'
 
     # builder-merge job to run JJB update
     #
     # This job's purpose is to update all the JJB
 
-    node: master
+    node: opnfv-jump-1
 
     project-type: freestyle
 
@@ -90,11 +97,11 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{branch}'
         - string:
             name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+            default: ssh://gerrit.opnfv.org:29418/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
 
     scm:
         - gerrit-trigger-scm:
@@ -118,11 +125,13 @@
                 branches:
                     - branch-compare-type: 'ANT'
                       branch-pattern: '**/master'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**'
 
     builders:
-        - shell:
-            echo "Hello World"
-
+        - 'apex-build-{stream}'
+        - 'apex-workspace-cleanup'
 
 - job-template:
     name: 'apex-daily-{stream}'
@@ -132,7 +141,7 @@
     # Required Variables:
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
-    node: master
+    node: opnfv-jump-1
 
     disabled: true
 
@@ -159,8 +168,122 @@
             user: '{ssh-credentials}'
 
     triggers:
-        - timed: 'H H * * *'
+        - 'apex-{stream}'
 
     builders:
-        - shell:
-             echo "Hello World"
+        - 'apex-build-{stream}'
+        - 'apex-workspace-cleanup'
+
+########################
+# parameter macros
+########################
+- parameter:
+    name: apex-parameter
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache/{gs-pathname}
+            description: "Directory where the cache to be used during the build is located."
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+        - string:
+            name: GS_URL
+            default: artifacts.opnfv.org/$PROJECT/{gs-pathname}
+            description: "URL to Google Storage."
+
+########################
+# builder macros
+########################
+- builder:
+    name: 'apex-build-master'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            # log info to console
+            echo "Starting the build of Apex using OpenStack Master packages. This will take some time..."
+            echo "---------------------------------------------------------------------------------------"
+            echo
+            # create the cache directory if it doesn't exist
+            [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
+            # set OPNFV_ARTIFACT_VERSION
+            export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
+            # start the build
+            cd $WORKSPACE/ci
+            ./build.sh -fM -v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
+            # list the contents of BUILD_OUTPUT directory
+            ls -al $BUILD_DIRECTORY
+            # save information regarding artifact into file
+            (
+                echo "OPNFV_ARTIFACT_VERSION=$OPNFV_ARTIFACT_VERSION"
+                echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
+                echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
+                echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
+                echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso | cut -d' ' -f1)"
+                echo "OPNFV_BUILD_URL=$BUILD_URL"
+            ) > $WORKSPACE/opnfv.properties
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+- builder:
+    name: 'apex-build-ga'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            # log info to console
+            echo "Starting the build of Apex using OpenStack GA packages.. This will take some time..."
+            echo "-------------------------------------------------------------------------------------"
+            echo
+            # create the cache directory if it doesn't exist
+            [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
+            # set OPNFV_ARTIFACT_VERSION
+            export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
+            # start the build
+            cd $WORKSPACE/ci
+            ./build.sh -v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
+            # list the contents of BUILD_OUTPUT directory
+            ls -al $BUILD_DIRECTORY
+            # save information regarding artifact into file
+            (
+                echo "OPNFV_ARTIFACT_VERSION=$OPNFV_ARTIFACT_VERSION"
+                echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
+                echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
+                echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
+                echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso | cut -d' ' -f1)"
+                echo "OPNFV_BUILD_URL=$BUILD_URL"
+            ) > $WORKSPACE/opnfv.properties
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
+- builder:
+    name: 'apex-workspace-cleanup'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # delete everything that is in $WORKSPACE
+            /bin/rm -rf $WORKSPACE
+
+#######################
+# trigger macros
+########################
+- trigger:
+    name: 'apex-master'
+    triggers:
+        - timed: '0 11 * * *'
+
