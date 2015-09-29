@@ -10,6 +10,7 @@
         - 'compass-verify-on-ericsson-node'
         - 'compass-merge'
         - 'compass-daily-{stream}'
+        - 'compass-build-iso'
         - 'compass-build'
         - 'compass-deploy-virtual-{flavor}'
 
@@ -256,7 +257,7 @@
             threshold: SUCCESS
 
 - job-template:
-    name: 'compass-build'
+    name: 'compass-build-iso'
 
     project-type: freestyle
 
@@ -281,10 +282,44 @@
             branch: 'master'
 
     builders:
-        - 'compass-make-ppa'
         - 'compass-build'
         - 'compass-upload-artifact'
         - 'compass-workspace-cleanup'
+
+- job-template:
+    name: 'compass-build'
+
+    description: "build ppa(using docker) in huawei lab"
+
+    project-type: freestyle
+
+    node: huawei-build
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - compass-parameter:
+            installer: '{installer}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+
+            refspec: ''
+            branch: 'master'
+
+    builders:
+        - 'compass-make-ppa'
+        - trigger-builds:
+          - project: 'compass-build'
+            git-revision: true
+            block: true
 
 - job-template:
     name: 'compass-deploy-virtual-{flavor}'
