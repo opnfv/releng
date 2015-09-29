@@ -380,7 +380,6 @@
 
     builders:
         - 'fuel-download-artifact'
-        - 'fuel-odl-plugin-build'
         - 'fuel-deploy'
 
     publishers:
@@ -531,51 +530,6 @@
             echo "Done!"
 
 - builder:
-    name: 'fuel-odl-plugin-build'
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-
-            # install dependencies if they are not available already
-            if [[ ! $(rpm -qa | grep rubygems) ]]; then
-                echo "Rubygems not found, but required for Fuel Plugin build ... attempting to install"
-                sudo yum install -y rubygems ruby-devel
-            fi
-
-            if [[ ! $(gem list | grep fpm) ]]; then
-                echo "fpm gem not found, but required for Fuel Plugin build ... attempting to install"
-                sudo gem install fpm
-            fi
-
-            if [[ ! $(pip list | grep fuel-plugin-builder) ]]; then
-                echo "fuel-plugin-builder not found, but required for Fuel Plugin build ... attempting to install"
-                sudo pip install fuel-plugin-builder
-            fi
-
-            # log info to console
-            echo "Starting the build of Fuel Opendaylight Plugin. This could take some time..."
-            echo "--------------------------------------------------------"
-            echo
-
-            export ODL_PLUGIN_BRANCH="juno/lithium-sr1"
-
-            cd $WORKSPACE
-            git clone https://github.com/stackforge/fuel-plugin-opendaylight
-
-            pushd $WORKSPACE/fuel-plugin-opendaylight
-            git checkout $ODL_PLUGIN_BRANCH
-            popd
-
-            fpb --build fuel-plugin-opendaylight/
-
-            echo
-            echo "--------------------------------------------------------"
-            echo "Done!"
-
-- builder:
     name: 'fuel-deploy'
     builders:
         - shell: |
@@ -601,7 +555,6 @@
             # set CONFDIR, BRIDGE
             export CONFDIR=$WORKSPACE/fuel/deploy/templates/hardware_environment/conf/linux_foundation_lab/pod2
             export BRIDGE=pxebr
-            export PLUGIN=$WORKSPACE/fuel-plugin-opendaylight
 
             # cleanup first
             sudo $WORKSPACE/common/ci/clean.sh -base_config $WORKSPACE/foreman/ci/inventory/lf_pod2_ksgen_settings.yml
@@ -616,8 +569,8 @@
 
             # start the deployment
             echo "Issuing command"
-            echo "sudo $WORKSPACE/fuel/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE -p $PLUGIN -nh"
-            sudo $WORKSPACE/fuel/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE -p $PLUGIN -nh
+            echo "sudo $WORKSPACE/fuel/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE -nh"
+            sudo $WORKSPACE/fuel/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE -nh
 
             echo
             echo "--------------------------------------------------------"
