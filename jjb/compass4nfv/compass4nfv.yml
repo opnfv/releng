@@ -11,7 +11,7 @@
         - 'compass-merge'
         - 'compass-daily-{stream}'
         - 'compass-build-iso'
-        - 'compass-build'
+        - 'compass-build-ppa'
         - 'compass-deploy-virtual-{flavor}'
 
     # stream:    branch with - in place of / (eg. stable-helium)
@@ -250,7 +250,7 @@
 
     publishers:
         - trigger:
-            project: 'compass-build'
+            project: 'compass-build-iso'
             threshold: SUCCESS
         - trigger:
             project: 'compass-deploy-virtual-cluster'
@@ -287,7 +287,7 @@
         - 'builder-compass-workspace-cleanup'
 
 - job-template:
-    name: 'compass-build'
+    name: 'compass-build-ppa'
 
     description: "build ppa(using docker) in huawei lab"
 
@@ -310,16 +310,14 @@
     scm:
         - git-scm:
             credentials-id: '{ssh-credentials}'
-
             refspec: ''
             branch: 'master'
 
+    triggers:
+        - timed: 'H 4-18/2 * * *'
+
     builders:
         - 'builder-compass-make-ppa'
-        - trigger-builds:
-          - project: 'compass-build-iso'
-            git-revision: true
-            block: true
 
 - job-template:
     name: 'compass-deploy-virtual-{flavor}'
