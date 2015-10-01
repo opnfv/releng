@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da6255ed_18f891e4",
+        "filename": "utils/test/result_collection_api/resources/handlers.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 443,
+      "author": {
+        "id": 335
+      },
+      "writtenOn": "2015-10-01T13:33:36Z",
+      "side": 1,
+      "message": "do we need pod and pod name?\nis there any risk of inconsistency\nwhen cally the API I imagine we could call with pod or pod_name\nif we use the 2 parameters with non corresponding value, it could be a problem\n\nas far as I understand pod is an integer , arbitrary given\nthe best would be to follow Releng rules?\n\nwhen we run CI, we give the following paramters:\n- PROJECT\n- INSTALLER_TYPE\n- INSTALLER_IP (not needed)\n- GIT_BASE (not needed)\n\n\nand the job may be suffixed by the version e.g. functest-fuel-stable-arno\n\u003d\u003e give the version here stable-arno\n\nand is run on a POD which name can be defined as:\n- opnfv-jump-2\n- intel-wcp1\n- huawei-deploy1\n\n\u003d\u003e to be discussed with Releng/Fatih but I would suggest to define only pod as the pod identifier that would be a string as defined in CI (e.g. opnfv-jum-2)",
+      "range": {
+        "startLine": 443,
+        "startChar": 14,
+        "endLine": 443,
+        "endChar": 15
+      },
+      "revId": "3a5a5427f51817520826317c77cbc54b6200202d",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da6255ed_38f3550c",
+        "filename": "utils/test/result_collection_api/resources/handlers.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 444,
+      "author": {
+        "id": 335
+      },
+      "writtenOn": "2015-10-01T13:33:36Z",
+      "side": 1,
+      "message": "I would suggest \n\n- project\n- case\n- pod\n- version\n- installer\n\nwith pod \u003d pod name\nif we keep pod_id then we should create tables that reference the pod based on this id so we can retrieve the name from the id\nit is also a Pharos task to define POD in a json format...could make sense to use a common structure \u003d\u003e could be discussed with Pharos",
+      "range": {
+        "startLine": 444,
+        "startChar": 0,
+        "endLine": 444,
+        "endChar": 9
+      },
+      "revId": "3a5a5427f51817520826317c77cbc54b6200202d",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
