@@ -128,8 +128,9 @@ class TestResult:
         self.case_name = None
         self.project_name = None
         self.pod_id = None
+        self.pod_name = None
         self.installer = None
-        self.platform_version = None
+        self.version = None
         self.description = None
         self.creation_date = None
         self.details = None
@@ -143,11 +144,14 @@ class TestResult:
         t = TestResult()
         t._id = test_result_dict.get('_id')
         t.case_name = test_result_dict.get('case_name')
+        t.pod_name = test_result_dict.get('pod_name')
         t.project_name = test_result_dict.get('project_name')
         t.pod_id = test_result_dict.get('pod_id')
         t.description = test_result_dict.get('description')
         t.creation_date = str(test_result_dict.get('creation_date'))
         t.details = test_result_dict.get('details')
+        t.version = test_result_dict.get('version')
+        t.installer = test_result_dict.get('installer')
 
         return t
 
@@ -156,8 +160,11 @@ class TestResult:
             "case_name": self.case_name,
             "project_name": self.project_name,
             "pod_id": self.pod_id,
+            "pod_name": self.pod_name,
             "description": self.description,
             "creation_date": str(self.creation_date),
+            "version": self.version,
+            "installer": self.installer,
             "details": self.details,
         }
 
@@ -167,7 +174,10 @@ class TestResult:
             "case_name": self.case_name,
             "project_name": self.project_name,
             "pod_id": self.pod_id,
+            "pod_name": self.pod_name,
             "description": self.description,
             "creation_date": str(self.creation_date),
+            "version": self.version,
+            "installer": self.installer,
             "details": self.details,
         }

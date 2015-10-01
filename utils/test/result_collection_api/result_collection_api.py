@@ -15,14 +15,12 @@ Pre-requisites:
 We can launch the API with this file
 
 TODOs :
-  - use POD name instead of id
   - logging
   - json args validation with schemes
   - POST/PUT/DELETE for PODs
   - POST/PUT/GET/DELETE for installers, platforms (enrich results info)
   - count cases for GET on test_projects
   - count results for GET on cases
-  - provide filtering on requests
   - include objects
   - swagger documentation
   - setup file

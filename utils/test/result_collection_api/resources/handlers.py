@@ -441,17 +441,24 @@ class TestResultsHandler(GenericApiHandler):
          - project : project name
          - case : case name
          - pod : pod ID
+         - pod_name : pod name
+         - version : platform version (ArnoR1, ...)
+         - installer (fuel, ...)
 
         :param result_id: Get a result by ID
         :raise HTTPError
 
-        GET /results/project=functest&case=keystone.catalog&pod=1
+        GET /results/project=functest&case=keystone.catalog&pod=1&version=Arno
         => get results with optional filters
         """
 
         project_arg = self.get_query_argument("project", None)
         case_arg = self.get_query_argument("case", None)
+        # will be removed to keep only pod_name
         pod_arg = self.get_query_argument("pod", None)
+        pod_name_arg = self.get_query_argument("pod_name", None)
+        version_arg = self.get_query_argument("version", None)
+        installer_arg = self.get_query_argument("installer", None)
 
         # prepare request
         get_request = dict()
@@ -464,6 +471,16 @@ class TestResultsHandler(GenericApiHandler):
 
             if pod_arg is not None:
                 get_request["pod_id"] = int(pod_arg)
+
+            if pod_name_arg is not None:
+                get_request["pod_name"] = pod_name_arg
+
+            if version_arg is not None:
+                get_request["version"] = version_arg
+
+            if installer_arg is not None:
+                get_request["installer"] = installer_arg
+
         else:
             get_request["_id"] = result_id
 
@@ -471,7 +488,8 @@ class TestResultsHandler(GenericApiHandler):
         # fetching results
         cursor = self.db.test_results.find(get_request)
         while (yield cursor.fetch_next):
-            test_result = TestResult.test_result_from_dict(cursor.next_object())
+            test_result = TestResult.test_result_from_dict(
+                cursor.next_object())
             res.append(test_result.format_http())
 
         # building meta object
@@ -502,8 +520,12 @@ class TestResultsHandler(GenericApiHandler):
             raise HTTPError(HTTP_BAD_REQUEST)
         if self.json_args.get("case_name") is None:
             raise HTTPError(HTTP_BAD_REQUEST)
+        # check for pod_name instead of id,
+        # keeping id for current implementations
+        """
         if self.json_args.get("pod_id") is None:
             raise HTTPError(HTTP_BAD_REQUEST)
+        """
 
         # TODO : replace checks with jsonschema
         # check for project
@@ -522,9 +544,26 @@ class TestResultsHandler(GenericApiHandler):
                             "Could not find case [{}] "
                             .format(self.json_args.get("case_name")))
 
-        # check for pod
+        pod_id = self.json_args.get("pod_id")
+        pod_name = self.json_args.get("pod_name")
+        check_dict = dict()
+
+        # we use check_dict to perform the request in the db based on
+        # pod_name and if not available, then pod_id
+        if pod_name is not None:
+            check_dict["key"] = "pod_name"
+            check_dict["value"] = pod_name
+        elif pod_id is not None:
+            check_dict["key"] = "_id"
+            check_dict["value"] = pod_id
+
+        # no argument for pod is given
+        if len(check_dict) == 0:
+            raise HTTPError(HTTP_BAD_REQUEST)
+
         mongo_dict = yield self.db.pod.find_one(
-            {"_id": self.json_args.get("pod_id")})
+            {check_dict["key"]: check_dict["value"]})
+
         if mongo_dict is None:
             raise HTTPError(HTTP_NOT_FOUND,
                             "Could not find POD [{}] "
