@@ -11,7 +11,7 @@ import json
 
 from tornado.web import RequestHandler, asynchronous, HTTPError
 from tornado import gen
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from models import Pod, TestProject, TestCase, TestResult
 from common.constants import DEFAULT_REPRESENTATION, HTTP_BAD_REQUEST, \
@@ -60,6 +60,8 @@ class PodHandler(GenericApiHandler):
     """ Handle the requests about the POD Platforms
     HTTP Methdods :
         - GET : Get PODS
+        - POST : Create a pod
+        - DELETE : DELETE POD
     """
 
     def initialize(self):
@@ -68,19 +70,15 @@ class PodHandler(GenericApiHandler):
 
     @asynchronous
     @gen.coroutine
-    def get(self, pod_id=None):
+    def get(self, pod_name=None):
         """
         Get all pods or a single pod
         :param pod_id:
         """
-
-        if pod_id is None:
-            pod_id = ""
-
         get_request = dict()
 
-        if len(pod_id) > 0:
-            get_request["_id"] = int(pod_id)
+        if pod_name is not None:
+            get_request["name"] = pod_name
 
         res = []
         cursor = self.db.pod.find(get_request)
@@ -97,6 +95,69 @@ class PodHandler(GenericApiHandler):
         answer["meta"] = meta
 
         self.finish_request(answer)
+
+    @asynchronous
+    @gen.coroutine
+    def post(self):
+        """ Create a POD"""
+
+        if self.json_args is None:
+            raise HTTPError(HTTP_BAD_REQUEST)
+
+        query = {"name": self.json_args.get("name")}
+
+        # check for existing name in db
+        mongo_dict = yield self.db.pod.find_one(query)
+        if mongo_dict is not None:
+            raise HTTPError(HTTP_FORBIDDEN,
+                            "{} already exists as a pod".format(
+                                self.json_args.get("name")))
+
+        pod = Pod.pod_from_dict(self.json_args)
+        pod.creation_date = datetime.now()
+
+        future = self.db.pod.insert(pod.format())
+        result = yield future
+        pod._id = result
+
+        meta = dict()
+        meta["success"] = True
+        meta["uri"] = "/pods/{}".format(pod.name)
+
+        answer = dict()
+        answer["pod"] = pod.format_http()
+        answer["meta"] = meta
+
+        self.finish_request(answer)
+
+    @asynchronous
+    @gen.coroutine
+    def delete(self, pod_name):
+        """ Remove a POD
+
+        # check for an existing pod to be deleted
+        mongo_dict = yield self.db.pod.find_one(
+            {'name': pod_name})
+        pod = TestProject.pod(mongo_dict)
+        if pod is None:
+            raise HTTPError(HTTP_NOT_FOUND,
+                            "{} could not be found as a pod to be deleted"
+                            .format(pod_name))
+
+        # just delete it, or maybe save it elsewhere in a future
+        res = yield self.db.test_projects.remove(
+            {'name': pod_name})
+
+        meta = dict()
+        meta["success"] = True
+        meta["deletion-data"] = res
+
+        answer = dict()
+        answer["meta"] = meta
+
+        self.finish_request(answer)
+        """
+        pass
 
 
 class TestProjectHandler(GenericApiHandler):
@@ -440,18 +501,26 @@ class TestResultsHandler(GenericApiHandler):
         Available filters for this request are :
          - project : project name
          - case : case name
-         - pod : pod ID
+         - pod : pod name
+         - version : platform version (Arno-R1, ...)
+         - installer (fuel, ...)
+         - period : x (x last days)
+
 
         :param result_id: Get a result by ID
         :raise HTTPError
 
-        GET /results/project=functest&case=keystone.catalog&pod=1
+        GET /results/project=functest&case=vPing&version=Arno-R1 \
+        &pod=pod_name&period=15
         => get results with optional filters
         """
 
         project_arg = self.get_query_argument("project", None)
         case_arg = self.get_query_argument("case", None)
         pod_arg = self.get_query_argument("pod", None)
+        version_arg = self.get_query_argument("version", None)
+        installer_arg = self.get_query_argument("installer", None)
+        period_arg = self.get_query_argument("period", None)
 
         # prepare request
         get_request = dict()
@@ -463,15 +532,34 @@ class TestResultsHandler(GenericApiHandler):
                 get_request["case_name"] = case_arg
 
             if pod_arg is not None:
-                get_request["pod_id"] = int(pod_arg)
+                get_request["pod_name"] = pod_arg
+
+            if version_arg is not None:
+                get_request["version"] = version_arg
+
+            if installer_arg is not None:
+                get_request["installer"] = installer_arg
+
+            if period_arg is not None:
+                try:
+                    period_arg = int(period_arg)
+                except:
+                    raise HTTPError(HTTP_BAD_REQUEST)
+
+                if period_arg > 0:
+                    period = datetime.now() - timedelta(days=period_arg)
+                    obj = {"$gte": period}
+                    get_request["creation_date"] = obj
         else:
             get_request["_id"] = result_id
 
+        print get_request
         res = []
         # fetching results
         cursor = self.db.test_results.find(get_request)
         while (yield cursor.fetch_next):
-            test_result = TestResult.test_result_from_dict(cursor.next_object())
+            test_result = TestResult.test_result_from_dict(
+                cursor.next_object())
             res.append(test_result.format_http())
 
         # building meta object
@@ -502,7 +590,9 @@ class TestResultsHandler(GenericApiHandler):
             raise HTTPError(HTTP_BAD_REQUEST)
         if self.json_args.get("case_name") is None:
             raise HTTPError(HTTP_BAD_REQUEST)
-        if self.json_args.get("pod_id") is None:
+        # check for pod_name instead of id,
+        # keeping id for current implementations
+        if self.json_args.get("pod_name") is None:
             raise HTTPError(HTTP_BAD_REQUEST)
 
         # TODO : replace checks with jsonschema
@@ -524,11 +614,11 @@ class TestResultsHandler(GenericApiHandler):
 
         # check for pod
         mongo_dict = yield self.db.pod.find_one(
-            {"_id": self.json_args.get("pod_id")})
+            {"name": self.json_args.get("pod_name")})
         if mongo_dict is None:
             raise HTTPError(HTTP_NOT_FOUND,
                             "Could not find POD [{}] "
-                            .format(self.json_args.get("pod_id")))
+                            .format(self.json_args.get("pod_name")))
 
         # convert payload to object
         test_result = TestResult.test_result_from_dict(self.json_args)
