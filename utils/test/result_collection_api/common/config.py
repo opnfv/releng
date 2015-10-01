@@ -47,6 +47,7 @@ class APIConfig:
     def __init__(self):
         self._default_config_location = "config.ini"
         self.mongo_url = None
+        self.mongo_dbname = None
         self.api_port = None
         self.api_debug_on = None
         self._parser = None
@@ -87,13 +88,18 @@ class APIConfig:
 
         # Linking attributes to keys from file with their sections
         obj.mongo_url = obj._get_parameter("mongo", "url")
+        obj.mongo_dbname = obj._get_parameter("mongo", "dbname")
+
         obj.api_port = obj._get_int_parameter("api", "port")
         obj.api_debug_on = obj._get_bool_parameter("api", "debug")
+
         return obj
 
     def __str__(self):
         return "mongo_url = %s \n" \
+               "mongo_dbname = %s \n" \
                "api_port = %s \n" \
                "api_debug_on = %s \n" % (self.mongo_url,
+                                         self.mongo_dbname,
                                          self.api_port,
                                          self.api_debug_on)
