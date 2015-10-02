@@ -208,8 +208,8 @@
     builders:
         - shell: |
             #!/bin/bash
-             set -o errexit
-             set -o pipefail
+            set -o errexit
+            set -o pipefail
 
             echo "Yardstick: prepare Yardstick environment"
 
@@ -220,52 +220,14 @@
             fi
             source $HOME/opnfv-openrc.sh
 
-            # Emergency fix for glance '--is-public' error.
-            # TODO: This should maybe go into openrc instead!?
-            export OS_IMAGE_API_VERSION=1
-
-            # Install required packages. 
-            # 'libguestfs-tools' is needed when building the yardstick image.
-            sudo yum -y install libguestfs-tools
-
-            # set virtualenv
-            echo "Yardstick: setup virtualenv"
             cd $WORKSPACE
-            virtualenv $WORKSPACE/yardstick_venv
-            source $WORKSPACE/yardstick_venv/bin/activate
-            easy_install -U setuptools
-            python setup.py develop > /dev/null 2>&1
 
-            echo "Yardstick: configure the images"
-            # check if cirros-0.3.3 image is already available
-            # if not, create the image
-            IMAGE_NAMES[0]=cirros-0.3.3
-            if ! nova image-show ${IMAGE_NAMES[0]} > /dev/null 2>&1; then
-                echo "Image ${IMAGE_NAMES[0]} doesn't exist. Creating image ${IMAGE_NAMES[0]}"
-                glance image-create --name cirros-0.3.3 --is-public true --disk-format qcow2 --container-format bare --file $HOME/yardstick/cirros-0.3.3-x86_64-disk.img
-            fi
+            testsuite=$WORKSPACE/tests/opnv/test_suites/pod2_daily.yaml
 
-            # check if yardstick-trusty image is already available
-            # if not, create the image to $WORKSPACE
-            IMAGE_NAMES[1]=yardstick-trusty-server
-            if ! nova image-show ${IMAGE_NAMES[1]} > /dev/null 2>&1; then
-                echo "Image ${IMAGE_NAMES[1]} doesn't exist. Creating image ${IMAGE_NAMES[1]}"
-                sudo $(which yardstick-img-modify) $WORKSPACE/tools/ubuntu-server-cloudimg-modify.sh
-                glance image-create --name yardstick-trusty-server --is-public true --disk-format qcow2 --container-format bare --file $WORKSPACE/yardstick-trusty-server.img
-            fi
+            $WORKSPACE/ci/rundocker \
+                  $WORKSPACE/ci/yardstick-verify \
+                  $testsuite 
 
-            # execute tasks
-            echo "Yardstick: execute scenarios"
-            ./ci/run_tasks.sh
-
-            # cleanup
-            echo "Yardstick: cleanup"
-            for IMAGE_NAME in ${IMAGE_NAMES[@]}
-            do
-                glance image-delete $IMAGE_NAME
-            done
-
-            # done
             echo "Yardstick: done!"
 
 - builder:
