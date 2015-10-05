@@ -15,6 +15,9 @@
         - 'fuel-merge-build-{stream}'
         - 'fuel-merge-virtual-deploy-{stream}'
         - 'fuel-daily-{stream}'
+        - 'fuel-build-{stream}'
+        - 'fuel-deploy-{stream}'
+        - 'fuel-lab-reconfig-{stream}'
 
     stream:
         - master:
@@ -282,21 +285,21 @@
 - job-template:
     name: 'fuel-daily-{stream}'
 
-    node: ericsson-build
-
-    disabled: true
-
     project-type: freestyle
 
-    logrotate:
-        daysToKeep: '{build-days-to-keep}'
-        numToKeep: '{build-num-to-keep}'
-        artifactDaysToKeep: '{build-artifact-days-to-keep}'
-        artifactNumToKeep: '{build-artifact-num-to-keep}'
+    node: ericsson-build
+
+    disabled: false
+
+    triggers:
+        - 'fuel-{strem}-trigger'
 
     parameters:
         - project-parameter:
             project: '{project}'
+        - fuel-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
 
     scm:
         - git-scm:
@@ -304,16 +307,157 @@
             refspec: ''
             branch: '{branch}'
 
-    wrappers:
-        - ssh-agent-credentials:
-            user: '{ssh-credentials}'
+    logrotate:
+        daysToKeep: '{build-days-to-keep}'
+        numToKeep: '{build-num-to-keep}'
+        artifactDaysToKeep: '{build-artifact-days-to-keep}'
+        artifactNumToKeep: '{build-artifact-num-to-keep}'
+
+    builders:
+        - trigger-builds:
+          - project: 'fuel-build-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'fuel-lab-reconfig-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'fuel-deploy-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'functest-fuel-{stream}'
+            block: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
 
     triggers:
-        - timed: 'H H * * *'
+        - 'fuel-{stream}-daily-trigger'
+
+- job-template:
+    name: 'fuel-build-{stream}'
+
+    project-type: freestyle
+
+    node: ericsson-build
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - fuel-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
 
     builders:
         - shell:
-             echo "Hello World"
+            !include-raw ./fuel-build.sh
+        - shell:
+            !include-raw ./fuel-upload-artifact.sh
+        - shell:
+            !include-raw ./fuel-workspace-cleanup.sh
+
+    publishers:
+        - email:
+            recipients: jonas.bjurel@ericsson.com stefan.k.berg@ericsson.com
+
+- job-template:
+    name: 'fuel-deploy-{stream}'
+
+    project-type: freestyle
+
+    disabled: false
+
+    node: opnfv-jump-2
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - fuel-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: GIT_BASE
+            default: ssh://gerrit.opnfv.org:29418/$PROJECT
+            description: "POD2 has some issues with cloning using https so that's why GIT_BASE is overriden here again."
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell:
+            !include-raw ./fuel-download-artifact.sh
+        - shell:
+            !include-raw ./fuel-deploy.sh
+
+    publishers:
+        - email:
+            recipients: jonas.bjurel@ericsson.com stefan.k.berg@ericsson.com
+
+- job-template:
+    name: 'fuel-lab-reconfig-{stream}'
+
+    project-type: freestyle
+
+    disabled: false
+
+    node: master
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - fuel-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: GIT_BASE
+            default: ssh://gerrit.opnfv.org:29418/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - "apex-daily.*"
+
+    builders:
+        - shell:
+            !include-raw ./fuel-lab-reconfig.sh
 
 ########################
 # parameter macros
@@ -341,3 +485,11 @@
             name: GS_URL
             default: artifacts.opnfv.org/$PROJECT{gs-pathname}
             description: "URL to Google Storage."
+
+########################
+# trigger macros
+########################
+- trigger:
+    name: 'fuel-master-daily-trigger'
+    triggers:
+        - timed: '0 5 * * *'
