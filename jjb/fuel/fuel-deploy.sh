@@ -7,7 +7,7 @@ set -o pipefail
 source latest.properties
 
 # echo the info about artifact that is used during the deployment
-echo "Using $(echo $OPNFV_ARTIFACT_URL | cut -d'/' -f4) for deployment"
+echo "Using $(echo $OPNFV_ARTIFACT_URL | cut -d'/' -f3) for deployment"
 
 # create TMPDIR if it doesn't exist
 export TMPDIR=$HOME/tmpdir
@@ -24,7 +24,7 @@ export BRIDGE=pxebr
 # clone genesis repo and checkout the SR1 tag
 echo "Cloning genesis repo"
 cd $WORKSPACE
-git clone https://gerrit.opnfv.org/gerrit/p/genesis.git genesis
+GIT_SSL_NO_VERIFY=true git clone https://gerrit.opnfv.org/gerrit/genesis genesis
 cd genesis
 git checkout arno.2015.2.0
 
