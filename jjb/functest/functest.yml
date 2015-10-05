@@ -29,7 +29,7 @@
         - 'functest-openstack-bench-test-{pod}'
         - 'functest-openstack-tempest-smoke-test-{pod}'
         - 'functest-odl-test-{pod}'
-        - 'functest-vims-test-{pod}'
+        - 'functest-vims-test-{installer}-{stream}'
         - 'functest-vping-test-{pod}'
         - 'functest-daily-{stream}'
         - 'functest-merge-{stream}'
@@ -252,7 +252,7 @@
             $WORKSPACE/testcases/Controllers/ODL/CI/start_tests.sh
 
 - job-template:
-    name: functest-vims-test-{pod}
+    name: functest-vims-test-{installer}-{stream}
 
     project-type: freestyle
 
@@ -266,7 +266,11 @@
 
     builders:
         - shell: |
-            echo "put your CI scenario here"
+            #!/bin/bash
+            set +e
+            # vIMS
+            echo "Functest: run vIMS"
+            python $WORKSPACE/testcases/vIMS/CI/vIMS.py --debug $WORKSPACE/
 
 
 - job-template:
