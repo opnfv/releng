@@ -9,15 +9,18 @@
             node: 'opnfv-jump-2'
             installer_type: 'fuel'
             installer_ip: '10.20.0.2'
+            functest_repo_dir:  '/home/opnfv/repos/functest'
         - foreman:
             node: 'opnfv-jump-2'
             installer_type: 'foreman'
             installer_ip: '172.30.10.73'
+            functest_repo_dir:  '/home/opnfv/repos/functest'
     pod:
         - orange-build:
             node: 'orange-build'
             installer_type: 'foreman'
             installer_ip: '172.30.10.73'
+            functest_repo_dir:  '/home/opnfv/repos/functest'
 
     jobs:
         - 'set-functest-env-{pod}'
@@ -68,22 +71,12 @@
             #!/bin/bash
             set +e
 
-            echo "Functest: prepare Functest environment"
-            mkdir -p $HOME/functest/
-            # source openstack vars
-            if [[ ! -f $HOME/opnfv-openrc.sh ]]; then
-                echo "Unable to access file $HOME/opnfv-openrc.sh"
-                exit 1
-            fi
-            source $HOME/opnfv-openrc.sh
+            echo "Functest: spawn Docker and run Functest suite"
+            cmd="${FUNCTEST_REPO_DIR}/docker/start.sh"
+            docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
+            -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
 
-            # WORKSPACE is the root of the functest repo
-            # go into WORKSPACE where the functest repo is cloned
-            cd $WORKSPACE
 
-            # prepare
-            echo "Functest: prepare Functest environment"
-            python $WORKSPACE/testcases/config_functest.py --debug $WORKSPACE/ start
 
 - job-template:
     name: clean-functest-env-{pod}
@@ -103,20 +96,11 @@
             #!/bin/bash
             set +e
 
-            # collect results
-            echo "Functest: copy results and clean Functest environment"
-            mkdir -p $HOME/functest/results
+            # Remove any docker containers leftovers
+            $ docker ps | grep opnfv/functest | awk '{print $1}' | xargs docker stop &>/dev/null
+            $ docker ps -a | grep opnfv/functest | awk '{print $1}' | xargs docker rm &>/dev/null
+            $ docker images | grep opnfv/functest | awk '{print $3}' | xargs docker rmi &>/dev/null
 
-            # save ODL results
-            cp -Rf $WORSPACE/testcases/Controllers/ODL/CI/logs $HOME/functest/results/ODL
-
-            # save tempest.conf for further troubleshooting
-            cp $HOME/.rally/tempest/for-deployment-*/tempest.conf $HOME/functest/results
-
-            # cleanup
-            # source openstack vars
-            source $HOME/opnfv-openrc.sh
-            python $WORKSPACE/testcases/config_functest.py --debug --force $WORKSPACE/ clean
 
 - job-template:
     name: set-functest-env-{installer}-{stream}
@@ -136,22 +120,11 @@
             #!/bin/bash
             set +e
 
-            echo "Functest: prepare Functest environment"
-            mkdir -p $HOME/functest/
-            # source openstack vars
-            if [[ ! -f $HOME/opnfv-openrc.sh ]]; then
-                echo "Unable to access file $HOME/opnfv-openrc.sh"
-                exit 1
-            fi
-            source $HOME/opnfv-openrc.sh
+            echo "Functest: spawn Docker and run Functest suite"
+            cmd="${FUNCTEST_REPO_DIR}/docker/start.sh"
+            docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
+            -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
 
-            # WORKSPACE is the root of the functest repo
-            # go into WORKSPACE where the functest repo is cloned
-            cd $WORKSPACE
-
-            # prepare
-            echo "Functest: prepare Functest environment"
-            python $WORKSPACE/testcases/config_functest.py --debug $WORKSPACE/ start
 
 - job-template:
     name: clean-functest-env-{installer}-{stream}
@@ -171,20 +144,10 @@
             #!/bin/bash
             set +e
 
-            # collect results
-            echo "Functest: copy results and clean Functest environment"
-            mkdir -p $HOME/functest/results
-
-            # save ODL results
-            cp -Rf $WORSPACE/testcases/Controllers/ODL/CI/logs $HOME/functest/results/ODL
-
-            # save tempest.conf for further troubleshooting
-            cp $HOME/.rally/tempest/for-deployment-*/tempest.conf $HOME/functest/results
-
-            # cleanup
-            # source openstack vars
-            source $HOME/opnfv-openrc.sh
-            python $WORKSPACE/testcases/config_functest.py --debug --force $WORKSPACE/ clean
+            # Remove any docker containers leftovers
+            $ docker ps | grep opnfv/functest | awk '{print $1}' | xargs docker stop &>/dev/null
+            $ docker ps -a | grep opnfv/functest | awk '{print $1}' | xargs docker rm &>/dev/null
+            $ docker images | grep opnfv/functest | awk '{print $3}' | xargs docker rmi &>/dev/null
 
 - job-template:
     name: functest-openstack-bench-test-{pod}
@@ -205,7 +168,10 @@
             set +e
 
             echo "Functest: run Functest Rally Bench suites"
-            python $WORKSPACE/testcases/VIM/OpenStack/CI/libraries/run_rally.py --debug $WORKSPACE/ all
+            cmd="python ${FUNCTEST_REPO_DIR}/testcases/VIM/OpenStack/CI/libraries/run_rally.py \
+                --debug ${FUNCTEST_REPO_DIR}/ all"
+            docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
+                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
 
 - job-template:
     name: functest-openstack-tempest-smoke-test-{pod}
@@ -227,8 +193,9 @@
 
             # tempest
             echo "Functest: run Tempest suite"
-            rally verify start smoke
-            rally verify list
+            cmd="rally verify start smoke; rally verify list;"
+            docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
+                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
 
 - job-template:
     name: functest-odl-test-{pod}
@@ -249,7 +216,9 @@
             set +e
 
             echo "Functest: run ODL suite"
-            $WORKSPACE/testcases/Controllers/ODL/CI/start_tests.sh
+            cmd="${FUNCTEST_REPO_DIR}/testcases/Controllers/ODL/CI/start_tests.sh"
+            docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
+                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
 
 - job-template:
     name: functest-vping-test-{pod}
@@ -271,7 +240,11 @@
 
             # vPing
             echo "Functest: run vPing"
-            python $WORKSPACE/testcases/vPing/CI/libraries/vPing.py --debug $WORKSPACE/ -r
+            cmd="python ${FUNCTEST_REPO_DIR}/testcases/vPing/CI/libraries/vPing.py \
+                --debug ${FUNCTEST_REPO_DIR}/ -r"
+            docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
+                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
+
 
 - job-template:
     name: functest-{pod}
@@ -291,6 +264,10 @@
             name: INSTALLER_IP
             default: '{installer_ip}'
             description: "Installer IP."
+        - string:
+            name: FUNCTEST_REPO_DIR
+            default: '{functest_repo_dir}'
+            description: "Directory where the root functest repo is cloned in the docker."
         - '{pod}'
 
     scm:
@@ -306,7 +283,6 @@
         artifactNumToKeep: -1
 
     builders:
-        - 'functest-fetch-os-creds'
         - 'functest-all'
         - 'functest-store-results'
         - 'functest-cleanup'
@@ -330,6 +306,10 @@
             default: '{installer_ip}'
             description: "Installer IP."
         - string:
+            name: FUNCTEST_REPO_DIR
+            default: '{functest_repo_dir}'
+            description: "Directory where the root functest repo is cloned in the docker."
+        - string:
             name: GIT_BASE
             default: ssh://gerrit.opnfv.org:29418/$PROJECT
             description: "Override GIT_BASE"
@@ -347,7 +327,6 @@
         artifactNumToKeep: -1
 
     builders:
-        - 'functest-fetch-os-creds'
         - 'functest-all'
         - 'functest-store-results'
         - 'functest-cleanup'
@@ -371,6 +350,10 @@
             default: '{installer_ip}'
             description: "Installer IP."
         - string:
+            name: FUNCTEST_REPO_DIR
+            default: '{functest_repo_dir}'
+            description: "Directory where the root functest repo is cloned in the docker."
+        - string:
             name: GIT_BASE
             default: ssh://gerrit.opnfv.org:29418/$PROJECT
             description: "Override GIT_BASE"
@@ -388,7 +371,6 @@
         artifactNumToKeep: -1
 
     builders:
-        - 'functest-fetch-os-creds'
         - 'functest-vims'
 
 - job-template:
@@ -599,70 +581,18 @@
             #!/bin/bash
             set +e
 
-            echo "Functest: prepare Functest environment"
-            mkdir -p $HOME/functest/
+            # Remove any docker containers leftovers
+            $ docker ps | grep opnfv/functest | awk '{print $1}' | xargs docker stop &>/dev/null
+            $ docker ps -a | grep opnfv/functest | awk '{print $1}' | xargs docker rm &>/dev/null
+            $ docker images | grep opnfv/functest | awk '{print $3}' | xargs docker rmi &>/dev/null
 
-            # source openstack vars
-            if [ ! -f $HOME/opnfv-openrc.sh ]; then
-                echo "Credentials file not found in "$HOME/opnfv-openrc.sh
-                exit 1
-            fi
-            echo "Sourcing the OpenStack credentials in"$HOME/opnfv-openrc.sh
-            source $HOME/opnfv-openrc.sh
+            # Pull and store fresh image from Dockerhub
+            $ docker pull opnfv/functest
 
-            # WORKSPACE is the root of the functest repo
-            # go into WORKSPACE where the functest repo is cloned
-            cd $WORKSPACE
-
-            # prepare
-            echo "Functest: prepare Functest environment"
-            python $WORKSPACE/testcases/config_functest.py --debug $WORKSPACE/ start
-            if [ $? != 0 ]; then
-                echo "Error when configuring Functest environment"
-                exit 1
-            fi
-
-            # vPing
-            echo "Functest: run vPing"
-            python $WORKSPACE/testcases/vPing/CI/libraries/vPing.py --debug $WORKSPACE/ -r
-
-            # ODL
-            echo "Functest: run ODL suite"
-
-            if [ $INSTALLER_TYPE == "fuel" ]; then
-                odl_ip=$(keystone catalog --service network | grep publicURL | cut -f3 -d"/" | cut -f1 -d":")
-                neutron_ip=$(keystone catalog --service identity | grep publicURL | cut -f3 -d"/" | cut -f1 -d":")
-                usr_name=$(env | grep OS | grep OS_USERNAME | cut -f2 -d'=')
-                pass=$(env | grep OS | grep OS_PASSWORD | cut -f2 -d'=')
-                odl_port=8181
-                ODL_PORT=$odl_port ODL_IP=$odl_ip NEUTRON_IP=$neutron_ip USR_NAME=$usr_name PASS=$pass \
-                $WORKSPACE/testcases/Controllers/ODL/CI/start_tests.sh
-            elif [ $INSTALLER_TYPE == "foreman" ]; then
-                #odl_port=8081
-                $WORKSPACE/testcases/Controllers/ODL/CI/start_tests.sh
-            else
-                echo "INSTALLER_TYPE not valid."
-                exit 1
-            fi
-
-            # rally
-            echo "Functest: run Functest Rally Bench suites"
-            python $WORKSPACE/testcases/VIM/OpenStack/CI/libraries/run_rally.py --debug $WORKSPACE/ all
-
-            # tempest
-            echo "Functest: run Tempest suite"
-            rally verify start smoke
-            rally verify list
-
-            # collect results
-            echo "Functest: copy results and clean Functest environment"
-            mkdir -p $HOME/functest/results
-
-            # save ODL results
-            cp -Rf $WORKSPACE/testcases/Controllers/ODL/CI/logs $HOME/functest/results/ODL
-
-            # save tempest.conf for further troubleshooting
-            cp $HOME/.rally/tempest/for-deployment-*/tempest.conf $HOME/functest/results
+            # Run Docker and Functest tests
+            cmd="${FUNCTEST_REPO_DIR}/docker/start.sh"
+            docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
+                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
 
 - builder:
     name: functest-vims
@@ -670,22 +600,10 @@
         - shell: |
             #!/bin/bash
             set +e
-
-            # source openstack vars
-            if [ ! -f $HOME/opnfv-openrc.sh ]; then
-                echo "Credentials file not found in "$HOME/opnfv-openrc.sh
-                exit 1
-            fi
-            echo "Sourcing the OpenStack credentials in"$HOME/opnfv-openrc.sh
-            source $HOME/opnfv-openrc.sh
-
-            # WORKSPACE is the root of the functest repo
-            # go into WORKSPACE where the functest repo is cloned
-            cd $WORKSPACE
-
-            # vIMS
-            echo "Functest: run vIMS"
-            python $WORKSPACE/testcases/vIMS/CI/vIMS.py --debug $WORKSPACE/
+            cmd="python ${FUNCTEST_REPO_DIR}/testcases/vIMS/CI/vIMS.py \
+                --debug ${FUNCTEST_REPO_DIR}/"
+            docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
+                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
 
 
 - builder:
@@ -702,11 +620,8 @@
             set +e
 
             # cleanup
-            source $HOME/opnfv-openrc.sh
-            python $WORKSPACE/testcases/config_functest.py --debug --force $WORKSPACE/ clean
+            # Remove any docker containers leftovers
+            $ docker ps | grep opnfv/functest | awk '{print $1}' | xargs docker stop &>/dev/null
+            $ docker ps -a | grep opnfv/functest | awk '{print $1}' | xargs docker rm &>/dev/null
+            $ docker images | grep opnfv/functest | awk '{print $3}' | xargs docker rmi &>/dev/null
 
-- builder:
-    name: functest-fetch-os-creds
-    builders:
-        - shell:
-            !include-raw ../../utils/fetch_os_creds.sh
