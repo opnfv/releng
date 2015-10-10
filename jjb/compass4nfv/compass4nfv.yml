@@ -209,6 +209,7 @@
                 branches:
                     - branch-compare-type: 'ANT'
                       branch-pattern: '**/master'
+
     builders:
         - 'builder-compass-merge'
 
@@ -232,7 +233,7 @@
             branch: '{branch}'
 
     triggers:
-        - pollscm: '@midnight'
+        - timed: '@midnight'
 
     logrotate:
         daysToKeep: 30
@@ -241,20 +242,14 @@
         artifactNumToKeep: -1
 
     builders:
-        #- 'builder-compass-build-iso'
-        #- 'builder-compass-upload-artifact'
-        #- 'builder-compass-workspace-cleanup'
-        - shell: |
-            echo "Hello world!"
-            echo "compass-deploy-virtual job will be triggered!"
-
-    publishers:
-        - trigger:
-            project: 'compass-build-iso'
-            threshold: SUCCESS
-        - trigger:
-            project: 'compass-deploy-virtual-cluster'
-            threshold: SUCCESS
+        - trigger-builds:
+          - project: 'compass-build'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'compass-deploy-virtual-cluster'
+            git-revision: true
+            block: true
 
 - job-template:
     name: 'compass-build-iso'
@@ -338,14 +333,13 @@
             default: '{conf}'
             description: ""
 
-    triggers:
-        - pollscm: "H/2 * * * *"
 
     logrotate:
         daysToKeep: 30
         numToKeep: 10
         artifactDaysToKeep: -1
         artifactNumToKeep: -1
+
 
     builders:
         - 'builder-compass-ci-preclean-workspace'
@@ -388,11 +382,6 @@
             name: GS_URL_PROXY
             default: build.opnfv.org/artifacts/$PROJECT/
             description: "URL to Google Storage proxy"
-        - string:
-            name: INTERNAL_REPO_XA
-            default: "root@192.168.127.11:~/xh/work/build/work"
-            description: "Artifact Repository"
-
         - string:
             name: installer_ip
             default: "10.1.0.12"
@@ -553,10 +542,10 @@
             curl -s -o $WORKSPACE/latest.properties http://$GS_URL/latest.properties
 
             # check if we got the file
-            [[ -f latest.properties ]] || exit 1
+            [[ -f $WORKSPACE/latest.properties ]] || exit 1
 
             # source the file so we get OPNFV vars
-            source latest.properties
+            source $WORKSPACE/latest.properties
 
             # download the file
             curl -s -o $WORKSPACE/compass.iso http://$OPNFV_ARTIFACT_URL > gsutil.iso.log 2>&1
