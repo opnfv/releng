@@ -1,0 +1,164 @@
+#!/bin/bash
+#Monit setup script for opnfv jnlp slave connections
+
+test_firewall() {
+echo "testing that the firewall is open for us at build.opnfv.org"
+test=$(echo "blah"| nc -w 4 build.opnfv.org 57387 > /dev/null 2>&1; echo $?)
+if [[ $test == 0 ]]; then
+  echo "Firewall is open for us at build.opnfv.org"
+  exit 0
+else
+cat << EOF
+LF firewall not open, please send a report to helpdesk with your gpg key attached, or better yet upload it to the key servers. (I should be able to find it with gpg --search-keys your@company.email.com
+opnfv-helpdesk@rt.linuxfoundation.org
+Jenkins Home: $jenkinshome
+Jenkins User: $jenkinsuser
+Slave Name: $slave_name
+IP Address: $(curl -s http://icanhazip.com)
+EOF
+exit 1
+fi
+}
+
+main () {
+dir=$(cd $(dirname $0); pwd)
+
+#tests
+if [[ -z $jenkinsuser || -z $jenkinshome ]]; then
+  echo "jenkinsuser or home not defined, please edit this file to define it"
+  exit 1
+fi
+
+if [[ -z $slave_name || -z $slave_secret ]]; then
+  echo "slave name or secret not defined, please edit this file to define it"
+  exit 1
+fi
+
+if [[ $(whoami) != "root" && $(whoami) != "$jenkinsuser"  ]]; then
+  echo "This script must be run as user root or jenkins user"
+  exit 1
+fi
+
+if [[ $distro == Debian || $distro == Ubuntu ]]; then
+  monitconfdir="/etc/monit/conf.d/"
+elif [[ $distro == Fedora || $distro == CentOS || $distro == Redhat ]]; then
+  monitconfdir="/etc/monit.d"
+fi
+
+#make pid dir
+if ! [ -d /var/run/$jenkinsuser/ ]; then
+  mkdir   /var/run/$jenkinsuser/
+  chown $jenkinsuser:$jenkinsuser /var/run/$jenkinsuser/
+fi
+
+#create pid file
+pidfile="/var/run/$jenkinsuser/jenkins_jnlp_pid"
+echo $$ > /var/run/$jenkinsuser/jenkins_jnlp_pid
+trap 'rm -f "$pidfile"; exit' EXIT SIGQUIT SIGINT SIGSTOP SIGTERM
+
+
+if [[ $skip_monit == true ]]; then
+  :
+else
+  #check for monit
+  if [ $(which monit) ]; then
+    echo "monit installed"
+  else
+    if [ -n "$(command -v yum)" ]; then
+      echo "please install monit; eg: yum -y install monit"
+      exit 1
+    elif [ -n "$(command -v apt-get)" ]; then
+      echo "please install monit  eg: apt-get install -y monit"
+      exit 1
+    else
+      echo "system not supported plese contact help desk"
+      exit 1
+    fi
+  fi
+fi
+
+makemonit () {
+echo "Writing the following as monit config:"
+cat << EOF | tee $monitconfdir/jenkins
+check process bash with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
+start program = "/bin/bash -c 'cd $dir; export started_monit=true; $0 $@' as uid $jenkinsuser and gid $jenkinsuser"
+stop program = "/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)"
+EOF
+}
+
+if [[ -f $monitconfdir/jenkins ]]; then
+  #test for diff
+  if [[ "$(diff $monitconfdir/jenkins <(echo "\
+check process bash with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
+start program = \"/bin/bash -c 'cd $dir; export started_monit=true; $0 $@' as uid $jenkinsuser and gid $jenkinsuser\"
+stop program = \"/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)\"\
+") )" ]]; then
+    echo "Updating monit config..."
+    makemonit $@
+  fi
+else
+  makemonit $@
+fi
+
+
+if [[ $started_monit == "true" ]]; then
+  wget --timestamping https://build.opnfv.org/ci/jnlpJars/slave.jar && true
+  $connectionstring
+else
+  echo "you are ready to start monit"
+  echo "eg: service monit start"
+  echo "example debug mode if you are having problems:  /usr/bin/monit -Ivv -c /etc/monit.conf "
+  exit 0
+fi
+
+}
+
+usage() {
+cat << EOF
+
+jenkins-jnlp-connect.sh configures monit to keep slave connection up
+Checks for new versions of slave.jar
+run as root to create pid directory and create monit config.
+can be run as root additional times if you change variables and need to update monit config.
+after running as root you should see "you are ready to start monit"
+
+usage: $0 [OPTIONS]
+ -h  show this message
+ -j  set jenkins home
+ -u  set jenkins user
+ -n  set slave name
+ -s  set secret key
+ -t  test the connection string by connecting without monit
+ -f  test firewall
+
+Example: $0 -j /home/jenkins/ -u jenkins -n lab1 -s 727fdefoofoofoofoofoofoofof800
+
+EOF
+
+exit 1
+
+}
+
+if [[ -z "$@" ]]; then usage
+fi
+
+
+while getopts "j:u:n:s:htf" OPTION
+do
+        case $OPTION in
+                j ) jenkinshome="$OPTARG" ;;
+                u ) jenkinsuser="$OPTARG" ;;
+                n ) slave_name="$OPTARG" ;;
+                s ) slave_secret="$OPTARG";;
+                h ) usage; exit;;
+                t ) started_monit=true
+                    skip_monit=true ;;
+                f ) test_firewall ;;
+                \? ) echo "Unknown option: -$OPTARG" >&2; exit 1;;
+        esac
+done
+
+connectionstring="java -jar slave.jar -jnlpUrl https://build.opnfv.org/ci/computer/"$slave_name"/slave-agent.jnlp -secret "$slave_secret" -noCertificateCheck "
+distro="$(tr -s ' \011' '\012' < /etc/issue | head -n 1)"
+
+main "$@"
