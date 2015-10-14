@@ -624,7 +624,8 @@ class TestResultsHandler(GenericApiHandler):
         test_result = TestResult.test_result_from_dict(self.json_args)
         test_result.creation_date = datetime.now()
 
-        future = self.db.test_results.insert(test_result.format())
+        future = self.db.test_results.insert(test_result.format(),
+                                             check_keys=False)
         result = yield future
         test_result._id = result
 
