@@ -249,9 +249,9 @@
                 echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
                 echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
                 echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso | cut -d' ' -f1)"
-                echo "OPNFV_SRPM_URL=$GS_URL/opnfv-apex-$(grep Version build/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '-_').src.rpm"
-                echo "OPNFV_RPM_URL=$GS_URL/opnfv-apex-$(grep Version build/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '-_').rpm"
-                echo "OPNFV_RPM_MD5SUM=$(md5sum $BUILD_DIRECTORY/$(grep Version build/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '-_').rpm)"
+                echo "OPNFV_SRPM_URL=$GS_URL/opnfv-apex-$(grep Version build/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '_-').src.rpm"
+                echo "OPNFV_RPM_URL=$GS_URL/opnfv-apex-$(grep Version build/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '_-').rpm"
+                echo "OPNFV_RPM_MD5SUM=$(md5sum $BUILD_DIRECTORY/$(grep Version build/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '_-').rpm)"
                 echo "OPNFV_BUILD_URL=$BUILD_URL"
             ) > $WORKSPACE/opnfv.properties
             echo
