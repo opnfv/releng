@@ -14,14 +14,17 @@ fi
 
 trap clean EXIT TERM INT SIGTERM SIGHUP
 
-#set git_sha1
+#collect files
 files=()
 while read -r -d ''; do
   files+=("$REPLY")
 done < <(find docs/ -type f -iname '*.rst' -print0)
+
+#set sha1
 for file in "${{files[@]}}"; do
   sed -i "s/_sha1_/$git_sha1/g" $file
 done
+
 
 directories=()
 while read -d $'\n'; do
@@ -107,3 +110,31 @@ for dir in "${{directories[@]}}"; do
   fi
 
 done
+
+#check that line length is less than 120 characters
+for file in "${{files[@]}}"; do
+  toolong=""
+  toolong+="$(awk 'length($0) > 120 {{ print NR ":" $0 }}' "$file")"
+  if ! [[ -z "$toolong" ]];
+  then
+    echo "Build failed, please shorten the following lines to less than 120 characters"
+    echo "$file"
+    echo "$toolong"
+    status=failed
+  fi
+done
+
+#check that there are no trailing white spaces
+for file in "${{files[@]}}"; do
+  blanks=""
+  blanks+="$(grep -n '[[:space:]]$' "$file")"
+  if ! [[ -z "$blanks" ]];
+  then
+    echo "Build failed, please remove the folling trailing whitespace"
+    echo "$file"
+    echo "$blanks"
+    status=failed
+  fi
+done
+
+if [[ $status == "failed" ]]; then exit 1; fi
