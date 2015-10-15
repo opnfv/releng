@@ -12,16 +12,25 @@ echo "cleaning up output directory"
 fi
 }}
 
+gerritcomment() {{
+    echo "$gerrit_comment"
+    ssh -p 29418 gerrit.opnfv.org gerrit review -p $GERRIT_PROJECT -m \
+    "$gerrit_comment" $GERRIT_PATCHSET_REVISION
+}}
+
 trap clean EXIT TERM INT SIGTERM SIGHUP
 
-#set git_sha1
+#collect files
 files=()
 while read -r -d ''; do
   files+=("$REPLY")
 done < <(find docs/ -type f -iname '*.rst' -print0)
+
+#set sha1
 for file in "${{files[@]}}"; do
   sed -i "s/_sha1_/$git_sha1/g" $file
 done
+
 
 directories=()
 while read -d $'\n'; do
@@ -71,9 +80,7 @@ for dir in "${{directories[@]}}"; do
 
     # post link to gerrit as comment
     gerrit_comment="$(echo '"Document is available at 'http://$gs_path_review/"${{dir##*/}}"/index.html' for review"')"
-    echo "$gerrit_comment"
-    ssh -p 29418 gerrit.opnfv.org gerrit review -p $GERRIT_PROJECT -m \
-    "$gerrit_comment" $GERRIT_PATCHSET_REVISION
+    gerritcomment
 
     #set cache to 0
     for x in $(gsutil ls gs://$gs_path_review/"${{dir##*/}}" | grep html);
@@ -107,3 +114,40 @@ for dir in "${{directories[@]}}"; do
   fi
 
 done
+
+#check that line length is less than 120 characters
+for file in "${{files[@]}}"; do
+  toolong=""
+  toolong+="$(awk 'length($0) > 120 {{ print NR ":" $0 }}' "$file")"
+  if ! [[ -z "$toolong" ]];
+  then
+    echo "Build failed, please shorten the following lines to less than 120 characters"
+    echo "$file"
+    echo "$toolong"
+    status=failed
+    gerrit_comment="Build failed, please shorten the following lines to less than 120 characters
+    "$file"
+    "$toolong""
+    gerritcomment
+
+  fi
+done
+
+#check that there are no trailing white spaces
+for file in "${{files[@]}}"; do
+  blanks=""
+  blanks+="$(grep -n '[[:space:]]$' "$file")"
+  if ! [[ -z "$blanks" ]];
+  then
+    echo "Build failed, please remove the following trailing whitespace"
+    echo "$file"
+    echo "$blanks"
+    status=failed
+    gerrit_comment="Build failed, please remove the following trailing whitespace
+    "$file"
+    "$blanks""
+    gerritcomment
+  fi
+done
+
+if [[ $status == "failed" ]]; then exit 1; fi
