@@ -6,6 +6,8 @@
     jobs:
         - 'bottlenecks-test'
         - 'bottlenecks-verify'
+        - 'bottlenecks-daily-{stream}'
+        - 'bottlenecks-merge'
 
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
@@ -15,11 +17,9 @@
 
     project: 'bottlenecks'
     somevar: 'foo'
-
-########################
-# job templates
-########################
-
+###############################
+# Job templates
+##############################
 - job-template:
     name: 'bottlenecks-test'
 
@@ -35,6 +35,52 @@
         - shell: |
             echo "Hello world from bottlenecks"
 
+- job-template:
+    name: 'bottlenecks-daily-{stream}'
+
+    node: master
+
+    # Job template for daily builders
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+
+    project-type: freestyle
+    varsetabove: '{somevar}'
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    wrappers:
+        - ssh-agent-credentials:
+            user: '{ssh-credentials}'
+
+    triggers:
+        - timed: 'H H * * *'
+
+    prebuilders:
+        - test-macro
+
+    builders:
+        - shell: |
+            echo "hello world"
+
+    postbuilders:
+        - test-macro
 
 - job-template:
     name: 'bottlenecks-verify'
@@ -54,7 +100,6 @@
             project: '{project}'
         - gerrit-parameter:
             branch: 'master'
-
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
@@ -85,5 +130,56 @@
                     branch-pattern: '**/master'
 
     builders:
-       - shell:
-            !include-raw docu-build.sh
+        - shell: |
+            echo "hello world"
+
+- job-template:
+    name: 'bottlenecks-merge'
+
+    node: master
+
+    # builder-merge job to run JJB update
+    #
+    # This job's purpose is to update all the JJB
+
+    project-type: freestyle
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 40
+        artifactDaysToKeep: -1
+        artifactNumToKeep: 5
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: 'master'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    wrappers:
+        - ssh-agent-credentials:
+            user: '{ssh-credentials}'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'bottlenecks'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/master'
+
+    builders:
+        - shell: |
+            echo "hello world"
+
