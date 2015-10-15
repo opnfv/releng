@@ -63,7 +63,11 @@
 
     builders:
         - shell:
-            echo "Hello World"
+            ci/test.sh
+
+    publishers:
+        - junit:
+            results: nosetests.xml
 
 - job-template:
     name: 'storperf-merge'
@@ -113,7 +117,8 @@
 
     builders:
         - shell:
-            echo "Hello World"
+            ci/test.sh
+            ci/build.sh
 
 
 - job-template:
@@ -155,4 +160,5 @@
 
     builders:
         - shell:
-             echo "Hello World"
+            ci/test.sh
+            ci/build.sh
