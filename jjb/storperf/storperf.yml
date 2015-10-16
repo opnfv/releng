@@ -62,8 +62,9 @@
                     branch-pattern: '**/master'
 
     builders:
-        - shell:
-            echo "Hello World"
+        - shell: |
+            $WORKSPACE/ci/verify.sh
+
 
 - job-template:
     name: 'storperf-merge'
@@ -112,8 +113,12 @@
                       branch-pattern: '**/master'
 
     builders:
-        - shell:
-            echo "Hello World"
+        - shell: |
+            $WORKSPACE/ci/merge.sh
+
+    publishers:
+        - junit:
+            results: nosetests.xml
 
 
 - job-template:
@@ -154,5 +159,6 @@
         - timed: 'H H * * *'
 
     builders:
-        - shell:
-             echo "Hello World"
+        - shell: |
+            $WORKSPACE/ci/daily.sh
+
