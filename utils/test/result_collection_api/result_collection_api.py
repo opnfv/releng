@@ -34,7 +34,7 @@ import motor
 import argparse
 
 from resources.handlers import VersionHandler, PodHandler, \
-    TestProjectHandler, TestCasesHandler, TestResultsHandler
+    TestProjectHandler, TestCasesHandler, TestResultsHandler, DashboardHandler
 from common.config import APIConfig
 
 
@@ -80,10 +80,19 @@ def make_app():
             #   => get results with optional filters
             # POST /results =>
             # Push results with mandatory request payload parameters
-            # (project, case, and pod_id)
+            # (project, case, and pod)
             (r"/results", TestResultsHandler),
             (r"/results([^/]*)", TestResultsHandler),
             (r"/results/([^/]*)", TestResultsHandler),
+
+            # Method to manage Dashboard ready results
+            # GET /dashboard?project=functest&case=vPing&pod=opnfv-jump2
+            #  => get results in dasboard ready format
+            # get /dashboard
+            #  => get the list of project with dashboard ready results
+            (r"/dashboard", DashboardHandler),
+            (r"/dashboard([^/]*)", DashboardHandler),
+            (r"/dashboard/([^/]*)", DashboardHandler),
         ],
         db=db,
         debug=CONF.api_debug_on,
