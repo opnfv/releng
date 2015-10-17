@@ -14,6 +14,8 @@ class Pod:
         self._id = ""
         self.name = ""
         self.creation_date = ""
+        self.mode = ""
+        self.details = ""
 
     @staticmethod
     def pod_from_dict(pod_dict):
@@ -24,11 +26,15 @@ class Pod:
         p._id = pod_dict.get('_id')
         p.creation_date = str(pod_dict.get('creation_date'))
         p.name = pod_dict.get('name')
+        p.mode = pod_dict.get('mode')
+        p.details = pod_dict.get('details')
         return p
 
     def format(self):
         return {
             "name": self.name,
+            "mode": self.mode,
+            "details": self.details,
             "creation_date": str(self.creation_date),
         }
 
@@ -36,6 +42,8 @@ class Pod:
         return {
             "_id": str(self._id),
             "name": self.name,
+            "mode": self.mode,
+            "details": self.details,
             "creation_date": str(self.creation_date),
         }
 
