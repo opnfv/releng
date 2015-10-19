@@ -213,6 +213,12 @@
 
             echo "Yardstick: Run benchmark test suites ..."
 
+            # Remove old containers
+            docker ps | grep opnfv/yardstick-ci |\
+                awk '{print $1}' | xargs -r docker stop &>/dev/null
+            docker ps -a | grep opnfv/yardstick-ci |\
+                awk '{print $1}' | xargs -r  docker rm &>/dev/null
+
             # Make sure we have latest image
             docker pull opnfv/yardstick-ci
 
