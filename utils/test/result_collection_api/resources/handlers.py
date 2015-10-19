@@ -18,6 +18,10 @@ from common.constants import DEFAULT_REPRESENTATION, HTTP_BAD_REQUEST, \
     HTTP_NOT_FOUND, HTTP_FORBIDDEN
 from common.config import prepare_put_request
 
+from dashboard.dashboard_utils import get_dashboard_cases, \
+    check_dashboard_ready_project, check_dashboard_ready_case, \
+    get_dashboard_result
+
 
 class GenericApiHandler(RequestHandler):
     """
@@ -630,3 +634,133 @@ class TestResultsHandler(GenericApiHandler):
         test_result._id = result
 
         self.finish_request(test_result.format_http())
+
+
+class DashboardHandler(GenericApiHandler):
+    """
+    DashboardHandler Class
+    Handle the requests about the Test project's results
+    in a dahboard ready format
+    HTTP Methdods :
+        - GET : Get all test results and details about a specific one
+    """
+    def initialize(self):
+        """ Prepares the database for the entire class """
+        super(DashboardHandler, self).initialize()
+        self.name = "dashboard"
+
+    @asynchronous
+    @gen.coroutine
+    def get(self, result_id=None):
+        """
+        Retrieve dashboard ready result(s) for a test project
+        Available filters for this request are :
+         - project : project name
+         - case : case name
+         - pod : pod name
+         - version : platform version (Arno-R1, ...)
+         - installer (fuel, ...)
+         - period : x (x last days)
+
+
+        :param result_id: Get a result by ID
+        :raise HTTPError
+
+        GET /dashboard?project=functest&case=vPing&version=Arno-R1 \
+        &pod=pod_name&period=15
+        => get results with optional filters
+        """
+
+        project_arg = self.get_query_argument("project", None)
+        case_arg = self.get_query_argument("case", None)
+        pod_arg = self.get_query_argument("pod", None)
+        version_arg = self.get_query_argument("version", None)
+        installer_arg = self.get_query_argument("installer", None)
+        period_arg = self.get_query_argument("period", None)
+
+        # prepare request
+        get_request = dict()
+
+        # /dashboard?project=<>&pod=<>...
+        if (result_id is None):
+            if project_arg is not None:
+                get_request["project_name"] = project_arg
+
+            if case_arg is not None:
+                get_request["case_name"] = case_arg
+
+            if pod_arg is not None:
+                get_request["pod_name"] = pod_arg
+
+            if version_arg is not None:
+                get_request["version"] = version_arg
+
+            if installer_arg is not None:
+                get_request["installer"] = installer_arg
+
+            if period_arg is not None:
+                try:
+                    period_arg = int(period_arg)
+                except:
+                    raise HTTPError(HTTP_BAD_REQUEST)
+                if period_arg > 0:
+                    period = datetime.now() - timedelta(days=period_arg)
+                    obj = {"$gte": period}
+                    get_request["creation_date"] = obj
+        else:
+            get_request["_id"] = result_id
+
+        dashboard = []
+
+        # on /dashboard retrieve the list of projects and testcases
+        # ready for dashboard
+        if project_arg is None:
+            raise HTTPError(HTTP_NOT_FOUND,
+                            "error:Project name missing")
+        elif check_dashboard_ready_project(project_arg, "./dashboard"):
+            res = []
+            # fetching results
+            cursor = self.db.test_results.find(get_request)
+            while (yield cursor.fetch_next):
+                test_result = TestResult.test_result_from_dict(
+                    cursor.next_object())
+                res.append(test_result.format_http())
+
+            if case_arg is None:
+                raise HTTPError(
+                    HTTP_NOT_FOUND,
+                    "error:Test case missing for project " + project_arg)
+            elif check_dashboard_ready_case(project_arg, case_arg):
+                dashboard = get_dashboard_result(project_arg, case_arg, res)
+            else:
+                raise HTTPError(
+                    HTTP_NOT_FOUND,
+                    "error:" + case_arg +
+                    " test case not case dashboard ready on project " +
+                    project_arg)
+
+        else:
+            dashboard.append(
+                {"error": "Project not recognized or not dashboard ready"})
+            dashboard.append(
+                {"Dashboard-ready-projects":
+                    get_dashboard_cases("./dashboard")})
+            raise HTTPError(
+                HTTP_NOT_FOUND,
+                "error: no dashboard ready data for this project")
+
+        # fetching results
+        # cursor = self.db.test_results.find(get_request)
+        # while (yield cursor.fetch_next):
+        #    test_result = TestResult.test_result_from_dict(
+        #        cursor.next_object())
+        #    res.append(test_result.format_http())
+
+        # building meta object
+        meta = dict()
+
+        # final response object
+        answer = dict()
+        answer["dashboard"] = dashboard
+        answer["meta"] = meta
+        self.finish_request(answer)
