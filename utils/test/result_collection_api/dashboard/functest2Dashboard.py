@@ -58,6 +58,49 @@ def format_Tempest_for_dashboard(results):
     Post processing for the Tempest test case
     """
     test_data = [{'description': 'Tempest results for Dashboard'}]
+
+    # Graph 1: Test_Duration = f(time)
+    # ********************************
+    new_element = []
+    for data in results:
+        new_element.append({'x': data['creation_date'],
+                            'y': data['details']['duration']})
+
+    test_data.append({'name': "Tempest duration",
+                      'info': {'type': "graph",
+                               'xlabel': 'time',
+                               'ylabel': 'duration (s)'},
+                      'data_set': new_element})
+
+    # Graph 2: (Nb test, nb failure)=f(time)
+    # ***************************************
+    new_element = []
+    for data in results:
+        new_element.append({'x': data['creation_date'],
+                            'y1': data['details']['tests'],
+                            'y2': data['details']['failures']})
+
+    test_data.append({'name': "Tempest nb tests/nb failures",
+                      'info': {'type': "graph",
+                               'xlabel': 'time',
+                               'y1label': 'Number of tests',
+                               'y2label': 'Number of failures'},
+                      'data_set': new_element})
+
+    # Graph 3: bar graph Summ(nb tests run), Sum (nb tests failed)
+    # ********************************************************
+    nbTests = 0
+    nbFailures = 0
+
+    for data in results:
+        nbTests += data['details']['tests']
+        nbFailures += data['details']['failures']
+
+    test_data.append({'name': "Total number of tests run/failure tests",
+                      'info': {"type": "bar"},
+                      'data_set': [{'Run': nbTests,
+                                    'Failed': nbFailures}]})
+
     return test_data
 
 
