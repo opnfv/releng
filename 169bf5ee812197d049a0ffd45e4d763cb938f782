@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da6255ed_2c966595",
+        "filename": "utils/jenkins-jnlp-connect.sh",
+        "patchSetId": 15
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 334
+      },
+      "writtenOn": "2015-10-23T16:35:00Z",
+      "side": 1,
+      "message": "Should probably make these arguments to the script, rather than editing the script directly (other than using env vars)",
+      "revId": "169bf5ee812197d049a0ffd45e4d763cb938f782",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da6255ed_ec8f2d74",
+        "filename": "utils/jenkins-jnlp-connect.sh",
+        "patchSetId": 15
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 334
+      },
+      "writtenOn": "2015-10-23T16:35:00Z",
+      "side": 1,
+      "message": "Does it really make sense that the script always has to be here if you are running it as root?  Seems like it could be anywhere.  Maybe you should just grab the file dynamically and check.",
+      "revId": "169bf5ee812197d049a0ffd45e4d763cb938f782",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da6255ed_6cca1da3",
+        "filename": "utils/jenkins-jnlp-connect.sh",
+        "patchSetId": 15
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 334
+      },
+      "writtenOn": "2015-10-23T16:35:00Z",
+      "side": 1,
+      "message": "I think this can just be if ! nc -w 4 build.opnfv.org 57387; then\n\nWhen I run this on my setup it, the command hangs and stays connected to the server.  To fix this you can modify the above command to pipe in a command like:\n\nif ! echo \"blah\" | nc -w 4 build.opnfv.org 57387; then\n\n[root@intelpod2-jumphost jenkins]# echo \"blah\" |nc -w 1 -vt build.opnfv.org 57387\nNcat: Version 6.40 ( http://nmap.org/ncat )\nNcat: Connected to 146.148.73.196:57387.\nNcat: 5 bytes sent, 0 bytes received in 0.12 seconds.\n[root@intelpod2-jumphost jenkins]# echo $?\n0",
+      "revId": "169bf5ee812197d049a0ffd45e4d763cb938f782",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da6255ed_4ccf59b1",
+        "filename": "utils/jenkins-jnlp-connect.sh",
+        "patchSetId": 15
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 334
+      },
+      "writtenOn": "2015-10-23T16:35:00Z",
+      "side": 1,
+      "message": "Shouldn\u0027t this be /etc/monit.d/monit.conf?  I don\u0027t see where config file is placed on my centos7 system.",
+      "revId": "169bf5ee812197d049a0ffd45e4d763cb938f782",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
