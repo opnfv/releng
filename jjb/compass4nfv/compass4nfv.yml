@@ -309,7 +309,7 @@
             branch: 'master'
 
     triggers:
-        - timed: 'H 4-18/2 * * *'
+        - timed: 'H 16 * * *'
 
     builders:
         - 'builder-compass-make-ppa'
@@ -420,11 +420,8 @@
             do
                 md5=$(md5sum $i | cut -d ' ' -f1)
                 echo $md5 > $i.md5
-            done
-            # upload PPA
-            for i in $(find *.gz *.iso *.img *.md5 -type f)
-            do
                 curl -T $i $PPA_REPO
+                curl -T $i.md5 $PPA_REPO
             done
 
 - builder:
