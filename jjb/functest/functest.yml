@@ -226,6 +226,7 @@
         artifactNumToKeep: -1
 
     builders:
+        - 'set-functest-env'
         - 'functest-all'
         - 'functest-store-results'
         - 'functest-cleanup'
@@ -270,6 +271,7 @@
         artifactNumToKeep: -1
 
     builders:
+        - 'set-functest-env'
         - 'functest-all'
         - 'functest-store-results'
         - 'functest-cleanup'
@@ -524,18 +526,10 @@
             #!/bin/bash
             set +e
 
-            # Remove any docker containers leftovers
-            docker ps | grep opnfv/functest | awk '{print $1}' | xargs docker stop &>/dev/null
-            docker ps -a | grep opnfv/functest | awk '{print $1}' | xargs docker rm &>/dev/null
-            docker images | grep opnfv/functest | awk '{print $3}' | xargs docker rmi &>/dev/null
-
-            # Pull and store fresh image from Dockerhub
-            docker pull opnfv/functest
-
-            # Run Docker and Functest tests
-            cmd="${FUNCTEST_REPO_DIR}/docker/start.sh"
-            docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
-                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
+            cmd1 = "${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
+            cmd2 = "${FUNCTEST_REPO_DIR}/docker/run_tests.sh"
+            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
+            docker exec $container_id sh -c "${cmd1} && ${cmd2}"
 
 
 - builder:
@@ -545,10 +539,15 @@
             #!/bin/bash
             set +e
 
-            echo "Functest: spawn Docker and run Functest suite"
-            cmd="${FUNCTEST_REPO_DIR}/docker/start.sh"
-            docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
-            -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
+            echo "Functest: spawn Docker and prepare environment"
+            envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP}"
+            docker ps -a | grep opnfv/functest | awk '{print $1}' | xargs docker rm -f &>/dev/null
+            docker pull opnfv/functest
+            docker run -ti -e $envs opnfv/functest /bin/bash &
+            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
+            docker start $container_id
+            cmd="${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
+            docker exec $container_id $cmd
 
 
 - builder:
@@ -559,10 +558,9 @@
             set +e
 
             echo "Functest: run vPing"
-            cmd="python ${FUNCTEST_REPO_DIR}/testcases/vPing/CI/libraries/vPing.py \
-                --debug ${FUNCTEST_REPO_DIR}/ -r"
-            docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
-                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
+            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test vping"
+            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
+            docker exec $container_id $cmd
 
 - builder:
     name: functest-odl
@@ -572,9 +570,9 @@
             set +e
 
             echo "Functest: run ODL suite"
-            cmd="${FUNCTEST_REPO_DIR}/testcases/Controllers/ODL/CI/start_tests.sh"
-            docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
-                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
+            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test odl"
+            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
+            docker exec $container_id $cmd
 
 - builder:
     name: functest-tempest-smoke
@@ -585,9 +583,9 @@
 
             # tempest
             echo "Functest: run Tempest suite"
-            cmd="rally verify start smoke; rally verify list;"
-            docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
-                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
+            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test tempest"
+            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
+            docker exec $container_id $cmd
 
 
 
@@ -599,10 +597,9 @@
             set +e
 
             echo "Functest: run Functest Rally Bench suites"
-            cmd="python ${FUNCTEST_REPO_DIR}/testcases/VIM/OpenStack/CI/libraries/run_rally.py \
-                --debug ${FUNCTEST_REPO_DIR}/ all"
-            docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
-                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
+            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test rally"
+            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
+            docker exec $container_id $cmd
 
 
 - builder:
@@ -613,8 +610,8 @@
             set +e
             cmd="python ${FUNCTEST_REPO_DIR}/testcases/vIMS/CI/vIMS.py \
                 --debug ${FUNCTEST_REPO_DIR}/"
-            docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
-                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
+            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
+            docker exec $container_id $cmd
 
 
 
