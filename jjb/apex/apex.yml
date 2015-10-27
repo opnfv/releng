@@ -76,6 +76,7 @@
 
     builders:
         - 'apex-build'
+        - 'apex-deploy-virtual'
         - 'apex-workspace-cleanup'
 
 - job-template:
@@ -136,6 +137,7 @@
 
     builders:
         - 'apex-build'
+        - 'apex-deploy-virtual'
         - 'apex-workspace-cleanup'
 
 - job-template:
@@ -187,6 +189,8 @@
     builders:
         - 'apex-build'
         - 'apex-upload-artifact'
+        - 'apex-workspace-cleanup'
+        - 'apex-deploy-virtual'
         - 'apex-workspace-cleanup'
 
 ########################
@@ -300,6 +304,50 @@
             echo "ISO Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
             echo "RPM Artifact is available as http://$GS_URL/$(basename $OPNFV_RPM_URL)"
 
+- builder:
+    name: 'apex-deploy-virtual'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Starting the Apex virtual deployment."
+            echo "--------------------------------------------------------"
+            echo
+
+            # check if we got the file
+            if [[ -f opnfv.properties ]]; then
+                # source the file so we get OPNFV vars
+                source opnfv.properties
+                RPM_INSTALL_PATH=noarch/$(basepath RPM_URL)
+            else
+                # get the latest.properties file in order to get info regarding latest artifact
+                curl -s -o $WORKSPACE/opnfv.properties http://$GS_URL/latest.properties
+                [[ -f opnfv.properties ]] || exit 1
+
+                # source the file so we get OPNFV vars
+                source opnfv.properties
+                RPM_INSTALL_PATH=$RPM_URL
+            fi
+
+            # update / install the new rpm
+            if rpm -q opnfv-apex; then
+               sudo yum update -y $RPM_INSTALL_PATH;
+            else
+               sudo yum install -y $RPM_INSTALL_PATH;
+            fi
+
+            # cleanup virtual machines before we start
+            sudo opnfv-clean
+            # initiate virtual deployment
+            sudo opnfv-deploy -v
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
 
 #######################
 # trigger macros
