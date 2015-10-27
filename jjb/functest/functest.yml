@@ -539,12 +539,20 @@
             #!/bin/bash
             set +e
 
-            echo "Functest: spawn Docker and prepare environment"
+            echo "Functest: Start Docker and prepare environment"
             envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP}"
             docker ps -a | grep opnfv/functest | awk '{print $1}' | xargs docker rm -f &>/dev/null
             docker pull opnfv/functest
-            docker run -ti -e $envs opnfv/functest /bin/bash &
+            echo "Functest: Running docker run command: docker run -i -e $envs opnfv/functest /bin/bash &"
+            docker run -i -e $envs opnfv/functest /bin/bash &
+            docker ps -a
             container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
+            echo "Container ID=${container_id}"
+            if [ -z ${container_id} ]; then
+                echo "Cannot find opnfv/functest container ID. Please check if it is existing."
+                docker ps -a
+                exit 1
+            fi
             docker start $container_id
             cmd="${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
             docker exec $container_id $cmd
