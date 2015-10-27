@@ -23,10 +23,8 @@
             functest_repo_dir:  '/home/opnfv/repos/functest'
 
     jobs:
-        - 'set-functest-env-{pod}'
         - 'functest-{pod}'
         - 'clean-functest-env-{pod}'
-        - 'set-functest-env-{installer}-{stream}'
         - 'functest-{installer}-{stream}'
         - 'clean-functest-env-{installer}-{stream}'
         - 'functest-openstack-bench-test-{pod}'
@@ -54,24 +52,6 @@
 # job template
 ################################
 - job-template:
-    name: set-functest-env-{pod}
-
-    project-type: freestyle
-
-    node: '{pod}'
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    builders:
-        - 'set-functest-env'
-
-
-
-- job-template:
     name: clean-functest-env-{pod}
 
     project-type: freestyle
@@ -86,23 +66,6 @@
 
     builders:
         - 'functest-cleanup'
-
-
-- job-template:
-    name: set-functest-env-{installer}-{stream}
-
-    project-type: freestyle
-
-    node: '{node}'
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    builders:
-        - 'set-functest-env'
 
 
 - job-template:
@@ -533,22 +496,12 @@
             docker pull opnfv/functest
 
             # Run Docker and Functest tests
-            cmd="${FUNCTEST_REPO_DIR}/docker/start.sh"
+            cmd1 = "${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
+            cmd2 = "${FUNCTEST_REPO_DIR}/docker/run_tests.sh"
             docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
-                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
+                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest \
+                "${cmd1} && ${cmd2}"
 
-
-- builder:
-    name: set-functest-env
-    builders:
-        - shell: |
-            #!/bin/bash
-            set +e
-
-            echo "Functest: spawn Docker and run Functest suite"
-            cmd="${FUNCTEST_REPO_DIR}/docker/start.sh"
-            docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
-            -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
 
 
 - builder:
@@ -559,10 +512,11 @@
             set +e
 
             echo "Functest: run vPing"
-            cmd="python ${FUNCTEST_REPO_DIR}/testcases/vPing/CI/libraries/vPing.py \
-                --debug ${FUNCTEST_REPO_DIR}/ -r"
+            cmd1 = "${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
+            cmd2 = "${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test vping"
             docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
-                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
+                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest \
+                "${cmd1} && ${cmd2}"
 
 - builder:
     name: functest-odl
@@ -572,9 +526,11 @@
             set +e
 
             echo "Functest: run ODL suite"
-            cmd="${FUNCTEST_REPO_DIR}/testcases/Controllers/ODL/CI/start_tests.sh"
+            cmd1 = "${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
+            cmd2 = "${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test odl"
             docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
-                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
+                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest \
+                "${cmd1} && ${cmd2}"
 
 - builder:
     name: functest-tempest-smoke
@@ -585,9 +541,11 @@
 
             # tempest
             echo "Functest: run Tempest suite"
-            cmd="rally verify start smoke; rally verify list;"
+            cmd1 = "${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
+            cmd2 = "${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test tempest"
             docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
-                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
+                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest \
+                "${cmd1} && ${cmd2}"
 
 
 
@@ -599,10 +557,11 @@
             set +e
 
             echo "Functest: run Functest Rally Bench suites"
-            cmd="python ${FUNCTEST_REPO_DIR}/testcases/VIM/OpenStack/CI/libraries/run_rally.py \
-                --debug ${FUNCTEST_REPO_DIR}/ all"
+            cmd1 = "${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
+            cmd2 = "${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test rally"
             docker run -t -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
-                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest $cmd
+                -e "INSTALLER_IP=${INSTALLER_IP}" opnfv/functest \
+                "${cmd1} && ${cmd2}"
 
 
 - builder:
