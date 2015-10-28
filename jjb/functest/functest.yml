@@ -546,16 +546,25 @@
             echo "Functest: Running docker run command: docker run -i -e $envs opnfv/functest /bin/bash &"
             docker run -i -e $envs opnfv/functest /bin/bash &
             docker ps -a
+            sleep 5
             container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
             echo "Container ID=${container_id}"
             if [ -z ${container_id} ]; then
-                echo "Cannot find opnfv/functest container ID. Please check if it is existing."
+                echo "Cannot find opnfv/functest container ID ${container_id}. Please check if it is existing."
                 docker ps -a
                 exit 1
             fi
-            docker start $container_id
+            echo "Starting the container: docker start ${container_id}"
+            docker start ${container_id}
+            sleep 5
+            docker ps
+            if [ $(docker ps | grep opnfv/functest | wc -l) == 0 ]; then
+                echo "The container opnfv/functest with ID=${container_id} has not been properly started. Exiting..."
+                exit 1
+            fi
             cmd="${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
-            docker exec $container_id $cmd
+            echo "Executing command inside the docker: ${cmd}"
+            docker exec ${container_id} ${cmd}
 
 
 - builder:
