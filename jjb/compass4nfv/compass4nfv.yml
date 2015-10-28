@@ -155,7 +155,6 @@
     builders:
         - 'builder-compass-build-iso'
         - 'builder-compass-deploy-virtual-flavor'
-        - 'builder-compass-backup-logs'
     publishers:
         - archive:
             artifacts: 'ansible.log'
@@ -345,7 +344,6 @@
         - 'builder-compass-ci-preclean-workspace'
         - 'builder-compass-download-artifact'
         - 'builder-compass-deploy-virtual-flavor'
-        - 'builder-compass-backup-logs'
     publishers:
         - archive:
             artifacts: 'ansible.log'
@@ -484,11 +482,22 @@
 
             export ISO_URL=file://$BUILD_DIRECTORY/compass.iso
             cd $WORKSPACE
+
             ./deploy.sh $FLAVOR_CONF
+            if [ $? -ne 0 ]; then
+                echo "depolyment failed!"
+                deploy_ret=1
+            fi
 
             echo
             echo "--------------------------------------------------------"
             echo "Done!"
+
+            ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+            sshpass -p root scp 2>/dev/null $ssh_options root@${installer_ip}:/var/ansible/run/openstack_juno-opnfv2/ansible.log ./  &> /dev/null
+
+            exit $deploy_ret
+
 
 - builder:
     name: 'builder-compass-upload-artifact'
@@ -577,9 +586,3 @@
             sudo rm $WORKSPACE -rf
             git clone $GIT_BASE  $WORKSPACE
 
-- builder:
-    name: 'builder-compass-backup-logs'
-    builders:
-        - shell: |
-            ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-            sshpass -p root scp 2>/dev/null $ssh_options root@${installer_ip}:/var/ansible/run/openstack_juno-opnfv2/ansible.log ./  &> /dev/null
