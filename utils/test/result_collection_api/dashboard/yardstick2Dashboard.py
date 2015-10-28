@@ -69,7 +69,7 @@ def _get_test_status_bar(results):
     return nbTest, nbTestOk
 
 
-def format_ping_for_dashboard(results):
+def format_Ping_for_dashboard(results):
     """
     Post processing for the Ping test case
     """
