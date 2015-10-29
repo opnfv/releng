@@ -646,7 +646,8 @@
             set +e
 
             # cleanup: remove any docker containers leftovers
-            docker ps | grep opnfv/functest | awk '{print $1}' | xargs docker stop &>/dev/null
-            docker ps -a | grep opnfv/functest | awk '{print $1}' | xargs docker rm &>/dev/null
-            docker images | grep opnfv/functest | awk '{print $3}' | xargs docker rmi &>/dev/null
+            echo "Removing the docker container..."
+            docker rm -f $(docker ps | grep opnfv/functest | awk '{print $1}')
+            echo "Removing the docker image..."
+            docker rmi -f $(docker images | grep opnfv/functest | awk '{print $3}')
 
