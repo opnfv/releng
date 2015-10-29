@@ -21,9 +21,12 @@
             branch: 'master'
 
     flavor:
-        - five:
-            conf: 'virtual_five'
-            node: 'huawei-build'
+        - cluster-odl:
+            conf: 'virtual_cluster_odl'
+            node: 'huawei-deploy-vm'
+        - cluster-onos:
+            conf: 'virtual_cluster_onos'
+            node: 'huawei-deploy-vm'
         - cluster:
             conf: 'virtual_cluster'
             node: 'huawei-build'
@@ -247,6 +250,14 @@
             block: true
         - trigger-builds:
           - project: 'compass-deploy-virtual-cluster'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'compass-deploy-virtual-cluster-odl'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'compass-deploy-virtual-cluster-onos'
             git-revision: true
             block: true
 
