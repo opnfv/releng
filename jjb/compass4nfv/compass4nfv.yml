@@ -12,6 +12,7 @@
         - 'compass-build-iso'
         - 'compass-build-ppa'
         - 'compass-deploy-virtual-{flavor}'
+        - 'compass-deploy-bare-huawei-us'
 
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
@@ -299,6 +300,40 @@
             allow-empty: 'true'
             fingerprint: true
 
+
+- job-template:
+    name: 'compass-deploy-bare-huawei-us'
+
+    project-type: freestyle
+
+    disabled: false
+
+    node: 'huawei-us-deploy-bare-1'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - compass-parameter:
+            installer: '{installer}'
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - 'builder-compass-ci-preclean-workspace'
+        - 'builder-compass-download-artifact'
+        - 'builder-compass-deploy-bare'
+
+    publishers:
+        - archive:
+            artifacts: 'ansible.log'
+            allow-empty: 'true'
+            fingerprint: true
+
+
 ########################
 # parameter macros
 ########################
@@ -447,6 +482,36 @@
 
             exit $deploy_ret
 
+- builder:
+    name: 'builder-compass-deploy-bare'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -x
+
+            # log info to console
+            echo "Starting the deployment on virtual environment using $INSTALLER. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
+
+            export CONFDIR=$WORKSPACE/deploy/conf/hardware_environment/huawei_us_lab/pod1
+            export ISO_URL=file://$BUILD_DIRECTORY/compass.iso
+            cd $WORKSPACE
+
+            ./deploy.sh --dha $CONFDIR/dha.yml --network $CONFDIR/network.yml
+            if [ $? -ne 0 ]; then
+                echo "depolyment failed!"
+                deploy_ret=1
+            fi
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
+            ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+            sshpass -p root scp 2>/dev/null $ssh_options root@${installer_ip}:/var/ansible/run/openstack_juno-opnfv2/ansible.log ./  &> /dev/null
+
+            exit $deploy_ret
 
 - builder:
     name: 'builder-compass-upload-artifact'
