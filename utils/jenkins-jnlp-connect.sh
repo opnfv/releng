@@ -100,6 +100,7 @@ fi
 
 if [[ $started_monit == "true" ]]; then
 wget --timestamping https://build.opnfv.org/ci/jnlpJars/slave.jar && true
+chown $jenkinsuser $jenkinsuser slave.jar
 
 if [[ -f /var/run/$jenkinsuser/jenkins_jnlp_pid ]];
 then echo "pid file found"
@@ -113,9 +114,12 @@ then echo "pid file found"
         fi
 fi
 
-exec $connectionstring &
-echo $! > /var/run/$jenkinsuser/jenkins_jnlp_pid
-#trap 'rm -f "$pidfile"; exit' EXIT SIGQUIT SIGINT SIGSTOP SIGTERM
+if [[ run_in_foreground == true ]]; then
+  $connectionstring
+else
+  exec $connectionstring &
+  echo $! > /var/run/$jenkinsuser/jenkins_jnlp_pid
+fi
 
 else
   echo "you are ready to start monit"
@@ -165,7 +169,8 @@ do
                 s ) slave_secret="$OPTARG";;
                 h ) usage; exit;;
                 t ) started_monit=true
-                    skip_monit=true ;;
+                    skip_monit=true 
+                    run_in_foreground=true ;;
                 f ) test_firewall ;;
                 \? ) echo "Unknown option: -$OPTARG" >&2; exit 1;;
         esac
