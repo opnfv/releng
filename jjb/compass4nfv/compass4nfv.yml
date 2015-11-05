@@ -215,10 +215,10 @@
           - project: 'compass-deploy-virtual-cluster'
             git-revision: true
             block: true
-        - trigger-builds:
-          - project: 'compass-deploy-virtual-cluster-odl'
-            git-revision: true
-            block: true
+#        - trigger-builds:
+#          - project: 'compass-deploy-virtual-cluster-odl'
+#            git-revision: true
+#            block: true
         - trigger-builds:
           - project: 'compass-deploy-virtual-cluster-onos'
             git-revision: true
@@ -422,10 +422,10 @@
             description: "URL to Google Storage proxy"
         - string:
             name: installer_ip
-            default: "10.1.0.12"
+            default: "192.168.200.2"
         - string:
             name: PPA_REPO
-            default: "http://58.251.166.184:9999"
+            default: "http://205.177.226.235:9999"
         - string:
             name: PPA_CACHE
             default: "$WORKSPACE/work/repo/"
@@ -552,6 +552,9 @@
 
             export CONFDIR=$WORKSPACE/deploy/conf/hardware_environment/huawei_us_lab/pod1
             export ISO_URL=file://$BUILD_DIRECTORY/compass.iso
+            export EXTERNAL_NIC=eth0
+            export INSTALL_NIC=eth1
+
             cd $WORKSPACE
 
             ./deploy.sh --dha $CONFDIR/dha.yml --network $CONFDIR/network.yml
