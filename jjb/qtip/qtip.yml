@@ -5,8 +5,8 @@
         - 'qtip-daily-{stream}'
         - 'qtip-merge'
         - 'qtip-verify'
-        - 'qtip-dhrystone-VM_vs_Baremetal-{pod}'
-        - 'qtip_dhrystone-BM_vs_BM-{pod}'
+        - 'qtip-dhrystone-serial-{pod}'
+        - 'qtip-ssl-parallel-{pod}'
 
 
     # stream:    branch with - in place of / (eg. stable-helium)
@@ -15,9 +15,9 @@
 
     pod:
         - dell-build:
-           node: 'dell-build'
-           installer_type: 'foreman'
-           installer_ip: '172.18.0.12'
+           node: 'dell-us-testing-bm-1'
+           installer_type: 'fuel'
+           installer_ip: '10.20.0.2'
 
 
     stream:
@@ -192,7 +192,7 @@
             echo "merge logic goes here"
 
 - job-template:
-    name: 'qtip-dhrystone-VM_vs_Baremetal-{pod}'
+    name: 'qtip-dhrystone-serial-{pod}'
 
     project-type: freestyle
 
@@ -230,13 +230,13 @@
 
     builders:
         - 'qtip-fetch-os-cred'
-        - 'qtip-dhrystone-VM_vs_BM'
+        - 'qtip-dhrystone-serial'
 
     triggers:
-      - timed: '0 13 * * *'
+      - timed: '0 20 * * *'
 
 - job-template:
-    name: 'qtip_dhrystone-BM_vs_BM-{pod}'
+    name: 'qtip-ssl-parallel-{pod}'
 
 
     project-type: freestyle
@@ -275,7 +275,7 @@
 
     builders:
       - 'qtip-fetch-os-cred'
-      - 'qtip-dhrystone-BM_vs_BM'
+      - 'qtip-ssl-parallel'
 
     triggers:
       - timed: "@midnight"
@@ -284,7 +284,7 @@
 #biuilder macros
 ###########################
 - builder:
-    name: qtip-dhrystone-VM_vs_BM
+    name: qtip-dhrystone-serial
 
     builders:
         - shell: |
@@ -300,11 +300,11 @@
 
 
             echo "Running QTIP dhrystone with First Test case"
-            ./QTIP.sh First dhrystone
+            python qtip.py -s compute -b dhrystone_serial.yaml
 
 
 - builder:
-    name: qtip-dhrystone-BM_vs_BM
+    name: qtip-ssl-parallel
 
     builders:
         - shell: |
@@ -320,7 +320,7 @@
 
 
             echo "Running QTIP dhrystone with Second Test case"
-            ./QTIP.sh Second dhrystone
+            python qtip.py -s compute -b ssl_parallel.yaml
 
 
 - builder:
