@@ -10,8 +10,14 @@ echo
 
 DOCKER_IMAGE_NAME="opnfv/functest"
 
+
 # Get tag version
-DOCKER_TAG=$(../../utils/calculate_version.sh -t docker -n $DOCKER_IMAGE_NAME)
+cd $WORKSPACE
+rm -rf ./functest/
+git clone https://gerrit.opnfv.org/gerrit/functest
+
+
+DOCKER_TAG=$($WORKSPACE/releng/utils/calculate_version.sh -t docker -n $DOCKER_IMAGE_NAME)
 
 ret_val=$?
 if [ $ret_val -ne 0 ]; then
@@ -23,18 +29,24 @@ fi
 
 # Remove previous running containers
 echo "Removing existing $DOCKER_IMAGE_NAME containers..."
-docker ps | grep $DOCKER_IMAGE_NAME | awk '{{print $1}}' | xargs docker stop &>/dev/null
-docker ps -a | grep $DOCKER_IMAGE_NAME | awk '{{print $1}}' | xargs docker rm &>/dev/null
+if [ ! -z $(docker ps -a | grep $DOCKER_IMAGE_NAME) ]; then
+    docker ps | grep $DOCKER_IMAGE_NAME | awk '{{print $1}}' | xargs docker stop &>/dev/null
+    docker ps -a | grep $DOCKER_IMAGE_NAME | awk '{{print $1}}' | xargs docker rm &>/dev/null
+fi
 
 # Remove existing images
 echo "Removing existing $DOCKER_IMAGE_NAME images..."
-docker images | grep $DOCKER_IMAGE_NAME | awk '{{print $3}}' | xargs docker rmi &>/dev/null
+if [ ! -z $(docker images | grep $DOCKER_IMAGE_NAME) ]; then
+    docker images | grep $DOCKER_IMAGE_NAME | awk '{{print $3}}' | xargs docker rmi &>/dev/null
+fi
 
 
 # Start the build
 echo "Starting image build of $DOCKER_IMAGE_NAME:$DOCKER_TAG..."
-cd $WORKSPACE/docker/
+cd $WORKSPACE/functest/docker
 docker build -t $DOCKER_IMAGE_NAME:$DOCKER_TAG .
+# Update also latest
+docker build -t $DOCKER_IMAGE_NAME:latest .
 
 # list the images
 echo "Available images are:"
@@ -46,5 +58,7 @@ if [ "$PUSH_IMAGE" == "true" ]; then
     echo "--------------------------------------------------------"
     echo
     # Push to the Dockerhub repository
-    docker push $DOCKER_IMAGE_NAME:$DOCKER_TAG
+    docker push -f $DOCKER_IMAGE_NAME:$DOCKER_TAG
+    echo "Updating $DOCKER_IMAGE_NAME:latest to the docker registry..."
+    docker push -f $DOCKER_IMAGE_NAME:latest
 fi
