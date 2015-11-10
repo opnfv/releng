@@ -47,7 +47,7 @@ function docker_version() {
 
 function artifact_version() {
     # To be done
-    echo ""
+    error "Not supported yet..."
 }
 
 
