@@ -11,7 +11,7 @@ echo
 DOCKER_IMAGE_NAME="opnfv/functest"
 
 # Get tag version
-DOCKER_TAG=$(../../calculate_version.sh -t docker -n $DOCKER_IMAGE_NAME)
+DOCKER_TAG=$(../../utils/calculate_version.sh -t docker -n $DOCKER_IMAGE_NAME)
 
 ret_val=$?
 if [ $ret_val -ne 0 ]; then
