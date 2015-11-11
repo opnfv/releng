@@ -10,7 +10,7 @@ echo "-----"
 echo
 
 #make
-sphinx-build -b html -E -c etc/ design_docs/ build/
+sphinx-build -b html -E -c etc/ docs/design/ build/
 
 echo
 echo "Upload"
@@ -38,13 +38,13 @@ if [[ $JOB_NAME =~ "verify" ]] ; then
     ssh -p 29418 gerrit.opnfv.org gerrit review -p $GERRIT_PROJECT -m \
     $gerrit_comment $GERRIT_PATCHSET_REVISION
 else
-    gsutil cp -r build/* "gs://$gs_path_branch/design_docs/"
-    #gsutil cp -r build/design_docs "gs://$gs_path_branch/"
+    gsutil cp -r build/* "gs://$gs_path_branch/docs/design/"
+    #gsutil cp -r build/docs/design "gs://$gs_path_branch/"
     #gsutil cp -r build/requirements/html "gs://$gs_path_branch/"
     #gsutil cp -r build/requirements/latex/*.pdf "gs://$gs_path_branch/"
     #echo
 
-    echo "Latest document is available at http://$gs_path_branch/design_docs/index.html"
+    echo "Latest document is available at http://$gs_path_branch/docs/design/index.html"
 
     if gsutil ls "gs://$gs_path_review" > /dev/null 2>&1 ; then
         echo
