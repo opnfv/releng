@@ -21,7 +21,7 @@ def get_functest_cases():
     get the list of the supported test cases
     TODO: update the list when adding a new test case for the dashboard
     """
-    return ["vPing", "Tempest", "odl", "Rally"]
+    return ["vPing", "vIMS", "Tempest", "odl", "Rally"]
 
 
 def format_functest_for_dashboard(case, results):
@@ -51,6 +51,86 @@ def check_functest_case_exist(case):
         return False
     else:
         return True
+
+
+def format_vIMS_for_dashboard(results):
+    """
+    Post processing for the vIMS test case
+    """
+    test_data = [{'description': 'vIMS results for Dashboard'}]
+
+    # Graph 1: (duration_deployment_orchestrator,
+    #            duration_deployment_vnf,
+    #             duration_test) = f(time)
+    # ********************************
+    new_element = []
+
+    for data in results:
+        new_element.append({'x': data['creation_date'],
+                            'y1': data['details']['orchestrator']['duration'],
+                            'y2': data['details']['vIMS']['duration'],
+                            'y3': data['details']['sig_test']['duration']})
+
+    test_data.append({'name': "Tempest nb tests/nb failures",
+                      'info': {'type': "graph",
+                               'xlabel': 'time',
+                               'y1label': 'orchestation deployment duration',
+                               'y2label': 'vIMS deployment duration',
+                               'y3label': 'vIMS test duration'},
+                      'data_set': new_element})
+
+    # Graph 2: (Nb test, nb failure, nb skipped)=f(time)
+    # **************************************************
+    new_element = []
+
+    for data in results:
+        # Retrieve all the tests
+        nbTests = 0
+        nbFailures = 0
+        nbSkipped = 0
+        vIMS_test = data['details']['sig_test']['result']
+
+        for data_test in vIMS_test:
+            # Calculate nb of tests run and nb of tests failed
+            # vIMS_results = get_vIMSresults(vIMS_test)
+            # print vIMS_results
+            if data_test['result'] == "Passed":
+                nbTests += 1
+            elif data_test['result'] == "Failed":
+                nbFailures += 1
+            elif data_test['result'] == "Skipped":
+                nbSkipped += 1
+
+        new_element.append({'x': data['creation_date'],
+                            'y1': nbTests,
+                            'y2': nbFailures,
+                            'y3': nbSkipped})
+
+    test_data.append({'name': "vIMS nb tests passed/failed/skipped",
+                      'info': {'type': "graph",
+                               'xlabel': 'time',
+                               'y1label': 'Number of tests passed',
+                               'y2label': 'Number of tests failed',
+                               'y3label': 'Number of tests skipped'},
+                      'data_set': new_element})
+    """
+    # Graph 3: bar graph Summ(nb tests run), Sum (nb tests failed)
+    # ********************************************************
+    nbTests = 0
+    nbFailures = 0
+
+    for data in results:
+		vIMS_test = data['details']['sig_test']['result']
+		vIMS_results = get_vIMSresults(vIMS_test)
+		nbTests += vIMS_results['tests_run']
+		nbFailures += vIMS_results['tests_failed']
+
+    test_data.append({'name': "Total number of tests run/failure tests",
+                      'info': {"type": "bar"},
+                      'data_set': [{'Run': nbTests,
+                                    'Failed': nbFailures}]})
+    """
+    return test_data
 
 
 def format_Tempest_for_dashboard(results):
