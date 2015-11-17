@@ -41,7 +41,7 @@ fi
 
 # Start the build
 echo "Building of $DOCKER_IMAGE_NAME:$DOCKER_TAG..."
-cd $WORKSPACE/functest/docker
+cd $WORKSPACE/docker
 docker build -t $DOCKER_IMAGE_NAME:$DOCKER_TAG .
 echo "Creating tag 'latest'..."
 docker tag $DOCKER_IMAGE_NAME:$DOCKER_TAG $DOCKER_IMAGE_NAME:latest
