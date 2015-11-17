@@ -12,7 +12,12 @@ echo
 [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
 
 # set OPNFV_ARTIFACT_VERSION
-export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
+if [[ $GERRIT_EVENT_TYPE = "change-merged" ]]; then
+    echo "Building Fuel ISO for a merged change"
+    OPNFV_ARTIFACT_VERSION=$(gerrit-$GERRIT_CHANGE_NUMBER)
+else
+    OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
+fi
 
 # start the build
 cd $WORKSPACE/$INSTALLER/ci
