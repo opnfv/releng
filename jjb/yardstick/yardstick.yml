@@ -171,6 +171,11 @@
     parameters:
         - project-parameter:
             project: '{project}'
+        - '{pod}-parameters'
+        - string:
+            name: POD_NAME
+            default: '{pod}'
+            description: "POD where the job runs"
         - string:
             name: INSTALLER_TYPE
             default: '{installer_type}'
@@ -242,14 +247,33 @@
             !include-raw ../../utils/fetch_os_creds.sh
 
 ########################
+# parameter macros
+########################
+- parameter:
+    name: 'ericsson-parameters'
+    parameters:
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+
+- parameter:
+    name: 'lf-parameters'
+    parameters:
+        - string:
+            name: GIT_BASE
+            default: ssh://gerrit.opnfv.org:29418/$PROJECT
+            description: "URL for LF POD"
+
+########################
 # trigger macros
 ########################
 - trigger:
-    name: yardstick-trigger-ericsson
+    name: 'yardstick-trigger-ericsson'
     triggers:
-        timed: "@midnight"
+        - timed: '@midnight'
 
 - trigger:
-    name: yardstick-trigger-lf
+    name: 'yardstick-trigger-lf'
     triggers:
-        timed: "#@midnight"
+        - timed: '#@midnight'
