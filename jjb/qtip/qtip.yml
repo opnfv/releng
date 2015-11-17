@@ -5,8 +5,8 @@
         - 'qtip-daily-{stream}'
         - 'qtip-merge'
         - 'qtip-verify'
-        - 'qtip-dhrystone-serial-{pod}'
-        - 'qtip-ssl-parallel-{pod}'
+        - 'qtip-dhrystone-VM_vs_Baremetal-{pod}'
+        - 'qtip_dhrystone-BM_vs_BM-{pod}'
 
 
     # stream:    branch with - in place of / (eg. stable-helium)
@@ -15,9 +15,9 @@
 
     pod:
         - dell-build:
-           node: 'dell-us-testing-bm-1'
-           installer_type: 'fuel'
-           installer_ip: '10.20.0.2'
+           node: 'dell-build'
+           installer_type: 'foreman'
+           installer_ip: '172.18.0.12'
 
 
     stream:
@@ -192,7 +192,7 @@
             echo "merge logic goes here"
 
 - job-template:
-    name: 'qtip-dhrystone-serial-{pod}'
+    name: 'qtip-dhrystone-VM_vs_Baremetal-{pod}'
 
     project-type: freestyle
 
@@ -230,13 +230,13 @@
 
     builders:
         - 'qtip-fetch-os-cred'
-        - 'qtip-dhrystone-serial'
+        - 'qtip-dhrystone-VM_vs_BM'
 
     triggers:
-      - timed: '0 20 * * *'
+      - timed: '0 13 * * *'
 
 - job-template:
-    name: 'qtip-ssl-parallel-{pod}'
+    name: 'qtip_dhrystone-BM_vs_BM-{pod}'
 
 
     project-type: freestyle
@@ -275,7 +275,7 @@
 
     builders:
       - 'qtip-fetch-os-cred'
-      - 'qtip-ssl-parallel'
+      - 'qtip-dhrystone-BM_vs_BM'
 
     triggers:
       - timed: "@midnight"
@@ -284,35 +284,43 @@
 #biuilder macros
 ###########################
 - builder:
-    name: qtip-dhrystone-serial
+    name: qtip-dhrystone-VM_vs_BM
 
     builders:
         - shell: |
             #! /bin/bash
+
+
             if [[ ! -f $HOME/opnfv-openrc.sh]]; then
                echo "Unable to access file $HOME/opnfv-openrc.sh"
                exit 1
             fi
             source $HOME/opnfv-openrc.sh
             cd $WORKSPACE
+
+
             echo "Running QTIP dhrystone with First Test case"
-            python qtip.py -s compute -b dhrystone_serial.yaml
+            ./QTIP.sh First dhrystone
 
 
 - builder:
-    name: qtip-ssl-parallel
+    name: qtip-dhrystone-BM_vs_BM
 
     builders:
         - shell: |
             #!/bin/bash
+
+
             if [[ ! -f $HOME/opnfv-openrc.sh]]; then
                echo "Unable to access file $HOME/opnfv-openrc.sh"
                exit 1
             fi
             source $HOME/opnfv-openrc.sh
             cd $WORKSPACE
+
+
             echo "Running QTIP dhrystone with Second Test case"
-            python qtip.py -s compute -b ssl_parallel.yaml
+            ./QTIP.sh Second dhrystone
 
 
 - builder:
