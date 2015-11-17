@@ -1,9 +1,8 @@
 - project:
     name: kvmfornfv
     jobs:
-        - 'kvmfornfv-verify'
-        - 'kvmfornfv-merge'
-        - 'kvmfornfv-daily-{stream}'
+        - 'kvmfornfv-verify-{stream}'
+        - 'kvmfornfv-merge-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
@@ -14,7 +13,7 @@
     project: 'kvmfornfv'
 
 - job-template:
-    name: 'kvmfornfv-verify'
+    name: 'kvmfornfv-verify-{stream}'
 
     node: ericsson-build
 
@@ -67,16 +66,16 @@
 
     builders:
         - shell:
-            echo "Hello World"
+            !include-raw ./kvmfornfv-build.sh
 
 - job-template:
-    name: 'kvmfornfv-merge'
+    name: 'kvmfornfv-merge-{stream}'
 
     # builder-merge job to run JJB update
     #
     # This job's purpose is to update all the JJB
 
-    node: master
+    node: ericsson-build
 
     project-type: freestyle
 
@@ -121,46 +120,4 @@
 
     builders:
         - shell:
-            echo "Hello World"
-
-
-- job-template:
-    name: 'kvmfornfv-daily-{stream}'
-
-    # Job template for daily builders
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-    node: master
-
-    disabled: true
-
-    project-type: freestyle
-
-    logrotate:
-        daysToKeep: '{build-days-to-keep}'
-        numToKeep: '{build-num-to-keep}'
-        artifactDaysToKeep: '{build-artifact-days-to-keep}'
-        artifactNumToKeep: '{build-artifact-num-to-keep}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    wrappers:
-        - ssh-agent-credentials:
-            user: '{ssh-credentials}'
-
-    triggers:
-        - timed: 'H H * * *'
-
-    builders:
-        - shell:
-             echo "Hello World"
+            !include-raw ./kvmfornfv-build.sh
