@@ -3,8 +3,13 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-# get the latest.properties file in order to get info regarding latest artifact
-curl -s -o $WORKSPACE/latest.properties http://$GS_URL/latest.properties
+if [[ $GERRIT_EVENT_TYPE = "change-merged" ]]; then
+    # get the properties file for the Fuel ISO built for a merged change
+    curl -s -o $WORKSPACE/opnfv-gerrit-$GERRIT_CHANGE_NUMBER.properties http://$GS_URL/latest.properties
+else
+    # get the latest.properties file in order to get info regarding latest artifact
+    curl -s -o $WORKSPACE/latest.properties http://$GS_URL/latest.properties
+fi
 
 # check if we got the file
 [[ -f latest.properties ]] || exit 1

@@ -222,10 +222,10 @@
     builders:
         - shell:
             !include-raw ./fuel-build.sh
-#        - shell:
-#            !include-raw ./fuel-upload-artifact.sh
-#        - shell:
-#            !include-raw ./fuel-workspace-cleanup.sh
+        - shell:
+            !include-raw ./fuel-upload-artifact.sh
+        - shell:
+            !include-raw ./fuel-workspace-cleanup.sh
 
 - job-template:
     name: 'fuel-merge-virtual-deploy-{stream}'
@@ -281,12 +281,12 @@
             dependency-jobs: 'fuel-merge-build-{stream}'
 
     builders:
-#        - shell:
-#            !include-raw ./fuel-download-artifact.sh
+        - shell:
+            !include-raw ./fuel-download-artifact.sh
         - shell:
             !include-raw ./fuel-virtual-deploy.sh
-#        - shell:
-#            !include-raw ./fuel-workspace-cleanup.sh
+        - shell:
+            !include-raw ./fuel-workspace-cleanup.sh
 
 - job-template:
     name: 'fuel-daily-{stream}'
