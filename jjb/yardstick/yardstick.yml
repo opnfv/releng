@@ -1,18 +1,23 @@
 - project:
     name: yardstick
 
-    installer:
-        - fuel:
+    project: 'yardstick'
+
+    pod:
+        - lf:
             node: 'opnfv-jump-2'
             installer_type: 'fuel'
             installer_ip: '10.20.0.2'
-        - foreman:
-            node: 'opnfv-jump-2'
-            installer_type: 'foreman'
-            installer_ip: '172.30.10.73'
+        - ericsson:
+            node: 'yardstick-pod'
+            installer_type: 'fuel'
+            installer_ip: '10.20.0.2'
+
+    installer:
+        - fuel
 
     jobs:
-        - 'yardstick-{installer}-{stream}'
+        - 'yardstick-{installer}-{pod}-{stream}'
         - 'yardstick-merge'
         - 'yardstick-verify'
 
@@ -21,11 +26,6 @@
     stream:
         - master:
             branch: 'master'
-        - stable-arno:
-            branch: 'stable/arno'
-            gs-pathname: '/arno'
-
-    project: 'yardstick'
 
 - job-template:
     name: 'yardstick-verify'
@@ -160,7 +160,7 @@
             deactivate
 
 - job-template:
-    name: 'yardstick-{installer}-{stream}'
+    name: 'yardstick-{installer}-{pod}-{stream}'
 
     project-type: freestyle
 
@@ -191,6 +191,9 @@
         numToKeep: 10
         artifactDaysToKeep: -1
         artifactNumToKeep: -1
+
+    triggers:
+        - 'yardstick-trigger-{pod}'
 
     builders:
         - 'yardstick-fetch-os-creds'
@@ -237,3 +240,16 @@
     builders:
         - shell:
             !include-raw ../../utils/fetch_os_creds.sh
+
+########################
+# trigger macros
+########################
+- trigger:
+    name: yardstick-trigger-ericsson
+    triggers:
+        timed: "@midnight"
+
+- trigger:
+    name: yardstick-trigger-lf
+    triggers:
+        timed: "#@midnight"
