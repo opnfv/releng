@@ -26,6 +26,7 @@ else
     echo "Tag version to be build and pushed: $DOCKER_TAG"
 fi
 
+
 # Remove previous running containers if exist
 if [[ ! -z $(docker ps -a | grep $DOCKER_IMAGE_NAME) ]]; then
     echo "Removing existing $DOCKER_IMAGE_NAME containers..."
@@ -33,20 +34,22 @@ if [[ ! -z $(docker ps -a | grep $DOCKER_IMAGE_NAME) ]]; then
     docker ps -a | grep $DOCKER_IMAGE_NAME | awk '{{print $1}}' | xargs docker rm
 fi
 
-# list the images
-echo "Available images are:"
-docker images
 
 # Remove existing images if exist
 if [[ ! -z $(docker images | grep $DOCKER_IMAGE_NAME) ]]; then
-    echo "Removing existing $DOCKER_IMAGE_NAME images..."
-    docker images | grep $DOCKER_IMAGE_NAME | awk '{{print $3}}' \
-        | xargs docker rmi -f
+    echo "Docker images to remove:"
+    docker images | head -1 && docker images | grep $DOCKER_IMAGE_NAME
+    image_tags=$(docker images | grep $DOCKER_IMAGE_NAME | awk '{{print $2}}')
+    image_tags_arr=($image_tags)
+    for tag in "${image_tags_arr[@]}"; do
+        echo "Removing docker image $DOCKER_IMAGE_NAME:$tag..."
+        docker rmi $DOCKER_IMAGE_NAME:$tag
+    done
 fi
 
 
 # Start the build
-echo "Building of $DOCKER_IMAGE_NAME:$DOCKER_TAG..."
+echo "Building docker image: $DOCKER_IMAGE_NAME:$DOCKER_TAG..."
 cd $WORKSPACE/docker
 docker build -t $DOCKER_IMAGE_NAME:$DOCKER_TAG .
 echo "Creating tag 'latest'..."
