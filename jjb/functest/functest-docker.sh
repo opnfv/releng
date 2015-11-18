@@ -56,8 +56,8 @@ if [ "$PUSH_IMAGE" == "true" ]; then
     echo "--------------------------------------------------------"
     echo
     # Push to the Dockerhub repository
-    docker push -f $DOCKER_IMAGE_NAME:$DOCKER_TAG
+    docker push $DOCKER_IMAGE_NAME:$DOCKER_TAG
 
     echo "Updating $DOCKER_IMAGE_NAME:latest to the docker registry..."
-    docker push -f $DOCKER_IMAGE_NAME:latest
+    docker push $DOCKER_IMAGE_NAME:latest
 fi
