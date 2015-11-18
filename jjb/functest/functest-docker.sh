@@ -15,7 +15,8 @@ DOCKER_IMAGE_NAME="opnfv/functest"
 cd $WORKSPACE
 git clone https://gerrit.opnfv.org/gerrit/releng
 
-DOCKER_TAG=$($WORKSPACE/releng/utils/calculate_version.sh -t docker -n $DOCKER_IMAGE_NAME)
+DOCKER_TAG=$($WORKSPACE/releng/utils/calculate_version.sh -t docker \
+    -n $DOCKER_IMAGE_NAME)
 
 ret_val=$?
 if [ $ret_val -ne 0 ]; then
@@ -25,17 +26,22 @@ else
     echo "Tag version to be build and pushed: $DOCKER_TAG"
 fi
 
-# Remove previous running containers
-echo "Removing existing $DOCKER_IMAGE_NAME containers..."
+# Remove previous running containers if exist
 if [[ ! -z $(docker ps -a | grep $DOCKER_IMAGE_NAME) ]]; then
-    docker ps | grep $DOCKER_IMAGE_NAME | awk '{{print $1}}' | xargs docker stop &>/dev/null
-    docker ps -a | grep $DOCKER_IMAGE_NAME | awk '{{print $1}}' | xargs docker rm &>/dev/null
+    echo "Removing existing $DOCKER_IMAGE_NAME containers..."
+    docker ps | grep $DOCKER_IMAGE_NAME | awk '{{print $1}}' | xargs docker stop
+    docker ps -a | grep $DOCKER_IMAGE_NAME | awk '{{print $1}}' | xargs docker rm
 fi
 
-# Remove existing images
-echo "Removing existing $DOCKER_IMAGE_NAME images..."
+# list the images
+echo "Available images are:"
+docker images
+
+# Remove existing images if exist
 if [[ ! -z $(docker images | grep $DOCKER_IMAGE_NAME) ]]; then
-    docker images | grep $DOCKER_IMAGE_NAME | awk '{{print $3}}' | xargs docker rmi &>/dev/null
+    echo "Removing existing $DOCKER_IMAGE_NAME images..."
+    docker images | grep $DOCKER_IMAGE_NAME | awk '{{print $3}}' \
+        | xargs docker rmi -f
 fi
 
 
