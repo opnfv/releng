@@ -78,7 +78,7 @@ makemonit () {
 echo "Writing the following as monit config:"
 cat << EOF | tee $monitconfdir/jenkins
 check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
-start program = "/bin/bash -c 'cd $dir; export started_monit=true; $0 $@'" as uid "$jenkinsuser" and gid "$jenkinsuser"
+start program = "/usr/bin/sudo -u jenkins /bin/bash -c 'cd $dir; export started_monit=true; $0 $@'"
 stop program = "/bin/bash -c '/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)'"
 EOF
 }
