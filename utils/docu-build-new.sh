@@ -29,17 +29,23 @@ while read -d $'\n'; do
 done < <(find docs/ -name 'index.rst' -printf '%h\n' | sort -u )
 
 for dir in "${{directories[@]}}"; do
+  _name="${{dir##*/}}"
+  _build="${dir}/build"
+  _output="docs/output/${_name}"
   echo
   echo "#############################"
-  echo "Building DOCS in ${{dir##*/}}"
+  echo "Building DOCS in ${_name}"
   echo "#############################"
+  echo "########### MIBU ############"
   echo
 
-  if [[ ! -d docs/output/"${{dir##*/}}/" ]]; then
-    mkdir -p docs/output/"${{dir##*/}}/"
-  fi
+  mkdir -p "${_output}"
 
-  sphinx-build -b html -E -c docs/etc/ ""$dir"/" docs/output/"${{dir##*/}}/"
+  sphinx-build -b html -E -c docs/etc "${dir}" "${_output}"
+
+  sphinx-build -b latex -E -c docs/etc "${dir}" "${_build}"
+  make -C "${_build}" LATEXOPTS='--interaction=nonstopmode' all-pdf
+  mv "${_build}"/*.pdf "${_output}"
 
 done
 
