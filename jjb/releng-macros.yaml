@@ -143,3 +143,132 @@
     name: jacoco-nojava-workaround
     builders:
         - shell: 'mkdir -p $WORKSPACE/target/classes'
+
+- builder:
+    name: build-html-and-pdf-docs-output
+    builders:
+        - shell: |
+            #!/bin/bash -e
+            set -o pipefail
+            export PATH=$PATH:/usr/local/bin/
+
+            [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
+
+            git_sha1="$(git rev-parse HEAD)"
+
+            find docs/ -type f -iname '*.rst' -print0 | while read file
+            do
+                sed -i "s/_sha1_/$git_sha1/g" "$file"
+            done
+
+            find docs/ -name 'index.rst' -printf '%h\n' | while read dir
+            do
+                _name="${{dir##*/}}"
+                _build="$dir/build"
+                _output="docs/output/$_name"
+
+                echo
+                echo "#################${{dir//?/#}}"
+                echo "Building DOCS in ${{dir}}"
+                echo "#################${{dir//?/#}}"
+                echo
+
+                mkdir -p "$_output"
+
+                sphinx-build -b html -E -c docs/etc "$dir" "$_output"
+
+                sphinx-build -b latex -E -c docs/etc "$dir" "$_build"
+                make -C "$_build" LATEXOPTS='--interaction=nonstopmode' all-pdf
+                mv "$_build"/*.pdf "$_output"
+
+- publisher:
+    name: upload-under-review-docs-to-opnfv-artifacts
+    publishers:
+        - shell: |
+            #!/bin/bash -e
+            set -o pipefail
+            export PATH=$PATH:/usr/local/bin/
+
+            [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
+            [[ -d docs/output ]]
+
+            echo
+            echo "##########################"
+            echo "UPLOADING DOCS UNER REVIEW"
+            echo "##########################"
+            echo
+
+            gs_path="artifacts.opnfv.org/review/$GERRIT_CHANGE_NUMBER"
+
+            gsutil cp -r docs/output/* "gs://$gs_path"
+
+            gsutil ls "gs://$gs_path" | grep -e 'html$' | while read file
+            do
+                gsutil setmeta \
+                    -h "Content-Type:text/html" \
+                    -h "Cache-Control:private, max-age=0, no-transform" \
+                    "$file"
+            done
+
+            gerrit_comment="Document link(s):
+            $(gsutil ls "gs://$gs_path" | grep -e 'index.html$' -e 'pdf$' | sed 's/^gs/http/')"
+            echo
+            echo "$gerrit_comment"
+            echo
+            {gerrit-review} -p {project} -m "$gerrit_comment" $GERRIT_PATCHSET_REVISION
+
+- publisher:
+    name: upload-merged-docs-to-opnfv-artifacts
+    publishers:
+        - shell: |
+            #!/bin/bash -e
+            set -o pipefail
+            export PATH=$PATH:/usr/local/bin/
+
+            [[ -d docs/output ]]
+
+            echo
+            echo "#####################"
+            echo "UPLOADING MERGED DOCS"
+            echo "#####################"
+            echo
+
+            if [[ "{branch}" == "master" ]] ; then
+                gs_path="artifacts.opnfv.org/{project}/docs"
+            else
+                gs_path="artifacts.opnfv.org/{project}/{branch}/docs"
+            fi
+
+            gsutil cp -r docs/output/* "gs://$gs_path"
+
+            gsutil ls "gs://$gs_path" | grep -e 'html$' | while read file
+            do
+                gsutil setmeta \
+                    -h "Content-Type:text/html" \
+                    -h "Cache-Control:private, max-age=0, no-transform" \
+                    "$file"
+            done
+
+            gerrit_comment="Document link(s):
+            $(gsutil ls "gs://$gs_path" | grep -e 'index.html$' -e 'pdf$' | sed 's/^gs/http/')"
+            echo
+            echo "$gerrit_comment"
+            echo
+            {gerrit-review} -p {project} -m "$gerrit_comment" $GERRIT_PATCHSET_REVISION
+
+- publisher:
+    name: remove-old-docs-from-opnfv-artifacts
+    publishers:
+        - shell: |
+            #!/bin/bash -e
+            export PATH=$PATH:/usr/local/bin/
+
+            [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
+
+            gs_path="artifacts.opnfv.org/review/$GERRIT_CHANGE_NUMBER"
+
+            if gsutil ls "gs://$gs_path" > /dev/null 2>&1 ; then
+                echo
+                echo "Deleting Out-of-dated Documents..."
+                gsutil rm -r "gs://$gs_path_review"
+            fi
