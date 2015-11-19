@@ -126,14 +126,12 @@ elif [ "$installer_type" == "foreman" ]; then
         | grep $admin_ip | sed 's/ /\n/g' | grep ^http | head -1) &> /dev/null
 
 elif [ "$installer_type" == "compass" ]; then
-    #ip_compass="10.1.0.12"
     verify_connectivity $installer_ip
-
-    # controller_ip='10.1.0.222'
-    controller_ip=$(sshpass -p'root' ssh 2>/dev/null -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@10.1.0.12 \
-        'mysql -ucompass -pcompass -Dcompass -e"select package_config  from cluster;"' \
-        | awk -F"," '{for(i=1;i<NF;i++)if($i~/\"ha_proxy\": {\"vip\":/)print $i}' \
+    controller_ip=$(sshpass -p'root' ssh 2>/dev/null $ssh_options root@${installer_ip} \
+        'mysql -ucompass -pcompass -Dcompass -e"select *  from cluster;"' \
+        | awk -F"," '{for(i=1;i<NF;i++)if($i~/\"host1\"/) {print $(i+1);break;}}'  \
         | grep -oP "\d+.\d+.\d+.\d+")
+
     if [ -z $controller_ip ]; then
         error "The controller $controller_ip is not up. Please check that the POD is correctly deployed."
     fi
