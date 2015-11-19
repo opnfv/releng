@@ -1,12 +1,3 @@
-.. image:: ../etc/opnfv-logo.png
-  :height: 40
-  :width: 200
-  :alt: OPNFV
-  :align: left
-
-|
-|
-
 Creating/Configuring/Verifying Jenkins Jobs
 ============================================
 
@@ -184,8 +175,6 @@ The Current merge and verify jobs for jenkins job builder as pulled from the rep
                  cd /opt/jenkins-ci/releng
                  git pull
                  jenkins-jobs update --delete-old jjb/
- 
- 
 
 
 Revision: _sha1_
