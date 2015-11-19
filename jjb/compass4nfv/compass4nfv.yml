@@ -382,6 +382,11 @@
         - 'builder-compass-ci-preclean-workspace'
         - 'builder-compass-download-artifact'
         - 'builder-compass-deploy-bare'
+        - 'builder-functest-workaround'
+        - 'builder-set-functest-env'
+        - 'builder-functest-vping'
+        - 'builder-functest-cleanup'
+
 
     publishers:
         - archive:
@@ -412,6 +417,10 @@
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+        - string:
+            name: FUNCTEST_REPO_DIR
+            default: '/home/opnfv/repos/functest'
+            description: "Directory where the root functest repo is cloned in the docker."
         - string:
             name: GS_URL
             default: artifacts.opnfv.org/$PROJECT/
@@ -659,3 +668,110 @@
             sudo rm $WORKSPACE -rf
             git clone $GIT_BASE  $WORKSPACE
 
+- builder:
+    name: 'builder-set-functest-env'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set +e
+
+            echo "Functest: Start Docker and prepare environment"
+            envs="INSTALLER_TYPE=${INSTALLER} -e INSTALLER_IP=${installer_ip}"
+            docker rm -f $(docker ps -a | grep opnfv/functest | awk '{print $1}')
+            docker rmi -f $(docker images | grep opnfv/functest | awk '{print $3}')
+            docker pull opnfv/functest
+            echo "Functest: Running docker run command: docker run -i -e $envs opnfv/functest /bin/bash &"
+            docker run -i -e $envs opnfv/functest /bin/bash &
+            docker ps -a
+            sleep 5
+            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
+            echo "Container ID=${container_id}"
+            if [ -z ${container_id} ]; then
+                echo "Cannot find opnfv/functest container ID ${container_id}. Please check if it is existing."
+                docker ps -a
+                exit 1
+            fi
+            echo "Starting the container: docker start ${container_id}"
+            docker start ${container_id}
+            sleep 5
+            docker ps
+            if [ $(docker ps | grep opnfv/functest | wc -l) == 0 ]; then
+                echo "The container opnfv/functest with ID=${container_id} has not been properly started. Exiting..."
+                exit 1
+            fi
+            cmd="${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
+            echo "Executing command inside the docker: ${cmd}"
+            docker exec ${container_id} ${cmd}
+
+- builder:
+    name: 'builder-functest-vping'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set +e
+
+            echo "Functest: run vPing"
+            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test vping"
+            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
+            docker exec $container_id $cmd
+
+- builder:
+    name: 'builder-functest-cleanup'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set +e
+
+            # cleanup: remove any docker containers leftovers
+            echo "Removing the docker container..."
+            docker rm -f $(docker ps -a | grep opnfv/functest | awk '{print $1}')
+            echo "Removing the docker image..."
+            docker rmi -f $(docker images | grep opnfv/functest | awk '{print $3}')
+
+- builder:
+    name: 'builder-functest-workaround'
+    builder:
+        - shell: |
+            #!/bin/bash
+            set +e
+            neutron_private_net_name=functest-net
+            neutron_private_subnet_name=functest-subnet
+            neutron_private_subnet_cidr=192.168.120.0/24
+            neutron_private_subnet_start=192.168.120.2
+            neutron_private_subnet_end=192.168.120.253
+            neutron_private_subnet_gateway=192.168.120.254
+
+            OS_PASSWORD=console
+            OS_TENANT_NAME=admin
+            OS_AUTH_URL='http://10.145.140.111:5000/v2.0'
+            OS_USERNAME=ADMIN
+            OS_REGION_NAME=regionOne
+
+            controller_ip=10.145.140.111
+
+            openstack_creds=" \
+                --os-username=${OS_USERNAME} \
+                --os-password=${OS_PASSWORD} \
+                --os-tenant-name=${OS_TENANT_NAME} \
+                --os-auth-url=${OS_AUTH_URL}"
+
+            # create functest network
+            sshpass -proot ssh ${controller_ip} \
+                "neutron net-create ${neutron_private_net_name} \
+                --provider:physical_network physnet \
+                --provider:network_type vlan \
+                --provider:segmentation_id 103 \
+                ${openstack_creds}"
+
+            # create functest subnet
+            sshpass -proot ssh ${controller_ip} "neutron subnet-create  \
+                ${neutron_private_net_name} ${neutron_private_subnet_cidr} \
+                --name ${neutron_private_subnet_name} \
+                --gateway ${neutron_private_subnet_gateway} \
+                --allocation-pool start=${neutron_private_subnet_start},\
+                end={neutron_private_subnet_end} \
+                ${openstack_creds}"
+
+            # delete iptables
+            iptables -nL --line-num |grep "reject-with icmp-port-unreachable"  \
+                | head -n 1 | awk '{print $1}' | xargs iptables -D FORWARD
