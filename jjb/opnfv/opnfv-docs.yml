@@ -74,8 +74,10 @@
                     pattern: 'docs/**'
 
     builders:
-       - shell:
-           !include-raw ../../utils/docu-build-new.sh
+        - build-html-and-pdf-docs-output
+
+    publisher:
+        - upload-under-review-docs-to-opnfv-artifacts
 
 - job-template:
     name: 'opnfv-docs-merge'
@@ -123,5 +125,8 @@
                     pattern: 'docs/**'
 
     builders:
-       - shell:
-           !include-raw ../../utils/docu-build-new.sh
+        - build-html-and-pdf-docs-output
+
+    publisher:
+        - upload-merged-docs-to-opnfv-artifacts
+        - remove-old-docs-from-opnfv-artifacts
