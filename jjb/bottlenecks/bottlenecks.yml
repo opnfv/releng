@@ -3,15 +3,29 @@
 ####################################
 - project:
     name: bottlenecks
+    
+    installer:
+        - fuel:
+           node: 'opnfv-jump-2'
+           installer_type: 'fuel'
+           installer_ip: '10.20.0.2'
+        - foreman:
+           node: 'opnfv-jump-2'
+           installer_type: 'foreman'
+           installer_ip: '172.30.10.73'
     jobs:
         - 'bottlenecks-test'
         - 'bottlenecks-verify'
+        - 'bottlenecks-daily-{stream}'
+        - 'bottlenecks-merge'
+        - 'bottlenecks-{installer}-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
     stream:
         - master:
             branch: 'master'
+            gs-pathname: ''
 
     project: 'bottlenecks'
     somevar: 'foo'
@@ -85,5 +99,153 @@
                     branch-pattern: '**/master'
 
     builders:
-       - shell:
-            !include-raw docu-build.sh
+       - shell: |
+           echo "hello world from bottlenecks"
+
+- job-template:
+    name: 'bottlenecks-daily-{stream}'
+
+    node: master
+
+    # Job template for daily builders
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+
+    project-type: freestyle
+    varsetabove: '{somevar}'
+
+    logrotate:
+        daysToKeep: '{build-days-to-keep}'
+        numToKeep: '{build-num-to-keep}'
+        artifactDaysToKeep: '{build-artifact-days-to-keep}'
+        artifactNumToKeep: '{build-artifact-num-to-keep}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - functest-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{stream}'
+
+    wrappers:
+        - ssh-agent-credentials:
+            user: '{ssh-credentials}'
+
+    triggers:
+        - timed: 'H H * * *'
+
+    prebuilders:
+        - test-macro
+
+    builders:
+        - shell: |
+            echo "hello world from bottlenecks"
+
+    postbuilders:
+        - test-macro
+
+- job-template:
+    name: 'bottlenecks-merge'
+
+    node: master
+
+    # builder-merge job to run JJB update
+    #
+    # This job's purpose is to update all the JJB
+
+    project-type: freestyle
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 40
+        artifactDaysToKeep: -1
+        artifactNumToKeep: 5
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: 'master'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    wrappers:
+        - ssh-agent-credentials:
+            user: '{ssh-credentials}'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/master'
+
+    builders:
+        - shell: |
+            echo "hello world from bottlenecks"
+
+- job-template:
+    name: bottlenecks-{installer}-{stream}
+
+    project-type: freestyle
+
+    node: master
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - string:
+            name: INSTALLER_TYPE
+            default: '{installer_type}'
+            description: "Installer name that is used for deployment."
+        - string:
+            name: INSTALLER_IP
+            default: '{installer_ip}'
+            description: "Installer IP."
+        - string:
+            name: GIT_BASE
+            default: ssh://gerrit.opnfv.org:29418/$PROJECT
+            description: "Override GIT_BASE"
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: master
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders: |
+        echo "hello world from bottlenecks"
+
+########################
+# parameter macros
+########################
+- parameter:
+    name: bottlenecks-parameter
+    parameters:
+        - string:
+            name: GS_PATHNAME
+            default: '{gs-pathname}'
+            description: "Version directory where the opnfv documents will be stored in gs repository"
