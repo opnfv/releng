@@ -55,6 +55,7 @@ The Sphinx Build
 When you push documentation changes to gerrit a jenkins job will create html documentation.
 
 * Verify Jobs
+
 For verify jobs a link to the documentation will show up as a comment in gerrit for you to see the result.
 
 * Merge jobs
