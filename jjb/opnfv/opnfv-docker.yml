@@ -1,0 +1,76 @@
+##############################################
+# job configuration for docker build and push
+##############################################
+
+- project:
+
+    name: opnfv-docker
+
+    project:
+        - 'functest'
+        - 'yardstick'
+
+    jobs:
+        - '{project}-docker-build-push-{stream}'
+
+    stream:
+        - master:
+            branch: 'master'
+
+########################
+# job templates
+########################
+- job-template:
+    name: '{project}-docker-build-push-{stream}'
+
+    project-type: freestyle
+
+    node: ericsson-build
+
+    disabled: false
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - string:
+            name: GIT_BASE
+            default: "https://gerrit.opnfv.org/gerrit/$PROJECT"
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+        - string:
+            name: PUSH_IMAGE
+            default: "true"
+            description: "To enable/disable pushing the image to Dockerhub."
+        - string:
+            name: BASE_VERSION
+            default: "brahmaputra.0"
+            description: "Base version to be used."
+        - string:
+            name: DOCKER_REPO_NAME
+            default: "opnfv/{project}"
+            description: "Dockerhub repo to be pushed to."
+        - string:
+            name: UPDATE_LATEST_SATABLE
+            default: "false"
+            description: "This will update the latest_stable image only."    
+        - string:
+            name: STABLE_TAG
+            description: "If above option is true, this is the tag to be pulled."    
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    logrotate:
+        daysToKeep: '{build-days-to-keep}'
+        numToKeep: '{build-num-to-keep}'
+        artifactDaysToKeep: '{build-artifact-days-to-keep}'
+        artifactNumToKeep: '{build-artifact-num-to-keep}'
+
+    builders:
+        - shell:
+            !include-raw ./opnfv-docker.sh
+
+    triggers:
+        - pollscm: "*/30 * * * *"
