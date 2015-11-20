@@ -1,15 +1,17 @@
 ##############################################
-# job configuration for functest docker build
+# job configuration for docker build and push
 ##############################################
 
 - project:
 
-    name: functest-docker
+    name: opnfv-docker
 
-    project: 'functest'
+    project:
+        - 'functest'
+        - 'yardstick'
 
     jobs:
-        - 'functest-docker-build-push-{stream}'
+        - '{project}-docker-build-push-{stream}'
 
     stream:
         - master:
@@ -20,7 +22,7 @@
 ########################
 
 - job-template:
-    name: 'functest-docker-build-push-{stream}'
+    name: '{project}-docker-build-push-{stream}'
 
     project-type: freestyle
 
@@ -31,7 +33,7 @@
     parameters:
         - project-parameter:
             project: '{project}'
-        - functest-docker-parameter
+        - docker-parameter
 
 
     scm:
@@ -47,8 +49,7 @@
         artifactNumToKeep: '{build-artifact-num-to-keep}'
 
     builders:
-        - shell:
-            !include-raw ./functest-docker.sh
+        - 'docker-build'
 
     triggers:
         - pollscm: "*/30 * * * *"
@@ -58,7 +59,7 @@
 # parameter macros
 ########################
 - parameter:
-    name: functest-docker-parameter
+    name: docker-parameter
     parameters:
         - string:
             name: GIT_BASE
@@ -72,3 +73,17 @@
             name: BASE_VERSION
             default: "brahmaputra.0"
             description: "Base version to be used."
+        - string:
+            name: DOCKER_REPO_NAME
+            default: "opnfv/{project}"
+            description: "Dockerhub repo to be pushed to."
+
+########################
+# builder macros
+########################
+# macros
+- builder:
+    name: docker-build
+    builders:
+        - shell:
+            !include-raw ./opnfv-docker.sh
