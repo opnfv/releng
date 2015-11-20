@@ -3,21 +3,17 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. project::
+    Example Documentation
+
 Example Documentation table of contents
 =======================================
-
-Contents:
 
 .. toctree::
    :numbered:
    :maxdepth: 4
 
    documentation-example.rst
-
-Indices and tables
-==================
-
-* :ref:`search`
 
 Revision: _sha1_
 
