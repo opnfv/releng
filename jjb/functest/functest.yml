@@ -226,10 +226,10 @@
         artifactNumToKeep: -1
 
     builders:
+        - 'functest-cleanup'
         - 'set-functest-env'
         - 'functest-all'
         - 'functest-store-results'
-        - 'functest-cleanup'
 
 - job-template:
     name: functest-{installer}-{stream}
@@ -271,10 +271,10 @@
         artifactNumToKeep: -1
 
     builders:
+        - 'functest-cleanup'
         - 'set-functest-env'
         - 'functest-all'
         - 'functest-store-results'
-        - 'functest-cleanup'
 
 - job-template:
     name: functest-vims-{installer}-{stream}
@@ -541,7 +541,6 @@
 
             echo "Functest: Start Docker and prepare environment"
             envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP}"
-            docker ps -a | grep opnfv/functest | awk '{print $1}' | xargs docker rm -f &>/dev/null
             docker pull opnfv/functest
             echo "Functest: Running docker run command: docker run -i -e $envs opnfv/functest /bin/bash &"
             docker run -i -e $envs opnfv/functest /bin/bash &
@@ -647,8 +646,7 @@
             set +e
 
             # cleanup: remove any docker containers leftovers
-            echo "Removing the docker container..."
+            echo "Removing existing Functest Docker containers..."
             docker rm -f $(docker ps | grep opnfv/functest | awk '{print $1}')
-            echo "Removing the docker image..."
+            echo "Removing existing Functest Docker image..."
             docker rmi -f $(docker images | grep opnfv/functest | awk '{print $3}')
-
