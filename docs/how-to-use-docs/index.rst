@@ -3,10 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Example Documentation table of contents
-=======================================
 
-Contents:
+Example Documentation
+=====================
 
 .. toctree::
    :numbered:
@@ -14,10 +13,7 @@ Contents:
 
    documentation-example.rst
 
-Indices and tables
-==================
-
-* :ref:`search`
+Leave these at the bottom of each of your documents they are used internally
 
 Revision: _sha1_
 

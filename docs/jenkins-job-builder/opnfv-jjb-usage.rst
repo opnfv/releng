@@ -175,8 +175,3 @@ The Current merge and verify jobs for jenkins job builder as pulled from the rep
                  cd /opt/jenkins-ci/releng
                  git pull
                  jenkins-jobs update --delete-old jjb/
-
-
-Revision: _sha1_
-
-Build date: |today| 
