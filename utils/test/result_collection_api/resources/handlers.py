@@ -719,6 +719,21 @@ class DashboardHandler(GenericApiHandler):
                             "error:Project name missing")
         elif check_dashboard_ready_project(project_arg, "./dashboard"):
             res = []
+
+            if case_arg is None:
+                raise HTTPError(
+                    HTTP_NOT_FOUND,
+                    "error:Test case missing for project " + project_arg)
+
+            # special case of status for project
+            if case_arg == "status":
+                del get_request["case_name"]
+                # retention time to be agreed
+                # last five days by default?
+                # TODO move to DB
+                period = datetime.now() - timedelta(days=5)
+                get_request["creation_date"] = {"$gte": period}
+
             # fetching results
             cursor = self.db.test_results.find(get_request)
             while (yield cursor.fetch_next):
@@ -726,11 +741,7 @@ class DashboardHandler(GenericApiHandler):
                     cursor.next_object())
                 res.append(test_result.format_http())
 
-            if case_arg is None:
-                raise HTTPError(
-                    HTTP_NOT_FOUND,
-                    "error:Test case missing for project " + project_arg)
-            elif check_dashboard_ready_case(project_arg, case_arg):
+            if check_dashboard_ready_case(project_arg, case_arg):
                 dashboard = get_dashboard_result(project_arg, case_arg, res)
             else:
                 raise HTTPError(
