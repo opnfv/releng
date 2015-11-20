@@ -3,6 +3,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# set GERRIT_EVENT_TYPE to empty string in case if it is none-gerrit triggered job
+GERRIT_EVENT_TYPE=${GERRIT_EVENT_TYPE:-}
+
 if [[ $GERRIT_EVENT_TYPE = "change-merged" ]]; then
     # get the properties file for the Fuel ISO built for a merged change
     curl -s -o $WORKSPACE/opnfv-gerrit-$GERRIT_CHANGE_NUMBER.properties http://$GS_URL/latest.properties
