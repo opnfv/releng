@@ -3,6 +3,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# set GERRIT_EVENT_TYPE to empty string in case if it is none-gerrit triggered job
+GERRIT_EVENT_TYPE=${{GERRIT_EVENT_TYPE:-}}
+
 # log info to console
 echo "Starting the build of $INSTALLER. This could take some time..."
 echo "--------------------------------------------------------"
