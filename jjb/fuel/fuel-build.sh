@@ -14,9 +14,9 @@ echo
 # set OPNFV_ARTIFACT_VERSION
 if [[ "$JOB_NAME" =~ "merge" ]]; then
     echo "Building Fuel ISO for a merged change"
-    OPNFV_ARTIFACT_VERSION=$(gerrit-$GERRIT_CHANGE_NUMBER)
+    export OPNFV_ARTIFACT_VERSION="gerrit-$GERRIT_CHANGE_NUMBER"
 else
-    OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
+    export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
 fi
 
 # start the build
