@@ -12,7 +12,7 @@ echo
 [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
 
 # set OPNFV_ARTIFACT_VERSION
-if [[ $GERRIT_EVENT_TYPE = "change-merged" ]]; then
+if [[ "$JOB_NAME" =~ "merge" ]]; then
     echo "Building Fuel ISO for a merged change"
     OPNFV_ARTIFACT_VERSION=$(gerrit-$GERRIT_CHANGE_NUMBER)
 else

@@ -3,7 +3,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [[ $GERRIT_EVENT_TYPE = "change-merged" ]]; then
+if [[ "$JOB_NAME" =~ "merge" ]]; then
     # get the properties file for the Fuel ISO built for a merged change
     curl -s -o $WORKSPACE/opnfv-gerrit-$GERRIT_CHANGE_NUMBER.properties http://$GS_URL/latest.properties
 else
