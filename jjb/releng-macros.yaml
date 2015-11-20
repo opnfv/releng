@@ -201,15 +201,14 @@
 
             gs_path="artifacts.opnfv.org/review/$GERRIT_CHANGE_NUMBER"
 
-            gsutil cp -r docs/output/* "gs://$gs_path"
+            gsutil -m cp -r docs/output/* "gs://$gs_path"
 
-            gsutil ls "gs://$gs_path" | grep -e 'html$' | while read file
-            do
-                gsutil setmeta \
+            if gsutil ls "gs://$gs_path" | grep -e 'html$' > /dev/null 2>&1 ; then
+                gsutil -m setmeta \
                     -h "Content-Type:text/html" \
                     -h "Cache-Control:private, max-age=0, no-transform" \
-                    "$file"
-            done
+                    "gs://$gs_path"/**.html
+            fi
 
             gerrit_comment="Document link(s):
             $(gsutil ls "gs://$gs_path" | grep -e 'index.html$' -e 'pdf$' | sed 's/^gs/http/')"
@@ -240,15 +239,14 @@
                 gs_path="artifacts.opnfv.org/{project}/{branch}/docs"
             fi
 
-            gsutil cp -r docs/output/* "gs://$gs_path"
+            gsutil -m cp -r docs/output/* "gs://$gs_path"
 
-            gsutil ls "gs://$gs_path" | grep -e 'html$' | while read file
-            do
-                gsutil setmeta \
+            if gsutil ls "gs://$gs_path" | grep -e 'html$' > /dev/null 2>&1 ; then
+                gsutil -m setmeta \
                     -h "Content-Type:text/html" \
                     -h "Cache-Control:private, max-age=0, no-transform" \
-                    "$file"
-            done
+                    "gs://$gs_path"/**.html
+            fi
 
             gerrit_comment="Document link(s):
             $(gsutil ls "gs://$gs_path" | grep -e 'index.html$' -e 'pdf$' | sed 's/^gs/http/')"
@@ -271,5 +269,5 @@
             if gsutil ls "gs://$gs_path" > /dev/null 2>&1 ; then
                 echo
                 echo "Deleting Out-of-dated Documents..."
-                gsutil rm -r "gs://$gs_path_review"
+                gsutil -m rm -r "gs://$gs_path_review"
             fi
