@@ -226,6 +226,7 @@
         artifactNumToKeep: -1
 
     builders:
+        - 'functest-cleanup'
         - 'set-functest-env'
         - 'functest-all'
         - 'functest-store-results'
@@ -271,6 +272,7 @@
         artifactNumToKeep: -1
 
     builders:
+        - 'functest-cleanup'
         - 'set-functest-env'
         - 'functest-all'
         - 'functest-store-results'
@@ -520,19 +522,6 @@
 ########################
 # macros
 - builder:
-    name: functest-all
-    builders:
-        - shell: |
-            #!/bin/bash
-            set +e
-
-            echo "Functest: running all the tests"
-            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh"
-            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
-            docker exec $container_id $cmd
-
-
-- builder:
     name: set-functest-env
     builders:
         - shell: |
@@ -541,8 +530,7 @@
 
             echo "Functest: Start Docker and prepare environment"
             envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP}"
-            docker ps -a | grep opnfv/functest | awk '{print $1}' | xargs docker rm -f &>/dev/null
-            docker pull opnfv/functest
+            docker pull opnfv/functest:latest_stable
             echo "Functest: Running docker run command: docker run -i -e $envs opnfv/functest /bin/bash &"
             docker run -i -e $envs opnfv/functest /bin/bash &
             docker ps -a
@@ -566,6 +554,17 @@
             echo "Executing command inside the docker: ${cmd}"
             docker exec ${container_id} ${cmd}
 
+- builder:
+    name: functest-all
+    builders:
+        - shell: |
+            #!/bin/bash
+            set +e
+
+            echo "Functest: running all the tests"
+            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh"
+            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
+            docker exec $container_id $cmd
 
 - builder:
     name: functest-vping
@@ -647,8 +646,8 @@
             set +e
 
             # cleanup: remove any docker containers leftovers
-            echo "Removing the docker container..."
-            docker rm -f $(docker ps | grep opnfv/functest | awk '{print $1}')
-            echo "Removing the docker image..."
+            echo "Removing existing Functest Docker containers..."
+            docker rm -f $(docker ps -a | grep opnfv/functest | awk '{print $1}')
+            echo "Removing existing Functest Docker image..."
             docker rmi -f $(docker images | grep opnfv/functest | awk '{print $3}')
 
