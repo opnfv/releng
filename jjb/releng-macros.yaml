@@ -177,7 +177,7 @@
 
                 sphinx-build -b html -E -c docs/etc "$dir" "$_output"
 
-                sphinx-build -b latex -E -c docs/etc "$dir" "$_build"
+                sphinx-build -b latex -E -c docs/etc --project=$_name "$dir" "$_build"
                 make -C "$_build" LATEXOPTS='--interaction=nonstopmode' all-pdf
                 mv "$_build"/*.pdf "$_output"
 
