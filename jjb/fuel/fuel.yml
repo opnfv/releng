@@ -12,7 +12,7 @@
     jobs:
         - 'fuel-verify-build-{stream}'
         - 'fuel-merge-build-{stream}'
-        - 'fuel-merge-virtual-deploy-{stream}'
+        - 'fuel-merge-deploy-virtual-{stream}'
         - 'fuel-daily-{stream}'
         - 'fuel-build-{stream}'
         - 'fuel-deploy-{stream}'
@@ -157,11 +157,11 @@
             !include-raw ./fuel-workspace-cleanup.sh
 
 - job-template:
-    name: 'fuel-merge-virtual-deploy-{stream}'
+    name: 'fuel-merge-deploy-virtual-{stream}'
 
     project-type: freestyle
 
-    node: ericsson-build
+    node: fuel-deploy-virtual
 
     concurrent: true
 
@@ -213,9 +213,13 @@
         - shell:
             !include-raw ./fuel-download-artifact.sh
         - shell:
-            !include-raw ./fuel-virtual-deploy.sh
+            !include-raw ./fuel-deploy-virtual.sh
         - shell:
             !include-raw ./fuel-workspace-cleanup.sh
+
+    publishers:
+        - email:
+            recipients: jonas.bjurel@ericsson.com stefan.k.berg@ericsson.com
 
 - job-template:
     name: 'fuel-daily-{stream}'
