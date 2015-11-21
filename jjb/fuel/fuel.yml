@@ -161,7 +161,7 @@
 
     project-type: freestyle
 
-    node: ericsson-build
+    node: fuel-deploy-virtual
 
     concurrent: true
 
@@ -216,6 +216,10 @@
             !include-raw ./fuel-virtual-deploy.sh
         - shell:
             !include-raw ./fuel-workspace-cleanup.sh
+
+    publishers:
+        - email:
+            recipients: jonas.bjurel@ericsson.com stefan.k.berg@ericsson.com
 
 - job-template:
     name: 'fuel-daily-{stream}'
