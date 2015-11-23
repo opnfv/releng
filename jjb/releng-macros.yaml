@@ -198,9 +198,9 @@
             [[ -d docs/output ]]
 
             echo
-            echo "##########################"
-            echo "UPLOADING DOCS UNER REVIEW"
-            echo "##########################"
+            echo "###########################"
+            echo "UPLOADING DOCS UNDER REVIEW"
+            echo "###########################"
             echo
 
             gs_path="artifacts.opnfv.org/review/$GERRIT_CHANGE_NUMBER"
@@ -214,8 +214,7 @@
                     "gs://$gs_path"/**.html
             fi
 
-            gerrit_comment="Document link(s):
-            $(gsutil ls "gs://$gs_path" | grep -e 'index.html$' -e 'pdf$' | sed 's/^gs/http/')"
+            gerrit_comment="Document link(s): $(gsutil ls gs://$gs_path | grep -e 'index.html$' -e 'pdf$' | sed 's/^gs/http/')"
             echo
             echo "$gerrit_comment"
             echo
@@ -253,8 +252,7 @@
                     "gs://$gs_path"/**.html
             fi
 
-            gerrit_comment="Document link(s):
-            $(gsutil ls "gs://$gs_path" | grep -e 'index.html$' -e 'pdf$' | sed 's/^gs/http/')"
+            gerrit_comment="Document link(s): $(gsutil ls gs://$gs_path | grep -e 'index.html$' -e 'pdf$' | sed 's/^gs/http/')"
             echo
             echo "$gerrit_comment"
             echo
