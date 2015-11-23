@@ -1,8 +1,8 @@
 - project:
     name: storperf
     jobs:
-        - 'storperf-verify'
-        - 'storperf-merge'
+        - 'storperf-verify-{stream}'
+        - 'storperf-merge-{stream}'
         - 'storperf-daily-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
@@ -14,7 +14,7 @@
     project: 'storperf'
 
 - job-template:
-    name: 'storperf-verify'
+    name: 'storperf-verify-{stream}'
 
     node: ericsson-build
 
@@ -31,6 +31,10 @@
             project: '{project}'
         - gerrit-parameter:
             branch: 'master'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
 
     scm:
         - gerrit-trigger-scm:
@@ -67,7 +71,7 @@
 
 
 - job-template:
-    name: 'storperf-merge'
+    name: 'storperf-merge-{stream}'
 
     # builder-merge job to run JJB update
     #
@@ -88,6 +92,10 @@
             project: '{project}'
         - gerrit-parameter:
             branch: 'master'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
 
     scm:
         - gerrit-trigger-scm:
