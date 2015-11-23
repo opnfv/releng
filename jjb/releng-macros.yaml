@@ -221,7 +221,7 @@
             echo
             echo "$gerrit_comment"
             echo
-            {gerrit-review} -p {project} -m "$gerrit_comment" $GERRIT_PATCHSET_REVISION
+            ssh -p 29418 gerrit.opnfv.org gerrit review -p $GERRIT_PROJECT -m "$gerrit_comment" $GERRIT_PATCHSET_REVISION
 
 #TODO(r-mibu): change this to publisher
 - builder:
@@ -240,10 +240,10 @@
             echo "#####################"
             echo
 
-            if [[ "{branch}" == "master" ]] ; then
-                gs_path="artifacts.opnfv.org/{project}/docs"
+            if [[ "$GERRIT_BRANCH" == "master" ]] ; then
+                gs_path="artifacts.opnfv.org/$GERRIT_PROJECT/docs"
             else
-                gs_path="artifacts.opnfv.org/{project}/{branch}/docs"
+                gs_path="artifacts.opnfv.org/$GERRIT_PROJECT/$GERRIT_BRANCH/docs"
             fi
 
             gsutil -m cp -r docs/output/* "gs://$gs_path"
@@ -262,7 +262,7 @@
             echo
             echo "$gerrit_comment"
             echo
-            {gerrit-review} -p {project} -m "$gerrit_comment" $GERRIT_PATCHSET_REVISION
+            ssh -p 29418 gerrit.opnfv.org gerrit review -p $GERRIT_PROJECT -m "$gerrit_comment" $GERRIT_PATCHSET_REVISION
 
 #TODO(r-mibu): change this to publisher
 - builder:
