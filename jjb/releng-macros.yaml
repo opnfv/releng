@@ -214,7 +214,10 @@
                     "gs://$gs_path"/**.html
             fi
 
-            gerrit_comment="Document link(s): $(gsutil ls gs://$gs_path | grep -e 'index.html$' -e 'pdf$' | sed 's/^gs/http/')"
+            files=$(find docs/output | grep -e 'index.html$' -e 'pdf$' | \
+                    sed -e "s|^docs/output|    http://$gs_path|")
+            gerrit_comment="Document link(s):
+            $files"
             echo
             echo "$gerrit_comment"
             echo
@@ -252,7 +255,10 @@
                     "gs://$gs_path"/**.html
             fi
 
-            gerrit_comment="Document link(s): $(gsutil ls gs://$gs_path | grep -e 'index.html$' -e 'pdf$' | sed 's/^gs/http/')"
+            files=$(find docs/output | grep -e 'index.html$' -e 'pdf$' | \
+                    sed -e "s|^docs/output|    http://$gs_path|")
+            gerrit_comment="Document link(s):
+            $files"
             echo
             echo "$gerrit_comment"
             echo
