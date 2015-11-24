@@ -644,8 +644,21 @@
         - shell: |
             #!/bin/bash
 
-            # cleanup: remove any docker containers leftovers
-            echo "Removing existing Functest Docker containers..."
-            docker rm -f $(docker ps | grep opnfv/functest | awk '{print $1}')
-            echo "Removing existing Functest Docker image..."
-            docker rmi -f $(docker images | grep opnfv/functest | awk '{print $3}')
+            # Remove previous running containers if exist
+            if [[ ! -z $(docker ps -a | grep opnfv/functest) ]]; then
+                echo "Removing existing opnfv/functest containers..."
+                docker ps | grep opnfv/functest | awk '{{print $1}}' | xargs docker stop
+                docker ps -a | grep opnfv/functest | awk '{{print $1}}' | xargs docker rm
+            fi
+
+
+            # Remove existing images if exist
+            if [[ ! -z $(docker images | grep opnfv/functest) ]]; then
+                echo "Docker images to remove:"
+                docker images | head -1 && docker images | grep opnfv/functest
+                image_tags=($(docker images | grep opnfv/functest | awk '{{print $2}}'))
+                for tag in "${{image_tags[@]}}"; do
+                    echo "Removing docker image opnfv/functest:$tag..."
+                    docker rmi opnfv/functest:$tag
+                done
+            fi
