@@ -15,6 +15,11 @@
             installer_type: 'foreman'
             installer_ip: '172.30.10.73'
             functest_repo_dir:  '/home/opnfv/repos/functest'
+        - apex:
+            node: 'opnfv-jump-1'
+            installer_type: 'apex'
+            installer_ip: '192.168.X.X'
+            functest_repo_dir:  '/home/opnfv/repos/functest'
     pod:
         - orange-build:
             node: 'orange-build'
@@ -538,7 +543,10 @@
         - shell: |
             #!/bin/bash
             set +e
-
+            if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
+                INSTALLER_IP=$(cat instack /var/lib/libvirt/dnsmasq/default.leases \
+                    |sed 's/.*192/192/g' | sed 's/\ in.*//g')
+            fi
             echo "Functest: Start Docker and prepare environment"
             envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP}"
             docker pull opnfv/functest:latest_stable
