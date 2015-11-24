@@ -15,6 +15,11 @@
             installer_type: 'foreman'
             installer_ip: '172.30.10.73'
             functest_repo_dir:  '/home/opnfv/repos/functest'
+        - apex:
+            node: 'opnfv-jump-1'
+            installer_type: 'apex'
+            installer_ip: '192.168.X.X'
+            functest_repo_dir:  '/home/opnfv/repos/functest'
     pod:
         - orange-build:
             node: 'orange-build'
@@ -199,6 +204,7 @@
     parameters:
         - project-parameter:
             project: '{project}'
+        - functest-parameter
         - string:
             name: INSTALLER_TYPE
             default: '{installer_type}'
@@ -207,10 +213,6 @@
             name: INSTALLER_IP
             default: '{installer_ip}'
             description: "Installer IP."
-        - string:
-            name: FUNCTEST_REPO_DIR
-            default: '{functest_repo_dir}'
-            description: "Directory where the root functest repo is cloned in the docker."
         - '{pod}'
 
     scm:
@@ -241,6 +243,7 @@
     parameters:
         - project-parameter:
             project: '{project}'
+        - functest-parameter
         - string:
             name: INSTALLER_TYPE
             default: '{installer_type}'
@@ -249,10 +252,6 @@
             name: INSTALLER_IP
             default: '{installer_ip}'
             description: "Installer IP."
-        - string:
-            name: FUNCTEST_REPO_DIR
-            default: '{functest_repo_dir}'
-            description: "Directory where the root functest repo is cloned in the docker."
         - string:
             name: GIT_BASE
             default: ssh://gerrit.opnfv.org:29418/$PROJECT
@@ -286,6 +285,7 @@
     parameters:
         - project-parameter:
             project: '{project}'
+        - functest-parameter
         - string:
             name: INSTALLER_TYPE
             default: '{installer_type}'
@@ -294,10 +294,6 @@
             name: INSTALLER_IP
             default: '{installer_ip}'
             description: "Installer IP."
-        - string:
-            name: FUNCTEST_REPO_DIR
-            default: '{functest_repo_dir}'
-            description: "Directory where the root functest repo is cloned in the docker."
         - string:
             name: GIT_BASE
             default: ssh://gerrit.opnfv.org:29418/$PROJECT
@@ -478,6 +474,10 @@
             name: GS_PATHNAME
             default: '{gs-pathname}'
             description: "Version directory where the opnfv documents will be stored in gs repository"
+        - string:
+            name: FUNCTEST_REPO_DIR
+            default: "/home/opnfv/repos/functest"
+            description: "Directory where the Functest repository is cloned"
 
 - parameter:
     name: orange-build
@@ -538,7 +538,10 @@
         - shell: |
             #!/bin/bash
             set +e
-
+            if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
+                INSTALLER_IP=$(cat instack /var/lib/libvirt/dnsmasq/default.leases \
+                    |sed 's/.*192/192/g' | sed 's/\ in.*//g')
+            fi
             echo "Functest: Start Docker and prepare environment"
             envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP}"
             docker pull opnfv/functest:latest_stable
