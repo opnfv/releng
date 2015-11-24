@@ -191,6 +191,13 @@
         - 'apex-upload-artifact'
         - 'apex-deploy-virtual'
         - 'apex-workspace-cleanup'
+        - trigger-builds:
+          - project: 'functest-apex-{stream}'
+            block: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
 
 ########################
 # parameter macros
