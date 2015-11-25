@@ -18,7 +18,7 @@ chmod a+x $HOME
 chmod a+x $TMPDIR
 
 # set CONFDIR, BRIDGE
-CONFDIR=$WORKSPACE/fuel/deploy/templates/hardware_environment/conf/linux_foundation_lab/pod2
+CONFDIR=$WORKSPACE/deploy/templates/hardware_environment/conf/linux_foundation_lab/pod2
 BRIDGE=pxebr
 
 # clone genesis repo and checkout the SR1 tag
@@ -41,9 +41,9 @@ echo
 
 # start the deployment
 echo "Issuing command"
-echo "sudo $WORKSPACE/fuel/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE -nh"
+echo "sudo $WORKSPACE/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE -nh"
 
-sudo $WORKSPACE/fuel/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE -nh
+sudo $WORKSPACE/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE -nh
 
 echo
 echo "--------------------------------------------------------"

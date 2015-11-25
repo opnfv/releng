@@ -20,7 +20,7 @@ else
 fi
 
 # start the build
-cd $WORKSPACE/$INSTALLER/ci
+cd $WORKSPACE/ci
 ./build.sh -v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
 
 # list the build artifacts

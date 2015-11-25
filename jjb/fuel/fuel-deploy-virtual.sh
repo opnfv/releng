@@ -18,7 +18,7 @@ chmod a+x $HOME
 chmod a+x $TMPDIR
 
 # set CONFDIR, BRIDGE
-CONFDIR=$WORKSPACE/fuel/deploy/templates/virtual_environment/conf
+CONFDIR=$WORKSPACE/deploy/templates/virtual_environment/conf
 BRIDGE=pxebr
 
 # log info to console
@@ -28,9 +28,9 @@ echo
 
 # start the deployment
 echo "Issuing command"
-echo "sudo $WORKSPACE/fuel/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE -nh"
+echo "sudo $WORKSPACE/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE -nh"
 
-sudo $WORKSPACE/fuel/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE -nh
+sudo $WORKSPACE/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $CONFDIR/dea.yaml -dha $CONFDIR/dha.yaml -s $TMPDIR -b $BRIDGE -nh
 
 echo
 echo "--------------------------------------------------------"
