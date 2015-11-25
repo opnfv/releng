@@ -1,5 +1,3 @@
-.. two dots create a comment. please leave this logo at the top of each of your rst files.
-
 How to create documentation for your OPNFV project
 ==================================================
 
@@ -21,8 +19,9 @@ This index file must refence your other rst files.
 
 .. code-block:: bash
 
-  Example Documentation table of contents
-  =======================================
+  =====================
+  Example Documentation
+  =====================
 
   Contents:
 
@@ -32,10 +31,8 @@ This index file must refence your other rst files.
 
      documentation-example.rst
 
-  Indices and tables
-  ==================
-
-  * :ref:`search`
+  ..
+      Leave these at the bottom of 'index.rst' file
 
   Revision: _sha1_
 
@@ -71,10 +68,3 @@ links are easy to add: Here is a link to sphinx, the tool that we are using to g
 .. code-block:: bash
 
   echo "Heres is a code block with bash syntax highlighting"
-
-
-Leave these at the bottom of each of your documents they are used internally
-
-Revision: _sha1_
-
-Build date: |today|

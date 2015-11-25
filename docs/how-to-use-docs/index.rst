@@ -1,12 +1,9 @@
-.. OPNFV Release Engineering documentation, created by
-   sphinx-quickstart on Tue Jun  9 19:12:31 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+..
+    This is new template created on Thu Nov 26 16:18:09 JST 2015
 
-Example Documentation table of contents
-=======================================
-
-Contents:
+=====================
+Example Documentation
+=====================
 
 .. toctree::
    :numbered:
@@ -14,10 +11,8 @@ Contents:
 
    documentation-example.rst
 
-Indices and tables
-==================
-
-* :ref:`search`
+..
+    Leave these at the bottom of 'index.rst' file
 
 Revision: _sha1_
 
