@@ -164,6 +164,8 @@
                 sed -i "s/_sha1_/$git_sha1/g" "$file"
             done
 
+            build_errors=""
+
             find docs/ -name 'index.rst' -printf '%h\n' | while read dir
             do
                 _name="${dir##*/}"
@@ -180,10 +182,28 @@
 
                 sphinx-build -b html -E -c docs/etc "$dir" "$_output"
 
-                #sphinx-build -b latex -E -c docs/etc -D project=$_name "$dir" "$_build"
-                #make -C "$_build" LATEXOPTS='--interaction=nonstopmode' all-pdf
-                #mv "$_build"/*.pdf "$_output"
+                # Note: PDF creation may fail in project doc builds.
+                #       We allow this test to be marked as succeeded with
+                #       failure in PDF creation, but leave message to fix it.
+                #       Any failure has to be fixed before B release.
+                {
+                sphinx-build -b latex -E -c docs/etc -D project=$_name "$dir" "$_build"
+                make -C "$_build" LATEXOPTS='--interaction=nonstopmode' all-pdf
+                mv "$_build"/*.pdf "$_output"
+                } || {
+                echo
+                echo
+                echo "Error: PDF creation for $dir has failed, please fix source rst file(s)."
+                echo
+                echo
+                build_errors="$build_errors, $dir"
+                }
             done
+
+            if [[ -n "$build_errors" ]] ; then
+                gerrit_comment="Warn: PDF creation has failed, please fix source rst file(s) under ${build_errors#, }."
+                ssh -p 29418 gerrit.opnfv.org "gerrit review -p $GERRIT_PROJECT -m '$gerrit_comment' $GERRIT_PATCHSET_REVISION"
+            fi
 
 #TODO(r-mibu): change this to publisher
 - builder:
