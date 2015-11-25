@@ -157,12 +157,16 @@
 
             [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
 
-            git_sha1="$(git rev-parse HEAD)"
-
-            find docs/ -type f -iname '*.rst' -print0 | while read file
-            do
-                sed -i "s/_sha1_/$git_sha1/g" "$file"
-            done
+            _get_title_script="
+            import os
+            from docutils import core
+            with open('index.rst', 'r') as file:
+                data = file.read()
+                doctree = core.publish_doctree(data,
+                    settings_overrides={'report_level': 5,
+                                        'halt_level': 5})
+                print doctree[0].astext()"
+            _git_sha1="$(git rev-parse HEAD)"
 
             find docs/ -name 'index.rst' -printf '%h\n' | while read dir
             do
@@ -176,16 +180,35 @@
                 echo "#################${dir//?/#}"
                 echo
 
+                sed -i "s/_sha1_/$_git_sha1/g" "$dir/index.rst"
+
+                if [[ ! -f "$dir/conf.py" ]] ; then
+                    cp "etc/conf.py" "$dir/conf.py"
+                    _title=$(cd $dir; python -c "$_get_title_script")
+                    echo "latex_documents = [('index', '$_name.tex', '$_title', 'OPNFV', 'manual'),]" >> "$dir/conf.py"
+                fi
+
                 mkdir -p "$_output"
 
-                sphinx-build -b html -E -c docs/etc "$dir" "$_output"
+                sphinx-build -b html -E "$dir" "$_output"
 
-                #sphinx-build -b latex -E -c docs/etc -D project=$_name "$dir" "$_build"
-                #make -C "$_build" LATEXOPTS='--interaction=nonstopmode' all-pdf
-                #mv "$_build"/*.pdf "$_output"
+                # Note: PDF creation may fail in project doc builds.
+                #       We allow this test to be marked as succeeded with
+                #       failure in PDF creation, but leave message to fix it.
+                #       Any failure has to be fixed before B release.
+                {
+                    sphinx-build -b latex -E "$dir" "$_build"
+                    make -C "$_build" LATEXOPTS='--interaction=nonstopmode' all-pdf
+                    mv "$_build"/*.pdf "$_output"
+                } || {
+                    _msg="Error: PDF creation for $dir has failed, please fix source rst file(s)."
+                    echo
+                    echo "$_msg"
+                    echo
+                    echo "$_msg" >> gerrit_comment.txt
+                }
             done
 
-#TODO(r-mibu): change this to publisher
 - builder:
     name: upload-under-review-docs-to-opnfv-artifacts
     builders:
@@ -214,16 +237,10 @@
                     "gs://$gs_path"/**.html
             fi
 
-            files=$(find docs/output | grep -e 'index.html$' -e 'pdf$' | \
-                    sed -e "s|^docs/output|    http://$gs_path|")
-            gerrit_comment="Document link(s):
-            $files"
-            echo
-            echo "$gerrit_comment"
-            echo
-            ssh -p 29418 gerrit.opnfv.org "gerrit review -p $GERRIT_PROJECT -m '$gerrit_comment' $GERRIT_PATCHSET_REVISION"
+            echo "Document link(s):" >> gerrit_comment.txt
+            find docs/output | grep -e 'index.html$' -e 'pdf$' | \
+                sed -e "s|^docs/output|    http://$gs_path|" >> gerrit_comment.txt
 
-#TODO(r-mibu): change this to publisher
 - builder:
     name: upload-merged-docs-to-opnfv-artifacts
     builders:
@@ -255,16 +272,28 @@
                     "gs://$gs_path"/**.html
             fi
 
-            files=$(find docs/output | grep -e 'index.html$' -e 'pdf$' | \
-                    sed -e "s|^docs/output|    http://$gs_path|")
-            gerrit_comment="Document link(s):
-            $files"
-            echo
-            echo "$gerrit_comment"
-            echo
-            ssh -p 29418 gerrit.opnfv.org "gerrit review -p $GERRIT_PROJECT -m '$gerrit_comment' $GERRIT_PATCHSET_REVISION"
+            echo "Document link(s):" >> gerrit_comment.txt
+            find docs/output | grep -e 'index.html$' -e 'pdf$' | \
+                sed -e "s|^docs/output|    http://$gs_path|" >> gerrit_comment.txt
 
-#TODO(r-mibu): change this to publisher
+- builder:
+    name: report-docs-build-result-to-gerrit
+    builders:
+        - shell: |
+            #!/bin/bash -e
+            export PATH=$PATH:/usr/local/bin/
+            if [[ -e gerrit_comment.txt ]] ; then
+                echo
+                echo "posting review comment to gerrit..."
+                echo
+                cat gerrit_comment.txt
+                echo
+                ssh -p 29418 gerrit.opnfv.org \
+                    "gerrit review -p $GERRIT_PROJECT \
+                     -m '$(cat gerrit_comment.txt)' \
+                     $GERRIT_PATCHSET_REVISION"
+            fi
+
 - builder:
     name: remove-old-docs-from-opnfv-artifacts
     builders:
@@ -281,3 +310,18 @@
                 echo "Deleting Out-of-dated Documents..."
                 gsutil -m rm -r "gs://$gs_path"
             fi
+
+- builder:
+    name: upload-review-docs
+    builders:
+        - build-html-and-pdf-docs-output
+        - upload-under-review-docs-to-opnfv-artifacts
+        - report-docs-build-result-to-gerrit
+
+- builder:
+    name: upload-merged-docs
+    builders:
+        - build-html-and-pdf-docs-output
+        - upload-merged-docs-to-opnfv-artifacts
+        - report-docs-build-result-to-gerrit
+        - remove-old-docs-from-opnfv-artifacts
