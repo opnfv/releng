@@ -8,17 +8,14 @@
         - 'qtip-dhrystone-serial-{pod}'
         - 'qtip-ssl-parallel-{pod}'
 
-
     # stream:    branch with - in place of / (eg. stable-helium)
     # branch:    branch (eg. stable/helium)
-
 
     pod:
         - dell-build:
            node: 'dell-us-testing-bm-1'
            installer_type: 'fuel'
            installer_ip: '10.20.0.2'
-
 
     stream:
         - master:
@@ -29,8 +26,6 @@
 
 - job-template:
     name: qtip-test
-
-    project-type: freestyle
 
     logrotate:
         daysToKeep: 30
@@ -51,7 +46,6 @@
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
 
-    project-type: freestyle
     varsetabove: '{somevar}'
 
     logrotate:
@@ -63,7 +57,6 @@
     parameters:
         - project-parameter:
             project: '{project}'
-
 
     scm:
         - git-scm:
@@ -88,8 +81,6 @@
 
 - job-template:
     name: 'qtip-verify'
-
-    project-type: freestyle
 
     logrotate:
         daysToKeep: 30
@@ -140,8 +131,6 @@
     #
     # This job's purpose is to update all the JJB
 
-    project-type: freestyle
-
     logrotate:
         daysToKeep: 30
         numToKeep: 40
@@ -181,8 +170,6 @@
 
 - job-template:
     name: 'qtip-dhrystone-serial-{pod}'
-
-    project-type: freestyle
 
     disabled: false
 
@@ -225,9 +212,6 @@
 
 - job-template:
     name: 'qtip-ssl-parallel-{pod}'
-
-
-    project-type: freestyle
 
     disabled: false
 
@@ -286,7 +270,6 @@
             echo "Running QTIP dhrystone with First Test case"
             python qtip.py -s compute -b dhrystone_serial.yaml
 
-
 - builder:
     name: qtip-ssl-parallel
 
@@ -301,7 +284,6 @@
             cd $WORKSPACE
             echo "Running QTIP dhrystone with Second Test case"
             python qtip.py -s compute -b ssl_parallel.yaml
-
 
 - builder:
     name: qtip-fetch-os-cred
