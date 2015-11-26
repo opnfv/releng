@@ -60,22 +60,22 @@ The Current merge and verify jobs for jenkins job builder as pulled from the rep
      jobs:
          - 'builder-verify-jjb'
          - 'builder-merge'
- 
+
      project: 'releng'
- 
+
  - job-template:
      name: builder-verify-jjb
- 
+
      node: master
- 
+
      project-type: freestyle
- 
+
      logrotate:
          daysToKeep: 30
          numToKeep: 10
          artifactDaysToKeep: -1
          artifactNumToKeep: -1
- 
+
      parameters:
          - project-parameter:
              project: '{project}'
@@ -86,11 +86,11 @@ The Current merge and verify jobs for jenkins job builder as pulled from the rep
              credentials-id: '{ssh-credentials}'
              refspec: '$GERRIT_REFSPEC'
              choosing-strategy: 'gerrit'
- 
+
      wrappers:
          - ssh-agent-credentials:
              user: '{ssh-credentials}'
- 
+
      triggers:
          - gerrit:
              trigger-on:
@@ -114,45 +114,45 @@ The Current merge and verify jobs for jenkins job builder as pulled from the rep
                        pattern: jjb/**
                      - compare-type: ANT
                        pattern: jjb-templates/**
- 
- 
+
+
      builders:
          - shell:
              !include-raw verify-releng
- 
+
  - job-template:
      name: 'builder-merge'
- 
+
      node: master
- 
+
      # builder-merge job to run JJB update
      #
      # This job's purpose is to update all the JJB
- 
+
      project-type: freestyle
- 
+
      logrotate:
          daysToKeep: 30
          numToKeep: 40
          artifactDaysToKeep: -1
          artifactNumToKeep: 5
- 
+
      parameters:
          - project-parameter:
              project: '{project}'
          - gerrit-parameter:
              branch: 'master'
- 
+
      scm:
          - gerrit-trigger-scm:
              credentials-id: '{ssh-credentials}'
              refspec: ''
              choosing-strategy: 'default'
- 
+
      wrappers:
          - ssh-agent-credentials:
              user: '{ssh-credentials}'
- 
+
      triggers:
          - gerrit:
              trigger-on:
@@ -168,7 +168,7 @@ The Current merge and verify jobs for jenkins job builder as pulled from the rep
                  file-paths:
                      - compare-type: ANT
                        pattern: jjb/**
- 
+
      builders:
          - shell: |
                  source /opt/virtualenv/jenkins-job-builder/bin/activate
