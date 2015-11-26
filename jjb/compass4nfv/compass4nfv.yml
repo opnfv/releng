@@ -39,8 +39,6 @@
 - job-template:
     name: 'compass-verify'
 
-    project-type: freestyle
-
     disabled: false
 
     node: 'huawei-deploy-vm'
@@ -75,7 +73,6 @@
             credentials-id: '{ssh-credentials}'
             refspec: '$GERRIT_REFSPEC'
             choosing-strategy: 'gerrit'
-
 
     triggers:
         - gerrit:
@@ -114,8 +111,6 @@
     # builder-merge job to run JJB update
     #
     # This job's purpose is to update all the JJB
-
-    project-type: freestyle
 
     node: huawei-build
 
@@ -165,8 +160,6 @@
 
 - job-template:
     name: 'compass-daily-{stream}'
-
-    project-type: freestyle
 
     node: huawei-build
 
@@ -220,8 +213,6 @@
 - job-template:
     name: 'compass-build-iso'
 
-    project-type: freestyle
-
     node: ericsson-build
 
     concurrent: true
@@ -260,8 +251,6 @@
 
     description: "build ppa(using docker) in huawei lab"
 
-    project-type: freestyle
-
     node: huawei-build
 
     concurrent: true
@@ -299,8 +288,6 @@
 - job-template:
     name: 'compass-deploy-virtual-{flavor}'
 
-    project-type: freestyle
-
     disabled: false
 
     node: '{node}'
@@ -323,13 +310,11 @@
             default: '{conf}'
             description: ""
 
-
     logrotate:
         daysToKeep: 30
         numToKeep: 10
         artifactDaysToKeep: -1
         artifactNumToKeep: -1
-
 
     builders:
         - 'builder-compass-ci-preclean-workspace'
@@ -341,11 +326,8 @@
             allow-empty: 'true'
             fingerprint: true
 
-
 - job-template:
     name: 'compass-deploy-bare-huawei-us'
-
-    project-type: freestyle
 
     disabled: false
 
@@ -381,7 +363,6 @@
             artifacts: 'ansible.log'
             allow-empty: 'true'
             fingerprint: true
-
 
 ########################
 # parameter macros
@@ -586,7 +567,6 @@
             gsutil cp $BUILD_DIRECTORY/compass.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
             gsutil cp $BUILD_DIRECTORY/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
             gsutil cp $BUILD_DIRECTORY/opnfv.properties gs://$GS_URL/latest.properties > gsutil.latest.log 2>&1
-
 
             echo
             echo "--------------------------------------------------------"
