@@ -56,8 +56,6 @@
 - job-template:
     name: set-functest-env-{pod}
 
-    project-type: freestyle
-
     node: '{pod}'
 
     logrotate:
@@ -69,12 +67,8 @@
     builders:
         - 'set-functest-env'
 
-
-
 - job-template:
     name: clean-functest-env-{pod}
-
-    project-type: freestyle
 
     node: '{pod}'
 
@@ -87,11 +81,8 @@
     builders:
         - 'functest-cleanup'
 
-
 - job-template:
     name: set-functest-env-{installer}-{stream}
-
-    project-type: freestyle
 
     node: '{node}'
 
@@ -104,11 +95,8 @@
     builders:
         - 'set-functest-env'
 
-
 - job-template:
     name: clean-functest-env-{installer}-{stream}
-
-    project-type: freestyle
 
     node: '{node}'
 
@@ -124,8 +112,6 @@
 - job-template:
     name: functest-openstack-bench-test-{pod}
 
-    project-type: freestyle
-
     node: '{pod}'
 
     logrotate:
@@ -137,11 +123,8 @@
     builders:
         - 'functest-rally-bench'
 
-
 - job-template:
     name: functest-openstack-tempest-smoke-test-{pod}
-
-    project-type: freestyle
 
     node: '{pod}'
 
@@ -157,8 +140,6 @@
 - job-template:
     name: functest-odl-test-{pod}
 
-    project-type: freestyle
-
     node: '{pod}'
 
     logrotate:
@@ -171,11 +152,8 @@
         - shell: |
         - 'functest-odl'
 
-
 - job-template:
     name: functest-vping-test-{pod}
-
-    project-type: freestyle
 
     node: '{pod}'
 
@@ -188,11 +166,8 @@
     builders:
         - 'functest-vping'
 
-
 - job-template:
     name: functest-{pod}
-
-    project-type: freestyle
 
     node: '{pod}'
 
@@ -233,8 +208,6 @@
 
 - job-template:
     name: functest-{installer}-{stream}
-
-    project-type: freestyle
 
     node: '{node}'
 
@@ -278,8 +251,6 @@
 
 - job-template:
     name: functest-vims-{installer}-{stream}
-
-    project-type: freestyle
 
     node: '{node}'
 
@@ -329,7 +300,6 @@
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
 
-    project-type: freestyle
     varsetabove: '{somevar}'
 
     logrotate:
@@ -367,8 +337,6 @@
     name: 'functest-verify-{stream}'
 
     node: master
-
-    project-type: freestyle
 
     logrotate:
         daysToKeep: 30
@@ -418,8 +386,6 @@
     # builder-merge job to run JJB update
     #
     # This job's purpose is to update all the JJB
-
-    project-type: freestyle
 
     logrotate:
         daysToKeep: 30
@@ -519,7 +485,6 @@
             container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
             docker exec $container_id $cmd
 
-
 - builder:
     name: set-functest-env
     builders:
@@ -552,7 +517,6 @@
             cmd="${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
             echo "Executing command inside the docker: ${cmd}"
             docker exec ${container_id} ${cmd}
-
 
 - builder:
     name: functest-vping
@@ -591,8 +555,6 @@
             container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
             docker exec $container_id $cmd
 
-
-
 - builder:
     name: functest-rally-bench
     builders:
@@ -605,7 +567,6 @@
             container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
             docker exec $container_id $cmd
 
-
 - builder:
     name: functest-vims
     builders:
@@ -617,8 +578,6 @@
             cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test vims"
             container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
             docker exec $container_id $cmd
-
-
 
 - builder:
     name: functest-store-results
@@ -640,7 +599,6 @@
                 docker ps | grep opnfv/functest | awk '{{print $1}}' | xargs docker stop
                 docker ps -a | grep opnfv/functest | awk '{{print $1}}' | xargs docker rm
             fi
-
 
             # Remove existing images if exist
             if [[ ! -z $(docker images | grep opnfv/functest) ]]; then

@@ -28,8 +28,6 @@
 - job-template:
     name: octopus-test
 
-    project-type: freestyle
-
     logrotate:
         daysToKeep: 30
         numToKeep: 10
@@ -51,7 +49,6 @@
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
 
-    project-type: freestyle
     varsetabove: '{somevar}'
 
     logrotate:
@@ -89,8 +86,6 @@
     name: 'octopus-verify-{stream}'
 
     node: master
-
-    project-type: freestyle
 
     logrotate:
         daysToKeep: 30
@@ -141,8 +136,6 @@
     #
     # This job's purpose is to update all the JJB
 
-    project-type: freestyle
-
     logrotate:
         daysToKeep: 30
         numToKeep: 40
@@ -161,7 +154,6 @@
             refspec: ''
             choosing-strategy: 'default'
 
-
     triggers:
         - gerrit:
             trigger-on:
@@ -178,7 +170,6 @@
     builders:
         - shell:
             !include-raw ../opnfvdocs/docu-build.sh
-
 
 ########################
 ## parameter macros
