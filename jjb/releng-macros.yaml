@@ -168,6 +168,9 @@
                 print doctree[0].astext()"
             _git_sha1="$(git rev-parse HEAD)"
 
+            git clone ssh://gerrit.opnfv.org:29418/releng
+            [[ -d releng ]]
+
             find docs/ -name 'index.rst' -printf '%h\n' | while read dir
             do
                 _name="${dir##*/}"
@@ -183,11 +186,11 @@
                 sed -i "s/_sha1_/$_git_sha1/g" "$dir/index.rst"
 
                 if [[ ! -f "$dir/conf.py" ]] ; then
-                    cp "docs/etc/conf.py" "$dir/conf.py"
+                    cp releng/docs/etc/conf.py "$dir/conf.py"
                     _title=$(cd $dir; python -c "$_get_title_script")
                     echo "latex_documents = [('index', '$_name.tex', '$_title', 'OPNFV', 'manual'),]" >> "$dir/conf.py"
                 fi
-                cp -f "docs/etc/opnfv-logo.png" "$dir/opnfv-logo.png"
+                cp -f releng/docs/etc/opnfv-logo.png "$dir/opnfv-logo.png"
 
                 mkdir -p "$_output"
 
