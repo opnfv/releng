@@ -200,7 +200,7 @@
                 {
                     sphinx-build -b latex -E "$dir" "$_build"
                     make -C "$_build" LATEXOPTS='--interaction=nonstopmode' all-pdf
-                    mv "$_build"/*.pdf "$_output"
+                    mv "$_build/$_name.pdf" "$_output"
                 } || {
                     _msg="Error: PDF creation for $dir has failed, please fix source rst file(s)."
                     echo
@@ -229,7 +229,7 @@
 
             gs_path="artifacts.opnfv.org/review/$GERRIT_CHANGE_NUMBER"
 
-            gsutil -m cp -r docs/output/* "gs://$gs_path"
+            gsutil -m cp -r docs/output "gs://$gs_path"
 
             if gsutil ls "gs://$gs_path" | grep -e 'html$' > /dev/null 2>&1 ; then
                 gsutil -m setmeta \
