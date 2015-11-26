@@ -159,13 +159,20 @@
 
             _get_title_script="
             import os
-            from docutils import core
+            from docutils import core, nodes
             with open('index.rst', 'r') as file:
                 data = file.read()
-                doctree = core.publish_doctree(data,
-                    settings_overrides={'report_level': 5,
-                                        'halt_level': 5})
-                print doctree[0].astext()"
+            doctree = core.publish_doctree(data,
+                settings_overrides={'report_level': 5,
+                                    'halt_level': 5})
+            if isinstance(doctree[0], nodes.title):
+                title = doctree[0]
+            else:
+                for c in doctree.children:
+                    if isinstance(c, nodes.section):
+                        title = c[0]
+                        break
+            print title.astext()"
             _git_sha1="$(git rev-parse HEAD)"
 
             git clone ssh://gerrit.opnfv.org:29418/releng
