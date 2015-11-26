@@ -19,9 +19,16 @@ else
     export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
 fi
 
+NOCACHE_PATTERN="verify: no-cache"
+if [[ "$JOB_NAME" =~ "verify" && "$GERRIT_CHANGE_COMMIT_MESSAGE" =~ "$NOCACHE_PATTERN" ]]; then
+    echo "The cache will not be used for this build!"
+    NOCACHE_ARG="-f P"
+fi
+NOCACHE_ARG=${NOCACHE_ARG:-}
+
 # start the build
 cd $WORKSPACE/ci
-./build.sh -v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
+./build.sh -v $OPNFV_ARTIFACT_VERSION $NOCACHE_ARG -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
 
 # list the build artifacts
 ls -al $BUILD_DIRECTORY
