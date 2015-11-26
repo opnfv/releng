@@ -227,9 +227,12 @@
             echo "###########################"
             echo
 
-            gs_path="artifacts.opnfv.org/review/$GERRIT_CHANGE_NUMBER"
+            gs_base="artifacts.opnfv.org/review"
+            gs_path="$gs_base/$GERRIT_CHANGE_NUMBER"
+            local_path="docs/$GERRIT_CHANGE_NUMBER"
 
-            gsutil -m cp -r docs/output "gs://$gs_path"
+            mv docs/output "$local_path"
+            gsutil -m cp -r "$local_path" "gs://$gs_base"
 
             if gsutil ls "gs://$gs_path" | grep -e 'html$' > /dev/null 2>&1 ; then
                 gsutil -m setmeta \
@@ -239,8 +242,8 @@
             fi
 
             echo "Document link(s):" >> gerrit_comment.txt
-            find docs/output | grep -e 'index.html$' -e 'pdf$' | \
-                sed -e "s|^docs/output|    http://$gs_path|" >> gerrit_comment.txt
+            find "$local_path" | grep -e 'index.html$' -e 'pdf$' | \
+                sed -e "s|^$local_path|    http://$gs_path|" >> gerrit_comment.txt
 
 - builder:
     name: upload-merged-docs-to-opnfv-artifacts
@@ -259,12 +262,15 @@
             echo
 
             if [[ "$GERRIT_BRANCH" == "master" ]] ; then
-                gs_path="artifacts.opnfv.org/$GERRIT_PROJECT/docs"
+                gs_base="artifacts.opnfv.org/$GERRIT_PROJECT"
             else
-                gs_path="artifacts.opnfv.org/$GERRIT_PROJECT/$GERRIT_BRANCH/docs"
+                gs_base="artifacts.opnfv.org/$GERRIT_PROJECT/$GERRIT_BRANCH"
             fi
+            gs_path="$gs_base/docs"
+            local_path="docs/docs"
 
-            gsutil -m cp -r docs/output/* "gs://$gs_path"
+            mv docs/output "$local_path"
+            gsutil -m cp -r "$local_path" "gs://$gs_base"
 
             if gsutil ls "gs://$gs_path" | grep -e 'html$' > /dev/null 2>&1 ; then
                 gsutil -m setmeta \
@@ -274,8 +280,8 @@
             fi
 
             echo "Document link(s):" >> gerrit_comment.txt
-            find docs/output | grep -e 'index.html$' -e 'pdf$' | \
-                sed -e "s|^docs/output|    http://$gs_path|" >> gerrit_comment.txt
+            find "$local_path" | grep -e 'index.html$' -e 'pdf$' | \
+                sed -e "s|^$local_path|    http://$gs_path|" >> gerrit_comment.txt
 
 - builder:
     name: report-docs-build-result-to-gerrit
