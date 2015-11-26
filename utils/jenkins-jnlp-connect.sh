@@ -100,7 +100,7 @@ fi
 
 if [[ $started_monit == "true" ]]; then
 wget --timestamping https://build.opnfv.org/ci/jnlpJars/slave.jar && true
-chown $jenkinsuser $jenkinsuser slave.jar
+chown $jenkinsuser:$jenkinsuser slave.jar
 
 if [[ -f /var/run/$jenkinsuser/jenkins_jnlp_pid ]];
 then echo "pid file found"
