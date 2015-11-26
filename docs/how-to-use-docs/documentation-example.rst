@@ -50,7 +50,7 @@ For verify jobs a link to the documentation will show up as a comment in gerrit 
 
 * Merge jobs
 
-Once you are happy with the look of your documentation you can submit the patchset the merge job will 
+Once you are happy with the look of your documentation you can submit the patchset the merge job will
 copy the output of each documentation directory to http://artifacts.opnfv.org/$project/docs/$name_of_your_folder/index.html
 
 Here are some quick examples of how to use rst markup
