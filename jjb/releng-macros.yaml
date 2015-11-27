@@ -152,73 +152,9 @@
     builders:
         - shell: |
             #!/bin/bash -e
-            set -o pipefail
             export PATH=$PATH:/usr/local/bin/
-
-            [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
-
-            _get_title_script="
-            import os
-            from docutils import core, nodes
-            with open('index.rst', 'r') as file:
-                data = file.read()
-            doctree = core.publish_doctree(data,
-                settings_overrides={'report_level': 5,
-                                    'halt_level': 5})
-            if isinstance(doctree[0], nodes.title):
-                title = doctree[0]
-            else:
-                for c in doctree.children:
-                    if isinstance(c, nodes.section):
-                        title = c[0]
-                        break
-            print title.astext()"
-            _git_sha1="$(git rev-parse HEAD)"
-
             git clone ssh://gerrit.opnfv.org:29418/releng
-            [[ -d releng ]]
-
-            find docs/ -name 'index.rst' -printf '%h\n' | while read dir
-            do
-                _name="${dir##*/}"
-                _build="$dir/build"
-                _output="docs/output/$_name"
-
-                echo
-                echo "#################${dir//?/#}"
-                echo "Building DOCS in $dir"
-                echo "#################${dir//?/#}"
-                echo
-
-                sed -i "s/_sha1_/$_git_sha1/g" "$dir/index.rst"
-
-                if [[ ! -f "$dir/conf.py" ]] ; then
-                    cp releng/docs/etc/conf.py "$dir/conf.py"
-                    _title=$(cd $dir; python -c "$_get_title_script")
-                    echo "latex_documents = [('index', '$_name.tex', \"$_title\", 'OPNFV', 'manual'),]" >> "$dir/conf.py"
-                fi
-                cp -f releng/docs/etc/opnfv-logo.png "$dir/opnfv-logo.png"
-
-                mkdir -p "$_output"
-
-                sphinx-build -b html -E "$dir" "$_output"
-
-                # Note: PDF creation may fail in project doc builds.
-                #       We allow this test to be marked as succeeded with
-                #       failure in PDF creation, but leave message to fix it.
-                #       Any failure has to be fixed before B release.
-                {
-                    sphinx-build -b latex -E "$dir" "$_build"
-                    make -C "$_build" LATEXOPTS='--interaction=nonstopmode' all-pdf
-                    mv "$_build/$_name.pdf" "$_output"
-                } || {
-                    _msg="Error: PDF creation for $dir has failed, please fix source rst file(s)."
-                    echo
-                    echo "$_msg"
-                    echo
-                    echo "$_msg" >> gerrit_comment.txt
-                }
-            done
+            GERRIT_COMMENT=gerrit_comment.txt ./releng/utils/docs-build.sh
 
 - builder:
     name: upload-under-review-docs-to-opnfv-artifacts
