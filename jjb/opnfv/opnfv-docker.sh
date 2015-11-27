@@ -29,7 +29,7 @@ if [[ ! -z $(docker images | grep $DOCKER_REPO_NAME) ]]; then
 fi
 
 # If we just want to update the latest_stable image
-if [[ [ "$UPDATE_LATEST_STABLE" == "true" ] ]]; then
+if [[ "$UPDATE_LATEST_STABLE" == "true" ]]; then
     echo "Pulling $DOCKER_REPO_NAME:$STABLE_TAG ..."
     docker pull $DOCKER_REPO_NAME:$STABLE_TAG
     if [[ $? -ne 0 ]]; then
@@ -81,7 +81,7 @@ echo "Available images are:"
 docker images
 
 # Push image to Dockerhub
-if [ "$PUSH_IMAGE" == "true" ]; then
+if [[ "$PUSH_IMAGE" == "true" ]]; then
     echo "Pushing $DOCKER_REPO_NAME:$DOCKER_TAG to the docker registry..."
     echo "--------------------------------------------------------"
     echo
