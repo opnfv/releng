@@ -1,12 +1,10 @@
 - project:
     name: ovsnfv
     jobs:
-        - 'ovsnfv-verify'
-        - 'ovsnfv-merge'
+        - 'ovsnfv-verify-{stream}'
+        - 'ovsnfv-merge-{stream}'
         - 'ovsnfv-daily-{stream}'
 
-    # stream:    branch with - in place of / (eg. stable-arno)
-    # branch:    branch (eg. stable/arno)
     stream:
         - master:
             branch: 'master'
@@ -14,9 +12,9 @@
     project: 'ovsnfv'
 
 - job-template:
-    name: 'ovsnfv-verify'
+    name: 'ovsnfv-verify-{stream}'
 
-    node: ericsson-build
+    node: opnfv-build
 
     project-type: freestyle
 
@@ -62,17 +60,19 @@
                     branch-pattern: '**/master'
 
     builders:
-        - shell:
-            echo "Hello World"
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            cd $WORKSPACE/ci
+            ./build.sh
 
 - job-template:
-    name: 'ovsnfv-merge'
+    name: 'ovsnfv-merge-{stream}'
 
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
-    node: master
+    node: opnfv-build
 
     project-type: freestyle
 
@@ -112,19 +112,20 @@
                       branch-pattern: '**/master'
 
     builders:
-        - shell:
-            echo "Hello World"
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            cd $WORKSPACE/ci
+            ./build.sh
 
 
 - job-template:
     name: 'ovsnfv-daily-{stream}'
 
-    # Job template for daily builders
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-    node: master
+    node: opnfv-build
 
     disabled: true
 
@@ -139,6 +140,10 @@
     parameters:
         - project-parameter:
             project: '{project}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
 
     scm:
         - git-scm:
@@ -147,8 +152,14 @@
             branch: '{branch}'
 
     triggers:
-        - timed: 'H H * * *'
+        - timed: '@midnight'
 
     builders:
-        - shell:
-             echo "Hello World"
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            cd $WORKSPACE/ci
+            ./build.sh
