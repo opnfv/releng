@@ -1,0 +1,45 @@
+##################################
+# job configuration for maas pilot
+##################################
+- project:
+    name: pharos
+    jobs:
+        - 'pharos-maas-pilot'
+
+    stream:
+        - master:
+            branch: 'master'
+
+    project: 'pharos'
+##############################
+# job template
+##############################
+- job-template:
+    name: 'pharos-maas-pilot'
+
+    node: master
+
+    project-type: freestyle
+
+    logrotate:
+        daysToKeep: '{build-days-to-keep}'
+        numToKeep: '{build-num-to-keep}'
+        artifactDaysToKeep: '{build-artifact-days-to-keep}'
+        artifactNumToKeep: '{build-artifact-num-to-keep}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    triggers:
+       - pollscm: '@midnight'
+
+    builders:
+        - shell:
+            echo "Hello World"
