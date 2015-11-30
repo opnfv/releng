@@ -6,11 +6,20 @@
     jobs:
         - 'bottlenecks-test'
         - 'bottlenecks-verify'
-        - 'bottlenecks-daily-{stream}'
         - 'bottlenecks-merge'
+        - 'bottlenecks-daily-{installer}-{pod}-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
+    pod:
+        - lf:
+            node: 'opnfv-jump-2'
+            installer_type: 'fuel'
+            installer_ip: '10.20.0.2'
+
+    installer:
+        -fuel
+
     stream:
         - master:
             branch: 'master'
@@ -34,46 +43,7 @@
             echo "Hello world from bottlenecks"
 
 - job-template:
-    name: 'bottlenecks-daily-{stream}'
 
-    # Job template for daily builders
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-
-    varsetabove: '{somevar}'
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    triggers:
-        - timed: 'H H * * *'
-
-    prebuilders:
-        - test-macro
-
-    builders:
-        - shell: |
-            echo "hello world"
-
-    postbuilders:
-        - test-macro
-
-- job-template:
     name: 'bottlenecks-verify'
 
     logrotate:
@@ -123,6 +93,12 @@
     #
     # This job's purpose is to update all the JJB
 
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 40
+        artifactDaysToKeep: -1
+        artifactNumToKeep: 5
+
     parameters:
         - project-parameter:
             project: '{project}'
@@ -152,3 +128,107 @@
         - shell: |
             echo "hello world"
 
+- job-template:
+    name: 'bottlenecks-daily-{installer}-{pod}-{stream}'
+
+    disabled: false
+
+    node: '{node}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{pod}-parameters'
+        - string:
+            name: POD_NAME
+            default: '{pod}'
+            description: "POD where the job runs"
+        - string:
+            name: INSTALLER_TYPE
+            default: '{installer_type}'
+            description: "Installer name that is used for deployment."
+        - string:
+            name: INSTALLER_IP
+            default: '{installer_ip}'
+            description: "Installer IP."
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: master
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    triggers:
+        - 'bottlenecks-trigger-{pod}'
+
+    builders:
+        - 'bottlenecks-fetch-os-creds'
+        - 'run-rubbos-env-preparation'
+        - 'run-rubbos-tools-installation'
+        - 'rubbos-exec'
+
+    publishers:
+        - email:
+            recipients: hongbo.tianhongbo@huawei.com matthew.lijun@huawei.com
+
+###################################
+#builders for bottlenecks project
+###################################
+- builder:
+    name: bottlenecks-fetch-os-creds
+    builders:
+        - shell:
+            !include-raw ../../utils/fetch_os_creds.sh
+
+- builder:
+    name: run-rubbos-env-preparation
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+
+            echo "Bottlenecks: export openstack parameters before rubbos running"
+
+            cd $WORKSPACE
+            ./rubbos/rubbos_scripts/1-1-1/scripts/env_preparation.sh
+
+- builder:
+    name: run-rubbos-tools-installation
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+
+            echo "Bottlenecks: to install tools to run rubbos"
+
+            cd $WORKSPACE
+            ./rubbos/rubbos_scripts/1-1-1/scripts/run.sh
+
+- builder:
+    name: rubbos-exec
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+
+            echo "Bottlenecks: rubbos execution"
+
+            cd $WORKSPACE
+            cd ./rubbos/rubbos_scripts/1-1-1
+            source set_bottlenecks_rubbos_env.sh
+            ssh $CONTROL_HOST
+            ./tmp/CONTROL_rubbos_exec.sh
+
+#######################
+#trigger macros
+#######################
+- trigger:
+    name: 'bottlenecks-trigger-lf'
+    triggers:
+        - timed: '@midnight'
