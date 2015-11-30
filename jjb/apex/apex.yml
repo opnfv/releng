@@ -176,8 +176,8 @@
 
     builders:
         - 'apex-build'
-        - 'apex-upload-artifact'
         - 'apex-deploy-virtual'
+        - 'apex-upload-artifact'
         - 'apex-workspace-cleanup'
         - trigger-builds:
           - project: 'functest-apex-{stream}'
@@ -312,20 +312,9 @@
             echo "--------------------------------------------------------"
             echo
 
-            # check if we got the file
-            if [[ -f opnfv.properties ]]; then
-                # source the file so we get OPNFV vars
-                source opnfv.properties
-                RPM_INSTALL_PATH=build_output/$(basename $OPNFV_RPM_URL)
-            else
-                # get the latest.properties file in order to get info regarding latest artifact
-                curl -s -o $WORKSPACE/opnfv.properties http://$GS_URL/latest.properties
-                [[ -f opnfv.properties ]] || exit 1
-
-                # source the file so we get OPNFV vars
-                source opnfv.properties
-                RPM_INSTALL_PATH=$RPM_URL
-            fi
+            # source the file so we get OPNFV vars
+            source opnfv.properties
+            RPM_INSTALL_PATH=build_output/$(basename $OPNFV_RPM_URL)
 
             # update / install the new rpm
             if rpm -q opnfv-apex > /dev/null; then
