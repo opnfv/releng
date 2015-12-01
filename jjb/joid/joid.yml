@@ -1,0 +1,233 @@
+# Draft for Joid - Work still in progress
+# Author: David Blaisonneau [irc: David_Orange ]
+
+########################
+# Job configuration for joid
+########################
+- project:
+
+    name: joid
+
+    project: 'joid'
+
+    installer: 'joid'
+
+    jobs:
+        - 'joid-daily-full-{stream}'
+        - 'joid-daily-quick-{stream}'
+        - 'joid-clean-{stream}'
+        - 'joid-configure-{stream}'
+        - 'joid-prepare-{stream}'
+        - 'joid-deploy-{stream}'
+
+    pod:
+        - orange-fr-podX:
+            node: ''
+            installer_type: ''
+            installer_ip: ''
+
+    stream:
+        - master:
+            branch: 'master'
+            gs-pathname: ''
+
+########################
+# job templates
+########################
+
+- job-template:
+    name: 'joid-daily-full{stream}'
+
+    node: intel-podX
+
+    disabled: false
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - joid-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+
+    builders:
+        - trigger-builds:
+          - project: 'joid-clean-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'joid-configure-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'joid-prepare-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'joid-deploy-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'functest-joid-{stream}'
+            block: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'yardstick-joid-lf-{stream}'
+            block: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+
+    triggers:
+        - 'joid-{stream}-daily-trigger'
+
+- job-template:
+    name: 'joid-daily-full{stream}'
+
+    node: intel-podX
+
+    disabled: false
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - joid-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+
+    builders:
+        - trigger-builds:
+          - project: 'joid-clean-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'joid-configure-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'joid-deploy-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'functest-joid-{stream}'
+            block: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'yardstick-joid-lf-{stream}'
+            block: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+
+    triggers:
+        - 'joid-{stream}-daily-trigger'
+
+- job-template:
+    name: 'joid-clean-{stream}'
+
+    disabled: false
+
+    node: intel-podX
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            set +e
+            cd ~/joid/ci
+            ./clean.sh
+
+- job-template:
+    name: 'joid-configure-{stream}'
+
+    disabled: false
+
+    node: intel-podX
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            set +e
+            source ~/joid_local_config
+            cd ~/joid/ci
+            MAASCONFIG=~/joid/ci/maas/$POD_DC/$POD_NUM/deployment.yaml
+            sed -i -- 's/user: ubuntu/user: $MAAS_USER/' $MAASCONFIG
+            sed -i -- 's/password: ubuntu/user: $MAAS_PASSWORD/' $MAASCONFIG
+            ./02-maasdeploy.sh $POD_NAME
+
+- job-template:
+    name: 'joid-prepare-{stream}'
+
+    disabled: false
+
+    node: intel-podX
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            set +e
+            source ~/joid_local_config
+            cd ~/joid/ci
+            MAASCONFIG=~/joid/ci/maas/$POD_DC/$POD_NUM/deployment.yaml
+            sed -i -- 's/user: ubuntu/user: $MAAS_USER/' $MAASCONFIG
+            sed -i -- 's/password: ubuntu/user: $MAAS_PASSWORD/' $MAASCONFIG
+            ./02-maasdeploy.sh $POD_NAME
+
+- job-template:
+    name: 'joid-deploy-{stream}'
+
+    disabled: false
+
+    node: intel-podX
+
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 10
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            set +e
+            source ~/joid_local_config
+            cd ~/joid/ci
+            if [ "$JOID_MODE" == 'nonha' ]
+                then SRCBUNDLE=~/joid/ci/$JOID_SDN_CONTROLLER/juju-deployer/ovs-$JOID_SDN_CONTROLLER.yaml
+                else SRCBUNDLE=~/joid/ci/$JOID_SDN_CONTROLLER/juju-deployer/ovs-$JOID_SDN_CONTROLLER-$JOID_MODE.yaml
+                fi
+            sed -i -- 's/"admin-password": openstack/"admin-password": $OS_ADMIN_PASSWORD/' $SRCBUNDLE
+            ./deploy.sh -t $JOID_MODE -o $JOID_RELEASE -s $JOID_SDN_CONTROLLER -l $POD_NAME
+
+
+########################
+# trigger macros
+########################
+- trigger:
+    name: 'joid-master-daily-trigger'
+    triggers:
+        - timed: '0 3 * * *'
