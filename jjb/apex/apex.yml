@@ -3,6 +3,9 @@
     jobs:
         - 'apex-verify-{stream}'
         - 'apex-merge-{stream}'
+        - 'apex-build-{stream}'
+        - 'apex-virtual-deploy-{stream}'
+        - 'apex-baremetal-deploy-{stream}'
         - 'apex-daily-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
@@ -123,9 +126,9 @@
         - 'apex-workspace-cleanup'
 
 - job-template:
-    name: 'apex-daily-{stream}'
+    name: 'apex-build-{stream}'
 
-    # Job template for daily builders
+    # Job template for builds
     #
     # Required Variables:
     #     stream:    branch with - in place of / (eg. stable)
@@ -161,6 +164,82 @@
         - 'apex-deploy-virtual'
         - 'apex-upload-artifact'
         - 'apex-workspace-cleanup'
+
+- job-template:
+    name: 'apex-virtual-deploy-{stream}'
+
+    # Job template for virtual deployment
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: opnfv-jump-1
+
+    disabled: false
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+            flags: '{flags}'
+
+    builders:
+        - 'apex-deploy-virtual'
+        - 'apex-workspace-cleanup'
+
+- job-template:
+    name: 'apex-baremetal-deploy-{stream}'
+
+    # Job template for baremetal deployment
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: opnfv-jump-1
+
+    disabled: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+            flags: '{flags}'
+
+    builders:
+        - 'apex-workspace-cleanup'
+
+- job-template:
+    name: 'apex-daily-{stream}'
+
+    # Job template for daily build
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: opnfv-jump-1
+
+    disabled: false
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+            flags: '{flags}'
+
+    builders:
+        - trigger-builds:
+          - project: 'apex-build-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'apex-virtual-deploy-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'apex-baremetal-deploy-{stream}'
         - trigger-builds:
           - project: 'functest-apex-{stream}'
             block: true
@@ -175,6 +254,10 @@
 - parameter:
     name: apex-parameter
     parameters:
+        - string:
+            name: ARTIFACT_NAME
+            default: ''
+            description: "RPM Artifact name that will be appended to GS_URL to deploy a specific artifact"
         - string:
             name: BUILD_DIRECTORY
             default: $WORKSPACE/build_output
@@ -294,7 +377,27 @@
             echo "--------------------------------------------------------"
             echo
 
-            # source the file so we get OPNFV vars
+            if [[ -z "$ARTIFACT_NAME" ]]; then
+                # if artifact name is passed the pull a
+                # specific artifact from artifacts.opnfv.org
+                RPM_INSTALL_PATH=$GS_URL/$ARTIFACT_NAME
+            else
+                if [[ -f opnfv.properties ]]; then
+                    # if opnfv.properties exists then use the
+                    # local build. Source the file so we get local OPNFV vars
+                    source opnfv.properties
+                    RPM_INSTALL_PATH=build_output/$(basename $OPNFV_RPM_URL)
+                else
+                    # no opnfv.properties means use the latest from artifacts.opnfv.org
+                    # get the latest.properties to get the link to the latest artifact
+                    curl -s -o $WORKSPACE/opnfv.properties http://$GS_URL/latest.properties
+                    [[ -f opnfv.properties ]] || exit 1
+                    # source the file so we get OPNFV vars
+                    source opnfv.properties
+                    RPM_INSTALL_PATH=$RPM_URL
+                fi
+            fi
+
             source opnfv.properties
             RPM_INSTALL_PATH=build_output/$(basename $OPNFV_RPM_URL)
 
