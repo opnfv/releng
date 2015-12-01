@@ -165,7 +165,7 @@
             export PATH=$PATH:/usr/local/bin/
 
             [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
-            [[ -d docs/output ]]
+            [[ -d output ]]
 
             echo
             echo "###########################"
@@ -175,9 +175,10 @@
 
             gs_base="artifacts.opnfv.org/review"
             gs_path="$gs_base/$GERRIT_CHANGE_NUMBER"
-            local_path="docs/$GERRIT_CHANGE_NUMBER"
+            local_path="upload/$GERRIT_CHANGE_NUMBER"
 
-            mv docs/output "$local_path"
+            mkdir -p upload
+            mv output "$local_path"
             gsutil -m cp -r "$local_path" "gs://$gs_base"
 
             if gsutil ls "gs://$gs_path" | grep -e 'html$' > /dev/null 2>&1 ; then
@@ -199,7 +200,7 @@
             set -o pipefail
             export PATH=$PATH:/usr/local/bin/
 
-            [[ -d docs/output ]]
+            [[ -d output ]]
 
             echo
             echo "#####################"
@@ -213,9 +214,10 @@
                 gs_base="artifacts.opnfv.org/$GERRIT_PROJECT/$GERRIT_BRANCH"
             fi
             gs_path="$gs_base/docs"
-            local_path="docs/docs"
+            local_path="upload/docs"
 
-            mv docs/output "$local_path"
+            mkdir -p upload
+            mv output "$local_path"
             gsutil -m cp -r "$local_path" "gs://$gs_base"
 
             if gsutil ls "gs://$gs_path" | grep -e 'html$' > /dev/null 2>&1 ; then
