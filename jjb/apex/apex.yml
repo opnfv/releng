@@ -172,7 +172,7 @@
         - 'apex-workspace-cleanup'
 
 - job-template:
-    name: 'apex-virtual-deploy-{stream}'
+    name: 'apex-deploy-virtual-{stream}'
 
     # Job template for virtual deployment
     #
@@ -195,7 +195,7 @@
         - 'apex-workspace-cleanup'
 
 - job-template:
-    name: 'apex-baremetal-deploy-{stream}'
+    name: 'apex-deploy-baremetal-{stream}'
 
     # Job template for baremetal deployment
     #
@@ -246,11 +246,11 @@
             git-revision: true
             block: true
         - trigger-builds:
-          - project: 'apex-virtual-deploy-{stream}'
+          - project: 'apex-deploy-virtual-{stream}'
             git-revision: true
             block: true
         - trigger-builds:
-          - project: 'apex-baremetal-deploy-{stream}'
+          - project: 'apex-deploy-baremetal-{stream}'
         - trigger-builds:
           - project: 'functest-apex-{stream}'
             block: true
