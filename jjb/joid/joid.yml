@@ -1,0 +1,283 @@
+# Draft for Joid - Work in progress
+# Author: David Blaisonneau [irc: David_Orange ]
+
+########################
+# Job configuration for joid
+########################
+- project:
+
+    name: joid
+
+    project: 'joid'
+
+    installer: 'joid'
+
+    jobs:
+        - 'joid-daily-full-{pod}-{stream}'
+        - 'joid-daily-{pod}-{stream}'
+        - 'joid-clean-{pod}-{stream}'
+        - 'joid-destroy-vm-{pod}-{stream}'
+        - 'joid-gitclone-{pod}-{stream}'
+        - 'joid-configure-{pod}-{stream}'
+        - 'joid-recoverjujuenv-{pod}-{stream}'
+        - 'joid-prepare-{pod}-{stream}'
+        - 'joid-deploy-{pod}-{stream}'
+        - 'joid-adminopenrc-{pod}-{stream}'
+
+    pod:
+        - orange-fr-pod2
+
+    stream:
+        - master:
+            branch: 'master'
+            gs-pathname: ''
+
+########################
+# job templates
+########################
+
+# Job: Erase all, including KVM, and deploy JOID
+- job-template:
+    name: 'joid-daily-full-{pod}-{stream}'
+
+    node: {pod}
+
+    disabled: true
+
+    parameters:
+        - joid-parameters
+
+    builders:
+        - trigger-builds:
+          - project: 'joid-clean-{pod}-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'joid-destroy-vm-{pod}-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'joid-gitclone-{pod}-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'joid-configure-{pod}-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'joid-prepare-{pod}-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'joid-deploy-{pod}-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'joid-adminopenrc-{pod}-{stream}'
+            git-revision: true
+            block: true
+
+
+# Job: Erase juju config, and deploy JOID
+- job-template:
+    name: 'joid-daily-{pod}-{stream}'
+
+    node: {pod}
+
+    disabled: true
+
+    parameters:
+        - joid-parameters
+
+    builders:
+        - trigger-builds:
+          - project: 'joid-clean-{pod}-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'joid-gitclone-{pod}-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'joid-recoverjujuenv-{pod}-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'joid-configure-{pod}-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'joid-deploy-{pod}-{stream}'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'joid-adminopenrc-{pod}-{stream}'
+            git-revision: true
+            block: true
+
+#     triggers:
+#         - 'joid-{pod}-{stream}-daily-trigger'
+
+# Job: Release MAAS nodes and juju config
+- job-template:
+    name: 'joid-clean-{pod}-{stream}'
+
+    disabled: true
+
+    parameters:
+        - joid-parameters
+
+    node: {pod}
+
+    builders:
+        - shell:
+            !include-raw ./joid-clean.sh
+
+# Destroy MAAS and Juju Bootstrap KVMs
+- job-template:
+    name: 'joid-destroy-vm-{pod}-{stream}'
+
+    disabled: true
+
+    parameters:
+        - joid-parameters
+
+    node: {pod}
+
+    builders:
+        - shell:
+            !include-raw ./joid-destroy-vm.sh
+
+# Git clone last joid repo
+- job-template:
+    name: 'joid-gitclone-{pod}-{stream}'
+
+    disabled: true
+
+    parameters:
+        - joid-parameters
+
+    node: {pod}
+
+    builders:
+        - shell:
+            !include-raw ./joid-gitclone.sh
+
+# Set local parameters on the new config
+- job-template:
+    name: 'joid-configure-{pod}-{stream}'
+
+    disabled: true
+
+    parameters:
+        - joid-parameters
+
+    node: {pod}
+
+    builders:
+        - shell:
+            !include-raw ./joid-configure.sh
+
+# Recover MAAS config
+- job-template:
+    name: 'joid-recoverjujuenv-{pod}-{stream}'
+
+    disabled: true
+
+    parameters:
+        - joid-parameters
+
+    node: {pod}
+
+    builders:
+        - shell:
+            !include-raw ./joid-recoverjujuenv.sh
+
+# Create MAAS and juju Boostrap
+- job-template:
+    name: 'joid-prepare-{pod}-{stream}'
+
+    disabled: true
+
+    parameters:
+        - joid-parameters
+
+    node: {pod}
+
+    builders:
+        - shell:
+            !include-raw ./joid-prepare.sh
+
+# Deploy JOID
+- job-template:
+    name: 'joid-deploy-{pod}-{stream}'
+
+    disabled: true
+
+    parameters:
+        - joid-parameters
+
+    node: {pod}
+
+    builders:
+        - shell:
+            !include-raw ./joid-deploy.sh
+
+# Deploy JOID
+- job-template:
+    name: 'joid-adminopenrc-{pod}-{stream}'
+
+    disabled: true
+
+    parameters:
+        - joid-parameters
+
+    node: {pod}
+
+    builders:
+        - shell:
+            !include-raw ./joid-setadminrc.sh
+
+
+########################
+# parameters macros
+########################
+- parameter:
+    name: joid-parameters
+    parameters:
+        - string:
+            name: INSTALLER
+            default: '{installer}'
+            description: "Installer to use."
+        - string:
+            name: JOID_MODE
+            default: 'ha'
+            description: "High availability mode: <ha|nonha|tip>"
+        - string:
+            name: JOID_OS_RELEASE
+            default: 'liberty'
+            description: "Openstack release: <juno|liberty>"
+        - string:
+            name: JOID_SDN_CONTROLLER
+            default: 'odl'
+            description: "Joid SDN controller: <odl|opencontrail|onos|none>"
+        - string:
+            name: JOID_LOCAL_CONFIG_FOLDER
+            default: '~/joid_config'
+            description: "Joid local pod config"
+        - string:
+            name: JOID_ADMIN_OPENRC
+            default: '~/joid_config/admin-openrc'
+            description: "Joid local pod config"
+
+########################
+# trigger macros
+########################
+# No trigger macro until we get a pod to test the installer (orange-pod2 must stay
+# stable for 4 to 6 weeks slots
+
+# - trigger:
+#     name: 'joid-test-daily-trigger'
+#     triggers:
+#         - timed: '0 3 * * *'
+#
