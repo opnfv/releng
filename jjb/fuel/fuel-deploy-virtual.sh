@@ -18,7 +18,7 @@ chmod a+x $HOME
 chmod a+x $TMPDIR
 
 # set CONFDIR, BRIDGE
-CONFDIR=$WORKSPACE/deploy/templates/virtual_environment/conf
+CONFDIR=$WORKSPACE/deploy/templates/virtual_environment_noha/conf
 BRIDGE=pxebr
 
 # log info to console
