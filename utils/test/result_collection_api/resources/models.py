@@ -84,7 +84,6 @@ class TestProject:
             "name": self.name,
             "description": self.description,
             "creation_date": str(self.creation_date),
-            "test_cases": test_cases
         }
 
 
