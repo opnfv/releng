@@ -477,10 +477,10 @@
             envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP}"
             docker pull opnfv/functest:latest_stable
             echo "Functest: Running docker run command: docker run -i -e $envs opnfv/functest /bin/bash &"
-            docker run -i -e $envs opnfv/functest /bin/bash &
+            docker run -i -e $envs opnfv/functest:latest_stable /bin/bash &
             docker ps -a
             sleep 5
-            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
+            container_id=$(docker ps | grep 'opnfv/functest:latest_stable' | awk '{print $1}' | head -1)
             echo "Container ID=${container_id}"
             if [ -z ${container_id} ]; then
                 echo "Cannot find opnfv/functest container ID ${container_id}. Please check if it is existing."
@@ -491,7 +491,7 @@
             docker start ${container_id}
             sleep 5
             docker ps
-            if [ $(docker ps | grep opnfv/functest | wc -l) == 0 ]; then
+            if [ $(docker ps | grep 'opnfv/functest:latest_stable' | wc -l) == 0 ]; then
                 echo "The container opnfv/functest with ID=${container_id} has not been properly started. Exiting..."
                 exit 1
             fi
