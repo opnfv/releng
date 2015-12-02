@@ -267,7 +267,7 @@
     parameters:
         - string:
             name: ARTIFACT_NAME
-            default: ''
+            default: 'latest'
             description: "RPM Artifact name that will be appended to GS_URL to deploy a specific artifact"
         - string:
             name: BUILD_DIRECTORY
@@ -388,7 +388,7 @@
             echo "--------------------------------------------------------"
             echo
 
-            if [[ -z "$ARTIFACT_NAME" ]]; then
+            if [[ ! "$ARTIFACT_NAME" == "latest" ]]; then
                 # if artifact name is passed the pull a
                 # specific artifact from artifacts.opnfv.org
                 RPM_INSTALL_PATH=$GS_URL/$ARTIFACT_NAME
