@@ -476,8 +476,8 @@
             echo "Functest: Start Docker and prepare environment"
             envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP}"
             docker pull opnfv/functest:latest_stable
-            echo "Functest: Running docker run command: docker run -i -e $envs opnfv/functest /bin/bash &"
-            docker run -i -e $envs opnfv/functest:latest_stable /bin/bash &
+            echo "Functest: Running docker run command: docker run -i -e $envs opnfv/functest:latest_stable /bin/bash &"
+            docker run -id -e $envs opnfv/functest:latest_stable /bin/bash
             docker ps -a
             sleep 5
             container_id=$(docker ps | grep 'opnfv/functest:latest_stable' | awk '{print $1}' | head -1)
