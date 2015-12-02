@@ -164,9 +164,6 @@
             refspec: ''
             branch: '{branch}'
 
-    triggers:
-        - 'apex-{stream}'
-
     builders:
         - 'apex-build'
         - 'apex-deploy-virtual'
@@ -242,6 +239,10 @@
             use-build-blocker: true
             blocking-jobs:
                 - "apex-daily.*"
+
+    triggers:
+        - 'apex-{stream}'
+
     builders:
         - trigger-builds:
           - project: 'apex-build-{stream}'
