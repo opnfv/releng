@@ -16,7 +16,6 @@ pygments_style = 'sphinx'
 html_use_index = False
 numfig = True
 html_logo = 'opnfv-logo.png'
-html_theme = 'sphinx_rtd_theme'
 
 latex_domain_indices = False
 latex_logo = 'opnfv-logo.png'
