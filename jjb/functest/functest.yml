@@ -18,10 +18,15 @@
             installer_type: 'apex'
             installer_ip: '192.168.X.X'
     pod:
-        - orange-build:
-            node: 'orange-build'
-            installer_type: 'foreman'
+        - orange-test1:
+            node: 'orange-test1'
+            installer_type: 'fuel'
             installer_ip: '172.30.10.73'
+
+        - orange-fr-pod2:
+            node: 'orange-fr-pod2'
+            installer_type: 'joid'
+            installer_ip: '127.0.0.1'
 
     jobs:
         - 'set-functest-env-{pod}'
@@ -412,12 +417,24 @@
             description: "Directory where the Functest repository is cloned"
 
 - parameter:
-    name: orange-build
+    name: orange-test1
     parameters:
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: "Override GIT_BASE"
+
+- parameter:
+    name: orange-fr-pod2
+    parameters:
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Override GIT_BASE"
+        - string:
+            name: LAB_CONFIG
+            default: "/home/opnfv/repos/functest"
+            description: "Openstack credentials on the dev lab"
 
 - parameter:
     name: opnfv-jump-1
@@ -474,10 +491,16 @@
                     |sed 's/.*192/192/g' | sed 's/\ in.*//g')
             fi
             echo "Functest: Start Docker and prepare environment"
-            envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP}"
+            envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} -e NODE_NAME=${NODE_NAME}"
+            labconfig = ""
+            # If production lab then creds may be retrieved dynamically
+            # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
+            if [ -n "${LAB_CONFIG}" ]; then
+                labconfig="-v ${LAB_CONFIG}:/home/opnfv/functest/conf/openstack.creds"
+            fi
             docker pull opnfv/functest:latest_stable
-            echo "Functest: Running docker run command: docker run -i -e $envs opnfv/functest:latest_stable /bin/bash &"
-            docker run -id -e $envs opnfv/functest:latest_stable /bin/bash
+            echo "Functest: Running docker run command: docker run -i -e $envs ${labconfig} opnfv/functest:latest_stable /bin/bash &"
+            docker run -id -e $envs ${labconfig} opnfv/functest:latest_stable /bin/bash
             docker ps -a
             sleep 5
             container_id=$(docker ps | grep 'opnfv/functest:latest_stable' | awk '{print $1}' | head -1)
