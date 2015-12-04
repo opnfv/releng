@@ -32,12 +32,6 @@
 - job-template:
     name: 'bottlenecks-test'
 
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
-
     builders:
         - shell: |
             echo "Hello world from bottlenecks"
@@ -45,12 +39,6 @@
 - job-template:
 
     name: 'bottlenecks-verify'
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
 
     parameters:
         - project-parameter:
@@ -92,12 +80,6 @@
     # builder-merge job to run JJB update
     #
     # This job's purpose is to update all the JJB
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 40
-        artifactDaysToKeep: -1
-        artifactNumToKeep: 5
 
     parameters:
         - project-parameter:
@@ -157,12 +139,6 @@
             credentials-id: '{ssh-credentials}'
             refspec: ''
             branch: '{branch}'
-
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 10
-        artifactDaysToKeep: -1
-        artifactNumToKeep: -1
 
     triggers:
         - 'bottlenecks-trigger-{pod}'
