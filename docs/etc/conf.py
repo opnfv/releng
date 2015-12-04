@@ -9,6 +9,8 @@ before the document builder jobs ('opnfv-docs-verify' and 'opnfv-docs-merge').
 See https://wiki.opnfv.org/documentation/tools .
 '''
 
+extensions = ['sphinxcontrib.httpdomain']
+
 needs_sphinx = '1.3'
 master_doc = 'index'
 pygments_style = 'sphinx'
