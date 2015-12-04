@@ -496,14 +496,14 @@
             fi
             echo "Functest: Start Docker and prepare environment"
             envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} -e NODE_NAME=${NODE_NAME}"
-            labconfig = ""
+            labconfig=""
             # If production lab then creds may be retrieved dynamically
             # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
             if [ -n "${LAB_CONFIG}" ]; then
                 labconfig="-v ${LAB_CONFIG}:/home/opnfv/functest/conf/openstack.creds"
             fi
             docker pull opnfv/functest:latest_stable
-            cmd = "docker run -id -e $envs ${labconfig} opnfv/functest:latest_stable /bin/bash"
+            cmd="docker run -id -e $envs ${labconfig} opnfv/functest:latest_stable /bin/bash"
             echo "Functest: Running docker run command: ${cmd}"
             ${cmd}
             docker ps -a
