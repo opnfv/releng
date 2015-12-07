@@ -100,30 +100,13 @@ if [ "$installer_type" == "fuel" ]; then
     #NOTE: this is super ugly sed 's/v1\/.*/v1\//'OS_AUTH_URL
     # but sometimes the output of endpoint-list is like this: http://172.30.9.70:8004/v1/%(tenant_id)s
 
-
-elif [ "$installer_type" == "foreman" ]; then
-    #ip_foreman="172.30.10.73"
-    controller="oscontroller1.opnfv.com"
+elif [ "$installer_type" == "apex" ]; then
     verify_connectivity $installer_ip
 
-    # Check if controller is alive (here is more difficult to get the ip from a command like "fuel node")
-    sshpass -p vagrant ssh $ssh_options root@${installer_ip} \
-        "sshpass -p Op3nStack ssh $ssh_options root@${controller} 'ls'" &> /dev/null
-    if [ $? -ne 0 ]; then
-        error "The controller ${controller} is not up. Please check that the POD is correctly deployed."
-    fi
-
-    info "Fetching openrc from a Foreman Controller '${controller}'..."
-    sshpass -p vagrant ssh $ssh_options root@${installer_ip} \
-        "sshpass -p Op3nStack scp $ssh_options root@${controller}:~/keystonerc_admin ." &> /dev/null
-    sshpass -p vagrant scp $ssh_options root@${installer_ip}:~/keystonerc_admin $dest_path &> /dev/null
-
-    #This file contains the mgmt keystone API, we need the public one for our rc file
-    admin_ip=$(cat $dest_path | grep "OS_AUTH_URL" | sed 's/^.*\=//' | sed "s/^\([\"']\)\(.*\)\1\$/\2/g" | sed s'/\/$//')
-    public_ip=$(sshpass -p vagrant ssh $ssh_options root@${installer_ip} \
-        "sshpass -p Op3nStack ssh $ssh_options root@${controller} \
-        'source keystonerc_admin;keystone endpoint-list'" \
-        | grep $admin_ip | sed 's/ /\n/g' | grep ^http | head -1) &> /dev/null
+    # The credentials file is located in the Instack VM (192.0.2.1)
+    # NOTE: This might change for bare metal deployments
+    info "Fetching rc file from Instack VM $installer_ip..."
+    sudo scp root@$installer_ip:/home/stack/overcloudrc $dest_path &> /dev/null
 
 elif [ "$installer_type" == "compass" ]; then
     verify_connectivity $installer_ip
@@ -150,18 +133,46 @@ elif [ "$installer_type" == "compass" ]; then
         | grep $admin_ip | sed 's/ /\n/g' | grep ^http | head -1)
     info "public_ip: $public_ip"
 
+
+elif [ "$installer_type" == "foreman" ]; then
+    #ip_foreman="172.30.10.73"
+    controller="oscontroller1.opnfv.com"
+    verify_connectivity $installer_ip
+
+    # Check if controller is alive (here is more difficult to get the ip from a command like "fuel node")
+    sshpass -p vagrant ssh $ssh_options root@${installer_ip} \
+        "sshpass -p Op3nStack ssh $ssh_options root@${controller} 'ls'" &> /dev/null
+    if [ $? -ne 0 ]; then
+        error "The controller ${controller} is not up. Please check that the POD is correctly deployed."
+    fi
+
+    info "Fetching openrc from a Foreman Controller '${controller}'..."
+    sshpass -p vagrant ssh $ssh_options root@${installer_ip} \
+        "sshpass -p Op3nStack scp $ssh_options root@${controller}:~/keystonerc_admin ." &> /dev/null
+    sshpass -p vagrant scp $ssh_options root@${installer_ip}:~/keystonerc_admin $dest_path &> /dev/null
+
+    #This file contains the mgmt keystone API, we need the public one for our rc file
+    admin_ip=$(cat $dest_path | grep "OS_AUTH_URL" | sed 's/^.*\=//' | sed "s/^\([\"']\)\(.*\)\1\$/\2/g" | sed s'/\/$//')
+    public_ip=$(sshpass -p vagrant ssh $ssh_options root@${installer_ip} \
+        "sshpass -p Op3nStack ssh $ssh_options root@${controller} \
+        'source keystonerc_admin;keystone endpoint-list'" \
+        | grep $admin_ip | sed 's/ /\n/g' | grep ^http | head -1) &> /dev/null
+
 else
     error "Installer $installer is not supported by this script"
 fi
 
 
-
-if [ "$public_ip" == "" ]; then
-    error "Cannot retrieve the public IP from keystone"
+if [ ! -f $dest_path ]; then
+    error "There has been an error retrieving the credentials"
 fi
 
-info "Keystone public IP is $public_ip"
-sed -i  "/OS_AUTH_URL/c\export OS_AUTH_URL=\'$public_ip'" $dest_path
+if [ "$public_ip" != "" ]; then
+    info "Exchanging keystone public IP in rc file to $public_ip"
+    sed -i  "/OS_AUTH_URL/c\export OS_AUTH_URL=\'$public_ip'" $dest_path
+fi
+
+
 
 echo "-------- Credentials: --------"
 cat $dest_path
