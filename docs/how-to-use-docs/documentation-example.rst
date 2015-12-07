@@ -170,3 +170,18 @@ change. Then, the merge job will upload latest build documents to
 ``http://artifacts.opnfv.org/<Project Name>/docs/`` .
 You can put links in your project wiki page, so that everyone can see the
 latest document always.
+
+Sphinx Extensions
+=================
+
+You can see available sphinx extension(s) in `requirements.txt`_.
+
+.. _requirements.txt:
+    https://gerrit.opnfv.org/gerrit/gitweb?p=releng.git;a=blob;f=docs/etc/requirements.txt;
+
+You can use other sphinx extensions to improve your documents.
+To share such tips, we encourage you to enable the extension in OPNFV infra
+by asking releng and opnfvdocs teams to add new sphinx extension via email
+or gerrit (proposing change in `conf.py`_ and `requirements.txt`_).
+After quick sanity checks, we'll install python package (if needed) and make
+it available in OPNFV document build.
