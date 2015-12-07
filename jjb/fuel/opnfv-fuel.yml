@@ -1,0 +1,85 @@
+########################
+# Job configuration for fuel
+########################
+- project:
+
+    name: 'opnfv-fuel'
+
+    installer: 'fuel'
+
+    controller:
+        - 'opencontrail'
+        - 'opendaylight'
+        - 'onos'
+
+    pod: 'lf-pod2'
+
+    stream:
+        - master:
+            branch: 'master'
+            gs-pathname: ''
+
+    jobs:
+        - 'opnfv-fuel-{controller}-daily-{stream}'
+        - 'opnfv-fuel-daily-deploy-{stream}'
+
+########################
+# job templates
+########################
+- job-template:
+    name: 'opnfv-fuel-{controller}-daily-{stream}'
+
+    disabled: true
+
+    concurrent: false
+
+    node: ericsson-build
+
+    parameters:
+        - project-parameter:
+            project: '{installer}'
+        - '{installer}-defaults':
+            controller: '{controller}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - trigger-builds:
+          - project: 'opnfv-fuel-daily-deploy-{stream}'
+            git-revision: true
+            block: true
+            predefined-parameters:
+                CONTROLLER='{controller}'
+
+- job-template:
+    name: 'opnfv-fuel-daily-deploy-{stream}'
+
+    disabled: true
+
+    concurrent: false
+
+    wrappers:
+        - build-name:
+            name: '{installer}-$CONTROLLER'
+
+    parameters:
+        - project-parameter:
+            project: '{installer}'
+        - '{pod}-defaults'
+        - '{installer}-defaults'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Hello World from OPNFV $INSTALLER_NAME"
+            echo "Running $INSTALLER_NAME with controller $CONTROLLER"
