@@ -1,0 +1,49 @@
+########################
+# Job configuration for compass4nfv
+########################
+- project:
+
+    name: 'compass4nfv'
+
+    controller:
+        - 'opencontrail'
+        - 'opendaylight'
+        - 'onos'
+
+    pod: 'huawei-sc-pod1'
+
+    stream:
+        - master:
+            branch: 'master'
+            gs-pathname: ''
+
+    jobs:
+        - 'opnfv-{name}-{controller}-daily-{stream}'
+
+########################
+# job templates
+########################
+- job-template:
+    name: 'opnfv-{name}-{controller}-daily-{stream}'
+
+    disabled: true
+
+    concurrent: false
+
+    parameters:
+        - project-parameter:
+            project: '{name}'
+        - '{pod}-defaults'
+        - '{name}-defaults':
+            controller: '{controller}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Hello World from OPNFV $INSTALLER_NAME"
