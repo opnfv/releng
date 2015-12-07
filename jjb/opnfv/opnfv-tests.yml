@@ -1,0 +1,85 @@
+########################################################################
+# This file list the dependencies of the tests
+# It is used by the test projects to know if the test can be run or not
+#
+#
+# it is used to managed the complexity of the possible combination
+# ref: https://etherpad.opnfv.org/p/brahmaputra_release_testing
+#
+#
+# 17 projects have been declared for Brahmaputra (D Milestone)
+# 89 testcases are associated with these 17 projects
+#
+# constraints may be declared at the testcase or the test project level
+#
+# By default we consider that all the tests can be run on any configuration
+#
+# we defined 3 constraints
+# - installer (e.g. my test can be run only with installer Compass)
+# possible values: apex, compass, fuel, joid
+#
+# - controller (e.g. my test can be done only with controller OpenContrail)
+# possible values: none, odl, onos, opencontrail
+#
+# - options (ovs, kvm, QEMU, proc) (my test is only possible with OVS 2.3.2)
+# possible values:
+# ovs: ovs2.4, ovsX
+# kvm:
+# qemu:
+# proc: arm
+#
+#######################################################################
+armband:
+    options: arm
+
+#bottlenecks:
+
+#copper:
+
+#doctor:
+
+# For functest, most of the test cases are agnostic
+# vPing, Tempest, Rally, vIMS shall be runnable on any OPNFV solution
+functest:
+    cases:
+        odl:
+            controller: odl
+        onos:
+            controller: onos
+        onos-ovsdb:
+            controller: onos
+
+#ha:
+
+#ipvsix:
+
+#kvmfornfv:
+
+ovno:
+    controller: opencontrail
+
+ovsnfv:
+    options: ovsX
+
+#promise:
+
+#qtip:
+
+sdnvpn:
+    options: ovs2.4
+
+    cases:
+        opnfv-yardstick-tc026-sdnvpn:
+            controller: none
+        odl_vpn_service-tests:
+            controller: odl
+        openstack-neutron-bgpvpn-api-extension-tests:
+            controller: none
+
+#sfc:
+
+#vnfgraph:
+
+#vsperf:
+
+#yardstick:
