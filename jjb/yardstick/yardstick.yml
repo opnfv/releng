@@ -4,17 +4,8 @@
     project: 'yardstick'
 
     pod:
-        - lf:
-            node: 'opnfv-jump-2'
-            installer_type: 'fuel'
-            installer_ip: '10.20.0.2'
-        - ericsson:
-            node: 'yardstick-pod'
-            installer_type: 'fuel'
-            installer_ip: '10.20.0.2'
-
-    installer:
-        - fuel
+        - lf-pod2
+        - ericsson-yardstick-pod
 
     jobs:
         - 'yardstick-{installer}-{pod}-{stream}'
@@ -146,24 +137,13 @@
 
     disabled: false
 
-    node: '{node}'
+    defaults: '{pod}-defaults'
 
     parameters:
         - project-parameter:
             project: '{project}'
-        - '{pod}-parameters'
-        - string:
-            name: POD_NAME
-            default: '{pod}'
-            description: "POD where the job runs"
-        - string:
-            name: INSTALLER_TYPE
-            default: '{installer_type}'
-            description: "Installer name that is used for deployment."
-        - string:
-            name: INSTALLER_IP
-            default: '{installer_ip}'
-            description: "Installer IP."
+        - '{pod}-params'
+        - '{installer}-params'
 
     scm:
         - git-scm:
@@ -225,26 +205,6 @@
     builders:
         - shell:
             !include-raw ../../utils/fetch_os_creds.sh
-
-########################
-# parameter macros
-########################
-- parameter:
-    name: 'ericsson-parameters'
-    parameters:
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
-
-- parameter:
-    name: 'lf-parameters'
-    parameters:
-        - string:
-            name: GIT_BASE
-            default: ssh://gerrit.opnfv.org:29418/$PROJECT
-            description: "URL for LF POD"
-
 ########################
 # trigger macros
 ########################
