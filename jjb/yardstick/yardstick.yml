@@ -189,13 +189,27 @@
             echo "Yardstick: Run benchmark test suites ..."
 
             # Remove old containers
-            docker ps | grep opnfv/yardstick-ci |\
+            docker ps | grep opnfv/yardstick |\
                 awk '{print $1}' | xargs -r docker stop &>/dev/null
-            docker ps -a | grep opnfv/yardstick-ci |\
+            docker ps -a | grep opnfv/yardstick |\
                 awk '{print $1}' | xargs -r  docker rm &>/dev/null
 
+            # Remove existing images if exist
+            if [[ ! -z $(docker images | grep opnfv/yardstick) ]]; then
+                echo "Docker images to remove:"
+                docker images | head -1 && docker images | grep opnfv/yardstick
+                image_tags=($(docker images | grep opnfv/yardstick | awk '{print $2}'))
+                for tag in "${image_tags[@]}"; do
+                    echo "Removing docker image opnfv/yardstick:$tag..."
+                    docker rmi opnfv/yardstick:$tag
+                done
+            fi
+
             # Make sure we have latest image
-            docker pull opnfv/yardstick-ci
+            docker pull opnfv/yardstick
+
+            # Test suites to run
+            TEST_SUITES=opnfv_${POD_NAME}_daily.yaml
 
             docker run \
                --privileged=true \
@@ -203,8 +217,11 @@
                 -t \
                 -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
                 -e "INSTALLER_IP=${INSTALLER_IP}" \
-                opnfv/yardstick-ci \
-                run_benchmarks
+                -e "POD_NAME=${POD_NAME}" \
+                -e "EXTERNAL_NETWORK=net04_ext" \
+                opnfv/yardstick \
+                run_tests.sh \
+                $TEST_SUITES
 
             echo "Yardstick: done!"
 
