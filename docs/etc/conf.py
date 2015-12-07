@@ -6,7 +6,13 @@ directory (e.g. docs/how-to-use-docs/conf.py). If there is no 'conf.py'
 in the document directory, this file will be copied to that directory
 before the document builder jobs ('opnfv-docs-verify' and 'opnfv-docs-merge').
 
-See https://wiki.opnfv.org/documentation/tools .
+You may need python package installation for new sphinx extension.
+Install python package with 'pip' in your machine and add the extension to
+the 'extensions' list below to test the documentation build locally.
+If you feel that your extensions would be useful for other projects too,
+we encourage you to propose a change in the releng repository.
+
+For further guidance see the https://wiki.opnfv.org/documentation/tools page.
 '''
 
 extensions = ['sphinxcontrib.httpdomain']

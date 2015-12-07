@@ -87,9 +87,9 @@ If you need to change the default configuration for document build, create
 new conf.py in the document directory (e.g. 'docs/how-to-use-docs/conf.py')
 that will be used in build process instead of default for OPNFV document
 build. The OPNFV default configuration can be found in releng repo
-(see `conf.py`_).
+(see `docs/etc/conf.py`_).
 
-.. _conf.py:
+.. _docs/etc/conf.py:
     https://gerrit.opnfv.org/gerrit/gitweb?p=releng.git;a=blob;f=docs/etc/conf.py;
 
 In the build process, the following parameters are automatically added if they
@@ -170,3 +170,18 @@ change. Then, the merge job will upload latest build documents to
 ``http://artifacts.opnfv.org/<Project Name>/docs/`` .
 You can put links in your project wiki page, so that everyone can see the
 latest document always.
+
+Sphinx Extensions
+=================
+
+You can see available sphinx extension(s) in `docs/etc/requirements.txt`_.
+
+.. _docs/etc/requirements.txt:
+    https://gerrit.opnfv.org/gerrit/gitweb?p=releng.git;a=blob;f=docs/etc/requirements.txt;
+
+You can use other sphinx extensions to improve your documents.
+To share such tips, we encourage you to enable the extension in OPNFV infra
+by asking releng and opnfvdocs teams to add new sphinx extension via gerrit
+(proposing change in `docs/etc/conf.py`_ and `docs/etc/requirements.txt`_).
+After quick sanity checks, we'll install python package (if needed) and make
+it available in OPNFV document build.
