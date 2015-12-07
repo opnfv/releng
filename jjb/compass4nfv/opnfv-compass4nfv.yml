@@ -1,0 +1,84 @@
+########################
+# Job configuration for compass4nfv
+########################
+- project:
+
+    name: 'opnfv-compass4nfv'
+
+    installer: 'compass4nfv'
+
+    controller:
+        - 'opencontrail'
+        - 'opendaylight'
+        - 'onos'
+
+    pod: 'huawei-sc-pod1'
+
+    stream:
+        - master:
+            branch: 'master'
+            gs-pathname: ''
+
+    jobs:
+        - 'opnfv-compass4nfv-{controller}-daily-{stream}'
+        - 'opnfv-compass4nfv-daily-deploy-{stream}'
+
+########################
+# job templates
+########################
+- job-template:
+    name: 'opnfv-compass4nfv-{controller}-daily-{stream}'
+
+    disabled: true
+
+    concurrent: false
+
+    parameters:
+        - project-parameter:
+            project: '{installer}'
+        - '{pod}-defaults'
+        - '{installer}-defaults':
+            controller: '{controller}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - trigger-builds:
+          - project: 'opnfv-compass4nfv-daily-deploy-{stream}'
+            git-revision: true
+            block: true
+            predefined-parameters:
+                CONTROLLER='{controller}'
+
+- job-template:
+    name: 'opnfv-compass4nfv-daily-deploy-{stream}'
+
+    disabled: true
+
+    concurrent: false
+
+    wrappers:
+        - build-name:
+            name: '{installer} $CONTROLLER'
+
+    parameters:
+        - project-parameter:
+            project: '{installer}'
+        - '{pod}-defaults'
+        - '{installer}-defaults'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Hello World from OPNFV $INSTALLER_NAME"
+            echo "Running $INSTALLER_NAME with controller $CONTROLLER"

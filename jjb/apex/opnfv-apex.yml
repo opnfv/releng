@@ -1,0 +1,84 @@
+########################
+# Job configuration for apex
+########################
+- project:
+
+    name: 'opnfv-apex'
+
+    installer: 'apex'
+
+    controller:
+        - 'opencontrail'
+        - 'opendaylight'
+        - 'onos'
+
+    pod: 'intel-pod2'
+
+    stream:
+        - master:
+            branch: 'master'
+            gs-pathname: ''
+
+    jobs:
+        - 'opnfv-apex-{controller}-daily-{stream}'
+        - 'opnfv-apex-daily-deploy-{stream}'
+
+########################
+# job templates
+########################
+- job-template:
+    name: 'opnfv-apex-{controller}-daily-{stream}'
+
+    disabled: true
+
+    concurrent: false
+
+    parameters:
+        - project-parameter:
+            project: '{installer}'
+        - '{pod}-defaults'
+        - '{installer}-defaults':
+            controller: '{controller}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - trigger-builds:
+          - project: 'opnfv-apex-daily-deploy-{stream}'
+            git-revision: true
+            block: true
+            predefined-parameters:
+                CONTROLLER='{controller}'
+
+- job-template:
+    name: 'opnfv-apex-daily-deploy-{stream}'
+
+    disabled: true
+
+    concurrent: false
+
+    wrappers:
+        - build-name:
+            name: '{installer} $CONTROLLER'
+
+    parameters:
+        - project-parameter:
+            project: '{installer}'
+        - '{pod}-defaults'
+        - '{installer}-defaults'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Hello World from OPNFV $INSTALLER_NAME"
+            echo "Running $INSTALLER_NAME with controller $CONTROLLER"
