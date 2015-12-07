@@ -1,0 +1,51 @@
+########################
+# Job configuration for joid
+########################
+- project:
+
+    name: 'opnfv-joid'
+
+    installer: 'joid'
+
+    controller:
+        - 'opencontrail'
+        - 'opendaylight'
+        - 'onos'
+
+    pod: 'intel-pod5'
+
+    stream:
+        - master:
+            branch: 'master'
+            gs-pathname: ''
+
+    jobs:
+        - '{name}-{controller}-daily-{stream}'
+
+########################
+# job templates
+########################
+- job-template:
+    name: '{name}-{controller}-daily-{stream}'
+
+    disabled: true
+
+    concurrent: false
+
+    parameters:
+        - project-parameter:
+            project: '{installer}'
+        - '{pod}-defaults'
+        - '{installer}-defaults':
+            controller: '{controller}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Hello World from OPNFV $INSTALLER_NAME"
