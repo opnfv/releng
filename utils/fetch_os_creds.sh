@@ -106,7 +106,7 @@ elif [ "$installer_type" == "apex" ]; then
     # The credentials file is located in the Instack VM (192.0.2.1)
     # NOTE: This might change for bare metal deployments
     info "Fetching rc file from Instack VM $installer_ip..."
-    sudo scp root@$installer_ip:/home/stack/overcloudrc $dest_path &> /dev/null
+    sudo scp $ssh_options root@$installer_ip:/home/stack/overcloudrc $dest_path
 
 elif [ "$installer_type" == "compass" ]; then
     verify_connectivity $installer_ip
