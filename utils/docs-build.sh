@@ -38,6 +38,26 @@ html_notes="\n    Revision: $rev_full\n\n    Build date: |today|"
 default_conf='releng/docs/etc/conf.py'
 opnfv_logo='releng/docs/etc/opnfv-logo.png'
 
+function check_rst_doc() {
+    _src="$1"
+
+    if ! which doc8 > /dev/null ; then
+        echo "Error: 'doc8' not found. Exec 'sudo pip install doc8' first."
+        exit 1
+    fi
+    # Note: This check may fail in many jobs for building project docs, since
+    #       the old sample has lines more than 120. We ignore failures on this
+    #       check right now, but these have to be fixed before OPNFV B release.
+    _out=$(doc8 --max-line-length 120 "$_src") || {
+        _msg='Error: rst validatino (doc8) has failed, please fix the following error(s).'
+        _errs=$(echo "$_out" | sed -n -e "/^$_src/s/^/    /p")
+        echo
+        echo -e "$_msg\n$_errs"
+        echo
+        [[ -n "$GERRIT_COMMENT" ]] && echo -e "$_msg\n$_errs" >> "$GERRIT_COMMENT"
+    }
+}
+
 function add_html_notes() {
     _src="$1"
     _dir="$2"
@@ -64,6 +84,8 @@ function add_config() {
     fi
 }
 
+
+check_rst_doc $SRC_DIR
 
 if [[ ! -d "$RELENG_DIR" ]] ; then
     echo "Error: $RELENG_DIR dir not found. See https://wiki.opnfv.org/documentation/tools ."
