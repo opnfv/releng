@@ -315,6 +315,20 @@
         - 'builder-compass-ci-preclean-workspace'
         - 'builder-compass-download-artifact'
         - 'builder-compass-deploy-bare'
+        - 'builder-functest-workaround'
+        - trigger-builds:
+          - project: 'clean-functest-env-huawei-build'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'set-functest-env-huawei-build'
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'functest-vping-test-huawei-build'
+            git-revision: true
+            block: true
+
 
     publishers:
         - archive:
@@ -344,6 +358,10 @@
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+        - string:
+            name: FUNCTEST_REPO_DIR
+            default: '/home/opnfv/repos/functest'
+            description: "Directory where the root functest repo is cloned in the docker."
         - string:
             name: GS_URL
             default: artifacts.opnfv.org/$PROJECT/
@@ -590,3 +608,51 @@
             sudo rm $WORKSPACE -rf
             git clone $GIT_BASE  $WORKSPACE
 
+- builder:
+    name: 'builder-functest-workaround'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set +e
+            neutron_private_net_name=functest-net
+            neutron_private_subnet_name=functest-subnet
+            neutron_private_subnet_cidr=192.168.120.0/24
+            neutron_private_subnet_start=192.168.120.2
+            neutron_private_subnet_end=192.168.120.253
+            neutron_private_subnet_gateway=192.168.120.254
+
+            $WORKSPACE/utils/fetch_os_creds.sh -d ./openstack.creds   -i ${INSTALLER} -a ${installer_ip}
+            source ./openstack.creds
+
+            ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+            controller_ip=$(sshpass -p'root' ssh 2>/dev/null $ssh_options root@${installer_ip} \
+                'mysql -ucompass -pcompass -Dcompass -e"select *  from cluster;"' \
+                | awk -F"," '{for(i=1;i<NF;i++)if($i~/\"host1\"/) {print $(i+1);break;}}'  \
+                | grep -oP "\d+.\d+.\d+.\d+")
+
+            openstack_creds=" \
+                --os-username=${OS_USERNAME} \
+                --os-password=${OS_PASSWORD} \
+                --os-tenant-name=${OS_TENANT_NAME} \
+                --os-auth-url=${OS_AUTH_URL}"
+
+            # create functest network
+            sshpass -proot ssh ${controller_ip} \
+                "neutron net-create ${neutron_private_net_name} \
+                --provider:physical_network physnet \
+                --provider:network_type vlan \
+                --provider:segmentation_id 103 \
+                ${openstack_creds}"
+
+            # create functest subnet
+            sshpass -proot ssh ${controller_ip} "neutron subnet-create  \
+                ${neutron_private_net_name} ${neutron_private_subnet_cidr} \
+                --name ${neutron_private_subnet_name} \
+                --gateway ${neutron_private_subnet_gateway} \
+                --allocation-pool \
+                start=${neutron_private_subnet_start},end=${neutron_private_subnet_end} \
+                ${openstack_creds}"
+
+            # delete iptables
+            iptables -nL --line-num |grep "reject-with icmp-port-unreachable"  \
+                | head -n 1 | awk '{print $1}' | xargs iptables -D FORWARD
