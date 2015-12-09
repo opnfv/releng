@@ -137,6 +137,9 @@ elif [ "$installer_type" == "compass" ]; then
     info "public_ip: $public_ip"
 
 
+elif [ "$installer_type" == "joid" ]; then
+    # do nothing...for the moment
+    # we can either do a scp from the jumphost or use the -v option to transmit the param to the docker file
 elif [ "$installer_type" == "foreman" ]; then
     #ip_foreman="172.30.10.73"
     controller="oscontroller1.opnfv.com"
