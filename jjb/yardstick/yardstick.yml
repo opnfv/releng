@@ -169,6 +169,7 @@
         - 'yardstick-trigger-{pod}'
 
     builders:
+        - 'yardstick-cleanup'
         - 'yardstick-fetch-os-creds'
         - 'yardstick-daily'
 
@@ -188,24 +189,7 @@
 
             echo "Yardstick: Run benchmark test suites ..."
 
-            # Remove old containers
-            docker ps | grep opnfv/yardstick |\
-                awk '{print $1}' | xargs -r docker stop &>/dev/null
-            docker ps -a | grep opnfv/yardstick |\
-                awk '{print $1}' | xargs -r  docker rm &>/dev/null
-
-            # Remove existing images if exist
-            if [[ ! -z $(docker images | grep opnfv/yardstick) ]]; then
-                echo "Docker images to remove:"
-                docker images | head -1 && docker images | grep opnfv/yardstick
-                image_tags=($(docker images | grep opnfv/yardstick | awk '{print $2}'))
-                for tag in "${image_tags[@]}"; do
-                    echo "Removing docker image opnfv/yardstick:$tag..."
-                    docker rmi opnfv/yardstick:$tag
-                done
-            fi
-
-            # Make sure we have latest image
+            # Pull the latest image
             docker pull opnfv/yardstick
 
             # Test suites to run
@@ -230,6 +214,32 @@
     builders:
         - shell:
             !include-raw ../../utils/fetch_os_creds.sh
+
+- builder:
+    name: yardstick-cleanup
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Cleaning up docker containers/images..."
+
+            # Remove previous running containers if exist
+            if [[ ! -z $(docker ps -a | grep opnfv/yardstick) ]]; then
+                echo "Removing existing opnfv/yardstick containers..."
+                docker ps | grep opnfv/yardstick | awk '{print $1}' | xargs docker stop
+                docker ps -a | grep opnfv/yardstick | awk '{print $1}' | xargs docker rm
+            fi
+
+            # Remove existing images if exist
+            if [[ ! -z $(docker images | grep opnfv/yardstick) ]]; then
+                echo "Docker images to remove:"
+                docker images | head -1 && docker images | grep opnfv/yardstick
+                image_tags=($(docker images | grep opnfv/yardstick | awk '{print $2}'))
+                for tag in "${image_tags[@]}"; do
+                    echo "Removing docker image opnfv/yardstick:$tag..."
+                    docker rmi opnfv/yardstick:$tag
+                done
+            fi
 
 ########################
 # parameter macros
