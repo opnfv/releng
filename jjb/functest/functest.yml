@@ -450,7 +450,7 @@
             #!/bin/bash
             set +e
             if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
-                INSTALLER_IP=$(cat instack /var/lib/libvirt/dnsmasq/default.leases \
+                INSTALLER_IP=$(cat /var/lib/libvirt/dnsmasq/default.leases | grep instack \
                     |sed 's/.*192/192/g' | sed 's/\ in.*//g')
                 sshkey="-v /root/.ssh/id_rsa:/root/.ssh/id_rsa"
             fi
