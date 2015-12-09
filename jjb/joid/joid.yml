@@ -3,14 +3,12 @@
 ########################
 - project:
 
-    name: 'opnfv-joid'
+    name: 'joid'
 
     installer: 'joid'
 
     controller:
-        - 'opencontrail'
-        - 'opendaylight'
-        - 'onos'
+        - 'odl'
 
     pod: 'intel-pod5'
 
@@ -20,23 +18,23 @@
             gs-pathname: ''
 
     jobs:
-        - 'opnfv-joid-{controller}-daily-{stream}'
-        - 'opnfv-joid-daily-deploy-{stream}'
+        - 'joid-{controller}-daily-{stream}-{pod}'
+        - 'joid-daily-deploy-{stream}'
 
 ########################
 # job templates
 ########################
 - job-template:
-    name: 'opnfv-joid-{controller}-daily-{stream}'
+    name: 'joid-{controller}-daily-{stream}-{pod}'
 
-    disabled: true
+    disabled: false
 
     concurrent: false
 
     parameters:
         - project-parameter:
             project: '{installer}'
-        - '{pod}-defaults'
+        - 'opnfv-build-defaults'
         - '{installer}-defaults':
             controller: '{controller}'
 
@@ -48,16 +46,16 @@
 
     builders:
         - trigger-builds:
-          - project: 'opnfv-joid-daily-deploy-{stream}'
+          - project: 'joid-daily-deploy-{stream}'
             git-revision: true
             block: true
             predefined-parameters:
                 CONTROLLER='{controller}'
 
 - job-template:
-    name: 'opnfv-joid-daily-deploy-{stream}'
+    name: 'joid-daily-deploy-{stream}'
 
-    disabled: true
+    disabled: false
 
     concurrent: false
 
@@ -80,6 +78,9 @@
     builders:
         - shell: |
             #!/bin/bash
-            echo "Hello World from OPNFV $INSTALLER_NAME"
             echo "Running $INSTALLER_NAME with controller $CONTROLLER"
-
+            echo "Please note that this is a quick try to see how joid deployment works"
+            cd $WORKSPACE/ci
+            ./clean.sh
+            ./02-maasdeploy.sh intelpod5
+            ./deploy.sh -o liberty -s $CONTROLLER -t ha -l intelpod5

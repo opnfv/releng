@@ -90,9 +90,9 @@
             name: SLAVE_NAME
             description: 'Slave name on Jenkins'
             allowed-slaves:
-                - intelpod5-jumphost
+                - intel-us-deploy-bare-pod5
             default-slaves:
-                - intelpod5-jumphost
+                - intel-us-deploy-bare-pod5
         - string:
             name: INSTALLER_VERSION
             default: stable
@@ -154,6 +154,21 @@
             name: INSTALLER_VERSION
             default: stable
             description: 'Version of the installer to deploy'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on the jumphost'
+
+- parameter:
+    name: 'opnfv-build-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Label on Jenkins'
+            allowed-slaves:
+                - opnfv-build
+            default-slaves:
+                - opnfv-build
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
