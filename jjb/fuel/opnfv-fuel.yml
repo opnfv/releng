@@ -53,7 +53,7 @@
             git-revision: true
             block: true
             predefined-parameters:
-                CONTROLLER='{controller}'
+                CONTROLLER={controller}
 
 - job-template:
     name: 'opnfv-fuel-daily-deploy-{stream}'
@@ -70,7 +70,8 @@
         - project-parameter:
             project: '{installer}'
         - '{pod}-defaults'
-        - '{installer}-defaults'
+        - '{installer}-defaults':
+            controller: '{controller}'
 
     scm:
         - git-scm:

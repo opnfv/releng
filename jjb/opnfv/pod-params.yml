@@ -42,15 +42,35 @@
             description: 'Git URL to use on the jumphost'
 
 - parameter:
+    name: 'ericsson-pod1-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - ericsson-ca-deploy-bare-pod1
+            default-slaves:
+                - ericsson-ca-deploy-bare-pod1
+        - string:
+            name: INSTALLER_VERSION
+            default: latest
+            description: 'Version of the installer to deploy'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on the jumphost'
+
+
+- parameter:
     name: 'ericsson-pod2-defaults'
     parameters:
         - node:
             name: SLAVE_NAME
             description: 'Slave name on Jenkins'
             allowed-slaves:
-                - ericsson-ca-fuel-bare-1
+                - ericsson-ca-deploy-bare-pod2
             default-slaves:
-                - ericsson-ca-fuel-bare-1
+                - ericsson-ca-deploy-bare-pod2
         - string:
             name: INSTALLER_VERSION
             default: latest
@@ -141,7 +161,7 @@
             description: 'Git URL to use on the jumphost'
 
 - parameter:
-    name: 'huawei-sc-pod1-defaults'
+    name: 'huawei-pod1-defaults'
     parameters:
         - node:
             name: SLAVE_NAME
