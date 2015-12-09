@@ -450,8 +450,8 @@
             #!/bin/bash
             set +e
             if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
-                INSTALLER_IP=$(cat instack /var/lib/libvirt/dnsmasq/default.leases \
-                    |sed 's/.*192/192/g' | sed 's/\ in.*//g')
+                INSTALLER_IP=$(grep instack /var/lib/libvirt/dnsmasq/default.leases \
+                    |awk '{print $3}' | head -n 1)
                 sshkey="-v /root/.ssh/id_rsa:/root/.ssh/id_rsa"
             fi
             echo "Functest: Start Docker and prepare environment"
