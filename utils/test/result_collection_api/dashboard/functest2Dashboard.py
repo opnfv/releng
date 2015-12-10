@@ -63,10 +63,10 @@ def format_status_for_dashboard(results):
     # TODO to be done and discussed
     testcases = get_functest_cases()
     test_data.append({'nb test suite(s) run': len(testcases)-1})
-    # test_data.append({'nb test suite(s) failed':1})
-    # test_data.append({'test suite run': ['vPing', 'tempest', 'vIMS' ]})
-    # test_data.append({'average Openstack Tempest failure rate (%)': 10})
-    # test_data.append({'average odl failure rate (%)': 10})
+    test_data.append({'vPing': '100%'})
+    test_data.append({'VIM status': '82%'})
+    test_data.append({'SDN Controllers': {'odl':'92%', 'onos':'95%', 'opencontrail':'93%'}})
+    test_data.append({'VNF deployment': '95%'})
 
     return test_data
 
