@@ -1,5 +1,5 @@
 - parameter:
-    name: 'lf-pod1-defaults'
+    name: 'opnfv-jump-1-defaults'
     parameters:
         - node:
             name: SLAVE_NAME
@@ -22,7 +22,7 @@
             description: 'SSH key to use for Apex'
 
 - parameter:
-    name: 'lf-pod2-defaults'
+    name: 'opnfv-jump-2-defaults'
     parameters:
         - node:
             name: SLAVE_NAME
@@ -38,11 +38,18 @@
         - string:
             name: GIT_BASE
             default: ssh://gerrit.opnfv.org:29418/$PROJECT
-            description: 'Git URL for LF POD2'
             description: 'Git URL to use on the jumphost'
+        - string:
+            name: YARDSTICK_TEST_SUITE
+            default: opnfv_${{NODE_NAME}}_{loop}.yaml
+            description: 'Path to test suite'
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: 'db_args'
+            description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
-    name: 'ericsson-pod1-defaults'
+    name: 'ericsson-ca-deploy-bare-pod1-defaults'
     parameters:
         - node:
             name: SLAVE_NAME
@@ -59,10 +66,13 @@
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: 'Git URL to use on the jumphost'
-
+        - string:
+            name: YARDSTICK_TEST_SUITE
+            default: /path/to/yardstick/ericsson-pod1/{loop}/suite
+            description: 'Path to test suite'
 
 - parameter:
-    name: 'ericsson-pod2-defaults'
+    name: 'ericsson-ca-deploy-bare-pod2-defaults'
     parameters:
         - node:
             name: SLAVE_NAME
@@ -81,7 +91,7 @@
             description: 'Git URL to use on the jumphost'
 
 - parameter:
-    name: 'intel-pod2-defaults'
+    name: 'intelpod2-jumphost-defaults'
     parameters:
         - node:
             name: SLAVE_NAME
@@ -104,7 +114,7 @@
             description: 'SSH key to use for Apex'
 
 - parameter:
-    name: 'intel-pod5-defaults'
+    name: 'intel-us-deploy-bare-pod5-defaults'
     parameters:
         - node:
             name: SLAVE_NAME
@@ -123,15 +133,15 @@
             description: 'Git URL to use on the jumphost'
 
 - parameter:
-    name: 'intel-pod6-defaults'
+    name: 'intel-us-deploy-bare-pod6-defaults'
     parameters:
         - node:
             name: SLAVE_NAME
             description: 'Slave name on Jenkins'
             allowed-slaves:
-                - intelpod6-jumphost
+                - intel-us-deploy-bare-pod6
             default-slaves:
-                - intelpod6-jumphost
+                - intel-us-deploy-bare-pod6
         - string:
             name: INSTALLER_VERSION
             default: latest
@@ -142,15 +152,15 @@
             description: 'Git URL to use on the jumphost'
 
 - parameter:
-    name: 'intel-pod8-defaults'
+    name: 'intel-us-deploy-bare-pod8-defaults'
     parameters:
         - node:
             name: SLAVE_NAME
             description: 'Slave name on Jenkins'
             allowed-slaves:
-                - intelpod8-jumphost
+                - intel-us-deploy-bare-pod8
             default-slaves:
-                - intelpod8-jumphost
+                - intel-us-deploy-bare-pod8
         - string:
             name: INSTALLER_VERSION
             default: latest
@@ -161,7 +171,7 @@
             description: 'Git URL to use on the jumphost'
 
 - parameter:
-    name: 'huawei-pod1-defaults'
+    name: 'huawei-us-deploy-bare-1-defaults'
     parameters:
         - node:
             name: SLAVE_NAME
@@ -180,18 +190,46 @@
             description: 'Git URL to use on the jumphost'
 
 - parameter:
-    name: 'opnfv-build-defaults'
+    name: 'intel-us-build-1-defaults'
     parameters:
         - node:
             name: SLAVE_NAME
             description: 'Slave name on Jenkins'
             allowed-slaves:
                 - intel-us-build-1
-                - ericsson-ca-build-1
             default-slaves:
                 - intel-us-build-1
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on the slave'
+
+- parameter:
+    name: 'intel-us-build-2-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - intel-us-build-2
+            default-slaves:
+                - intel-us-build-2
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on the slave'
+
+- parameter:
+    name: 'ericsson-ca-build-1-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - ericsson-ca-build-1
+            default-slaves:
                 - ericsson-ca-build-1
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on the jumphost'
+            description: 'Git URL to use on the slave'
