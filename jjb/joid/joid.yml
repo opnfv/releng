@@ -9,7 +9,7 @@
 
     controller: 'odl'
 
-    pod: 'intel-pod5'
+    pod: 'intel-us-deploy-bare-pod5'
 
     stream:
         - master:
@@ -17,14 +17,14 @@
             gs-pathname: ''
 
     jobs:
-        - 'joid-{controller}-daily-{stream}-{pod}'
+        - 'joid-{controller}-{pod}-daily-{stream}'
         - 'joid-daily-deploy-{stream}'
 
 ########################
 # job templates
 ########################
 - job-template:
-    name: 'joid-{controller}-daily-{stream}-{pod}'
+    name: 'joid-{controller}-{pod}-daily-{stream}'
 
     disabled: false
 
@@ -33,7 +33,7 @@
     parameters:
         - project-parameter:
             project: '{installer}'
-        - 'opnfv-build-defaults'
+        - 'intel-us-build-1-defaults'
         - '{installer}-defaults':
             controller: '{controller}'
 
