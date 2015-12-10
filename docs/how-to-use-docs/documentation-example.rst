@@ -138,8 +138,22 @@ built files.
     /output/
     /releng/
 
-Verify Jobs
-===========
+Jenkins Jobs
+============
+
+Enabling Jenkins Jobs
+---------------------
+
+Jenkins in OPNFV infra performs the jobs to verify and update your documents.
+To make your project repository watched by Jenkins to execute those jobs, you
+have to add your project name in 'project-pattern' of the following jobs by
+sending patch to update `jjb/opnfv/opnfv-docs.yml`_ on gerrit.
+
+.. _jjb/opnfv/opnfv-docs.yml:
+    https://gerrit.opnfv.org/gerrit/gitweb?p=releng.git;a=blob;f=jjb/opnfv/opnfv-docs.yml;
+
+Verify Job
+----------
 
 The verify job name is **opnfv-docs-verify**.
 
@@ -160,8 +174,8 @@ Currently, the job reports 'SUCCESS' as result of document build even if the
 PDF creation failed. This is a provisional workaround, since many projects are
 not ready for PDF creation yet.
 
-Merge Jobs
-==========
+Merge Job
+----------
 
 The merge job name is **opnfv-docs-merge**.
 
