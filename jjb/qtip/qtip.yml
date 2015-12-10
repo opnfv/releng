@@ -214,7 +214,7 @@
       - 'qtip-ssl-parallel'
 
     triggers:
-      - timed: "@midnight"
+      - timed: '0 0,11,18 * * *'
 
 ###########################
 #biuilder macros
@@ -225,11 +225,11 @@
     builders:
         - shell: |
             #! /bin/bash
-            if [[ ! -f $WORKSPACE/opnfv-openrc.sh ]]; then
-               echo "Unable to access file $WORKSPACE/opnfv-openrc.sh"
+            if [[ ! -f $WORKSPACE/opnfv-stack.sh ]]; then
+               echo "Unable to access file $WO:qRKSPACE/opnfv-openrc.sh"
                exit 1
             fi
-            source $WORKSPACE/opnfv-openrc.sh
+            source $WORKSPACE/opnfv-stack.sh
             cd $WORKSPACE
             echo "Running QTIP dhrystone with First Test case"
             python qtip.py -s compute -b dhrystone_serial.yaml
@@ -240,11 +240,11 @@
     builders:
         - shell: |
             #!/bin/bash
-            if [[ ! -f $WORKSPACE/opnfv-openrc.sh ]]; then
+            if [[ ! -f $WORKSPACE/opnfv-stack.sh ]]; then
                echo "Unable to access file $WORKSPACE/opnfv-openrc.sh"
                exit 1
             fi
-            source $WORKSPACE/opnfv-openrc.sh
+            source $WORKSPACE/opnfv-stack.sh
             cd $WORKSPACE
             echo "Running QTIP dhrystone with Second Test case"
             python qtip.py -s compute -b ssl_parallel.yaml
@@ -258,5 +258,5 @@
             cd $WORKSPACE
             git clone https://gerrit.opnfv.org/gerrit/releng
             cd $WORKSPACE/releng/utils
-            ./fetch_os_creds.sh                  #To test the problem with creating the file in $HOME
-            ./fetch_os_creds.sh -d $WORKSPACE    #To test if  the file can be created in $WORKSPACE
+            #./fetch_os_creds.sh                  #To test the problem with creating the file in $HOME
+            ./fetch_os_creds.sh -d $WORKSPACE/opnfv-stack.sh    #To test if  the file can be created in $WORKSPACE
