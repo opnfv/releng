@@ -12,7 +12,7 @@
         - 'onos'
         - 'opencontrail'
 
-    pod: 'intel-pod2'
+    pod: 'intelpod2-jumphost'
 
     stream:
         - master:
@@ -20,14 +20,14 @@
             gs-pathname: ''
 
     jobs:
-        - 'opnfv-apex-{controller}-daily-{stream}'
-        - 'opnfv-apex-daily-deploy-{stream}'
+        - 'opnfv-apex-{controller}-{pod}-daily-{stream}'
+        - 'opnfv-apex-deploy-{pod}-daily-{stream}'
 
 ########################
 # job templates
 ########################
 - job-template:
-    name: 'opnfv-apex-{controller}-daily-{stream}'
+    name: 'opnfv-apex-{controller}-{pod}-daily-{stream}'
 
     disabled: true
 
@@ -55,7 +55,7 @@
                 CONTROLLER={controller}
 
 - job-template:
-    name: 'opnfv-apex-daily-deploy-{stream}'
+    name: 'opnfv-apex-deploy-{pod}-daily-{stream}'
 
     disabled: true
 

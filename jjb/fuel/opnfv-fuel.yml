@@ -12,7 +12,7 @@
         - 'onos'
         - 'opencontrail'
 
-    pod: 'lf-pod2'
+    pod: 'opnfv-jump-2'
 
     stream:
         - master:
@@ -20,14 +20,14 @@
             gs-pathname: ''
 
     jobs:
-        - 'opnfv-fuel-{controller}-daily-{stream}'
-        - 'opnfv-fuel-daily-deploy-{stream}'
+        - 'opnfv-fuel-{controller}-{pod}-daily-{stream}'
+        - 'opnfv-fuel-deploy-{pod}-daily-{stream}'
 
 ########################
 # job templates
 ########################
 - job-template:
-    name: 'opnfv-fuel-{controller}-daily-{stream}'
+    name: 'opnfv-fuel-{controller}-{pod}-daily-{stream}'
 
     disabled: true
 
@@ -56,7 +56,7 @@
                 CONTROLLER={controller}
 
 - job-template:
-    name: 'opnfv-fuel-daily-deploy-{stream}'
+    name: 'opnfv-fuel-deploy-{pod}-daily-{stream}'
 
     disabled: true
 
