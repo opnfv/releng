@@ -12,7 +12,12 @@
         - 'onos'
         - 'opencontrail'
 
-    pod: 'opnfv-jump-2'
+    pod:
+        - 'opnfv-jump-2'
+        - 'ericsson-pod1'
+
+    loop:
+        - 'daily'
 
     stream:
         - master:
@@ -20,24 +25,23 @@
             gs-pathname: ''
 
     jobs:
-        - 'opnfv-fuel-{controller}-{pod}-daily-{stream}'
-        - 'opnfv-fuel-deploy-{pod}-daily-{stream}'
+        - 'opnfv-fuel-{controller}-{pod}-{loop}-{stream}'
+        - 'opnfv-fuel-deploy-{pod}-{loop}-{stream}'
 
 ########################
 # job templates
 ########################
 - job-template:
-    name: 'opnfv-fuel-{controller}-{pod}-daily-{stream}'
+    name: 'opnfv-fuel-{controller}-{pod}-{loop}-{stream}'
 
     disabled: true
 
     concurrent: false
 
-    node: ericsson-build
-
     parameters:
         - project-parameter:
             project: '{installer}'
+        - 'ericsson-ca-build-1-defaults'
         - '{installer}-defaults':
             controller: '{controller}'
 
@@ -56,7 +60,7 @@
                 CONTROLLER={controller}
 
 - job-template:
-    name: 'opnfv-fuel-deploy-{pod}-daily-{stream}'
+    name: 'opnfv-fuel-deploy-{pod}-{loop}-{stream}'
 
     disabled: true
 
@@ -69,7 +73,8 @@
     parameters:
         - project-parameter:
             project: '{installer}'
-        - '{pod}-defaults'
+        - '{pod}-defaults':
+            loop: '{loop}'
         - '{installer}-defaults'
 
     scm:
