@@ -12,7 +12,7 @@
         - 'onos'
         - 'opencontrail'
 
-    pod: 'huawei-pod1'
+    pod: 'huawei-us-deploy-bare-1'
 
     stream:
         - master:
@@ -20,14 +20,14 @@
             gs-pathname: ''
 
     jobs:
-        - 'opnfv-compass4nfv-{controller}-daily-{stream}'
-        - 'opnfv-compass4nfv-daily-deploy-{stream}'
+        - 'opnfv-compass4nfv-{controller}-{pod}-daily-{stream}'
+        - 'opnfv-compass4nfv-deploy-{pod}-daily-{stream}'
 
 ########################
 # job templates
 ########################
 - job-template:
-    name: 'opnfv-compass4nfv-{controller}-daily-{stream}'
+    name: 'opnfv-compass4nfv-{controller}-{pod}-daily-{stream}'
 
     disabled: true
 
@@ -55,7 +55,7 @@
                 CONTROLLER={controller}
 
 - job-template:
-    name: 'opnfv-compass4nfv-daily-deploy-{stream}'
+    name: 'opnfv-compass4nfv-deploy-{pod}-daily-{stream}'
 
     disabled: true
 
