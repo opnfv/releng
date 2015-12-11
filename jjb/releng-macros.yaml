@@ -167,6 +167,11 @@
             [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
             [[ -d output ]]
 
+            if [[ -z "$(ls -A output)" ]] ; then
+                echo "Note: output folder is empty, skip upload..."
+                exit 0
+            fi
+
             echo
             echo "###########################"
             echo "UPLOADING DOCS UNDER REVIEW"
@@ -201,6 +206,11 @@
             export PATH=$PATH:/usr/local/bin/
 
             [[ -d output ]]
+
+            if [[ -z "$(ls -A output)" ]] ; then
+                echo "Note: output folder is empty, skip upload..."
+                exit 0
+            fi
 
             echo
             echo "#####################"
