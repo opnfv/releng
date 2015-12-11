@@ -19,21 +19,14 @@
 #            branch: 'stable/brahmaputra'
 #            gs-pathname: '/brahmaputra'
 
-- job_defaults: &conductor_job_defaults
-    name: conductor_job_defaults
+- job-template:
+    name: 'conductor-verify-{stream}'
 
     parameters:
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
             branch: '{stream}'
-
-- job-template:
-    name: 'conductor-verify-{stream}'
-
-    <<: *conductor_job_defaults
-
-    parameters:
         - 'opnfv-build-defaults'
 
     scm:

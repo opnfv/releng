@@ -18,21 +18,14 @@
 #            branch: 'stable/brahmaputra'
 #            gs-pathname: '/brahmaputra'
 
-- job_defaults: &octopus_job_defaults
-    name: octopus_job_defaults
+- job-template:
+    name: 'octopus-verify-{stream}'
 
     parameters:
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
             branch: '{stream}'
-
-- job-template:
-    name: 'octopus-verify-{stream}'
-
-    <<: *octopus_job_defaults
-
-    parameters:
         - 'opnfv-build-defaults'
 
     scm:

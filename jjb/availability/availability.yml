@@ -19,21 +19,14 @@
 #            branch: 'stable/brahmaputra'
 #            gs-pathname: '/brahmaputra'
 
-- job_defaults: &availability_job_defaults
-    name: availability_job_defaults
+- job-template:
+    name: 'availability-verify-{stream}'
 
     parameters:
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
             branch: '{stream}'
-
-- job-template:
-    name: 'availability-verify-{stream}'
-
-    <<: *availability_job_defaults
-
-    parameters:
         - 'opnfv-build-defaults'
 
     scm:

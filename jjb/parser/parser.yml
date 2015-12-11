@@ -19,21 +19,14 @@
 #            branch: 'stable/brahmaputra'
 #            gs-pathname: '/brahmaputra'
 
-- job_defaults: &parser_job_defaults
-    name: parser_job_defaults
+- job-template:
+    name: 'parser-verify-{stream}'
 
     parameters:
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
             branch: '{stream}'
-
-- job-template:
-    name: 'parser-verify-{stream}'
-
-    <<: *parser_job_defaults
-
-    parameters:
         - 'opnfv-build-defaults'
 
     scm:
