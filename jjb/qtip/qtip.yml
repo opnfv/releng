@@ -1,15 +1,12 @@
 - project:
     name: qtip
+
+    project: '{name}'
+
     jobs:
-        - 'qtip-test'
-        - 'qtip-daily-{stream}'
-        - 'qtip-merge'
-        - 'qtip-verify'
+        - 'qtip-verify-{stream}'
         - 'qtip-dhrystone-serial-{pod}'
         - 'qtip-ssl-parallel-{pod}'
-
-    # stream:    branch with - in place of / (eg. stable-helium)
-    # branch:    branch (eg. stable/helium)
 
     pod:
         - dell-build:
@@ -17,64 +14,25 @@
            installer_type: 'fuel'
            installer_ip: '10.20.0.2'
 
+# only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
             branch: 'master'
-
-    project: 'qtip'
-    somevar: 'foo'
-
-- job-template:
-    name: qtip-test
-
-    builders:
-        - shell: |
-            echo "Hello world from qtip"
+            gs-pathname: ''
+#        - stable-brahmaputra:
+#            branch: 'stable/brahmaputra'
+#            gs-pathname: '/brahmaputra'
 
 - job-template:
-    name: 'qtip-daily-{stream}'
-
-    # Job template for daily builders
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-
-    varsetabove: '{somevar}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    triggers:
-        - timed: 'H H * * *'
-
-    prebuilders:
-        - test-macro
-
-    builders:
-        - shell: |
-            pwd
-            find .
-            echo "Hello world from qtip {somevar} daily"
-
-    postbuilders:
-        - test-macro
-
-- job-template:
-    name: 'qtip-verify'
+    name: 'qtip-verify-{stream}'
 
     parameters:
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{stream}'
+        - 'opnfv-build-defaults'
+
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
@@ -95,54 +53,17 @@
                     comment-contains-value: 'reverify'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'qtip'
+                project-pattern: '{project}'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
+                    branch-pattern: '**/{stream}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**|.gitignore'
 
     builders:
         - shell: |
-            pwd
-            find .
-            echo "verify logic goes here"
-
-- job-template:
-    name: 'qtip-merge'
-
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: 'master'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'qtip'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
-
-    builders:
-        - shell: |
-            pwd
-            find .
-            echo "merge logic goes here"
+            echo "Nothing to verify!"
 
 - job-template:
     name: 'qtip-dhrystone-serial-{pod}'

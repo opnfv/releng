@@ -4,13 +4,9 @@
 - project:
     name: bottlenecks
     jobs:
-        - 'bottlenecks-test'
-        - 'bottlenecks-verify'
-        - 'bottlenecks-merge'
+        - 'bottlenecks-verify-{stream}'
         - 'bottlenecks-daily-{installer}-{pod}-{stream}'
 
-    # stream:    branch with - in place of / (eg. stable-arno)
-    # branch:    branch (eg. stable/arno)
     pod:
         - lf:
             node: 'opnfv-jump-2'
@@ -20,31 +16,29 @@
     installer:
         -fuel
 
+# only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
             branch: 'master'
+            gs-pathname: ''
+#        - stable-brahmaputra:
+#            branch: 'stable/brahmaputra'
+#            gs-pathname: '/brahmaputra'
 
     project: 'bottlenecks'
-    somevar: 'foo'
 ###############################
 # Job templates
 ##############################
 - job-template:
-    name: 'bottlenecks-test'
-
-    builders:
-        - shell: |
-            echo "Hello world from bottlenecks"
-
-- job-template:
-
-    name: 'bottlenecks-verify'
+    name: 'bottlenecks-verify-{stream}'
 
     parameters:
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{stream}'
+        - 'opnfv-build-defaults'
+
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
@@ -68,47 +62,14 @@
                 project-pattern: '{project}'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
+                    branch-pattern: '**/{stream}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**|.gitignore'
 
     builders:
         - shell: |
-            echo "hello world"
-
-- job-template:
-    name: 'bottlenecks-merge'
-
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: 'master'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'bottlenecks'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
-
-    builders:
-        - shell: |
-            echo "hello world"
+            echo "Nothing to verify!"
 
 - job-template:
     name: 'bottlenecks-daily-{installer}-{pod}-{stream}'
@@ -120,7 +81,7 @@
     parameters:
         - project-parameter:
             project: '{project}'
-        - '{pod}-parameters'
+        - 'opnfv-jump-2-defaults'
         - string:
             name: POD_NAME
             default: '{pod}'
