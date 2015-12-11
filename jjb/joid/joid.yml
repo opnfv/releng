@@ -9,7 +9,9 @@
 
     controller: 'odl'
 
-    pod: 'intel-pod5'
+    pod:
+        - 'intel-pod5'
+        - 'orange-pod2'
 
     stream:
         - master:
@@ -100,3 +102,16 @@
             cd $WORKSPACE/ci
             echo "Executing deploy.sh -o liberty -s $CONTROLLER -t ha -l intelpod5"
             ./deploy.sh -o liberty -s $CONTROLLER -t ha -l intelpod5
+- builder:
+    name: orange-pod2-builder
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Running $INSTALLER_NAME with controller $CONTROLLER"
+            echo "Please note that this is WIP generic builder"
+            echo
+            echo "Executing clean.sh"
+            cd $WORKSPACE/ci
+            ./clean.sh
+        - shell:
+            !include-raw ./joid-deploy.sh
