@@ -1,73 +1,41 @@
-#################################
-# job configuration for pharos
-#################################
+###################################################
+# All the jobs except verify have been removed!
+# They will only be enabled on request by projects!
+###################################################
 - project:
     name: pharos
-    jobs:
-        - 'pharos-daily-{stream}'
-        - 'pharos-merge-{stream}'
-        - 'pharos-verify-{stream}'
-        - 'pharos-maas-pilot-{stream}'
 
-    # stream:    branch with - in place of / (eg. stable-arno)
-    # branch:    branch (eg. stable/arno)
+    project: '{name}'
+
+    jobs:
+        - 'pharos-verify-{stream}'
+
+# only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
             branch: 'master'
             gs-pathname: ''
-        - stable-arno:
-            branch: 'stable/arno'
-            gs-pathname: '/arno'
+#        - stable-brahmaputra:
+#            branch: 'stable/brahmaputra'
+#            gs-pathname: '/brahmaputra'
 
-    project: 'pharos'
-    somevar: 'foo'
-##############################
-# job template
-##############################
-- job-template:
-    name: 'pharos-daily-{stream}'
-
-    # Job template for daily builders
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-
-    varsetabove: '{somevar}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - pharos-parameter:
-            gs-pathname: '{gs-pathname}'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    triggers:
-        - 'pharos-{stream}'
-
-    prebuilders:
-        - test-macro
-
-    builders:
-        - shell:
-            !include-raw ../opnfvdocs/docu-build.sh
-
-    postbuilders:
-        - test-macro
-
-- job-template:
-    name: 'pharos-verify-{stream}'
+- job_defaults: &pharos_job_defaults
+    name: pharos_job_defaults
 
     parameters:
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: '{branch}'
+            branch: '{stream}'
+
+- job-template:
+    name: 'pharos-verify-{stream}'
+
+    <<: *pharos_job_defaults
+
+    parameters:
+        - 'opnfv-build-defaults'
+
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
@@ -88,90 +56,14 @@
                     comment-contains-value: 'reverify'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'pharos'
+                project-pattern: '{project}'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
+                    branch-pattern: '**/{stream}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**|.gitignore'
 
     builders:
-        - shell:
-            !include-raw ../opnfvdocs/docu-build.sh
-
-- job-template:
-    name: 'pharos-merge-{stream}'
-
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: '{branch}'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'pharos'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/{branch}'
-
-    builders:
-        - shell:
-            !include-raw ../opnfvdocs/docu-build.sh
-
-- job-template:
-    name: 'pharos-maas-pilot-{stream}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    triggers:
-       - pollscm: '@midnight'
-
-    builders:
-        - shell:
-            echo "Hello World"
-########################
-# parameter macros
-########################
-- parameter:
-    name: pharos-parameter
-    parameters:
-        - string:
-            name: GS_PATHNAME
-            default: '{gs-pathname}'
-            description: "Version directory where the pharos documents will be stored in gs repository"
-
-########################
-## trigger macros
-#########################
-- trigger:
-    name: 'pharos-master'
-    triggers:
-       - pollscm: "H 6 * * *"
-
-- trigger:
-    name: 'pharos-stable-arno'
-    triggers:
-       - pollscm: "H 18 * * *"
+        - shell: |
+            echo "Nothing to verify!"
