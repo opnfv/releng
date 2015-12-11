@@ -64,6 +64,21 @@ function add_config() {
     fi
 }
 
+function generate_name() {
+    _dir=$1
+
+    if [[ "$_dir" == "$SRC_DIR" ]] ; then
+        _name=$(basename $SRC_DIR)
+    else
+        _name="${_dir#$SRC_DIR/}"
+        if [[ "$_name" == "$SRC_DIR" ]] ; then
+            echo "Error: the directory name [$_dir] conflicts with the name of main source directory [$SRC_DIR]"
+            exit 1
+        fi
+    fi
+    # Replace '/' by '_'
+    echo "${_name////_}"
+}
 
 if [[ ! -d "$RELENG_DIR" ]] ; then
     echo "Error: $RELENG_DIR dir not found. See https://wiki.opnfv.org/documentation/tools ."
@@ -72,7 +87,7 @@ fi
 
 find $SRC_DIR -name $INDEX_RST -printf '%h\n' | while read dir
 do
-    name="${dir##*/}"
+    name=$(generate_name $dir)
     src="$BUILD_DIR/src/$name"
     build="$BUILD_DIR/$name"
     output="$OUTPUT_DIR/$name"
