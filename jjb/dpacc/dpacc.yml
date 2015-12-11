@@ -1,71 +1,41 @@
+###################################################
+# All the jobs except verify have been removed!
+# They will only be enabled on request by projects!
+###################################################
 - project:
     name: dpacc
-    jobs:
-        - 'dpacc-test'
-        - 'dpacc-daily-{stream}'
-        - 'dpacc-merge'
-        - 'dpacc-verify'
 
-    # stream:    branch with - in place of / (eg. stable-helium)
-    # branch:    branch (eg. stable/helium)
+    project: '{name}'
+
+    jobs:
+        - 'dpacc-verify-{stream}'
+
+# only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
             branch: 'master'
+            gs-pathname: ''
+#        - stable-brahmaputra:
+#            branch: 'stable/brahmaputra'
+#            gs-pathname: '/brahmaputra'
 
-    project: 'dpacc'
-    somevar: 'foo'
-
-- job-template:
-    name: dpacc-test
-
-    builders:
-        - shell: |
-            echo "Hello world from dpacc"
-
-- job-template:
-    name: 'dpacc-daily-{stream}'
-
-    # Job template for daily builders
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-
-    varsetabove: '{somevar}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    triggers:
-        - timed: 'H H * * *'
-
-    prebuilders:
-        - test-macro
-
-    builders:
-        - shell: |
-            pwd
-            find .
-            echo "Hello world from dpacc {somevar} daily"
-
-    postbuilders:
-        - test-macro
-
-- job-template:
-    name: 'dpacc-verify'
+- job_defaults: &dpacc_job_defaults
+    name: dpacc_job_defaults
 
     parameters:
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{stream}'
+
+- job-template:
+    name: 'dpacc-verify-{stream}'
+
+    <<: *dpacc_job_defaults
+
+    parameters:
+        - 'opnfv-build-defaults'
+
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
@@ -86,51 +56,14 @@
                     comment-contains-value: 'reverify'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'dpacc'
+                project-pattern: '{project}'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
+                    branch-pattern: '**/{stream}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**|.gitignore'
 
     builders:
         - shell: |
-            pwd
-            find .
-            echo "verify logic goes here"
-
-- job-template:
-    name: 'dpacc-merge'
-
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: 'master'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'dpacc'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
-
-    builders:
-        - shell: |
-            pwd
-            find .
-            echo "merge logic goes here"
+            echo "Nothing to verify!"

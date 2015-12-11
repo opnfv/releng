@@ -1,4 +1,3 @@
-# this is the job configuration for bgs
 - project:
 
     name: compass
@@ -6,19 +5,21 @@
     installer: 'compass'
 
     jobs:
-        - 'compass-verify'
-        - 'compass-merge'
+        - 'compass-verify-{stream}'
         - 'compass-daily-{stream}'
         - 'compass-build-iso'
         - 'compass-build-ppa'
         - 'compass-deploy-virtual-{flavor}'
         - 'compass-deploy-bare-huawei-us'
 
-    # stream:    branch with - in place of / (eg. stable-helium)
-    # branch:    branch (eg. stable/helium)
+# only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
             branch: 'master'
+            gs-pathname: ''
+#        - stable-brahmaputra:
+#            branch: 'stable/brahmaputra'
+#            gs-pathname: '/brahmaputra'
 
     flavor:
         - cluster-odl:
@@ -37,7 +38,7 @@
 # job templates
 ########################
 - job-template:
-    name: 'compass-verify'
+    name: 'compass-verify-{stream}'
 
     disabled: false
 
@@ -88,7 +89,7 @@
                     branch-pattern: '**/master'
                 forbidden-file-paths:
                   - compare-type: ANT
-                    pattern: 'docs/**'
+                    pattern: 'docs/**|.gitignore'
 
     builders:
         - 'builder-compass-build-iso'
@@ -98,53 +99,6 @@
             artifacts: 'ansible.log'
             allow-empty: 'true'
             fingerprint: true
-
-- job-template:
-    name: 'compass-merge'
-
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
-    node: huawei-build
-
-    concurrent: true
-
-    properties:
-        - throttle:
-            enabled: true
-            max-total: 3
-            max-per-node: 1
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: 'master'
-        - compass-parameter:
-            installer: '{installer}'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
-
-    builders:
-        - 'builder-compass-merge'
 
 - job-template:
     name: 'compass-daily-{stream}'
@@ -365,13 +319,6 @@
 ########################
 # builder macros
 ########################
-- builder:
-    name: 'builder-compass-merge'
-    builders:
-        - shell: |
-            #!/bin/bash
-            echo "Hello World!"
-
 - builder:
     name: 'builder-compass-make-ppa'
     builders:
