@@ -84,6 +84,34 @@ function add_config() {
     fi
 }
 
+function is_top_dir() {
+    [[ "$1" == "$SRC_DIR" ]]
+}
+
+function generate_name_for_top_dir() {
+    for suffix in '' '.top' '.all' '.master' '_' '__' '___'
+    do
+        _name="$(basename $SRC_DIR)$suffix"
+        [[ -e "$SRC_DIR/$_name" ]] && continue
+        echo "$_name"
+        return
+    done
+
+    echo "Error: cannot found name for top directory [$SRC_DIR]"
+    exit 1
+}
+
+function generate_name() {
+    _dir=$1
+
+    if is_top_dir "$_dir" ; then
+        _name=$(generate_name_for_top_dir $SRC_DIR)
+    else
+        _name="${_dir#$SRC_DIR/}"
+    fi
+    # Replace '/' by '_'
+    echo "${_name////_}"
+}
 
 check_rst_doc $SRC_DIR
 
@@ -94,7 +122,7 @@ fi
 
 find $SRC_DIR -name $INDEX_RST -printf '%h\n' | while read dir
 do
-    name="${dir##*/}"
+    name=$(generate_name $dir)
     src="$BUILD_DIR/src/$name"
     build="$BUILD_DIR/$name"
     output="$OUTPUT_DIR/$name"
@@ -142,5 +170,10 @@ do
         echo
         [[ -n "$GERRIT_COMMENT" ]] && echo "$msg" >> "$GERRIT_COMMENT"
     }
+
+    if is_top_dir "$dir" ; then
+        mv "$output"/* "$OUTPUT_DIR"/
+        rm -rf "$output"
+    fi
 
 done
