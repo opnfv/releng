@@ -3,79 +3,38 @@
 ################################
 - project:
     name: octopus
+
+    project: '{name}'
+
     jobs:
-        - 'octopus-test'
-        - 'octopus-daily-{stream}'
-        - 'octopus-merge-{stream}'
         - 'octopus-verify-{stream}'
 
-    # stream:    branch with - in place of / (eg. stable-arno)
-    # branch:    branch (eg. stable/arno)
+# only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
             branch: 'master'
             gs-pathname: ''
-        - stable-arno:
-            branch: 'stable/arno'
-            gs-pathname: '/arno'
+#        - stable-brahmaputra:
+#            branch: 'stable/brahmaputra'
+#            gs-pathname: '/brahmaputra'
 
-    project: 'octopus'
-    somevar: 'foo'
-###############################
-# job templates
-###############################
-
-- job-template:
-    name: octopus-test
-
-    builders:
-        - shell: |
-            echo "Hello world from octopus"
-
-- job-template:
-    name: 'octopus-daily-{stream}'
-
-    # Job template for daily builders
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-
-    varsetabove: '{somevar}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - octopus-parameter:
-            gs-pathname: '{gs-pathname}'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    triggers:
-        - 'octopus-{stream}'
-
-    prebuilders:
-        - test-macro
-
-    builders:
-        - shell:
-            !include-raw ../opnfvdocs/docu-build.sh
-
-    postbuilders:
-        - test-macro
-
-- job-template:
-    name: 'octopus-verify-{stream}'
+- job_defaults: &octopus_job_defaults
+    name: octopus_job_defaults
 
     parameters:
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: '{branch}'
+            branch: '{stream}'
+
+- job-template:
+    name: 'octopus-verify-{stream}'
+
+    <<: *octopus_job_defaults
+
+    parameters:
+        - 'opnfv-build-defaults'
+
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
@@ -96,71 +55,14 @@
                     comment-contains-value: 'reverify'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'octopus'
+                project-pattern: '{project}'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
+                    branch-pattern: '**/{stream}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**|.gitignore'
 
     builders:
-        - shell:
-            !include-raw ../opnfvdocs/docu-build.sh
-
-- job-template:
-    name: 'octopus-merge-{stream}'
-
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: '{branch}'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'octopus'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/{branch}'
-
-    builders:
-        - shell:
-            !include-raw ../opnfvdocs/docu-build.sh
-
-########################
-## parameter macros
-#########################
-- parameter:
-    name: octopus-parameter
-    parameters:
-        - string:
-            name: GS_PATHNAME
-            default: '{gs-pathname}'
-            description: "Version directory where the octopus will be stored in gs repository"
-
-#########################
-## trigger macros
-#########################
-- trigger:
-    name: 'octopus-master'
-    triggers:
-        - pollscm: "H 7 * * *"
-
-- trigger:
-    name: 'octopus-stable-arno'
-    triggers:
-        - pollscm: "H 19 * * *"
+        - shell: |
+            echo "Nothing to verify!"

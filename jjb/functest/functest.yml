@@ -55,8 +55,6 @@
         - 'functest-odl-test-{pod}'
         - 'functest-vims-{installer}-{stream}'
         - 'functest-vping-test-{pod}'
-        - 'functest-daily-{stream}'
-        - 'functest-merge-{stream}'
         - 'functest-verify-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
@@ -236,42 +234,6 @@
         - 'functest-vims'
 
 - job-template:
-    name: 'functest-daily-{stream}'
-
-    # Job template for daily builders
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-
-    varsetabove: '{somevar}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - functest-parameter:
-            gs-pathname: '{gs-pathname}'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{stream}'
-
-    triggers:
-        - 'functest-{stream}'
-
-    prebuilders:
-        - test-macro
-
-    builders:
-        - shell:
-            !include-raw ../opnfvdocs/docu-build.sh
-
-    postbuilders:
-        - test-macro
-
-- job-template:
     name: 'functest-verify-{stream}'
 
     parameters:
@@ -305,44 +267,8 @@
                     branch-pattern: '**/{branch}'
 
     builders:
-        - shell:
-            echo "Hello World"
-
-- job-template:
-    name: 'functest-merge-{stream}'
-
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: '{branch}'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'functest'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/{branch}'
-
-    builders:
-        - shell:
-            !include-raw ../opnfvdocs/docu-build.sh
+        - shell: |
+            echo "Nothing to verify!"
 
 ########################
 # parameter macros

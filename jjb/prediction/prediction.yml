@@ -1,69 +1,41 @@
+###################################################
+# All the jobs except verify have been removed!
+# They will only be enabled on request by projects!
+###################################################
 - project:
     name: prediction
-    jobs:
-        - 'prediction-test'
-        - 'prediction-daily-{stream}'
-        - 'prediction-merge'
-        - 'prediction-verify'
 
-    # stream:    branch with - in place of / (eg. stable-helium)
-    # branch:    branch (eg. stable/helium)
+    project: '{name}'
+
+    jobs:
+        - 'prediction-verify-{stream}'
+
+# only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
             branch: 'master'
+            gs-pathname: ''
+#        - stable-brahmaputra:
+#            branch: 'stable/brahmaputra'
+#            gs-pathname: '/brahmaputra'
 
-    project: 'prediction'
-    somevar: 'foo'
-
-- job-template:
-    name: prediction-test
-
-    builders:
-        - shell: |
-            echo "Hello world from prediction"
-
-- job-template:
-    name: 'prediction-daily-{stream}'
-
-    # Job template for daily builders
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-
-    varsetabove: '{somevar}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    triggers:
-        - timed: 'H H * * *'
-
-    prebuilders:
-        - test-macro
-
-    builders:
-        - shell:
-            !include-raw docu-build.sh
-
-    postbuilders:
-        - test-macro
-
-- job-template:
-    name: 'prediction-verify'
+- job_defaults: &prediction_job_defaults
+    name: prediction_job_defaults
 
     parameters:
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{stream}'
+
+- job-template:
+    name: 'prediction-verify-{stream}'
+
+    <<: *prediction_job_defaults
+
+    parameters:
+        - 'opnfv-build-defaults'
+
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
@@ -84,48 +56,14 @@
                     comment-contains-value: 'reverify'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'prediction'
+                project-pattern: '{project}'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
+                    branch-pattern: '**/{stream}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**|.gitignore'
 
     builders:
-        - shell:
-            !include-raw docu-build.sh
-
-- job-template:
-    name: 'prediction-merge'
-
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: 'master'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'prediction'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
-
-    builders:
-        - shell:
-            !include-raw docu-build.sh
-
+        - shell: |
+            echo "Nothing to verify!"
