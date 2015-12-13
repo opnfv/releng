@@ -1,46 +1,41 @@
 - project:
     name: yardstick
 
-    project: 'yardstick'
+    project: '{name}'
 
     pod:
-        - lf:
-            node: 'opnfv-jump-2'
-            installer_type: 'fuel'
-            installer_ip: '10.20.0.2'
-        - ericsson:
-            node: 'yardstick-pod'
-            installer_type: 'fuel'
-            installer_ip: '10.20.0.2'
+        - opnfv-jump-2:
+            installer: fuel
+        - ericsson-pod1:
+            installer: fuel
+        - huawei-us-deploy-bare-1:
+            installer: compass4nfv
 
-    installer:
-        - fuel
+    loop:
+        - daily
 
     jobs:
-        - 'yardstick-{installer}-{pod}-{stream}'
-        - 'yardstick-merge'
-        - 'yardstick-verify'
+        - 'yardstick-{installer}-{pod}-{loop}-{stream}'
+        - 'yardstick-merge-{stream}'
+        - 'yardstick-verify-{stream}'
 
-    # stream:    branch with - in place of / (eg. stable-helium)
-    # branch:    branch (eg. stable/helium)
     stream:
         - master:
             branch: 'master'
+            gs-pathname: ''
+#        - brahmaputra:
+#            branch: 'stable/brahmaputra'
+#            gs-pathname: '/brahmaputra'
 
 - job-template:
-    name: 'yardstick-verify'
-
-    node: ericsson-build
+    name: 'yardstick-verify-{stream}'
 
     parameters:
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+            branch: '{branch}'
+        - 'ericsson-ca-build-1-defaults'
 
     scm:
         - gerrit-trigger-scm:
@@ -62,10 +57,10 @@
                     comment-contains-value: 'reverify'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'yardstick'
+                project-pattern: '{project}'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
+                    branch-pattern: '**/{branch}'
 
     builders:
         - shell: |
@@ -83,23 +78,14 @@
             deactivate
 
 - job-template:
-    name: 'yardstick-merge'
-
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
-    node: ericsson-build
+    name: 'yardstick-merge-{stream}'
 
     parameters:
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+            branch: '{branch}'
+        - 'ericsson-ca-build-1-defaults'
 
     scm:
         - gerrit-trigger-scm:
@@ -115,10 +101,10 @@
                     comment-contains-value: 'remerge'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'yardstick'
+                project-pattern: '{project}'
                 branches:
                     - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
+                      branch-pattern: '**/{branch}'
 
     builders:
         - shell: |
@@ -136,28 +122,20 @@
             deactivate
 
 - job-template:
-    name: 'yardstick-{installer}-{pod}-{stream}'
+    name: 'yardstick-{installer}-{pod}-{loop}-{stream}'
 
     disabled: false
-
-    node: '{node}'
 
     parameters:
         - project-parameter:
             project: '{project}'
-        - '{pod}-parameters'
+        - '{pod}-defaults'
+        - '{installer}-defaults'
+        - 'yardstick-params-{pod}'
         - string:
-            name: POD_NAME
-            default: '{pod}'
-            description: "POD where the job runs"
-        - string:
-            name: INSTALLER_TYPE
-            default: '{installer_type}'
-            description: "Installer name that is used for deployment."
-        - string:
-            name: INSTALLER_IP
-            default: '{installer_ip}'
-            description: "Installer IP."
+            name: YARDSTICK_SUITE_NAME
+            default: opnfv_${{NODE_NAME}}_{loop}.yaml
+            description: 'Path to test suite'
 
     scm:
         - git-scm:
@@ -192,20 +170,17 @@
             # Pull the latest image
             docker pull opnfv/yardstick
 
-            # Test suites to run
-            TEST_SUITES=opnfv_${POD_NAME}_daily.yaml
-
             docker run \
                --privileged=true \
                 --rm \
                 -t \
                 -e "INSTALLER_TYPE=${INSTALLER_TYPE}" \
                 -e "INSTALLER_IP=${INSTALLER_IP}" \
-                -e "POD_NAME=${POD_NAME}" \
+                -e "POD_NAME=${NODE_NAME}" \
                 -e "EXTERNAL_NETWORK=net04_ext" \
                 opnfv/yardstick \
                 run_tests.sh \
-                $TEST_SUITES
+                $YARDSTICK_SUITE_NAME
 
             echo "Yardstick: done!"
 
@@ -240,35 +215,46 @@
                     docker rmi opnfv/yardstick:$tag
                 done
             fi
-
 ########################
 # parameter macros
 ########################
 - parameter:
-    name: 'ericsson-parameters'
+    name: 'yardstick-params-ericsson-pod1'
     parameters:
         - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+            name: YARDSTICK_DB_BACKEND
+            default: 'none'
+            description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
-    name: 'lf-parameters'
+    name: 'yardstick-params-opnfv-jump-2'
     parameters:
         - string:
-            name: GIT_BASE
-            default: ssh://gerrit.opnfv.org:29418/$PROJECT
-            description: "URL for LF POD"
+            name: YARDSTICK_DB_BACKEND
+            default: 'db_args'
+            description: 'Arguments to use in order to choose the backend DB'
 
+- parameter:
+    name: 'yardstick-params-huawei-us-deploy-bare-1'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: 'none'
+            description: 'Arguments to use in order to choose the backend DB'
 ########################
 # trigger macros
 ########################
 - trigger:
-    name: 'yardstick-trigger-ericsson'
+    name: 'yardstick-trigger-ericsson-pod1'
     triggers:
         - timed: '@midnight'
 
 - trigger:
-    name: 'yardstick-trigger-lf'
+    name: 'yardstick-trigger-opnfv-jump-2'
+    triggers:
+        - timed: '#@midnight'
+
+- trigger:
+    name: 'yardstick-trigger-huawei-us-deploy-bare-1'
     triggers:
         - timed: '#@midnight'
