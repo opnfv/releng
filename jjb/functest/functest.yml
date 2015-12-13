@@ -4,234 +4,72 @@
 - project:
     name: functest
 
-    installer:
-        - fuel:
-            node: 'opnfv-jump-2'
-            installer_type: 'fuel'
-            installer_ip: '10.20.0.2'
-        - foreman:
-            node: 'opnfv-jump-2'
-            installer_type: 'foreman'
-            installer_ip: '172.30.10.73'
-        - apex:
-            node: 'opnfv-jump-1'
-            installer_type: 'apex'
-            installer_ip: '192.168.X.X'
-        - compass:
-            node: 'huawei-us-deploy-bare-1'
-            installer_type: 'compass'
-            installer_ip: '192.168.200.2'
-        - joid:
-            node: 'intel-pod5'
-            installer_type: 'compass'
-            installer_ip: '127.0.0.1'
+    project: '{name}'
+
     pod:
+        - opnfv-jump-1:
+            installer: apex
+        - opnfv-jump-2:
+            installer: fuel
         - orange-test1:
-            node: 'orange-test1'
-            installer_type: 'fuel'
-            installer_ip: '172.30.10.73'
-        - orange-fr-pod2:
-            node: 'orange-fr-pod2'
-            installer_type: 'joid'
-            installer_ip: '127.0.0.1'
-        - huawei-build:
-            node: 'huawei-us-deploy-bare-1'
-            installer_type: 'compass'
-            installer_ip: '192.168.200.2'
+            installer: fuel
+        - orange-pod2:
+            installer: joid
+        - huawei-us-deploy-bare-1:
+            installer: compass4nfv
         - intel-pod5:
-            node: 'intel-pod5'
-            installer_type: 'joid'
-            installer_ip: '127.0.0.1'
+            installer: joid
+
+    suite:
+        - 'daily':
+            suitename: 'functest-daily'
+        - 'tempest':
+            suitename: 'functest-suite'
+        - 'rally':
+            suitename: 'functest-suite'
+        - 'odl':
+            suitename: 'functest-suite'
+        - 'vims':
+            suitename: 'functest-suite'
+        - 'vping':
+            suitename: 'functest-suite'
 
     jobs:
-        - 'set-functest-env-{pod}'
-        - 'functest-{pod}'
-        - 'clean-functest-env-{pod}'
-        - 'set-functest-env-{installer}-{stream}'
-        - 'functest-{installer}-{stream}'
-        - 'clean-functest-env-{installer}-{stream}'
-        - 'functest-openstack-bench-test-{pod}'
-        - 'functest-openstack-tempest-smoke-test-{pod}'
-        - 'functest-odl-test-{pod}'
-        - 'functest-vims-{installer}-{stream}'
-        - 'functest-vping-test-{pod}'
+        - 'functest-{installer}-{pod}-{suite}-{stream}'
         - 'functest-verify-{stream}'
 
-    # stream:    branch with - in place of / (eg. stable-arno)
-    # branch:    branch (eg. stable/arno)
     stream:
         - master:
             branch: 'master'
             gs-pathname: ''
-        - stable-arno:
-            branch: 'stable/arno'
-            gs-pathname: '/arno'
+#        - brahmaputra:
+#            branch: 'stable/brahmaputra'
+#            gs-pathname: '/brahmaputra'
 
-    project: 'functest'
-    somevar: 'foo'
 ################################
 # job template
 ################################
 - job-template:
-    name: set-functest-env-{pod}
-
-    node: '{node}'
-
-    builders:
-        - 'set-functest-env'
-
-- job-template:
-    name: clean-functest-env-{pod}
-
-    node: '{node}'
-
-    builders:
-        - 'functest-cleanup'
-
-- job-template:
-    name: set-functest-env-{installer}-{stream}
-
-    node: '{node}'
-
-    builders:
-        - 'set-functest-env'
-
-- job-template:
-    name: clean-functest-env-{installer}-{stream}
-
-    node: '{node}'
-
-    builders:
-        - 'functest-cleanup'
-
-- job-template:
-    name: functest-openstack-bench-test-{pod}
-
-    node: '{node}'
-
-    builders:
-        - 'functest-rally-bench'
-
-- job-template:
-    name: functest-openstack-tempest-smoke-test-{pod}
-
-    node: '{node}'
-
-    builders:
-        - 'functest-tempest-smoke'
-
-- job-template:
-    name: functest-odl-test-{pod}
-
-    node: '{node}'
-
-    builders:
-        - shell: |
-        - 'functest-odl'
-
-- job-template:
-    name: functest-vping-test-{pod}
-
-    node: '{node}'
-
-    builders:
-        - 'functest-vping'
-
-- job-template:
-    name: functest-{pod}
-
-    node: '{node}'
+    name: 'functest-{installer}-{pod}-{suite}-{stream}'
 
     parameters:
         - project-parameter:
             project: '{project}'
+        - '{pod}-defaults'
+        - '{installer}-defaults'
+        - string:
+            name: FUNCTEST_SUITE_NAME
+            default: '{suite}'
         - functest-parameter
-        - string:
-            name: INSTALLER_TYPE
-            default: '{installer_type}'
-            description: "Installer name that is used for deployment."
-        - string:
-            name: INSTALLER_IP
-            default: '{installer_ip}'
-            description: "Installer IP."
-        - '{pod}'
 
     scm:
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: master
+            branch: '{branch}'
 
     builders:
-        - 'functest-cleanup'
-        - 'set-functest-env'
-        - 'functest-all'
-        - 'functest-store-results'
-
-- job-template:
-    name: functest-{installer}-{stream}
-
-    node: '{node}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - functest-parameter
-        - string:
-            name: INSTALLER_TYPE
-            default: '{installer_type}'
-            description: "Installer name that is used for deployment."
-        - string:
-            name: INSTALLER_IP
-            default: '{installer_ip}'
-            description: "Installer IP."
-        - string:
-            name: GIT_BASE
-            default: ssh://gerrit.opnfv.org:29418/$PROJECT
-            description: "Override GIT_BASE"
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: master
-
-    builders:
-        - 'functest-cleanup'
-        - 'set-functest-env'
-        - 'functest-all'
-        - 'functest-store-results'
-
-- job-template:
-    name: functest-vims-{installer}-{stream}
-
-    node: '{node}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - functest-parameter
-        - string:
-            name: INSTALLER_TYPE
-            default: '{installer_type}'
-            description: "Installer name that is used for deployment."
-        - string:
-            name: INSTALLER_IP
-            default: '{installer_ip}'
-            description: "Installer IP."
-        - string:
-            name: GIT_BASE
-            default: ssh://gerrit.opnfv.org:29418/$PROJECT
-            description: "Override GIT_BASE"
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: master
-
-    builders:
-        - 'functest-vims'
+        - '{obj:suitename}'
 
 - job-template:
     name: 'functest-verify-{stream}'
@@ -269,7 +107,6 @@
     builders:
         - shell: |
             echo "Nothing to verify!"
-
 ########################
 # parameter macros
 ########################
@@ -284,62 +121,6 @@
             name: FUNCTEST_REPO_DIR
             default: "/home/opnfv/repos/functest"
             description: "Directory where the Functest repository is cloned"
-
-- parameter:
-    name: orange-test1
-    parameters:
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Override GIT_BASE"
-
-- parameter:
-    name: orange-fr-pod2
-    parameters:
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Override GIT_BASE"
-        - string:
-            name: LAB_CONFIG
-            default: "/home/opnfv/repos/functest"
-            description: "Openstack credentials on the dev lab"
-
-- parameter:
-    name: opnfv-jump-1
-    parameters:
-        - string:
-            name: GIT_BASE
-            default: ssh://gerrit.opnfv.org:29418/$PROJECT
-            description: "Override GIT_BASE"
-
-- parameter:
-    name: huawei-build
-    parameters:
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Override GIT_BASE"
-
-- parameter:
-    name: intel-pod5
-    parameters:
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Override GIT_BASE"
-        - string:
-            name: LAB_CONFIG
-            default: "/home/ubuntu/joid_config/admin-openrc"
-            description: "Openstack credentials on the dev lab"
-
-- parameter:
-    name: opnfv-jump-2
-    parameters:
-        - string:
-            name: GIT_BASE
-            default: ssh://gerrit.opnfv.org:29418/$PROJECT
-            description: "Override GIT_BASE"
 ########################
 # trigger macros
 ########################
@@ -347,16 +128,29 @@
     name: 'functest-master'
     triggers:
         - pollscm: "H 9 * * *"
-
-- trigger:
-    name: 'functest-stable-arno'
-    triggers:
-        - pollscm: "H 21 * * *"
-
 ########################
 # builder macros
 ########################
-# macros
+- builder:
+    name: functest-daily
+    builders:
+        - 'functest-cleanup'
+        - 'set-functest-env'
+        - 'functest-all'
+        - 'functest-store-results'
+
+- builder:
+    name: functest-suite
+    builders:
+        - shell: |
+            #!/bin/bash
+            set +e
+
+            echo "Functest: run $FUNCTEST_SUITE_NAME"
+            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test $FUNCTEST_SUITE_NAME"
+            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
+            docker exec $container_id $cmd
+
 - builder:
     name: functest-all
     builders:
@@ -413,67 +207,6 @@
             cmd="${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
             echo "Executing command inside the docker: ${cmd}"
             docker exec ${container_id} ${cmd}
-
-- builder:
-    name: functest-vping
-    builders:
-        - shell: |
-            #!/bin/bash
-            set +e
-
-            echo "Functest: run vPing"
-            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test vping"
-            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
-            docker exec $container_id $cmd
-
-- builder:
-    name: functest-odl
-    builders:
-        - shell: |
-            #!/bin/bash
-            set +e
-
-            echo "Functest: run ODL suite"
-            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test odl"
-            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
-            docker exec $container_id $cmd
-
-- builder:
-    name: functest-tempest-smoke
-    builders:
-        - shell: |
-            #!/bin/bash
-            set +e
-
-            # tempest
-            echo "Functest: run Tempest suite"
-            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test tempest"
-            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
-            docker exec $container_id $cmd
-
-- builder:
-    name: functest-rally-bench
-    builders:
-        - shell: |
-            #!/bin/bash
-            set +e
-
-            echo "Functest: run Functest Rally Bench suites"
-            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test rally"
-            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
-            docker exec $container_id $cmd
-
-- builder:
-    name: functest-vims
-    builders:
-        - shell: |
-            #!/bin/bash
-            set +e
-
-            echo "Functest: run Functest vIMS test"
-            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test vims"
-            container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
-            docker exec $container_id $cmd
 
 - builder:
     name: functest-store-results
