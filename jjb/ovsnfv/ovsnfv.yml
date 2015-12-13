@@ -13,7 +13,7 @@
         - master:
             branch: 'master'
             gs-pathname: ''
-#        - stable-brahmaputra:
+#        - brahmaputra:
 #            branch: 'stable/brahmaputra'
 #            gs-pathname: '/brahmaputra'
 
@@ -24,7 +24,7 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{branch}'
         - 'intel-us-build-2-defaults'
 
     scm:
@@ -47,10 +47,10 @@
                     comment-contains-value: 'reverify'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'ovsnfv'
+                project-pattern: '{project}'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
+                    branch-pattern: '**/{branch}'
 
     builders:
         - shell: |
@@ -69,7 +69,7 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{branch}'
         - 'intel-us-build-2-defaults'
 
     scm:
@@ -86,10 +86,10 @@
                     comment-contains-value: 'remerge'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'ovsnfv'
+                project-pattern: '{project}'
                 branches:
                     - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
+                      branch-pattern: '**/{branch}'
 
     builders:
         - shell: |
