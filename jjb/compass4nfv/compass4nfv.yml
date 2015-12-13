@@ -7,8 +7,8 @@
     jobs:
         - 'compass-verify-{stream}'
         - 'compass-daily-{stream}'
-        - 'compass-build-iso'
-        - 'compass-build-ppa'
+        - 'compass-build-iso-{stream}'
+        - 'compass-build-ppa-{stream}'
         - 'compass-deploy-virtual-{flavor}'
         - 'compass-deploy-bare-huawei-us'
 
@@ -17,7 +17,7 @@
         - master:
             branch: 'master'
             gs-pathname: ''
-#        - stable-brahmaputra:
+#        - brahmaputra:
 #            branch: 'stable/brahmaputra'
 #            gs-pathname: '/brahmaputra'
 
@@ -56,7 +56,7 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{branch}'
         - compass-parameter:
             installer: '{installer}'
         - string:
@@ -86,7 +86,7 @@
                 project-pattern: '{project}'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
+                    branch-pattern: '**/{branch}'
                 forbidden-file-paths:
                   - compare-type: ANT
                     pattern: 'docs/**|.gitignore'
@@ -147,7 +147,7 @@
             block: true
 
 - job-template:
-    name: 'compass-build-iso'
+    name: 'compass-build-iso-{stream}'
 
     node: ericsson-build
 
@@ -169,7 +169,7 @@
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: 'master'
+            branch: '{branch}'
 
     builders:
         - 'builder-compass-build-iso'
@@ -177,7 +177,7 @@
         - 'builder-compass-workspace-cleanup'
 
 - job-template:
-    name: 'compass-build-ppa'
+    name: 'compass-build-ppa-{stream}'
 
     description: "build ppa(using docker) in huawei lab"
 
@@ -201,7 +201,7 @@
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: 'master'
+            branch: '{branch}'
 
     triggers:
         - timed: 'H 16 * * *'
