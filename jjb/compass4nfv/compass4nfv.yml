@@ -400,6 +400,9 @@
             echo
 
             export ISO_URL=file://$BUILD_DIRECTORY/compass.iso
+            brctl addbr vnic_ci
+            ifconfig vnic_ci up
+            export EXTERNAL_NIC=vnic_ci
             cd $WORKSPACE
 
             ./deploy.sh $FLAVOR_CONF
