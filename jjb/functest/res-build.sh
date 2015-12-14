@@ -7,9 +7,9 @@ export PATH=$PATH:/usr/local/bin/
 git_sha1="$(git rev-parse HEAD)"
 res_build_date=$(date -u +"%Y-%m-%d_%H-%M-%S")
 
-# Result directory in the docker file
+# Result directory in the jumphost
 # to be used only with CI
-dir_result="/home/opnfv/functest/results"
+dir_result='~/functest/results'
 
 # Clean the results directory
 # remove json file for rally, export only html
