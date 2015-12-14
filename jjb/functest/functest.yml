@@ -20,22 +20,12 @@
         - intel-pod5:
             installer: joid
 
-    suite:
-        - 'daily':
-            suitename: 'functest-daily'
-        - 'tempest':
-            suitename: 'functest-suite'
-        - 'rally':
-            suitename: 'functest-suite'
-        - 'odl':
-            suitename: 'functest-suite'
-        - 'vims':
-            suitename: 'functest-suite'
-        - 'vping':
-            suitename: 'functest-suite'
+    testsuite:
+        - 'daily'
+        - 'suite'
 
     jobs:
-        - 'functest-{installer}-{pod}-{suite}-{stream}'
+        - 'functest-{installer}-{pod}-{testsuite}-{stream}'
         - 'functest-verify-{stream}'
 
     stream:
@@ -50,16 +40,18 @@
 # job template
 ################################
 - job-template:
-    name: 'functest-{installer}-{pod}-{suite}-{stream}'
+    name: 'functest-{installer}-{pod}-{testsuite}-{stream}'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER: $FUNCTEST_SUITE_NAME'
 
     parameters:
         - project-parameter:
             project: '{project}'
         - '{pod}-defaults'
         - '{installer}-defaults'
-        - string:
-            name: FUNCTEST_SUITE_NAME
-            default: '{suite}'
+        - 'functest-{testsuite}-parameter'
         - functest-parameter
 
     scm:
@@ -69,7 +61,7 @@
             branch: '{branch}'
 
     builders:
-        - '{obj:suitename}'
+        - 'functest-{testsuite}-builder'
 
 - job-template:
     name: 'functest-verify-{stream}'
@@ -112,6 +104,24 @@
 # parameter macros
 ########################
 - parameter:
+    name: functest-daily-parameter
+    parameters:
+        - string:
+            name: FUNCTEST_SUITE_NAME
+            default: 'daily'
+            description: "Suite name to run"
+- parameter:
+    name: functest-suite-parameter
+    parameters:
+        - choice:
+            name: FUNCTEST_SUITE_NAME
+            choices:
+                - 'tempest'
+                - 'rally'
+                - 'odl'
+                - 'vims'
+                - 'vping'
+- parameter:
     name: functest-parameter
     parameters:
         - string:
@@ -133,7 +143,7 @@
 # builder macros
 ########################
 - builder:
-    name: functest-daily
+    name: functest-daily-builder
     builders:
         - 'functest-cleanup'
         - 'set-functest-env'
@@ -141,7 +151,7 @@
 #        - 'functest-store-results'
 
 - builder:
-    name: functest-suite
+    name: functest-suite-builder
     builders:
         - shell: |
             #!/bin/bash
