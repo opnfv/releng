@@ -132,6 +132,10 @@
             name: FUNCTEST_REPO_DIR
             default: "/home/opnfv/repos/functest"
             description: "Directory where the Functest repository is cloned"
+        - string:
+            name: PUSH_RESULTS_TO_DB
+            default: "true"
+            description: "Push the results of all the tests to the resultDB"
 ########################
 # trigger macros
 ########################
@@ -156,9 +160,12 @@
         - shell: |
             #!/bin/bash
             set +e
-
+            flag=""
+            if [ "${PUSH_RESULTS_TO_DB}" == "true" ]; then
+                flag="-r"
+            fi
             echo "Functest: run $FUNCTEST_SUITE_NAME"
-            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test $FUNCTEST_SUITE_NAME"
+            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test $FUNCTEST_SUITE_NAME ${flag}"
             container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
             docker exec $container_id $cmd
 
@@ -168,9 +175,12 @@
         - shell: |
             #!/bin/bash
             set +e
-
+            flag=""
+            if [ "${PUSH_RESULTS_TO_DB}" == "true" ]; then
+                flag="-r"
+            fi
             echo "Functest: running all the tests"
-            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh"
+            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh -r"
             container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
             docker exec $container_id $cmd
 
