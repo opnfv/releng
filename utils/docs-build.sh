@@ -95,6 +95,10 @@ fi
 find $SRC_DIR -name $INDEX_RST -printf '%h\n' | while read dir
 do
     name="${dir##*/}"
+    #If there is a top level index.rst dont put it in $project/docs/docs
+    if [[ $name == "docs" ]];
+      then name="";
+    fi
     src="$BUILD_DIR/src/$name"
     build="$BUILD_DIR/$name"
     output="$OUTPUT_DIR/$name"
