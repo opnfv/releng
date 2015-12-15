@@ -152,7 +152,7 @@
         - 'functest-cleanup'
         - 'set-functest-env'
         - 'functest-all'
-#        - 'functest-store-results'
+        - 'functest-store-results'
 
 - builder:
     name: functest-suite-builder
@@ -204,8 +204,14 @@
                 labconfig="-v ${LAB_CONFIG}:/home/opnfv/functest/conf/openstack.creds"
             fi
 
+            dir_result="${HOME}/opnfv/functest/reports"
+            mkdir -f ${dir_result}
+            rm -rf ${dir_result}/*
+
+            $res_volume="-v ${dir_result}:/home/opnfv/functest/results"
+
             docker pull opnfv/functest:latest_stable
-            cmd="docker run -id -e $envs ${labconfig} ${sshkey} opnfv/functest:latest_stable /bin/bash"
+            cmd="docker run -id -e $envs ${labconfig} ${sshkey} ${res_volume} opnfv/functest:latest_stable /bin/bash"
             echo "Functest: Running docker run command: ${cmd}"
             ${cmd}
             docker ps -a
