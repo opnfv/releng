@@ -14,8 +14,6 @@
         - master:
             branch: 'master'
             gs-pathname: ''
-            flags: ''
-            disabled: false
 
     project: 'apex'
 
@@ -27,7 +25,6 @@
     parameters:
         - apex-parameter:
             gs-pathname: '{gs-pathname}'
-            flags: '{flags}'
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
@@ -90,7 +87,6 @@
     parameters:
         - apex-parameter:
             gs-pathname: '{gs-pathname}'
-            flags: '{flags}'
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
@@ -144,7 +140,6 @@
             project: '{project}'
         - apex-parameter:
             gs-pathname: '{gs-pathname}'
-            flags: '{flags}'
         - gerrit-parameter:
             branch: '{branch}'
         - string:
@@ -187,7 +182,6 @@
             project: '{project}'
         - apex-parameter:
             gs-pathname: '{gs-pathname}'
-            flags: '{flags}'
 
     builders:
         - 'apex-deploy-virtual'
@@ -216,7 +210,6 @@
             project: '{project}'
         - apex-parameter:
             gs-pathname: '{gs-pathname}'
-            flags: '{flags}'
 
     builders:
         - 'apex-workspace-cleanup'
@@ -244,7 +237,6 @@
             project: '{project}'
         - apex-parameter:
             gs-pathname: '{gs-pathname}'
-            flags: '{flags}'
 
     properties:
         - build-blocker:
@@ -300,10 +292,6 @@
             name: GS_URL
             default: artifacts.opnfv.org/$PROJECT/{gs-pathname}
             description: "URL to Google Storage."
-        - string:
-            name: FLAGS
-            default: '{flags}'
-            description: "Build Flags"
 
 ########################
 # builder macros
@@ -319,8 +307,6 @@
             # log info to console
             echo "Starting the build of Apex using OpenStack Master packages. This will take some time..."
             echo "---------------------------------------------------------------------------------------"
-            echo "Build flags for this build are ${FLAGS}"
-            echo "---------------------------------------------------------------------------------------"
             echo
             # create the cache directory if it doesn't exist
             [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
@@ -328,7 +314,7 @@
             export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
             # start the build
             cd $WORKSPACE/ci
-            ./build.sh $FLAGS -v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
+            ./build.sh -v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
             RPM_VERSION=$(grep Version $BUILD_DIRECTORY/../build/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '_-')
             # list the contents of BUILD_OUTPUT directory
             ls -al $BUILD_DIRECTORY
