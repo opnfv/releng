@@ -19,31 +19,41 @@
     loop:
         - 'daily'
 
+    # ignore these as these will not exist in real job
+    dummy-phase:
+        - build
+        - deploy
+        - functest
+        - yardstick
+
     stream:
         - master:
             branch: 'master'
             gs-pathname: ''
 
     jobs:
-        - 'opnfv-fuel-{controller}-{pod}-{loop}-{stream}'
-        - 'opnfv-fuel-deploy-{pod}-{loop}-{stream}'
+        - 'tmp_fuel-{controller}-{pod}-{loop}-{stream}'
+        - 'tmp_fuel-{dummy-phase}-{pod}-{loop}-{stream}'
 
 ########################
 # job templates
 ########################
 - job-template:
-    name: 'opnfv-fuel-{controller}-{pod}-{loop}-{stream}'
+    name: 'tmp_fuel-{controller}-{pod}-{loop}-{stream}'
 
-    disabled: true
-
-    concurrent: false
+    project-type: multijob
 
     parameters:
         - project-parameter:
             project: '{installer}'
         - 'ericsson-ca-build-1-defaults'
-        - '{installer}-defaults':
-            controller: '{controller}'
+        - '{installer}-defaults'
+        - string:
+            name: CONTROLLER
+            default: '{controller}'
+        - string:
+            name: FEATURE
+            default: 'none'
 
     scm:
         - git-scm:
@@ -52,17 +62,36 @@
             branch: '{branch}'
 
     builders:
-        - trigger-builds:
-          - project: 'opnfv-fuel-daily-deploy-{stream}'
-            git-revision: true
-            block: true
-            predefined-parameters:
-                CONTROLLER={controller}
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'tmp_fuel-build-{loop}-{stream}'
+                  kill-phase-on: FAILURE
+                  current-parameters: true
+        - multijob:
+            name: deploy
+            condition: SUCCESSFUL
+            projects:
+                - name: 'opnfv-fuel-deploy-{loop}-{stream}'
+                  kill-phase-on: FAILURE
+                  current-parameters: true
+        - multijob:
+            name: functest
+            projects:
+                - name: 'opnfv-fuel-test-{loop}-{stream}'
+                  current-parameters: true
+        - multijob:
+            name: yardstick
+            projects:
+                - name: 'opnfv-fuel-test-{loop}-{stream}'
+                  current-parameters: true
+
 
 - job-template:
-    name: 'opnfv-fuel-deploy-{pod}-{loop}-{stream}'
+    name: 'tmp_fuel-{dummy-phase}-{pod}-{loop}-{stream}'
 
-    disabled: true
+    disabled: false
 
     concurrent: false
 
@@ -73,9 +102,14 @@
     parameters:
         - project-parameter:
             project: '{installer}'
-        - '{pod}-defaults':
-            loop: '{loop}'
+        - '{pod}-defaults'
         - '{installer}-defaults'
+        - string:
+            name: CONTROLLER
+            default: 'none'
+        - string:
+            name: FEATURE
+            default: 'none'
 
     scm:
         - git-scm:
