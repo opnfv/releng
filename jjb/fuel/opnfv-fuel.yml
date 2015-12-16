@@ -73,18 +73,18 @@
             name: deploy
             condition: SUCCESSFUL
             projects:
-                - name: 'tmp_fuel-deploy-{loop}-{stream}'
+                - name: 'tmp_fuel-deploy-{pod}-{loop}-{stream}'
                   kill-phase-on: FAILURE
                   current-parameters: true
         - multijob:
             name: functest
             projects:
-                - name: 'tmp_fuel-test-{loop}-{stream}'
+                - name: 'tmp_fuel-test-{pod}-{loop}-{stream}'
                   current-parameters: true
         - multijob:
             name: yardstick
             projects:
-                - name: 'tmp_fuel-test-{loop}-{stream}'
+                - name: 'tmp_fuel-test-{pod}-{loop}-{stream}'
                   current-parameters: true
 
 
