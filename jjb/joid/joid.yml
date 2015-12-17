@@ -5,39 +5,58 @@
 
     name: 'joid'
 
+    project: '{name}'
+
     installer: 'joid'
 
-    controller: 'odl'
+    sdn-controller:
+        - 'nosdn':
+            disabled: true
+        - 'odl':
+            disabled: false
+        - 'onos':
+            disabled: true
+        - 'opencontrail':
+            disabled: true
 
     pod:
         - 'intel-pod5'
         - 'orange-pod2'
 
+# only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
-            branch: 'master'
+            branch: '{stream}'
             gs-pathname: ''
+#        - brahmaputra:
+#            branch: 'stable/{stream}'
+#            gs-pathname: '{stream}'
 
     jobs:
-        - 'joid-{controller}-{pod}-daily-{stream}'
+        - 'joid-{sdn-controller}-{pod}-daily-{stream}'
         - 'joid-deploy-{pod}-daily-{stream}'
 
 ########################
 # job templates
 ########################
 - job-template:
-    name: 'joid-{controller}-{pod}-daily-{stream}'
+    name: 'joid-{sdn-controller}-{pod}-daily-{stream}'
 
-    disabled: false
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
 
     concurrent: false
 
     parameters:
-        - project-parameter:
-            project: '{installer}'
-        - 'intel-us-build-1-defaults'
-        - '{installer}-defaults':
-            controller: '{controller}'
+        - '{pod}-defaults'
+        - '{installer}-defaults'
+        - string:
+            name: SDN_CONTROLLER
+            default: '{sdn-controller}'
+        - string:
+            name: OPNFV_FEATURE
+            default: 'none'
 
     scm:
         - git-scm:
@@ -46,12 +65,7 @@
             branch: '{branch}'
 
     builders:
-        - trigger-builds:
-          - project: 'joid-deploy-{pod}-daily-{stream}'
-            git-revision: true
-            block: true
-            predefined-parameters:
-                CONTROLLER={controller}
+        - '{installer}-multijob-{pod}-builder'
 
 - job-template:
     name: 'joid-deploy-{pod}-daily-{stream}'
@@ -62,14 +76,13 @@
 
     wrappers:
         - build-name:
-            name: '$BUILD_NUMBER: {installer} $CONTROLLER'
+            name: '$BUILD_NUMBER: $INSTALLER_TYPE $SDN_CONTROLLER'
 
     parameters:
         - project-parameter:
-            project: '{installer}'
+            project: '{project}'
         - '{pod}-defaults'
-        - '{installer}-defaults':
-            controller: '{controller}'
+        - '{installer}-defaults'
 
     scm:
         - git-scm:
@@ -81,6 +94,58 @@
         - '{pod}-builder'
 
 ########################
+# multijob builder macros
+########################
+# intel-pod5 is CI POD so full CI will run on it
+# deploy, functest, yardstick
+- builder:
+    name: joid-multijob-intel-pod5-builder
+    builders:
+        - multijob:
+            name: deploy
+            condition: SUCCESSFUL
+            projects:
+                - name: 'joid-deploy-{pod}-daily-{stream}'
+                  current-parameters: true
+                  git-revision: true
+                  kill-phase-on: FAILURE
+        - multijob:
+            name: functest
+            condition: COMPLETED
+            projects:
+                - name: 'functest-joid-{pod}-daily-{stream}'
+                  current-parameters: true
+                  kill-phase-on: NEVER
+# yardstick placeholder
+#        - multijob:
+#            name: yardstick
+#            condition: COMPLETED
+#            projects:
+#                - name: 'yardstick-joid-{pod}-daily-{stream}'
+#                  current-parameters: true
+#                  kill-phase-on: NEVER
+
+# orange-pod2 is NOT a CI POD so only the selected jobs will run
+# deploy and functest currently
+- builder:
+    name: joid-multijob-orange-pod2-builder
+    builders:
+        - multijob:
+            name: deploy
+            condition: SUCCESSFUL
+            projects:
+                - name: 'joid-deploy-{pod}-daily-{stream}'
+                  current-parameters: true
+                  git-revision: true
+                  kill-phase-on: FAILURE
+        - multijob:
+            name: functest
+            condition: COMPLETED
+            projects:
+                - name: 'functest-joid-{pod}-daily-{stream}'
+                  current-parameters: true
+                  kill-phase-on: NEVER
+########################
 # builder macros
 ########################
 - builder:
@@ -88,30 +153,29 @@
     builders:
         - shell: |
             #!/bin/bash
-            echo "Running $INSTALLER_TYPE with controller $CONTROLLER"
+            echo "Running $INSTALLER_TYPE with controller $SDN_CONTROLLER"
             echo "Please note that this is a quick try to see how joid deployment works"
             echo
             echo "Executing clean.sh"
             cd $WORKSPACE/ci
             ./clean.sh
-        - shell: |
-            cd $WORKSPACE/ci
+            echo
             echo "Executing 02-maasdeploy.sh intelpod5"
             ./02-maasdeploy.sh intelpod5
-        - shell: |
-            cd $WORKSPACE/ci
-            echo "Executing deploy.sh -o liberty -s $CONTROLLER -t ha -l intelpod5"
-            ./deploy.sh -o liberty -s $CONTROLLER -t ha -l intelpod5
+            echo
+            echo "Executing deploy.sh -o liberty -s $SDN_CONTROLLER -t ha -l intelpod5"
+            ./deploy.sh -o liberty -s $SDN_CONTROLLER -t ha -l intelpod5
+
 - builder:
     name: orange-pod2-builder
     builders:
         - shell: |
             #!/bin/bash
-            echo "Running $INSTALLER_TYPE with controller $CONTROLLER"
+            echo "Running $INSTALLER_TYPE with controller $SDN_CONTROLLER"
             echo "Please note that this is WIP generic builder"
             echo
             echo "Executing clean.sh"
             cd $WORKSPACE/ci
             ./clean.sh
         - shell:
-            !include-raw ./joid-deploy.sh
+            !include-raw: ./joid-deploy.sh
