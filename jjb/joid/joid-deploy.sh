@@ -2,10 +2,12 @@
 set +e
 set -o nounset
 
+JOID_LOCAL_CONFIG_FOLDER=$HOME/joid_config
+JOID_ADMIN_OPENRC=$JOID_LOCAL_CONFIG_FOLDER/admin-openrc
+
 ####### Temporary - to be done with jenkins params #####
 JOID_MODE=ha
 JOID_RELEASE=liberty
-JOID_LOCAL_CONFIG_FOLDER=~/joid_config
 JOID_SDN_CONTROLLER=odl
 #################
 
@@ -33,7 +35,6 @@ else
     export OS_ADMIN_PASSWORD=openstack
     export CEPH_DISKS=/srv
     export CEPH_REFORMAT=no
-    export JOID_ADMIN_OPENRC=$WORKSPACE/admin_openrc.sh
 fi
 
 ##
@@ -47,8 +48,8 @@ if [ -e "$JOID_LOCAL_CONFIG_FOLDER/environments.yaml" ] && [ "$MAAS_REINSTALL" =
 else
     MAASCONFIG=$WORKSPACE/ci/maas/$POD_DC/$POD_NUM/deployment.yaml
     echo "------ Set MAAS password ------"
-    sed -i -- 's/user: ubuntu/user: $MAAS_USER/' $MAASCONFIG
-    sed -i -- 's/password: ubuntu/password: $MAAS_PASSWORD/' $MAASCONFIG
+    sed -i -- "s/user: ubuntu/user: $MAAS_USER/" $MAASCONFIG
+    sed -i -- "s/password: ubuntu/password: $MAAS_PASSWORD/" $MAASCONFIG
     echo "------ Redeploy MAAS ------"
     ./02-maasdeploy.sh $POD_NAME
 fi
@@ -86,9 +87,16 @@ echo "Execute: ./deploy.sh -t $JOID_MODE -o $JOID_RELEASE -s $JOID_SDN_CONTROLLE
 ## Set Admin RC
 ##
 
-echo "------ Create OpenRC file ------"
-KEYSTONE=$(cat bundle.yaml |shyaml get-value openstack-phase2.services.keystone.options.vip)
+echo "------ Create OpenRC file [$JOID_ADMIN_OPENRC] ------"
+KEYSTONE=$(cat bundles.yaml |shyaml get-value openstack-phase2.services.keystone.options.vip)
 
+# create the folder if needed
+JOID_ADMIN_OPENRC_FOLDER=$(echo $JOID_ADMIN_OPENRC | perl -pe "s|^(.*/).*?$|\1|")
+if [ ! -d "$JOID_ADMIN_OPENRC_FOLDER" ]; then
+    mkdir -p $JOID_ADMIN_OPENRC_FOLDER
+fi
+
+# export the openrc file
 cat << EOF > $JOID_ADMIN_OPENRC
 export OS_USERNAME=admin
 export OS_PASSWORD=$OS_ADMIN_PASSWORD
@@ -96,6 +104,10 @@ export OS_TENANT_NAME=admin
 export OS_AUTH_URL=http://$KEYSTONE:5000/v2.0
 export OS_REGION_NAME=Canonical
 EOF
+
+##
+## Backup local juju env
+##
 
 if [ -d "$JOID_LOCAL_CONFIG_FOLDER" ]; then
     echo "------ Backup Juju environment ------"
