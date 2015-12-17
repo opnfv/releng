@@ -190,26 +190,30 @@
         - shell: |
             #!/bin/bash
             set +e
+            # labconfig is used only for joid
+            labconfig=""
             if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
                 INSTALLER_IP=$(grep instack /var/lib/libvirt/dnsmasq/default.leases \
                     |awk '{print $3}' | head -n 1)
                 sshkey="-v /root/.ssh/id_rsa:/root/.ssh/id_rsa"
                 sudo iptables -D FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable
                 sudo iptables -D FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable
+            elif [[ ${INSTALLER_TYPE} == 'joid' ]]; then
+                # If production lab then creds may be retrieved dynamically
+                # creds are on the jumphost, always in the same folder
+                labconfig="-v /home/ubuntu/joid/ci/cloud/admin-openrc:/home/opnfv/functest/conf/openstack.creds"
+                # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
+                # replace the default one by the customized one provided by jenkins config
+                if [ -n "${LAB_CONFIG}" ]; then
+                    labconfig="-v ${LAB_CONFIG}:/home/opnfv/functest/conf/openstack.creds"
+                fi
             fi
             echo "Functest: Start Docker and prepare environment"
             envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} -e NODE_NAME=${NODE_NAME}"
-            labconfig=""
-            # If production lab then creds may be retrieved dynamically
-            # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
-            if [ -n "${LAB_CONFIG}" ]; then
-                labconfig="-v ${LAB_CONFIG}:/home/opnfv/functest/conf/openstack.creds"
-            fi
-
+            
             dir_result="${HOME}/opnfv/functest/reports"
             mkdir -f ${dir_result}
             rm -rf ${dir_result}/*
-
             $res_volume="-v ${dir_result}:/home/opnfv/functest/results"
 
             docker pull opnfv/functest:latest_stable
