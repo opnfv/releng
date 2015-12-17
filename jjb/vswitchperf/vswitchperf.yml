@@ -1,37 +1,31 @@
 - project:
-    name: vswitchperf
-    jobs:
-        - 'vswitchperf-daily-{stream}'
-        - 'vswitchperf-merge-{stream}'
-        - 'vswitchperf-verify-{stream}'
 
-    # stream:    branch with - in place of / (eg. stable-helium)
-    # branch:    branch (eg. stable/helium)
+    name: vswitchperf
+
+    project: '{name}'
+
+    jobs:
+        - 'vswitchperf-verify-{stream}'
+        - 'vswitchperf-merge-{stream}'
+        - 'vswitchperf-daily-{stream}'
+
+# only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
             branch: 'master'
-
-    project: 'vswitchperf'
-    somevar: 'foo'
+            gs-pathname: ''
+#        - brahmaputra:
+#            branch: 'stable/brahmaputra'
+#            gs-pathname: '/brahmaputra'
 
 - job-template:
+
     name: 'vswitchperf-daily-{stream}'
-
-    # Job template for daily builders
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-
-    varsetabove: '{somevar}'
-    node: opnfv-build
 
     parameters:
         - project-parameter:
             project: '{project}'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/vswitchperf
+        - 'intel-pod3-defaults'
 
     scm:
         - git-scm:
@@ -42,9 +36,6 @@
     triggers:
         - timed: 'H H * * *'
 
-    prebuilders:
-        - test-macro
-
     builders:
         - shell: |
             pwd
@@ -54,15 +45,10 @@
             # run basic sanity test
             make sanity
 
-    postbuilders:
-        - test-macro
-
 - job-template:
     name: 'vswitchperf-verify-{stream}'
 
     project-type: freestyle
-
-    node: opnfv-build
 
     concurrent: true
 
@@ -76,10 +62,9 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/vswitchperf
+            branch: '{branch}'
+        - 'opnfv-build-defaults'
+
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
@@ -100,10 +85,10 @@
                     comment-contains-value: 'reverify'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'vswitchperf'
+                project-pattern: '{project}'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
+                    branch-pattern: '**/{branch}'
                 forbidden-file-paths:
                   - compare-type: ANT
                     pattern: 'docs/**'
@@ -120,13 +105,7 @@
 - job-template:
     name: 'vswitchperf-merge-{stream}'
 
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
     project-type: freestyle
-
-    node: opnfv-build
 
     concurrent: true
 
@@ -140,10 +119,8 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/vswitchperf
+            branch: '{branch}'
+        - 'opnfv-build-defaults'
 
     scm:
         - gerrit-trigger-scm:
@@ -159,10 +136,10 @@
                     comment-contains-value: 'remerge'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'vswitchperf'
+                project-pattern: '{project}'
                 branches:
                     - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
+                      branch-pattern: '**/{branch}'
                 forbidden-file-paths:
                   - compare-type: ANT
                     pattern: 'docs/**'
