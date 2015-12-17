@@ -205,6 +205,11 @@
             if [ -n "${LAB_CONFIG}" ]; then
                 labconfig="-v ${LAB_CONFIG}:/home/opnfv/functest/conf/openstack.creds"
             fi
+            # in case of joid installation, creds are on the jumphost
+            # always in the same folder
+            if [ ${INSTALLER_TYPE} == "joid" ]; then
+                labconfig="-v /home/ubuntu/joid/ci/cloud/admin-openrc:/home/opnfv/functest/conf/openstack.creds"
+            fi
 
             dir_result="${HOME}/opnfv/functest/reports"
             mkdir -f ${dir_result}
