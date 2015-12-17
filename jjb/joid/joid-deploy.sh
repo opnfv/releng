@@ -33,7 +33,7 @@ else
     export OS_ADMIN_PASSWORD=openstack
     export CEPH_DISKS=/srv
     export CEPH_REFORMAT=no
-    export JOID_ADMIN_OPENRC=$WORKSPACE/admin_openrc.sh
+    export JOID_ADMIN_OPENRC=$WORKSPACE/ci/cloud/admin-openrc
 fi
 
 ##
@@ -47,8 +47,8 @@ if [ -e "$JOID_LOCAL_CONFIG_FOLDER/environments.yaml" ] && [ "$MAAS_REINSTALL" =
 else
     MAASCONFIG=$WORKSPACE/ci/maas/$POD_DC/$POD_NUM/deployment.yaml
     echo "------ Set MAAS password ------"
-    sed -i -- 's/user: ubuntu/user: $MAAS_USER/' $MAASCONFIG
-    sed -i -- 's/password: ubuntu/password: $MAAS_PASSWORD/' $MAASCONFIG
+    sed -i -- "s/user: ubuntu/user: $MAAS_USER/" $MAASCONFIG
+    sed -i -- "s/password: ubuntu/password: $MAAS_PASSWORD/" $MAASCONFIG
     echo "------ Redeploy MAAS ------"
     ./02-maasdeploy.sh $POD_NAME
 fi
@@ -86,8 +86,8 @@ echo "Execute: ./deploy.sh -t $JOID_MODE -o $JOID_RELEASE -s $JOID_SDN_CONTROLLE
 ## Set Admin RC
 ##
 
-echo "------ Create OpenRC file ------"
-KEYSTONE=$(cat bundle.yaml |shyaml get-value openstack-phase2.services.keystone.options.vip)
+echo "------ Create OpenRC file [$JOID_ADMIN_OPENRC] ------"
+KEYSTONE=$(cat bundles.yaml |shyaml get-value openstack-phase2.services.keystone.options.vip)
 
 cat << EOF > $JOID_ADMIN_OPENRC
 export OS_USERNAME=admin
