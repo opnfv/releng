@@ -204,6 +204,8 @@
             # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
             if [ -n "${LAB_CONFIG}" ]; then
                 labconfig="-v ${LAB_CONFIG}:/home/opnfv/functest/conf/openstack.creds"
+            elif [ "$installer_type" == "joid" ]; then
+                labconfig="-v /home/ubuntu/joid/ci/cloud/admin-openrc:/home/opnfv/functest/conf/openstack.creds"
             fi
 
             dir_result="${HOME}/opnfv/functest/reports"
