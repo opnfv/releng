@@ -34,7 +34,7 @@
             branch: '{branch}'
 
     triggers:
-        - timed: 'H H * * *'
+        - pollscm: '@midnight'
 
     builders:
         - shell: |
@@ -44,6 +44,10 @@
             make
             # run basic sanity test
             make sanity
+            scl enable python33 bash
+            source ~/vsperfenv/bin/activate
+            cd ../ci
+            ./build-vsperf.sh daily
 
 - job-template:
     name: 'vswitchperf-verify-{stream}'
@@ -101,6 +105,10 @@
             make
             # run basic sanity test
             make sanity
+            scl enable python33 bash
+            source ~/vsperfenv/bin/activate
+            cd ../ci
+            ./build-vsperf.sh verify
 
 - job-template:
     name: 'vswitchperf-merge-{stream}'
@@ -150,3 +158,7 @@
             cd src
             make clobber
             make
+            scl enable python33 bash
+            source ~/vsperfenv/bin/activate
+            cd ../ci
+            ./build-vsperf.sh merge
