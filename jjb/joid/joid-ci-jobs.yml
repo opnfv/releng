@@ -7,7 +7,47 @@
 
     project: '{name}'
 
-    installer: 'joid'
+    installer: '{name}'
+
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+    brahmaputra: &brahmaputra
+        stream: brahmaputra
+        branch: 'stable/{stream}'
+        gs-pathname: '{stream}'
+#--------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+#      Current Mapping
+#--------------------------------
+#  everything runs against master branch
+#--------------------------------
+    pod:
+        - intel-pod5:
+            <<: *master
+        - orange-pod2:
+            <<: *master
+#--------------------------------
+#     Milestone E Mapping
+#     !!!DO NOT ENABLE!!!
+#--------------------------------
+#        brahmaputra
+#--------------------------------
+#        - intel-pod5:
+#            <<: *brahmaputra
+#--------------------------------
+#           master
+#--------------------------------
+#        - intel-pod6:
+#            <<: *master
+#        - orange-pod2:
+#            <<: *master
+#--------------------------------
 
     sdn-controller:
         - 'nosdn':
@@ -18,19 +58,6 @@
             disabled: true
         - 'opencontrail':
             disabled: true
-
-    pod:
-        - 'intel-pod5'
-        - 'orange-pod2'
-
-# only master branch is enabled at the moment to keep no of jobs sane
-    stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-#        - brahmaputra:
-#            branch: 'stable/{stream}'
-#            gs-pathname: '{stream}'
 
     jobs:
         - 'joid-{sdn-controller}-{pod}-daily-{stream}'
@@ -47,6 +74,10 @@
     disabled: '{obj:disabled}'
 
     concurrent: false
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Feature: $OPNFV_FEATURE'
 
     parameters:
         - project-parameter:
@@ -80,7 +111,7 @@
 
     wrappers:
         - build-name:
-            name: '$BUILD_NUMBER: $INSTALLER_TYPE $SDN_CONTROLLER'
+            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Feature: $OPNFV_FEATURE'
 
     parameters:
         - project-parameter:
@@ -104,6 +135,24 @@
 # deploy, functest, yardstick
 - builder:
     name: joid-multijob-intel-pod5-builder
+    builders:
+        - multijob:
+            name: deploy
+            condition: SUCCESSFUL
+            projects:
+                - name: 'joid-deploy-{pod}-daily-{stream}'
+                  current-parameters: true
+                  git-revision: true
+                  kill-phase-on: FAILURE
+        - multijob:
+            name: functest
+            condition: COMPLETED
+            projects:
+                - name: 'functest-joid-{pod}-daily-{stream}'
+                  current-parameters: true
+                  kill-phase-on: NEVER
+- builder:
+    name: joid-multijob-intel-pod6-builder
     builders:
         - multijob:
             name: deploy
@@ -154,6 +203,24 @@
 ########################
 - builder:
     name: intel-pod5-builder
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Running $INSTALLER_TYPE with controller $SDN_CONTROLLER"
+            echo "Please note that this is a quick try to see how joid deployment works"
+            echo
+            echo "Executing clean.sh"
+            cd $WORKSPACE/ci
+            ./clean.sh
+            echo
+            echo "Executing 02-maasdeploy.sh intelpod5"
+            ./02-maasdeploy.sh intelpod5
+            echo
+            echo "Executing deploy.sh -o liberty -s $SDN_CONTROLLER -t ha -l intelpod5"
+            ./deploy.sh -o liberty -s $SDN_CONTROLLER -t ha -l intelpod5
+
+- builder:
+    name: intel-pod6-builder
     builders:
         - shell: |
             #!/bin/bash
