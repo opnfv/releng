@@ -5,12 +5,6 @@ set -o nounset
 JOID_LOCAL_CONFIG_FOLDER=$HOME/joid_config
 JOID_ADMIN_OPENRC=$JOID_LOCAL_CONFIG_FOLDER/admin-openrc
 
-####### Temporary - to be done with jenkins params #####
-JOID_MODE=ha
-JOID_RELEASE=liberty
-JOID_SDN_CONTROLLER=odl
-#################
-
 ##
 ## Load local config or defaults
 ##
@@ -20,6 +14,7 @@ if [ -e "$JOID_LOCAL_CONFIG_FOLDER/config.sh" ]; then
     source $JOID_LOCAL_CONFIG_FOLDER/config.sh
 else
     echo "------ No local config, load default ------"
+    # link NODE_NAME to joid node config names
     case $NODE_NAME in
         orange-fr-pod2)
             POD=orange-pod2 ;;
@@ -59,10 +54,10 @@ fi
 ##
 
 # Get juju deployer file
-if [ "$JOID_MODE" == 'nonha' ]; then
-    SRCBUNDLE=$WORKSPACE/ci/$JOID_SDN_CONTROLLER/juju-deployer/ovs-$JOID_SDN_CONTROLLER.yaml
+if [ "$HA_MODE" == 'nonha' ]; then
+    SRCBUNDLE=$WORKSPACE/ci/$SDN_CONTROLLER/juju-deployer/ovs-$SDN_CONTROLLER.yaml
 else
-    SRCBUNDLE=$WORKSPACE/ci/$JOID_SDN_CONTROLLER/juju-deployer/ovs-$JOID_SDN_CONTROLLER-$JOID_MODE.yaml
+    SRCBUNDLE=$WORKSPACE/ci/$SDN_CONTROLLER/juju-deployer/ovs-$SDN_CONTROLLER-$HA_MODE.yaml
 fi
 
 # Modify files
@@ -79,9 +74,9 @@ sed -i -r -- "s/^(\s+osd-reformat: )'no'/\1'$CEPH_REFORMAT'/" $SRCBUNDLE
 ##
 
 echo "------ Deploy with juju ------"
-echo "Execute: ./deploy.sh -t $JOID_MODE -o $JOID_RELEASE -s $JOID_SDN_CONTROLLER -l $POD_NAME"
+echo "Execute: ./deploy.sh -t $HA_MODE -o $OS_RELEASE -s $SDN_CONTROLLER -l $POD_NAME"
 
-./deploy.sh -t $JOID_MODE -o $JOID_RELEASE -s $JOID_SDN_CONTROLLER -l $POD_NAME
+./deploy.sh -t $HA_MODE -o $OS_RELEASE -s $SDN_CONTROLLER -l $POD_NAME
 
 ##
 ## Set Admin RC
@@ -113,3 +108,28 @@ if [ -d "$JOID_LOCAL_CONFIG_FOLDER" ]; then
     echo "------ Backup Juju environment ------"
     cp environments.yaml $JOID_LOCAL_CONFIG_FOLDER/
 fi
+
+##
+## Basic test to return a realistic result to jenkins
+##
+source $JOID_ADMIN_OPENRC
+curl -i -sw '%{http_code}' -H "Content-Type: application/json"   -d "
+{ \"auth\": {
+    \"identity\": {
+      \"methods\": [\"password\"],
+      \"password\": {
+        \"user\": {
+          \"name\": \"$OS_TENANT_NAME\",
+          \"domain\": { \"id\": \"default\" },
+          \"password\": \"$OS_PASSWORD\"
+        }
+      }
+    }
+  }
+}"   http://$KEYSTONE:5000/v3/auth/tokens |grep "HTTP/1.1 20" 2>&1 >/dev/null; echo $?;
+RES=$?
+if [ $RES == 0 ]; then
+    echo "Deploy SUCCESS"
+else
+    echo "Deploy FAILED"
+return $RES
