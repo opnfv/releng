@@ -7,7 +7,47 @@
 
     project: '{name}'
 
-    installer: 'joid'
+    installer: '{name}'
+
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+    brahmaputra: &brahmaputra
+        stream: brahmaputra
+        branch: 'stable/{stream}'
+        gs-pathname: '{stream}'
+#--------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+#      Current Mapping
+#--------------------------------
+#  everything runs against master branch
+#--------------------------------
+    pod:
+        - intel-pod5:
+            <<: *master
+        - orange-pod2:
+            <<: *master
+#--------------------------------
+#     Milestone E Mapping
+#     !!!DO NOT ENABLE!!!
+#--------------------------------
+#        brahmaputra
+#--------------------------------
+#        - intel-pod5:
+#            <<: *brahmaputra
+#--------------------------------
+#           master
+#--------------------------------
+#        - intel-pod6:
+#            <<: *master
+#        - orange-pod2:
+#            <<: *master
+#--------------------------------
 
     sdn-controller:
         - 'nosdn':
@@ -18,19 +58,6 @@
             disabled: true
         - 'opencontrail':
             disabled: true
-
-    pod:
-        - 'intel-pod5'
-        - 'orange-pod2'
-
-# only master branch is enabled at the moment to keep no of jobs sane
-    stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-#        - brahmaputra:
-#            branch: 'stable/{stream}'
-#            gs-pathname: '{stream}'
 
     jobs:
         - 'joid-{sdn-controller}-{pod}-daily-{stream}'
@@ -47,6 +74,13 @@
     disabled: '{obj:disabled}'
 
     concurrent: false
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Feature: $OPNFV_FEATURE'
+
+    triggers:
+        - 'joid-{pod}-trigger'
 
     parameters:
         - project-parameter:
@@ -80,7 +114,7 @@
 
     wrappers:
         - build-name:
-            name: '$BUILD_NUMBER: $INSTALLER_TYPE $SDN_CONTROLLER'
+            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Feature: $OPNFV_FEATURE'
 
     parameters:
         - project-parameter:
@@ -183,3 +217,16 @@
             ./clean.sh
         - shell:
             !include-raw ./joid-deploy.sh
+########################
+# trigger macros
+########################
+- trigger:
+    name: 'joid-intel-pod5-trigger'
+    triggers:
+        - timed: '0 3 * * *'
+# timer trigger is commented out since we do not know if the automatic runs should
+# be enabled on orange-pod2
+- trigger:
+    name: 'joid-orange-pod2-trigger'
+    triggers:
+        - timed: '#0 3 * * *'
