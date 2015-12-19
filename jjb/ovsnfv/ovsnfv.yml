@@ -60,8 +60,7 @@
             set -o pipefail
 
             cd $WORKSPACE/ci
-            echo "Builds have been disabled."
-#            ./build.sh
+            ./build.sh
 
 - job-template:
     name: 'ovsnfv-merge-{stream}'
@@ -100,8 +99,7 @@
             set -o pipefail
 
             cd $WORKSPACE/ci
-            echo "Builds have been disabled."
-#            ./build.sh
+            ./build.sh
 
 - job-template:
     name: 'ovsnfv-daily-{stream}'
@@ -110,6 +108,10 @@
         - project-parameter:
             project: '{project}'
         - 'intel-us-build-2-defaults'
+        - string:
+            name: GS_URL
+            default: gs://$GS_BASE{gs-pathname}
+            description: "URL to Google Storage."
 
     scm:
         - git-scm:
@@ -128,5 +130,4 @@
             set -o pipefail
 
             cd $WORKSPACE/ci
-            echo "Builds have been disabled."
-#            ./build.sh
+            ./build.sh
