@@ -6,19 +6,83 @@
 
     project: '{name}'
 
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+    brahmaputra: &brahmaputra
+        stream: brahmaputra
+        branch: 'stable/{stream}'
+        gs-pathname: '{stream}'
+#--------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+#      Current Mapping
+#--------------------------------
+#  everything runs against master branch
+#--------------------------------
     pod:
-        - intel-us-deploy-virtual-2:
-            installer: apex
-        - opnfv-jump-2:
-            installer: fuel
-        - orange-test1:
-            installer: fuel
-        - orange-pod2:
-            installer: joid
         - huawei-us-deploy-bare-1:
             installer: compass
+            <<: *master
         - intel-pod5:
             installer: joid
+            <<: *master
+        - intel-us-deploy-virtual-2:
+            installer: apex
+            <<: *master
+        - opnfv-jump-2:
+            installer: fuel
+            <<: *master
+        - orange-test1:
+            installer: fuel
+            <<: *master
+        - orange-pod2:
+            installer: joid
+            <<: *master
+#--------------------------------
+#     Milestone E Mapping
+#     !!!DO NOT ENABLE!!!
+#--------------------------------
+#        brahmaputra
+#--------------------------------
+#        - huawei-us-deploy-bare-1:
+#            installer: compass
+#            <<: *brahmaputra
+#        - intel-pod5:
+#            installer: joid
+#            <<: *brahmaputra
+#        - opnfv-jump-1:
+#            installer: apex
+#            <<: *brahmaputra
+#        - opnfv-jump-2:
+#            installer: fuel
+#            <<: *brahmaputra
+#--------------------------------
+#           master
+#--------------------------------
+#        - ericsson-pod2:
+#            installer: fuel
+#            <<: *master
+#        - intelpod2-jumphost:
+#            installer: apex
+#            <<: *master
+#        - intel-pod6:
+#            installer: joid
+#            <<: *master
+#        - intel-pod8:
+#            installer: compass
+#            <<: *master
+#        - orange-test1:
+#            installer: fuel
+#            <<: *master
+#        - orange-pod2:
+#            installer: joid
+#            <<: *master
+#--------------------------------
 
     testsuite:
         - 'daily'
@@ -26,15 +90,6 @@
 
     jobs:
         - 'functest-{installer}-{pod}-{testsuite}-{stream}'
-        - 'functest-verify-{stream}'
-
-    stream:
-        - master:
-            branch: 'master'
-            gs-pathname: ''
-#        - brahmaputra:
-#            branch: 'stable/brahmaputra'
-#            gs-pathname: '/brahmaputra'
 
 ################################
 # job template
@@ -62,43 +117,6 @@
 
     builders:
         - 'functest-{testsuite}-builder'
-
-- job-template:
-    name: 'functest-verify-{stream}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: '{branch}'
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: '$GERRIT_REFSPEC'
-            choosing-strategy: 'gerrit'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'functest'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-
-    builders:
-        - shell: |
-            echo "Nothing to verify!"
 
 ########################
 # parameter macros
