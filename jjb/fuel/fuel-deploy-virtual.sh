@@ -22,7 +22,7 @@ CONFDIR=$WORKSPACE/deploy/templates/virtual_environment_noha/conf
 BRIDGE=pxebr
 
 # log info to console
-echo "Starting the deployment for a merged change using $INSTALLER. This could take some time..."
+echo "Starting the deployment for a merged change using $INSTALLER_TYPE. This could take some time..."
 echo "--------------------------------------------------------"
 echo
 
