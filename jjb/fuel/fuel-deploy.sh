@@ -17,8 +17,7 @@ mkdir -p $TMPDIR
 chmod a+x $HOME
 chmod a+x $TMPDIR
 
-# set CONFDIR, BRIDGE
-POD_CONF_DIR=$WORKSPACE/deploy/templates/hardware_environment/conf/linux_foundation_lab/pod2
+# set BRIDGE
 BRIDGE=pxebr
 
 # clone genesis repo and checkout the SR1 tag

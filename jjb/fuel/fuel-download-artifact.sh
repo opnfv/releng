@@ -4,10 +4,12 @@ set -o nounset
 set -o pipefail
 
 if [[ "$JOB_NAME" =~ "merge" ]]; then
+    echo "Downloading http://$GS_URL/opnfv-gerrit-$GERRIT_CHANGE_NUMBER.properties"
     # get the properties file for the Fuel ISO built for a merged change
     curl -s -o $WORKSPACE/latest.properties http://$GS_URL/opnfv-gerrit-$GERRIT_CHANGE_NUMBER.properties
 else
     # get the latest.properties file in order to get info regarding latest artifact
+    echo "Downloading http://$GS_URL/latest.properties"
     curl -s -o $WORKSPACE/latest.properties http://$GS_URL/latest.properties
 fi
 
