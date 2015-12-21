@@ -31,7 +31,7 @@ else
 fi
 
 # log info to console
-echo "Starting the build of $INSTALLER. This could take some time..."
+echo "Starting the build of $INSTALLER_TYPE. This could take some time..."
 echo "--------------------------------------------------------"
 echo
 

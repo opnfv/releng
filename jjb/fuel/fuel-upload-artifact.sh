@@ -4,7 +4,7 @@ set -o nounset
 set -o pipefail
 
 # log info to console
-echo "Uploading the $INSTALLER artifact. This could take some time..."
+echo "Uploading the $INSTALLER_TYPE artifact. This could take some time..."
 echo "--------------------------------------------------------"
 echo
 

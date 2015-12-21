@@ -18,7 +18,7 @@ fi
 source latest.properties
 
 # log info to console
-echo "Downloading the $INSTALLER artifact using URL http://$OPNFV_ARTIFACT_URL"
+echo "Downloading the $INSTALLER_TYPE artifact using URL http://$OPNFV_ARTIFACT_URL"
 echo "This could take some time..."
 echo "--------------------------------------------------------"
 echo

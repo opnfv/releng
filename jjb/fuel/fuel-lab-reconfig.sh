@@ -19,7 +19,7 @@ if ! GIT_SSL_NO_VERIFY=true git clone https://gerrit.opnfv.org/gerrit/releng; th
 fi
 
 # log info to console
-echo "Starting the lab reconfiguration for $INSTALLER..."
+echo "Starting the lab reconfiguration for $INSTALLER_TYPE..."
 echo "--------------------------------------------------------"
 echo
 

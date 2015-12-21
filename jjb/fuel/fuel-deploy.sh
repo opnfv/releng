@@ -35,7 +35,7 @@ sudo $WORKSPACE/genesis/common/ci/clean.sh -base_config $WORKSPACE/genesis/forem
 sudo $WORKSPACE/genesis/common/ci/setup.sh
 
 # log info to console
-echo "Starting the deployment using $INSTALLER. This could take some time..."
+echo "Starting the deployment using $INSTALLER_TYPE. This could take some time..."
 echo "--------------------------------------------------------"
 echo
 
