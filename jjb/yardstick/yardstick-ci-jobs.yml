@@ -1,130 +1,84 @@
+###################################
+# job configuration for functest
+###################################
 - project:
     name: yardstick
 
     project: '{name}'
 
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+    brahmaputra: &brahmaputra
+        stream: brahmaputra
+        branch: 'stable/{stream}'
+        gs-pathname: '{stream}'
+#--------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+#      Current Mapping
+#--------------------------------
+#  everything runs against master branch
+#--------------------------------
     pod:
         - opnfv-jump-2:
             installer: fuel
+            <<: *master
         - ericsson-pod1:
             installer: fuel
+            <<: *master
         - huawei-us-deploy-bare-1:
             installer: compass
-
+            <<: *master
+#--------------------------------
+#     Milestone E Mapping
+#     !!!DO NOT ENABLE!!!
+#--------------------------------
+#        brahmaputra
+#--------------------------------
+#        - huawei-us-deploy-bare-1:
+#            installer: compass
+#            <<: *brahmaputra
+#        - intel-pod5:
+#            installer: joid
+#            <<: *brahmaputra
+#        - opnfv-jump-1:
+#            installer: apex
+#            <<: *brahmaputra
+#        - opnfv-jump-2:
+#            installer: fuel
+#            <<: *brahmaputra
+#--------------------------------
+#           master
+#--------------------------------
+#        - ericsson-pod1:
+#            installer: fuel
+#            <<: *master
+#        - ericsson-pod2:
+#            installer: fuel
+#            <<: *master
+#--------------------------------
     loop:
         - daily
 
     jobs:
         - 'yardstick-{installer}-{pod}-{loop}-{stream}'
-        - 'yardstick-merge-{stream}'
-        - 'yardstick-verify-{stream}'
 
-    stream:
-        - master:
-            branch: 'master'
-            gs-pathname: ''
-#        - brahmaputra:
-#            branch: 'stable/brahmaputra'
-#            gs-pathname: '/brahmaputra'
-
-- job-template:
-    name: 'yardstick-verify-{stream}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: '{branch}'
-        - 'ericsson-ca-build-1-defaults'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: '$GERRIT_REFSPEC'
-            choosing-strategy: 'gerrit'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
-
-            echo "Running unit tests..."
-            cd $WORKSPACE
-            virtualenv $WORKSPACE/yardstick_venv
-            source $WORKSPACE/yardstick_venv/bin/activate
-            easy_install -U setuptools
-            python setup.py develop
-            ./run_tests.sh
-            deactivate
-
-- job-template:
-    name: 'yardstick-merge-{stream}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: '{branch}'
-        - 'ericsson-ca-build-1-defaults'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/{branch}'
-
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
-
-            echo "Running unit tests..."
-            cd $WORKSPACE
-            virtualenv $WORKSPACE/yardstick_venv
-            source $WORKSPACE/yardstick_venv/bin/activate
-            easy_install -U setuptools
-            python setup.py develop
-            ./run_tests.sh
-            deactivate
-
+################################
+# job templates
+################################
 - job-template:
     name: 'yardstick-{installer}-{pod}-{loop}-{stream}'
 
     disabled: false
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Feature: $OPNFV_FEATURE'
 
     parameters:
         - project-parameter:
