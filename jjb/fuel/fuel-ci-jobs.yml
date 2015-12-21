@@ -1,0 +1,225 @@
+- project:
+
+    name: 'fuel'
+
+    project: 'fuel'
+
+    installer: 'fuel'
+
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+    brahmaputra: &brahmaputra
+        stream: brahmaputra
+        branch: 'stable/{stream}'
+        gs-pathname: '/{stream}'
+#--------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+#      Current Mapping
+#--------------------------------
+#  everything runs against master branch
+#--------------------------------
+    pod:
+        - opnfv-jump-2:
+            <<: *master
+        - ericsson-pod1:
+            <<: *master
+#        - ericsson-pod2:
+#            <<: *master
+#--------------------------------
+#     Milestone E Mapping
+#     !!!DO NOT ENABLE!!!
+#--------------------------------
+#        brahmaputra
+#--------------------------------
+#        - opnfv-jump-2:
+#            <<: *brahmaputra
+# TESTING the CI stuff!!!!!!!
+        - ericsson-pod2:
+            <<: *brahmaputra
+
+# please check the triggers before enabling any of the controllers!!!
+    sdn-controller:
+        - 'nosdn':
+            disabled: false
+        - 'odl':
+            disabled: true
+        - 'onos':
+            disabled: true
+        - 'opencontrail':
+            disabled: true
+
+    jobs:
+        - 'fuel-{sdn-controller}-{pod}-daily-{stream}'
+        - 'fuel-build-{pod}-daily-{stream}'
+        - 'fuel-deploy-{pod}-daily-{stream}'
+
+########################
+# job templates
+########################
+- job-template:
+    name: 'fuel-{sdn-controller}-{pod}-daily-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Feature: $OPNFV_FEATURE'
+
+    triggers:
+        - 'fuel-{pod}-trigger'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{pod}-defaults'
+        - '{installer}-defaults'
+        - string:
+            name: SDN_CONTROLLER
+            default: '{sdn-controller}'
+        - string:
+            name: OPNFV_FEATURE
+            default: 'none'
+        - fuel-ci-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'fuel-build-{pod}-daily-{stream}'
+                  current-parameters: true
+                  git-revision: true
+                  kill-phase-on: FAILURE
+        - multijob:
+            name: deploy
+            condition: SUCCESSFUL
+            projects:
+                - name: 'fuel-deploy-{pod}-daily-{stream}'
+                  current-parameters: true
+                  git-revision: true
+                  kill-phase-on: FAILURE
+        - multijob:
+            name: functest
+            condition: COMPLETED
+            projects:
+                - name: 'functest-fuel-{pod}-daily-{stream}'
+                  current-parameters: true
+                  kill-phase-on: NEVER
+        - multijob:
+            name: yardstick
+            condition: COMPLETED
+            projects:
+                - name: 'yardstick-fuel-{pod}-daily-{stream}'
+                  current-parameters: true
+                  kill-phase-on: NEVER
+
+- job-template:
+    name: 'fuel-build-{pod}-daily-{stream}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - 'ericsson-ca-build-1-defaults'
+        - fuel-ci-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    wrappers:
+        - timeout:
+            timeout: 360
+            fail: true
+
+    builders:
+        - shell:
+            !include-raw ./fuel-build.sh
+        - shell:
+            !include-raw ./fuel-upload-artifact.sh
+        - shell:
+            !include-raw ./fuel-workspace-cleanup.sh
+
+    publishers:
+        - email:
+            recipients: jonas.bjurel@ericsson.com stefan.k.berg@ericsson.com
+
+- job-template:
+    name: 'fuel-deploy-{pod}-daily-{stream}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{pod}-defaults'
+        - fuel-ci-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - shell:
+            !include-raw ./fuel-download-artifact.sh
+        - shell:
+            !include-raw ./fuel-deploy.sh
+
+    publishers:
+        - email:
+            recipients: jonas.bjurel@ericsson.com stefan.k.berg@ericsson.com
+########################
+# parameter macros
+########################
+- parameter:
+    name: fuel-ci-parameter
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache/$INSTALLER
+            description: "Directory where the cache to be used during the build is located."
+        - string:
+            name: GS_URL
+            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+            description: "URL to Google Storage."
+########################
+# trigger macros
+########################
+# trigger for opnfv-jump-2 is set to run 1 hour ahead of others
+# to prevent doing unnecessary builds
+- trigger:
+    name: 'fuel-opnfv-jump-2-trigger'
+    triggers:
+        - timed: '0 2 * * *'
+- trigger:
+    name: 'fuel-ericsson-pod1-trigger'
+    triggers:
+        - timed: '0 3 * * *'
+- trigger:
+    name: 'fuel-ericsson-pod2-trigger'
+    triggers:
+        - timed: '0 3 * * *'
