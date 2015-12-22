@@ -60,17 +60,23 @@ function check_rst_doc() {
 
 function add_html_notes() {
     _src="$1"
-    _dir="$2"
 
-    if grep -q -e ' _sha1_' "$_src"/*.rst ; then
+    if grep -e ' _sha1_' "$_src"/*.rst ; then
         # TODO: remove this, once old templates were removed from all repos.
         echo
-        echo "Warn: '_sha1_' was found in $_dir , use the latest document template."
+        echo "Warn: '_sha1_' was found, use the latest document template."
         echo "      See https://wiki.opnfv.org/documentation/tools ."
         echo
         sed -i "s/ _sha1_/ $git_sha1/g" "$_src"/*.rst
     fi
     sed -i -e "\$a\\\n.. only:: html\n$html_notes" "$_src"/*.rst
+}
+
+function prepare_src_files() {
+    mkdir -p "$BUILD_DIR"
+    [[ -e "$BUILD_DIR/src" ]] && rm -rf "$BUILD_DIR/src"
+    cp -r "$SRC_DIR" "$BUILD_DIR/src"
+    add_html_notes "$BUILD_DIR/src"
 }
 
 function add_config() {
@@ -113,6 +119,7 @@ function generate_name() {
     echo "${_name////_}"
 }
 
+
 check_rst_doc $SRC_DIR
 
 if [[ ! -d "$RELENG_DIR" ]] ; then
@@ -120,10 +127,12 @@ if [[ ! -d "$RELENG_DIR" ]] ; then
     exit 1
 fi
 
+prepare_src_files
+
 find $SRC_DIR -name $INDEX_RST -printf '%h\n' | while read dir
 do
     name=$(generate_name $dir)
-    src="$BUILD_DIR/src/$name"
+    src="$BUILD_DIR/src${dir#$SRC_DIR}"
     build="$BUILD_DIR/$name"
     output="$OUTPUT_DIR/$name"
     conf="$src/conf.py"
@@ -133,12 +142,6 @@ do
     echo "Building DOCS in $dir"
     echo "#################${dir//?/#}"
     echo
-
-    mkdir -p "$BUILD_DIR/src"
-    [[ -e "$src" ]] && rm -rf "$src"
-    cp -r "$dir" "$src"
-
-    add_html_notes "$src" "$dir"
 
     [[ ! -f "$conf" ]] && cp "$default_conf" "$conf"
     title=$(cd $src; python -c "$get_title_script")
