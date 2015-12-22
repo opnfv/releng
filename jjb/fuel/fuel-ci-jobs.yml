@@ -68,6 +68,12 @@
 
     concurrent: false
 
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+
     wrappers:
         - build-name:
             name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Feature: $OPNFV_FEATURE'
@@ -129,6 +135,14 @@
 - job-template:
     name: 'fuel-build-{pod}-daily-{stream}'
 
+    concurrent: false
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+
     parameters:
         - project-parameter:
             project: '{project}'
@@ -162,6 +176,14 @@
 
 - job-template:
     name: 'fuel-deploy-{pod}-daily-{stream}'
+
+    concurrent: false
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
 
     parameters:
         - project-parameter:
