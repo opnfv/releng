@@ -4,9 +4,9 @@ set -o nounset
 set -o pipefail
 
 # check if we built something
-if [ -f $WORKSPSACE/.noupload ]; then
+if [ -f $WORKSPACE/.noupload ]; then
     echo "Nothing new to upload. Exiting."
-    /bin/rm -f $WORKSPSACE/.noupload
+    /bin/rm -f $WORKSPACE/.noupload
     exit 0
 fi
 
