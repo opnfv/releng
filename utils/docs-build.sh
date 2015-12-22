@@ -61,15 +61,18 @@ function check_rst_doc() {
 function add_html_notes() {
     _src="$1"
 
-    if grep -e ' _sha1_' "$_src"/*.rst ; then
-        # TODO: remove this, once old templates were removed from all repos.
-        echo
-        echo "Warn: '_sha1_' was found, use the latest document template."
-        echo "      See https://wiki.opnfv.org/documentation/tools ."
-        echo
-        sed -i "s/ _sha1_/ $git_sha1/g" "$_src"/*.rst
-    fi
-    sed -i -e "\$a\\\n.. only:: html\n$html_notes" "$_src"/*.rst
+    find "$_src" -name '*.rst' | while read file
+    do
+        if grep -q -e ' _sha1_' "$file" ; then
+            # TODO: remove this, once old templates were removed from all repos.
+            echo
+            echo "Warn: '_sha1_' was found in [$file], use the latest document template."
+            echo "      See https://wiki.opnfv.org/documentation/tools ."
+            echo
+            sed -i "s/ _sha1_/ $git_sha1/g" "$file"
+        fi
+        sed -i -e "\$a\\\n.. only:: html\n$html_notes" "$file"
+    done
 }
 
 function prepare_src_files() {
