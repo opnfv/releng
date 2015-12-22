@@ -107,6 +107,7 @@
     builders:
         - 'bottlenecks-fetch-os-creds'
         - 'run-rubbos-env-preparation'
+        - 'bottlenecks-instance-creation'
         - 'run-rubbos-tools-installation'
         - 'rubbos-exec'
 
@@ -136,6 +137,17 @@
             ./rubbos/rubbos_scripts/1-1-1/scripts/env_preparation.sh
 
 - builder:
+    name: bottlenecks-instance-creation
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+
+            echo "Bottlenecks: instance creation by using heat template"
+            cd $WORKSPACE
+            ./utils/infra_setup/heat_template/HOT_create_instance.sh
+
+- builder:
     name: run-rubbos-tools-installation
     builders:
         - shell: |
@@ -145,6 +157,8 @@
             echo "Bottlenecks: to install tools to run rubbos"
 
             cd $WORKSPACE
+            cd rubbos/rubbos_scripts/1-1-1
+            source set_bottlenecks_rubbos_env.sh
             ./rubbos/rubbos_scripts/1-1-1/scripts/run.sh
 
 - builder:
