@@ -26,11 +26,11 @@ fi
 gsutil -m setmeta \
     -h "Content-Type:text/html" \
     -h "Cache-Control:private, max-age=0, no-transform" \
-    gs://$GS_URL/*.properties
+    gs://$GS_URL/*.properties > /dev/null 2>&1
 
 gsutil -m setmeta \
     -h "Cache-Control:private, max-age=0, no-transform" \
-    gs://$GS_URL/*.iso
+    gs://$GS_URL/*.iso > /dev/null 2>&1
 
 echo
 echo "--------------------------------------------------------"
