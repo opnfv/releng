@@ -6,7 +6,7 @@ set -o pipefail
 # check if we built something
 if [ -f $WORKSPSACE/.noupload ]; then
     echo "Nothing new to upload. Exiting."
-    /bin/rm -f $WORKSPSACE/.noupload
+    /bin/rm -f $WORKSPACE/.noupload
     exit 0
 fi
 
