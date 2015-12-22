@@ -5,12 +5,12 @@ set -o pipefail
 
 cd $WORKSPACE
 
+LATEST_ISO_PROPERTIES=$WORKSPACE/latest.iso.properties
 if [[ "$JOB_NAME" =~ "daily" ]]; then
     # check to see if we already have an artifact on artifacts.opnfv.org
     # for this commit during daily builds
     echo "Checking to see if we already built and stored Fuel ISO for this commit"
 
-    LATEST_ISO_PROPERTIES=$WORKSPACE/latest.iso.properties
     curl -s -o $LATEST_ISO_PROPERTIES http://$GS_URL/latest.properties 2>/dev/null
 
     # get metadata of latest ISO
