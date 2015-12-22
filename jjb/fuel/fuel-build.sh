@@ -5,16 +5,20 @@ set -o pipefail
 
 cd $WORKSPACE
 
-# check to see if we already have an artifact on artifacts.opnfv.org
-# for this commit
-echo "Checking to see if we already built and stored Fuel ISO for this commit"
+if [[ "$JOB_NAME" =~ "daily" ]]; then
+    # check to see if we already have an artifact on artifacts.opnfv.org
+    # for this commit during daily builds
+    echo "Checking to see if we already built and stored Fuel ISO for this commit"
 
-LATEST_ISO_PROPERTIES=$WORKSPACE/latest.iso.properties
-curl -s -o $LATEST_ISO_PROPERTIES http://$GS_URL/latest.properties 2>/dev/null
+    LATEST_ISO_PROPERTIES=$WORKSPACE/latest.iso.properties
+    curl -s -o $LATEST_ISO_PROPERTIES http://$GS_URL/latest.properties 2>/dev/null
 
-# get metadata of latest ISO
-LATEST_ISO_SHA1=$(grep OPNFV_GIT_SHA1 $LATEST_ISO_PROPERTIES | cut -d'=' -f2)
-LATEST_ISO_URL=$(grep OPNFV_ARTIFACT_URL $LATEST_ISO_PROPERTIES | cut -d'=' -f2)
+    # get metadata of latest ISO
+    LATEST_ISO_SHA1=$(grep OPNFV_GIT_SHA1 $LATEST_ISO_PROPERTIES | cut -d'=' -f2)
+    LATEST_ISO_URL=$(grep OPNFV_ARTIFACT_URL $LATEST_ISO_PROPERTIES | cut -d'=' -f2)
+else
+    LATEST_ISO_SHA1=none
+fi
 
 # get current SHA1
 CURRENT_SHA1=$(git rev-parse HEAD)
