@@ -1,0 +1,180 @@
+- project:
+
+    name: onosfw
+
+    jobs:
+        - 'onosfw-verify-{stream}'
+        - 'onosfw-daily-{stream}'
+        - 'onosfw-build-{stream}'
+
+# only master branch is enabled at the moment to keep no of jobs sane
+    stream:
+        - master:
+            branch: 'master'
+            gs-pathname: ''
+#        - brahmaputra:
+#            branch: 'stable/brahmaputra'
+#            gs-pathname: '/brahmaputra'
+
+    project: 'onosfw'
+
+########################
+# job templates
+########################
+- job-template:
+    name: 'onosfw-verify-{stream}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-defaults'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**|.gitignore'
+
+    builders:
+        - 'builder-onosfw-build'
+
+- job-template:
+    name: 'onosfw-daily-{stream}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - 'opnfv-build-defaults'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    triggers:
+        - timed: '@midnight'
+
+    builders:
+        - trigger-builds:
+          - project: 'onosfw-build-{stream}'
+            git-revision: true
+            block: true
+
+- job-template:
+    name: 'onosfw-build-{stream}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - 'opnfv-build-defaults'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - 'builder-onosfw-build'
+        - 'builder-onosfw-upload-artifact'
+
+
+
+########################
+# builder macros
+########################
+- builder:
+    name: 'builder-onosfw-build'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Starting the build of $PROJECT. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
+
+            # create the cache directory if it doesn't exist
+            [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
+            [[ -d $BUILD_DIRECTORY ]] || mkdir -p $BUILD_DIRECTORY
+
+            # set OPNFV_ARTIFACT_VERSION
+            export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
+
+            # start the build
+            cd $WORKSPACE/
+            ./ci/build.sh  $BUILD_DIRECTORY/
+
+            # list the build artifacts
+            ls -al $BUILD_DIRECTORY
+
+            # save information regarding artifact into file
+            (
+                echo "OPNFV_ARTIFACT_VERSION=$OPNFV_ARTIFACT_VERSION"
+                echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
+                echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
+                echo "OPNFV_ARTIFACT_URL=$GS_BASE/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
+                echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $BUILD_DIRECTORY/onosfw.iso | cut -d' ' -f1)"
+                echo "OPNFV_BUILD_URL=$BUILD_URL"
+            ) > $BUILD_DIRECTORY/opnfv.properties
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
+
+- builder:
+    name: 'builder-onosfw-upload-artifact'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Uploading the $INSTALLER artifact. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
+
+            # source the opnfv.properties to get ARTIFACT_VERSION
+            source $BUILD_DIRECTORY/opnfv.properties
+
+            # upload artifact and additional files to google storage
+            gsutil cp $BUILD_DIRECTORY/onosfw.iso gs://$GS_BASE/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
+            gsutil cp $BUILD_DIRECTORY/opnfv.properties gs://$GS_BASE/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
+            gsutil cp $BUILD_DIRECTORY/opnfv.properties gs://$GS_BASE/latest.properties > gsutil.latest.log 2>&1
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+            echo "Artifact is available as http://$GS_BASE/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
+
+
