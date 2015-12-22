@@ -18,6 +18,7 @@
 #            gs-pathname: '/{stream}'
 
     jobs:
+        - 'fuel-build-daily-{stream}'
         - 'fuel-verify-build-{stream}'
         - 'fuel-merge-build-{stream}'
         - 'fuel-merge-deploy-virtual-{stream}'
@@ -25,6 +26,51 @@
 ########################
 # job templates
 ########################
+- job-template:
+    name: 'fuel-build-daily-{stream}'
+
+    concurrent: false
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - 'ericsson-ca-build-1-defaults'
+        - '{installer}-defaults'
+        - fuel-project-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    triggers:
+        - pollscm: '0 H/6 * * *'
+
+    wrappers:
+        - timeout:
+            timeout: 360
+            fail: true
+
+    builders:
+        - shell:
+            !include-raw ./fuel-build.sh
+        - shell:
+            !include-raw ./fuel-upload-artifact.sh
+        - shell:
+            !include-raw ./fuel-workspace-cleanup.sh
+
+    publishers:
+        - email:
+            recipients: jonas.bjurel@ericsson.com stefan.k.berg@ericsson.com
+
 - job-template:
     name: 'fuel-verify-build-{stream}'
 

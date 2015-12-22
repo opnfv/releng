@@ -53,7 +53,6 @@
 
     jobs:
         - 'fuel-{sdn-controller}-{pod}-daily-{stream}'
-        - 'fuel-build-{pod}-daily-{stream}'
         - 'fuel-deploy-{pod}-daily-{stream}'
 
 ########################
@@ -103,13 +102,6 @@
 
     builders:
         - multijob:
-            name: build
-            condition: SUCCESSFUL
-            projects:
-                - name: 'fuel-build-{pod}-daily-{stream}'
-                  git-revision: true
-                  kill-phase-on: FAILURE
-        - multijob:
             name: deploy
             condition: SUCCESSFUL
             projects:
@@ -131,48 +123,6 @@
                 - name: 'yardstick-fuel-{pod}-daily-{stream}'
                   current-parameters: true
                   kill-phase-on: NEVER
-
-- job-template:
-    name: 'fuel-build-{pod}-daily-{stream}'
-
-    concurrent: false
-
-    properties:
-        - throttle:
-            enabled: true
-            max-total: 1
-            max-per-node: 1
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - 'ericsson-ca-build-1-defaults'
-        - '{installer}-defaults'
-        - fuel-ci-parameter:
-            gs-pathname: '{gs-pathname}'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    wrappers:
-        - timeout:
-            timeout: 360
-            fail: true
-
-    builders:
-        - shell:
-            !include-raw ./fuel-build.sh
-        - shell:
-            !include-raw ./fuel-upload-artifact.sh
-        - shell:
-            !include-raw ./fuel-workspace-cleanup.sh
-
-    publishers:
-        - email:
-            recipients: jonas.bjurel@ericsson.com stefan.k.berg@ericsson.com
 
 - job-template:
     name: 'fuel-deploy-{pod}-daily-{stream}'
