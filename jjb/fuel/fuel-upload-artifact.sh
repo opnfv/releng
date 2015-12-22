@@ -3,6 +3,13 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# check if we built something
+if [ -f $WORKSPSACE/.noupload ]; then
+    echo "Nothing new to upload. Exiting."
+    /bin/rm -f $WORKSPSACE/.noupload
+    exit 0
+fi
+
 # log info to console
 echo "Uploading the $INSTALLER_TYPE artifact. This could take some time..."
 echo "--------------------------------------------------------"

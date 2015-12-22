@@ -23,6 +23,7 @@ if [[ "$CURRENT_SHA1" == "$LATEST_ISO_SHA1" ]]; then
     echo "An ISO has already been built for this commit"
     echo "    $LATEST_ISO_URL"
     echo "Nothing new to build. Exiting."
+    touch $WORKSPACE/.noupload
     exit 0
 else
     echo "This commit has not been built yet. Proceeding with the build."
