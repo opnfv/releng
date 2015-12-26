@@ -425,8 +425,11 @@
             # cleanup virtual machines before we start
             sudo opnfv-clean
             # initiate virtual deployment
-            sudo opnfv-deploy -v -d /usr/share/doc/opnfv/deploy_settings.yaml.example -n /usr/share/doc/opnfv/network_settings.yaml.example
-
+            if [ -e /usr/share/doc/opnfv/network_settings.yaml.example ]; then
+              sudo opnfv-deploy -v -d /usr/share/doc/opnfv/deploy_settings.yaml.example -n /usr/share/doc/opnfv/network_settings.yaml.example
+            else
+              sudo opnfv-deploy -v
+            fi
             echo
             echo "--------------------------------------------------------"
             echo "Done!"
