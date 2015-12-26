@@ -13,7 +13,7 @@ echo
 if [[ ! -z $(docker ps -a | grep $DOCKER_REPO_NAME) ]]; then
     echo "Removing existing $DOCKER_REPO_NAME containers..."
     docker ps | grep $DOCKER_REPO_NAME | awk '{{print $1}}' | xargs docker stop
-    docker ps -a | grep $DOCKER_REPO_NAME | awk '{{print $1}}' | xargs docker rm
+    docker ps -a | grep $DOCKER_REPO_NAME | awk '{{print $1}}' | xargs docker rm -f
 fi
 
 
@@ -24,7 +24,7 @@ if [[ ! -z $(docker images | grep $DOCKER_REPO_NAME) ]]; then
     image_tags=($(docker images | grep $DOCKER_REPO_NAME | awk '{{print $2}}'))
     for tag in "${{image_tags[@]}}"; do
         echo "Removing docker image $DOCKER_REPO_NAME:$tag..."
-        docker rmi $DOCKER_REPO_NAME:$tag
+        docker rmi -f $DOCKER_REPO_NAME:$tag
     done
 fi
 
@@ -36,7 +36,7 @@ if [[ "$UPDATE_LATEST_STABLE" == "true" ]]; then
         echo "ERROR: The image $DOCKER_REPO_NAME with tag $STABLE_TAG does not exist."
         exit 1
     fi
-    docker tag $DOCKER_REPO_NAME:$STABLE_TAG $DOCKER_REPO_NAME:latest_stable
+    docker tag -f $DOCKER_REPO_NAME:$STABLE_TAG $DOCKER_REPO_NAME:latest_stable
     echo "Pushing $DOCKER_REPO_NAME:latest_stable ..."
     docker push $DOCKER_REPO_NAME:latest_stable
     exit 0
