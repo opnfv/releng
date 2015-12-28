@@ -126,7 +126,7 @@
             branch: '{branch}'
 
     triggers:
-        - timed: '@midnight'
+        - timed: 'H 16 * * *'
 
     builders:
         - trigger-builds:
@@ -137,14 +137,19 @@
           - project: 'compass-deploy-virtual-cluster'
             git-revision: true
             block: true
-#        - trigger-builds:
-#          - project: 'compass-deploy-virtual-cluster-odl'
-#            git-revision: true
-#            block: true
+        - trigger-builds:
+          - project: 'compass-deploy-virtual-cluster-odl'
+            git-revision: true
+            block: true
         - trigger-builds:
           - project: 'compass-deploy-virtual-cluster-onos'
             git-revision: true
             block: true
+        - trigger-builds:
+          - project: 'compass-deploy-bare-huawei-us'
+            git-revision: true
+            block: true
+
 
 - job-template:
     name: 'compass-build-iso-{stream}'
