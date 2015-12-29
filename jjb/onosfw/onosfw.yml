@@ -60,7 +60,7 @@
                     pattern: 'docs/**|.gitignore'
 
     builders:
-        - 'builder-onosfw-build'
+        - 'builder-onosfw-helloworld'
 
 - job-template:
     name: 'onosfw-daily-{stream}'
@@ -100,8 +100,7 @@
             branch: '{branch}'
 
     builders:
-        - 'builder-onosfw-build'
-        - 'builder-onosfw-upload-artifact'
+        - 'builder-onosfw-helloworld'
 
 
 
@@ -178,3 +177,9 @@
             echo "Artifact is available as http://$GS_BASE/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
 
 
+- builder:
+    name: 'builder-onosfw-helloworld'
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Hello world!"
