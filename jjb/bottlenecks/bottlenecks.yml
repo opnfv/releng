@@ -6,7 +6,7 @@
     jobs:
         - 'bottlenecks-verify-{stream}'
         - 'bottlenecks-daily-{installer}-{pod}-{stream}'
-
+        - 'bottlenecks-upload-artifacts-{stream}'
     pod:
         - lf:
             node: 'opnfv-jump-2'
@@ -72,6 +72,32 @@
             echo "Nothing to verify!"
 
 - job-template:
+    name: 'bottlenecks-upload-artifacts-{stream}'
+
+    node: ericsson-build
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+    
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - 'bottlenecks-builder-upload-artifact'
+
+- job-template:
     name: 'bottlenecks-daily-{installer}-{pod}-{stream}'
 
     disabled: false
@@ -114,6 +140,25 @@
     publishers:
         - email:
             recipients: hongbo.tianhongbo@huawei.com matthew.lijun@huawei.com
+
+####################
+# parameter macros
+####################
+- parameter:
+    name: bottlenecks-parameter
+    parameters:
+        -string:
+           name: CACHE_DIR
+           default: $WORKSPACE/cache
+           description: "the cache to store packages downloaded from public IP"
+        -string:
+           name: RUBBOS_URL
+           default: http://artifacts.opnfv.org/bottlenecks/rubbos/
+           description: "LF artifacts url for storage of bottlenecks packages"
+        -string:
+           name: PACKAGE_URL
+           default: http://205.177.226.235:9999/bottlenecks/rubbos/
+           description: "the url where we store the packages used for bottlenecks rubbos"
 
 ###################################
 #builders for bottlenecks project
@@ -175,6 +220,26 @@
             source set_bottlenecks_rubbos_env.sh
             ssh $CONTROL_HOST
             ./tmp/CONTROL_rubbos_exec.sh
+
+- builder:
+    name: bottlenecks-builder-upload-artifact
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+
+            echo "Bottlenecks: upload to artifacts from the public IP"
+
+            [[ -d $CACHE_DIR ]] || mkdir -p $CACHE_DIR
+
+            for file in $(curl -s $PACKAGE_URL |
+                               grep href |
+                               sed 's/.*href="//' |
+                               sed 's/".*//' |
+                               grep '^[a-zA-Z].*'); do
+                 curl -s -O $CACHE_DIR/$file $PACKAGE_URL/$file
+                 curl -T $CACHE_DIR/$file $RUBBOS_URL
+            done
 
 #######################
 #trigger macros
