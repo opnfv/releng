@@ -87,6 +87,7 @@
     parameters:
         - project-parameter:
             project: '{project}'
+        - 'ericsson-ca-build-1-defaults'
 
     scm:
         - git-scm:
@@ -96,6 +97,7 @@
 
     builders:
         - 'bottlenecks-builder-upload-artifact'
+        - 'bottlenecks-workspace-cleanup'
 
 - job-template:
     name: 'bottlenecks-daily-{installer}-{pod}-{stream}'
@@ -240,6 +242,17 @@
                  curl --connect-timeout 10 -o $CACHE_DIR/$file $PACKAGE_URL$file
                  gsutil cp $CACHE_DIR/$file $RUBBOS_URL
             done
+
+- builder:
+    name: bottlenecks-workspace-cleanup
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+
+            echo "Bottlenecks: cleanup cache used for storage downloaded packages"
+
+            /bin/rm -rf $WORKSPACE
 
 #######################
 #trigger macros
