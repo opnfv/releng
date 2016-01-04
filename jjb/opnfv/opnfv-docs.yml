@@ -11,11 +11,13 @@
         - 'opnfv-docs-verify-{stream}'
         - 'opnfv-docs-merge-{stream}'
 
-    # stream:    branch with - in place of / (eg. stable-arno)
-    # branch:    branch (eg. stable/arno)
     stream:
         - master:
-            branch: 'master'
+            branch: '{stream}'
+            gs-pathname: ''
+        - brahmaputra:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
 
 ########################
 # job templates
@@ -70,6 +72,10 @@
             project: $GERRIT_PROJECT
         - gerrit-parameter:
             branch: 'master'
+        - string:
+            name: GS_URL
+            default: '$GS_BASE{gs-pathname}'
+            description: "Directory where the build artifact will be located upon the completion     of the build."
 
     scm:
         - gerrit-trigger-scm:
