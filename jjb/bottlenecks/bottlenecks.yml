@@ -123,6 +123,10 @@
             name: INSTALLER_IP
             default: '{installer_ip}'
             description: "Installer IP."
+        - string:
+            name: GERRIT_REFSPEC_DEBUG
+            default: ''
+            description: "Gerrit refspec for debug."
 
     scm:
         - git-scm:
@@ -135,10 +139,7 @@
 
     builders:
         - 'bottlenecks-fetch-os-creds'
-        #- 'run-rubbos-env-preparation'
-        - 'bottlenecks-instance-creation'
-        #- 'run-rubbos-tools-installation'
-        #- 'rubbos-exec'
+        - 'bottlenecks-run-rubbos'
 
     publishers:
         - email:
@@ -173,19 +174,7 @@
             !include-raw ../../utils/fetch_os_creds.sh
 
 - builder:
-    name: run-rubbos-env-preparation
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-
-            echo "Bottlenecks: export openstack parameters before rubbos running"
-
-            cd $WORKSPACE
-            ./rubbos/rubbos_scripts/1-1-1/scripts/env_preparation.sh
-
-- builder:
-    name: bottlenecks-instance-creation
+    name: bottlenecks-run-rubbos
     builders:
         - shell: |
             #!/bin/bash
@@ -193,36 +182,7 @@
 
             echo "Bottlenecks: instance creation by using heat template"
             cd $WORKSPACE
-            ./utils/infra_setup/heat_template/HOT_create_instance.sh
-
-- builder:
-    name: run-rubbos-tools-installation
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-
-            echo "Bottlenecks: to install tools to run rubbos"
-
-            cd $WORKSPACE
-            cd rubbos/rubbos_scripts/1-1-1
-            source set_bottlenecks_rubbos_env.sh
-            ./rubbos/rubbos_scripts/1-1-1/scripts/run.sh
-
-- builder:
-    name: rubbos-exec
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-
-            echo "Bottlenecks: rubbos execution"
-
-            cd $WORKSPACE
-            cd ./rubbos/rubbos_scripts/1-1-1
-            source set_bottlenecks_rubbos_env.sh
-            ssh $CONTROL_HOST
-            ./tmp/CONTROL_rubbos_exec.sh
+            ./ci/run.sh $GERRIT_REFSPEC_DEBUG
 
 - builder:
     name: bottlenecks-builder-upload-artifact
@@ -261,4 +221,24 @@
 - trigger:
     name: 'bottlenecks-trigger-lf'
     triggers:
-        - timed: '@midnight'
+        - timed: '0 16 * * *'
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**|.gitignore'
