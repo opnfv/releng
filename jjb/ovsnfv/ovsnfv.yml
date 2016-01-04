@@ -11,11 +11,11 @@
 # only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
-            branch: 'master'
+            branch: '{stream}'
             gs-pathname: ''
 #        - brahmaputra:
 #            branch: 'stable/brahmaputra'
-#            gs-pathname: '/brahmaputra'
+#            gs-pathname: '/{stream}'
 
 - job-template:
     name: 'ovsnfv-verify-{stream}'
@@ -26,6 +26,10 @@
         - gerrit-parameter:
             branch: '{branch}'
         - 'intel-us-build-2-defaults'
+        - string:
+            name: GS_URL
+            default: '$GS_BASE{gs-pathname}'
+            description: "Directory where the build artifact will be located upon the completion of the build."
 
     scm:
         - gerrit-trigger-scm:
@@ -71,6 +75,10 @@
         - gerrit-parameter:
             branch: '{branch}'
         - 'intel-us-build-2-defaults'
+        - string:
+            name: GS_URL
+            default: '$GS_BASE{gs-pathname}'
+            description: "Directory where the build artifact will be located upon the completion of the build."
 
     scm:
         - gerrit-trigger-scm:
@@ -110,8 +118,8 @@
         - 'intel-us-build-2-defaults'
         - string:
             name: GS_URL
-            default: gs://$GS_BASE{gs-pathname}
-            description: "URL to Google Storage."
+            default: '$GS_BASE{gs-pathname}'
+            description: "Directory where the build artifact will be located upon the completion of the build."
 
     scm:
         - git-scm:
