@@ -88,7 +88,8 @@
         - project-parameter:
             project: '{project}'
         - 'ericsson-ca-build-1-defaults'
-        - 'bottlenecks-parameter'
+        - bottlenecks-parameter:
+            gs-pathname: '{gs-pathname}'
 
     scm:
         - git-scm:
@@ -157,7 +158,7 @@
            description: "the cache to store packages downloaded from public IP"
         - string:
            name: RUBBOS_URL
-           default: gs://artifacts.opnfv.org/bottlenecks/rubbos
+           default: gs://artifacts.opnfv.org/bottlenecks/rubbos{gs-pathname}
            description: "LF artifacts url for storage of bottlenecks packages"
         - string:
            name: PACKAGE_URL
@@ -221,7 +222,7 @@
 - trigger:
     name: 'bottlenecks-trigger-lf'
     triggers:
-        - timed: '0 16 * * *'
+        - timed: '0 6 * * *'
         - gerrit:
             trigger-on:
                 - patchset-created-event:
