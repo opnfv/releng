@@ -88,6 +88,7 @@
         - project-parameter:
             project: '{project}'
         - 'ericsson-ca-build-1-defaults'
+        - 'bottlenecks-parameter'
 
     scm:
         - git-scm:
@@ -134,10 +135,10 @@
 
     builders:
         - 'bottlenecks-fetch-os-creds'
-        - 'run-rubbos-env-preparation'
+        #- 'run-rubbos-env-preparation'
         - 'bottlenecks-instance-creation'
-        - 'run-rubbos-tools-installation'
-        - 'rubbos-exec'
+        #- 'run-rubbos-tools-installation'
+        #- 'rubbos-exec'
 
     publishers:
         - email:
@@ -232,7 +233,7 @@
 
             echo "Bottlenecks: upload to artifacts from the public IP"
 
-            [[ -d $CACHE_DIR ]] || mkdir -p $CACHE_DIR
+            [[ -d $CACHE_DIR ]] || mkdir -p "$CACHE_DIR"
 
             for file in $(curl -s $PACKAGE_URL |
                                grep href |
