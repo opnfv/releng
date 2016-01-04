@@ -92,6 +92,10 @@
         - project-parameter:
             project: '{project}'
         - 'opnfv-build-defaults'
+        - string:
+            name: GS_URL
+            default: '$GS_BASE{gs-pathname}'
+            description: "Directory where the build artifact will be located upon the completion     of the build."
 
     scm:
         - git-scm:
@@ -101,8 +105,6 @@
 
     builders:
         - 'builder-onosfw-helloworld'
-
-
 
 ########################
 # builder macros
@@ -140,7 +142,7 @@
                 echo "OPNFV_ARTIFACT_VERSION=$OPNFV_ARTIFACT_VERSION"
                 echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
                 echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
-                echo "OPNFV_ARTIFACT_URL=$GS_BASE/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
+                echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
                 echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $BUILD_DIRECTORY/onosfw.iso | cut -d' ' -f1)"
                 echo "OPNFV_BUILD_URL=$BUILD_URL"
             ) > $BUILD_DIRECTORY/opnfv.properties
@@ -167,14 +169,14 @@
             source $BUILD_DIRECTORY/opnfv.properties
 
             # upload artifact and additional files to google storage
-            gsutil cp $BUILD_DIRECTORY/onosfw.iso gs://$GS_BASE/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
-            gsutil cp $BUILD_DIRECTORY/opnfv.properties gs://$GS_BASE/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
-            gsutil cp $BUILD_DIRECTORY/opnfv.properties gs://$GS_BASE/latest.properties > gsutil.latest.log 2>&1
+            gsutil cp $BUILD_DIRECTORY/onosfw.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
+            gsutil cp $BUILD_DIRECTORY/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
+            gsutil cp $BUILD_DIRECTORY/opnfv.properties gs://$GS_URL/latest.properties > gsutil.latest.log 2>&1
 
             echo
             echo "--------------------------------------------------------"
             echo "Done!"
-            echo "Artifact is available as http://$GS_BASE/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
+            echo "Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
 
 
 - builder:
