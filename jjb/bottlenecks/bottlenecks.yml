@@ -88,6 +88,7 @@
         - project-parameter:
             project: '{project}'
         - 'ericsson-ca-build-1-defaults'
+        - 'bottlenecks-parameter'
 
     scm:
         - git-scm:
@@ -134,10 +135,10 @@
 
     builders:
         - 'bottlenecks-fetch-os-creds'
-        - 'run-rubbos-env-preparation'
+        #- 'run-rubbos-env-preparation'
         - 'bottlenecks-instance-creation'
-        - 'run-rubbos-tools-installation'
-        - 'rubbos-exec'
+        #- 'run-rubbos-tools-installation'
+        #- 'rubbos-exec'
 
     publishers:
         - email:
@@ -149,15 +150,15 @@
 - parameter:
     name: bottlenecks-parameter
     parameters:
-        -string:
+        - string:
            name: CACHE_DIR
            default: $WORKSPACE/cache
            description: "the cache to store packages downloaded from public IP"
-        -string:
+        - string:
            name: RUBBOS_URL
            default: http://artifacts.opnfv.org/bottlenecks/rubbos
            description: "LF artifacts url for storage of bottlenecks packages"
-        -string:
+        - string:
            name: PACKAGE_URL
            default: http://205.177.226.235:9999/bottlenecks/rubbos/
            description: "the url where we store the packages used for bottlenecks rubbos"
