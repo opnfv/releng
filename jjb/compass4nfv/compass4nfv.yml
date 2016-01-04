@@ -15,11 +15,11 @@
 # only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
-            branch: 'master'
+            branch: '{stream}'
             gs-pathname: ''
 #        - brahmaputra:
-#            branch: 'stable/brahmaputra'
-#            gs-pathname: '/brahmaputra'
+#            branch: 'stable/{stream}'
+#            gs-pathname: '/{stream}'
 
     flavor:
         - cluster-odl:
@@ -305,7 +305,7 @@
             description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
         - string:
             name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT/
+            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
             description: "URL to Google Storage."
         - string:
             name: GS_URL_PROXY
