@@ -15,11 +15,11 @@
 # only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
-            branch: 'master'
+            branch: '{stream}'
             gs-pathname: ''
 #        - brahmaputra:
-#            branch: 'stable/brahmaputra'
-#            gs-pathname: '/brahmaputra'
+#            branch: 'stable/{stream}'
+#            gs-pathname: '/{stream}'
 
     flavor:
         - cluster-odl:
@@ -59,6 +59,7 @@
             branch: '{branch}'
         - compass-parameter:
             installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
         - string:
             name: FLAVOR_CONF
             default: 'virtual_cluster'
@@ -118,6 +119,7 @@
             project: '{project}'
         - compass-parameter:
             installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
 
     scm:
         - git-scm:
@@ -169,6 +171,7 @@
             project: '{project}'
         - compass-parameter:
             installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
 
     scm:
         - git-scm:
@@ -201,6 +204,7 @@
             project: '{project}'
         - compass-parameter:
             installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
 
     scm:
         - git-scm:
@@ -234,6 +238,7 @@
             project: '{project}'
         - compass-parameter:
             installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
         - string:
             name: FLAVOR_CONF
             default: '{conf}'
@@ -269,6 +274,7 @@
             project: '{project}'
         - compass-parameter:
             installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
 
     builders:
         - 'builder-compass-ci-preclean-workspace'
@@ -305,7 +311,7 @@
             description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
         - string:
             name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT/
+            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
             description: "URL to Google Storage."
         - string:
             name: GS_URL_PROXY
