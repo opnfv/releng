@@ -32,6 +32,10 @@
             project: $GERRIT_PROJECT
         - gerrit-parameter:
             branch: '{branch}'
+        - string:
+            name: GIT_CLONE_BASE
+            default: ssh://gerrit.opnfv.org:29418
+            description: "Used for overriding the GIT URL coming from parameters macro."
 
     scm:
         - gerrit-trigger-scm:
@@ -75,6 +79,10 @@
             project: $GERRIT_PROJECT
         - gerrit-parameter:
             branch: '{branch}'
+        - string:
+            name: GIT_CLONE_BASE
+            default: ssh://gerrit.opnfv.org:29418
+            description: "Used for overriding the GIT URL coming from parameters macro."
         - string:
             name: GS_URL
             default: '$GS_BASE{gs-pathname}'
@@ -120,6 +128,10 @@
             default: '$GS_BASE{gs-pathname}'
             description: "Directory where the build artifact will be located upon the completion of the build."
         - string:
+            name: GIT_CLONE_BASE
+            default: ssh://gerrit.opnfv.org:29418
+            description: "Used for overriding the GIT URL coming from parameters macro."
+        - string:
             name: GERRIT_BRANCH
             default: '{branch}'
             description: 'Specify the branch in this way in order to be able to use clone-opnfv-repos builder.'
@@ -150,7 +162,7 @@
             # clone releng repo to get repo list
             cd $WORKSPACE
             echo "Cloning releng repo"
-            git clone $GIT_BASE/releng --quiet
+            git clone $GIT_CLONE_BASE/releng --quiet
 
             # clone rest of the repos and checkout the branch
             echo "Cloning repos of participating OPNFV Projects and checking out $GERRIT_BRANCH"
@@ -159,7 +171,7 @@
             for repo in $(grep -v '^#' $WORKSPACE/releng/jjb/opnfvdocs/project.cfg | sort); do
                 cd $WORKSPACE
                 echo "    $repo"
-                git clone $GIT_BASE/$repo --branch $GERRIT_BRANCH --quiet
+                git clone $GIT_CLONE_BASE/$repo --branch $GERRIT_BRANCH --quiet
             done
             echo "--------------------------------------------------------"
             echo
