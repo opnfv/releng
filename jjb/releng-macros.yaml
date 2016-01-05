@@ -216,17 +216,12 @@
             echo "#####################"
             echo
 
-            if [[ "$GERRIT_BRANCH" == "master" ]] ; then
-                gs_base="artifacts.opnfv.org/$GERRIT_PROJECT"
-            else
-                gs_base="artifacts.opnfv.org/$GERRIT_PROJECT/$GERRIT_BRANCH"
-            fi
-            gs_path="$gs_base/docs"
+            gs_path="$GS_URL/docs"
             local_path="upload/docs"
 
             mkdir -p upload
             mv output "$local_path"
-            gsutil -m cp -r "$local_path" "gs://$gs_base"
+            gsutil -m cp -r "$local_path" "gs://$GS_URL"
 
             if gsutil ls "gs://$gs_path" | grep -e 'html$' > /dev/null 2>&1 ; then
                 gsutil -m setmeta \
