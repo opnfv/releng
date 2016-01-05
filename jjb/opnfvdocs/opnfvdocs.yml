@@ -1,0 +1,169 @@
+########################
+# Job configuration for opnfvdocs
+########################
+- project:
+
+    name: opnfvdocs
+
+    project: '{name}'
+
+    jobs:
+        - 'opnfvdocs-verify-{stream}'
+        - 'opnfvdocs-merge-{stream}'
+        - 'opnfvdocs-daily-{stream}'
+
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+        - brahmaputra:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
+
+########################
+# job templates
+########################
+
+- job-template:
+    name: 'opnfvdocs-verify-{stream}'
+
+    parameters:
+        - project-parameter:
+            project: $GERRIT_PROJECT
+        - gerrit-parameter:
+            branch: '{branch}'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'REG_EXP'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**'
+
+    builders:
+        - clone-opnfv-repos
+        - build-html-and-pdf-docs-output
+#        - upload-under-review-docs-to-opnfv-artifacts
+        - report-docs-build-result-to-gerrit
+
+- job-template:
+    name: 'opnfvdocs-merge-{stream}'
+
+    parameters:
+        - project-parameter:
+            project: $GERRIT_PROJECT
+        - gerrit-parameter:
+            branch: '{branch}'
+        - string:
+            name: GS_URL
+            default: '$GS_BASE{gs-pathname}'
+            description: "Directory where the build artifact will be located upon the completion of the build."
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'REG_EXP'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**'
+
+    builders:
+        - clone-opnfv-repos
+        - build-html-and-pdf-docs-output
+#        - upload-merged-docs-to-opnfv-artifacts
+        - report-docs-build-result-to-gerrit
+        - remove-old-docs-from-opnfv-artifacts
+
+- job-template:
+    name: 'opnfvdocs-daily-{stream}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - string:
+            name: GS_URL
+            default: '$GS_BASE{gs-pathname}'
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: GERRIT_BRANCH
+            default: '{branch}'
+            description: 'Specify the branch in this way in order to be able to use clone-opnfv-repos builder.'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    triggers:
+        - timed: '0 H/6 * * *'
+
+    builders:
+        - clone-opnfv-repos
+        - build-html-and-pdf-docs-output
+#        - upload-merged-docs-to-opnfv-artifacts
+
+- builder:
+    name: clone-opnfv-repos
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # clone releng repo to get repo list
+            cd $WORKSPACE
+            echo "Cloning releng repo"
+            git clone $GIT_BASE/releng --quiet
+
+            # clone rest of the repos and checkout the branch
+            echo "Cloning repos of participating OPNFV Projects and checking out $GERRIT_BRANCH"
+            echo
+            echo "--------------------------------------------------------"
+            for repo in $(grep -v '^#' $WORKSPACE/releng/jjb/opnfvdocs/project.cfg | sort); do
+                cd $WORKSPACE
+                echo "    $repo"
+                git clone $GIT_BASE/$repo --branch $GERRIT_BRANCH --quiet
+            done
+            echo "--------------------------------------------------------"
+            echo
+            echo "Done"
+
+            # remove releng clone in order not to cause issues for rest of the builders
+            /bin/rm -rf $WORKSPACE/releng
