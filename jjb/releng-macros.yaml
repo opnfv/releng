@@ -159,7 +159,9 @@
     name: build-html-and-pdf-docs-output
     builders:
         - shell: |
-            #!/bin/bash -e
+            #!/bin/bash
+            set -o errexit
+            set -o xtrace
             export PATH=$PATH:/usr/local/bin/
             git clone ssh://gerrit.opnfv.org:29418/releng
             GERRIT_COMMENT=gerrit_comment.txt ./releng/utils/docs-build.sh
@@ -168,8 +170,10 @@
     name: upload-under-review-docs-to-opnfv-artifacts
     builders:
         - shell: |
-            #!/bin/bash -e
+            #!/bin/bash
+            set -o errexit
             set -o pipefail
+            set -o xtrace
             export PATH=$PATH:/usr/local/bin/
 
             [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
@@ -204,8 +208,10 @@
     name: upload-generated-docs-to-opnfv-artifacts
     builders:
         - shell: |
-            #!/bin/bash -e
+            #!/bin/bash
+            set -o errexit
             set -o pipefail
+            set -o xtrace
             export PATH=$PATH:/usr/local/bin/
 
             [[ -d output ]]
@@ -238,7 +244,10 @@
     name: report-docs-build-result-to-gerrit
     builders:
         - shell: |
-            #!/bin/bash -e
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+            set -o xtrace
             export PATH=$PATH:/usr/local/bin/
             if [[ -e gerrit_comment.txt ]] ; then
                 echo
@@ -256,7 +265,10 @@
     name: remove-old-docs-from-opnfv-artifacts
     builders:
         - shell: |
-            #!/bin/bash -e
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+            set -o xtrace
             export PATH=$PATH:/usr/local/bin/
 
             [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
