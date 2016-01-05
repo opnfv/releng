@@ -3,10 +3,11 @@
 export PATH=$PATH:/usr/local/bin/
 
 
-SRC_DIR=${SRC_DIR:-docs}
+DOCS_DIR=${DOCS_DIR:-docs}
 INDEX_RST=${INDEX_RST:-index.rst}
-BUILD_DIR=${BUILD_DIR:-build}
-OUTPUT_DIR=${OUTPUT_DIR:-output}
+BUILD_DIR=${BUILD_DIR:-docs_build}
+OUTPUT_DIR=${OUTPUT_DIR:-docs_output}
+SRC_DIR=${SRC_DIR:-$BUILD_DIR/_src}
 RELENG_DIR=${RELENG_DIR:-releng}
 GERRIT_COMMENT=${GERRIT_COMMENT:-}
 
@@ -76,10 +77,11 @@ function add_html_notes() {
 }
 
 function prepare_src_files() {
-    mkdir -p "$BUILD_DIR"
-    [[ -e "$BUILD_DIR/src" ]] && rm -rf "$BUILD_DIR/src"
-    cp -r "$SRC_DIR" "$BUILD_DIR/src"
-    add_html_notes "$BUILD_DIR/src"
+    mkdir -p "$(dirname $SRC_DIR)"
+
+    [[ -e "$SRC_DIR" ]] && rm -rf "$SRC_DIR"
+    cp -r "$DOCS_DIR" "$SRC_DIR"
+    add_html_notes "$SRC_DIR"
 }
 
 function add_config() {
@@ -94,19 +96,19 @@ function add_config() {
 }
 
 function is_top_dir() {
-    [[ "$1" == "$SRC_DIR" ]]
+    [[ "$1" == "$DOCS_DIR" ]]
 }
 
 function generate_name_for_top_dir() {
     for suffix in '' '.top' '.all' '.master' '_' '__' '___'
     do
-        _name="$(basename $SRC_DIR)$suffix"
-        [[ -e "$SRC_DIR/$_name" ]] && continue
+        _name="$(basename $DOCS_DIR)$suffix"
+        [[ -e "$DOCS_DIR/$_name" ]] && continue
         echo "$_name"
         return
     done
 
-    echo "Error: cannot find name for top directory [$SRC_DIR]"
+    echo "Error: cannot find name for top directory [$DOCS_DIR]"
     exit 1
 }
 
@@ -114,16 +116,16 @@ function generate_name() {
     _dir=$1
 
     if is_top_dir "$_dir" ; then
-        _name=$(generate_name_for_top_dir $SRC_DIR)
+        _name=$(generate_name_for_top_dir $DOCS_DIR)
     else
-        _name="${_dir#$SRC_DIR/}"
+        _name="${_dir#$DOCS_DIR/}"
     fi
     # Replace '/' by '_'
     echo "${_name////_}"
 }
 
 
-check_rst_doc $SRC_DIR
+check_rst_doc $DOCS_DIR
 
 if [[ ! -d "$RELENG_DIR" ]] ; then
     echo "Error: $RELENG_DIR dir not found. See https://wiki.opnfv.org/documentation/tools ."
@@ -132,10 +134,10 @@ fi
 
 prepare_src_files
 
-find $SRC_DIR -name $INDEX_RST -printf '%h\n' | while read dir
+find $DOCS_DIR -name $INDEX_RST -printf '%h\n' | while read dir
 do
     name=$(generate_name $dir)
-    src="$BUILD_DIR/src${dir#$SRC_DIR}"
+    src="$SRC_DIR/${dir#$DOCS_DIR/}"
     build="$BUILD_DIR/$name"
     output="$OUTPUT_DIR/$name"
     conf="$src/conf.py"
