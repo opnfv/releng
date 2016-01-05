@@ -44,10 +44,8 @@
             make
             # run basic sanity test
             make sanity
-            scl enable python33 bash
-            source ~/vsperfenv/bin/activate
             cd ../ci
-            ./build-vsperf.sh daily
+            scl enable python33 "source ~/vsperfenv/bin/activate ; ./build-vsperf.sh daily"
 
 - job-template:
     name: 'vswitchperf-verify-{stream}'
