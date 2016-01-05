@@ -9,7 +9,7 @@ res_build_date=$(date -u +"%Y-%m-%d_%H-%M-%S")
 
 # Result directory in the jumphost
 # to be used only with CI
-dir_result="${HOME}/opnfv/functest/reports"
+dir_result="${HOME}/opnfv/functest/results"
 
 # Clean the results directory
 # remove json file for rally, export only html
