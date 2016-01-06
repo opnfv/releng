@@ -2,51 +2,49 @@
 set +e
 set -o nounset
 
-JOID_LOCAL_CONFIG_FOLDER=$HOME/joid_config
-JOID_ADMIN_OPENRC=$JOID_LOCAL_CONFIG_FOLDER/admin-openrc
+##
+## Create LAB_CONFIG folder if not exists
+##
+mkdir -p $LAB_CONFIG
 
 ##
-## Load local config or defaults
+## Override default passwords with local settings if needed
 ##
 
-if [ -e "$JOID_LOCAL_CONFIG_FOLDER/config.sh" ]; then
-    echo "------ Load local config ------"
-    source $JOID_LOCAL_CONFIG_FOLDER/config.sh
-else
-    echo "------ No local config, load default ------"
-    # link NODE_NAME to joid node config names
-    case $NODE_NAME in
-        orange-fr-pod2)
-            POD=orange-pod2 ;;
-        *)
-            POD=$NODE_NAME ;;
-    esac
-    export POD_DC=$(echo $POD |cut -d\- -f1)
-    export POD_NUM=$(echo $POD |cut -d\- -f2)
-    export POD_NAME=$POD_DC$POD_NUM
-    export MAAS_REINSTALL=true
-    export MAAS_USER=ubuntu
-    export MAAS_PASSWORD=ubuntu
-    export OS_ADMIN_PASSWORD=openstack
-    export CEPH_DISKS=/srv
-    export CEPH_REFORMAT=no
+export MAAS_USER=ubuntu
+export MAAS_PASSWORD=ubuntu
+export OS_ADMIN_PASSWORD=openstack
+
+if [ -e "$LAB_CONFIG/passwords.sh" ]; then
+    echo "------ Load local passwords ------"
+    source $LAB_CONFIG/passwords.sh
 fi
+
+##
+## Set Joid pod config name
+##
+POD_NAME=$JOID_POD_OWNER$JOID_POD_ID
 
 ##
 ## Redeploy MAAS or recover the previous config
 ##
 
 cd $WORKSPACE/ci
-if [ -e "$JOID_LOCAL_CONFIG_FOLDER/environments.yaml" ] && [ "$MAAS_REINSTALL" == "false" ]; then
+if [ -e "$LAB_CONFIG/environments.yaml" ] && [ "$MAAS_REINSTALL" == "false" ]; then
     echo "------ Recover Juju environment to use MAAS ------"
-    cp $JOID_LOCAL_CONFIG_FOLDER/environments.yaml .
+    cp $LAB_CONFIG/environments.yaml .
 else
-    MAASCONFIG=$WORKSPACE/ci/maas/$POD_DC/$POD_NUM/deployment.yaml
+    MAASCONFIG=$WORKSPACE/ci/maas/$JOID_POD_OWNER/$JOID_POD_ID/deployment.yaml
     echo "------ Set MAAS password ------"
     sed -i -- "s/user: ubuntu/user: $MAAS_USER/" $MAASCONFIG
     sed -i -- "s/password: ubuntu/password: $MAAS_PASSWORD/" $MAASCONFIG
     echo "------ Redeploy MAAS ------"
     ./02-maasdeploy.sh $POD_NAME
+    RES=$?
+    if [ $RES != 0 ]; then
+        echo "MAAS Deploy FAILED"
+        exit $RES
+    fi
 fi
 
 ##
@@ -77,19 +75,18 @@ echo "------ Deploy with juju ------"
 echo "Execute: ./deploy.sh -t $HA_MODE -o $OS_RELEASE -s $SDN_CONTROLLER -l $POD_NAME"
 
 ./deploy.sh -t $HA_MODE -o $OS_RELEASE -s $SDN_CONTROLLER -l $POD_NAME
+RES=$?
+if [ $RES != 0 ]; then
+    echo "Deploy FAILED"
+    exit $RES
+fi
 
 ##
 ## Set Admin RC
 ##
-
+JOID_ADMIN_OPENRC=$LAB_CONFIG/admin-openrc
 echo "------ Create OpenRC file [$JOID_ADMIN_OPENRC] ------"
 KEYSTONE=$(cat bundles.yaml |shyaml get-value openstack-phase2.services.keystone.options.vip)
-
-# create the folder if needed
-JOID_ADMIN_OPENRC_FOLDER=$(echo $JOID_ADMIN_OPENRC | perl -pe "s|^(.*/).*?$|\1|")
-if [ ! -d "$JOID_ADMIN_OPENRC_FOLDER" ]; then
-    mkdir -p $JOID_ADMIN_OPENRC_FOLDER
-fi
 
 # export the openrc file
 cat << EOF > $JOID_ADMIN_OPENRC
@@ -104,14 +101,14 @@ EOF
 ## Backup local juju env
 ##
 
-if [ -d "$JOID_LOCAL_CONFIG_FOLDER" ]; then
-    echo "------ Backup Juju environment ------"
-    cp environments.yaml $JOID_LOCAL_CONFIG_FOLDER/
-fi
+echo "------ Backup Juju environment ------"
+cp environments.yaml $LAB_CONFIG/
 
 ##
 ## Basic test to return a realistic result to jenkins
 ##
+
+echo "------ Do basic test ------"
 source $JOID_ADMIN_OPENRC
 curl -i -sw '%{http_code}' -H "Content-Type: application/json"   -d "
 { \"auth\": {
@@ -119,18 +116,18 @@ curl -i -sw '%{http_code}' -H "Content-Type: application/json"   -d "
       \"methods\": [\"password\"],
       \"password\": {
         \"user\": {
-          \"name\": \"$OS_TENANT_NAME\",
+          \"name\": \"admin\",
           \"domain\": { \"id\": \"default\" },
-          \"password\": \"$OS_PASSWORD\"
+          \"password\": \"$OS_ADMIN_PASSWORD\"
         }
       }
     }
   }
-}"   http://$KEYSTONE:5000/v3/auth/tokens |grep "HTTP/1.1 20" 2>&1 >/dev/null; echo $?;
+}"   http://$KEYSTONE:5000/v3/auth/tokens |grep "HTTP/1.1 20" 2>&1 >/dev/null;
 RES=$?
 if [ $RES == 0 ]; then
     echo "Deploy SUCCESS"
 else
-    echo "Deploy FAILED"
+    echo "Deploy FAILED to query keystone"
 fi
 exit $RES

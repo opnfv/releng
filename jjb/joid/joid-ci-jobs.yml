@@ -188,32 +188,13 @@
 # builder macros
 ########################
 - builder:
-    name: intel-pod5-builder
+    name: '{pod}-builder'
     builders:
         - shell: |
             #!/bin/bash
             echo "Running $INSTALLER_TYPE with controller $SDN_CONTROLLER"
-            echo "Please note that this is a quick try to see how joid deployment works"
             echo
-            echo "Executing clean.sh"
-            cd $WORKSPACE/ci
-            ./clean.sh
-            echo
-            echo "Executing 02-maasdeploy.sh intelpod5"
-            ./02-maasdeploy.sh intelpod5
-            echo
-            echo "Executing deploy.sh -o liberty -s $SDN_CONTROLLER -t ha -l intelpod5"
-            ./deploy.sh -o liberty -s $SDN_CONTROLLER -t ha -l intelpod5
-
-- builder:
-    name: orange-pod2-builder
-    builders:
-        - shell: |
-            #!/bin/bash
-            echo "Running $INSTALLER_TYPE with controller $SDN_CONTROLLER"
-            echo "Please note that this is WIP generic builder"
-            echo
-            echo "Executing clean.sh"
+            echo "------ First Executing clean.sh ------"
             cd $WORKSPACE/ci
             ./clean.sh
         - shell:
@@ -225,8 +206,8 @@
     name: 'joid-intel-pod5-trigger'
     triggers:
         - timed: '0 3 * * *'
-# timer trigger is commented out since we do not know if the automatic runs should
-# be enabled on orange-pod2
+# timer trigger is commented out since we do not want automatic runs enabled on
+# orange-pod2
 - trigger:
     name: 'joid-orange-pod2-trigger'
     triggers:
