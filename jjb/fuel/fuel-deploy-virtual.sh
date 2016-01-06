@@ -11,14 +11,24 @@ echo "Using $(echo $OPNFV_ARTIFACT_URL | cut -d'/' -f3) for deployment"
 
 # create TMPDIR if it doesn't exist
 export TMPDIR=$HOME/tmpdir
-[[ -d $TMPDIR ]] || mkdir -p $TMPDIR
+mkdir -p $TMPDIR
 
 # change permissions down to TMPDIR
 chmod a+x $HOME
 chmod a+x $TMPDIR
 
+# get the lab name from SLAVE_NAME
+# we currently support ericsson and intel labs
+LAB_NAME=${SLAVE_NAME%%-*}
+if [[ ! "$LAB_NAME" =~ (ericsson|intel) ]]; then
+    echo "Unsupported/unidentified lab $LAB_NAME. Cannot continue!"
+    exit 1
+else
+    echo "Using configuration for $LAB_NAME"
+fi
+
 # set CONFDIR, BRIDGE
-CONFDIR=$WORKSPACE/deploy/templates/virtual_environment_noha/conf
+CONFDIR=$WORKSPACE/deploy/templates/$LAB_NAME/virtual_environment/noha/conf
 BRIDGE=pxebr
 
 # log info to console
