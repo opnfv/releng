@@ -472,16 +472,17 @@
 
             source opnfv.properties
             RPM_INSTALL_PATH=build_output/$(basename $OPNFV_RPM_URL)
+            if [ ! -e "$RPM_INSTALL_PATH" ]; then
+               RPM_INSTALL_PATH=http://${OPNFV_RPM_URL}
+            fi
 
             # update / install the new rpm
             if rpm -q opnfv-apex > /dev/null; then
                if sudo yum update -y $RPM_INSTALL_PATH | grep "does not update installed package"; then
                    sudo yum downgrade -y $RPM_INSTALL_PATH;
                fi
-            elif [ -e "$RPM_INSTALL_PATH" ]; then
-               sudo yum install -y $RPM_INSTALL_PATH;
             else
-               sudo yum install -y http://${OPNFV_RPM_URL}
+               sudo yum install -y $RPM_INSTALL_PATH;
             fi
 
             # cleanup environment before we start
