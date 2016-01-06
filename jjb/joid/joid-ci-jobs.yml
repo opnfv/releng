@@ -111,8 +111,8 @@
     parameters:
         - project-parameter:
             project: '{project}'
-        - '{pod}-defaults'
         - '{installer}-defaults'
+        - '{pod}-defaults'
 
     scm:
         - git-scm:
@@ -121,7 +121,7 @@
             branch: '{branch}'
 
     builders:
-        - '{pod}-builder'
+        - 'builder-macro'
 
 ########################
 # multijob builder macros
@@ -213,48 +213,13 @@
 # builder macros
 ########################
 - builder:
-    name: intel-pod5-builder
+    name: 'builder-macro'
     builders:
         - shell: |
             #!/bin/bash
             echo "Running $INSTALLER_TYPE with controller $SDN_CONTROLLER"
             echo
-            echo "Executing clean.sh"
-            cd $WORKSPACE/ci
-            ./clean.sh
-            echo
-            echo "Executing 02-maasdeploy.sh intelpod5"
-            ./02-maasdeploy.sh intelpod5
-            echo
-            echo "Executing deploy.sh -o liberty -s $SDN_CONTROLLER -t ha -l intelpod5"
-            ./deploy.sh -o liberty -s $SDN_CONTROLLER -t ha -l intelpod5
-
-- builder:
-    name: intel-pod6-builder
-    builders:
-        - shell: |
-            #!/bin/bash
-            echo "Running $INSTALLER_TYPE with controller $SDN_CONTROLLER"
-            echo
-            echo "Executing clean.sh"
-            cd $WORKSPACE/ci
-            ./clean.sh
-            echo
-            echo "Executing 02-maasdeploy.sh intelpod6"
-            ./02-maasdeploy.sh intelpod6
-            echo
-            echo "Executing deploy.sh -o liberty -s $SDN_CONTROLLER -t ha -l intelpod6"
-            ./deploy.sh -o liberty -s $SDN_CONTROLLER -t ha -l intelpod6
-
-- builder:
-    name: orange-pod2-builder
-    builders:
-        - shell: |
-            #!/bin/bash
-            echo "Running $INSTALLER_TYPE with controller $SDN_CONTROLLER"
-            echo "Please note that this is WIP generic builder"
-            echo
-            echo "Executing clean.sh"
+            echo "------ First Executing clean.sh ------"
             cd $WORKSPACE/ci
             ./clean.sh
         - shell:
