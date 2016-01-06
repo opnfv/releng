@@ -5,8 +5,8 @@
     name: bottlenecks
     jobs:
         - 'bottlenecks-verify-{stream}'
-        - 'bottlenecks-daily-{installer}-{pod}-{stream}'
-        - 'bottlenecks-upload-artifacts-{stream}'
+        - 'bottlenecks-daily-{installer}-{suite}-{pod}-{stream}'
+        - 'bottlenecks-{suite}-upload-artifacts-{stream}'
     pod:
         - lf:
             node: 'opnfv-jump-2'
@@ -14,16 +14,20 @@
             installer_ip: '10.20.0.2'
 
     installer:
-        -fuel
+        - 'fuel'
+
+    suite:
+        - 'rubbos'
+        - 'vstf'
 
 # only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
-            branch: 'master'
+            branch: '{stream}'
             gs-pathname: ''
 #        - brahmaputra:
-#            branch: 'stable/brahmaputra'
-#            gs-pathname: '/brahmaputra'
+#            branch: 'stable/{stream}'
+#            gs-pathname: '/{stream}'
 
     project: 'bottlenecks'
 ###############################
@@ -72,7 +76,7 @@
             echo "Nothing to verify!"
 
 - job-template:
-    name: 'bottlenecks-upload-artifacts-{stream}'
+    name: 'bottlenecks-{suite}-upload-artifacts-{stream}'
 
     node: ericsson-build
 
@@ -90,6 +94,7 @@
         - 'ericsson-ca-build-1-defaults'
         - bottlenecks-parameter:
             gs-pathname: '{gs-pathname}'
+            suite: '{suite}'
 
     scm:
         - git-scm:
@@ -102,7 +107,7 @@
         - 'bottlenecks-workspace-cleanup'
 
 - job-template:
-    name: 'bottlenecks-daily-{installer}-{pod}-{stream}'
+    name: 'bottlenecks-daily-{installer}-{suite}-{pod}-{stream}'
 
     disabled: false
 
@@ -140,11 +145,11 @@
 
     builders:
         - 'bottlenecks-fetch-os-creds'
-        - 'bottlenecks-run-rubbos'
+        - 'bottlenecks-run-{suite}'
 
     publishers:
         - email:
-            recipients: hongbo.tianhongbo@huawei.com matthew.lijun@huawei.com liangqi1@huawei.com
+            recipients: hongbo.tianhongbo@huawei.com matthew.lijun@huawei.com liangqi1@huawei.com liyiting@huawei.com
 
 ####################
 # parameter macros
@@ -154,15 +159,15 @@
     parameters:
         - string:
            name: CACHE_DIR
-           default: $WORKSPACE/cache
+           default: $WORKSPACE/cache/{suite}
            description: "the cache to store packages downloaded from public IP"
         - string:
-           name: RUBBOS_URL
-           default: gs://artifacts.opnfv.org/bottlenecks/rubbos{gs-pathname}
+           name: SUITE_URL
+           default: gs://artifacts.opnfv.org/bottlenecks/{suite}{gs-pathname}
            description: "LF artifacts url for storage of bottlenecks packages"
         - string:
            name: PACKAGE_URL
-           default: http://205.177.226.235:9999/bottlenecks/rubbos/
+           default: http://205.177.226.235:9999/bottlenecks/{suite}/
            description: "the url where we store the packages used for bottlenecks rubbos"
 
 ###################################
@@ -186,13 +191,24 @@
             ./ci/run.sh $GERRIT_REFSPEC_DEBUG
 
 - builder:
+    name: bottlenecks-run-vstf
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+
+            echo "Bottlenecks: vstf running now..."
+            #need FIX
+            echo "hello world from bottlenecks vstf"
+
+- builder:
     name: bottlenecks-builder-upload-artifact
     builders:
         - shell: |
             #!/bin/bash
             set -o errexit
 
-            echo "Bottlenecks: upload to artifacts from the public IP"
+            echo "Bottlenecks ${suite}: upload to artifacts from the public IP"
 
             [[ -d $CACHE_DIR ]] || mkdir -p $CACHE_DIR
 
@@ -202,7 +218,7 @@
                                sed 's/".*//' |
                                grep '^[a-zA-Z].*'); do
                  curl --connect-timeout 10 -o $CACHE_DIR/$file $PACKAGE_URL$file
-                 gsutil cp $CACHE_DIR/$file $RUBBOS_URL
+                 gsutil cp $CACHE_DIR/$file $SUITE_URL
             done
 
 - builder:
