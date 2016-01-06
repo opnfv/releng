@@ -478,8 +478,10 @@
                if sudo yum update -y $RPM_INSTALL_PATH | grep "does not update installed package"; then
                    sudo yum downgrade -y $RPM_INSTALL_PATH;
                fi
-            else
+            elif [ -e "$RPM_INSTALL_PATH" ]; then
                sudo yum install -y $RPM_INSTALL_PATH;
+            else
+               sudo yum install -y http://${OPNFV_RPM_URL}
             fi
 
             # cleanup environment before we start
