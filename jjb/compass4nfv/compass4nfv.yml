@@ -9,7 +9,7 @@
         - 'compass-daily-{stream}'
         - 'compass-build-iso-{stream}'
         - 'compass-build-ppa-{stream}'
-        - 'compass-deploy-virtual-{flavor}-{stream}'
+        - 'compass-deploy-virtual-{sdn-controller}-{stream}'
         - 'compass-deploy-bare-huawei-us-{stream}'
 
 # only master branch is enabled at the moment to keep no of jobs sane
@@ -21,16 +21,19 @@
 #            branch: 'stable/{stream}'
 #            gs-pathname: '/{stream}'
 
-    flavor:
-        - cluster-odl:
-            conf: 'virtual_cluster_odl'
-            node: 'huawei-deploy-vm'
-        - cluster-onos:
-            conf: 'virtual_cluster_onos'
-            node: 'huawei-deploy-vm'
-        - cluster:
-            conf: 'virtual_cluster'
-            node: 'huawei-deploy-vm'
+    sdn-controller:
+        - 'nosdn':
+            disabled: false
+            node: huawei-deploy-vm
+        - 'odl':
+            disabled: false
+            node: huawei-deploy-vm
+        - 'onos':
+            disabled: false
+            node: huawei-deploy-vm
+        - 'opencontrail':
+            disabled: true
+            node: huawei-deploy-vm
 
     project: 'compass4nfv'
 
@@ -61,9 +64,8 @@
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
         - string:
-            name: FLAVOR_CONF
-            default: 'virtual_cluster'
-            description: ""
+            name: SDN_CONTROLLER
+            default: '{sdn-controller}'
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
@@ -94,7 +96,7 @@
 
     builders:
         - 'builder-compass-build-iso'
-        - 'builder-compass-deploy-virtual-flavor'
+        - 'builder-compass-deploy-virtual'
     publishers:
         - archive:
             artifacts: 'ansible.log'
@@ -136,7 +138,7 @@
             git-revision: true
             block: true
         - trigger-builds:
-          - project: 'compass-deploy-virtual-cluster-{stream}'
+          - project: 'compass-deploy-virtual-cluster-nosnd-{stream}'
             git-revision: true
             block: false
         - trigger-builds:
@@ -219,7 +221,7 @@
         - 'builder-compass-make-ppa'
 
 - job-template:
-    name: 'compass-deploy-virtual-{flavor}-{stream}'
+    name: 'compass-deploy-virtual-{sdn-controller}-{stream}'
 
     disabled: false
 
@@ -240,14 +242,13 @@
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
         - string:
-            name: FLAVOR_CONF
-            default: '{conf}'
-            description: ""
+            name: SDN_CONTROLLER
+            default: '{sdn-controller}'
 
     builders:
         - 'builder-compass-ci-preclean-workspace'
         - 'builder-compass-download-artifact'
-        - 'builder-compass-deploy-virtual-flavor'
+        - 'builder-compass-deploy-virtual'
     publishers:
         - archive:
             artifacts: 'ansible.log'
@@ -275,6 +276,9 @@
         - compass-parameter:
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
+        - string:
+            name: SDN_CONTROLLER
+            default: '{sdn-controller}'
 
     builders:
         - 'builder-compass-ci-preclean-workspace'
@@ -409,7 +413,7 @@
             echo "Done!"
 
 - builder:
-    name: 'builder-compass-deploy-virtual-flavor'
+    name: 'builder-compass-deploy-virtual'
     builders:
         - shell: |
             #!/bin/bash
@@ -421,14 +425,9 @@
             echo
 
             export ISO_URL=file://$BUILD_DIRECTORY/compass.iso
-            sudo brctl addbr vnic_ci
-            sudo ifconfig vnic_ci up
-            export EXTERNAL_NIC=vnic_ci
-            cd $WORKSPACE
-
             export OS_VERSION=${COMPASS_OS_VERSION}
             export OPENSTACK_VERSION=${COMPASS_OPENSTACK_VERSION}
-            ./deploy.sh $FLAVOR_CONF
+            ./deploy.sh --dha $CONFDIR/$SDN_CONTROLLER.yml --network $CONFDIR/$NODE_NAME/network.yml
             if [ $? -ne 0 ]; then
                 echo "depolyment failed!"
                 deploy_ret=1
