@@ -197,7 +197,7 @@
     #     branch:    branch (eg. stable)
     node: opnfv-jump-1
 
-    disabled: true
+    disabled: false
 
     scm:
         - git-scm:
@@ -212,6 +212,7 @@
             gs-pathname: '{gs-pathname}'
 
     builders:
+        - 'apex-deploy-baremetal'
         - 'apex-workspace-cleanup'
 
 - job-template:
@@ -430,6 +431,64 @@
             else
               sudo opnfv-deploy -v
             fi
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
+- builder:
+    name: 'apex-deploy-baremetal'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Starting the Apex baremetal deployment."
+            echo "--------------------------------------------------------"
+            echo
+
+            if [[ ! "$ARTIFACT_NAME" == "latest" ]]; then
+                # if artifact name is passed the pull a
+                # specific artifact from artifacts.opnfv.org
+                RPM_INSTALL_PATH=$GS_URL/$ARTIFACT_NAME
+            else
+                if [[ -f opnfv.properties ]]; then
+                    # if opnfv.properties exists then use the
+                    # local build. Source the file so we get local OPNFV vars
+                    source opnfv.properties
+                    RPM_INSTALL_PATH=build_output/$(basename $OPNFV_RPM_URL)
+                else
+                    # no opnfv.properties means use the latest from artifacts.opnfv.org
+                    # get the latest.properties to get the link to the latest artifact
+                    curl -s -o $WORKSPACE/opnfv.properties http://$GS_URL/latest.properties
+                    [[ -f opnfv.properties ]] || exit 1
+                    # source the file so we get OPNFV vars
+                    source opnfv.properties
+                    RPM_INSTALL_PATH=$OPNFV_RPM_URL
+                fi
+            fi
+
+            source opnfv.properties
+            RPM_INSTALL_PATH=build_output/$(basename $OPNFV_RPM_URL)
+
+            # update / install the new rpm
+            if rpm -q opnfv-apex > /dev/null; then
+               if sudo yum update -y $RPM_INSTALL_PATH | grep "does not update installed package"; then
+                   sudo yum downgrade -y $RPM_INSTALL_PATH;
+               fi
+            else
+               sudo yum install -y $RPM_INSTALL_PATH;
+            fi
+
+            # cleanup environment before we start
+            sudo opnfv-clean
+            # initiate baremetal deployment
+            sudo opnfv-deploy -i  /root/inventory/pod_settings.yaml \
+            -d /usr/share/doc/opnfv/deploy_settings.yaml.example \
+            -n /root/network/network_settings.yaml
+
             echo
             echo "--------------------------------------------------------"
             echo "Done!"
