@@ -180,7 +180,16 @@ do
     }
 
     if is_top_dir "$dir" ; then
-        mv "$output"/* "$OUTPUT_DIR"/
+        # NOTE: Having top level document (docs/index.rst) is not recommended.
+        #       It may cause conflicts with other docs (mostly with HTML
+        #       folders for contents in top level docs and other document
+        #       folders). But, let's try merge of those contents into the top
+        #       docs directory.
+        (
+            cd $output
+            find . -type d -print | xargs -I d mkdir -p ../d
+            find . -type f -print | xargs -I f mv -b f ../f
+        )
         rm -rf "$output"
     fi
 
