@@ -9,6 +9,11 @@ source latest.properties
 # echo the info about artifact that is used during the deployment
 echo "Using $(echo $OPNFV_ARTIFACT_URL | cut -d'/' -f3) for deployment"
 
+# checkout the commit that was used for building the downloaded artifact
+# to make sure the ISO and deployment mechanism uses same versions
+echo "Checking out $OPNFV_GIT_SHA1"
+git checkout $OPNFV_GIT_SHA1 --quiet
+
 # create TMPDIR if it doesn't exist
 export TMPDIR=$HOME/tmpdir
 mkdir -p $TMPDIR
@@ -19,7 +24,7 @@ chmod a+x $TMPDIR
 
 # get the lab name from SLAVE_NAME
 # we currently support ericsson and intel labs
-LAB_NAME=${{SLAVE_NAME%%-*}}
+LAB_NAME=${{NODE_NAME%%-*}}
 if [[ ! "$LAB_NAME" =~ (ericsson|intel) ]]; then
     echo "Unsupported/unidentified lab $LAB_NAME. Cannot continue!"
     exit 1

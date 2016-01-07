@@ -9,6 +9,11 @@ source latest.properties
 # echo the info about artifact that is used during the deployment
 echo "Using $(echo $OPNFV_ARTIFACT_URL | cut -d'/' -f3) for deployment"
 
+# checkout the commit that was used for building the downloaded artifact
+# to make sure the ISO and deployment mechanism uses same versions
+echo "Checking out $OPNFV_GIT_SHA1"
+git checkout $OPNFV_GIT_SHA1 --quiet
+
 # create TMPDIR if it doesn't exist
 export TMPDIR=$HOME/tmpdir
 mkdir -p $TMPDIR
@@ -19,19 +24,6 @@ chmod a+x $TMPDIR
 
 # set BRIDGE
 BRIDGE=pxebr
-
-# clone genesis repo and checkout the SR1 tag
-#echo "Cloning genesis repo"
-#cd $WORKSPACE
-#GIT_SSL_NO_VERIFY=true git clone https://gerrit.opnfv.org/gerrit/genesis genesis
-#cd genesis
-#git checkout arno.2015.2.0
-
-# cleanup first
-#sudo $WORKSPACE/genesis/common/ci/clean.sh -base_config $WORKSPACE/genesis/foreman/ci/inventory/lf_pod2_ksgen_settings.yml
-
-# prepare for Fuel Deployment
-#sudo $WORKSPACE/genesis/common/ci/setup.sh
 
 # log info to console
 echo "Starting the deployment using $INSTALLER_TYPE. This could take some time..."
