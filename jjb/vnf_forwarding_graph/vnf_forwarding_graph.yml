@@ -1,71 +1,27 @@
 - project:
     name: vnf_forwarding_graph
-    jobs:
-        - 'vnf_forwarding_graph-test'
-        - 'vnf_forwarding_graph-daily-{stream}'
-        - 'vnf_forwarding_graph-merge'
-        - 'vnf_forwarding_graph-verify'
 
-    # stream:    branch with - in place of / (eg. stable-helium)
-    # branch:    branch (eg. stable/helium)
+    project: '{name}'
+
+    jobs:
+        - 'vnf_forwarding_graph-verify-{stream}'
+
     stream:
         - master:
-            branch: 'master'
-
-    project: 'vnf_forwarding_graph'
-    somevar: 'foo'
-
-- job-template:
-    name: vnf_forwarding_graph-test
-
-    builders:
-        - shell: |
-            echo "Hello world from vnf_forwarding_graph"
+            branch: '{stream}'
+            gs-pathname: ''
+        - brahmaputra:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
 
 - job-template:
-    name: 'vnf_forwarding_graph-daily-{stream}'
-
-    # Job template for daily builders
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-
-    varsetabove: '{somevar}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    triggers:
-        - timed: 'H H * * *'
-
-    prebuilders:
-        - test-macro
-
-    builders:
-        - shell: |
-            pwd
-            find .
-            echo "Hello world from vnf_forwarding_graph {somevar} daily"
-
-    postbuilders:
-        - test-macro
-
-- job-template:
-    name: 'vnf_forwarding_graph-verify'
+    name: 'vnf_forwarding_graph-verify-{stream}'
 
     parameters:
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{branch}'
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
@@ -86,52 +42,11 @@
                     comment-contains-value: 'reverify'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'vnf_forwarding_graph'
+                project-pattern: '{project}'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
+                    branch-pattern: '**/{branch}'
 
     builders:
         - shell: |
-            pwd
-            find .
-            echo "verify logic goes here"
-
-- job-template:
-    name: 'vnf_forwarding_graph-merge'
-
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: 'master'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'vnf_forwarding_graph'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
-
-    builders:
-        - shell: |
-            pwd
-            find .
-            echo "merge logic goes here"
-
+            echo "Nothing to verify!"
