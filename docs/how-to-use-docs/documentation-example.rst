@@ -134,8 +134,8 @@ built files.
 
 .. code-block:: bash
 
-    /build/
-    /output/
+    /docs_build/
+    /docs_output/
     /releng/
 
 Jenkins Jobs
