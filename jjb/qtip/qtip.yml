@@ -5,12 +5,15 @@
 
     jobs:
         - 'qtip-verify-{stream}'
-        - 'qtip-dhrystone-serial-{pod}'
-        - 'qtip-ssl-parallel-{pod}'
+        - 'qtip-run-{pod}'
 
     pod:
-        - dell-build:
+        - dell-us-testing-bm-1:
            node: 'dell-us-testing-bm-1'
+           installer_type: 'fuel'
+           installer_ip: '10.20.0.2'
+        - dell-us-deploying-bm-3:
+           node: 'dell-us-deploying-bm-3'
            installer_type: 'fuel'
            installer_ip: '10.20.0.2'
 
@@ -66,7 +69,7 @@
             echo "Nothing to verify!"
 
 - job-template:
-    name: 'qtip-dhrystone-serial-{pod}'
+    name: 'qtip-run-{pod}'
 
     disabled: false
 
@@ -84,41 +87,8 @@
           default: '{installer_ip}'
           description: "Installer IP"
       - string:
-          name: GIT_BASE
-          default: https://gerrit.opnfv.org/gerrit/$PROJECT
-          description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
-
-    scm:
-       - git-scm:
-           credentials-id: '{ssh-credentials}'
-           refspec: ''
-           branch: master
-
-    builders:
-        - 'qtip-fetch-os-cred'
-        - 'qtip-dhrystone-serial'
-
-    triggers:
-      - timed: '0 20 * * *'
-
-- job-template:
-    name: 'qtip-ssl-parallel-{pod}'
-
-    disabled: false
-
-    node: '{node}'
-
-    parameters:
-      - project-parameter:
-          project: '{project}'
-      - string:
-          name: INSTALLER_TYPE
-          default: '{installer_type}'
-          description: "Installer name that is used for deployment."
-      - string:
-          name: INSTALLER_IP
-          default: '{installer_ip}'
-          description: "IP address of the installer"
+          name: NODE_NAME
+          dfault: 'node'
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -131,49 +101,78 @@
            branch: master
 
     builders:
-      - 'qtip-fetch-os-cred'
-      - 'qtip-ssl-parallel'
+        - 'qtip-cleanup'
+        - 'qtip-set-env'
+        - 'qtip-run-suite'
 
     triggers:
-      - timed: '0 0,11,18 * * *'
+      - timed: '0 0,13,15,20 * * *'
+
 
 ###########################
 #biuilder macros
 ###########################
 - builder:
-    name: qtip-dhrystone-serial
-
-    builders:
-        - shell: |
-            #! /bin/bash
-            if [[ ! -f $WORKSPACE/opnfv-stack.sh ]]; then
-               echo "Unable to access file $WO:qRKSPACE/opnfv-openrc.sh"
-               exit 1
-            fi
-            source $WORKSPACE/opnfv-stack.sh
-            cd $WORKSPACE
-            echo "Running QTIP dhrystone with First Test case"
-            python qtip.py -s compute -b dhrystone_serial.yaml
-
-- builder:
-    name: qtip-ssl-parallel
-
+    name: qtip-set-env
     builders:
         - shell: |
             #!/bin/bash
-            if [[ ! -f $WORKSPACE/opnfv-stack.sh ]]; then
-               echo "Unable to access file $WORKSPACE/opnfv-openrc.sh"
-               exit 1
+            echo "Qtip: Start Docker and prepare environment"
+            envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} -e NODE_NAME=${NODE_NAME}"
+            suite="TEST_CASE=all"
+            docker pull opnfv/qtip:latest
+
+            cmd=" docker run -id -e $envs -e $suite opnfv/qtip:latest /bin/bash"
+            echo "Qtip: Running docker run command: ${cmd}"
+            ${cmd}
+            docker ps -a
+            container_id=$(docker ps | grep 'opnfv/qtip:latest' | awk '{print $1}' | head -1)
+             if [ $(docker ps | grep 'opnfv/qtip' | wc -l) == 0 ]; then
+                echo "The container opnfv/qtip with ID=${container_id} has not been properly started. Exiting..."
+                exit 1
             fi
-            source $WORKSPACE/opnfv-stack.sh
-            cd $WORKSPACE
-            echo "Running QTIP dhrystone with Second Test case"
-            python qtip.py -s compute -b ssl_parallel.yaml
+- builder:
+    name: qtip-run-suite
+    builders:
+        - shell: |
+            #! /bin/bash
+            QTIP_REPO=/home/opnfv/repos/qtip
+            docker exec -t ${container_id} $QTIP_REPO/docker/run_qtip.sh
+
+
+- builder:
+    name: qtip-cleanup
+    builders:
+        - shell: |
+            #! /bin/bash
+
+             echo "Cleaning up QTIP  docker containers/images..."
+              # Remove previous running containers if exist
+             if [[ ! -z $(docker ps -a | grep opnfv/qtip) ]]; then
+                 echo "Removing existing opnfv/qtip containers..."
+                 running_containers= $(docker ps | grep opnfv/qtip | awk '{print $1}')
+                 docker stop ${running_containers}
+                 all_containers= $(docker ps -a | grep opnfv/qtip | awk '{print $1}')
+                 docker rm ${all_containers}
+             fi
+
+             # Remove existing images if exist
+             if [[ ! -z $(docker images | grep opnfv/qtip) ]]; then
+                 echo "Docker images to remove:"
+                 docker images | head -1 && docker images | grep opnfv/qtip
+                 image_tags=($(docker images | grep opnfv/qtip | awk '{print $2}'))
+                 for tag in "${image_tags[@]}"; do
+                     echo "Removing docker image opnfv/qtip:$tag..."
+                     docker rmi opnfv/qtip:$tag
+                 done
+             fi
 
 - builder:
     name: qtip-fetch-os-cred
     builders:
         - shell: |
+
+
             echo $HOME
             echo $WORKSPACE
             cd $WORKSPACE
