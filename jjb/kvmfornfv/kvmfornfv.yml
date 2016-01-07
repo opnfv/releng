@@ -1,16 +1,19 @@
 - project:
     name: kvmfornfv
+
+    project: '{name}'
+
     jobs:
         - 'kvmfornfv-verify-{stream}'
         - 'kvmfornfv-merge-{stream}'
 
-    # stream:    branch with - in place of / (eg. stable-arno)
-    # branch:    branch (eg. stable/arno)
     stream:
         - master:
-            branch: 'master'
-
-    project: 'kvmfornfv'
+            branch: '{stream}'
+            gs-pathname: ''
+        - brahmaputra:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
 
 - job-template:
     name: 'kvmfornfv-verify-{stream}'
@@ -21,7 +24,7 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{branch}'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -47,10 +50,10 @@
                     comment-contains-value: 'reverify'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'kvmfornfv'
+                project-pattern: '{project}'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
+                    branch-pattern: '**/{branch}'
 
     builders:
         - shell:
@@ -59,17 +62,13 @@
 - job-template:
     name: 'kvmfornfv-merge-{stream}'
 
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
     node: ericsson-build
 
     parameters:
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{branch}'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -89,10 +88,10 @@
                     comment-contains-value: 'remerge'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'kvmfornfv'
+                project-pattern: '{project}'
                 branches:
                     - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
+                      branch-pattern: '**/{branch}'
 
     builders:
         - shell:
