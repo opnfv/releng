@@ -23,42 +23,30 @@
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
-#      Current Mapping
-#--------------------------------
-#  everything runs against master branch
+#        brahmaputra
 #--------------------------------
     pod:
         - intel-pod5:
+            <<: *brahmaputra
+#--------------------------------
+#           master
+#--------------------------------
+        - intel-pod6:
             <<: *master
         - orange-pod2:
             <<: *master
 #--------------------------------
-#     Milestone E Mapping
-#     !!!DO NOT ENABLE!!!
-#--------------------------------
-#        brahmaputra
-#--------------------------------
-#        - intel-pod5:
-#            <<: *brahmaputra
-#--------------------------------
-#           master
-#--------------------------------
-#        - intel-pod6:
-#            <<: *master
-#        - orange-pod2:
-#            <<: *master
-#--------------------------------
-
 # please check the triggers before enabling any of the controllers!!!
     sdn-controller:
-        - 'nosdn':
-            disabled: true
         - 'odl':
             disabled: false
-        - 'onos':
-            disabled: true
-        - 'opencontrail':
-            disabled: true
+# commented out below controllers to get Arno scenario settled first
+#        - 'nosdn':
+#            disabled: true
+#        - 'onos':
+#            disabled: true
+#        - 'opencontrail':
+#            disabled: true
 
     jobs:
         - 'joid-{sdn-controller}-{pod}-daily-{stream}'
@@ -78,10 +66,10 @@
 
     wrappers:
         - build-name:
-            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Feature: $OPNFV_FEATURE'
+            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Scenario: $DEPLOY_SCENARIO'
 
     triggers:
-        - 'joid-{pod}-trigger'
+        - 'joid-{pod}-{sdn-controller}-trigger'
 
     parameters:
         - project-parameter:
@@ -92,7 +80,7 @@
             name: SDN_CONTROLLER
             default: '{sdn-controller}'
         - string:
-            name: OPNFV_FEATURE
+            name: DEPLOY_SCENARIO
             default: 'none'
 
     scm:
@@ -115,7 +103,7 @@
 
     wrappers:
         - build-name:
-            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Feature: $OPNFV_FEATURE'
+            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Scenario: $DEPLOY_SCENARIO'
 
     parameters:
         - project-parameter:
@@ -153,6 +141,40 @@
             condition: COMPLETED
             projects:
                 - name: 'functest-joid-{pod}-daily-{stream}'
+                  current-parameters: true
+                  kill-phase-on: NEVER
+        - multijob:
+            name: yardstick
+            condition: COMPLETED
+            projects:
+                - name: 'yardstick-joid-{pod}-daily-{stream}'
+                  current-parameters: true
+                  kill-phase-on: NEVER
+# intel-pod6 is CI POD so full CI will run on it
+# deploy, functest, yardstick
+- builder:
+    name: joid-multijob-intel-pod6-builder
+    builders:
+        - multijob:
+            name: deploy
+            condition: SUCCESSFUL
+            projects:
+                - name: 'joid-deploy-{pod}-daily-{stream}'
+                  current-parameters: true
+                  git-revision: true
+                  kill-phase-on: FAILURE
+        - multijob:
+            name: functest
+            condition: COMPLETED
+            projects:
+                - name: 'functest-joid-{pod}-daily-{stream}'
+                  current-parameters: true
+                  kill-phase-on: NEVER
+        - multijob:
+            name: yardstick
+            condition: COMPLETED
+            projects:
+                - name: 'yardstick-joid-{pod}-daily-{stream}'
                   current-parameters: true
                   kill-phase-on: NEVER
 # yardstick placeholder
@@ -193,7 +215,6 @@
         - shell: |
             #!/bin/bash
             echo "Running $INSTALLER_TYPE with controller $SDN_CONTROLLER"
-            echo "Please note that this is a quick try to see how joid deployment works"
             echo
             echo "Executing clean.sh"
             cd $WORKSPACE/ci
@@ -204,6 +225,23 @@
             echo
             echo "Executing deploy.sh -o liberty -s $SDN_CONTROLLER -t ha -l intelpod5"
             ./deploy.sh -o liberty -s $SDN_CONTROLLER -t ha -l intelpod5
+
+- builder:
+    name: intel-pod6-builder
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Running $INSTALLER_TYPE with controller $SDN_CONTROLLER"
+            echo
+            echo "Executing clean.sh"
+            cd $WORKSPACE/ci
+            ./clean.sh
+            echo
+            echo "Executing 02-maasdeploy.sh intelpod6"
+            ./02-maasdeploy.sh intelpod6
+            echo
+            echo "Executing deploy.sh -o liberty -s $SDN_CONTROLLER -t ha -l intelpod6"
+            ./deploy.sh -o liberty -s $SDN_CONTROLLER -t ha -l intelpod6
 
 - builder:
     name: orange-pod2-builder
@@ -222,12 +260,14 @@
 # trigger macros
 ########################
 - trigger:
-    name: 'joid-intel-pod5-trigger'
+    name: 'joid-intel-pod5-odl-trigger'
     triggers:
         - timed: '0 3 * * *'
-# timer trigger is commented out since we do not know if the automatic runs should
-# be enabled on orange-pod2
 - trigger:
-    name: 'joid-orange-pod2-trigger'
+    name: 'joid-intel-pod6-odl-trigger'
     triggers:
-        - timed: '#0 3 * * *'
+        - timed: '0 3 * * *'
+- trigger:
+    name: 'joid-orange-pod2-odl-trigger'
+    triggers:
+        - timed: ''
