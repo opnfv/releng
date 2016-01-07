@@ -66,8 +66,7 @@
                     pattern: 'docs/**'
 
     builders:
-        - clone-opnfv-repos
-        - build-html-and-pdf-docs-output
+        - build-opnfv-composite-docs
         - upload-under-review-docs-to-opnfv-artifacts
         - report-docs-build-result-to-gerrit
 
@@ -111,8 +110,7 @@
                     pattern: 'docs/**'
 
     builders:
-        - clone-opnfv-repos
-        - build-html-and-pdf-docs-output
+        - build-opnfv-composite-docs
 #        - upload-generated-docs-to-opnfv-artifacts
         - report-docs-build-result-to-gerrit
         - remove-old-docs-from-opnfv-artifacts
@@ -134,7 +132,7 @@
         - string:
             name: GERRIT_BRANCH
             default: '{branch}'
-            description: 'Specify the branch in this way in order to be able to use clone-opnfv-repos builder.'
+            description: 'Specify the branch in this way in order to be able to use build-opnfv-composite-docs builder.'
 
     scm:
         - git-scm:
@@ -146,62 +144,13 @@
         - timed: '0 H/6 * * *'
 
     builders:
-        - clone-opnfv-repos
-        - build-html-and-pdf-docs-output
+        - build-opnfv-composite-docs
 #        - upload-generated-docs-to-opnfv-artifacts
 
 - builder:
-    name: clone-opnfv-repos
-
-    # TODO(r-mibu): fix job name which is not relevant anymore
-    #               AND move this script into opnfvdocs repo
-
+    name: build-opnfv-composite-docs
     builders:
         - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-
-            tmp=$WORKSPACE/composite_tmp
-            [[ -d $tmp ]] && rm -rf $tmp
-            mkdir -p $tmp
-            mkdir -p $WORKSPACE/docs/projects
-
-            pushd $tmp
-
-            # clone releng repo to get repo list
-            echo "Cloning releng repo"
-            git clone $GIT_CLONE_BASE/releng --branch master --depth 1 --quiet
-            repos=$(grep -v '^#' releng/jjb/opnfvdocs/project.cfg | sort)
-
-            echo
-            echo "Cloning repos of participating OPNFV Projects and copying docs"
-            echo
-            echo "--------------------------------------------------------"
-            for repo in $repos; do
-                echo "    $repo ($GERRIT_BRANCH)"
-                git clone $GIT_CLONE_BASE/$repo --branch $GERRIT_BRANCH --depth 1 --quiet
-                cp -r $repo/docs $WORKSPACE/docs/projects/$repo
-            done
-            echo "--------------------------------------------------------"
-            echo
-
-            echo "Creating document links"
-            for guide in configguide userguide
-            do
-                link_list=$WORKSPACE/docs/$guide/projects-$guide.rst
-                for repo in $repos
-                do
-                    file=projects/$repo/$guide/$guide.rst
-                    [[ -e $WORKSPACE/docs/$file ]] || continue
-                    echo "" >> $link_list
-                    echo "$repo:" >> $link_list
-                    echo ".. include:: ../$file" >> $link_list
-                done
-            done
-
-            popd
-            rm -rf $tmp
-
-            echo "Done"
+            #!/bin/bash -e
+            export PATH=$PATH:/usr/local/bin/
+            GERRIT_COMMENT=gerrit_comment.txt ./build-composite.sh
