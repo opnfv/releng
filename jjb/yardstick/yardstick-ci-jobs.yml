@@ -20,11 +20,15 @@
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
-#      Current Mapping
-#--------------------------------
-#  everything runs against master branch
+#        brahmaputra
 #--------------------------------
     pod:
+        - intel-pod5:
+            installer: joid
+            <<: *brahmaputra
+#--------------------------------
+#        master
+#--------------------------------
         - opnfv-jump-2:
             installer: fuel
             <<: *master
@@ -34,36 +38,12 @@
         - ericsson-pod2:
             installer: fuel
             <<: *master
+        - intel-pod6:
+            installer: joid
+            <<: *master
         - huawei-us-deploy-bare-1:
             installer: compass
             <<: *master
-#--------------------------------
-#     Milestone E Mapping
-#     !!!DO NOT ENABLE!!!
-#--------------------------------
-#        brahmaputra
-#--------------------------------
-#        - huawei-us-deploy-bare-1:
-#            installer: compass
-#            <<: *brahmaputra
-#        - intel-pod5:
-#            installer: joid
-#            <<: *brahmaputra
-#        - opnfv-jump-1:
-#            installer: apex
-#            <<: *brahmaputra
-#        - opnfv-jump-2:
-#            installer: fuel
-#            <<: *brahmaputra
-#--------------------------------
-#           master
-#--------------------------------
-#        - ericsson-pod1:
-#            installer: fuel
-#            <<: *master
-#        - ericsson-pod2:
-#            installer: fuel
-#            <<: *master
 #--------------------------------
     loop:
         - daily
@@ -132,6 +112,7 @@
                 -e "INSTALLER_IP=${INSTALLER_IP}" \
                 -e "POD_NAME=${NODE_NAME}" \
                 -e "EXTERNAL_NETWORK=${EXTERNAL_NETWORK}" \
+                -e "YARDSTICK_BRANCH=${GERRIT_BRANCH}" \
                 opnfv/yardstick \
                 run_tests.sh $YARDSTICK_DB_BACKEND \
                 $YARDSTICK_SUITE_NAME
@@ -172,6 +153,22 @@
 ########################
 # parameter macros
 ########################
+- parameter:
+    name: 'yardstick-params-intel-pod5'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: ''
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'yardstick-params-intel-pod6'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: ''
+            description: 'Arguments to use in order to choose the backend DB'
+
 - parameter:
     name: 'yardstick-params-ericsson-pod1'
     parameters:
