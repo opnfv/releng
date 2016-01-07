@@ -1,17 +1,20 @@
 - project:
     name: storperf
+
+    project: '{name}'
+
     jobs:
         - 'storperf-verify-{stream}'
         - 'storperf-merge-{stream}'
         - 'storperf-daily-{stream}'
 
-    # stream:    branch with - in place of / (eg. stable-arno)
-    # branch:    branch (eg. stable/arno)
     stream:
         - master:
-            branch: 'master'
-
-    project: 'storperf'
+            branch: '{stream}'
+            gs-pathname: ''
+        - brahmaputra:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
 
 - job-template:
     name: 'storperf-verify-{stream}'
@@ -22,7 +25,7 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'master'
+            branch: '{branch}'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -48,10 +51,10 @@
                     comment-contains-value: 'reverify'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'storperf'
+                project-pattern: '{project}'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
+                    branch-pattern: '**/{branch}'
 
     builders:
         - shell: |
@@ -90,10 +93,10 @@
                     comment-contains-value: 'remerge'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: 'storperf'
+                project-pattern: '{project}'
                 branches:
                     - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
+                      branch-pattern: '**/{branch}'
 
     builders:
         - shell: |
