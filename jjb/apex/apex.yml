@@ -20,7 +20,7 @@
 - job-template:
     name: 'apex-verify-{stream}'
 
-    node: intel-us-deploy-virtual-2
+    node: opnfv-jump-1
 
     parameters:
         - apex-parameter:
@@ -80,7 +80,7 @@
     #
     # This job's purpose is to update all the JJB
 
-    node: intel-us-deploy-virtual-2
+    node: opnfv-jump-1
 
     disabled: true
 
@@ -131,7 +131,7 @@
     # Required Variables:
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
-    node: intel-us-deploy-virtual-2
+    node: opnfv-jump-1
 
     disabled: false
 
@@ -167,7 +167,7 @@
     # Required Variables:
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
-    node: intel-us-deploy-virtual-2
+    node: opnfv-jump-1
 
     disabled: false
 
@@ -223,7 +223,7 @@
     # Required Variables:
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
-    node: intel-us-deploy-virtual-2
+    node: opnfv-jump-1
 
     disabled: false
 
@@ -254,13 +254,11 @@
             git-revision: true
             block: true
         - trigger-builds:
-          - project: 'apex-deploy-virtual-{stream}'
+          - project: 'apex-deploy-baremetal-{stream}'
             git-revision: true
             block: true
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-{stream}'
-        - trigger-builds:
-          - project: 'functest-apex-intel-us-deploy-virtual-2-daily-{stream}'
+          - project: 'functest-apex-opnfv-jump-1-daily-{stream}'
             block: true
             block-thresholds:
                 build-step-failure-threshold: 'never'
