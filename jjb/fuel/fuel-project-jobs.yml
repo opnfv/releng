@@ -8,14 +8,13 @@
 
     installer: 'fuel'
 
-# only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
             branch: '{stream}'
             gs-pathname: ''
-#        - brahmaputra:
-#            branch: 'stable/{stream}'
-#            gs-pathname: '/{stream}'
+        - brahmaputra:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
 
     jobs:
         - 'fuel-build-daily-{stream}'
@@ -52,7 +51,7 @@
             branch: '{branch}'
 
     triggers:
-        - pollscm: '0 H/6 * * *'
+        - pollscm: '0 H/4 * * *'
 
     wrappers:
         - timeout:
