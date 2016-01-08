@@ -16,6 +16,10 @@ mkdir -p $LAB_CONFIG
 if [ -e "$LAB_CONFIG/$PWD_FILENAME" ]; then
     echo "------ Load local passwords ------"
     source $LAB_CONFIG/$PWD_FILENAME
+else
+    export MAAS_USER=ubuntu
+    export MAAS_PASSWORD=ubuntu
+    export OS_ADMIN_PASSWORD=openstack
 fi
 
 ##
@@ -41,12 +45,8 @@ if [ -e "$LAB_CONFIG/environments.yaml" ] && [ "$MAAS_REINSTALL" == "false" ]; t
 else
     MAASCONFIG=$WORKSPACE/ci/maas/${POD/-*}/${POD/*-}/deployment.yaml
     echo "------ Set MAAS password ------"
-    if [ -n "$MAAS_USER" ]; then
-        sed -i -- "s/user: ubuntu/user: $MAAS_USER/" $MAASCONFIG
-    fi
-    if [ -n "$MAAS_PASSWORD" ]; then
-        sed -i -- "s/password: ubuntu/password: $MAAS_PASSWORD/" $MAASCONFIG
-    fi
+    sed -i -- "s/user: ubuntu/user: $MAAS_USER/" $MAASCONFIG
+    sed -i -- "s/password: ubuntu/password: $MAAS_PASSWORD/" $MAASCONFIG
     echo "------ Redeploy MAAS ------"
     ./02-maasdeploy.sh $POD_NAME
     RES=$?
@@ -70,9 +70,7 @@ fi
 # Modify files
 
 echo "------ Set openstack password ------"
-if [ -n "$OS_ADMIN_PASSWORD" ]; then
-    sed -i -- "s/\"admin-password\": openstack/\"admin-password\": $OS_ADMIN_PASSWORD/" $SRCBUNDLE
-fi
+sed -i -- "s/\"admin-password\": openstack/\"admin-password\": $OS_ADMIN_PASSWORD/" $SRCBUNDLE
 
 echo "------ Set ceph disks ------"
 if [ -z "$CEPH_DISKS_CONTROLLERS" ]; then
