@@ -53,22 +53,6 @@ if [[ "$UPDATE_LATEST_STABLE" == "true" ]]; then
 fi
 
 
-# Get tag version
-cd $WORKSPACE
-git clone https://gerrit.opnfv.org/gerrit/releng
-
-DOCKER_TAG=$($WORKSPACE/releng/utils/calculate_version.sh -t docker \
-    -n $DOCKER_REPO_NAME)
-
-ret_val=$?
-if [ $ret_val -ne 0 ]; then
-    echo "Error retrieving the version tag."
-    exit 1
-else
-    echo "Tag version to be build and pushed: $DOCKER_TAG"
-fi
-
-
 # cd to directory where Dockerfile is located
 if [[ "$DOCKER_REPO_NAME" == "opnfv/functest" ]]; then
     cd $WORKSPACE/docker
@@ -82,6 +66,27 @@ else
     echo "ERROR: DOCKER_REPO_NAME parameter not valid: $DOCKER_REPO_NAME"
     exit 1
 fi
+
+
+# Get tag version
+branch=$(git rev-parse --abbrev-ref HEAD)
+if [ $branch == "master" ]; then
+    DOCKER_TAG="master"
+else
+    cd $WORKSPACE
+    git clone https://gerrit.opnfv.org/gerrit/releng
+
+    DOCKER_TAG=$($WORKSPACE/releng/utils/calculate_version.sh -t docker \
+        -n $DOCKER_REPO_NAME)
+
+    ret_val=$?
+    if [ $ret_val -ne 0 ]; then
+        echo "Error retrieving the version tag."
+        exit 1
+    fi
+fi
+echo "Tag version to be build and pushed: $DOCKER_TAG"
+
 
 # Start the build
 echo "Building docker image: $DOCKER_REPO_NAME:$DOCKER_TAG..."
