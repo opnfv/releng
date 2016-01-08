@@ -1,0 +1,219 @@
+- project:
+
+    name: compass-ci
+
+    installer: 'compass'
+
+    project: 'compass4nfv'
+
+    jobs:
+        - 'compass-{sdn-controller}-{pod}-daily-{stream}'
+        - 'compass-deploy-{pod}-daily-{stream}'
+
+# only master branch is enabled at the moment to keep no of jobs sane
+    stream:
+        - master: &master
+            stream: master
+            branch: '{stream}'
+            gs-pathname: ''
+        - brahmaputra: &brahmaputra
+            stream: brahmaputra 
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
+
+#--------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+    pod:
+#--------------------------------
+#        brahmaputra
+#--------------------------------
+        - huawei-us-deploy-bare-1:
+            <<: *brahmaputra
+#--------------------------------
+#        master
+#--------------------------------
+        - intel-pod6:
+            <<: *master
+
+    sdn-controller:
+        - 'nosdn':
+            disabled: false
+        - 'odl':
+            disabled: false
+        - 'onos':
+            disabled: false
+        - 'opencontrail':
+            disabled: true
+
+
+########################
+# job templates
+########################
+- job-template:
+    name: 'compass-{sdn-controller}-{pod}-daily-{stream}'
+
+    project-type: multijob
+    
+    node: huawei-build
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Scenario: $DEPLOY_SCENARIO'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - compass-ci-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: SDN_CONTROLLER
+            default: '{sdn-controller}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'none'
+        - 'huawei-us-build-1-default'
+        - '{installer}-defaults'
+
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    triggers:
+        - 'compass-{pod}-{sdn-controller}-trigger'
+
+    builders:
+        - multijob:
+            name: deploy
+            condition: SUCCESSFUL
+            projects:
+                - name: 'compass-deploy-{pod}-daily-{stream}'
+                  current-parameters: true
+                  git-revision: true
+                  kill-phase-on: FAILURE
+        - multijob:
+            name: functest
+            condition: COMPLETED
+            projects:
+                - name: 'functest-compass-{pod}-daily-{stream}'
+                  current-parameters: true
+                  kill-phase-on: NEVER
+        - multijob:
+            name: yardstick
+            condition: COMPLETED
+            projects:
+                - name: 'yardstick-compass-{pod}-daily-{stream}'
+                  current-parameters: true
+                  kill-phase-on: NEVER
+
+- job-template:
+    name: 'compass-deploy-{pod}-daily-{stream}'
+
+    disabled: false
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - compass-ci-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: SDN_CONTROLLER
+            default: '{sdn-controller}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'none'
+        - '{pod}-defaults'
+        - '{installer}-defaults'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Scenario: $DEPLOY_SCENARIO'
+
+
+    builders:
+        - shell:
+            !include-raw ./compass-workspace-precleanup.sh
+        - shell:
+            !include-raw ./compass-download-artifact.sh
+        - shell:
+            !include-raw ./compass-deploy-bare.sh
+
+    publishers:
+        - archive:
+            artifacts: 'ansible.log'
+            allow-empty: 'true'
+            fingerprint: true
+
+########################
+# parameter macros
+########################
+- parameter:
+    name: compass-ci-parameter
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache/$PROJECT
+            description: "Directory where the cache to be used during the build is located."
+        - string:
+            name: GS_URL
+            default: '$GS_BASE{gs-pathname}'
+            description: "URL to Google Storage."
+        - string:
+            name: PPA_REPO
+            default: "http://205.177.226.235:9999"
+        - string:
+            name: PPA_CACHE
+            default: "$WORKSPACE/work/repo/"
+        - choice:
+            name: COMPASS_OPENSTACK_VERSION
+            choices:
+                - 'liberty'
+                - 'juno'
+        - choice:
+            name: COMPASS_OS_VERSION
+            choices:
+                - 'trusty'
+                - 'centos7'
+
+########################
+# trigger macros
+########################
+- trigger:
+    name: 'compass-huawei-us-deploy-bare-1-nosdn-trigger'
+    triggers:
+        - timed: '0 16 * * *'
+- trigger:
+    name: 'compass-intel-pod6-nosdn-trigger'
+    triggers:
+        - timed: '0 16 * * *'
