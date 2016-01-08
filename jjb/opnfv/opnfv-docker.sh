@@ -83,6 +83,11 @@ else
     exit 1
 fi
 
+branch=$(git rev-parse --abbrev-ref HEAD)
+if [ $branch == "master" ]; then
+    DOCKER_TAG="master"
+fi
+
 # Start the build
 echo "Building docker image: $DOCKER_REPO_NAME:$DOCKER_TAG..."
 
