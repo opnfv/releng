@@ -76,6 +76,8 @@
             use-build-blocker: true
             blocking-jobs:
                 - "apex-daily.*"
+                - "apex-deploy.*"
+                - "apex-build.*"
 
     builders:
         - 'apex-build'
@@ -162,6 +164,14 @@
             refspec: ''
             branch: '{branch}'
 
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - "apex-verify.*"
+                - "apex-deploy.*"
+                - "apex-daily.*"
+
     builders:
         - 'apex-build'
         - 'apex-deploy-virtual'
@@ -192,6 +202,15 @@
         - apex-parameter:
             gs-pathname: '{gs-pathname}'
 
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - "apex-verify.*"
+                - "apex-deploy.*"
+                - "apex-build.*"
+                - "apex-daily.*"
+
     builders:
         - 'apex-deploy-virtual'
         - 'apex-workspace-cleanup'
@@ -219,6 +238,15 @@
             project: '{project}'
         - apex-parameter:
             gs-pathname: '{gs-pathname}'
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - "apex-verify.*"
+                - "apex-deploy.*"
+                - "apex-build.*"
+                - "apex-daily.*"
 
     builders:
         - 'apex-deploy-baremetal'
@@ -252,7 +280,9 @@
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - "apex-daily.*"
+                - "apex-verify.*"
+                - "apex-deploy.*"
+                - "apex-build.*"
 
     triggers:
         - 'apex-{stream}'
