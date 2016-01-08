@@ -2,6 +2,149 @@
   "comments": [
     {
       "key": {
+        "uuid": "9a5c5d37_9b72e90f",
+        "filename": "jjb/joid/joid-ci-jobs.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-01-08T09:04:27Z",
+      "side": 1,
+      "message": "please do not change the order or you need to list reasons of doing and convince me :)\n\nthe idea is to override more general pod parameters with more specific installer parameters, that\u0027s why installer parameters are located after pod params.",
+      "revId": "30eea8d8234b19cf4d32f16b61130e876a418fe0",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a5c5d37_fb544555",
+        "filename": "jjb/joid/joid-deploy.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-01-08T09:04:27Z",
+      "side": 1,
+      "message": "I think it is much better not to have this here.\n\nThe POD name can be constructed using an available env var NODE_NAME. Something like\n\n   POD_NAME\u003d${NODE_NAME//-}\n\nAnd we should follow this POD naming scheme for all the slaves we add to Jenkins.",
+      "revId": "30eea8d8234b19cf4d32f16b61130e876a418fe0",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a5c5d37_9be0a997",
+        "filename": "jjb/joid/joid-deploy.sh",
+        "patchSetId": 3
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-01-08T09:04:27Z",
+      "side": 1,
+      "message": "again, instead of introducing new parameters to job, it is better to have the lab name and id extracted from the available env var; NODE_NAME. Something like\n\n   MAASCONFIG\u003d$WORKSPACE/ci/maas/${NODE_NAME//-*}/${NODE_NAME/*-/}/deployment.yaml\n\nThis will not work for Orange POD since it uses the old naming scheme in slave name on Jenkins. The country code is not relevant if you ask me so we can rename your slave and we don\u0027t need the extra params/vars.",
+      "revId": "30eea8d8234b19cf4d32f16b61130e876a418fe0",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a5c5d37_1ba39950",
+        "filename": "jjb/opnfv/installer-params.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-01-08T09:04:27Z",
+      "side": 1,
+      "message": "These should end up in scenario description which is specified by DEPLOY_SCENARIO which Jonas is working on defining.",
+      "range": {
+        "startLine": 92,
+        "startChar": 0,
+        "endLine": 99,
+        "endChar": 59
+      },
+      "revId": "30eea8d8234b19cf4d32f16b61130e876a418fe0",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a5c5d37_fb89e5ca",
+        "filename": "jjb/opnfv/installer-params.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-01-08T09:04:27Z",
+      "side": 1,
+      "message": "please rethink of introducing new params and take a look at the comment I put in joid-deploy.sh.\n\nthe reason for this is that having more params in jenkins jobs makes them unmanageable - 20 params in joid Jenkins job at the moment. we shouldn\u0027t introduce more and more parameters to Jenkins jobs.",
+      "range": {
+        "startLine": 104,
+        "startChar": 0,
+        "endLine": 111,
+        "endChar": 84
+      },
+      "revId": "30eea8d8234b19cf4d32f16b61130e876a418fe0",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a5c5d37_bb936df9",
+        "filename": "jjb/opnfv/slave-params.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-01-08T09:04:27Z",
+      "side": 1,
+      "message": "please rethink of introducing new params and take a look at the comment I put in joid-deploy.sh.\n\nthe reason for this is that having more params in jenkins jobs makes them unmanageable - 20 params in joid Jenkins job at the moment. we shouldn\u0027t introduce more and more parameters to Jenkins jobs.",
+      "range": {
+        "startLine": 180,
+        "startChar": 0,
+        "endLine": 187,
+        "endChar": 84
+      },
+      "revId": "30eea8d8234b19cf4d32f16b61130e876a418fe0",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a5c5d37_9b8e69cf",
+        "filename": "jjb/opnfv/slave-params.yml",
+        "patchSetId": 3
+      },
+      "lineNbr": 337,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-01-08T09:04:27Z",
+      "side": 1,
+      "message": "please rethink of introducing new params and take a look at the comment I put in joid-deploy.sh.\n\nthe reason for this is that having more params in jenkins jobs makes them unmanageable - 20 params in joid Jenkins job at the moment. we shouldn\u0027t introduce more and more parameters to Jenkins jobs.",
+      "range": {
+        "startLine": 330,
+        "startChar": 0,
+        "endLine": 337,
+        "endChar": 84
+      },
+      "revId": "30eea8d8234b19cf4d32f16b61130e876a418fe0",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9a5c5d37_db686123",
         "filename": "jjb/opnfv/slave-params.yml",
         "patchSetId": 3
