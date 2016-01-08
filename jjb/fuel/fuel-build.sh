@@ -56,7 +56,7 @@ if [[ "$JOB_NAME" =~ "verify" && "$GERRIT_CHANGE_COMMIT_MESSAGE" =~ "$NOCACHE_PA
     echo "The cache will not be used for this build!"
     NOCACHE_ARG="-f P"
 fi
-NOCACHE_ARG=${{NOCACHE_ARG:-}}
+NOCACHE_ARG=${NOCACHE_ARG:-}
 
 # start the build
 cd $WORKSPACE/ci

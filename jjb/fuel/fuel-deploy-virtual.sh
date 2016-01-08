@@ -24,7 +24,7 @@ chmod a+x $TMPDIR
 
 # get the lab name from SLAVE_NAME
 # we currently support ericsson and intel labs
-LAB_NAME=${{NODE_NAME%%-*}}
+LAB_NAME=${NODE_NAME%%-*}
 if [[ ! "$LAB_NAME" =~ (ericsson|intel) ]]; then
     echo "Unsupported/unidentified lab $LAB_NAME. Cannot continue!"
     exit 1

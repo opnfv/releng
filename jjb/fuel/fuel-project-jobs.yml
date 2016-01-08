@@ -60,11 +60,11 @@
 
     builders:
         - shell:
-            !include-raw ./fuel-build.sh
+            !include-raw-escape: ./fuel-build.sh
         - shell:
-            !include-raw ./fuel-upload-artifact.sh
+            !include-raw-escape: ./fuel-upload-artifact.sh
         - shell:
-            !include-raw ./fuel-workspace-cleanup.sh
+            !include-raw-escape: ./fuel-workspace-cleanup.sh
 
     publishers:
         - email:
@@ -125,9 +125,9 @@
 
     builders:
         - shell:
-            !include-raw ./fuel-build.sh
+            !include-raw-escape: ./fuel-build.sh
         - shell:
-            !include-raw ./fuel-workspace-cleanup.sh
+            !include-raw-escape: ./fuel-workspace-cleanup.sh
 
 - job-template:
     name: 'fuel-merge-build-{stream}'
@@ -176,11 +176,11 @@
 
     builders:
         - shell:
-            !include-raw ./fuel-build.sh
+            !include-raw-escape: ./fuel-build.sh
         - shell:
-            !include-raw ./fuel-upload-artifact.sh
+            !include-raw-escape: ./fuel-upload-artifact.sh
         - shell:
-            !include-raw ./fuel-workspace-cleanup.sh
+            !include-raw-escape: ./fuel-workspace-cleanup.sh
 
 - job-template:
     name: 'fuel-merge-deploy-virtual-{stream}'
@@ -228,11 +228,11 @@
 
     builders:
         - shell:
-            !include-raw ./fuel-download-artifact.sh
+            !include-raw-escape: ./fuel-download-artifact.sh
         - shell:
-            !include-raw ./fuel-deploy-virtual.sh
+            !include-raw-escape: ./fuel-deploy-virtual.sh
         - shell:
-            !include-raw ./fuel-workspace-cleanup.sh
+            !include-raw-escape: ./fuel-workspace-cleanup.sh
 
     publishers:
         - email:
