@@ -29,6 +29,9 @@
         - intel-pod5:
             installer: joid
             <<: *brahmaputra
+        - huawei-us-deploy-bare-1:
+            installer: compass
+            <<: *brahmaputra
 #--------------------------------
 #        master
 #--------------------------------
@@ -41,7 +44,7 @@
         - intel-pod6:
             installer: joid
             <<: *master
-        - huawei-us-deploy-bare-1:
+        - intel-pod8:
             installer: compass
             <<: *master
         - zte-build-1:
@@ -169,6 +172,14 @@
 
 - parameter:
     name: 'yardstick-params-intel-pod6'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: ''
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'yardstick-params-intel-pod8'
     parameters:
         - string:
             name: YARDSTICK_DB_BACKEND
