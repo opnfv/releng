@@ -1,21 +1,15 @@
-####################################
-# Job configuration for bottlenecks
-####################################
+###################################################
+# verify and artifacts upload jobs for bottlenecks
+###################################################
 - project:
-    name: bottlenecks
+    name: bottlenecks-project-jobs
+
+    project: 'bottlenecks'
+
     jobs:
         - 'bottlenecks-verify-{stream}'
-        - 'bottlenecks-daily-{installer}-{suite}-{pod}-{stream}'
         - 'bottlenecks-{suite}-upload-artifacts-{stream}'
-    pod:
-        - lf:
-            node: 'opnfv-jump-2'
-            installer_type: 'fuel'
-            installer_ip: '10.20.0.2'
-
-    installer:
-        - 'fuel'
-
+    
     suite:
         - 'rubbos'
         - 'vstf'
@@ -23,16 +17,12 @@
 # only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
-            branch: '{stream}'
+            branch: 'master'
             gs-pathname: ''
 #        - brahmaputra:
-#            branch: 'stable/{stream}'
-#            gs-pathname: '/{stream}'
+#            branch: 'stable/brahmaputra'
+#            gs-pathname: '/brahmaputra'
 
-    project: 'bottlenecks'
-###############################
-# Job templates
-##############################
 - job-template:
     name: 'bottlenecks-verify-{stream}'
 
@@ -92,8 +82,7 @@
         - project-parameter:
             project: '{project}'
         - 'ericsson-ca-build-1-defaults'
-        - bottlenecks-parameter:
-            gs-pathname: '{gs-pathname}'
+        - bottlenecks-artifacts-parameter:
             suite: '{suite}'
 
     scm:
@@ -106,61 +95,11 @@
         - 'bottlenecks-builder-upload-artifact'
         - 'bottlenecks-workspace-cleanup'
 
-- job-template:
-    name: 'bottlenecks-daily-{installer}-{suite}-{pod}-{stream}'
-
-    disabled: false
-
-    node: '{node}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - 'opnfv-jump-2-defaults'
-        - string:
-            name: POD_NAME
-            default: '{pod}'
-            description: "POD where the job runs"
-        - string:
-            name: INSTALLER_TYPE
-            default: '{installer_type}'
-            description: "Installer name that is used for deployment."
-        - string:
-            name: INSTALLER_IP
-            default: '{installer_ip}'
-            description: "Installer IP."
-        - string:
-            name: GERRIT_REFSPEC_DEBUG
-            default: ''
-            description: "Gerrit refspec for debug."
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    wrappers:
-        - timeout:
-            timeout: 120
-            fail: true
-
-    triggers:
-        - 'bottlenecks-trigger-{pod}'
-
-    builders:
-        - 'bottlenecks-fetch-os-creds'
-        - 'bottlenecks-run-{suite}'
-
-    publishers:
-        - email:
-            recipients: hongbo.tianhongbo@huawei.com matthew.lijun@huawei.com liangqi1@huawei.com liyiting@huawei.com
-
 ####################
 # parameter macros
 ####################
 - parameter:
-    name: bottlenecks-parameter
+    name: bottlenecks-artifacts-parameter
     parameters:
         - string:
            name: CACHE_DIR
@@ -168,43 +107,13 @@
            description: "the cache to store packages downloaded from public IP"
         - string:
            name: SUITE_URL
-           default: gs://artifacts.opnfv.org/bottlenecks/{suite}{gs-pathname}
+           default: gs://artifacts.opnfv.org/bottlenecks/{suite}
            description: "LF artifacts url for storage of bottlenecks packages"
         - string:
            name: PACKAGE_URL
            default: http://205.177.226.237:9999/bottlenecks/{suite}/
            description: "the url where we store the packages used for bottlenecks rubbos"
 
-###################################
-#builders for bottlenecks project
-###################################
-- builder:
-    name: bottlenecks-fetch-os-creds
-    builders:
-        - shell:
-            !include-raw ../../utils/fetch_os_creds.sh
-
-- builder:
-    name: bottlenecks-run-rubbos
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-
-            echo "Bottlenecks: rubbos running now..."
-            cd $WORKSPACE
-            ./ci/run.sh $GERRIT_REFSPEC_DEBUG
-
-- builder:
-    name: bottlenecks-run-vstf
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-
-            echo "Bottlenecks: vstf running now..."
-            cd $WORKSPACE
-            ./ci/vstf_run.sh $GERRIT_REFSPEC_DEBUG
 - builder:
     name: bottlenecks-builder-upload-artifact
     builders:
@@ -236,31 +145,3 @@
             echo "Bottlenecks: cleanup cache used for storage downloaded packages"
 
             /bin/rm -rf $CACHE_DIR
-
-#######################
-#trigger macros
-#######################
-- trigger:
-    name: 'bottlenecks-trigger-lf'
-    triggers:
-        - timed: '0 6 * * *'
-        - gerrit:
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**|.gitignore'
