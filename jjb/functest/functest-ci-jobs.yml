@@ -186,8 +186,9 @@
             # labconfig is used only for joid
             labconfig=""
             if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
-                INSTALLER_IP=$(grep instack /var/lib/libvirt/dnsmasq/default.leases \
-                    |awk '{print $3}' | head -n 1)
+                instack_mac=$(virsh domiflist instack | grep default | \
+                              grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
+                INSTALLER_IP=$(/usr/sbin/arp -e | grep ${instack_mac} | awk {'print $1'})
                 sshkey="-v /root/.ssh/id_rsa:/root/.ssh/id_rsa"
                 sudo iptables -D FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable
                 sudo iptables -D FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable
