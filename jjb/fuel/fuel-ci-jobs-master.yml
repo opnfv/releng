@@ -1,10 +1,10 @@
 - project:
 
-    name: 'fuel'
+    name: 'fuel-master'
 
-    project: '{name}'
+    project: 'fuel'
 
-    installer: '{name}'
+    installer: '{project}'
 
 #--------------------------------
 # BRANCH ANCHORS
@@ -13,41 +13,33 @@
         stream: master
         branch: '{stream}'
         gs-pathname: ''
-    brahmaputra: &brahmaputra
-        stream: brahmaputra
-        branch: 'stable/{stream}'
-        gs-pathname: '/{stream}'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
-#        brahmaputra
-#--------------------------------
     pod:
-        - opnfv-jump-2:
-            <<: *brahmaputra
-#--------------------------------
-#        master
-#--------------------------------
-        - ericsson-pod1:
-            <<: *master
         - ericsson-pod2:
             <<: *master
 #--------------------------------
 
-# please check the triggers before enabling any of the controllers!!!
-    sdn-controller:
-        - 'nosdn':
-            disabled: false
+# new scenario descriptions
+    scenario:
+        - 'os_ha'
+        - 'os_odl-l2_ha'
+        - 'os_odl-l3_ha'
+        - 'os_onos_ha'
+        - 'os_kvm_ha'
+        - 'os_ovs_ha'
+        - 'os_kvm_ovs_ha'
 
     jobs:
-        - 'fuel-{sdn-controller}-{pod}-daily-{stream}'
-        - 'fuel-deploy-{pod}-daily-{stream}'
+        - 'fuel-{scenario}-{pod}-daily-{stream}'
+        - 'fuel-deploy-{pod}-daily-{stream}-development'
 
 ########################
-# job templates - old type of defining the scenario
+# job templates - new type of defining the scenario
 ########################
 - job-template:
-    name: 'fuel-{sdn-controller}-{pod}-daily-{stream}'
+    name: 'fuel-{scenario}-{pod}-daily-{stream}'
 
     project-type: multijob
 
@@ -63,10 +55,7 @@
 
     wrappers:
         - build-name:
-            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Scenario: $DEPLOY_SCENARIO'
-
-    triggers:
-        - 'fuel-{pod}-{sdn-controller}-trigger'
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
 
     parameters:
         - project-parameter:
@@ -74,11 +63,8 @@
         - '{pod}-defaults'
         - '{installer}-defaults'
         - string:
-            name: SDN_CONTROLLER
-            default: '{sdn-controller}'
-        - string:
             name: DEPLOY_SCENARIO
-            default: 'none'
+            default: '{scenario}'
         - fuel-ci-parameter:
             gs-pathname: '{gs-pathname}'
 
@@ -113,7 +99,7 @@
                   kill-phase-on: NEVER
 
 - job-template:
-    name: 'fuel-deploy-{pod}-daily-{stream}'
+    name: 'fuel-deploy-{pod}-daily-{stream}-development'
 
     concurrent: false
 
@@ -125,33 +111,32 @@
 
     parameters:
         - project-parameter:
-            project: '{project}'
-        - '{pod}-defaults'
-        - '{installer}-defaults'
-        - fuel-ci-parameter:
-            gs-pathname: '{gs-pathname}'
+            project: 'fuel'
+        - 'ericsson-pod2-defaults'
+        - 'fuel-defaults'
+        - fuel-ci-parameter-new:
+            gs-pathname: ''
 
     scm:
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: '{branch}'
+            branch: 'master'
 
     wrappers:
         - build-name:
             name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
 
     builders:
-        - 'builder-{stream}'
-
-    publishers:
-        - email:
-            recipients: jonas.bjurel@ericsson.com stefan.k.berg@ericsson.com
+        - shell:
+            !include-raw-escape: ./fuel-download-artifact.sh
+        - shell:
+            !include-raw-escape: ./fuel-deploy-master.sh
 ########################
 # parameter macros
 ########################
 - parameter:
-    name: fuel-ci-parameter
+    name: fuel-ci-parameter-new
     parameters:
         - string:
             name: BUILD_DIRECTORY
@@ -165,37 +150,3 @@
             name: GS_URL
             default: artifacts.opnfv.org/$PROJECT{gs-pathname}
             description: "URL to Google Storage."
-########################
-# builder macros
-########################
-- builder:
-    name: 'builder-master'
-    builders:
-        - shell:
-            !include-raw-escape: ./fuel-download-artifact.sh
-        - shell:
-            !include-raw-escape: ./fuel-deploy-master.sh
-- builder:
-    name: 'builder-brahmaputra'
-    builders:
-        - shell:
-            !include-raw-escape: ./fuel-download-artifact.sh
-        - shell:
-            !include-raw-escape: ./fuel-deploy.sh
-########################
-# trigger macros
-########################
-# trigger for opnfv-jump-2 is set to run 1 hour ahead of others
-# to prevent doing unnecessary builds
-- trigger:
-    name: 'fuel-opnfv-jump-2-nosdn-trigger'
-    triggers:
-        - timed: '0 2 * * *'
-- trigger:
-    name: 'fuel-ericsson-pod1-nosdn-trigger'
-    triggers:
-        - timed: '0 2 * * *'
-- trigger:
-    name: 'fuel-ericsson-pod2-nosdn-trigger'
-    triggers:
-        - timed: ''
