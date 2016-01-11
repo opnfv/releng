@@ -15,7 +15,10 @@ we encourage you to propose a change in the releng repository.
 For further guidance see the https://wiki.opnfv.org/documentation/tools page.
 '''
 
-extensions = ['sphinxcontrib.httpdomain']
+extensions = ['sphinxcontrib.httpdomain';
+              'sphinx.ext.autodoc';
+              'sphinx.ext.viewcode';
+              'sphinx.ext.napoleon']
 
 needs_sphinx = '1.3'
 master_doc = 'index'
