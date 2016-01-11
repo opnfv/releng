@@ -136,7 +136,7 @@
     name: qtip-run-suite
     builders:
         - shell: |
-            #! /bin/bash
+            #!/bin/bash
             QTIP_REPO=/home/opnfv/repos/qtip
             docker exec -t ${container_id} $QTIP_REPO/docker/run_qtip.sh
 
@@ -145,34 +145,34 @@
     name: qtip-cleanup
     builders:
         - shell: |
-            #! /bin/bash
+            #!/bin/bash
 
-             echo "Cleaning up QTIP  docker containers/images..."
-              # Remove previous running containers if exist
-             if [[ ! -z $(docker ps -a | grep opnfv/qtip) ]]; then
-                 echo "Removing existing opnfv/qtip containers..."
-                 running_containers= $(docker ps | grep opnfv/qtip | awk '{print $1}')
-                 docker stop ${running_containers}
-                 all_containers= $(docker ps -a | grep opnfv/qtip | awk '{print $1}')
-                 docker rm ${all_containers}
-             fi
+            echo "Cleaning up QTIP  docker containers/images..."
+            # Remove previous running containers if exist
+            if [[ ! -z $(docker ps -a | grep opnfv/qtip) ]]; then
+                echo "Removing existing opnfv/qtip containers..."
+                running_containers= $(docker ps | grep opnfv/qtip | awk '{print $1}')
+                docker stop ${running_containers}
+                all_containers= $(docker ps -a | grep opnfv/qtip | awk '{print $1}')
+                docker rm ${all_containers}
+            fi
 
-             # Remove existing images if exist
-             if [[ ! -z $(docker images | grep opnfv/qtip) ]]; then
-                 echo "Docker images to remove:"
-                 docker images | head -1 && docker images | grep opnfv/qtip
-                 image_tags=($(docker images | grep opnfv/qtip | awk '{print $2}'))
-                 for tag in "${image_tags[@]}"; do
-                     echo "Removing docker image opnfv/qtip:$tag..."
-                     docker rmi opnfv/qtip:$tag
-                 done
-             fi
+            # Remove existing images if exist
+            if [[ ! -z $(docker images | grep opnfv/qtip) ]]; then
+                echo "Docker images to remove:"
+                docker images | head -1 && docker images | grep opnfv/qtip
+                image_tags=($(docker images | grep opnfv/qtip | awk '{print $2}'))
+                for tag in "${image_tags[@]}"; do
+                    echo "Removing docker image opnfv/qtip:$tag..."
+                    docker rmi opnfv/qtip:$tag
+                done
+            fi
 
 - builder:
     name: qtip-fetch-os-cred
     builders:
         - shell: |
-
+            #!/bin/bash
 
             echo $HOME
             echo $WORKSPACE
