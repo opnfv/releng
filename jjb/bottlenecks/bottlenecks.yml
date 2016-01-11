@@ -10,6 +10,7 @@
     pod:
         - lf:
             node: 'opnfv-jump-2'
+            disabled: true
             installer_type: 'fuel'
             installer_ip: '10.20.0.2'
 
@@ -109,7 +110,7 @@
 - job-template:
     name: 'bottlenecks-daily-{installer}-{suite}-{pod}-{stream}'
 
-    disabled: false
+    disabled: '{disabled}'
 
     node: '{node}'
 
@@ -243,7 +244,7 @@
 - trigger:
     name: 'bottlenecks-trigger-lf'
     triggers:
-        - timed: '0 6 * * *'
+        - timed: ''
         - gerrit:
             trigger-on:
                 - patchset-created-event:
