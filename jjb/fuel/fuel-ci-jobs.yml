@@ -49,6 +49,7 @@
     jobs:
         - 'fuel-{sdn-controller}-{pod}-daily-{stream}'
         - 'fuel-deploy-{pod}-daily-{stream}'
+        - 'fuel-deploy-{pod}-daily-{stream}-wip'
 
 ########################
 # job templates
@@ -153,6 +154,45 @@
             !include-raw-escape: ./fuel-download-artifact.sh
         - shell:
             !include-raw-escape: ./fuel-deploy.sh
+
+    publishers:
+        - email:
+            recipients: jonas.bjurel@ericsson.com stefan.k.berg@ericsson.com
+
+- job-template:
+    name: 'fuel-deploy-{pod}-daily-{stream}-wip'
+
+    concurrent: false
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+
+    parameters:
+        - project-parameter:
+            project: 'fuel'
+        - 'ericsson-pod2-defaults'
+        - 'fuel-defaults'
+        - fuel-ci-parameter:
+            gs-pathname: ''
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: 'master'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    builders:
+        - shell:
+            !include-raw-escape: ./fuel-download-artifact.sh
+        - shell:
+            !include-raw-escape: ./fuel-deploy-new.sh
 
     publishers:
         - email:
