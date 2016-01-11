@@ -5,6 +5,19 @@ set -o nounset
 PWD_FILENAME="passwords.sh"
 
 ##
+##
+##
+function exit_on_error {
+    RES=$1
+    MSG=$2
+    if [ $RES != 0 ]; then
+        echo "FAILED - $MSG"
+        exit $RES
+    fi
+}
+
+
+##
 ## Create LAB_CONFIG folder if not exists
 ##
 mkdir -p $LAB_CONFIG
@@ -49,11 +62,7 @@ else
     sed -i -- "s/password: ubuntu/password: $MAAS_PASSWORD/" $MAASCONFIG
     echo "------ Redeploy MAAS ------"
     ./02-maasdeploy.sh $POD_NAME
-    RES=$?
-    if [ $RES != 0 ]; then
-        echo "MAAS Deploy FAILED"
-        exit $RES
-    fi
+    exit_on_error $? "MAAS Deploy FAILED"
 fi
 
 ##
@@ -92,11 +101,7 @@ echo "------ Deploy with juju ------"
 echo "Execute: ./deploy.sh -t $HA_MODE -o $OS_RELEASE -s $SDN_CONTROLLER -l $POD_NAME"
 
 ./deploy.sh -t $HA_MODE -o $OS_RELEASE -s $SDN_CONTROLLER -l $POD_NAME
-RES=$?
-if [ $RES != 0 ]; then
-    echo "Deploy FAILED"
-    exit $RES
-fi
+exit_on_error $? "Main deploy FAILED"
 
 ##
 ## Set Admin RC
@@ -141,10 +146,39 @@ curl -i -sw '%{http_code}' -H "Content-Type: application/json"   -d "
     }
   }
 }"   http://$KEYSTONE:5000/v3/auth/tokens |grep "HTTP/1.1 20" 2>&1 >/dev/null;
-RES=$?
-if [ $RES == 0 ]; then
-    echo "Deploy SUCCESS"
+exit_on_error $? "Deploy FAILED to auth to openstack"
+
+
+##
+## Create external network if needed
+##
+
+EXTERNAL_NETWORK=${EXTERNAL_NETWORK:-}
+# split EXTERNAL_NETWORK=name;type;first ip;last ip; gateway;network
+IFS=';' read -r -a EXTNET <<< "$EXTERNAL_NETWORK"
+EXTNET_NAME=${EXTNET[0]}
+EXTNET_TYPE=${EXTNET[1]}
+EXTNET_FIP=${EXTNET[2]}
+EXTNET_LIP=${EXTNET[3]}
+EXTNET_GW=${EXTNET[4]}
+EXTNET_NET=${EXTNET[5]}
+# If we have more information than only the name, try to create it
+if [ -z "$EXTNET_TYPE" ]; then
+    echo "------ No data for external network creation, pass ------"
 else
-    echo "Deploy FAILED to auth to openstack"
+    echo "------ External network creation ------"
+    neutron net-create $EXTNET_NAME --router:external True \
+      --provider:physical_network external --provider:network_type $EXTNET_TYPE
+    exit_on_error $? "External network creation failed"
+    neutron subnet-create $EXTNET_NAME --name $EXTNET_NAME \
+      --allocation-pool start=$EXTNET_FIP,end=$EXTNET_LIP \
+      --disable-dhcp --gateway $EXTNET_GW $EXTNET_NET
+    exit_on_error $? "External subnet creation failed"
 fi
-exit $RES
+
+##
+## Exit success
+##
+
+echo "Deploy success"
+exit 0
