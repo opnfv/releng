@@ -186,7 +186,7 @@
             # labconfig is used only for joid
             labconfig=""
             if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
-                instack_mac=$(virsh domiflist instack | grep default | \
+                instack_mac=$(sudo virsh domiflist instack | grep default | \
                               grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
                 INSTALLER_IP=$(/usr/sbin/arp -e | grep ${instack_mac} | awk {'print $1'})
                 sshkey="-v /root/.ssh/id_rsa:/root/.ssh/id_rsa"
