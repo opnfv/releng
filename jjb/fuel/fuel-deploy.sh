@@ -7,7 +7,7 @@ set -o pipefail
 source latest.properties
 
 # echo the info about artifact that is used during the deployment
-echo "Using $(echo $OPNFV_ARTIFACT_URL | cut -d'/' -f3) for deployment"
+echo "Using ${OPNFV_ARTIFACT_URL/*\/} for deployment"
 
 # checkout the commit that was used for building the downloaded artifact
 # to make sure the ISO and deployment mechanism uses same versions
