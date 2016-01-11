@@ -73,9 +73,11 @@ echo "------ Set openstack password ------"
 sed -i -- "s/\"admin-password\": openstack/\"admin-password\": $OS_ADMIN_PASSWORD/" $SRCBUNDLE
 
 echo "------ Set ceph disks ------"
+CEPH_DISKS_CONTROLLERS=${CEPH_DISKS_CONTROLLERS:-}
 if [ -z "$CEPH_DISKS_CONTROLLERS" ]; then
     CEPH_DISKS_CONTROLLERS=$CEPH_DISKS
 fi
+
 #Find the first line of osd-devices to change the one for ceph, then the other for ceph-osd
 CEPH_DEV_LINE=$(grep -nr osd-devices $SRCBUNDLE |head -n1|cut -d: -f1)
 sed -i -- "${CEPH_DEV_LINE}s@osd-devices: /srv@osd-devices: $CEPH_DISKS@" $SRCBUNDLE
