@@ -8,8 +8,7 @@ echo
 
 export CONFDIR=$WORKSPACE/deploy/conf/hardware_environment/huawei_us_lab/pod1
 export ISO_URL=file://$BUILD_DIRECTORY/compass.iso
-export EXTERNAL_NIC=eth0
-export INSTALL_NIC=eth1
+export INSTALL_NIC=eth0
 
 cd $WORKSPACE
 
