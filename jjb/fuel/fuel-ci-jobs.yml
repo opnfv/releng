@@ -36,8 +36,7 @@
 
 # please check the triggers before enabling any of the controllers!!!
     sdn-controller:
-        - 'nosdn':
-            disabled: false
+        - 'nosdn'
 
     jobs:
         - 'fuel-{sdn-controller}-{pod}-daily-{stream}'
@@ -50,8 +49,6 @@
     name: 'fuel-{sdn-controller}-{pod}-daily-{stream}'
 
     project-type: multijob
-
-    disabled: '{obj:disabled}'
 
     concurrent: false
 
@@ -172,16 +169,16 @@
     name: 'builder-master'
     builders:
         - shell:
-            !include-raw-escape: ./fuel-download-artifact.sh
+            !include-raw: ./fuel-download-artifact.sh
         - shell:
-            !include-raw-escape: ./fuel-deploy-master.sh
+            !include-raw: ./fuel-deploy-master.sh
 - builder:
     name: 'builder-brahmaputra'
     builders:
         - shell:
-            !include-raw-escape: ./fuel-download-artifact.sh
+            !include-raw: ./fuel-download-artifact.sh
         - shell:
-            !include-raw-escape: ./fuel-deploy.sh
+            !include-raw: ./fuel-deploy.sh
 ########################
 # trigger macros
 ########################
