@@ -70,10 +70,27 @@ fi
 ##
 
 # Get juju deployer file
+case $SDN_CONTROLLER in
+    odl)
+        SRCBUNDLE="ovs-odl"
+        ;;
+    onos)
+        SRCBUNDLE="onos"
+        ;;
+    opencontrail)
+        SRCBUNDLE="contrail"
+        ;;
+    *)
+        SRCBUNDLE="ovs"
+        echo "${SDN_CONTROLLER} not in list, using 'nosdn' setting"
+        SDN_CONTROLLER="nosdn"
+        ;;
+    esac
+SRCBUNDLE="${WORKSPACE}/ci/${SDN_CONTROLLER}/juju-deployer/${SRCBUNDLE}"
 if [ "$HA_MODE" == 'nonha' ]; then
-    SRCBUNDLE=$WORKSPACE/ci/$SDN_CONTROLLER/juju-deployer/ovs-$SDN_CONTROLLER.yaml
+    SRCBUNDLE="${SRCBUNDLE}.yaml"
 else
-    SRCBUNDLE=$WORKSPACE/ci/$SDN_CONTROLLER/juju-deployer/ovs-$SDN_CONTROLLER-$HA_MODE.yaml
+    SRCBUNDLE="${SRCBUNDLE}-${HA_MODE}.yaml"
 fi
 
 # Modify files
