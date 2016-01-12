@@ -448,13 +448,20 @@
             source opnfv.properties
             RPM_INSTALL_PATH=build_output/$(basename $OPNFV_RPM_URL)
 
+            RPM_LIST=$RPM_INSTALL_PATH
+            for pkg in common instack; do
+              RPM_LIST+=" ${$RPM_INSTALL_PATH/opnfv-apex/$pkg}"
+            done
+
             # update / install the new rpm
             if rpm -q opnfv-apex > /dev/null; then
-               if sudo yum update -y $RPM_INSTALL_PATH | grep "does not update installed package"; then
-                   sudo yum downgrade -y $RPM_INSTALL_PATH;
+               if [ $(basename $OPNFV_RPM_URL) == $(rpm -q opnfv-apex).rpm ]; then
+                 echo "RPM is already installed"
+               elif sudo yum update -y $RPM_LIST | grep "does not update installed package"; then
+                   sudo yum downgrade -y $RPM_LIST;
                fi
             else
-               sudo yum install -y $RPM_INSTALL_PATH;
+               sudo yum install -y $RPM_LIST;
             fi
 
             # cleanup virtual machines before we start
@@ -510,15 +517,20 @@
                RPM_INSTALL_PATH=http://${OPNFV_RPM_URL}
             fi
 
+            RPM_LIST=$RPM_INSTALL_PATH
+            for pkg in common instack; do
+              RPM_LIST+=" ${$RPM_INSTALL_PATH/opnfv-apex/$pkg}"
+            done
+
             # update / install the new rpm
             if rpm -q opnfv-apex > /dev/null; then
                if [ $(basename $OPNFV_RPM_URL) == $(rpm -q opnfv-apex).rpm ]; then
                  echo "RPM is already installed"
-               elif sudo yum update -y $RPM_INSTALL_PATH | grep "does not update installed package"; then
-                   sudo yum downgrade -y $RPM_INSTALL_PATH;
+               elif sudo yum update -y $RPM_LIST | grep "does not update installed package"; then
+                   sudo yum downgrade -y $RPM_LIST;
                fi
             else
-               sudo yum install -y $RPM_INSTALL_PATH;
+               sudo yum install -y $RPM_LIST;
             fi
 
             # cleanup environment before we start
