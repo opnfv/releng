@@ -136,7 +136,10 @@
     name: qtip-run-suite
     builders:
         - shell: |
-            #!/bin/bash
+            #!/bin/basih
+            echo "The container id is:"
+            container_id=$(docker ps | grep 'opnfv/qtip:latest' | awk '{print $1}' | head -1)
+            echo $container_id
             QTIP_REPO=/home/opnfv/repos/qtip
             docker exec -t ${container_id} $QTIP_REPO/docker/run_qtip.sh
 
@@ -151,9 +154,9 @@
             # Remove previous running containers if exist
             if [[ ! -z $(docker ps -a | grep opnfv/qtip) ]]; then
                 echo "Removing existing opnfv/qtip containers..."
-                running_containers= $(docker ps | grep opnfv/qtip | awk '{print $1}')
+                running_containers=$(docker ps | grep opnfv/qtip | awk '{print $1}')
                 docker stop ${running_containers}
-                all_containers= $(docker ps -a | grep opnfv/qtip | awk '{print $1}')
+                all_containers=$(docker ps -a | grep opnfv/qtip | awk '{print $1}')
                 docker rm ${all_containers}
             fi
 
