@@ -14,6 +14,9 @@
 # a new method format_<Test_case>_for_dashboard(results)
 # v0.1: basic example with methods for Rubbos.
 #
+import os
+import requests
+import json
 
 
 def get_bottlenecks_cases():
@@ -21,7 +24,7 @@ def get_bottlenecks_cases():
     get the list of the supported test cases
     TODO: update the list when adding a new test case for the dashboard
     """
-    return ["rubbos"]
+    return ["rubbos", "tu1", "tu3"]
 
 
 def check_bottlenecks_case_exist(case):
@@ -54,7 +57,6 @@ def format_bottlenecks_for_dashboard(case, results):
 
 
 def format_rubbos_for_dashboard(results):
-
     """
     Post processing for the Rubbos test case
     """
@@ -76,24 +78,106 @@ def format_rubbos_for_dashboard(results):
     return test_data
 
 
-# for local test
-import json
+def format_tu1_for_dashboard(results):
+    test_data = [{'description': 'Tu-1 performance result'}]
+    line_element = []
+    bar_element = {}
+    last_result = results[-1]["details"]
+    for key in sorted(last_result):
+        bandwith = last_result[key]["Bandwidth"]
+        pktsize = int(key)
+        line_element.append({'x': pktsize,
+                             'y': bandwith * 1000})
+        bar_element[key] = bandwith * 1000
+    # graph1, line
+    test_data.append({'name': "VM2VM max single directional throughput",
+                      'info': {'type': "graph",
+                               'xlabel': 'pktsize',
+                               'ylabel': 'bandwith(kpps)'},
+                      'data_set': line_element})
+    # graph2, bar
+    test_data.append({'name': "VM2VM max single directional throughput",
+                      'info': {"type": "bar"},
+                      'data_set': bar_element})
+    return test_data
+
+
+def format_tu3_for_dashboard(results):
+    test_data = [{'description': 'Tu-3 performance result'}]
+    new_element = []
+    bar_element = {}
+    last_result = results[-1]["details"]
+    for key in sorted(last_result):
+        bandwith = last_result[key]["Bandwidth"]
+        pktsize = int(key)
+        new_element.append({'x': pktsize,
+                            'y': bandwith * 1000})
+        bar_element[key] = bandwith * 1000
+    # graph1, line
+    test_data.append({'name': "VM2VM max bidirectional throughput",
+                      'info': {'type': "graph",
+                               'xlabel': 'pktsize',
+                               'ylabel': 'bandwith(kpps)'},
+                      'data_set': new_element})
+    # graph2, bar
+    test_data.append({'name': "VM2VM max single directional throughput",
+                      'info': {"type": "bar"},
+                      'data_set': bar_element})
+    return test_data
+
+
+############################  For local test  ################################
+
+def _read_sample_output(filename):
+    curr_path = os.path.dirname(os.path.abspath(__file__))
+    output = os.path.join(curr_path, filename)
+    with open(output) as f:
+        sample_output = f.read()
+
+    result = json.loads(sample_output)
+    return result
+
+
+# Copy form functest/testcases/Dashboard/dashboard_utils.py
+# and did some minor modification for local test.
+def _get_results(db_url, test_criteria):
+    test_project = test_criteria["project"]
+    testcase = test_criteria["testcase"]
+
+    # Build headers
+    headers = {'Content-Type': 'application/json'}
+
+    # build the request
+    # if criteria is all => remove criteria
+    url = db_url + "/results?project=" + test_project + "&case=" + testcase
+
+    # Send Request to Test DB
+    myData = requests.get(url, headers=headers)
+
+    # Get result as a json object
+    myNewData = json.loads(myData.text)
+
+    # Get results
+    myDataResults = myNewData['test_results']
+    return myDataResults
 
 
 def _test():
-    print('Post processing for the Rubbos test case begin<--')
-    results = '[{"details":[{"client":200,"throughput":20},{"client":300,"throughput":50}],"project_name":' \
-              '"bottlenecks","pod_name":"unknown-pod","version":"unknown","installer":"fuel","description":' \
-              '"bottlenecks test cases result","_id":"56793f11514bc5068a345da4","creation_date":' \
-              '"2015-12-22 12:16:17.131438","case_name":"rubbos"},{"details":[{"client":200,"throughput":25},' \
-              '{"client":300,"throughput":52}],"project_name":"bottlenecks","pod_name":"unknown-pod","version":' \
-              '"unknown","installer":"fuel","description":"bottlenecks test cases result","_id":' \
-              '"56793f11514bc5068a345da4","creation_date":"2015-12-23 12:16:17.131438","case_name":"rubbos"}]'
+    db_url = "http://213.77.62.197"
+    results = _get_results(db_url, {"project": "bottlenecks", "testcase": "rubbos"})
+    test_result = format_rubbos_for_dashboard(results)
+    print json.dumps(test_result, indent=4)
 
-    print("the output is:")
-    print(format_rubbos_for_dashboard(json.loads(results)))
-    print('Post processing for the Rubbos test case end<--')
+    results = _get_results(db_url, {"project": "bottlenecks", "testcase": "tu1"})
+    #results = _read_sample_output("sample")
+    #print json.dumps(results, indent=4)
+    test_result = format_tu1_for_dashboard(results)
+    print json.dumps(test_result, indent=4)
+    results = _get_results(db_url, {"project": "bottlenecks", "testcase": "tu3"})
+    test_result = format_tu3_for_dashboard(results)
+    print json.dumps(test_result, indent=4)
 
 
 if __name__ == '__main__':
     _test()
+
