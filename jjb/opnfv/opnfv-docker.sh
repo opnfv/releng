@@ -84,6 +84,7 @@ else
         echo "Error retrieving the version tag."
         exit 1
     fi
+    cd -
 fi
 echo "Tag version to be build and pushed: $DOCKER_TAG"
 
