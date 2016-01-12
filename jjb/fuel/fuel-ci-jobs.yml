@@ -25,6 +25,8 @@
     pod:
         - opnfv-jump-2:
             <<: *brahmaputra
+        - virtual:
+            <<: *brahmaputra
 #--------------------------------
 #        master
 #--------------------------------
@@ -32,21 +34,36 @@
             <<: *master
         - ericsson-pod2:
             <<: *master
+        - virtual:
+            <<: *master
 #--------------------------------
 
-# please check the triggers before enabling any of the controllers!!!
-    sdn-controller:
-        - 'nosdn'
+# new scenario descriptions
+    scenario:
+        - 'os_ha':
+            auto-trigger-name: 'disabled-trigger'
+        - 'os_odl-l2_ha':
+            auto-trigger-name: '{scenario}-trigger'
+        - 'os_odl-l3_ha':
+            auto-trigger-name: 'disabled-trigger'
+        - 'os_onos_ha':
+            auto-trigger-name: 'disabled-trigger'
+        - 'os_kvm_ha':
+            auto-trigger-name: 'disabled-trigger'
+        - 'os_ovs_ha':
+            auto-trigger-name: 'disabled-trigger'
+        - 'os_kvm_ovs_ha':
+            auto-trigger-name: 'disabled-trigger'
 
     jobs:
-        - 'fuel-{sdn-controller}-{pod}-daily-{stream}'
+        - 'fuel-{scenario}-{pod}-daily-{stream}'
         - 'fuel-deploy-{pod}-daily-{stream}'
 
 ########################
 # job templates - old type of defining the scenario
 ########################
 - job-template:
-    name: 'fuel-{sdn-controller}-{pod}-daily-{stream}'
+    name: 'fuel-{scenario}-{pod}-daily-{stream}'
 
     project-type: multijob
 
@@ -60,14 +77,14 @@
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - 'fuel-{sdn-controller}-{pod}-daily-{stream}'
+                - 'fuel-os_.*?-{pod}-daily-{stream}'
 
     wrappers:
         - build-name:
-            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Scenario: $DEPLOY_SCENARIO'
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
 
     triggers:
-        - 'fuel-{pod}-{sdn-controller}-trigger'
+        - '{auto-trigger-name}'
 
     parameters:
         - project-parameter:
@@ -75,19 +92,10 @@
         - '{pod}-defaults'
         - '{installer}-defaults'
         - string:
-            name: SDN_CONTROLLER
-            default: '{sdn-controller}'
-        - string:
             name: DEPLOY_SCENARIO
-            default: 'none'
+            default: '{scenario}'
         - fuel-ci-parameter:
             gs-pathname: '{gs-pathname}'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
 
     builders:
         - multijob:
@@ -96,7 +104,6 @@
             projects:
                 - name: 'fuel-deploy-{pod}-daily-{stream}'
                   current-parameters: true
-                  git-revision: true
                   kill-phase-on: FAILURE
         - multijob:
             name: functest
@@ -123,12 +130,6 @@
             enabled: true
             max-total: 1
             max-per-node: 1
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'fuel-deploy-{pod}-daily-{stream}.*'
-                - 'functest-fuel-{pod}-daily-{stream}'
-                - 'yardstick-fuel-{pod}-daily-{stream}'
 
     parameters:
         - project-parameter:
@@ -149,11 +150,15 @@
             name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
 
     builders:
-        - 'builder-{stream}'
+        - shell:
+            !include-raw-escape: ./fuel-download-artifact.sh
+        - shell:
+            !include-raw-escape: ./fuel-deploy.sh
 
     publishers:
         - email:
             recipients: jonas.bjurel@ericsson.com stefan.k.berg@ericsson.com
+
 ########################
 # parameter macros
 ########################
@@ -172,37 +177,110 @@
             name: GS_URL
             default: artifacts.opnfv.org/$PROJECT{gs-pathname}
             description: "URL to Google Storage."
-########################
-# builder macros
-########################
-- builder:
-    name: 'builder-master'
-    builders:
-        - shell:
-            !include-raw: ./fuel-download-artifact.sh
-        - shell:
-            !include-raw: ./fuel-deploy-master.sh
-- builder:
-    name: 'builder-brahmaputra'
-    builders:
-        - shell:
-            !include-raw: ./fuel-download-artifact.sh
-        - shell:
-            !include-raw: ./fuel-deploy.sh
+- parameter:
+    name: 'virtual-defaults'
+    parameters:
+        - label:
+            name: SLAVE_LABEL
+            default: 'fuel-deploy-virtual'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on these Jenkins Slaves'
 ########################
 # trigger macros
 ########################
-# trigger for opnfv-jump-2 is set to run 1 hour ahead of others
-# to prevent doing unnecessary builds
+# os_odl-l2_ha trigger
 - trigger:
-    name: 'fuel-opnfv-jump-2-nosdn-trigger'
+    name: 'os_odl-l2_ha-trigger'
     triggers:
         - timed: '0 2 * * *'
+
+# the rest of the scenarios disabled at the moment
 - trigger:
-    name: 'fuel-ericsson-pod1-nosdn-trigger'
-    triggers:
-        - timed: '0 2 * * *'
-- trigger:
-    name: 'fuel-ericsson-pod2-nosdn-trigger'
+    name: 'disabled-trigger'
     triggers:
         - timed: ''
+
+# more granuler triggers based on the scenario and pod
+# commented out for the timebeing
+#- trigger:
+#    name: 'fuel-os_ha-opnfv-jump-2-trigger'
+#    triggers:
+#        - timed: ''
+#- trigger:
+#    name: 'fuel-os_odl-l3_ha-opnfv-jump-2-trigger'
+#    triggers:
+#        - timed: ''
+#- trigger:
+#    name: 'fuel-os_onos_ha-opnfv-jump-2-trigger'
+#    triggers:
+#        - timed: ''
+#- trigger:
+#    name: 'fuel-os_kvm_ha-opnfv-jump-2-trigger'
+#    triggers:
+#        - timed: ''
+#- trigger:
+#    name: 'fuel-os_ovs_ha-opnfv-jump-2-trigger'
+#    triggers:
+#        - timed: ''
+#- trigger:
+#    name: 'fuel-os_kvm_ovs_ha-opnfv-jump-2-trigger'
+#    triggers:
+#        - timed: ''
+#
+## ericsson-pod1 triggers - only os_odl-l2_ha trigger is enabled
+#- trigger:
+#    name: 'fuel-os_odl-l2_ha-ericsson-pod1-trigger'
+#    triggers:
+#        - timed: '0 2 * * *'
+#- trigger:
+#    name: 'fuel-os_ha-ericsson-pod1-trigger'
+#    triggers:
+#        - timed: ''
+#- trigger:
+#    name: 'fuel-os_odl-l3_ha-ericsson-pod1-trigger'
+#    triggers:
+#        - timed: ''
+#- trigger:
+#    name: 'fuel-os_onos_ha-ericsson-pod1-trigger'
+#    triggers:
+#        - timed: ''
+#- trigger:
+#    name: 'fuel-os_kvm_ha-ericsson-pod1-trigger'
+#    triggers:
+#        - timed: ''
+#- trigger:
+#    name: 'fuel-os_ovs_ha-ericsson-pod1-trigger'
+#    triggers:
+#        - timed: ''
+#- trigger:
+#    name: 'fuel-os_kvm_ovs_ha-ericsson-pod1-trigger'
+#    triggers:
+#        - timed: ''
+#
+## ericsson-pod2 triggers - only os_odl-l2_ha trigger is enabled
+#- trigger:
+#    name: 'fuel-os_odl-l2_ha-ericsson-pod2-trigger'
+#    triggers:
+#        - timed: '0 2 * * *'
+#- trigger:
+#    name: 'fuel-os_ha-ericsson-pod2-trigger'
+#    triggers:
+#        - timed: ''
+#- trigger:
+#    name: 'fuel-os_odl-l3_ha-ericsson-pod2-trigger'
+#    triggers:
+#        - timed: ''
+#- trigger:
+#    name: 'fuel-os_onos_ha-ericsson-pod2-trigger'
+#    triggers:
+#        - timed: ''
+#- trigger:
+#    name: 'fuel-os_kvm_ha-ericsson-pod2-trigger'
+#    triggers:
+#        - timed: ''
+#- trigger:
+#    name: 'fuel-os_ovs_ha-ericsson-pod2-trigger'
+#    triggers:
+#        - timed: ''

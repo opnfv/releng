@@ -16,8 +16,21 @@ fi
 # check if we got the file
 [[ -f latest.properties ]] || exit 1
 
-# source the file so we get OPNFV vars
+# source the file so we get artifact metadata
 source latest.properties
+
+# echo the info about artifact that is used during the deployment
+OPNFV_ARTIFACT=${OPNFV_ARTIFACT_URL/*\/}
+echo "Using $OPNFV_ARTIFACT for deployment"
+
+# check if we already have the ISO to avoid redownload
+ISO_STORE=$HOME/opnfv/iso_store/fuel
+if [[ -f "$ISO_STORE/$OPNFV_ARTIFACT" ]]; then
+    echo "ISO already exists. Skipping the download"
+    ln -s $ISO_STORE/$OPNFV_ARTIFACT $WORKSPACE/opnfv.iso
+    ls -al $WORKSPACE/opnfv.iso
+    exit 0
+fi
 
 # log info to console
 echo "Downloading the $INSTALLER_TYPE artifact using URL http://$OPNFV_ARTIFACT_URL"

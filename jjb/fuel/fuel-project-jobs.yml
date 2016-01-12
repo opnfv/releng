@@ -21,6 +21,7 @@
         - 'fuel-verify-build-{stream}'
         - 'fuel-merge-build-{stream}'
         - 'fuel-merge-deploy-virtual-{stream}'
+        - 'fuel-deploy-generic-daily-{stream}'
 
 ########################
 # job templates
@@ -238,6 +239,43 @@
     publishers:
         - email:
             recipients: jonas.bjurel@ericsson.com stefan.k.berg@ericsson.com
+
+- job-template:
+    name: 'fuel-deploy-generic-daily-{stream}'
+
+    concurrent: false
+
+    disabled: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - 'ericsson-pod2-defaults'
+        - '{installer}-defaults'
+        - fuel-project-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    builders:
+        - shell:
+            !include-raw-escape: ./fuel-download-artifact.sh
+        - shell:
+            !include-raw-escape: ./fuel-deploy.sh
 
 ########################
 # parameter macros

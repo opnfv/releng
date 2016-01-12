@@ -7,12 +7,27 @@ set -o pipefail
 source latest.properties
 
 # echo the info about artifact that is used during the deployment
-echo "Using $OPNFV_ARTIFACT_URL for deployment"
+echo "Using ${OPNFV_ARTIFACT_URL/*\/} for deployment"
 
 # checkout the commit that was used for building the downloaded artifact
 # to make sure the ISO and deployment mechanism uses same versions
 echo "Checking out $OPNFV_GIT_SHA1"
 git checkout $OPNFV_GIT_SHA1 --quiet
+
+# set deployment parameters
+BRIDGE=pxebr
+export TMPDIR=$HOME/tmpdir
+LAB_NAME=${NODE_NAME/-*}
+POD_NAME=${NODE_NAME/*-}
+
+if [[ "$NODE_NAME" =~ "virtual" ]]; then
+    POD_NAME="virtual_kvm"
+fi
+
+if [[ "$NODE_NAME" == "opnfv-jump-2" ]]; then
+    LAB_NAME="lf"
+    POD_NAME="pod2"
+fi
 
 # create TMPDIR if it doesn't exist
 export TMPDIR=$HOME/tmpdir
@@ -22,19 +37,32 @@ mkdir -p $TMPDIR
 chmod a+x $HOME
 chmod a+x $TMPDIR
 
-# set BRIDGE
-BRIDGE=pxebr
+# clone the securedlab repo
+cd $WORKSPACE
+echo "Cloning securedlab repo"
+git clone ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab --quiet
+
+# construct the command
+DEPLOY_COMMAND="sudo $WORKSPACE/ci/deploy.sh -b file://$WORKSPACE/securedlab -l $LAB_NAME -p $POD_NAME -s $DEPLOY_SCENARIO -i file://$WORKSPACE/opnfv.iso -H -B $BRIDGE -S $TMPDIR"
 
 # log info to console
+echo "Deployment parameters"
+echo "--------------------------------------------------------"
+echo "Scenario: $DEPLOY_SCENARIO"
+echo "Lab: $LAB_NAME"
+echo "POD: $POD_NAME"
+echo "ISO: ${OPNFV_ARTIFACT_URL/*\/}"
+echo
 echo "Starting the deployment using $INSTALLER_TYPE. This could take some time..."
 echo "--------------------------------------------------------"
 echo
 
 # start the deployment
 echo "Issuing command"
-echo "sudo $WORKSPACE/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $POD_CONF_DIR/dea.yaml -dha $POD_CONF_DIR/dha.yaml -s $TMPDIR -b $BRIDGE -nh"
+echo "$DEPLOY_COMMAND"
+echo
 
-sudo $WORKSPACE/ci/deploy.sh -iso $WORKSPACE/opnfv.iso -dea $POD_CONF_DIR/dea.yaml -dha $POD_CONF_DIR/dha.yaml -s $TMPDIR -b $BRIDGE -nh
+$DEPLOY_COMMAND
 
 echo
 echo "--------------------------------------------------------"
