@@ -67,14 +67,12 @@ else
     exit 1
 fi
 
-
 # Get tag version
 branch=$(git rev-parse --abbrev-ref HEAD)
 if [ $branch == "master" ]; then
     DOCKER_TAG="master"
 else
-    cd $WORKSPACE
-    git clone https://gerrit.opnfv.org/gerrit/releng
+    git clone https://gerrit.opnfv.org/gerrit/releng $WORKSPACE/releng
 
     DOCKER_TAG=$($WORKSPACE/releng/utils/calculate_version.sh -t docker \
         -n $DOCKER_REPO_NAME)
