@@ -97,7 +97,7 @@
             condition: SUCCESSFUL
             projects:
                 - name: 'compass-deploy-{pod}-daily-{stream}'
-                  current-parameters: true
+                  current-parameters: false
                   git-revision: true
                   kill-phase-on: FAILURE
         - multijob:
@@ -105,14 +105,14 @@
             condition: COMPLETED
             projects:
                 - name: 'functest-compass-{pod}-daily-{stream}'
-                  current-parameters: true
+                  current-parameters: false
                   kill-phase-on: NEVER
         - multijob:
             name: yardstick
             condition: COMPLETED
             projects:
                 - name: 'yardstick-compass-{pod}-daily-{stream}'
-                  current-parameters: true
+                  current-parameters: false
                   kill-phase-on: NEVER
 
 - job-template:
