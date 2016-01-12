@@ -179,6 +179,21 @@ do
         [[ -n "$GERRIT_COMMENT" ]] && echo "$msg" >> "$GERRIT_COMMENT"
     }
 
+    # TODO: failures in ODT creation should be handled error and
+    #       cause 'exit 1' before OPNFV B release.
+    tex=$(find $build -name '*.tex' | head -1)
+    odt=$(basename "${tex%.tex}.odt")
+    if [[ -e $tex ]] && which pandoc > /dev/null ; then
+        pandoc $tex -o $output/$odt || {
+            msg="Error: ODT creation for $dir has failed."
+            echo
+            echo "$msg"
+            echo
+        }
+    else
+        echo "Warn: tex file and/or 'pandoc' are not found, skip ODT creation."
+    fi
+
     if is_top_dir "$dir" ; then
         # NOTE: Having top level document (docs/index.rst) is not recommended.
         #       It may cause conflicts with other docs (mostly with HTML
