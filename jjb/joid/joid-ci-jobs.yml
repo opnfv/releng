@@ -36,27 +36,34 @@
         - orange-pod2:
             <<: *master
 #--------------------------------
-# please check the triggers before enabling any of the controllers!!!
-    sdn-controller:
-        - 'odl':
-            disabled: false
-# commented out below controllers to get Arno scenario settled first
-#        - 'nosdn':
-#            disabled: true
-        - 'onos':
-            disabled: false
-#        - 'opencontrail':
-#            disabled: true
+# new scenario descriptions
+    scenario:
+        - 'os-nosdn-nofeature-noha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-nosdn-nofeature-ha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-odl_l2-nofeature-ha':
+            auto-trigger-name: 'joid-{scenario}-{pod}-trigger'
+        - 'os-odl_l2-nofeature-noha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-onos-nofeature-ha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-onos-nofeature-noha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-ocl-nofeature-ha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-ocl-nofeature-noha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
 
     jobs:
-        - 'joid-{sdn-controller}-{pod}-daily-{stream}'
+        - 'joid-{scenario}-{pod}-daily-{stream}'
         - 'joid-deploy-{pod}-daily-{stream}'
 
 ########################
 # job templates
 ########################
 - job-template:
-    name: 'joid-{sdn-controller}-{pod}-daily-{stream}'
+    name: 'joid-{scenario}-{pod}-daily-{stream}'
 
     project-type: multijob
 
@@ -66,10 +73,10 @@
 
     wrappers:
         - build-name:
-            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Scenario: $DEPLOY_SCENARIO'
+            name: '$BUILD_NUMBER - Joid master - Scenario: $DEPLOY_SCENARIO'
 
     triggers:
-        - 'joid-{pod}-{sdn-controller}-trigger'
+        - '{auto-trigger-name}'
 
     parameters:
         - project-parameter:
@@ -77,11 +84,8 @@
         - '{installer}-defaults'
         - '{pod}-defaults'
         - string:
-            name: SDN_CONTROLLER
-            default: '{sdn-controller}'
-        - string:
             name: DEPLOY_SCENARIO
-            default: 'none'
+            default: '{scenario}'
 
     scm:
         - git-scm:
@@ -122,7 +126,7 @@
 
     wrappers:
         - build-name:
-            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Scenario: $DEPLOY_SCENARIO'
+            name: '$BUILD_NUMBER - Joid deploy - Scenario: $DEPLOY_SCENARIO'
         - timeout:
             timeout: 180
             fail: true
@@ -162,26 +166,14 @@
 # trigger macros
 ########################
 - trigger:
-    name: 'joid-intel-pod5-odl-trigger'
+    name: 'joid-os-odl_l2-nofeature-ha-intel-pod5-trigger'
     triggers:
         - timed: '0 2 * * *'
 - trigger:
-    name: 'joid-intel-pod6-odl-trigger'
+    name: 'joid-os-odl_l2-nofeature-ha-intel-pod6-trigger'
     triggers:
         - timed: '0 2 * * *'
 - trigger:
-    name: 'joid-orange-pod2-odl-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-intel-pod5-onos-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-intel-pod6-onos-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-orange-pod2-onos-trigger'
+    name: 'joid-os-odl_l2-nofeature-ha-orange-pod2-trigger'
     triggers:
         - timed: ''
