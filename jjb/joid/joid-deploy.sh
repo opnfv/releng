@@ -69,11 +69,49 @@ fi
 ## Configure Joid deployment
 ##
 
-# Get juju deployer file
-if [ "$HA_MODE" == 'nonha' ]; then
-    SRCBUNDLE=$WORKSPACE/ci/$SDN_CONTROLLER/juju-deployer/ovs-$SDN_CONTROLLER.yaml
+# Based on scenario naming we can get joid options
+# naming convention:
+#    os-<controller>-<nfvfeature>-<mode>[-<extrastuff>]
+# With parameters:
+#    controller=(nosdn|odl_l3|odl_l2|onos|ocl)
+#       No odl_l3 today
+#    nfvfeature=(kvm|ovs|dpdk|nofeature)
+#       '_' list separated.
+#    mode=(ha|noha)
+#    extrastuff=(none)
+#       Optional field - Not used today
+
+IFS='-' read -r -a DEPLOY_OPTIONS <<< "$DEPLOY_SCENARIO"
+SDN_CONTROLLER=${DEPLOY_OPTIONS[1]}
+NFV_FEATURES=${DEPLOY_OPTIONS[2]}
+HA_MODE=${DEPLOY_OPTIONS[3]}
+EXTRA=${DEPLOY_OPTIONS[4]}
+
+# Get the juju config path with those options, later we will directly use
+# scenario name
+case $SDN_CONTROLLER in
+    odl_l2)
+        SRCBUNDLE="ovs-odl"
+        ;;
+    onos)
+        SRCBUNDLE="onos"
+        ;;
+    ocl)
+        SRCBUNDLE="contrail"
+        SDN_CONTROLLER="opencontrail"
+        ;;
+    *)
+        SRCBUNDLE="ovs"
+        echo "${SDN_CONTROLLER} not in SDN controllers list, using 'nosdn' setting"
+        SDN_CONTROLLER="nosdn"
+        ;;
+    esac
+SRCBUNDLE="${WORKSPACE}/ci/${SDN_CONTROLLER}/juju-deployer/${SRCBUNDLE}"
+if [ "$HA_MODE" == 'noha' ]; then
+    SRCBUNDLE="${SRCBUNDLE}.yaml"
+    HA_MODE == 'nonha'
 else
-    SRCBUNDLE=$WORKSPACE/ci/$SDN_CONTROLLER/juju-deployer/ovs-$SDN_CONTROLLER-$HA_MODE.yaml
+    SRCBUNDLE="${SRCBUNDLE}-${HA_MODE}.yaml"
 fi
 
 # Modify files
