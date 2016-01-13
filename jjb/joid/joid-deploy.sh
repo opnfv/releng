@@ -42,6 +42,8 @@ fi
     case $NODE_NAME in
         orange-fr-pod2)
             POD=orange-pod2 ;;
+        juniper-us-test-1)
+            POD=juniper-pod1 ;;
         *)
             POD=$NODE_NAME ;;
     esac
@@ -94,6 +96,7 @@ EXTRA=${DEPLOY_OPTIONS[4]}
 case $SDN_CONTROLLER in
     odl_l2)
         SRCBUNDLE="ovs-odl"
+        SDN_CONTROLLER="odl"
         ;;
     onos)
         SRCBUNDLE="onos"
