@@ -214,19 +214,19 @@
         - ssh-agent-credentials:
             users: '{ssh-credentials}'
 
-    triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/{branch}'
-            dependency-jobs: 'fuel-merge-build-{stream}'
+#    triggers:
+#        - gerrit:
+#            trigger-on:
+#                - change-merged-event
+#                - comment-added-contains-event:
+#                    comment-contains-value: 'remerge'
+#            projects:
+#              - project-compare-type: 'ANT'
+#                project-pattern: '{project}'
+#                branches:
+#                    - branch-compare-type: 'ANT'
+#                      branch-pattern: '**/{branch}'
+#            dependency-jobs: 'fuel-merge-build-{stream}'
 
     builders:
         - shell:

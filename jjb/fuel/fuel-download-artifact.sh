@@ -24,13 +24,14 @@ OPNFV_ARTIFACT=${OPNFV_ARTIFACT_URL/*\/}
 echo "Using $OPNFV_ARTIFACT for deployment"
 
 # check if we already have the ISO to avoid redownload
-ISO_STORE=$HOME/opnfv/iso_store/fuel
-if [[ -f "$ISO_STORE/$OPNFV_ARTIFACT" ]]; then
-    echo "ISO already exists. Skipping the download"
-    ln -s $ISO_STORE/$OPNFV_ARTIFACT $WORKSPACE/opnfv.iso
-    ls -al $WORKSPACE/opnfv.iso
-    exit 0
-fi
+# disabled for the timebeing - needs adjustments
+#ISO_STORE=$HOME/opnfv/iso_store/fuel
+#if [[ -f "$ISO_STORE/$OPNFV_ARTIFACT" ]]; then
+#    echo "ISO already exists. Skipping the download"
+#    ln -s $ISO_STORE/$OPNFV_ARTIFACT $WORKSPACE/opnfv.iso
+#    ls -al $WORKSPACE/opnfv.iso
+#    exit 0
+#fi
 
 # log info to console
 echo "Downloading the $INSTALLER_TYPE artifact using URL http://$OPNFV_ARTIFACT_URL"
