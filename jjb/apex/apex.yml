@@ -14,6 +14,9 @@
         - master:
             branch: 'master'
             gs-pathname: ''
+        - brahmaputra:
+            branch: 'stable/brahmaputra'
+            gs-pathname: '/brahmaputra'
 
     project: 'apex'
 
@@ -290,7 +293,7 @@
             git-revision: true
             block: true
         - trigger-builds:
-          - project: 'apex-deploy-virtual-{stream}'
+          - project: 'apex-deploy-baremetal-{stream}'
             git-revision: true
             block: true
         - trigger-builds:
@@ -317,7 +320,7 @@
             description: "Directory where the build artifact will be located upon the completion of the build."
         - string:
             name: CACHE_DIRECTORY
-            default: $HOME/opnfv/cache/{gs-pathname}
+            default: $HOME/opnfv/cache{gs-pathname}
             description: "Directory where the cache to be used during the build is located."
         - string:
             name: GIT_BASE
@@ -325,7 +328,7 @@
             description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
         - string:
             name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT/{gs-pathname}
+            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
             description: "URL to Google Storage."
 
 ########################
@@ -346,7 +349,11 @@
             # create the cache directory if it doesn't exist
             [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
             # set OPNFV_ARTIFACT_VERSION
-            export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
+            if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
+              export OPNFV_ARTIFACT_VERSION="bramaputra.1.rc0"
+            else
+              export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
+            fi
             # start the build
             cd $WORKSPACE/ci
             ./build.sh -v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
