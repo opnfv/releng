@@ -30,41 +30,49 @@
         - intel-pod8:
             <<: *master
 
-    sdn-controller:
-        - 'nosdn':
+    scenario:
+        - 'os-nosdn-nofeature-ha':
             disabled: false
-        - 'odl':
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+        - 'os-odl_l2-nofeature-ha':
             disabled: false
-        - 'onos':
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+        - 'os-onos-nofeature-ha':
             disabled: false
-#        - 'opencontrail':
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+#        - 'os-ocl-nofeature-ha':
 #            disabled: true
+#            auto-trigger-name: 'joid-{scenario}-{pod}-trigger'
 
     jobs:
-        - 'compass-{sdn-controller}-{pod}-daily-{stream}'
+        - 'compass-{scenario}-{pod}-daily-{stream}'
         - 'compass-deploy-{pod}-daily-{stream}'
 
 ########################
 # job templates
 ########################
 - job-template:
-    name: 'compass-{sdn-controller}-{pod}-daily-{stream}'
+    name: 'compass-{scenario}-{pod}-daily-{stream}'
 
     project-type: multijob
 
     node: huawei-build
 
-    concurrent: true
+    concurrent: false
 
     properties:
         - throttle:
             enabled: true
             max-total: 1
             max-per-node: 1
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'compass-os-.*?-{pod}-daily-{stream}'
 
     wrappers:
         - build-name:
-            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Scenario: $DEPLOY_SCENARIO'
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
 
     parameters:
         - project-parameter:
@@ -73,23 +81,13 @@
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
         - string:
-            name: SDN_CONTROLLER
-            default: '{sdn-controller}'
-        - string:
             name: DEPLOY_SCENARIO
             default: 'none'
         - 'huawei-build-defaults'
         - '{installer}-defaults'
 
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
     triggers:
-        - 'compass-{pod}-{sdn-controller}-trigger'
+        - '{auto-trigger-name}'
 
     builders:
         - multijob:
@@ -98,7 +96,7 @@
             projects:
                 - name: 'compass-deploy-{pod}-daily-{stream}'
                   current-parameters: false
-                  git-revision: true
+                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
                   kill-phase-on: FAILURE
         - multijob:
             name: functest
@@ -106,6 +104,7 @@
             projects:
                 - name: 'functest-compass-{pod}-daily-{stream}'
                   current-parameters: false
+                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
                   kill-phase-on: NEVER
         - multijob:
             name: yardstick
@@ -113,6 +112,7 @@
             projects:
                 - name: 'yardstick-compass-{pod}-daily-{stream}'
                   current-parameters: false
+                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
                   kill-phase-on: NEVER
 
 - job-template:
@@ -120,13 +120,17 @@
 
     disabled: false
 
-    concurrent: true
+    concurrent: false
 
     properties:
         - throttle:
             enabled: true
             max-total: 1
             max-per-node: 1
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'compass-deploy-{pod}-daily-{stream}'
 
     parameters:
         - project-parameter:
@@ -134,12 +138,6 @@
         - compass-ci-parameter:
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
-        - string:
-            name: SDN_CONTROLLER
-            default: '{sdn-controller}'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'none'
         - '{pod}-defaults'
         - '{installer}-defaults'
 
@@ -151,7 +149,7 @@
 
     wrappers:
         - build-name:
-            name: '$BUILD_NUMBER - SDN: $SDN_CONTROLLER Scenario: $DEPLOY_SCENARIO'
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
 
 
     builders:
@@ -207,34 +205,34 @@
 # trigger macros
 ########################
 - trigger:
-    name: 'compass-huawei-us-deploy-bare-1-nosdn-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-huawei-us-deploy-bare-1-trigger'
     triggers:
         - timed: '0 16 * * * '
 - trigger:
-    name: 'compass-huawei-us-deploy-bare-1-odl-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-huawei-us-deploy-bare-1-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-huawei-us-deploy-bare-1-onos-trigger'
+    name: 'compass-os-onos-nofeature-ha-huawei-us-deploy-bare-1-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-huawei-us-deploy-bare-1-opencontrail-trigger'
+    name: 'compass-os-ocl-nofeature-ha-huawei-us-deploy-bare-1-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-intel-pod8-nosdn-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-intel-pod8-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-intel-pod8-odl-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-intel-pod8-trigger'
     triggers:
         - timed: '0 16 * * *'
 - trigger:
-    name: 'compass-intel-pod8-onos-trigger'
+    name: 'compass-os-onos-nofeature-ha-intel-pod8-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-intel-pod8-opencontrail-trigger'
+    name: 'compass-os-ocl-nofeature-ha-intel-pod8-trigger'
     triggers:
         - timed: ''
