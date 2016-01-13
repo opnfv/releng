@@ -182,9 +182,14 @@ do
     # TODO: failures in ODT creation should be handled error and
     #       cause 'exit 1' before OPNFV B release.
     tex=$(find $build -name '*.tex' | head -1)
-    odt=$(basename "${tex%.tex}.odt")
+    odt="${tex%.tex}.odt"
     if [[ -e $tex ]] && which pandoc > /dev/null ; then
-        pandoc $tex -o $output/$odt || {
+        (
+            cd $(dirname $tex)
+            pandoc $(basename $tex) -o $(basename $odt)
+        ) && {
+            mv $odt $output/
+        }|| {
             msg="Error: ODT creation for $dir has failed."
             echo
             echo "$msg"
