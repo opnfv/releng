@@ -14,6 +14,9 @@
         - master:
             branch: 'master'
             gs-pathname: ''
+        - brahmaputra:
+            branch: 'stable/brahmaputra'
+            gs-pathname: '/brahmaputra'
 
     project: 'apex'
 
@@ -33,6 +36,10 @@
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: "Used for overriding the GIT URL coming from parameters macro."
+        - string:
+            name: ARTIFACT_VERSION
+            default: 'dev'
+            description: "Artifact version type"
 
     scm:
         - gerrit-trigger-scm:
@@ -282,7 +289,7 @@
                 - "apex-build.*"
 
     triggers:
-        - 'apex-{stream}'
+        - 'apex-master'
 
     builders:
         - trigger-builds:
@@ -290,7 +297,7 @@
             git-revision: true
             block: true
         - trigger-builds:
-          - project: 'apex-deploy-virtual-{stream}'
+          - project: 'apex-deploy-baremetal-{stream}'
             git-revision: true
             block: true
         - trigger-builds:
@@ -312,12 +319,16 @@
             default: 'latest'
             description: "RPM Artifact name that will be appended to GS_URL to deploy a specific artifact"
         - string:
+            name: ARTIFACT_VERSION
+            default: 'daily'
+            description: "Artifact version type"
+        - string:
             name: BUILD_DIRECTORY
             default: $WORKSPACE/build_output
             description: "Directory where the build artifact will be located upon the completion of the build."
         - string:
             name: CACHE_DIRECTORY
-            default: $HOME/opnfv/cache/{gs-pathname}
+            default: $HOME/opnfv/cache{gs-pathname}
             description: "Directory where the cache to be used during the build is located."
         - string:
             name: GIT_BASE
@@ -325,7 +336,7 @@
             description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
         - string:
             name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT/{gs-pathname}
+            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
             description: "URL to Google Storage."
 
 ########################
@@ -346,7 +357,13 @@
             # create the cache directory if it doesn't exist
             [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
             # set OPNFV_ARTIFACT_VERSION
-            export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
+            if [ "$ARTIFACT_VERSION" == "dev" ]; then
+              export OPNFV_ARTIFACT_VERSION=dev${BUILD_NUMBER}
+            elif [ "$ARTIFACT_VERSION" == "daily" ]; then
+              export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d")
+            else
+              export OPNFV_ARTIFACT_VERSION=${ARTIFACT_VERSION}
+            fi
             # start the build
             cd $WORKSPACE/ci
             ./build.sh -v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
