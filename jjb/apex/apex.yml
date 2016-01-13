@@ -14,6 +14,9 @@
         - master:
             branch: 'master'
             gs-pathname: ''
+        - brahmaputra:
+            branch: 'stable/brahmaputra'
+            gs-pathname: '/brahmaputra'
 
     project: 'apex'
 
@@ -290,7 +293,7 @@
             git-revision: true
             block: true
         - trigger-builds:
-          - project: 'apex-deploy-virtual-{stream}'
+          - project: 'apex-deploy-baremetal-{stream}'
             git-revision: true
             block: true
         - trigger-builds:
@@ -539,3 +542,8 @@
     name: 'apex-master'
     triggers:
         - timed: '0 3 * * *'
+
+- trigger:
+    name: 'apex-brahmaputra'
+    triggers:
+        - timed: '0 6 * * *'
