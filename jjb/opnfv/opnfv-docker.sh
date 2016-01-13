@@ -12,12 +12,12 @@ echo
 # Remove previous running containers if exist
 if [[ ! -z $(docker ps -a | grep $DOCKER_REPO_NAME) ]]; then
     echo "Removing existing $DOCKER_REPO_NAME containers..."
-    #docker ps | grep $DOCKER_REPO_NAME | awk '{{print $1}}' | xargs docker stop
-    docker ps -a | grep $DOCKER_REPO_NAME | awk '{{print $1}}' | xargs docker rm -f
+    #docker ps | grep $DOCKER_REPO_NAME | awk '{print $1}' | xargs docker stop
+    docker ps -a | grep $DOCKER_REPO_NAME | awk '{print $1}' | xargs docker rm -f
     t=60
     # Wait max 60 sec for containers to be removed
-    while [ $t -gt 0 ]; do
-        ids=$(docker ps | grep $DOCKER_REPO_NAME |awk '{{print $1}}')
+    while [[ $t -gt 0 ]]; do
+        ids=$(docker ps | grep $DOCKER_REPO_NAME |awk '{print $1}')
         if [[ -z $ids ]]; then
             break
         fi
@@ -31,8 +31,8 @@ fi
 if [[ ! -z $(docker images | grep $DOCKER_REPO_NAME) ]]; then
     echo "Docker images to remove:"
     docker images | head -1 && docker images | grep $DOCKER_REPO_NAME
-    image_tags=($(docker images | grep $DOCKER_REPO_NAME | awk '{{print $2}}'))
-    for tag in "${{image_tags[@]}}"; do
+    image_tags=($(docker images | grep $DOCKER_REPO_NAME | awk '{print $2}'))
+    for tag in "${image_tags[@]}"; do
         echo "Removing docker image $DOCKER_REPO_NAME:$tag..."
         docker rmi -f $DOCKER_REPO_NAME:$tag
     done
@@ -68,10 +68,10 @@ else
 fi
 
 # Get tag version
-branch=$(git rev-parse --abbrev-ref HEAD)
+branch="${GIT_BRANCH##origin/}"
 echo "Current branch: $branch"
 
-if [ $branch == "master" ]; then
+if [[ "$branch" == "master" ]]; then
     DOCKER_TAG="master"
 else
     git clone https://gerrit.opnfv.org/gerrit/releng $WORKSPACE/releng
@@ -80,7 +80,7 @@ else
         -n $DOCKER_REPO_NAME)
 
     ret_val=$?
-    if [ $ret_val -ne 0 ]; then
+    if [[ $ret_val -ne 0 ]]; then
         echo "Error retrieving the version tag."
         exit 1
     fi
