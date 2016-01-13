@@ -71,6 +71,16 @@
 
     concurrent: false
 
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'joid-os-.*?-{pod}-daily-{stream}'
+
     wrappers:
         - build-name:
             name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
@@ -116,6 +126,16 @@
     disabled: false
 
     concurrent: false
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'joid-deploy-{pod}-daily-{stream}'
 
     wrappers:
         - build-name:
