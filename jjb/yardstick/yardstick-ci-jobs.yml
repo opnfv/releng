@@ -23,6 +23,9 @@
 #        brahmaputra
 #--------------------------------
     pod:
+        - opnfv-jump-1:
+            installer: apex
+            <<: *brahmaputra
         - opnfv-jump-2:
             installer: fuel
             <<: *brahmaputra
@@ -52,6 +55,9 @@
             <<: *master
         - orange-pod2:
             installer: joid
+            <<: *master
+        - opnfv-jump-1:
+            installer: apex
             <<: *master
 #--------------------------------
     loop:
@@ -201,7 +207,13 @@
             name: YARDSTICK_DB_BACKEND
             default: ''
             description: 'Arguments to use in order to choose the backend DB'
-
+- parameter:
+    name: 'yardstick-params-opnfv-jump-1'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: '-r 213.77.62.197/results'
+            description: 'Arguments to use in order to choose the backend DB'
 - parameter:
     name: 'yardstick-params-opnfv-jump-2'
     parameters:
