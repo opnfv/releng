@@ -112,7 +112,7 @@
     builders:
         - shell: |
             #!/bin/bash
-            set +e
+            set -e
             # labconfig is used only for joid
             labconfig=""
             sshkey=""
@@ -132,7 +132,7 @@
             fi
 
             opts="--privileged=true --rm"
-            envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NETWORK=${EXTERNAL_NETWORK} -e YARDSTICK_BRANCH=${GERRIT_BRANCH}"
+            envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NETWORK=${EXTERNAL_NETWORK} -e YARDSTICK_BRANCH=${GIT_BRANCH##origin/}"
 
             # Pull the latest image
             docker pull opnfv/yardstick
