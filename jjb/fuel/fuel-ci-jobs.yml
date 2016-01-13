@@ -40,20 +40,22 @@
 
 # new scenario descriptions
     scenario:
-        - 'os_ha':
-            auto-trigger-name: 'disabled-trigger'
-        - 'os_odl-l2_ha':
-            auto-trigger-name: '{scenario}-trigger'
-        - 'os_odl-l3_ha':
-            auto-trigger-name: 'disabled-trigger'
-        - 'os_onos_ha':
-            auto-trigger-name: 'disabled-trigger'
-        - 'os_kvm_ha':
-            auto-trigger-name: 'disabled-trigger'
-        - 'os_ovs_ha':
-            auto-trigger-name: 'disabled-trigger'
-        - 'os_kvm_ovs_ha':
-            auto-trigger-name: 'disabled-trigger'
+        - 'os-nosdn-kvm-ha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-nosdn-kvm_ovs-ha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-nosdn-nofeature-ha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-nosdn-ovs-ha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-nosdn-vlan-ha':
+            auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
+        - 'os-odl_l2-nofeature-ha':
+            auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
+        - 'os-odl_l3-nofeature-ha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-onos-nofeature-ha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
 
     jobs:
         - 'fuel-{scenario}-{pod}-daily-{stream}'
@@ -77,7 +79,7 @@
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - 'fuel-os_.*?-{pod}-daily-{stream}'
+                - 'fuel-os-.*?-{pod}-daily-{stream}'
 
     wrappers:
         - build-name:
@@ -190,97 +192,35 @@
 ########################
 # trigger macros
 ########################
-# os_odl-l2_ha trigger
 - trigger:
-    name: 'os_odl-l2_ha-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-opnfv-jump-2-trigger'
     triggers:
         - timed: '0 2 * * *'
-
-# the rest of the scenarios disabled at the moment
 - trigger:
-    name: 'disabled-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-ericsson-pod1-trigger'
+    triggers:
+        - timed: '0 2 * * *'
+- trigger:
+    name: 'fuel-os-odl_l2-nofeature-ha-ericsson-pod2-trigger'
+    triggers:
+        - timed: '0 2 * * *'
+- trigger:
+    name: 'fuel-os-odl_l2-nofeature-ha-virtual-trigger'
     triggers:
         - timed: ''
-
-# more granuler triggers based on the scenario and pod
-# commented out for the timebeing
-#- trigger:
-#    name: 'fuel-os_ha-opnfv-jump-2-trigger'
-#    triggers:
-#        - timed: ''
-#- trigger:
-#    name: 'fuel-os_odl-l3_ha-opnfv-jump-2-trigger'
-#    triggers:
-#        - timed: ''
-#- trigger:
-#    name: 'fuel-os_onos_ha-opnfv-jump-2-trigger'
-#    triggers:
-#        - timed: ''
-#- trigger:
-#    name: 'fuel-os_kvm_ha-opnfv-jump-2-trigger'
-#    triggers:
-#        - timed: ''
-#- trigger:
-#    name: 'fuel-os_ovs_ha-opnfv-jump-2-trigger'
-#    triggers:
-#        - timed: ''
-#- trigger:
-#    name: 'fuel-os_kvm_ovs_ha-opnfv-jump-2-trigger'
-#    triggers:
-#        - timed: ''
-#
-## ericsson-pod1 triggers - only os_odl-l2_ha trigger is enabled
-#- trigger:
-#    name: 'fuel-os_odl-l2_ha-ericsson-pod1-trigger'
-#    triggers:
-#        - timed: '0 2 * * *'
-#- trigger:
-#    name: 'fuel-os_ha-ericsson-pod1-trigger'
-#    triggers:
-#        - timed: ''
-#- trigger:
-#    name: 'fuel-os_odl-l3_ha-ericsson-pod1-trigger'
-#    triggers:
-#        - timed: ''
-#- trigger:
-#    name: 'fuel-os_onos_ha-ericsson-pod1-trigger'
-#    triggers:
-#        - timed: ''
-#- trigger:
-#    name: 'fuel-os_kvm_ha-ericsson-pod1-trigger'
-#    triggers:
-#        - timed: ''
-#- trigger:
-#    name: 'fuel-os_ovs_ha-ericsson-pod1-trigger'
-#    triggers:
-#        - timed: ''
-#- trigger:
-#    name: 'fuel-os_kvm_ovs_ha-ericsson-pod1-trigger'
-#    triggers:
-#        - timed: ''
-#
-## ericsson-pod2 triggers - only os_odl-l2_ha trigger is enabled
-#- trigger:
-#    name: 'fuel-os_odl-l2_ha-ericsson-pod2-trigger'
-#    triggers:
-#        - timed: '0 2 * * *'
-#- trigger:
-#    name: 'fuel-os_ha-ericsson-pod2-trigger'
-#    triggers:
-#        - timed: ''
-#- trigger:
-#    name: 'fuel-os_odl-l3_ha-ericsson-pod2-trigger'
-#    triggers:
-#        - timed: ''
-#- trigger:
-#    name: 'fuel-os_onos_ha-ericsson-pod2-trigger'
-#    triggers:
-#        - timed: ''
-#- trigger:
-#    name: 'fuel-os_kvm_ha-ericsson-pod2-trigger'
-#    triggers:
-#        - timed: ''
-#- trigger:
-#    name: 'fuel-os_ovs_ha-ericsson-pod2-trigger'
-#    triggers:
-#        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-vlan-ha-opnfv-jump-2-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-vlan-ha-ericsson-pod1-trigger'
+    triggers:
+        - timed: '0 2 * * *'
+- trigger:
+    name: 'fuel-os-nosdn-vlan-ha-ericsson-pod2-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-vlan-ha-virtual-trigger'
+    triggers:
+        - timed: ''
