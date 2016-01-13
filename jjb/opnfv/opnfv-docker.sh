@@ -91,7 +91,7 @@ echo "Tag version to be build and pushed: $DOCKER_TAG"
 # Start the build
 echo "Building docker image: $DOCKER_REPO_NAME:$DOCKER_TAG..."
 
-docker build -t --no-cache $DOCKER_REPO_NAME:$DOCKER_TAG .
+docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG .
 echo "Creating tag 'latest'..."
 docker tag $DOCKER_REPO_NAME:$DOCKER_TAG $DOCKER_REPO_NAME:latest
 
