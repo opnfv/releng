@@ -15,17 +15,17 @@
             gs-pathname: '/{stream}'
 
 
-    sdn-controller:
-        - 'nosdn':
+    scenario:
+        - 'os-nosdn-nofeature-ha':
             disabled: false
             node: huawei-deploy-vm
-        - 'odl':
+        - 'os-odl_l2-nofeature-ha':
             disabled: false
             node: huawei-deploy-vm
-        - 'onos':
+        - 'os-onos-nofeature-ha':
             disabled: false
             node: huawei-deploy-vm
-#        - 'opencontrail':
+#        - 'os-ocl-nofeature-ha':
 #            disabled: true
 #            node: huawei-deploy-vm
 
@@ -33,7 +33,7 @@
         - 'compass-verify-{stream}'
         - 'compass-build-iso-{stream}'
         - 'compass-build-ppa-{stream}'
-        - 'compass-deploy-virtual-{sdn-controller}-{stream}'
+        - 'compass-deploy-virtual-{scenario}-{stream}'
         - 'compass-virtual-daily-{stream}'
 
 ########################
@@ -65,8 +65,8 @@
         - '{node}-defaults'
         - '{installer}-defaults'
         - string:
-            name: SDN_CONTROLLER
-            default: '{sdn-controller}'
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-nofeature-ha'
 
     scm:
         - gerrit-trigger-scm:
@@ -137,7 +137,7 @@
             branch: '{branch}'
 
     triggers:
-        - timed: 'H 16 * * *'
+        - timed: 'H 14 * * *'
 
     builders:
         - trigger-builds:
@@ -145,15 +145,15 @@
             git-revision: true
             block: true
         - trigger-builds:
-          - project: 'compass-deploy-virtual-nosdn-{stream}'
+          - project: 'compass-deploy-virtual-os-nosdn-nofeature-ha-{stream}'
             git-revision: true
             block: false
         - trigger-builds:
-          - project: 'compass-deploy-virtual-odl-{stream}'
+          - project: 'compass-deploy-virtual-os-odl_l2-nofeature-ha-{stream}'
             git-revision: true
             block: false
         - trigger-builds:
-          - project: 'compass-deploy-virtual-onos-{stream}'
+          - project: 'compass-deploy-virtual-os-onos-nofeature-ha-{stream}'
             git-revision: true
             block: false
 
@@ -227,7 +227,7 @@
             !include-raw: ./compass-makeppa.sh
 
 - job-template:
-    name: 'compass-deploy-virtual-{sdn-controller}-{stream}'
+    name: 'compass-deploy-virtual-{scenario}-{stream}'
 
     disabled: false
 
@@ -248,11 +248,8 @@
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
         - string:
-            name: SDN_CONTROLLER
-            default: '{sdn-controller}'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'none'
+            name: DEPLOY_SCENARIO 
+            default: '{scenario}'
         - '{node}-defaults'
         - '{installer}-defaults'
 
