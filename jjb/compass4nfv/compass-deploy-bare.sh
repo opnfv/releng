@@ -6,7 +6,7 @@ echo "Starting the deployment on baremetal environment using $INSTALLER_TYPE. Th
 echo "--------------------------------------------------------"
 echo
 
-export CONFDIR=$WORKSPACE/deploy/conf/hardware_environment/huawei_us_lab/pod1
+export CONFDIR=$WORKSPACE/deploy/conf/hardware_environment/$NODE_NAME
 export ISO_URL=file://$BUILD_DIRECTORY/compass.iso
 export INSTALL_NIC=eth0
 
@@ -14,7 +14,7 @@ cd $WORKSPACE
 
 export OS_VERSION=${{COMPASS_OS_VERSION}}
 export OPENSTACK_VERSION=${{COMPASS_OPENSTACK_VERSION}}
-./deploy.sh --dha $CONFDIR/dha.yml --network $CONFDIR/network.yml
+./deploy.sh --dha $CONFDIR/${DEPLOY_SCENARIO}.yml --network $CONFDIR/network.yml
 if [ $? -ne 0 ]; then
     echo "depolyment failed!"
     deploy_ret=1
