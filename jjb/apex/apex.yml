@@ -292,6 +292,7 @@
         - trigger-builds:
           - project: 'apex-build-{stream}'
             git-revision: true
+            current-parameters: true
             block: true
         - trigger-builds:
           - project: 'apex-deploy-baremetal-{stream}'
@@ -364,7 +365,7 @@
             if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
               export OPNFV_ARTIFACT_VERSION="bramaputra.1.rc0"
             else
-              if [ "$ARTIFACT_VERSION" == "dev" ]; then
+              if echo $BUILD_TAG | grep "apex-verify" 1> /dev/null; then
                 export OPNFV_ARTIFACT_VERSION=dev${BUILD_NUMBER}
               elif [ "$ARTIFACT_VERSION" == "daily" ]; then
                 export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d")
@@ -475,7 +476,9 @@
 
             # update / install the new rpm
             if rpm -q opnfv-apex > /dev/null; then
-               if sudo yum update -y $RPM_INSTALL_PATH | grep "does not update installed package"; then
+               if [ $(basename $OPNFV_RPM_URL) == $(rpm -q opnfv-apex).rpm ]; then
+                 echo "RPM is already installed"
+               elif sudo yum update -y $RPM_INSTALL_PATH | grep "does not update installed package"; then
                    sudo yum downgrade -y $RPM_INSTALL_PATH;
                fi
             else
