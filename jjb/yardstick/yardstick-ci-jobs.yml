@@ -88,6 +88,10 @@
             name: YARDSTICK_SUITE_NAME
             default: opnfv_${{NODE_NAME}}_{loop}.yaml
             description: 'Path to test suite'
+        - string:
+            name: CI_DEBUG
+            default: 'false'
+            description: "Show debut output information"
 
     scm:
         - git-scm:
@@ -113,6 +117,8 @@
         - shell: |
             #!/bin/bash
             set -e
+            [[ $CI_DEBUG == true ]] && redirect=">/dev/null" || redirect=""
+
             # labconfig is used only for joid
             labconfig=""
             sshkey=""
@@ -135,7 +141,7 @@
             envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NETWORK=${EXTERNAL_NETWORK} -e YARDSTICK_BRANCH=${GIT_BRANCH##origin/}"
 
             # Pull the latest image
-            docker pull opnfv/yardstick
+            docker pull opnfv/yardstick $redirect
 
             # Run docker
             cmd="sudo docker run ${opts} ${envs} ${labconfig} ${sshkey} opnfv/yardstick run_tests.sh ${YARDSTICK_DB_BACKEND} ${YARDSTICK_SUITE_NAME}"
@@ -155,14 +161,14 @@
     builders:
         - shell: |
             #!/bin/bash
+            [[ $CI_DEBUG == true ]] && redirect=">/dev/null" || redirect=""
 
             echo "Cleaning up docker containers/images..."
-
             # Remove previous running containers if exist
             if [[ ! -z $(docker ps -a | grep opnfv/yardstick) ]]; then
                 echo "Removing existing opnfv/yardstick containers..."
-                docker ps | grep opnfv/yardstick | awk '{print $1}' | xargs docker stop
-                docker ps -a | grep opnfv/yardstick | awk '{print $1}' | xargs docker rm
+                docker ps | grep opnfv/yardstick | awk '{print $1}' | xargs docker stop $redirect
+                docker ps -a | grep opnfv/yardstick | awk '{print $1}' | xargs docker rm $redirect
             fi
 
             # Remove existing images if exist
@@ -172,7 +178,7 @@
                 image_tags=($(docker images | grep opnfv/yardstick | awk '{print $2}'))
                 for tag in "${image_tags[@]}"; do
                     echo "Removing docker image opnfv/yardstick:$tag..."
-                    docker rmi opnfv/yardstick:$tag
+                    docker rmi opnfv/yardstick:$tag $redirect
                 done
             fi
 ########################
