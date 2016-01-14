@@ -129,6 +129,10 @@
             name: PUSH_RESULTS_TO_DB
             default: "true"
             description: "Push the results of all the tests to the resultDB"
+        - string:
+            name: CI_DEBUG
+            default: 'false'
+            description: "Show debut output information"
 ########################
 # trigger macros
 ########################
@@ -184,6 +188,8 @@
         - shell: |
             #!/bin/bash
             set +e
+            [[ $CI_DEBUG == true ]] && redirect="" || redirect=">/dev/null"
+
             # labconfig is used only for joid
             labconfig=""
             if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
@@ -202,14 +208,15 @@
             fi
             echo "Functest: Start Docker and prepare environment"
             envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
-                -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO}"
+                -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
+                -e CI_DEBUG=${CI_DEBUG}"
 
             dir_result="${HOME}/opnfv/functest/reports"
             mkdir -p ${dir_result}
             rm -rf ${dir_result}/*
             res_volume="-v ${dir_result}:/home/opnfv/functest/results"
 
-            docker pull opnfv/functest:latest_stable
+            docker pull opnfv/functest:latest_stable $redirect
             cmd="sudo docker run --privileged=true -id ${envs} ${labconfig} ${sshkey} ${res_volume} opnfv/functest:latest_stable /bin/bash"
             echo "Functest: Running docker run command: ${cmd}"
             ${cmd}
@@ -245,14 +252,14 @@
     builders:
         - shell: |
             #!/bin/bash
+            [[ $CI_DEBUG == true ]] && redirect="" || redirect=">/dev/null"
 
             echo "Cleaning up docker containers/images..."
-
             # Remove previous running containers if exist
             if [[ ! -z $(docker ps -a | grep opnfv/functest) ]]; then
                 echo "Removing existing opnfv/functest containers..."
-                docker ps | grep opnfv/functest | awk '{print $1}' | xargs docker stop
-                docker ps -a | grep opnfv/functest | awk '{print $1}' | xargs docker rm
+                docker ps | grep opnfv/functest | awk '{print $1}' | xargs docker stop $redirect
+                docker ps -a | grep opnfv/functest | awk '{print $1}' | xargs docker rm $redirect
             fi
 
             # Remove existing images if exist
@@ -262,6 +269,6 @@
                 image_tags=($(docker images | grep opnfv/functest | awk '{print $2}'))
                 for tag in "${image_tags[@]}"; do
                     echo "Removing docker image opnfv/functest:$tag..."
-                    docker rmi opnfv/functest:$tag
+                    docker rmi opnfv/functest:$tag $redirect
                 done
             fi
