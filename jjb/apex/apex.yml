@@ -95,13 +95,13 @@
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-odl_l2-nofeature-ha-{stream}'
             predefined-parameters:
-              BUILD_DIRECTORY=apex-verify-master
+              BUILD_DIRECTORY=apex-verify-master/build_output
             git-revision: false
             block: true
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-onos-nofeature-ha-{stream}'
             predefined-parameters:
-              BUILD_DIRECTORY=apex-verify-master
+              BUILD_DIRECTORY=apex-verify-master/build_output
             git-revision: false
             block: true
         - 'apex-workspace-cleanup'
@@ -488,6 +488,11 @@
                     source ${BUILD_DIRECTORY}/../opnfv.properties
                     RPM_INSTALL_PATH=${BUILD_DIRECTORY}/$(basename $OPNFV_RPM_URL)
                 else
+                    if [[ $BUILD_DIRECTORY == *verify* ]]; then
+                      echo "BUILD_DIRECTORY is from a verify job, so will not use latest from URL"
+                      echo "Check that the slave has opnfv.properties in $BUILD_DIRECTORY"
+                      exit 1
+                    fi
                     # no opnfv.properties means use the latest from artifacts.opnfv.org
                     # get the latest.properties to get the link to the latest artifact
                     curl -s -o $WORKSPACE/opnfv.properties http://$GS_URL/latest.properties
