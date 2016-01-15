@@ -91,33 +91,15 @@ NFV_FEATURES=${DEPLOY_OPTIONS[2]}
 HA_MODE=${DEPLOY_OPTIONS[3]}
 EXTRA=${DEPLOY_OPTIONS[4]}
 
-# Get the juju config path with those options, later we will directly use
-# scenario name
-case $SDN_CONTROLLER in
-    odl_l2)
-        SRCBUNDLE="ovs-odl"
-        SDN_CONTROLLER="odl"
-        ;;
-    onos)
-        SRCBUNDLE="onos"
-        ;;
-    ocl)
-        SRCBUNDLE="contrail"
-        SDN_CONTROLLER="opencontrail"
-        ;;
-    *)
-        SRCBUNDLE="ovs"
-        echo "${SDN_CONTROLLER} not in SDN controllers list, using 'nosdn' setting"
-        SDN_CONTROLLER="nosdn"
-        ;;
-    esac
-SRCBUNDLE="${WORKSPACE}/ci/${SDN_CONTROLLER}/juju-deployer/${SRCBUNDLE}"
-if [ "$HA_MODE" == 'noha' ]; then
-    SRCBUNDLE="${SRCBUNDLE}.yaml"
-    HA_MODE == 'nonha'
-else
-    SRCBUNDLE="${SRCBUNDLE}-${HA_MODE}.yaml"
+if [ "$SDN_CONTROLLER" == 'odl_l2' ] || [ "$SDN_CONTROLLER" == 'odl_l3' ]; then
+    SDN_CONTROLLER='odl'
 fi
+if [ "$HA_MODE" == 'noha' ]; then
+    HA_MODE='nonha'
+fi
+SRCBUNDLE="${WORKSPACE}/ci/${SDN_CONTROLLER}/juju-deployer/"
+SRCBUNDLE="${SRCBUNDLE}/ovs-${SDN_CONTROLLER}-${HA_MODE}.yaml"
+
 
 # Modify files
 
@@ -217,6 +199,8 @@ else
       --allocation-pool start=$EXTNET_FIP,end=$EXTNET_LIP \
       --disable-dhcp --gateway $EXTNET_GW $EXTNET_NET
     exit_on_error $? "External subnet creation failed"
+    neutron net-update $EXTNET_NAME --shared
+    exit_on_error $? "External network sharing failed"
 fi
 
 ##
