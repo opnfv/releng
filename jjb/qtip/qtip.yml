@@ -105,6 +105,7 @@
         - 'qtip-cleanup'
         - 'qtip-set-env'
         - 'qtip-run-suite'
+        - 'qtip-pushtoDB'
 
     triggers:
       - timed: '0 0,13,15,20 * * *'
@@ -143,6 +144,18 @@
             QTIP_REPO=/home/opnfv/repos/qtip
             docker exec -t ${container_id} $QTIP_REPO/docker/run_qtip.sh
 
+- builder:
+    name: qtip-pushtoDB
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Pushing available results to DB"
+            echo "The container id is:"
+            container_id=$(docker ps | grep 'opnfv/qtip:latest' | awk '{print $1}' | head -1)
+            echo $container_id
+            QTIP_REPO=/home/opnfv/repos/qtip
+            docker exec -t ${container_id} $QTIP_REPO/docker/push_db.sh
 
 - builder:
     name: qtip-cleanup
