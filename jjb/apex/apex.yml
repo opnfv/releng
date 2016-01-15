@@ -95,14 +95,14 @@
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-odl_l2-nofeature-ha-{stream}'
             predefined-parameters:
-              DEPLOY_SCENARIO="os-odl_l2-nofeature-ha"
-            git-revision: true
+              BUILD_DIRECTORY=apex-verify-master
+            git-revision: false
             block: true
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-onos-nofeature-ha-{stream}'
             predefined-parameters:
-              DEPLOY_SCENARIO="os-onos-nofeature-ha"
-            git-revision: true
+              BUILD_DIRECTORY=apex-verify-master
+            git-revision: false
             block: true
         - 'apex-workspace-cleanup'
 
@@ -482,11 +482,11 @@
                 # specific artifact from artifacts.opnfv.org
                 RPM_INSTALL_PATH=$GS_URL/$ARTIFACT_NAME
             else
-                if [[ -f opnfv.properties ]]; then
+                if [[ -f ${BUILD_DIRECTORY}/../opnfv.properties ]]; then
                     # if opnfv.properties exists then use the
                     # local build. Source the file so we get local OPNFV vars
-                    source opnfv.properties
-                    RPM_INSTALL_PATH=build_output/$(basename $OPNFV_RPM_URL)
+                    source ${BUILD_DIRECTORY}/../opnfv.properties
+                    RPM_INSTALL_PATH=${BUILD_DIRECTORY}/$(basename $OPNFV_RPM_URL)
                 else
                     # no opnfv.properties means use the latest from artifacts.opnfv.org
                     # get the latest.properties to get the link to the latest artifact
@@ -496,12 +496,6 @@
                     source opnfv.properties
                     RPM_INSTALL_PATH=$OPNFV_RPM_URL
                 fi
-            fi
-
-            source opnfv.properties
-            RPM_INSTALL_PATH=build_output/$(basename $OPNFV_RPM_URL)
-            if [ ! -e "$RPM_INSTALL_PATH" ]; then
-               RPM_INSTALL_PATH=http://${OPNFV_RPM_URL}
             fi
 
             RPM_LIST=$RPM_INSTALL_PATH
