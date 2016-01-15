@@ -1,0 +1,205 @@
+####################################
+# job configuration for bottlenecks
+####################################
+- project:
+    name: bottlenecks-ci-jobs
+
+    project: 'bottlenecks'
+
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+    brahmaputra: &brahmaputra
+        stream: brahmaputra
+        branch: 'stable/{stream}'
+        gs-pathname: '{stream}'
+#--------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+#        brahmaputra
+#--------------------------------
+    pod:
+        - opnfv-jump-2:
+            installer: fuel
+            <<: *brahmaputra
+        - intel-pod5:
+            installer: joid
+            <<: *brahmaputra
+        - huawei-us-deploy-bare-1:
+            installer: compass
+            <<: *brahmaputra
+#--------------------------------
+#        master
+#--------------------------------
+        - ericsson-pod1:
+            installer: fuel
+            <<: *master
+        - ericsson-pod2:
+            installer: fuel
+            <<: *master
+        - intel-pod6:
+            installer: joid
+            <<: *master
+        - intel-pod8:
+            installer: compass
+            <<: *master
+        - zte-build-1:
+            installer: fuel
+            <<: *master
+        - orange-pod2:
+            installer: joid
+            <<: *master
+#--------------------------------
+    suite:
+        - 'rubbos'
+        - 'vstf'
+
+    jobs:
+        - 'bottlenecks-{installer}-{suite}-{pod}-daily-{stream}'
+
+################################
+# job templates
+################################
+- job-template:
+    name: 'bottlenecks-{installer}-{suite}-{pod}-daily-{stream}'
+
+    disabled: false
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{pod}-defaults'
+        - '{installer}-defaults'
+        - 'bottlenecks-params-{pod}'
+        - string:
+            name: GERRIT_REFSPEC_DEBUG
+            default: ''
+            description: "Gerrit refspec for debug."
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - 'bottlenecks-fetch-os-creds'
+        - 'bottlenecks-run-{suite}'
+
+    publishers:
+        - email:
+            recipients: hongbo.tianhongbo@huawei.com matthew.lijun@huawei.com liangqi1@huawei.com liyiting@huawei.com
+
+########################
+# builder macros
+########################
+- builder:
+    name: bottlenecks-fetch-os-creds
+    builders:
+        - shell:
+            !include-raw ../../utils/fetch_os_creds.sh
+
+- builder:
+    name: bottlenecks-run-rubbos
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+
+            echo "Bottlenecks: rubbos running now..."
+            cd $WORKSPACE
+            ./ci/run.sh $GERRIT_REFSPEC_DEBUG
+
+- builder:
+    name: bottlenecks-run-vstf
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+
+            echo "Bottlenecks: vstf running now..."
+            cd $WORKSPACE
+            ./ci/vstf_run.sh $GERRIT_REFSPEC_DEBUG
+
+########################
+# parameter macros
+########################
+- parameter:
+    name: 'bottlenecks-params-intel-pod5'
+    parameters:
+        - string:
+            name: BOTTLENECKS_DB_TARGET
+            default: '213.77.62.197'
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'bottlenecks-params-intel-pod6'
+    parameters:
+        - string:
+            name: BOTTLENECKS_DB_TARGET
+            default: '213.77.62.197'
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'bottlenecks-params-intel-pod8'
+    parameters:
+        - string:
+            name: BOTTLENECKS_DB_TARGET
+            default: '213.77.62.197'
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'bottlenecks-params-ericsson-pod1'
+    parameters:
+        - string:
+            name: BOTTLENECKS_DB_TARGET
+            default: '213.77.62.197'
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'bottlenecks-params-ericsson-pod2'
+    parameters:
+        - string:
+            name: BOTTLENECKS_DB_TARGET
+            default: '213.77.62.197'
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'bottlenecks-params-opnfv-jump-2'
+    parameters:
+        - string:
+            name: BOTTLENECKS_DB_TARGET
+            default: '213.77.62.197'
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'bottlenecks-params-huawei-us-deploy-bare-1'
+    parameters:
+        - string:
+            name: BOTTLENECKS_DB_TARGET
+            default: '213.77.62.197'
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'bottlenecks-params-zte-build-1'
+    parameters:
+        - string:
+            name: BOTTLENECKS_DB_TARGET
+            default: '213.77.62.197'
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'bottlenecks-params-orange-pod2'
+    parameters:
+        - string:
+            name: BOTTLENECKS_DB_TARGET
+            default: '213.77.62.197'
+            description: 'Arguments to use in order to choose the backend DB'
