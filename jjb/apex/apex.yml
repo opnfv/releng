@@ -4,8 +4,8 @@
         - 'apex-verify-{stream}'
         - 'apex-merge-{stream}'
         - 'apex-build-{stream}'
-        - 'apex-deploy-virtual-{stream}'
-        - 'apex-deploy-baremetal-{stream}'
+        - 'apex-deploy-virtual-{scenario}-{stream}'
+        - 'apex-deploy-baremetal-{scenario}-{stream}'
         - 'apex-daily-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
@@ -17,8 +17,16 @@
         - brahmaputra:
             branch: 'stable/brahmaputra'
             gs-pathname: '/brahmaputra'
+            disabled: true
 
     project: 'apex'
+
+    scenario:
+         - 'os-odl_l2-nofeature-ha'
+         - 'os-odl_l2-sfc-ha'
+         - 'os-odl_l3-nofeature-ha'
+         - 'os-onos-nofeature-ha'
+         - 'os-opencontrail-nofeature-ha'
 
 - job-template:
     name: 'apex-verify-{stream}'
@@ -28,7 +36,6 @@
     parameters:
         - apex-parameter:
             gs-pathname: '{gs-pathname}'
-            ARTIFACT_VERSION: 'dev'
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
@@ -85,7 +92,12 @@
 
     builders:
         - 'apex-build'
-        - 'apex-deploy-virtual'
+        - trigger-builds:
+          - project: 'apex-deploy-virtual-os-odl_l2-nofeature-ha-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO="os-odl_l2-nofeature-ha"
+            git-revision: true
+            block: true
         - 'apex-workspace-cleanup'
 
 - job-template:
@@ -181,7 +193,7 @@
         - 'apex-workspace-cleanup'
 
 - job-template:
-    name: 'apex-deploy-virtual-{stream}'
+    name: 'apex-deploy-virtual-{scenario}-{stream}'
 
     # Job template for virtual deployment
     #
@@ -203,6 +215,10 @@
             project: '{project}'
         - apex-parameter:
             gs-pathname: '{gs-pathname}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: '{scenario}'
+            description: "Scenario to deploy with."
 
     properties:
         - build-blocker:
@@ -217,7 +233,7 @@
         - 'apex-workspace-cleanup'
 
 - job-template:
-    name: 'apex-deploy-baremetal-{stream}'
+    name: 'apex-deploy-baremetal-{scenario}-{stream}'
 
     # Job template for baremetal deployment
     #
@@ -239,6 +255,10 @@
             project: '{project}'
         - apex-parameter:
             gs-pathname: '{gs-pathname}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: '{scenario}'
+            description: "Scenario to deploy with."
 
     properties:
         - build-blocker:
@@ -295,7 +315,9 @@
             current-parameters: true
             block: true
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-{stream}'
+          - project: 'apex-deploy-baremetal-os-odl_l2-nofeature-ha-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO="os-odl_l2-nofeature-ha"
             git-revision: true
             block: true
         - trigger-builds:
@@ -499,8 +521,18 @@
             # cleanup virtual machines before we start
             sudo opnfv-clean
             # initiate virtual deployment
-            if [ -e /usr/share/doc/opnfv/network_settings.yaml.example ]; then
-              sudo opnfv-deploy -v -d /usr/share/doc/opnfv/deploy_settings.yaml.example -n /usr/share/doc/opnfv/network_settings.yaml.example
+            if [ -e /etc/opnfv-apex/network_settings.yaml ]; then
+              if [ -n "$DEPLOY_SCENARIO" ]; then
+                echo "Deploy Scenario set to ${DEPLOY_SCENARIO}"
+                if [ -e /etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml ]; then
+                  sudo opnfv-deploy -v -d /etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml -n /etc/opnfv-apex/network_settings.yaml
+                else
+                  echo "File does not exist /etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml"
+                  exit 1
+                fi
+              else
+                echo "Deploy scenario not set!"
+                exit 1
             else
               sudo opnfv-deploy -v
             fi
@@ -571,9 +603,24 @@
             # cleanup environment before we start
             sudo opnfv-clean
             # initiate baremetal deployment
-            sudo opnfv-deploy -i  /root/inventory/pod_settings.yaml \
-            -d /usr/share/doc/opnfv/deploy_settings.yaml.example \
-            -n /root/network/network_settings.yaml
+            if [ -e /etc/opnfv-apex/network_settings.yaml ]; then
+              if [ -n "$DEPLOY_SCENARIO" ]; then
+                echo "Deploy Scenario set to ${DEPLOY_SCENARIO}"
+                if [ -e /etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml ]; then
+                  sudo opnfv-deploy -i  /root/inventory/pod_settings.yaml \
+                  -d /etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml \
+                  -n /root/network_settings.yaml
+                else
+                  echo "File does not exist /etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml"
+                  exit 1
+                fi
+              else
+                echo "Deploy scenario not set!"
+                exit 1
+            else
+              echo "File /etc/opnfv-apex/network_settings.yaml does not exist!"
+              exit 1
+            fi
 
             echo
             echo "--------------------------------------------------------"
