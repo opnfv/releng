@@ -321,6 +321,28 @@
             block: true
         - trigger-builds:
           - project: 'apex-deploy-baremetal-os-odl_l2-nofeature-ha-{stream}'
+            predefined-parameters:
+              BUILD_DIRECTORY=apex-build-master/build_output
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'functest-apex-opnfv-jump-1-daily-{stream}'
+            block: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'yardstick-apex-opnfv-jump-1-daily-{stream}'
+            block: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'apex-deploy-baremetal-os-onos-nofeature-ha-{stream}'
+            predefined-parameters:
+              BUILD_DIRECTORY=apex-build-master/build_output
             git-revision: true
             block: true
         - trigger-builds:
@@ -450,8 +472,19 @@
 
             # upload artifact and additional files to google storage
             gsutil cp $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
-            gsutil cp $BUILD_DIRECTORY/$(basename $OPNFV_RPM_URL) gs://$GS_URL/$(basename $OPNFV_RPM_URL) > gsutil.iso.log 2>&1
-            gsutil cp $BUILD_DIRECTORY/$(basename $OPNFV_SRPM_URL) gs://$GS_URL/$(basename $OPNFV_SRPM_URL) > gsutil.iso.log 2>&1
+            RPM_INSTALL_PATH=$BUILD_DIRECTORY/$(basename $OPNFV_RPM_URL)
+            RPM_LIST=$RPM_INSTALL_PATH
+            for pkg in common undercloud; do
+                RPM_LIST+=" ${RPM_INSTALL_PATH/opnfv-apex/opnfv-apex-${pkg}}"
+            done
+            SRPM_INSTALL_PATH=$BUILD_DIRECTORY/$(basename $OPNFV_SRPM_URL)
+            SRPM_LIST=$SRPM_INSTALL_PATH
+            for pkg in common undercloud; do
+                SRPM_LIST+=" ${SRPM_INSTALL_PATH/opnfv-apex/opnfv-apex-${pkg}}"
+            done
+            for artifact in $RPM_LIST $SRPM_LIST; do
+              gsutil cp $artifact gs://$GS_URL/$(basename $artifact) > gsutil.iso.log 2>&1
+            done
             gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
             gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/latest.properties > gsutil.latest.log 2>&1
 
@@ -567,11 +600,15 @@
                 # specific artifact from artifacts.opnfv.org
                 RPM_INSTALL_PATH=$GS_URL/$ARTIFACT_NAME
             else
-                if [[ -f opnfv.properties ]]; then
+                if [[ $BUILD_DIRECTORY == *apex-build* ]]; then
+                  BUILD_DIRECTORY=$WORKSPACE/../$BUILD_DIRECTORY
+                  echo "BUILD DIRECTORY modified to $BUILD_DIRECTORY"
+                fi
+                if [[ -f ${BUILD_DIRECTORY}/../opnfv.properties ]]; then
                     # if opnfv.properties exists then use the
                     # local build. Source the file so we get local OPNFV vars
-                    source opnfv.properties
-                    RPM_INSTALL_PATH=build_output/$(basename $OPNFV_RPM_URL)
+                    source ${BUILD_DIRECTORY}/../opnfv.properties
+                    RPM_INSTALL_PATH=${BUILD_DIRECTORY}/$(basename $OPNFV_RPM_URL)
                 else
                     # no opnfv.properties means use the latest from artifacts.opnfv.org
                     # get the latest.properties to get the link to the latest artifact
@@ -583,8 +620,6 @@
                 fi
             fi
 
-            source opnfv.properties
-            RPM_INSTALL_PATH=build_output/$(basename $OPNFV_RPM_URL)
             if [ ! -e "$RPM_INSTALL_PATH" ]; then
                RPM_INSTALL_PATH=http://${OPNFV_RPM_URL}
             fi
@@ -625,6 +660,7 @@
               else
                 echo "Deploy scenario not set!"
                 exit 1
+              fi
             else
               echo "File /etc/opnfv-apex/network_settings.yaml does not exist!"
               exit 1
