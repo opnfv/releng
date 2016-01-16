@@ -321,8 +321,6 @@
             block: true
         - trigger-builds:
           - project: 'apex-deploy-baremetal-os-odl_l2-nofeature-ha-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO="os-odl_l2-nofeature-ha"
             git-revision: true
             block: true
         - trigger-builds:
@@ -482,6 +480,11 @@
                 # specific artifact from artifacts.opnfv.org
                 RPM_INSTALL_PATH=$GS_URL/$ARTIFACT_NAME
             else
+                if [[ $BUILD_DIRECTORY == *verify* ]]; then
+                  BUILD_DIRECTORY=$WORKSPACE/../$BUILD_DIRECTORY
+                  echo "BUILD DIRECTORY modified to $BUILD_DIRECTORY"
+                fi
+
                 if [[ -f ${BUILD_DIRECTORY}/../opnfv.properties ]]; then
                     # if opnfv.properties exists then use the
                     # local build. Source the file so we get local OPNFV vars
