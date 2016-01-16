@@ -10,7 +10,7 @@ export ISO_URL=file://$BUILD_DIRECTORY/compass.iso
 export OS_VERSION=${{COMPASS_OS_VERSION}}
 export OPENSTACK_VERSION=${{COMPASS_OPENSTACK_VERSION}}
 export CONFDIR=$WORKSPACE/deploy/conf/vm_environment
-./deploy.sh --dha $CONFDIR/$SDN_CONTROLLER.yml --network $CONFDIR/$NODE_NAME/network.yml
+./deploy.sh --dha $CONFDIR/$DEPLOY_SCENARIO.yml --network $CONFDIR/$NODE_NAME/network.yml
 if [ $? -ne 0 ]; then
     echo "depolyment failed!"
     deploy_ret=1
