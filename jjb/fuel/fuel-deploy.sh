@@ -9,24 +9,38 @@ source latest.properties
 # echo the info about artifact that is used during the deployment
 echo "Using ${OPNFV_ARTIFACT_URL/*\/} for deployment"
 
-# checkout the commit that was used for building the downloaded artifact
-# to make sure the ISO and deployment mechanism uses same versions
-echo "Checking out $OPNFV_GIT_SHA1"
-git checkout $OPNFV_GIT_SHA1 --quiet
+if [[ "$JOB_NAME" =~ "merge" ]]; then
+    # set simplest scenario for virtual deploys to run for merges
+    DEPLOY_SCENARIO="os-nosdn-nofeature-ha"
+else
+    # for none-merge deployments
+    # checkout the commit that was used for building the downloaded artifact
+    # to make sure the ISO and deployment mechanism uses same versions
+    echo "Checking out $OPNFV_GIT_SHA1"
+    git checkout $OPNFV_GIT_SHA1 --quiet
+fi
 
 # set deployment parameters
-BRIDGE=pxebr
 export TMPDIR=$HOME/tmpdir
+BRIDGE=pxebr
 LAB_NAME=${NODE_NAME/-*}
 POD_NAME=${NODE_NAME/*-}
+
+if [[ "$NODE_NAME" == "opnfv-jump-2" ]]; then
+    LAB_NAME="lf"
+    POD_NAME="pod2"
+fi
 
 if [[ "$NODE_NAME" =~ "virtual" ]]; then
     POD_NAME="virtual_kvm"
 fi
 
-if [[ "$NODE_NAME" == "opnfv-jump-2" ]]; then
-    LAB_NAME="lf"
-    POD_NAME="pod2"
+# we currently support ericsson, intel, and lf labs
+if [[ ! "$LAB_NAME" =~ (ericsson|intel|lf) ]]; then
+    echo "Unsupported/unidentified lab $LAB_NAME. Cannot continue!"
+    exit 1
+else
+    echo "Using configuration for $LAB_NAME"
 fi
 
 # create TMPDIR if it doesn't exist
