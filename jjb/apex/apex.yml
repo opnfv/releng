@@ -194,7 +194,12 @@
 
     builders:
         - 'apex-build'
-        - 'apex-deploy-virtual'
+        - trigger-builds:
+          - project: 'apex-deploy-virtual-os-odl_l2-nofeature-ha-{stream}'
+            predefined-parameters:
+              BUILD_DIRECTORY=apex-build-master/build_output
+            git-revision: false
+            block: true
         - 'apex-upload-artifact'
         - 'apex-workspace-cleanup'
 
