@@ -314,7 +314,7 @@
                 - "apex-build.*"
 
     triggers:
-        - 'apex-master'
+        - 'apex-{stream}'
 
     builders:
         - trigger-builds:
@@ -519,6 +519,9 @@
                 if [[ $BUILD_DIRECTORY == *verify* ]]; then
                   BUILD_DIRECTORY=$WORKSPACE/../$BUILD_DIRECTORY
                   echo "BUILD DIRECTORY modified to $BUILD_DIRECTORY"
+                elif [[ $BUILD_DIRECTORY == *apex-build* ]]; then
+                  BUILD_DIRECTORY=$WORKSPACE/../$BUILD_DIRECTORY
+                  echo "BUILD DIRECTORY modified to $BUILD_DIRECTORY"
                 fi
 
                 if [[ -f ${BUILD_DIRECTORY}/../opnfv.properties ]]; then
@@ -529,6 +532,10 @@
                 else
                     if [[ $BUILD_DIRECTORY == *verify* ]]; then
                       echo "BUILD_DIRECTORY is from a verify job, so will not use latest from URL"
+                      echo "Check that the slave has opnfv.properties in $BUILD_DIRECTORY"
+                      exit 1
+                    elif [[ $BUILD_DIRECTORY == *apex-build* ]]; then
+                      echo "BUILD_DIRECTORY is from a daily job, so will not use latest from URL"
                       echo "Check that the slave has opnfv.properties in $BUILD_DIRECTORY"
                       exit 1
                     fi
@@ -680,3 +687,7 @@
     name: 'apex-master'
     triggers:
         - timed: '0 3 * * *'
+- trigger:
+    name: 'apex-brahmaputra'
+    triggers:
+        - timed: '0 6 * * 2050'
