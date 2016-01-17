@@ -194,6 +194,10 @@
             enabled: true
             max-total: 2
             max-per-node: 1
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'fuel-deploy-virtual-daily-.*'
 
     parameters:
         - project-parameter:
@@ -214,25 +218,25 @@
         - ssh-agent-credentials:
             users: '{ssh-credentials}'
 
-#    triggers:
-#        - gerrit:
-#            trigger-on:
-#                - change-merged-event
-#                - comment-added-contains-event:
-#                    comment-contains-value: 'remerge'
-#            projects:
-#              - project-compare-type: 'ANT'
-#                project-pattern: '{project}'
-#                branches:
-#                    - branch-compare-type: 'ANT'
-#                      branch-pattern: '**/{branch}'
-#            dependency-jobs: 'fuel-merge-build-{stream}'
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/{branch}'
+            dependency-jobs: 'fuel-merge-build-{stream}'
 
     builders:
         - shell:
             !include-raw-escape: ./fuel-download-artifact.sh
         - shell:
-            !include-raw-escape: ./fuel-deploy-virtual.sh
+            !include-raw-escape: ./fuel-deploy.sh
         - shell:
             !include-raw-escape: ./fuel-workspace-cleanup.sh
 
