@@ -127,8 +127,11 @@
                               grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
                 INSTALLER_IP=$(/usr/sbin/arp -e | grep ${instack_mac} | awk {'print $1'})
                 sshkey="-v /root/.ssh/id_rsa:/root/.ssh/id_rsa"
-                sudo iptables -D FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable
-                sudo iptables -D FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable
+                if [[ -n $(sudo iptables -L FORWARD |grep "REJECT"|grep "reject-with icmp-port-unreachable") ]]; then
+                    #note: this happens only in opnfv-lf-pod1
+                    sudo iptables -D FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable
+                    sudo iptables -D FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable
+                fi
             elif [[ ${INSTALLER_TYPE} == 'joid' ]]; then
                 # If production lab then creds may be retrieved dynamically
                 # creds are on the jumphost, always in the same folder
