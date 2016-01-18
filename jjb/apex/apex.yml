@@ -2,7 +2,7 @@
     name: apex
     jobs:
         - 'apex-verify-{stream}'
-        - 'apex-merge-{stream}'
+        - 'apex-runner-{platform}-{scenario}-{stream}'
         - 'apex-build-{stream}'
         - 'apex-deploy-virtual-{scenario}-{stream}'
         - 'apex-deploy-baremetal-{scenario}-{stream}'
@@ -27,6 +27,10 @@
          - 'os-odl_l3-nofeature-ha'
          - 'os-onos-nofeature-ha'
          - 'os-opencontrail-nofeature-ha'
+
+    platform:
+         - 'baremetal'
+         - 'virtual'
 
 - job-template:
     name: 'apex-verify-{stream}'
@@ -89,6 +93,7 @@
                 - "apex-daily.*"
                 - "apex-deploy.*"
                 - "apex-build.*"
+                - "apex-runner.*"
 
     builders:
         - 'apex-build'
@@ -107,15 +112,13 @@
         - 'apex-workspace-cleanup'
 
 - job-template:
-    name: 'apex-merge-{stream}'
+    name: 'apex-runner-{platform}-{scenario}-{stream}'
 
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
+    # runner jobs for deploying manually
 
     node: opnfv-jump-1
 
-    disabled: true
+    disabled: false
 
     parameters:
         - apex-parameter:
@@ -135,26 +138,34 @@
             refspec: ''
             choosing-strategy: 'default'
 
-    triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'apex'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**'
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - "apex-daily.*"
+                - "apex-verify.*"
 
     builders:
-        - 'apex-build'
-        - 'apex-deploy-virtual'
-        - 'apex-workspace-cleanup'
+        - trigger-builds:
+          - project: 'apex-deploy-{platform}-{scenario}-{stream}'
+            git-revision: false
+            block: true
+        - trigger-builds:
+          - project: 'functest-apex-opnfv-jump-1-daily-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO='{scenario}'
+            block: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'yardstick-apex-opnfv-jump-1-daily-{stream}'
+            block: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
 
 - job-template:
     name: 'apex-build-{stream}'
@@ -312,6 +323,7 @@
                 - "apex-verify.*"
                 - "apex-deploy.*"
                 - "apex-build.*"
+                - "apex-runner.*"
 
     triggers:
         - 'apex-{stream}'
@@ -330,6 +342,8 @@
             block: true
         - trigger-builds:
           - project: 'functest-apex-opnfv-jump-1-daily-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl_l2-nofeature-ha
             block: true
             block-thresholds:
                 build-step-failure-threshold: 'never'
@@ -350,6 +364,8 @@
             block: true
         - trigger-builds:
           - project: 'functest-apex-opnfv-jump-1-daily-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-onos-nofeature-ha
             block: true
             block-thresholds:
                 build-step-failure-threshold: 'never'
