@@ -137,7 +137,11 @@ prepare_src_files
 find $DOCS_DIR -name $INDEX_RST -printf '%h\n' | while read dir
 do
     name=$(generate_name $dir)
-    src="$SRC_DIR/${dir#$DOCS_DIR/}"
+    if is_top_dir "$dir" ; then
+        src="$SRC_DIR"
+    else
+        src="$SRC_DIR/${dir#$DOCS_DIR/}"
+    fi
     build="$BUILD_DIR/$name"
     output="$OUTPUT_DIR/$name"
     conf="$src/conf.py"
