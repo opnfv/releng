@@ -105,6 +105,7 @@
         - 'qtip-cleanup'
         - 'qtip-set-env'
         - 'qtip-run-suite'
+        - 'qtip-pushtoDB'
 
     triggers:
       - timed: '0 0,13,15,20 * * *'
@@ -137,12 +138,31 @@
     builders:
         - shell: |
             #!/bin/bash
+            container_id=$(docker ps | grep 'opnfv/qtip:latest' | awk '{print $1}' | head -1)
+            if [[ ! -z ${container_id} ]]; then
+                echo "The container ID is: ${container_id}"
+                QTIP_REPO=/home/opnfv/repos/qtip
+                docker exec -t ${container_id} $QTIP_REPO/docker/run_qtip.sh
+            else
+                echo "Container ID not available"
+            fi
+
+- builder:
+    name: qtip-pushtoDB
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Pushing available results to DB"
             echo "The container id is:"
             container_id=$(docker ps | grep 'opnfv/qtip:latest' | awk '{print $1}' | head -1)
-            echo $container_id
-            QTIP_REPO=/home/opnfv/repos/qtip
-            docker exec -t ${container_id} $QTIP_REPO/docker/run_qtip.sh
-
+            if [[ ! -z ${container_id} ]]; then
+                echo "The condiner ID is: ${container_id}"
+                QTIP_REPO=/home/opnfv/repos/qtip
+                docker exec -t ${container_id} $QTIP_REPO/docker/push_db.sh
+            else
+                echo "Container ID not available"
+            fi
 
 - builder:
     name: qtip-cleanup
