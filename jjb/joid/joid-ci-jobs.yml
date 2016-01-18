@@ -69,6 +69,8 @@
 
     project-type: multijob
 
+    node: intel-build
+
     concurrent: false
 
     properties:
@@ -103,21 +105,24 @@
             condition: SUCCESSFUL
             projects:
                 - name: 'joid-deploy-{pod}-daily-{stream}'
-                  current-parameters: true
+                  current-parameters: false
+                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
                   kill-phase-on: FAILURE
         - multijob:
             name: functest
             condition: COMPLETED
             projects:
                 - name: 'functest-joid-{pod}-daily-{stream}'
-                  current-parameters: true
+                  current-parameters: false
+                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
                   kill-phase-on: NEVER
         - multijob:
             name: yardstick
             condition: COMPLETED
             projects:
                 - name: 'yardstick-joid-{pod}-daily-{stream}'
-                  current-parameters: true
+                  current-parameters: false
+                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
                   kill-phase-on: NEVER
 
 - job-template:
