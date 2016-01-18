@@ -16,11 +16,7 @@ if [[ ! -z $(docker ps -a | grep $DOCKER_REPO_NAME) ]]; then
     docker ps -a | grep $DOCKER_REPO_NAME | awk '{print $1}' | xargs docker rm -f
     t=60
     # Wait max 60 sec for containers to be removed
-    while [[ $t -gt 0 ]]; do
-        ids=$(docker ps | grep $DOCKER_REPO_NAME |awk '{print $1}')
-        if [[ -z $ids ]]; then
-            break
-        fi
+    while [[ $t -gt 0 ]] && [[ -n "$(docker ps| grep $DOCKER_REPO_NAME)" ]]; do
         sleep 1
         let t=t-1
     done
@@ -33,8 +29,10 @@ if [[ ! -z $(docker images | grep $DOCKER_REPO_NAME) ]]; then
     docker images | head -1 && docker images | grep $DOCKER_REPO_NAME
     image_tags=($(docker images | grep $DOCKER_REPO_NAME | awk '{print $2}'))
     for tag in "${image_tags[@]}"; do
-        echo "Removing docker image $DOCKER_REPO_NAME:$tag..."
-        docker rmi -f $DOCKER_REPO_NAME:$tag
+        if [[ ! -z $(docker images|grep $DOCKER_REPO_NAME|grep $tag) ]]; then
+            echo "Removing docker image $DOCKER_REPO_NAME:$tag..."
+            docker rmi -f $DOCKER_REPO_NAME:$tag
+        fi
     done
 fi
 
