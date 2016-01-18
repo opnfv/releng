@@ -41,21 +41,31 @@
 
 # new scenario descriptions
     scenario:
-        - 'os-nosdn-kvm-ha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-        - 'os-nosdn-kvm_ovs-ha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-        - 'os-nosdn-nofeature-ha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-        - 'os-nosdn-ovs-ha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-        - 'os-nosdn-vlan-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
         - 'os-odl_l2-nofeature-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
         - 'os-odl_l3-nofeature-ha':
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-onos-nofeature-ha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-nosdn-nofeature-ha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-nosdn-kvm-ha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-nosdn-kvm_ovs-ha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-nosdn-ovs-ha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-nosdn-vlan-ha':
+            auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
+        - 'os-odl_l2-nofeature-noha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-odl_l3-nofeature-noha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-onos-nofeature-noha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-nosdn-nofeature-noha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+        - 'os-odl_l2-bgpvpn-noha':
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
 
     jobs:
@@ -63,12 +73,14 @@
         - 'fuel-deploy-{pod}-daily-{stream}'
 
 ########################
-# job templates - old type of defining the scenario
+# job templates
 ########################
 - job-template:
     name: 'fuel-{scenario}-{pod}-daily-{stream}'
 
     project-type: multijob
+
+    node: intel-build
 
     concurrent: false
 
@@ -92,7 +104,6 @@
     parameters:
         - project-parameter:
             project: '{project}'
-        - '{pod}-defaults'
         - '{installer}-defaults'
         - string:
             name: DEPLOY_SCENARIO
@@ -106,21 +117,24 @@
             condition: SUCCESSFUL
             projects:
                 - name: 'fuel-deploy-{pod}-daily-{stream}'
-                  current-parameters: true
+                  current-parameters: false
+                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
                   kill-phase-on: FAILURE
         - multijob:
             name: functest
             condition: COMPLETED
             projects:
                 - name: 'functest-fuel-{pod}-daily-{stream}'
-                  current-parameters: true
+                  current-parameters: false
+                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
                   kill-phase-on: NEVER
         - multijob:
             name: yardstick
             condition: COMPLETED
             projects:
                 - name: 'yardstick-fuel-{pod}-daily-{stream}'
-                  current-parameters: true
+                  current-parameters: false
+                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
                   kill-phase-on: NEVER
 
 - job-template:
