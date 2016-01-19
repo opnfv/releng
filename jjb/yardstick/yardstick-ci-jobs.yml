@@ -81,6 +81,9 @@
         - build-name:
             name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
 
+    triggers:
+        - 'yardstick-{pod}-trigger'
+
     parameters:
         - project-parameter:
             project: '{project}'
@@ -236,6 +239,7 @@
             name: YARDSTICK_DB_BACKEND
             default: '-i 10.118.36.90:8086'
             description: 'Arguments to use in order to choose the backend DB'
+
 - parameter:
     name: 'yardstick-params-opnfv-jump-1'
     parameters:
@@ -243,6 +247,7 @@
             name: YARDSTICK_DB_BACKEND
             default: '-r 213.77.62.197/results'
             description: 'Arguments to use in order to choose the backend DB'
+
 - parameter:
     name: 'yardstick-params-opnfv-jump-2'
     parameters:
@@ -274,3 +279,57 @@
             name: YARDSTICK_DB_BACKEND
             default: ''
             description: 'Arguments to use in order to choose the backend DB'
+
+#######################
+## trigger macros
+#######################
+# trigger for PODs to only run yardstick test suites
+- trigger:
+    name: 'yardstick-zte-build-1-trigger'
+    triggers:
+        - timed: '0 2 * * *'
+
+- trigger:
+    name: 'yardstick-intel-pod5-trigger'
+    triggers:
+        - timed: ''
+
+- trigger:
+    name: 'yardstick-intel-pod6-trigger'
+    triggers:
+        - timed: ''
+
+- trigger:
+    name: 'yardstick-intel-pod8-trigger'
+    triggers:
+        - timed: ''
+
+- trigger:
+    name: 'yardstick-ericsson-pod1-trigger'
+    triggers:
+        - timed: ''
+
+- trigger:
+    name: 'yardstick-ericsson-pod2-trigger'
+    triggers:
+        - timed: ''
+
+- trigger:
+    name: 'yardstick-opnfv-jump-1-trigger'
+    triggers:
+        - timed: ''
+
+- trigger:
+    name: 'yardstick-opnfv-jump-2-trigger'
+    triggers:
+        - timed: ''
+
+- trigger:
+    name: 'yardstick-huawei-us-deploy-bare-1-trigger'
+    triggers:
+        - timed: ''
+
+- trigger:
+    name: 'yardstick-orange-pod2-trigger'
+    triggers:
+        - timed: ''
