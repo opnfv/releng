@@ -50,6 +50,20 @@ fi
     export POD_NAME=${POD/-}
 
 ##
+## Parse Network config
+##
+
+EXTERNAL_NETWORK=${EXTERNAL_NETWORK:-}
+# split EXTERNAL_NETWORK=name;type;first ip;last ip; gateway;network
+IFS=';' read -r -a EXTNET <<< "$EXTERNAL_NETWORK"
+EXTNET_NAME=${EXTNET[0]}
+EXTNET_TYPE=${EXTNET[1]}
+EXTNET_FIP=${EXTNET[2]}
+EXTNET_LIP=${EXTNET[3]}
+EXTNET_GW=${EXTNET[4]}
+EXTNET_NET=${EXTNET[5]}
+
+##
 ## Redeploy MAAS or recover the previous config
 ##
 
@@ -101,10 +115,14 @@ SRCBUNDLE="${WORKSPACE}/ci/${SDN_CONTROLLER}/juju-deployer/"
 SRCBUNDLE="${SRCBUNDLE}/ovs-${SDN_CONTROLLER}-${HA_MODE}.yaml"
 
 
-# Modify files
-
+# Modify Bundle
 echo "------ Set openstack password ------"
 sed -i -- "s/\"admin-password\": openstack/\"admin-password\": $OS_ADMIN_PASSWORD/" $SRCBUNDLE
+
+if [ -n "$EXTNET_NAME" ]; then
+    echo "------ Set openstack default network ------"
+    sed -i -- "s/\"neutron-external-network\": ext_net/\"neutron-external-network\": $EXTNET_NAME/" $SRCBUNDLE
+fi
 
 echo "------ Set ceph disks ------"
 CEPH_DISKS_CONTROLLERS=${CEPH_DISKS_CONTROLLERS:-}
@@ -178,15 +196,6 @@ exit_on_error $? "Deploy FAILED to auth to openstack"
 ## Create external network if needed
 ##
 
-EXTERNAL_NETWORK=${EXTERNAL_NETWORK:-}
-# split EXTERNAL_NETWORK=name;type;first ip;last ip; gateway;network
-IFS=';' read -r -a EXTNET <<< "$EXTERNAL_NETWORK"
-EXTNET_NAME=${EXTNET[0]}
-EXTNET_TYPE=${EXTNET[1]}
-EXTNET_FIP=${EXTNET[2]}
-EXTNET_LIP=${EXTNET[3]}
-EXTNET_GW=${EXTNET[4]}
-EXTNET_NET=${EXTNET[5]}
 # If we have more information than only the name, try to create it
 if [ -z "$EXTNET_TYPE" ]; then
     echo "------ No data for external network creation, pass ------"
