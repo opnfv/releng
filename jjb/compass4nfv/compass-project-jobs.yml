@@ -6,35 +6,20 @@
 
     project: 'compass4nfv'
 
-    stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-        - brahmaputra:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
-
-
-    scenario:
-        - 'os-nosdn-nofeature-ha':
-            disabled: false
-            node: huawei-deploy-vm
-        - 'os-odl_l2-nofeature-ha':
-            disabled: false
-            node: huawei-deploy-vm
-        - 'os-onos-nofeature-ha':
-            disabled: false
-            node: huawei-deploy-vm
-#        - 'os-ocl-nofeature-ha':
-#            disabled: true
-#            node: huawei-deploy-vm
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+    brahmaputra: &brahmaputra
+        stream: brahmaputra
+        branch: 'stable/{stream}'
+        gs-pathname: '/{stream}'
 
     jobs:
         - 'compass-verify-{stream}'
         - 'compass-build-iso-{stream}'
         - 'compass-build-ppa-{stream}'
-        - 'compass-deploy-virtual-{scenario}-{stream}'
-        - 'compass-virtual-daily-{stream}'
+
 
 ########################
 # job templates
@@ -109,55 +94,6 @@
             fingerprint: true
 
 - job-template:
-    name: 'compass-virtual-daily-{stream}'
-
-    node: huawei-build
-
-    concurrent: true
-
-    properties:
-        - throttle:
-            enabled: true
-            max-total: 1
-            max-per-node: 1
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - compass-project-parameter:
-            installer: '{installer}'
-            gs-pathname: '{gs-pathname}'
-        - '{node}-defaults'
-        - '{installer}-defaults'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    triggers:
-        - timed: 'H 14 * * *'
-
-    builders:
-        - trigger-builds:
-          - project: 'compass-build-iso-{stream}'
-            git-revision: true
-            block: true
-        - trigger-builds:
-          - project: 'compass-deploy-virtual-os-nosdn-nofeature-ha-{stream}'
-            git-revision: true
-            block: false
-        - trigger-builds:
-          - project: 'compass-deploy-virtual-os-odl_l2-nofeature-ha-{stream}'
-            git-revision: true
-            block: false
-        - trigger-builds:
-          - project: 'compass-deploy-virtual-os-onos-nofeature-ha-{stream}'
-            git-revision: true
-            block: false
-
-- job-template:
     name: 'compass-build-iso-{stream}'
 
     node: ericsson-build
@@ -178,6 +114,9 @@
             gs-pathname: '{gs-pathname}'
         - '{node}-defaults'
         - '{installer}-defaults'
+
+    triggers:
+        - timed: 'H 14 * * *'
 
     scm:
         - git-scm:
@@ -226,46 +165,6 @@
         - shell:
             !include-raw: ./compass-makeppa.sh
 
-- job-template:
-    name: 'compass-deploy-virtual-{scenario}-{stream}'
-
-    disabled: false
-
-    node: '{node}'
-
-    concurrent: true
-
-    properties:
-        - throttle:
-            enabled: true
-            max-total: 1
-            max-per-node: 1
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - compass-project-parameter:
-            installer: '{installer}'
-            gs-pathname: '{gs-pathname}'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: '{scenario}'
-        - '{node}-defaults'
-        - '{installer}-defaults'
-
-    builders:
-        - shell:
-            !include-raw: ./compass-workspace-precleanup.sh
-        - shell:
-            !include-raw: ./compass-download-artifact.sh
-        - shell:
-            !include-raw: ./compass-deploy-virtual.sh
-
-    publishers:
-        - archive:
-            artifacts: 'ansible.log'
-            allow-empty: 'true'
-            fingerprint: true
 
 ########################
 # parameter macros
@@ -287,7 +186,7 @@
             description: "URL to Google Storage."
         - string:
             name: PPA_REPO
-            default: "http://205.177.226.235:9999"
+            default: "http://205.177.226.237:9999"
         - string:
             name: PPA_CACHE
             default: "$WORKSPACE/work/repo/"

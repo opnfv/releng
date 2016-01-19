@@ -29,6 +29,7 @@
 #--------------------------------
         - intel-pod8:
             <<: *master
+#--------------------------------
 
     scenario:
         - 'os-nosdn-nofeature-ha':
@@ -170,6 +171,105 @@
             allow-empty: 'true'
             fingerprint: true
 
+
+- job-template:
+    name: 'compass-{scenario}-daily-{stream}'
+
+    project-type: multijob
+
+    node: huawei-build
+
+    concurrent: false
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+
+    wrappers:
+        - build-name:
+            name: '$SLAVE_NAME - $BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - compass-ci-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: '{scenario}'
+        - 'huawei-build-defaults'
+        - '{installer}-defaults'
+
+    builders:
+        - multijob:
+            name: deploy
+            condition: SUCCESSFUL
+            projects:
+                - name: 'compass-deploy-virtual-{stream}'
+                  current-parameters: false
+                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
+                  kill-phase-on: FAILURE
+        - multijob:
+            name: functest
+            condition: COMPLETED
+            projects:
+                - name: 'functest-compass-huawei-deploy-vm-daily-{stream}'
+                  current-parameters: true
+                  kill-phase-on: NEVER
+        - multijob:
+            name: yardstick
+            condition: COMPLETED
+            projects:
+                - name: 'yardstick-compass-huawei-deploy-vm-daily-{stream}'
+                  current-parameters: true
+                  kill-phase-on: NEVER
+
+
+- job-template:
+    name: 'compass-deploy-virtual-{stream}'
+
+    disabled: false
+
+    node: 'huawei-deploy-vm'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+
+    wrappers:
+        - build-name:
+            name: '$SLAVE_NAME - $BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - compass-project-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - '{node}-defaults'
+        - '{installer}-defaults'
+
+    builders:
+        - shell:
+            !include-raw: ./compass-workspace-precleanup.sh
+        - shell:
+            !include-raw: ./compass-download-artifact.sh
+        - shell:
+            !include-raw: ./compass-deploy-virtual.sh
+
+    publishers:
+        - archive:
+            artifacts: 'ansible.log'
+            allow-empty: 'true'
+            fingerprint: true
+
 ########################
 # parameter macros
 ########################
@@ -190,7 +290,7 @@
             description: "URL to Google Storage."
         - string:
             name: PPA_REPO
-            default: "http://205.177.226.235:9999"
+            default: "http://205.177.226.237:9999"
         - string:
             name: PPA_CACHE
             default: "$WORKSPACE/work/repo/"
