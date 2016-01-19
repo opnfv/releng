@@ -53,8 +53,8 @@ chmod a+x $TMPDIR
 
 # clone the securedlab repo
 cd $WORKSPACE
-echo "Cloning securedlab repo"
-git clone ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab --quiet
+echo "Cloning securedlab repo ${GIT_BRANCH##origin/}"
+git clone ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab --quiet --branch ${GIT_BRANCH##origin/}
 
 # construct the command
 DEPLOY_COMMAND="sudo $WORKSPACE/ci/deploy.sh -b file://$WORKSPACE/securedlab -l $LAB_NAME -p $POD_NAME -s $DEPLOY_SCENARIO -i file://$WORKSPACE/opnfv.iso -H -B $BRIDGE -S $TMPDIR"
