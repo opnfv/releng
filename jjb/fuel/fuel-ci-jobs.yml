@@ -45,7 +45,7 @@
     scenario:
         # HA scenarios
         - 'os-odl_l2-nofeature-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
+            auto-trigger-name: '{stream}-fuel-{scenario}-{pod}-trigger'
         - 'os-odl_l3-nofeature-ha':
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-onos-nofeature-ha':
@@ -59,7 +59,7 @@
         - 'os-nosdn-ovs-ha':
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-nosdn-vlan-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
+            auto-trigger-name: '{stream}-fuel-{scenario}-{pod}-trigger'
         # NOHA scenarios
         - 'os-odl_l2-nofeature-noha':
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
@@ -224,35 +224,72 @@
 ########################
 # trigger macros
 ########################
+
+# brahmaputra branch - os-odl_l2-nofeature-ha triggers
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-opnfv-jump-2-trigger'
+    name: 'brahmaputra-fuel-os-odl_l2-nofeature-ha-opnfv-jump-2-trigger'
     triggers:
-        - timed: '0 2 * * *'
+        - timed: '0 22 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-ericsson-pod1-trigger'
-    triggers:
-        - timed: '0 2 * * *'
-- trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-ericsson-pod2-trigger'
-    triggers:
-        - timed: '0 2 * * *'
-- trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-virtual-trigger'
+    name: 'brahmaputra-fuel-os-odl_l2-nofeature-ha-ericsson-pod1-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-vlan-ha-opnfv-jump-2-trigger'
+    name: 'brahmaputra-fuel-os-odl_l2-nofeature-ha-ericsson-pod2-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-vlan-ha-ericsson-pod1-trigger'
+    name: 'brahmaputra-fuel-os-odl_l2-nofeature-ha-virtual-trigger'
+    triggers:
+        - timed: ''
+# master branch - os-odl_l2-nofeature-ha triggers
+- trigger:
+    name: 'master-fuel-os-odl_l2-nofeature-ha-opnfv-jump-2-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'master-fuel-os-odl_l2-nofeature-ha-ericsson-pod1-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'master-fuel-os-odl_l2-nofeature-ha-ericsson-pod2-trigger'
+    triggers:
+        - timed: '0 22 * * *'
+- trigger:
+    name: 'master-fuel-os-odl_l2-nofeature-ha-virtual-trigger'
+    triggers:
+        - timed: ''
+# brahmaputra branch - fuel-os-nosdn-vlan-ha triggers
+- trigger:
+    name: 'brahmaputra-fuel-os-nosdn-vlan-ha-opnfv-jump-2-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'brahmaputra-fuel-os-nosdn-vlan-ha-ericsson-pod1-trigger'
     triggers:
         - timed: '0 2 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-vlan-ha-ericsson-pod2-trigger'
+    name: 'brahmaputra-fuel-os-nosdn-vlan-ha-ericsson-pod2-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-vlan-ha-virtual-trigger'
+    name: 'brahmaputra-fuel-os-nosdn-vlan-ha-virtual-trigger'
+    triggers:
+        - timed: ''
+# master branch - fuel-os-nosdn-vlan-ha triggers
+- trigger:
+    name: 'master-fuel-os-nosdn-vlan-ha-opnfv-jump-2-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'master-fuel-os-nosdn-vlan-ha-ericsson-pod1-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'master-fuel-os-nosdn-vlan-ha-ericsson-pod2-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'master-fuel-os-nosdn-vlan-ha-virtual-trigger'
     triggers:
         - timed: ''
