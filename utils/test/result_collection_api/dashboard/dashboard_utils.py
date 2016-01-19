@@ -24,6 +24,8 @@ from vsperf2Dashboard import format_vsperf_for_dashboard, \
     check_vsperf_case_exist
 from bottlenecks2Dashboard import format_bottlenecks_for_dashboard, \
     check_bottlenecks_case_exist
+from qtip2Dashboard import format_qtip_for_dashboard, \
+    check_qtip_case_exist
 
 # any project test project wishing to provide dashboard ready values
 # must include at least 2 methods
