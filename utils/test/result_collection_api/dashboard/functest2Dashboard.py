@@ -21,7 +21,7 @@ def get_functest_cases():
     get the list of the supported test cases
     TODO: update the list when adding a new test case for the dashboard
     """
-    return ["status", "vPing", "vIMS", "Tempest", "odl", "Rally"]
+    return ["status", "vPing", "vPing_userdata", "vIMS", "Tempest", "odl", "Rally"]
 
 
 def format_functest_for_dashboard(case, results):
@@ -257,6 +257,42 @@ def format_vPing_for_dashboard(results):
             nbTestOk += 1
 
     test_data.append({'name': "vPing status",
+                      'info': {"type": "bar"},
+                      'data_set': [{'Nb tests': nbTest,
+                                    'Nb Success': nbTestOk}]})
+
+    return test_data
+
+def format_vPing_userdata_for_dashboard(results):
+    """
+    Post processing for the vPing_userdata test case
+    """
+    test_data = [{'description': 'vPing_userdata results for Dashboard'}]
+
+    # Graph 1: Test_Duration = f(time)
+    # ********************************
+    new_element = []
+    for data in results:
+        new_element.append({'x': data['creation_date'],
+                            'y': data['details']['duration']})
+
+    test_data.append({'name': "vPing_userdata duration",
+                      'info': {'type': "graph",
+                               'xlabel': 'time',
+                               'ylabel': 'duration (s)'},
+                      'data_set': new_element})
+
+    # Graph 2: bar
+    # ************
+    nbTest = 0
+    nbTestOk = 0
+
+    for data in results:
+        nbTest += 1
+        if data['details']['status'] == "OK":
+            nbTestOk += 1
+
+    test_data.append({'name': "vPing_userdata status",
                       'info': {"type": "bar"},
                       'data_set': [{'Nb tests': nbTest,
                                     'Nb Success': nbTestOk}]})
