@@ -28,6 +28,8 @@
     pod:
         - intel-pod5:
             <<: *brahmaputra
+        - virtual:
+            <<: *brahmaputra
 #--------------------------------
 #           master
 #--------------------------------
@@ -36,6 +38,8 @@
         - orange-pod2:
             <<: *master
         - juniper-pod1:
+            <<: *master
+        - virtual:
             <<: *master
 #--------------------------------
 # new scenario descriptions
@@ -145,7 +149,8 @@
         - project-parameter:
             project: '{project}'
         - '{installer}-defaults'
-        - '{pod}-defaults'
+        - '{pod}-defaults':
+            installer: '{installer}'
 
     scm:
         - git-scm:
@@ -155,7 +160,6 @@
 
     builders:
         - 'builder-macro'
-
 ########################
 # builder macros
 ########################
@@ -189,5 +193,9 @@
         - timed: ''
 - trigger:
     name: 'joid-os-odl_l2-nofeature-ha-juniper-pod1-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'joid-os-odl_l2-nofeature-ha-virtual-trigger'
     triggers:
         - timed: ''
