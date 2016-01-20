@@ -95,9 +95,6 @@
             project: '{project}'
         - '{installer}-defaults'
         - '{pod}-defaults'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: '{scenario}'
 
     builders:
         - multijob:
@@ -105,24 +102,21 @@
             condition: SUCCESSFUL
             projects:
                 - name: 'joid-deploy-{pod}-daily-{stream}'
-                  current-parameters: false
-                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
+                  current-parameters: true
                   kill-phase-on: FAILURE
         - multijob:
             name: functest
             condition: COMPLETED
             projects:
                 - name: 'functest-joid-{pod}-daily-{stream}'
-                  current-parameters: false
-                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
+                  current-parameters: true
                   kill-phase-on: NEVER
         - multijob:
             name: yardstick
             condition: COMPLETED
             projects:
                 - name: 'yardstick-joid-{pod}-daily-{stream}'
-                  current-parameters: false
-                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
+                  current-parameters: true
                   kill-phase-on: NEVER
 
 - job-template:
