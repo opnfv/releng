@@ -44,6 +44,8 @@ fi
             POD=orange-pod2 ;;
         juniper-us-test-1)
             POD=juniper-pod1 ;;
+        *virtual*)
+            POD=default ;;
         *)
             POD=$NODE_NAME ;;
     esac
