@@ -28,6 +28,8 @@
     pod:
         - intel-pod5:
             <<: *brahmaputra
+        - virtual:
+            <<: *brahmaputra
 #--------------------------------
 #           master
 #--------------------------------
@@ -36,6 +38,8 @@
         - orange-pod2:
             <<: *master
         - juniper-pod1:
+            <<: *master
+        - virtual:
             <<: *master
 #--------------------------------
 # new scenario descriptions
@@ -162,6 +166,15 @@
         - 'builder-macro'
 
 ########################
+# parameter macros
+########################
+- parameter:
+    name: 'virtual-defaults'
+    parameters:
+        - label:
+            name: SLAVE_LABEL
+            default: 'joid-deploy-virtual'
+########################
 # builder macros
 ########################
 - builder:
@@ -194,5 +207,9 @@
         - timed: ''
 - trigger:
     name: 'joid-os-odl_l2-nofeature-ha-juniper-pod1-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'joid-os-odl_l2-nofeature-ha-virtual-trigger'
     triggers:
         - timed: ''
