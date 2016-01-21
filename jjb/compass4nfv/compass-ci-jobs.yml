@@ -24,10 +24,14 @@
 #--------------------------------
         - huawei-us-deploy-bare-1:
             <<: *brahmaputra
+        - huawei-deploy-vm:
+            <<: *brahmaputra
 #--------------------------------
 #        master
 #--------------------------------
         - intel-pod8:
+            <<: *master
+        - huawei-deploy-vm:
             <<: *master
 
     scenario:
@@ -103,7 +107,7 @@
             condition: COMPLETED
             projects:
                 - name: 'functest-compass-{pod}-daily-{stream}'
-                  current-parameters: false
+                  current-parameters: true
                   predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
                   kill-phase-on: NEVER
         - multijob:
@@ -111,7 +115,7 @@
             condition: COMPLETED
             projects:
                 - name: 'yardstick-compass-{pod}-daily-{stream}'
-                  current-parameters: false
+                  current-parameters: true
                   predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
                   kill-phase-on: NEVER
 
@@ -231,12 +235,28 @@
 - trigger:
     name: 'compass-os-odl_l2-nofeature-ha-intel-pod8-trigger'
     triggers:
-        - timed: '0 16 * * *'
+        - timed: ''
 - trigger:
     name: 'compass-os-onos-nofeature-ha-intel-pod8-trigger'
     triggers:
         - timed: ''
 - trigger:
     name: 'compass-os-ocl-nofeature-ha-intel-pod8-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-nosdn-nofeature-ha-huawei-deploy-vm-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l2-nofeature-ha-huawei-deploy-vm-trigger'
+    triggers:
+        - timed: '0 16 * * *'
+- trigger:
+    name: 'compass-os-onos-nofeature-ha-huawei-deploy-vm-trigger'
+    triggers:
+        - timed: '0 16 * * *'
+- trigger:
+    name: 'compass-os-ocl-nofeature-ha-huawei-deploy-vm-trigger'
     triggers:
         - timed: ''
