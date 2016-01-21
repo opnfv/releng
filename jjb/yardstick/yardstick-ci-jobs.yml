@@ -43,6 +43,10 @@
             installer: fuel
             suite: daily
             <<: *brahmaputra
+        - huawei-deploy-vm:
+            installer: compass
+            suite: daily
+            <<: *brahmaputra
 #--------------------------------
 #        master
 #--------------------------------
@@ -76,6 +80,10 @@
             <<: *master
         - opnfv-jump-1:
             installer: apex
+            suite: daily
+            <<: *master
+        - huawei-deploy-vm:
+            installer: compass
             suite: daily
             <<: *master
 #--------------------------------
@@ -305,6 +313,14 @@
             default: ''
             description: 'Arguments to use in order to choose the backend DB'
 
+- parameter:
+    name: 'yardstick-params-huawei-deploy-vm'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: ''
+            description: 'Arguments to use in order to choose the backend DB'
+
 #######################
 ## trigger macros
 #######################
@@ -356,5 +372,10 @@
 
 - trigger:
     name: 'yardstick-orange-pod2-trigger'
+    triggers:
+        - timed: ''
+
+- trigger:
+    name: 'yardstick-huawei-deploy-vm-trigger'
     triggers:
         - timed: ''
