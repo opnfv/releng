@@ -199,6 +199,8 @@ exit_on_error $? "Deploy FAILED to auth to openstack"
 # If we have more information than only the name, try to create it
 if [ -z "$EXTNET_TYPE" ]; then
     echo "------ No data for external network creation, pass ------"
+elif [[ "$DEPLOY_SCENARIO" =~ "onos" ]]; then
+    echo "------ ONOS have created the external network, pass ------"
 else
     echo "------ External network creation ------"
     neutron net-create $EXTNET_NAME --router:external True \
