@@ -24,10 +24,14 @@
 #--------------------------------
         - huawei-us-deploy-bare-1:
             <<: *brahmaputra
+        - huawei-virtual:
+            <<: *brahmaputra
 #--------------------------------
 #        master
 #--------------------------------
         - intel-pod8:
+            <<: *master
+        - huawei-virtual:
             <<: *master
 
     scenario:
@@ -103,7 +107,7 @@
             condition: COMPLETED
             projects:
                 - name: 'functest-compass-{pod}-daily-{stream}'
-                  current-parameters: false
+                  current-parameters: true
                   predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
                   kill-phase-on: NEVER
         - multijob:
@@ -111,7 +115,7 @@
             condition: COMPLETED
             projects:
                 - name: 'yardstick-compass-{pod}-daily-{stream}'
-                  current-parameters: false
+                  current-parameters: true
                   predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
                   kill-phase-on: NEVER
 
@@ -204,7 +208,16 @@
             choices:
                 - 'trusty'
                 - 'centos7'
-
+- parameter:
+    name: 'huawei-virtual-defaults'
+    parameters:
+        - label:
+            name: SLAVE_LABEL
+            default: 'huawei-deploy-vm'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on these Jenkins Slaves'
 ########################
 # trigger macros
 ########################
@@ -231,12 +244,28 @@
 - trigger:
     name: 'compass-os-odl_l2-nofeature-ha-intel-pod8-trigger'
     triggers:
-        - timed: '0 16 * * *'
+        - timed: ''
 - trigger:
     name: 'compass-os-onos-nofeature-ha-intel-pod8-trigger'
     triggers:
         - timed: ''
 - trigger:
     name: 'compass-os-ocl-nofeature-ha-intel-pod8-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-nosdn-nofeature-ha-huawei-deploy-vm-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l2-nofeature-ha-huawei-deploy-vm-trigger'
+    triggers:
+        - timed: '0 16 * * *'
+- trigger:
+    name: 'compass-os-onos-nofeature-ha-huawei-deploy-vm-trigger'
+    triggers:
+        - timed: '0 16 * * *'
+- trigger:
+    name: 'compass-os-ocl-nofeature-ha-huawei-deploy-vm-trigger'
     triggers:
         - timed: ''
