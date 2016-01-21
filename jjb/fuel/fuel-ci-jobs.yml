@@ -40,16 +40,16 @@
         - virtual:
             <<: *master
 #--------------------------------
-
-# new scenario descriptions
+#       scenarios
+#--------------------------------
     scenario:
         # HA scenarios
+        - 'os-onos-nofeature-ha':
+            auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
         - 'os-odl_l2-nofeature-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
         - 'os-odl_l3-nofeature-ha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-        - 'os-onos-nofeature-ha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
         - 'os-nosdn-nofeature-ha':
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-nosdn-kvm-ha':
@@ -59,7 +59,7 @@
         - 'os-nosdn-ovs-ha':
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-nosdn-vlan-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         # NOHA scenarios
         - 'os-odl_l2-nofeature-noha':
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
@@ -88,9 +88,9 @@
 - job-template:
     name: 'fuel-{scenario}-{pod}-daily-{stream}'
 
-    project-type: multijob
-
     node: intel-build
+
+    project-type: multijob
 
     concurrent: false
 
@@ -122,30 +122,32 @@
             gs-pathname: '{gs-pathname}'
 
     builders:
-        - multijob:
-            name: deploy
-            condition: SUCCESSFUL
-            projects:
-                - name: 'fuel-deploy-{pod}-daily-{stream}'
-                  current-parameters: false
-                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
-                  kill-phase-on: FAILURE
-        - multijob:
-            name: functest
-            condition: COMPLETED
-            projects:
-                - name: 'functest-fuel-{pod}-daily-{stream}'
-                  current-parameters: false
-                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
-                  kill-phase-on: NEVER
-        - multijob:
-            name: yardstick
-            condition: COMPLETED
-            projects:
-                - name: 'yardstick-fuel-{pod}-daily-{stream}'
-                  current-parameters: false
-                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
-                  kill-phase-on: NEVER
+        - trigger-builds:
+            - project: 'fuel-deploy-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              block: true
+        - trigger-builds:
+            - project: 'functest-fuel-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              block: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+            - project: 'yardstick-fuel-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              block: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
 
 - job-template:
     name: 'fuel-deploy-{pod}-daily-{stream}'
@@ -224,35 +226,56 @@
 ########################
 # trigger macros
 ########################
+# os-onos3-nofeature-ha trigger
+- trigger:
+    name: 'fuel-os-onos-nofeature-ha-opnfv-jump-2-trigger'
+    triggers:
+        - timed: '0 20 * * *'
+- trigger:
+    name: 'fuel-os-onos-nofeature-ha-ericsson-pod1-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-onos-nofeature-ha-ericsson-pod2-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-onos-nofeature-ha-virtual-trigger'
+    triggers:
+        - timed: ''
+
+# os-odl_l2-nofeature-ha trigger
 - trigger:
     name: 'fuel-os-odl_l2-nofeature-ha-opnfv-jump-2-trigger'
     triggers:
-        - timed: '0 2 * * *'
+        - timed: '0 0 * * *'
 - trigger:
     name: 'fuel-os-odl_l2-nofeature-ha-ericsson-pod1-trigger'
     triggers:
-        - timed: '0 2 * * *'
+        - timed: ''
 - trigger:
     name: 'fuel-os-odl_l2-nofeature-ha-ericsson-pod2-trigger'
     triggers:
-        - timed: '0 2 * * *'
+        - timed: ''
 - trigger:
     name: 'fuel-os-odl_l2-nofeature-ha-virtual-trigger'
     triggers:
         - timed: ''
+
+# os-odl_l3-nofeature-ha trigger
 - trigger:
-    name: 'fuel-os-nosdn-vlan-ha-opnfv-jump-2-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-opnfv-jump-2-trigger'
+    triggers:
+        - timed: '0 4 * * *'
+- trigger:
+    name: 'fuel-os-odl_l3-nofeature-ha-ericsson-pod1-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-vlan-ha-ericsson-pod1-trigger'
-    triggers:
-        - timed: '0 2 * * *'
-- trigger:
-    name: 'fuel-os-nosdn-vlan-ha-ericsson-pod2-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-ericsson-pod2-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-vlan-ha-virtual-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-virtual-trigger'
     triggers:
         - timed: ''
