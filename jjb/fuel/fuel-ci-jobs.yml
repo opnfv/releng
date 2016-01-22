@@ -88,8 +88,6 @@
 - job-template:
     name: 'fuel-{scenario}-{pod}-daily-{stream}'
 
-    node: intel-build
-
     concurrent: false
 
     properties:
@@ -113,6 +111,8 @@
         - project-parameter:
             project: '{project}'
         - '{installer}-defaults'
+        - '{pod}-defaults':
+            installer: '{installer}'
         - string:
             name: DEPLOY_SCENARIO
             default: '{scenario}'
@@ -125,14 +125,14 @@
               current-parameters: false
               predefined-parameters:
                 DEPLOY_SCENARIO={scenario}
-              node-parameters: true
+              same-node: true
               block: true
         - trigger-builds:
             - project: 'functest-fuel-{pod}-daily-{stream}'
               current-parameters: false
               predefined-parameters:
                 DEPLOY_SCENARIO={scenario}
-              node-parameters: true
+              same-node: true
               block: true
               block-thresholds:
                 build-step-failure-threshold: 'never'
@@ -144,7 +144,7 @@
               predefined-parameters:
                 DEPLOY_SCENARIO={scenario}
               block: true
-              node-parameters: true
+              same-node: true
               block-thresholds:
                 build-step-failure-threshold: 'never'
                 failure-threshold: 'never'
@@ -168,9 +168,9 @@
     parameters:
         - project-parameter:
             project: '{project}'
+        - '{installer}-defaults'
         - '{pod}-defaults':
             installer: '{installer}'
-        - '{installer}-defaults'
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-odl_l2-nofeature-ha'
