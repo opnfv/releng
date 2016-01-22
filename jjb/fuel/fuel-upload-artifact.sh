@@ -11,8 +11,8 @@ if [ -f $WORKSPACE/.noupload ]; then
 fi
 
 # log info to console
+echo
 echo "Uploading the $INSTALLER_TYPE artifact. This could take some time..."
-echo "--------------------------------------------------------"
 echo
 
 # source the opnfv.properties to get ARTIFACT_VERSION
@@ -39,7 +39,11 @@ gsutil -m setmeta \
     -h "Cache-Control:private, max-age=0, no-transform" \
     gs://$GS_URL/*.iso > /dev/null 2>&1
 
+echo "Done!"
 echo
 echo "--------------------------------------------------------"
-echo "Done!"
+echo
 echo "Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
+echo
+echo "--------------------------------------------------------"
+echo
