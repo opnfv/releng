@@ -133,9 +133,9 @@ if [ -z "$CEPH_DISKS_CONTROLLERS" ]; then
 fi
 
 #Find the first line of osd-devices to change the one for ceph, then the other for ceph-osd
-CEPH_DEV_LINE=$(grep -nr osd-devices $SRCBUNDLE |head -n1|cut -d: -f1)
-sed -i -- "${CEPH_DEV_LINE}s@osd-devices: /srv@osd-devices: $CEPH_DISKS@" $SRCBUNDLE
-sed -i -- "s@osd-devices: /srv@osd-devices: $CEPH_DISKS_CONTROLLERS@" $SRCBUNDLE
+#CEPH_DEV_LINE=$(grep -nr osd-devices $SRCBUNDLE |head -n1|cut -d: -f1)
+#sed -i -- "${CEPH_DEV_LINE}s@osd-devices: /srv@osd-devices: $CEPH_DISKS@" $SRCBUNDLE
+sed -i -- "s@osd-devices: /srv@osd-devices: $CEPH_DISKS@" $SRCBUNDLE
 sed -i -r -- "s/^(\s+osd-reformat: )'no'/\1'$CEPH_REFORMAT'/" $SRCBUNDLE
 
 ##
