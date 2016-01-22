@@ -43,6 +43,14 @@
             installer: fuel
             suite: daily
             <<: *brahmaputra
+        - virtual:
+            installer: fuel
+            suite: daily
+            <<: *brahmaputra
+        - virtual:
+            installer: compass
+            suite: daily
+            <<: *brahmaputra
 #--------------------------------
 #        master
 #--------------------------------
@@ -76,6 +84,14 @@
             <<: *master
         - opnfv-jump-1:
             installer: apex
+            suite: daily
+            <<: *master
+        - virtual:
+            installer: fuel
+            suite: daily
+            <<: *master
+        - virtual:
+            installer: compass
             suite: daily
             <<: *master
 #--------------------------------
@@ -305,6 +321,14 @@
             default: ''
             description: 'Arguments to use in order to choose the backend DB'
 
+- parameter:
+    name: 'yardstick-params-virtual'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: ''
+            description: 'Arguments to use in order to choose the backend DB'
+
 #######################
 ## trigger macros
 #######################
@@ -356,5 +380,10 @@
 
 - trigger:
     name: 'yardstick-orange-pod2-trigger'
+    triggers:
+        - timed: ''
+
+- trigger:
+    name: 'yardstick-virtual-trigger'
     triggers:
         - timed: ''
