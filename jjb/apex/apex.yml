@@ -521,12 +521,12 @@
             gsutil cp $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
             RPM_INSTALL_PATH=$BUILD_DIRECTORY/$(basename $OPNFV_RPM_URL)
             RPM_LIST=$RPM_INSTALL_PATH
-            for pkg in common undercloud; do
+            for pkg in common undercloud opendaylight-sfc; do
                 RPM_LIST+=" ${RPM_INSTALL_PATH/opnfv-apex/opnfv-apex-${pkg}}"
             done
             SRPM_INSTALL_PATH=$BUILD_DIRECTORY/$(basename $OPNFV_SRPM_URL)
             SRPM_LIST=$SRPM_INSTALL_PATH
-            for pkg in common undercloud; do
+            for pkg in common undercloud opendaylight-sfc; do
                 SRPM_LIST+=" ${SRPM_INSTALL_PATH/opnfv-apex/opnfv-apex-${pkg}}"
             done
             for artifact in $RPM_LIST $SRPM_LIST; do
