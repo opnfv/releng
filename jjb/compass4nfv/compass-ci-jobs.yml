@@ -44,9 +44,9 @@
         - 'os-onos-nofeature-ha':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
-#        - 'os-ocl-nofeature-ha':
-#            disabled: true
-#            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+        - 'os-ocl-nofeature-ha':
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
 
     jobs:
         - 'compass-{scenario}-{pod}-daily-{stream}'
@@ -77,6 +77,9 @@
     wrappers:
         - build-name:
             name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+        - timeout:
+            timeout: 360
+            fail: true
 
     parameters:
         - project-parameter:
@@ -194,7 +197,7 @@
             description: "URL to Google Storage."
         - string:
             name: PPA_REPO
-            default: "http://205.177.226.235:9999"
+            default: "http://205.177.226.237:9999/{gs-pathname}"
         - string:
             name: PPA_CACHE
             default: "$WORKSPACE/work/repo/"
