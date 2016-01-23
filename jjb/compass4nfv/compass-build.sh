@@ -2,6 +2,7 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set +x
 
 # log info to console
 echo "Starting the build of $INSTALLER_TYPE. This could take some time..."
