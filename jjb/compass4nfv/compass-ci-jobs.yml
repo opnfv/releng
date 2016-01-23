@@ -44,9 +44,9 @@
         - 'os-onos-nofeature-ha':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
-#        - 'os-ocl-nofeature-ha':
-#            disabled: true
-#            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+        - 'os-ocl-nofeature-ha':
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
 
     jobs:
         - 'compass-{scenario}-{pod}-daily-{stream}'
@@ -77,6 +77,9 @@
     wrappers:
         - build-name:
             name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+        - timeout:
+            timeout: 360
+            fail: true
 
     parameters:
         - project-parameter:
@@ -185,19 +188,9 @@
             default: $WORKSPACE/build_output
             description: "Directory where the build artifact will be located upon the completion of the build."
         - string:
-            name: CACHE_DIRECTORY
-            default: $HOME/opnfv/cache/$PROJECT
-            description: "Directory where the cache to be used during the build is located."
-        - string:
             name: GS_URL
             default: '$GS_BASE{gs-pathname}'
             description: "URL to Google Storage."
-        - string:
-            name: PPA_REPO
-            default: "http://205.177.226.235:9999"
-        - string:
-            name: PPA_CACHE
-            default: "$WORKSPACE/work/repo/"
         - choice:
             name: COMPASS_OPENSTACK_VERSION
             choices:
