@@ -2,6 +2,7 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -x
 
 # log info to console
 echo "Starting the build of $INSTALLER_TYPE. This could take some time..."
@@ -14,6 +15,7 @@ echo
 
 # set OPNFV_ARTIFACT_VERSION
 export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
+export PACKAGE_URL=$PPA_REPO
 
 # start the build
 if [ -d $PPA_CACHE ]
