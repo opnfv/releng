@@ -99,7 +99,7 @@ def _get_results(db_url, testcase):
 
 def _test():
 
-    db_url = "http://213.77.62.197"
+    db_url = "http://testresults.opnfv.org/testapi"
     raw_result = defaultdict()
 
     raw_result = _get_results(db_url, {"project": "qtip", "testcase": "compute_test_suite"})
