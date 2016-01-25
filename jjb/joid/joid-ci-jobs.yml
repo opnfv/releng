@@ -71,8 +71,6 @@
 - job-template:
     name: 'joid-{scenario}-{pod}-daily-{stream}'
 
-    project-type: multijob
-
     concurrent: false
 
     properties:
@@ -103,27 +101,35 @@
             default: '{scenario}'
 
     builders:
-        - multijob:
-            name: deploy
-            condition: SUCCESSFUL
-            projects:
-                - name: 'joid-deploy-{pod}-daily-{stream}'
-                  current-parameters: true
-                  kill-phase-on: FAILURE
-        - multijob:
-            name: functest
-            condition: COMPLETED
-            projects:
-                - name: 'functest-joid-{pod}-daily-{stream}'
-                  current-parameters: true
-                  kill-phase-on: NEVER
-        - multijob:
-            name: yardstick
-            condition: COMPLETED
-            projects:
-                - name: 'yardstick-joid-{pod}-daily-{stream}'
-                  current-parameters: true
-                  kill-phase-on: NEVER
+        - trigger-builds:
+            - project: 'joid-deploy-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'functest-joid-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+            - project: 'yardstick-joid-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              block: true
+              same-node: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
 
 - job-template:
     name: 'joid-deploy-{pod}-daily-{stream}'
