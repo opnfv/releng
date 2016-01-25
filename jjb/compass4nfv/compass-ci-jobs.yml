@@ -49,7 +49,7 @@
             auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
 
     jobs:
-        - 'compass-{scenario}-{pod}-daily-{stream}'
+#        - 'compass-{scenario}-{pod}-daily-{stream}'
         - 'compass-deploy-{pod}-daily-{stream}'
 
 ########################
@@ -57,8 +57,6 @@
 ########################
 - job-template:
     name: 'compass-{scenario}-{pod}-daily-{stream}'
-
-    project-type: multijob
 
     node: huawei-build
 
@@ -90,37 +88,42 @@
         - string:
             name: DEPLOY_SCENARIO
             default: '{scenario}'
-        - 'huawei-build-defaults'
+        - '{pod}-defaults'
         - '{installer}-defaults'
 
     triggers:
         - '{auto-trigger-name}'
 
     builders:
-        - multijob:
-            name: deploy
-            condition: SUCCESSFUL
-            projects:
-                - name: 'compass-deploy-{pod}-daily-{stream}'
-                  current-parameters: false
-                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
-                  kill-phase-on: FAILURE
-        - multijob:
-            name: functest
-            condition: COMPLETED
-            projects:
-                - name: 'functest-compass-{pod}-daily-{stream}'
-                  current-parameters: true
-                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
-                  kill-phase-on: NEVER
-        - multijob:
-            name: yardstick
-            condition: COMPLETED
-            projects:
-                - name: 'yardstick-compass-{pod}-daily-{stream}'
-                  current-parameters: true
-                  predefined-parameters: 'DEPLOY_SCENARIO={scenario}'
-                  kill-phase-on: NEVER
+        - trigger-builds:
+            - project: 'compass-deploy-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'functest-compass-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+            - project: 'yardstick-compass-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              block: true
+              same-node: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
 
 - job-template:
     name: 'compass-deploy-{pod}-daily-{stream}'
