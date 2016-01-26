@@ -21,7 +21,7 @@ cd $WORKSPACE
 
 export OS_VERSION=${{COMPASS_OS_VERSION}}
 export OPENSTACK_VERSION=${{COMPASS_OPENSTACK_VERSION}}
-./deploy.sh --dha ${DHA_CONF} --network ${NETWORK_CONF}
+./deploy.sh --dha ${{DHA_CONF}} --network ${{NETWORK_CONF}}
 if [ $? -ne 0 ]; then
     echo "depolyment failed!"
     deploy_ret=1
