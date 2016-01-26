@@ -50,7 +50,7 @@ function check_rst_doc() {
     #       the old sample has lines more than 120. We ignore failures on this
     #       check right now, but these have to be fixed before OPNFV B release.
     _out=$(doc8 --max-line-length 240 --ignore D000 "$_src") || {
-        _msg='Error: rst validatino (doc8) has failed, please fix the following error(s).'
+        _msg='Warning: rst validation (doc8) has failed, please fix the following error(s).'
         _errs=$(echo "$_out" | sed -n -e "/^$_src/s/^/    /p")
         echo
         echo -e "$_msg\n$_errs"
