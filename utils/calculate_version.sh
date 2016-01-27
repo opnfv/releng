@@ -1,15 +1,17 @@
 #!/bin/bash
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2016 Ericsson AB and others.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
 
-#
-# Authors:
-#      Jose Lausuch <jose.lausuch@ericsson.com>
-#      Fatih Degirmenci <fatih.degirmenci@ericsson.com>
-#
 # Calculates and generates the version tag for the OPNFV objects:
 #     - Docker images
 #     - ISOs
-#     - Artifcats
-#
+#     - Artifacts
 
 info ()  {
     logger -s -t "Calculate_version.info" "$*"
