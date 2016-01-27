@@ -15,7 +15,6 @@
 # v0.1: basic example with methods for odl, Tempest, Rally and vPing
 #
 
-
 def get_functest_cases():
     """
     get the list of the supported test cases
@@ -89,7 +88,7 @@ def format_vIMS_for_dashboard(results):
                             'y2': data['details']['vIMS']['duration'],
                             'y3': data['details']['sig_test']['duration']})
 
-    test_data.append({'name': "Tempest nb tests/nb failures",
+    test_data.append({'name': "vIMS orchestrator/VNF/test duration",
                       'info': {'type': "graph",
                                'xlabel': 'time',
                                'y1label': 'orchestation deployment duration',
