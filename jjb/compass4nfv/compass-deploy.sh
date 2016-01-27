@@ -12,7 +12,7 @@ if [[ "$NODE_NAME" =~ "-vm" ]]; then
     export NETWORK_CONF=$CONFDIR/vm_environment/$NODE_NAME/network.yml
     export DHA_CONF=$CONFDIR/vm_environment/${{DEPLOY_SCENARIO}}.yml
 else
-    export INSTALL_NIC=eth0
+    export INSTALL_NIC=eth1
     export NETWORK_CONF=$CONFDIR/hardware_environment/$NODE_NAME/network.yml
     export DHA_CONF=$CONFDIR/hardware_environment/$NODE_NAME/${{DEPLOY_SCENARIO}}.yml
 fi
