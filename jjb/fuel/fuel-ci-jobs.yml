@@ -91,17 +91,19 @@
 - job-template:
     name: 'fuel-{scenario}-{pod}-daily-{stream}'
 
-    concurrent: false
+    concurrent: true
+
+    disabled: false
 
     properties:
         - throttle:
             enabled: true
-            max-total: 1
             max-per-node: 1
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
                 - 'fuel-os-.*?-{pod}-daily-{stream}'
+            block_level: 'NODE'
 
     wrappers:
         - build-name:
@@ -156,17 +158,19 @@
 - job-template:
     name: 'fuel-deploy-{pod}-daily-{stream}'
 
-    concurrent: false
+    concurrent: true
+
+    disabled: false
 
     properties:
         - throttle:
             enabled: true
-            max-total: 1
             max-per-node: 1
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
                 - 'fuel-deploy-{pod}-daily-{stream}'
+            block_level: 'NODE'
 
     parameters:
         - project-parameter:
