@@ -15,6 +15,7 @@
 # v0.1: basic example with methods for odl, Tempest, Rally and vPing
 #
 
+import dashboard_commons
 
 def get_functest_cases():
     """
@@ -84,12 +85,12 @@ def format_vIMS_for_dashboard(results):
     new_element = []
 
     for data in results:
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': dashboard_commons.format_date(data['creation_date']),
                             'y1': data['details']['orchestrator']['duration'],
                             'y2': data['details']['vIMS']['duration'],
                             'y3': data['details']['sig_test']['duration']})
 
-    test_data.append({'name': "Tempest nb tests/nb failures",
+    test_data.append({'name': "vIMS orchestrator/VNF/test duration",
                       'info': {'type': "graph",
                                'xlabel': 'time',
                                'y1label': 'orchestation deployment duration',
@@ -119,7 +120,7 @@ def format_vIMS_for_dashboard(results):
             elif data_test['result'] == "Skipped":
                 nbSkipped += 1
 
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': dashboard_commons.format_date(data['creation_date']),
                             'y1': nbTests,
                             'y2': nbFailures,
                             'y3': nbSkipped})
@@ -170,7 +171,7 @@ def format_Tempest_for_dashboard(results):
     # ********************************
     new_element = []
     for data in results:
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': dashboard_commons.format_date(data['creation_date']),
                             'y': data['details']['duration']})
 
     test_data.append({'name': "Tempest duration",
@@ -183,7 +184,7 @@ def format_Tempest_for_dashboard(results):
     # ***************************************
     new_element = []
     for data in results:
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': dashboard_commons.format_date(data['creation_date']),
                             'y1': data['details']['tests'],
                             'y2': data['details']['failures']})
 
@@ -237,7 +238,7 @@ def format_vPing_for_dashboard(results):
     # ********************************
     new_element = []
     for data in results:
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': dashboard_commons.format_date(data['creation_date']),
                             'y': data['details']['duration']})
 
     test_data.append({'name': "vPing duration",
@@ -273,7 +274,7 @@ def format_vPing_userdata_for_dashboard(results):
     # ********************************
     new_element = []
     for data in results:
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': dashboard_commons.format_date(data['creation_date']),
                             'y': data['details']['duration']})
 
     test_data.append({'name': "vPing_userdata duration",
