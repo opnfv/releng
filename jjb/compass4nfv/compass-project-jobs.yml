@@ -87,6 +87,27 @@
                     pattern: 'docs/**|.gitignore'
 
     builders:
+        - trigger-builds:
+            - project: 'compass-verify-deploy-{stream}'
+              current-parameters: true
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'compass-verify-smoke-{stream}'
+              current-parameters: true
+              same-node: true
+              block: false
+
+- job-template:
+    name: 'compass-verify-deploy-{stream}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
         - shell:
             !include-raw: ./compass-build.sh
         - shell:
