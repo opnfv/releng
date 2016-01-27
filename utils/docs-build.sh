@@ -1,7 +1,14 @@
 #!/bin/bash -e
-
+##############################################################################
+# Copyright (c) 2016 NEC and others.
+# r-mibu@cq.jp.nec.com
+# fatih.degirmenci@ericsson.com
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
 export PATH=$PATH:/usr/local/bin/
-
 
 DOCS_DIR=${DOCS_DIR:-docs}
 INDEX_RST=${INDEX_RST:-index.rst}

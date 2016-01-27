@@ -1,5 +1,15 @@
 #!/bin/bash -e
-
+##############################################################################
+# Copyright (c) 2016 Cisco and others.
+# pbandzi@cisco.com
+# trozet@redhat.com
+# szilard.cserey@ericsson.com
+# fatih.degirmenci@ericsson.com
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
 # Script checks that venv exists. If it doesn't it will be created
 # It requires python2.7 and virtualenv packages installed
 
