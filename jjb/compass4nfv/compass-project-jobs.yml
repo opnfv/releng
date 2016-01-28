@@ -42,7 +42,7 @@
     properties:
         - throttle:
             enabled: true
-            max-total: 0
+            max-total: 4
             max-per-node: 1
 
     parameters:
@@ -100,10 +100,10 @@
             max-per-node: 1
 
     scm:
-        - git-scm:
+        - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
             refspec: '$GERRIT_REFSPEC'
-            branch: '{branch}'
+            choosing-strategy: 'gerrit'
 
     builders:
         - shell:
