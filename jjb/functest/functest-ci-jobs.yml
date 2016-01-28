@@ -243,13 +243,13 @@
             sudo rm -rf ${dir_result}/*
             res_volume="-v ${dir_result}:/home/opnfv/functest/results"
 
-            docker pull opnfv/functest:latest_stable >$redirect
-            cmd="sudo docker run --privileged=true -id ${envs} ${labconfig} ${sshkey} ${res_volume} opnfv/functest:latest_stable /bin/bash"
+            docker pull opnfv/functest:latest >$redirect
+            cmd="sudo docker run --privileged=true -id ${envs} ${labconfig} ${sshkey} ${res_volume} opnfv/functest:latest /bin/bash"
             echo "Functest: Running docker run command: ${cmd}"
             ${cmd}
             docker ps -a
             sleep 5
-            container_id=$(docker ps | grep 'opnfv/functest:latest_stable' | awk '{print $1}' | head -1)
+            container_id=$(docker ps | grep 'opnfv/functest:latest' | awk '{print $1}' | head -1)
             echo "Container ID=${container_id}"
             if [ -z ${container_id} ]; then
                 echo "Cannot find opnfv/functest container ID ${container_id}. Please check if it is existing."
@@ -260,7 +260,7 @@
             docker start ${container_id}
             sleep 5
             docker ps
-            if [ $(docker ps | grep 'opnfv/functest:latest_stable' | wc -l) == 0 ]; then
+            if [ $(docker ps | grep 'opnfv/functest:latest' | wc -l) == 0 ]; then
                 echo "The container opnfv/functest with ID=${container_id} has not been properly started. Exiting..."
                 exit 1
             fi
