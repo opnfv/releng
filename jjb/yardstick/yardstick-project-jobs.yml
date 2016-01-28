@@ -71,6 +71,8 @@
             python setup.py develop
             ./run_tests.sh
             deactivate
+        - generate-api-docs-for-yardstick
+        - upload-review-docs
 
 - job-template:
     name: 'yardstick-merge-{stream}'
@@ -81,6 +83,10 @@
         - gerrit-parameter:
             branch: '{branch}'
         - 'ericsson-ca-build-1-defaults'
+        - string:
+            name: GS_URL
+            default: '$GS_BASE{gs-pathname}'
+            description: "Directory where the build artifact will be located upon the completion     of the build."
 
     scm:
         - gerrit-trigger-scm:
@@ -114,4 +120,22 @@
             easy_install -U setuptools
             python setup.py develop
             ./run_tests.sh
+            deactivate
+        - generate-api-docs-for-yardstick
+        - upload-merged-docs
+
+################################
+# job builders
+################################
+
+- builder:
+    name: generate-api-docs-for-yardstick
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+
+            source $WORKSPACE/yardstick_venv/bin/activate
+            sphinx-apidoc -o docs/apidocs yardstick
             deactivate
