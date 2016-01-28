@@ -1,0 +1,404 @@
+- project:
+    name: cperf
+    jobs:
+        - 'cperf-deploy-baremetal-{scenario}-{stream}'
+
+    # stream:    branch with - in place of / (eg. stable-arno)
+    # branch:    branch (eg. stable/arno)
+    stream:
+        - master:
+            branch: 'master'
+            gs-pathname: ''
+
+    project: 'cperf'
+
+    scenario:
+         - 'os-odl_l2-ofp-droptest'
+
+    platform:
+         - 'baremetal'
+
+- job-template:
+    name: 'cperf-deploy-baremetal-{scenario}-{stream}'
+
+    # Job template for baremetal deployment
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: opnfv-jump-1
+
+    disabled: false
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: '{scenario}'
+            description: "Scenario to deploy with."
+
+    # using apex deploy and cleanup here
+    builders:
+        - 'cperf-deploy-baremetal'
+        - 'cperf-cbench-test'
+        - 'workspace-cleanup'
+
+########################
+# parameter macros
+########################
+- parameter:
+    name: cperf-parameter
+    parameters:
+        - string:
+            name: ARTIFACT_NAME
+            default: 'latest'
+            description: "RPM Artifact name that will be appended to GS_URL to deploy a specific artifact"
+        - string:
+            name: ARTIFACT_VERSION
+            default: 'daily'
+            description: "Artifact version type"
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache{gs-pathname}
+            description: "Directory where the cache to be used during the build is located."
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+        - string:
+            name: GS_URL
+            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+            description: "URL to Google Storage."
+
+########################
+# builder macros
+########################
+- builder:
+    # this is coming from the apex JJB, so probably should move this kind of stuff to an include-raw...
+    name: 'apex-build'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+            # log info to console
+            echo "Starting the build of Apex using OpenStack Master packages. This will take some time..."
+            echo "---------------------------------------------------------------------------------------"
+            echo
+            # create the cache directory if it doesn't exist
+            [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
+            # set OPNFV_ARTIFACT_VERSION
+            if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
+              export OPNFV_ARTIFACT_VERSION="bramaputra.1.rc0"
+            else
+              if echo $BUILD_TAG | grep "apex-verify" 1> /dev/null; then
+                export OPNFV_ARTIFACT_VERSION=dev${BUILD_NUMBER}
+              elif [ "$ARTIFACT_VERSION" == "daily" ]; then
+                export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d")
+              else
+                export OPNFV_ARTIFACT_VERSION=${ARTIFACT_VERSION}
+              fi
+            fi
+            # start the build
+            cd $WORKSPACE/ci
+            ./build.sh -v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
+            RPM_VERSION=$(grep Version $BUILD_DIRECTORY/../build/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '_-')
+            # list the contents of BUILD_OUTPUT directory
+            ls -al $BUILD_DIRECTORY
+            # save information regarding artifact into file
+            (
+                echo "OPNFV_ARTIFACT_VERSION=$OPNFV_ARTIFACT_VERSION"
+                echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
+                echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
+                echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
+                echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso | cut -d' ' -f1)"
+                echo "OPNFV_SRPM_URL=$GS_URL/opnfv-apex-$RPM_VERSION.src.rpm"
+                echo "OPNFV_RPM_URL=$GS_URL/opnfv-apex-$RPM_VERSION.noarch.rpm"
+                echo "OPNFV_RPM_MD5SUM=$(md5sum $BUILD_DIRECTORY/opnfv-apex-$RPM_VERSION.noarch.rpm | cut -d' ' -f1)"
+                echo "OPNFV_BUILD_URL=$BUILD_URL"
+            ) > $WORKSPACE/opnfv.properties
+            echo
+            echo "--------------------------------------------------------"
+
+- builder:
+    name: 'workspace-cleanup'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # delete everything that is in $WORKSPACE
+            /bin/rm -rf $WORKSPACE
+
+- builder:
+    # this is coming from the apex JJB, so probably should move this kind of stuff to an include-raw...
+    name: 'apex-upload-artifact'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Uploading the Apex artifact. This could take some time..."
+            echo "--------------------------------------------------------"
+            echo
+
+            # source the opnfv.properties to get ARTIFACT_VERSION
+            source $WORKSPACE/opnfv.properties
+
+            # upload artifact and additional files to google storage
+            gsutil cp $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
+            RPM_INSTALL_PATH=$BUILD_DIRECTORY/$(basename $OPNFV_RPM_URL)
+            RPM_LIST=$RPM_INSTALL_PATH
+            for pkg in common undercloud; do
+                RPM_LIST+=" ${RPM_INSTALL_PATH/opnfv-apex/opnfv-apex-${pkg}}"
+            done
+            SRPM_INSTALL_PATH=$BUILD_DIRECTORY/$(basename $OPNFV_SRPM_URL)
+            SRPM_LIST=$SRPM_INSTALL_PATH
+            for pkg in common undercloud; do
+                SRPM_LIST+=" ${SRPM_INSTALL_PATH/opnfv-apex/opnfv-apex-${pkg}}"
+            done
+            for artifact in $RPM_LIST $SRPM_LIST; do
+              gsutil cp $artifact gs://$GS_URL/$(basename $artifact) > gsutil.iso.log 2>&1
+            done
+            gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
+            gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/latest.properties > gsutil.latest.log 2>&1
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+            echo "ISO Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
+            echo "RPM Artifact is available as http://$GS_URL/$(basename $OPNFV_RPM_URL)"
+
+- builder:
+    # this is coming from the apex JJB, so probably should move this kind of stuff to an include-raw...
+    name: 'apex-deploy-virtual'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Starting the Apex virtual deployment."
+            echo "--------------------------------------------------------"
+            echo
+
+            if [[ ! "$ARTIFACT_NAME" == "latest" ]]; then
+                # if artifact name is passed the pull a
+                # specific artifact from artifacts.opnfv.org
+                RPM_INSTALL_PATH=$GS_URL/$ARTIFACT_NAME
+            else
+                if [[ $BUILD_DIRECTORY == *verify* ]]; then
+                  BUILD_DIRECTORY=$WORKSPACE/../$BUILD_DIRECTORY
+                  echo "BUILD DIRECTORY modified to $BUILD_DIRECTORY"
+                elif [[ $BUILD_DIRECTORY == *apex-build* ]]; then
+                  BUILD_DIRECTORY=$WORKSPACE/../$BUILD_DIRECTORY
+                  echo "BUILD DIRECTORY modified to $BUILD_DIRECTORY"
+                fi
+
+                if [[ -f ${BUILD_DIRECTORY}/../opnfv.properties ]]; then
+                    # if opnfv.properties exists then use the
+                    # local build. Source the file so we get local OPNFV vars
+                    source ${BUILD_DIRECTORY}/../opnfv.properties
+                    RPM_INSTALL_PATH=${BUILD_DIRECTORY}/$(basename $OPNFV_RPM_URL)
+                else
+                    if [[ $BUILD_DIRECTORY == *verify* ]]; then
+                      echo "BUILD_DIRECTORY is from a verify job, so will not use latest from URL"
+                      echo "Check that the slave has opnfv.properties in $BUILD_DIRECTORY"
+                      exit 1
+                    elif [[ $BUILD_DIRECTORY == *apex-build* ]]; then
+                      echo "BUILD_DIRECTORY is from a daily job, so will not use latest from URL"
+                      echo "Check that the slave has opnfv.properties in $BUILD_DIRECTORY"
+                      exit 1
+                    fi
+                    # no opnfv.properties means use the latest from artifacts.opnfv.org
+                    # get the latest.properties to get the link to the latest artifact
+                    curl -s -o $WORKSPACE/opnfv.properties http://$GS_URL/latest.properties
+                    [[ -f opnfv.properties ]] || exit 1
+                    # source the file so we get OPNFV vars
+                    source opnfv.properties
+                    RPM_INSTALL_PATH=$OPNFV_RPM_URL
+                fi
+            fi
+
+            RPM_LIST=$RPM_INSTALL_PATH
+            for pkg in common undercloud; do
+                RPM_LIST+=" ${RPM_INSTALL_PATH/opnfv-apex/opnfv-apex-${pkg}}"
+            done
+
+            # update / install the new rpm
+            if rpm -q opnfv-apex > /dev/null; then
+               if [ $(basename $OPNFV_RPM_URL) == $(rpm -q opnfv-apex).rpm ]; then
+                 echo "RPM is already installed"
+               elif sudo yum update -y $RPM_LIST | grep "does not update installed package"; then
+                   if ! sudo yum downgrade -y $RPM_LIST; then
+                     sudo yum remove -y opnfv-undercloud opnfv-common
+                     sudo yum downgrade -y $RPM_INSTALL_PATH
+                   fi
+               fi
+            else
+               sudo yum install -y $RPM_LIST;
+            fi
+
+            # cleanup virtual machines before we start
+            sudo opnfv-clean
+            # initiate virtual deployment
+            if [ -e /etc/opnfv-apex/network_settings.yaml ]; then
+              if [ -n "$DEPLOY_SCENARIO" ]; then
+                echo "Deploy Scenario set to ${DEPLOY_SCENARIO}"
+                if [ -e /etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml ]; then
+                  sudo opnfv-deploy -v -d /etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml -n /etc/opnfv-apex/network_settings.yaml
+                else
+                  echo "File does not exist /etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml"
+                  exit 1
+                fi
+              else
+                echo "Deploy scenario not set!"
+                exit 1
+              fi
+            else
+              sudo opnfv-deploy -v
+            fi
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
+- builder:
+    # this is coming from the apex JJB, so probably should move this kind of stuff to an include-raw...
+    name: 'apex-deploy-baremetal'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Starting the Apex baremetal deployment."
+            echo "--------------------------------------------------------"
+            echo
+
+            if [[ ! "$ARTIFACT_NAME" == "latest" ]]; then
+                # if artifact name is passed the pull a
+                # specific artifact from artifacts.opnfv.org
+                RPM_INSTALL_PATH=$GS_URL/$ARTIFACT_NAME
+            else
+                if [[ $BUILD_DIRECTORY == *apex-build* ]]; then
+                  BUILD_DIRECTORY=$WORKSPACE/../$BUILD_DIRECTORY
+                  echo "BUILD DIRECTORY modified to $BUILD_DIRECTORY"
+                fi
+                if [[ -f ${BUILD_DIRECTORY}/../opnfv.properties ]]; then
+                    # if opnfv.properties exists then use the
+                    # local build. Source the file so we get local OPNFV vars
+                    source ${BUILD_DIRECTORY}/../opnfv.properties
+                    RPM_INSTALL_PATH=${BUILD_DIRECTORY}/$(basename $OPNFV_RPM_URL)
+                else
+                    # no opnfv.properties means use the latest from artifacts.opnfv.org
+                    # get the latest.properties to get the link to the latest artifact
+                    curl -s -o $WORKSPACE/opnfv.properties http://$GS_URL/latest.properties
+                    [[ -f opnfv.properties ]] || exit 1
+                    # source the file so we get OPNFV vars
+                    source opnfv.properties
+                    RPM_INSTALL_PATH=$OPNFV_RPM_URL
+                fi
+            fi
+
+            if [ ! -e "$RPM_INSTALL_PATH" ]; then
+               RPM_INSTALL_PATH=http://${OPNFV_RPM_URL}
+            fi
+
+            RPM_LIST=$RPM_INSTALL_PATH
+            for pkg in common undercloud; do
+                RPM_LIST+=" ${RPM_INSTALL_PATH/opnfv-apex/opnfv-apex-${pkg}}"
+            done
+
+            # update / install the new rpm
+            if rpm -q opnfv-apex > /dev/null; then
+               if [ $(basename $OPNFV_RPM_URL) == $(rpm -q opnfv-apex).rpm ]; then
+                 echo "RPM is already installed"
+               elif sudo yum update -y $RPM_LIST | grep "does not update installed package"; then
+                   if ! sudo yum downgrade -y $RPM_LIST; then
+                     sudo yum remove -y opnfv-undercloud opnfv-common
+                     sudo yum downgrade -y $RPM_INSTALL_PATH
+                   fi
+               fi
+            else
+               sudo yum install -y $RPM_LIST;
+            fi
+
+            # cleanup environment before we start
+            sudo opnfv-clean
+            # initiate baremetal deployment
+            if [ -e /etc/opnfv-apex/network_settings.yaml ]; then
+              if [ -n "$DEPLOY_SCENARIO" ]; then
+                echo "Deploy Scenario set to ${DEPLOY_SCENARIO}"
+                if [ -e /etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml ]; then
+                  sudo opnfv-deploy -i  /root/inventory/pod_settings.yaml \
+                  -d /etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml \
+                  -n /root/network/network_settings.yaml
+                else
+                  echo "File does not exist /etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml"
+                  exit 1
+                fi
+              else
+                echo "Deploy scenario not set!"
+                exit 1
+              fi
+            else
+              echo "File /etc/opnfv-apex/network_settings.yaml does not exist!"
+              exit 1
+            fi
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
+- builder:
+    name: 'cperf-cbench-test'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # log info to console
+            echo "Starting CBENCH performance test"
+            echo "--------------------------------------------------------"
+            echo
+
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+
+#######################
+# trigger macros
+########################
+- trigger:
+    name: 'cperf-master'
+    triggers:
+        - timed: '0 3 * * *'
+- trigger:
+    name: 'cperf-brahmaputra'
+    triggers:
+        - timed: '0 6 * * 2050'
