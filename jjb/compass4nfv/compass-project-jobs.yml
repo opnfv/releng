@@ -42,8 +42,13 @@
     properties:
         - throttle:
             enabled: true
-            max-total: 4
             max-per-node: 1
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'compass-verify-[^-]*'
+                - 'compass-os-.*?-virtual-daily-.*?'
+            block-level: 'NODE'
 
     parameters:
         - project-parameter:
@@ -96,8 +101,12 @@
     properties:
         - throttle:
             enabled: true
-            max-total: 0
             max-per-node: 1
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'compass-deploy-huawei-virtual-daily-.*?'
+            block-level: 'NODE'
 
     scm:
         - gerrit-trigger-scm:
