@@ -153,9 +153,23 @@ exit_on_error $? "Main deploy FAILED"
 ##
 JOID_ADMIN_OPENRC=$LAB_CONFIG/admin-openrc
 echo "------ Create OpenRC file [$JOID_ADMIN_OPENRC] ------"
+
+# get Keystone vip
 KEYSTONE=$(cat bundles.yaml |shyaml get-value openstack-phase2.services.keystone.options.vip)
-ODL_CONTROLLER=$(juju status odl-controller/0 |grep public-address|sed -- 's/.*\: //')
-ODL_PASSWORD=admin
+
+# get controller IP
+case "$SDN_CONTROLLER" in
+    "odl_l2" | "odl_l3")
+        SDN_CONTROLLER_IP=$(juju status odl-controller/0 |grep public-address|sed -- 's/.*\: //')
+        ;;
+    "onos")
+        SDN_CONTROLLER_IP=$(juju status onos-controller/0 |grep public-address|sed -- 's/.*\: //')
+        ;;
+    *)
+        SDN_CONTROLLER_IP='none'
+        ;;
+esac
+SDN_PASSWORD='admin'
 
 # export the openrc file
 cat << EOF > $JOID_ADMIN_OPENRC
@@ -164,8 +178,8 @@ export OS_PASSWORD=$OS_ADMIN_PASSWORD
 export OS_TENANT_NAME=admin
 export OS_AUTH_URL=http://$KEYSTONE:5000/v2.0
 export OS_REGION_NAME=Canonical
-export ODL_CONTROLLER=$ODL_CONTROLLER
-export ODL_PASSWORD=$ODL_PASSWORD
+export SDN_CONTROLLER=$SDN_CONTROLLER_IP
+export SDN_PASSWORD=$SDN_PASSWORD
 EOF
 
 ##
