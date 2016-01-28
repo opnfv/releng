@@ -1,105 +1,74 @@
+####################################
+# job configuration for qtip
+####################################
 - project:
-    name: qtip
+    name: qtip-ci-jobs
 
-    project: '{name}'
+    project: 'qtip'
 
-    jobs:
-        - 'qtip-verify-{stream}'
-        - 'qtip-{installer_type}-{pod}-daily-{stream}'
-
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+    brahmaputra: &brahmaputra
+        stream: brahmaputra
+        branch: 'stable/{stream}'
+        gs-pathname: '{stream}'
+#--------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+#        brahmaputra
+#--------------------------------
     pod:
         - dell-us-testing-bm-1:
-           node: 'dell-us-testing-bm-1'
-           installer_type: 'fuel'
-           installer_ip: '10.20.0.2'
+            installer: compass
+            <<: *brahmaputra
+        - orange-pod2:
+            installer: joid
+            <<: *brahmaputra
         - dell-us-deploying-bm3:
-           node: 'dell-us-deploying-bm3'
-           installer_type: 'fuel'
-           installer_ip: '10.20.0.2'
+            installer: fuel
+            <<: *brahmaputra
 
-# only master branch is enabled at the moment to keep no of jobs sane
-    stream:
-        - master:
-            branch: 'master'
-            gs-pathname: ''
-#        - brahmaputra:
-#            branch: 'stable/brahmaputra'
-#            gs-pathname: '/brahmaputra'
+#--------------------------------
+#        master
+#--------------------------------
+        - juniper-pod1:
+            installer: joid
+            <<: *master
+#      - zte-build-1:   #would be confirmed with the ZTE lab by tomorrow
+#            installer: fuel
+#            <<: *master
 
+#--------------------------------
+    jobs:
+        - 'qtip-{installer}-{pod}-daily-{stream}'
+
+################################
+# job templates
+################################
 - job-template:
-    name: 'qtip-verify-{stream}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: '{branch}'
-        - 'opnfv-build-defaults'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: '$GERRIT_REFSPEC'
-            choosing-strategy: 'gerrit'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**|.gitignore'
-
-    builders:
-        - shell: |
-            echo "Nothing to verify!"
-
-- job-template:
-    name: 'qtip-{installer_type}-{pod}-daily-{stream}'
+    name: 'qtip-{installer}-{pod}-daily-{stream}'
 
     disabled: false
-
-    node: '{node}'
 
     parameters:
       - project-parameter:
           project: '{project}'
+      - '{pod}-defaults'
+      - '{installer}-defaults'
       - string:
-          name: INSTALLER_TYPE
-          default: '{installer_type}'
-          description: "Installer name that is used for deployment."
-      - string:
-          name: INSTALLER_IP
-          default: '{installer_ip}'
-          description: "Installer IP"
-      - string:
-          name: NODE_NAME
-          default: '{node}'
-          description: "Name of the POD"
-      - string:
-          name: GIT_BASE
-          default: https://gerrit.opnfv.org/gerrit/$PROJECT
-          description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+          name: DEPLOY_SCENARIO
+          default: 'os-nosdn-nofeature-ha'
 
     scm:
        - git-scm:
            credentials-id: '{ssh-credentials}'
            refspec: ''
-           branch: master
+           branch: '{branch}'
 
     builders:
         - 'qtip-cleanup'
@@ -107,9 +76,9 @@
         - 'qtip-run-suite'
         - 'qtip-pushtoDB'
 
-    triggers:
-      - timed: '0 0,13,15,20 * * *'
-
+    publishers:
+        - email:
+            recipients: nauman.ahad@xflowresearch.com, mofassir.arif@xflowresearch.com, vikram@nvirters.com
 
 ###########################
 #biuilder macros
@@ -123,7 +92,6 @@
             envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} -e NODE_NAME=${NODE_NAME}"
             suite="TEST_CASE=all"
             docker pull opnfv/qtip:latest
-
             cmd=" docker run -id -e $envs -e $suite opnfv/qtip:latest /bin/bash"
             echo "Qtip: Running docker run command: ${cmd}"
             ${cmd}
@@ -190,17 +158,3 @@
                     docker rmi opnfv/qtip:$tag
                 done
             fi
-
-- builder:
-    name: qtip-fetch-os-cred
-    builders:
-        - shell: |
-            #!/bin/bash
-
-            echo $HOME
-            echo $WORKSPACE
-            cd $WORKSPACE
-            git clone https://gerrit.opnfv.org/gerrit/releng
-            cd $WORKSPACE/releng/utils
-            #./fetch_os_creds.sh                  #To test the problem with creating the file in $HOME
-            ./fetch_os_creds.sh -d $WORKSPACE/opnfv-stack.sh    #To test if  the file can be created in $WORKSPACE
