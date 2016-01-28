@@ -119,7 +119,7 @@ SRCBUNDLE="${SRCBUNDLE}/ovs-${SDN_CONTROLLER}-${HA_MODE}.yaml"
 
 # Modify Bundle
 echo "------ Set openstack password ------"
-sed -i -- "s/\"admin-password\": openstack/\"admin-password\": $OS_ADMIN_PASSWORD/" $SRCBUNDLE
+sed -i -- "s/admin-password: openstack/admin-password: $OS_ADMIN_PASSWORD/" $SRCBUNDLE
 
 if [ -n "$EXTNET_NAME" ]; then
     echo "------ Set openstack default network ------"
@@ -154,8 +154,16 @@ exit_on_error $? "Main deploy FAILED"
 JOID_ADMIN_OPENRC=$LAB_CONFIG/admin-openrc
 echo "------ Create OpenRC file [$JOID_ADMIN_OPENRC] ------"
 
-# get Keystone vip
-KEYSTONE=$(cat bundles.yaml |shyaml get-value openstack-phase2.services.keystone.options.vip)
+# get Keystone ip
+case "$HA_MODE" in
+    "ha")
+        KEYSTONE=$(cat bundles.yaml |shyaml get-value openstack-phase2.services.keystone.options.vip)
+        ;;
+    *)
+        KEYSTONE=$(juju status keystone |grep public-address|sed -- 's/.*\: //')
+        ;;
+esac
+
 
 # get controller IP
 case "$SDN_CONTROLLER" in
