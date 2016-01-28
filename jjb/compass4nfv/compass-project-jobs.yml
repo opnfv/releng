@@ -19,6 +19,7 @@
         - 'compass-verify-{stream}'
         - 'compass-build-iso-{stream}'
         - 'compass-build-ppa-{stream}'
+        - 'compass-verify-deploy-{stream}'
 
 
 ########################
@@ -41,7 +42,7 @@
     properties:
         - throttle:
             enabled: true
-            max-total: 1
+            max-total: 0
             max-per-node: 1
 
     parameters:
@@ -95,6 +96,14 @@
 
 - job-template:
     name: 'compass-verify-deploy-{stream}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 0
+            max-per-node: 1
 
     scm:
         - git-scm:
