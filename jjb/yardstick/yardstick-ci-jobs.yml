@@ -47,7 +47,7 @@
             installer: fuel
             suite: daily
             <<: *brahmaputra
-        - virtual:
+        - huawei-virtual:
             installer: compass
             suite: daily
             <<: *brahmaputra
@@ -337,6 +337,14 @@
             default: ''
             description: 'Arguments to use in order to choose the backend DB'
 
+- parameter:
+    name: 'yardstick-params-huawei-virtual'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: ''
+            description: 'Arguments to use in order to choose the backend DB'
+
 #######################
 ## trigger macros
 #######################
@@ -393,5 +401,10 @@
 
 - trigger:
     name: 'yardstick-virtual-trigger'
+    triggers:
+        - timed: ''
+
+- trigger:
+    name: 'yardstick-huawei-virtual-trigger'
     triggers:
         - timed: ''
