@@ -1,0 +1,192 @@
+###################################
+# job configuration for functest
+###################################
+- project:
+    name: cperf
+    project: '{name}'
+
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+    brahmaputra: &brahmaputra
+        stream: brahmaputra
+        branch: 'stable/{stream}'
+        gs-pathname: '/{stream}'
+
+#--------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+#        brahmaputra
+#--------------------------------
+    pod:
+        - intel-pod2:
+            installer: apex
+            <<: *brahmaputra
+
+#--------------------------------
+#        master
+#--------------------------------
+        - intel-pod2:
+            installer: apex
+            <<: *master
+
+#--------------------------------
+
+    testsuite:
+        - 'daily'
+
+    jobs:
+        - 'cperf-{installer}-{pod}-{testsuite}-{stream}'
+
+################################
+# job template
+################################
+- job-template:
+    name: 'cperf-{installer}-{pod}-{testsuite}-{stream}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-per-node: 1
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER Suite: $CPERF_SUITE_NAME Scenario: $DEPLOY_SCENARIO'
+        - timeout:
+            timeout: 400
+            abort: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{pod}-defaults'
+        - '{installer}-defaults'
+        - 'cperf-{testsuite}-parameter'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-odl_l2-nofeature-ha'  # need to figure this out, as I want openflowplugin + drop-test
+                                               # but I don't know of any scenario yet that doesn't use ovsdb
+                                               # at the very least.  But, actually I know how we can install
+                                               # extra features after deployment (but only for ODL, would have
+                                               # to figure it out for ONOS, $otherController01, etc
+        - cperf-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - 'cperf-{testsuite}-builder'
+
+########################
+# parameter macros
+########################
+- parameter:
+    name: cperf-daily-parameter
+    parameters:
+        - string:
+            name: CPERF_SUITE_NAME
+            default: 'daily'
+            description: "Suite name to run"
+- parameter:
+    name: cperf-parameter
+    parameters:
+        - string:
+            name: GS_PATHNAME
+            default: '{gs-pathname}'
+            description: "Version directory where the opnfv documents will be stored in gs repository"
+        - string:
+            name: CPERF_REPO_DIR
+            default: "/home/opnfv/repos/cperf"
+            description: "Directory where the cperf repository is cloned"
+        - string:
+            name: OPENDAYLIGHT_TEST_REPO
+            default: "https://git.opendaylight.org/gerrit/p/integration/test.git"  # are we only project in opnfv using this?
+                                                                                   # I thought not, but my search found no other
+                                                                                   # reference to this repo
+            description: "Robot Framework Test Resources From OpenDaylight Community"
+        - string:
+            name: PUSH_RESULTS_TO_DB
+            default: "true"
+            description: "Push the results of all the tests to the resultDB"
+        - string:
+            name: CI_DEBUG
+            default: 'false'
+            description: "Show debug output information"
+
+########################
+# trigger macros
+########################
+- trigger:
+    name: 'cperf-master'
+    triggers:
+        - pollscm:
+            cron: "H H * * *"
+
+########################
+# builder macros
+########################
+- builder:
+    name: cperf-daily-builder
+    builders:
+        - 'cbench-install'
+        - 'odl-cbench-suite'
+
+- builder:
+    name: cbench-install
+    builders:
+        - shell: |
+            #!/bin/bash
+            # assuming centos here, as this was taken verbatim from ODL VM work
+            # is this even going to end up on the right system that we want to
+            # run cbench from?
+            OF_DIR=$HOME/openflow  # Directory that contains OpenFlow code
+            OFLOPS_DIR=$HOME/oflops  # Directory that contains oflops repo
+            yum install -q -y net-snmp-devel libpcap-devel autoconf make automake libtool libconfig-devel
+            git clone git://gitosis.stanford.edu/openflow.git $OF_DIR &> /dev/null
+            git clone https://github.com/andi-bigswitch/oflops.git $OFLOPS_DIR &> /dev/null
+            cd $OFLOPS_DIR
+            ./boot.sh &> /dev/null
+            ./configure --with-openflow-src-dir=$OF_DIR &> /dev/null
+            make &> /dev/null
+            make install &> /dev/null
+
+- builder:
+    name: odl-cbench-suite
+    builders:
+        - shell: |
+            #!/bin/bash
+            git clone $OPENDAYLIGHT_TEST_REPO
+            cd test/csit/suites/openflowplugin/Performance/
+            # totally assuming the system this builder is running on has robot framework installed
+            pybot -e exclude -v ODL_SYSTEM_IP:192.168.1.5 -v switch_count:100 -v loops:10 \
+            -v TOOLS_SYSTEM_IP:localhost -v duration_in_seconds:60 010_Cbench.robot
+            # putting some thoughts here for now.  I know that in the future there will be tons more
+            # complex things to do that we are not doing (or able to do) in OpenDaylight CI, so simply
+            # using a suite as is from OpenDaylight (like above) may not be realistic.  But, I
+            # think this might be a good starting point.  I feel compelled to make a note here because
+            # as I'm working/learning through this I realize I've not yet done anything that requires
+            # the CPERF repo.  hmmm...  actually the above pybot might not work out of the box
+            # either, if it's running cbench from localhost.  I've never tried that, as it's always
+            # some dedicated external VM that robot logs in to, to run the test.  I'll research that.
+            # lots of questions???
+            #
+            # 1. what baremetal system should be used to run test tools like cbench (want most performant system)
+            # 2. can that system reach all the way in to the cloud(s) to touch the installed controllers?
+            # 3. how can I programatically know the controller IP address?  I took the one above (192.168.1.5)
+            #    from looking at what functest has written in their ODL/start_tests.sh.  maybe it's just good
+            #    enough to be told what to expect?
+            # 4. I think the assumption with OPNFV CI is that VMs are delivered totally bare and it's
+            #    up to the installers (e.g. apex) to lay down all the fancy bits.  Are there support
+            #    systems that we can install tools on over time once, without having to do it over
+            #    and over like I'm trying in "cbench-install" above?
+
