@@ -1,0 +1,180 @@
+####################################
+# job configuration for qtip
+####################################
+- project:
+    name: qtip-ci-jobs
+
+    project: 'bottlenecks'
+
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+    brahmaputra: &brahmaputra
+        stream: brahmaputra
+        branch: 'stable/{stream}'
+        gs-pathname: '{stream}'
+#--------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+#        brahmaputra
+#--------------------------------
+    pod:
+        - dell-us-testing-bm-1:
+            installer: compass
+            <<: *brahmaputra
+        - orange-fr-pod2:
+            installer: joid
+            <<: *brahmaputra
+        - dell-us-deploying-bm3:
+            installer: fuel
+            <<: *brahmaputra
+
+#--------------------------------
+#        master
+#--------------------------------
+        - juniper-us-test-1:
+            installer: joid
+            <<: *master
+       # - zte-build-1:   #would be confirmed with the ZTE lab by tomorrow
+       #     installer: fuel
+       #     <<: *master
+ 
+#--------------------------------
+
+    jobs:
+        - 'qtip-{installer}-{pod}-daily-{stream}'
+
+################################
+# job templates
+################################
+- job-template:
+    name: 'qtip-{installer}-{pod}-daily-{stream}'
+
+    disabled: false
+
+    node: '{node}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+      - string:
+          name: INSTALLER_TYPE
+          default: '{installer_type}'
+          description: "Installer name that is used for deployment."
+      - string:
+          name: INSTALLER_IP
+          default: '{installer_ip}'
+          description: "Installer IP"
+      - string:
+          name: NODE_NAME
+          default: '{node}'
+          description: "Name of the POD"
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+
+    scm:
+       - git-scm:
+           credentials-id: '{ssh-credentials}'
+           refspec: ''
+           branch: master
+
+    builders:
+        - 'qtip-cleanup'
+        - 'qtip-set-env'
+        - 'qtip-run-suite'
+        - 'qtip-pushtoDB'
+    
+
+    publishers:
+        - email:
+            recipients: nauman.ahad@xflowresearch.com, mofassir.arif@xflowresearch.com, vikram@nvirters.com
+
+
+
+###########################
+#biuilder macros
+###########################
+#- builder:
+#    name: qtip-set-env
+#    builders:
+#        - shell: |
+#            #!/bin/bash
+#            echo "Qtip: Start Docker and prepare environment"
+#            envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} -e NODE_NAME=${NODE_NAME}"
+#            suite="TEST_CASE=all"
+#            docker pull opnfv/qtip:latest
+#            cmd=" docker run -id -e $envs -e $suite opnfv/qtip:latest /bin/bash"
+#            echo "Qtip: Running docker run command: ${cmd}"
+#            ${cmd}
+#            docker ps -a
+#            container_id=$(docker ps | grep 'opnfv/qtip:latest' | awk '{print $1}' | head -1)
+#             if [ $(docker ps | grep 'opnfv/qtip' | wc -l) == 0 ]; then
+#                echo "The container opnfv/qtip with ID=${container_id} has not been properly started. Exiting..."
+#                exit 1
+#            fi
+#- builder:
+#    name: qtip-run-suite
+#    builders:
+#        - shell: |
+#            #!/bin/bash
+#            container_id=$(docker ps | grep 'opnfv/qtip:latest' | awk '{print $1}' | head -1)
+#            if [[ ! -z ${container_id} ]]; then
+#                echo "The container ID is: ${container_id}"
+#                QTIP_REPO=/home/opnfv/repos/qtip
+#                docker exec -t ${container_id} $QTIP_REPO/docker/run_qtip.sh
+#            else
+#                echo "Container ID not available"
+#            fi
+#
+#- builder:
+#    name: qtip-pushtoDB
+#    builders:
+#        - shell: |
+#            #!/bin/bash
+#
+#            echo "Pushing available results to DB"
+#            echo "The container id is:"
+#            container_id=$(docker ps | grep 'opnfv/qtip:latest' | awk '{print $1}' | head -1)
+#            if [[ ! -z ${container_id} ]]; then
+#                echo "The condiner ID is: ${container_id}"
+#                QTIP_REPO=/home/opnfv/repos/qtip
+#                docker exec -t ${container_id} $QTIP_REPO/docker/push_db.sh
+#            else
+#                echo "Container ID not available"
+#            fi
+#
+#- builder:
+#    name: qtip-cleanup
+#    builders:
+#        - shell: |
+#            #!/bin/bash
+#
+#            echo "Cleaning up QTIP  docker containers/images..."
+#            # Remove previous running containers if exist
+#            if [[ ! -z $(docker ps -a | grep opnfv/qtip) ]]; then
+#                echo "Removing existing opnfv/qtip containers..."
+#                running_containers=$(docker ps | grep opnfv/qtip | awk '{print $1}')
+#                docker stop ${running_containers}
+#                all_containers=$(docker ps -a | grep opnfv/qtip | awk '{print $1}')
+#                docker rm ${all_containers}
+#            fi
+#
+#            # Remove existing images if exist
+#            if [[ ! -z $(docker images | grep opnfv/qtip) ]]; then
+#                echo "Docker images to remove:"
+#                docker images | head -1 && docker images | grep opnfv/qtip
+#                image_tags=($(docker images | grep opnfv/qtip | awk '{print $2}'))
+#                for tag in "${image_tags[@]}"; do
+#                    echo "Removing docker image opnfv/qtip:$tag..."
+#                    docker rmi opnfv/qtip:$tag
+#                done
+#            fi
+
+
+
