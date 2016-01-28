@@ -59,12 +59,6 @@
             name: DEPLOY_SCENARIO
             default: 'os-nosdn-nofeature-ha'
 
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: '$GERRIT_REFSPEC'
-            choosing-strategy: 'gerrit'
-
     triggers:
         - gerrit:
             trigger-on:
@@ -108,7 +102,7 @@
     scm:
         - git-scm:
             credentials-id: '{ssh-credentials}'
-            refspec: ''
+            refspec: '$GERRIT_REFSPEC'
             branch: '{branch}'
 
     builders:
