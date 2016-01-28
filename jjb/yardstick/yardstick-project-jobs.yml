@@ -71,6 +71,7 @@
             python setup.py develop
             ./run_tests.sh
             deactivate
+        - upload-review-autodocs
 
 - job-template:
     name: 'yardstick-merge-{stream}'
@@ -81,6 +82,10 @@
         - gerrit-parameter:
             branch: '{branch}'
         - 'ericsson-ca-build-1-defaults'
+        - string:
+            name: GS_URL
+            default: '$GS_BASE{gs-pathname}'
+            description: "Directory where the build artifact will be located upon the completion     of the build."
 
     scm:
         - gerrit-trigger-scm:
@@ -115,3 +120,36 @@
             python setup.py develop
             ./run_tests.sh
             deactivate
+        - upload-merged-autodocs
+
+################################
+# job builders
+################################
+
+- builder:
+    name: build-html-and-pdf-docs-output-yardstick
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+
+            source $WORKSPACE/yardstick_venv/bin/activate
+            git clone ${GIT_BASE%$PROJECT}releng
+            GERRIT_COMMENT=gerrit_comment.txt ./releng/utils/docs-build.sh
+            deactivate
+
+- builder:
+    name: upload-review-autodocs
+    builders:
+        - build-html-and-pdf-docs-output-yardstick
+        - upload-under-review-docs-to-opnfv-artifacts
+        - report-docs-build-result-to-gerrit
+
+- builder:
+    name: upload-merged-autodocs
+    builders:
+        - build-html-and-pdf-docs-output-yardstick
+        - upload-generated-docs-to-opnfv-artifacts
+        - report-docs-build-result-to-gerrit
+        - remove-old-docs-from-opnfv-artifacts
