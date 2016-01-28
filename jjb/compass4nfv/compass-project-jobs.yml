@@ -8,9 +8,11 @@
 
     stream:
         - master:
+            slave_name: 'huawei-us-deploy-vm-1'
             branch: '{stream}'
             gs-pathname: ''
         - brahmaputra:
+            slave_name: 'huawei-us-deploy-vm-2'
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
 
@@ -30,9 +32,9 @@
 
     disabled: false
 
-    node: 'huawei-virtual'
+    node: '{slave_name}'
 
-    concurrent: true
+    concurrent: false
 
     wrappers:
         - timeout:
@@ -53,11 +55,15 @@
         - compass-project-parameter:
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
-        - '{node}-defaults'
+        #- '{node}-defaults'
         - '{installer}-defaults'
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-nosdn-nofeature-ha'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
 
     triggers:
         - gerrit:
