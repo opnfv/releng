@@ -171,6 +171,9 @@ case "$SDN_CONTROLLER" in
     "odl")
         SDN_CONTROLLER_IP=$(juju status odl-controller/0 |grep public-address|sed -- 's/.*\: //')
         ;;
+    "ocl" | "opencontrail")
+        SDN_CONTROLLER_IP=$(juju status contrail-control/0 |grep public-address|sed -- 's/.*\: //')
+        ;;
     "onos")
         SDN_CONTROLLER_IP=$(juju status onos-controller/0 |grep public-address|sed -- 's/.*\: //')
         ;;
