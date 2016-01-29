@@ -12,9 +12,11 @@
         - master:
             branch: '{stream}'
             gs-pathname: ''
+            disabled: false
         - brahmaputra:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
+            disabled: true
 
     jobs:
         - 'fuel-build-daily-{stream}'
@@ -74,6 +76,8 @@
 
 - job-template:
     name: 'fuel-verify-build-{stream}'
+
+    disabled: '{obj:disabled}'
 
     concurrent: true
 
@@ -139,6 +143,8 @@
 - job-template:
     name: 'fuel-merge-build-{stream}'
 
+    disabled: '{obj:disabled}'
+
     concurrent: true
 
     parameters:
@@ -198,9 +204,9 @@
 - job-template:
     name: 'fuel-merge-deploy-virtual-{stream}'
 
-    concurrent: true
+    disabled: '{obj:disabled}'
 
-    disabled: true
+    concurrent: true
 
     properties:
         - throttle:
@@ -275,7 +281,7 @@
 
     concurrent: false
 
-    disabled: true
+    disabled: false
 
     properties:
         - throttle:
