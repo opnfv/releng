@@ -7,7 +7,6 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-set -o errexit
 set -o nounset
 set -o pipefail
 
@@ -46,6 +45,16 @@ gsutil -m setmeta \
 gsutil -m setmeta \
     -h "Cache-Control:private, max-age=0, no-transform" \
     gs://$GS_URL/*.iso > /dev/null 2>&1
+
+# disabled errexit due to gsutil setmeta complaints
+#   BadRequestException: 400 Invalid argument
+# check if we uploaded the file successfully to see if things are fine
+gsutil ls gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > /dev/null 2>&1
+if [[ $? -ne 0 ]]; then
+    echo "Problem while uploading artifact!"
+    echo "Check log $WORKSPACE/gsutil.iso.log on the machine where this build is done."
+    exit 1
+fi
 
 echo "Done!"
 echo
