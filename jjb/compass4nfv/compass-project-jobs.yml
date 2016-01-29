@@ -32,9 +32,7 @@
 
     disabled: false
 
-    node: '{slave_name}'
-
-    concurrent: false
+    concurrent: true
 
     wrappers:
         - timeout:
@@ -60,15 +58,11 @@
         - compass-project-parameter:
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
-        #- '{node}-defaults'
+        - 'huawei-virtual-defaults'
         - '{installer}-defaults'
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-nosdn-nofeature-ha'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
 
     triggers:
         - gerrit:
