@@ -6,6 +6,8 @@ echo "Starting the deployment on baremetal environment using $INSTALLER_TYPE. Th
 echo "--------------------------------------------------------"
 echo
 
+echo 1 > /proc/sys/vm/drop_caches
+
 export CONFDIR=$WORKSPACE/deploy/conf
 export ISO_URL=file://$BUILD_DIRECTORY/compass.iso
 if [[ "$NODE_NAME" =~ "-vm" ]]; then
