@@ -58,15 +58,18 @@
 - job-template:
     name: 'compass-{scenario}-{pod}-daily-{stream}'
 
-    node: huawei-build
-
-    concurrent: false
+    concurrent: true
 
     properties:
         - throttle:
             enabled: true
-            max-total: 0
             max-per-node: 1
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'compass-os-.*?-{pod}-daily-.*?'
+                - 'compass-verify-[^-]*'
+            block-level: 'NODE'
 
     wrappers:
         - build-name:
@@ -131,12 +134,13 @@
     properties:
         - throttle:
             enabled: true
-            max-total: 0
             max-per-node: 1
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - 'compass-deploy-{pod}-daily-{stream}'
+                - 'compass-deploy-{pod}-daily-.*?'
+                - 'compass-verify-deploy-.*?'
+            block-level: 'NODE'
 
     wrappers:
         - build-name:
