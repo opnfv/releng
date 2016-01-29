@@ -245,7 +245,7 @@
                 -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
                 -e CI_DEBUG=${CI_DEBUG}"
 
-            dir_result="${HOME}/opnfv/functest/reports"
+            dir_result="${HOME}/opnfv/functest/results/"
             mkdir -p ${dir_result}
             sudo rm -rf ${dir_result}/*
             res_volume="-v ${dir_result}:/home/opnfv/functest/results"
@@ -279,7 +279,7 @@
     name: functest-store-results
     builders:
         - shell:
-            !include-raw: res-build.sh
+            !include-raw: ../../utils/push-test-logs.sh
 
 - builder:
     name: functest-cleanup
