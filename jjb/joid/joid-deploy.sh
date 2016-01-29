@@ -175,7 +175,7 @@ esac
 
 # get controller IP
 case "$SDN_CONTROLLER" in
-    "odl_l2" | "odl_l3")
+    "odl")
         SDN_CONTROLLER_IP=$(juju status odl-controller/0 |grep public-address|sed -- 's/.*\: //')
         ;;
     "onos")
