@@ -17,7 +17,7 @@
         - brahmaputra:
             branch: 'stable/brahmaputra'
             gs-pathname: '/brahmaputra'
-            disabled: true
+            disabled: false
 
     project: 'apex'
 
@@ -100,19 +100,19 @@
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-odl_l2-nofeature-ha-{stream}'
             predefined-parameters:
-              BUILD_DIRECTORY=apex-verify-master/build_output
+              BUILD_DIRECTORY='apex-verify-{stream}/build_output'
             git-revision: false
             block: true
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-onos-nofeature-ha-{stream}'
             predefined-parameters:
-              BUILD_DIRECTORY=apex-verify-master/build_output
+              BUILD_DIRECTORY='apex-verify-{stream}/build_output'
             git-revision: false
             block: true
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-odl_l3-nofeature-ha-{stream}'
             predefined-parameters:
-              BUILD_DIRECTORY=apex-verify-master/build_output
+              BUILD_DIRECTORY='apex-verify-{stream}/build_output'
             git-revision: false
             block: true
         - 'apex-workspace-cleanup'
@@ -214,7 +214,7 @@
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-odl_l2-nofeature-ha-{stream}'
             predefined-parameters:
-              BUILD_DIRECTORY=apex-build-master/build_output
+              BUILD_DIRECTORY='apex-build-{stream}/build_output'
             git-revision: false
             block: true
         - 'apex-upload-artifact'
@@ -343,7 +343,7 @@
         - trigger-builds:
           - project: 'apex-deploy-baremetal-os-odl_l2-nofeature-ha-{stream}'
             predefined-parameters:
-              BUILD_DIRECTORY=apex-build-master/build_output
+              BUILD_DIRECTORY='apex-build-{stream}/build_output'
             git-revision: true
             block: true
         - trigger-builds:
@@ -365,7 +365,7 @@
         - trigger-builds:
           - project: 'apex-deploy-baremetal-os-onos-nofeature-ha-{stream}'
             predefined-parameters:
-              BUILD_DIRECTORY=apex-build-master/build_output
+              BUILD_DIRECTORY='apex-build-{stream}/build_output'
             git-revision: true
             block: true
         - trigger-builds:
@@ -730,8 +730,8 @@
 - trigger:
     name: 'apex-master'
     triggers:
-        - timed: '0 3 * * *'
+        - timed: '0 3 * * 12'
 - trigger:
     name: 'apex-brahmaputra'
     triggers:
-        - timed: '0 6 * * 2050'
+        - timed: '0 3 * * *'
