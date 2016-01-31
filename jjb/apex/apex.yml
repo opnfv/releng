@@ -459,16 +459,20 @@
             # create the cache directory if it doesn't exist
             [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
             # set OPNFV_ARTIFACT_VERSION
-            if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
-              export OPNFV_ARTIFACT_VERSION="bramaputra.1.rc0"
-            else
-              if echo $BUILD_TAG | grep "apex-verify" 1> /dev/null; then
-                export OPNFV_ARTIFACT_VERSION=dev${BUILD_NUMBER}
-              elif [ "$ARTIFACT_VERSION" == "daily" ]; then
-                export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d")
+            if echo $BUILD_TAG | grep "apex-verify" 1> /dev/null; then
+              if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
+                export OPNFV_ARTIFACT_VERSION=brahmaputra-dev${BUILD_NUMBER}
               else
-                export OPNFV_ARTIFACT_VERSION=${ARTIFACT_VERSION}
+                export OPNFV_ARTIFACT_VERSION=dev${BUILD_NUMBER}
               fi
+            elif [ "$ARTIFACT_VERSION" == "daily" ]; then
+              if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
+                export OPNFV_ARTIFACT_VERSION=brahmaputra-$(date -u +"%Y-%m-%d")
+              else
+                export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d")
+              fi
+            else
+                export OPNFV_ARTIFACT_VERSION=${ARTIFACT_VERSION}
             fi
             # start the build
             cd $WORKSPACE/ci
