@@ -194,24 +194,6 @@
             description: 'Git URL to use on this Jenkins Slave'
 
 - parameter:
-    name: 'ericsson-build-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - ericsson-build
-            default-slaves:
-                - ericsson-build
-        - string:
-            name: INSTALLER_VERSION
-            default: stable
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-- parameter:
     name: 'huawei-build-defaults'
     parameters:
         - node:
@@ -267,15 +249,10 @@
 - parameter:
     name: 'opnfv-build-defaults'
     parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - intel-us-build-1
-                - ericsson-ca-build-1
-            default-slaves:
-                - intel-us-build-1
-                - ericsson-ca-build-1
+        - label:
+            name: SLAVE_LABEL
+            default: 'opnfv-build'
+            description: 'Slave label on Jenkins'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -310,21 +287,6 @@
                 - intel-us-build-2
             default-slaves:
                 - intel-us-build-2
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-
-- parameter:
-    name: 'ericsson-ca-build-1-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - ericsson-ca-build-1
-            default-slaves:
-                - ericsson-ca-build-1
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -426,11 +388,11 @@
             description: 'Git URL to use on these Jenkins Slaves'
 
 - parameter:
-    name: 'fuel-build-defaults'
+    name: 'ericsson-build-defaults'
     parameters:
         - label:
             name: SLAVE_LABEL
-            default: 'fuel-build'
+            default: 'ericsson-build'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
