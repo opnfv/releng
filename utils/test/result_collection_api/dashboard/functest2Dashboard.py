@@ -14,13 +14,15 @@
 # a new method format_<Test_case>_for_dashboard(results)
 # v0.1: basic example with methods for odl, Tempest, Rally and vPing
 #
+import re
+import datetime
 
 def get_functest_cases():
     """
     get the list of the supported test cases
     TODO: update the list when adding a new test case for the dashboard
     """
-    return ["status", "vPing", "vPing_userdata", "vIMS", "Tempest", "odl", "Rally"]
+    return ["status", "vPing", "vPing_userdata", "vIMS", "Tempest", "ODL", "ONOS", "Rally"]
 
 
 def format_functest_for_dashboard(case, results):
@@ -210,11 +212,59 @@ def format_Tempest_for_dashboard(results):
     return test_data
 
 
-def format_odl_for_dashboard(results):
+def format_ODL_for_dashboard(results):
+    """
+    Post processing for the ODL test case
+    """
+    test_data = [{'description': 'ODL results for Dashboard'}]
+
+    # Graph 1: (Nb test, nb failure)=f(time)
+    # ***************************************
+    new_element = []
+
+    for data in results:
+        odl_results = data['details']['details']
+        nbFailures = 0
+        for odl in odl_results:
+            if (odl['test_status']['@status'] == "FAIL"):
+                 nbFailures+=1
+        new_element.append({'x': data['creation_date'],
+                            'y1': len(odl_results),
+                            'y2': nbFailures})
+
+    test_data.append({'name': "ODL nb tests/nb failures",
+                      'info': {'type': "graph",
+                               'xlabel': 'time',
+                               'y1label': 'Number of tests',
+                               'y2label': 'Number of failures'},
+                      'data_set': new_element})
+    return test_data
+
+
+def format_ONOS_for_dashboard(results):
     """
     Post processing for the odl test case
     """
-    test_data = [{'description': 'odl results for Dashboard'}]
+    test_data = [{'description': 'ONOS results for Dashboard'}]
+    # Graph 1: (duration)=f(time)
+    # ***************************************
+    new_element = []
+
+    # default duration 0:00:08.999904
+    # consider only seconds => 09
+    for data in results:
+        t = data['details']['duration']
+        h,m,s = re.split(':',t)
+        s = round(float(s))
+        new_duration = int(datetime.timedelta(hours=int(h),minutes=int(m),seconds=int(s)).total_seconds())
+        new_element.append({'x': data['creation_date'],
+                            'y': new_duration})
+
+    test_data.append({'name': "ONOS duration",
+                      'info': {'type': "graph",
+                               'xlabel': 'time (s)',
+                               'ylabel': 'duration (s)'},
+                      'data_set': new_element})
     return test_data
 
 
