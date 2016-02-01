@@ -96,9 +96,9 @@ echo "Tag version to be build and pushed: $DOCKER_TAG"
 # Start the build
 echo "Building docker image: $DOCKER_REPO_NAME:$DOCKER_TAG..."
 
-docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG .
-echo "Creating tag 'latest'..."
-docker tag $DOCKER_REPO_NAME:$DOCKER_TAG $DOCKER_REPO_NAME:latest
+docker build --no-cache -t $DOCKER_REPO_NAME:latest .
+echo "Creating tag '$DOCKER_TAG'..."
+docker tag -f $DOCKER_REPO_NAME:latest $DOCKER_REPO_NAME:$DOCKER_TAG
 
 # list the images
 echo "Available images are:"
@@ -110,8 +110,9 @@ if [[ "$PUSH_IMAGE" == "true" ]]; then
     echo "--------------------------------------------------------"
     echo
     # Push to the Dockerhub repository
-    docker push $DOCKER_REPO_NAME:$DOCKER_TAG
-
-    echo "Updating $DOCKER_REPO_NAME:latest to the docker registry..."
+    echo "Pushing $DOCKER_REPO_NAME:latest ..."
     docker push $DOCKER_REPO_NAME:latest
+
+    echo "Pushing $DOCKER_REPO_NAME:$DOCKER_TAG ..."
+    docker push $DOCKER_REPO_NAME:$DOCKER_TAG
 fi
