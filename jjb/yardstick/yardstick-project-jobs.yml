@@ -58,21 +58,9 @@
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
-
-            echo "Running unit tests..."
-            cd $WORKSPACE
-            virtualenv $WORKSPACE/yardstick_venv
-            source $WORKSPACE/yardstick_venv/bin/activate
-            easy_install -U setuptools
-            python setup.py develop
-            ./run_tests.sh
-        - generate-api-docs-for-yardstick
-        - upload-review-docs
-        - shell: 'deactivate'
+        - yardstick-unit-tests-and-docs-build
+        - upload-under-review-docs-to-opnfv-artifacts
+        - report-docs-build-result-to-gerrit
 
 - job-template:
     name: 'yardstick-merge-{stream}'
@@ -108,6 +96,18 @@
                       branch-pattern: '**/{branch}'
 
     builders:
+        - yardstick-unit-tests-and-docs-build
+        - upload-generated-docs-to-opnfv-artifacts
+        - report-docs-build-result-to-gerrit
+        - remove-old-docs-from-opnfv-artifacts
+
+################################
+# job builders
+################################
+
+- builder:
+    name: yardstick-unit-tests-and-docs-build
+    builders:
         - shell: |
             #!/bin/bash
             set -o errexit
@@ -119,21 +119,15 @@
             source $WORKSPACE/yardstick_venv/bin/activate
             easy_install -U setuptools
             python setup.py develop
+
+            # unit tests
             ./run_tests.sh
-        - generate-api-docs-for-yardstick
-        - upload-merged-docs
-        - shell: 'deactivate'
 
-################################
-# job builders
-################################
-
-- builder:
-    name: generate-api-docs-for-yardstick
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
-
+            # generate api doc sources
             sphinx-apidoc -o docs/apidocs yardstick
+
+            # build docs
+            git clone ssh://gerrit.opnfv.org:29418/releng
+            GERRIT_COMMENT=gerrit_comment.txt ./releng/utils/docs-build.sh
+
+            deactivate
