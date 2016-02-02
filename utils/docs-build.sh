@@ -78,7 +78,7 @@ function add_html_notes() {
             echo
             sed -i "s/ _sha1_/ $git_sha1/g" "$file"
         fi
-        sed -i -e "\$a\\\n.. only:: html\n$html_notes" "$file"
+        sed -i -e "\$a\\\n..\n$html_notes" "$file"
     done
 }
 
