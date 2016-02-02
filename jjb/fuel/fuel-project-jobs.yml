@@ -279,28 +279,41 @@
 - job-template:
     name: 'fuel-deploy-generic-daily-{stream}'
 
-    concurrent: false
+    concurrent: true
 
     disabled: false
 
     properties:
         - throttle:
             enabled: true
-            max-total: 1
             max-per-node: 1
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - 'fuel-os-.*?-ericsson-pod2-daily-{stream}'
+                - 'fuel-os-.*?-daily-.*'
+                - 'fuel-deploy-generic-daily-.*'
+            block-level: 'NODE'
 
     parameters:
         - project-parameter:
             project: '{project}'
-        - 'ericsson-pod2-defaults'
         - '{installer}-defaults'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-odl_l2-nofeature-ha'
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - ericsson-pod2
+                - opnfv-jump-2
+                - ericsson-pod1
+            default-slaves:
+                - ericsson-pod2
         - fuel-project-parameter:
             gs-pathname: '{gs-pathname}'
 
