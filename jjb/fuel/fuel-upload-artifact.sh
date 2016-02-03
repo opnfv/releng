@@ -7,7 +7,6 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-set -o nounset
 set -o pipefail
 
 # check if we built something
@@ -17,13 +16,29 @@ if [ -f $WORKSPACE/.noupload ]; then
     exit 0
 fi
 
-# log info to console
-echo
-echo "Uploading the $INSTALLER_TYPE artifact. This could take some time..."
-echo
-
 # source the opnfv.properties to get ARTIFACT_VERSION
 source $WORKSPACE/opnfv.properties
+
+# storing ISOs for verify & merge jobs will be done once we get the disk array
+if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
+    # store ISO locally on NFS first
+    ISOSTORE="/iso_mount/opnfv_ci/${GIT_BRANCH##*/}"
+    if [[ -d "$ISOSTORE" ]]; then
+        # remove all but most recent 5 ISOs first to keep iso_mount clean & tidy
+        cd $ISOSTORE
+        ls -tp | grep -v '/' | tail -n +6 | xargs -d '\n' /bin/rm -f --
+
+        # store ISO
+        echo "Storing $INSTALLER_TYPE artifact on NFS first"
+        /bin/cp -f $BUILD_DIRECTORY/opnfv-$OPNFV_ARTIFACT_VERSION.iso \
+            $ISOSTORE/opnfv-$OPNFV_ARTIFACT_VERSION.iso
+    fi
+fi
+
+# log info to console
+echo
+echo "Uploading $INSTALLER_TYPE artifact. This could take some time..."
+echo
 
 # upload artifact and additional files to google storage
 gsutil cp $BUILD_DIRECTORY/opnfv-$OPNFV_ARTIFACT_VERSION.iso \

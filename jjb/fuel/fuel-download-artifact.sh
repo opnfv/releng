@@ -8,7 +8,6 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 set -o errexit
-set -o nounset
 set -o pipefail
 
 if [[ "$JOB_NAME" =~ "merge" ]]; then
@@ -31,15 +30,22 @@ source latest.properties
 OPNFV_ARTIFACT=${OPNFV_ARTIFACT_URL/*\/}
 echo "Using $OPNFV_ARTIFACT for deployment"
 
-# check if we already have the ISO to avoid redownload
-# disabled for the timebeing - needs adjustments
-#ISO_STORE=$HOME/opnfv/iso_store/fuel
-#if [[ -f "$ISO_STORE/$OPNFV_ARTIFACT" ]]; then
-#    echo "ISO already exists. Skipping the download"
-#    ln -s $ISO_STORE/$OPNFV_ARTIFACT $WORKSPACE/opnfv.iso
-#    ls -al $WORKSPACE/opnfv.iso
-#    exit 0
-#fi
+# using ISOs for verify & merge jobs from local storage will be enabled later
+if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
+    # check if we already have the ISO to avoid redownload
+    ISOSTORE="/iso_mount/opnfv_ci/${GIT_BRANCH##*/}"
+    if [[ -f "$ISOSTORE/$OPNFV_ARTIFACT" ]]; then
+        echo "ISO exists locally. Skipping the download and using the file from ISO store"
+        /bin/cp -f $ISOSTORE/$OPNFV_ARTIFACT $WORKSPACE/opnfv.iso
+        echo "--------------------------------------------------------"
+        echo
+        ls -al $WORKSPACE/opnfv.iso
+        echo
+        echo "--------------------------------------------------------"
+        echo "Done!"
+        exit 0
+    fi
+fi
 
 # log info to console
 echo "Downloading the $INSTALLER_TYPE artifact using URL http://$OPNFV_ARTIFACT_URL"
