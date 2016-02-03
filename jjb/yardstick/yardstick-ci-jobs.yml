@@ -149,6 +149,9 @@
     wrappers:
         - build-name:
             name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+        - timeout:
+            timeout: '${YARDSTICK_BUILD_TIMEOUT}'
+            abort: true
 
     triggers:
         - '{auto-trigger-name}'
@@ -170,6 +173,10 @@
             name: CI_DEBUG
             default: 'false'
             description: "Show debut output information"
+        - string:
+            name: YARDSTICK_BUILD_TIMEOUT
+            default: '360'
+            description: "Abort the build if it runs too long"
 
     scm:
         - git-scm:
