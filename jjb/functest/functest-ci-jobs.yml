@@ -221,7 +221,6 @@
             if [ "${PUSH_RESULTS_TO_DB}" == "true" ]; then
                 flag="-r"
             fi
-            echo "Functest: running all the tests"
             cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh ${flag}"
             container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
             docker exec $container_id $cmd
@@ -254,7 +253,7 @@
                 -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
                 -e CI_DEBUG=${CI_DEBUG}"
 
-            dir_result="${HOME}/opnfv/functest/results/"
+            dir_result="${HOME}/opnfv/functest/results/${branch}"
             mkdir -p ${dir_result}
             sudo rm -rf ${dir_result}/*
             res_volume="-v ${dir_result}:/home/opnfv/functest/results"
