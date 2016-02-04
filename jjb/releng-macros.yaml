@@ -195,7 +195,7 @@
             echo "###########################"
             echo
 
-            gs_base="artifacts.opnfv.org/review"
+            gs_base="artifacts.opnfv.org/$PROJECT/review"
             gs_path="$gs_base/$GERRIT_CHANGE_NUMBER"
             local_path="upload/$GERRIT_CHANGE_NUMBER"
 
@@ -283,6 +283,13 @@
 
             [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
 
+            gs_path="artifacts.opnfv.org/$PROJECT/review/$GERRIT_CHANGE_NUMBER"
+
+            if gsutil ls "gs://$gs_path" > /dev/null 2>&1 ; then
+                echo
+                echo "Deleting Out-of-dated Documents..."
+                gsutil -m rm -r "gs://$gs_path"
+            fi
             gs_path="artifacts.opnfv.org/review/$GERRIT_CHANGE_NUMBER"
 
             if gsutil ls "gs://$gs_path" > /dev/null 2>&1 ; then
