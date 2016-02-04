@@ -31,12 +31,19 @@ mkdir -p $dir_result
 # copy folder to artifact
 if [ -d "$dir_result" ]; then
     if [ "$(ls -A $dir_result)" ]; then
-          echo "copy result files to artifact $project_artifact"
-          gsutil -m cp -r "$dir_result" gs://artifacts.opnfv.org/"$project_artifact"/
-
-          # delete local results
-          # should not be useful as the container is about to die...just in case
-          rm -Rf $dir_result/*
+        set +e
+        gsutil&>/dev/null
+        if [ $? != 0 ]; then
+            echo "Not possible to push results to artifact: gsutil not installed";
+        else
+            gsutil ls gs://artifacts.opnfv.org/"$project_artifact"/ &>/dev/null
+            if [ $? != 0 ]; then
+                echo "Not possible to push results to artifact: wrong credentials.";
+            else
+                echo "copy result files to artifact $project_artifact"
+                gsutil -m cp -r "$dir_result" gs://artifacts.opnfv.org/"$project_artifact"/
+            fi
+        fi
     else
           echo "Result folder is empty"
     fi
