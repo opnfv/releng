@@ -31,12 +31,12 @@ mkdir -p $dir_result
 # copy folder to artifact
 if [ -d "$dir_result" ]; then
     if [ "$(ls -A $dir_result)" ]; then
-          echo "copy result files to artifact $project_artifact"
-          gsutil -m cp -r "$dir_result" gs://artifacts.opnfv.org/"$project_artifact"/
-
-          # delete local results
-          # should not be useful as the container is about to die...just in case
-          rm -Rf $dir_result/*
+              if [ $(whereis gsutil|wc -c) -lt 10 ];then
+                  echo "Impossible to push results to artifact. gsutil not installed";
+              else
+                  echo "copy result files to artifact $project_artifact"
+                  gsutil -m cp -r "$dir_result" gs://artifacts.opnfv.org/"$project_artifact"/
+              fi
     else
           echo "Result folder is empty"
     fi
