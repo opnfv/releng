@@ -33,10 +33,6 @@ if [ -d "$dir_result" ]; then
     if [ "$(ls -A $dir_result)" ]; then
           echo "copy result files to artifact $project_artifact"
           gsutil -m cp -r "$dir_result" gs://artifacts.opnfv.org/"$project_artifact"/
-
-          # delete local results
-          # should not be useful as the container is about to die...just in case
-          rm -Rf $dir_result/*
     else
           echo "Result folder is empty"
     fi
