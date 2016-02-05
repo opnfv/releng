@@ -2,6 +2,69 @@
   "comments": [
     {
       "key": {
+        "uuid": "5a4e6583_1d618739",
+        "filename": "jjb/cperf/cperf.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-02-05T19:37:19Z",
+      "side": 1,
+      "message": "scenarios are named based on below scheme.\n\n    os-[controller]-[feature]-[mode]-[optional_field]\n\nso this scenario name doesn\u0027t conform the scheme. please see more details on https://wiki.opnfv.org/brahmaputra_testing_page#scenario_naming",
+      "revId": "e8540b9437ff5ea445ec9391afe3572c1ab2aa2e",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a4e6583_fd658b45",
+        "filename": "jjb/cperf/cperf.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-02-05T19:37:19Z",
+      "side": 1,
+      "message": "this is one of the outdated things since baremetal deployments can be done on different PODs for different branches and having just baremetal could make managing and working with jobs a bit harder perhaps. please see the examples on the etherpad I linked on my earlier comment.",
+      "range": {
+        "startLine": 18,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 22
+      },
+      "revId": "e8540b9437ff5ea445ec9391afe3572c1ab2aa2e",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a4e6583_bd5f1372",
+        "filename": "jjb/cperf/cperf.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-02-05T19:37:19Z",
+      "side": 1,
+      "message": "the deploy job should be created in installer yml files to have the related installer/deployment job configurations together.\n\nthe naming scheme for deployment jobs is\n\n    [installer]-deploy-[pod]-[loop]-[branch]\n\nsee the details for deploy job naming on https://wiki.opnfv.org/brahmaputra_testing_page#jenkins_job_naming",
+      "range": {
+        "startLine": 22,
+        "startChar": 4,
+        "endLine": 22,
+        "endChar": 54
+      },
+      "revId": "e8540b9437ff5ea445ec9391afe3572c1ab2aa2e",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a4e6583_ccca23a1",
         "filename": "jjb/cperf/cperf.yml",
         "patchSetId": 1
@@ -18,6 +81,93 @@
         "startChar": 10,
         "endLine": 29,
         "endChar": 22
+      },
+      "revId": "e8540b9437ff5ea445ec9391afe3572c1ab2aa2e",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a4e6583_9d545755",
+        "filename": "jjb/cperf/cperf.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-02-05T19:37:19Z",
+      "side": 1,
+      "message": "we need to find a pod for you and also align the slave handling in jobs as stated on the etherpad.",
+      "parentUuid": "5a4e6583_ccca23a1",
+      "range": {
+        "startLine": 29,
+        "startChar": 10,
+        "endLine": 29,
+        "endChar": 22
+      },
+      "revId": "e8540b9437ff5ea445ec9391afe3572c1ab2aa2e",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a4e6583_7d519b61",
+        "filename": "jjb/cperf/cperf.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-02-05T19:37:19Z",
+      "side": 1,
+      "message": "cperf-bench-test should be a separate job which is located in this file, cperf.yml\n\nit is important the jobs/loops in CI do/test certain things about the system and give feedback based on what they do. with this, we can get more granular feedback based on what stage the CI failed or succeeded. having everything in same job also makes the troubleshooting a bit harder; if both deployment and cbench are in same job and if the job fails, you need to go and look at the job console log to find out what went wrong or do some other stuff.\n\n\napart from above, the test job naming scheme is\n\n    [testproject]-[installer]-[pod]-[loop]-[branch] \n\nso assuming cbench is the suite, it could be named like\n\n    cperf-apex-slaveXYZ-cbench-master\n\nsee the details for test job naming on https://wiki.opnfv.org/brahmaputra_testing_page#jenkins_job_naming",
+      "revId": "e8540b9437ff5ea445ec9391afe3572c1ab2aa2e",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a4e6583_3d4b23b2",
+        "filename": "jjb/cperf/cperf.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-02-05T19:37:19Z",
+      "side": 1,
+      "message": "just fyi, the naming and versioning will be worked on for the C-release and we will align them - this is ok for the timebeing.",
+      "range": {
+        "startLine": 60,
+        "startChar": 0,
+        "endLine": 68,
+        "endChar": 48
+      },
+      "revId": "e8540b9437ff5ea445ec9391afe3572c1ab2aa2e",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a4e6583_1dc86721",
+        "filename": "jjb/cperf/cperf.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-02-05T19:37:19Z",
+      "side": 1,
+      "message": "this will be unnecessary once you start using slave-params.yml",
+      "range": {
+        "startLine": 77,
+        "startChar": 0,
+        "endLine": 80,
+        "endChar": 143
       },
       "revId": "e8540b9437ff5ea445ec9391afe3572c1ab2aa2e",
       "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
@@ -48,6 +198,30 @@
     },
     {
       "key": {
+        "uuid": "5a4e6583_fdcc6b37",
+        "filename": "jjb/cperf/cperf.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-02-05T19:37:19Z",
+      "side": 1,
+      "message": "+1",
+      "parentUuid": "5a4e6583_5277ee02",
+      "range": {
+        "startLine": 91,
+        "startChar": 11,
+        "endLine": 91,
+        "endChar": 21
+      },
+      "revId": "e8540b9437ff5ea445ec9391afe3572c1ab2aa2e",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a4e6583_f265ba45",
         "filename": "jjb/cperf/cperf.yml",
         "patchSetId": 1
@@ -59,6 +233,30 @@
       "writtenOn": "2016-02-05T15:25:17Z",
       "side": 1,
       "message": "Good start :)",
+      "range": {
+        "startLine": 377,
+        "startChar": 0,
+        "endLine": 392,
+        "endChar": 23
+      },
+      "revId": "e8540b9437ff5ea445ec9391afe3572c1ab2aa2e",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a4e6583_ddd1afce",
+        "filename": "jjb/cperf/cperf.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 392,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-02-05T19:37:19Z",
+      "side": 1,
+      "message": "why not hello world! :)",
+      "parentUuid": "5a4e6583_f265ba45",
       "range": {
         "startLine": 377,
         "startChar": 0,
