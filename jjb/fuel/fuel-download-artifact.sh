@@ -36,7 +36,7 @@ if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
     ISOSTORE="/iso_mount/opnfv_ci/${GIT_BRANCH##*/}"
     if [[ -f "$ISOSTORE/$OPNFV_ARTIFACT" ]]; then
         echo "ISO exists locally. Skipping the download and using the file from ISO store"
-        /bin/cp -f $ISOSTORE/$OPNFV_ARTIFACT $WORKSPACE/opnfv.iso
+        ln -s $ISOSTORE/$OPNFV_ARTIFACT $WORKSPACE/opnfv.iso
         echo "--------------------------------------------------------"
         echo
         ls -al $WORKSPACE/opnfv.iso

@@ -29,17 +29,17 @@ if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
         ls -tp | grep -v '/' | tail -n +6 | xargs -d '\n' /bin/rm -f --
 
         # store ISO
-        echo "Storing $INSTALLER_TYPE artifact on NFS first"
+        echo "Storing $INSTALLER_TYPE artifact on NFS..."
         /bin/cp -f $BUILD_DIRECTORY/opnfv-$OPNFV_ARTIFACT_VERSION.iso \
             $ISOSTORE/opnfv-$OPNFV_ARTIFACT_VERSION.iso
     fi
 fi
 
 # log info to console
-echo
 echo "Uploading $INSTALLER_TYPE artifact. This could take some time..."
 echo
 
+cd $WORKSPACE
 # upload artifact and additional files to google storage
 gsutil cp $BUILD_DIRECTORY/opnfv-$OPNFV_ARTIFACT_VERSION.iso \
     gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
