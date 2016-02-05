@@ -17,12 +17,14 @@
 import re
 import datetime
 
+
 def get_functest_cases():
     """
     get the list of the supported test cases
     TODO: update the list when adding a new test case for the dashboard
     """
-    return ["status", "vPing", "vPing_userdata", "vIMS", "Tempest", "ODL", "ONOS", "Rally"]
+    return ["status", "vPing", "vPing_userdata", "vIMS", "Tempest", "ODL",
+            "ONOS", "Rally"]
 
 
 def format_functest_for_dashboard(case, results):
@@ -66,7 +68,9 @@ def format_status_for_dashboard(results):
     test_data.append({'nb test suite(s) run': len(testcases)-1})
     test_data.append({'vPing': '100%'})
     test_data.append({'VIM status': '82%'})
-    test_data.append({'SDN Controllers': {'odl':'92%', 'onos':'95%', 'opencontrail':'93%'}})
+    test_data.append({'SDN Controllers': {'odl': '92%',
+                                          'onos': '95%',
+                                          'ocl': '93%'}})
     test_data.append({'VNF deployment': '95%'})
 
     return test_data
@@ -227,7 +231,7 @@ def format_ODL_for_dashboard(results):
         nbFailures = 0
         for odl in odl_results:
             if (odl['test_status']['@status'] == "FAIL"):
-                 nbFailures+=1
+                nbFailures += 1
         new_element.append({'x': data['creation_date'],
                             'y1': len(odl_results),
                             'y2': nbFailures})
@@ -246,24 +250,90 @@ def format_ONOS_for_dashboard(results):
     Post processing for the odl test case
     """
     test_data = [{'description': 'ONOS results for Dashboard'}]
-    # Graph 1: (duration)=f(time)
+    # Graph 1: (duration FUNCvirtNet)=f(time)
     # ***************************************
     new_element = []
 
     # default duration 0:00:08.999904
     # consider only seconds => 09
     for data in results:
-        t = data['details']['duration']
-        h,m,s = re.split(':',t)
+        t = data['details']['FUNCvirNet']['duration']
+        h, m, s = re.split(':', t)
         s = round(float(s))
-        new_duration = int(datetime.timedelta(hours=int(h),minutes=int(m),seconds=int(s)).total_seconds())
+        new_duration = int(datetime.timedelta(hours=int(h),
+                                              minutes=int(m),
+                                              seconds=int(s)).total_seconds())
         new_element.append({'x': data['creation_date'],
                             'y': new_duration})
 
-    test_data.append({'name': "ONOS duration",
+    test_data.append({'name': "ONOS FUNCvirNet duration ",
                       'info': {'type': "graph",
                                'xlabel': 'time (s)',
                                'ylabel': 'duration (s)'},
+                      'data_set': new_element})
+
+    # Graph 2: (Nb test, nb failure)FuncvirtNet=f(time)
+    # ***************************************
+    new_element = []
+
+    for data in results:
+        onos_results = data['details']['FUNCvirNet']['status']
+        nbFailures = 0
+        for onos in onos_results:
+            if (onos['Case result'] == "FAIL"):
+                nbFailures += 1
+        new_element.append({'x': data['creation_date'],
+                            'y1': len(onos_results),
+                            'y2': nbFailures})
+
+    test_data.append({'name': "ONOS FUNCvirNet nb tests/nb failures",
+                      'info': {'type': "graph",
+                               'xlabel': 'time',
+                               'y1label': 'Number of tests',
+                               'y2label': 'Number of failures'},
+                      'data_set': new_element})
+
+    # Graph 3: (duration FUNCvirtNetL3)=f(time)
+    # ***************************************
+    new_element = []
+
+    # default duration 0:00:08.999904
+    # consider only seconds => 09
+    for data in results:
+        t = data['details']['FUNCvirNetL3']['duration']
+        h, m, s = re.split(':', t)
+        s = round(float(s))
+        new_duration = int(datetime.timedelta(hours=int(h),
+                                              minutes=int(m),
+                                              seconds=int(s)).total_seconds())
+        new_element.append({'x': data['creation_date'],
+                            'y': new_duration})
+
+    test_data.append({'name': "ONOS FUNCvirNetL3 duration",
+                      'info': {'type': "graph",
+                               'xlabel': 'time (s)',
+                               'ylabel': 'duration (s)'},
+                      'data_set': new_element})
+
+    # Graph 4: (Nb test, nb failure)FuncvirtNetL3=f(time)
+    # ***************************************
+    new_element = []
+
+    for data in results:
+        onos_results = data['details']['FUNCvirNetL3']['status']
+        nbFailures = 0
+        for onos in onos_results:
+            if (onos['Case result'] == "FAIL"):
+                nbFailures += 1
+        new_element.append({'x': data['creation_date'],
+                            'y1': len(onos_results),
+                            'y2': nbFailures})
+
+    test_data.append({'name': "ONOS FUNCvirNetL3 nb tests/nb failures",
+                      'info': {'type': "graph",
+                               'xlabel': 'time',
+                               'y1label': 'Number of tests',
+                               'y2label': 'Number of failures'},
                       'data_set': new_element})
     return test_data
 
@@ -312,6 +382,7 @@ def format_vPing_for_dashboard(results):
 
     return test_data
 
+
 def format_vPing_userdata_for_dashboard(results):
     """
     Post processing for the vPing_userdata test case
@@ -347,3 +418,4 @@ def format_vPing_userdata_for_dashboard(results):
                                     'Nb Success': nbTestOk}]})
 
     return test_data
+
