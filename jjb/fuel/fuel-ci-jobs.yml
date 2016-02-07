@@ -28,8 +28,8 @@
             <<: *brahmaputra
         - ericsson-pod1:
             <<: *brahmaputra
-#        - ericsson-pod2:
-#            <<: *brahmaputra
+        - ericsson-pod2:
+            <<: *brahmaputra
         - virtual:
             <<: *brahmaputra
 #--------------------------------
@@ -47,17 +47,17 @@
     scenario:
         # HA scenarios
         - 'os-odl_l2-nofeature-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
         - 'os-odl_l3-nofeature-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
         - 'os-onos-nofeature-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
         - 'os-nosdn-kvm-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
         - 'os-nosdn-ovs-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
         - 'os-nosdn-nofeature-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
         - 'os-odl_l2-bgpvpn-ha':
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-nosdn-kvm_ovs-ha':
@@ -227,109 +227,205 @@
 ########################
 # os-nosdn-nofeature-ha trigger
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-opnfv-jump-2-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-opnfv-jump-2-master-trigger'
     triggers:
         - timed: '0 2 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-ericsson-pod1-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-ericsson-pod1-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-ericsson-pod2-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-ericsson-pod2-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-nofeature-ha-virtual-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-nofeature-ha-opnfv-jump-2-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-nofeature-ha-ericsson-pod1-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-nofeature-ha-ericsson-pod2-brahmaputra-trigger'
     triggers:
         - timed: '0 2 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-virtual-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-virtual-brahmaputra-trigger'
     triggers:
         - timed: ''
 
 # os-nosdn-kvm-ha trigger
 - trigger:
-    name: 'fuel-os-nosdn-kvm-ha-opnfv-jump-2-trigger'
+    name: 'fuel-os-nosdn-kvm-ha-opnfv-jump-2-master-trigger'
     triggers:
         - timed: '0 6 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-kvm-ha-ericsson-pod1-trigger'
+    name: 'fuel-os-nosdn-kvm-ha-ericsson-pod1-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-ha-ericsson-pod2-trigger'
+    name: 'fuel-os-nosdn-kvm-ha-ericsson-pod2-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-kvm-ha-virtual-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-kvm-ha-opnfv-jump-2-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-kvm-ha-ericsson-pod1-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-kvm-ha-ericsson-pod2-brahmaputra-trigger'
     triggers:
         - timed: '0 6 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-kvm-ha-virtual-trigger'
+    name: 'fuel-os-nosdn-kvm-ha-virtual-brahmaputra-trigger'
     triggers:
         - timed: ''
 
 # os-odl_l2-nofeature-ha trigger
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-opnfv-jump-2-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-opnfv-jump-2-master-trigger'
     triggers:
         - timed: '0 10 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-ericsson-pod1-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-ericsson-pod1-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-ericsson-pod2-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-ericsson-pod2-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l2-nofeature-ha-virtual-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l2-nofeature-ha-opnfv-jump-2-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l2-nofeature-ha-ericsson-pod1-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l2-nofeature-ha-ericsson-pod2-brahmaputra-trigger'
     triggers:
         - timed: '0 10 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-virtual-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-virtual-brahmaputra-trigger'
     triggers:
         - timed: ''
 
 # os-odl_l3-nofeature-ha trigger
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-opnfv-jump-2-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-opnfv-jump-2-master-trigger'
     triggers:
         - timed: '0 14 * * *'
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-ericsson-pod1-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-ericsson-pod1-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-ericsson-pod2-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-ericsson-pod2-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l3-nofeature-ha-virtual-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l3-nofeature-ha-opnfv-jump-2-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l3-nofeature-ha-ericsson-pod1-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l3-nofeature-ha-ericsson-pod2-brahmaputra-trigger'
     triggers:
         - timed: '0 14 * * *'
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-virtual-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-virtual-brahmaputra-trigger'
     triggers:
         - timed: ''
 
 # os-onos-nofeature-ha trigger
 - trigger:
-    name: 'fuel-os-onos-nofeature-ha-opnfv-jump-2-trigger'
+    name: 'fuel-os-onos-nofeature-ha-opnfv-jump-2-master-trigger'
     triggers:
         - timed: '0 18 * * *'
 - trigger:
-    name: 'fuel-os-onos-nofeature-ha-ericsson-pod1-trigger'
+    name: 'fuel-os-onos-nofeature-ha-ericsson-pod1-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-ha-ericsson-pod2-trigger'
+    name: 'fuel-os-onos-nofeature-ha-ericsson-pod2-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-onos-nofeature-ha-virtual-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-onos-nofeature-ha-opnfv-jump-2-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-onos-nofeature-ha-ericsson-pod1-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-onos-nofeature-ha-ericsson-pod2-brahmaputra-trigger'
     triggers:
         - timed: '0 18 * * *'
 - trigger:
-    name: 'fuel-os-onos-nofeature-ha-virtual-trigger'
+    name: 'fuel-os-onos-nofeature-ha-virtual-brahmaputra-trigger'
     triggers:
         - timed: ''
 
 
 # os-nosdn-ovs-ha trigger
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-opnfv-jump-2-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-opnfv-jump-2-master-trigger'
     triggers:
         - timed: '0 22 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-ericsson-pod1-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-ericsson-pod1-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-ericsson-pod2-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-ericsson-pod2-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-ovs-ha-virtual-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-ovs-ha-opnfv-jump-2-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-ovs-ha-ericsson-pod1-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-ovs-ha-ericsson-pod2-brahmaputra-trigger'
     triggers:
         - timed: '0 22 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-virtual-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-virtual-brahmaputra-trigger'
     triggers:
         - timed: ''
