@@ -36,7 +36,7 @@ if [ -d "$dir_result" ]; then
         if [ $? != 0 ]; then
             echo "Not possible to push results to artifact: gsutil not installed";
         else
-            gsutil ls gs://artifacts.opnfv.org/"$project_artifact"/ &>/dev/null
+            gsutil ls gs://artifacts.opnfv.org/"$project"/ &>/dev/null
             if [ $? != 0 ]; then
                 echo "Not possible to push results to artifact: wrong credentials.";
             else
