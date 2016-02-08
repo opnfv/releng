@@ -36,9 +36,9 @@ if [ -d "$dir_result" ]; then
         if [ $? != 0 ]; then
             echo "Not possible to push results to artifact: gsutil not installed";
         else
-            gsutil ls gs://artifacts.opnfv.org/"$project_artifact"/ &>/dev/null
+            gsutil ls gs://artifacts.opnfv.org/"$project"/ &>/dev/null
             if [ $? != 0 ]; then
-                echo "Not possible to push results to artifact: wrong credentials.";
+                echo "Not possible to push results to artifact: gsutil not installed.";
             else
                 echo "copy result files to artifact $project_artifact"
                 gsutil -m cp -r "$dir_result" gs://artifacts.opnfv.org/"$project_artifact"/
