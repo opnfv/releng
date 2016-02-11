@@ -140,13 +140,22 @@ sed -i -- "s@osd-devices: /srv@osd-devices: $CEPH_DISKS@" $SRCBUNDLE
 sed -i -r -- "s/^(\s+osd-reformat: )'no'/\1'$CEPH_REFORMAT'/" $SRCBUNDLE
 
 ##
+## Manage NFV_FEATURES
+##
+NFV_PARAM=''
+if [ "$NFV_FEATURES" != 'nofeature' ]; then
+    NFV_PARAM="-f $NFV_FEATURES"
+fi
+
+
+##
 ## Configure Joid deployment
 ##
 
 echo "------ Deploy with juju ------"
-echo "Execute: ./deploy.sh -t $HA_MODE -o $OS_RELEASE -s $SDN_CONTROLLER -l $POD_NAME"
+echo "Execute: ./deploy.sh -t $HA_MODE -o $OS_RELEASE -s $SDN_CONTROLLER -l $POD_NAME $NFV_PARAMS"
 
-./deploy.sh -t $HA_MODE -o $OS_RELEASE -s $SDN_CONTROLLER -l $POD_NAME
+./deploy.sh -t $HA_MODE -o $OS_RELEASE -s $SDN_CONTROLLER -l $POD_NAME $NFV_PARAMS
 exit_on_error $? "Main deploy FAILED"
 
 ##
