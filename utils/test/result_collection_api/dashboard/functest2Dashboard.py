@@ -14,8 +14,8 @@
 # a new method format_<Test_case>_for_dashboard(results)
 # v0.1: basic example with methods for odl, Tempest, Rally and vPing
 #
-import re
 import datetime
+import re
 
 
 def get_functest_cases():
@@ -343,6 +343,33 @@ def format_Rally_for_dashboard(results):
     Post processing for the Rally test case
     """
     test_data = [{'description': 'Rally results for Dashboard'}]
+    # Graph 1: Test_Duration = f(time)
+    # ********************************
+    new_element = []
+    for data in results:
+        summary_cursor = len(data)
+        new_element.append({'x': data['creation_date'],
+                            'y': int(data['details'][summary_cursor]['summary']['duration'])})
+
+    test_data.append({'name': "rally duration",
+                      'info': {'type': "graph",
+                               'xlabel': 'time',
+                               'ylabel': 'duration (s)'},
+                      'data_set': new_element})
+
+    # Graph 2: Success rate = f(time)
+    # ********************************
+    new_element = []
+    for data in results:
+        new_element.append({'x': data['creation_date'],
+                            'y': float(data['details'][summary_cursor]['summary']['nb success'])})
+
+    test_data.append({'name': "rally success rate",
+                      'info': {'type': "graph",
+                               'xlabel': 'time',
+                               'ylabel': 'success rate (%)'},
+                      'data_set': new_element})
+
     return test_data
 
 
@@ -418,4 +445,3 @@ def format_vPing_userdata_for_dashboard(results):
                                     'Nb Success': nbTestOk}]})
 
     return test_data
-
