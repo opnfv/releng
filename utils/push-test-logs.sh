@@ -18,6 +18,14 @@ project=$PROJECT
 branch=${GIT_BRANCH##*/}
 testbed=$NODE_NAME
 dir_result="${HOME}/opnfv/$project/results/$branch"
+node_list=(\
+'opnfv-jump-1' 'opnfv-jump-2' 'ericsson-pod1' 'ericsson-pod2' \
+'intelpod2-jumphost' 'intel-pod3' 'intel-pod5' 'intel-pod6' \
+'intel-pod8' 'huawei-us-deploy-bare-1')
+
+if [[ ! " ${node_list[@]} " =~ " ${testbed} " ]]; then
+    echo "This is not a CI POD. Aborting pushing the logs to artifacts."
+fi
 
 if [[ "$branch" == "master" ]]; then
     project_artifact=logs/$project/$testbed/$res_build_date
