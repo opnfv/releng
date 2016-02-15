@@ -128,15 +128,22 @@ used in document build jobs:
 
 Then, you can see docs in output directory if build succeeded.
 
-This script will generate files in 'build' and 'output'. You should consider
-to add the following entries in '.gitignore' file, so that git can ignore
-built files.
+This script will generate files in 'docs_build' and 'docs_output'.
+You should consider to add the following entries in '.gitignore' file,
+so that git can ignore built files.
 
 .. code-block:: bash
 
     /docs_build/
     /docs_output/
     /releng/
+
+Note, you need some python packages which can be installed as follows:
+
+.. code-block:: bash
+
+    $ sudo pip install Sphinx==1.3.1 doc8 sphinxcontrib-httpdomain
+
 
 Jenkins Jobs
 ============
