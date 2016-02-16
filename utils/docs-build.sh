@@ -41,7 +41,7 @@ revision="$(git rev-parse --short HEAD)"
 rev_full="$(git rev-parse HEAD)"
 version="$(git describe --abbrev=0 2> /dev/null || echo draft) ($revision)"
 project="$(basename $(git rev-parse --show-toplevel))"
-html_notes="    Revision: $rev_full\n    Build date: |today|"
+html_notes="    Revision: $rev_full\n    Build date: $(date -u +'%Y-%m-%d')"
 default_conf='releng/docs/etc/conf.py'
 opnfv_logo='releng/docs/etc/opnfv-logo.png'
 
