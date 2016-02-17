@@ -25,12 +25,15 @@
     pod:
         - dell-us-testing-bm-1:
             installer: compass
+            auto-trigger-name: 'qtip-daily-dell-us-testing-bm-1-trigger'
             <<: *brahmaputra
         - orange-pod2:
             installer: joid
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *brahmaputra
         - dell-us-deploying-bm3:
             installer: fuel
+            auto-trigger-name: 'qtip-daily-dell-us-deploying-bm3-trigger'
             <<: *brahmaputra
 
 #--------------------------------
@@ -39,6 +42,7 @@
         - juniper-pod1:
             installer: joid
             <<: *master
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
 #      - zte-build-1:   #would be confirmed with the ZTE lab by tomorrow
 #            installer: fuel
 #            <<: *master
@@ -56,19 +60,22 @@
     disabled: false
 
     parameters:
-      - project-parameter:
-          project: '{project}'
-      - '{pod}-defaults'
-      - '{installer}-defaults'
-      - string:
-          name: DEPLOY_SCENARIO
-          default: 'os-nosdn-nofeature-ha'
+        - project-parameter:
+            project: '{project}'
+        - '{pod}-defaults'
+        - '{installer}-defaults'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-nofeature-ha'
 
     scm:
-       - git-scm:
-           credentials-id: '{ssh-credentials}'
-           refspec: ''
-           branch: '{branch}'
+        - git-scm:
+              credentials-id: '{ssh-credentials}'
+              refspec: ''
+              branch: '{branch}'
+
+    triggers:
+        - '{auto-trigger-name}'
 
     builders:
         - 'qtip-cleanup'
@@ -158,3 +165,29 @@
                     docker rmi opnfv/qtip:$tag
                 done
             fi
+
+#################
+#trigger macros
+#################
+
+- trigger:
+    name: 'qtip-daily-dell-us-deploying-bm3-trigger'
+    triggers:
+        - timed: '0 0 * * *'
+
+- trigger:
+    name: 'qtip-daily-dell-us-testing-bm-1-trigger'
+    triggers:
+        - timed: '0 3 * * *'
+
+#- trigger:
+#    name: 'qtip-daily-juniper-build1-trigger'
+#    triggers:
+#        - timed : '0 0 * * *'
+
+#- trigger:
+#   name: 'qtip-dailty-orange-fr-pod2-trigger'
+#   triggers:
+#       - timed : ' 0 0 * * *'
+
+
