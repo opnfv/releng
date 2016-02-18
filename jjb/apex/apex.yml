@@ -25,7 +25,7 @@
 
     scenario:
          - 'os-odl_l2-nofeature-ha'
-         - 'os-odl_l2-sfc-ha'
+         - 'os-odl_l2-sfc-noha'
          - 'os-odl_l3-nofeature-ha'
          - 'os-onos-nofeature-ha'
          - 'os-opencontrail-nofeature-ha'
@@ -63,7 +63,7 @@
                 - patchset-created-event:
                     exclude-drafts: 'false'
                     exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
+                    exclude-no-code-change: 'true'
                 - draft-published-event
                 - comment-added-contains-event:
                     comment-contains-value: 'recheck'
@@ -111,6 +111,12 @@
             block: true
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-odl_l3-nofeature-ha-{stream}'
+            predefined-parameters:
+              BUILD_DIRECTORY=apex-verify-{stream}/build_output
+            git-revision: false
+            block: true
+        - trigger-builds:
+          - project: 'apex-deploy-virtual-os-odl_l2-sfc-noha-{stream}'
             predefined-parameters:
               BUILD_DIRECTORY=apex-verify-{stream}/build_output
             git-revision: false
