@@ -88,4 +88,14 @@ $DEPLOY_COMMAND
 
 echo
 echo "--------------------------------------------------------"
-echo "Done!"
+echo "Deployment is done successfully!"
+
+# Quick and dirty fix for SFC scenatio - will be fixed properly post-release
+if [[ "$DEPLOY_SCENARIO" !~ "os-odl_l2-sfc" ]]; then
+    exit 0
+fi
+
+echo "SFC Scenario is deployed"
+
+# TBD: This is where we need to transfer poc.tacker-up.ssh script to
+# controller + ODL node
