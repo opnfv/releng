@@ -91,7 +91,7 @@ echo "--------------------------------------------------------"
 echo "Deployment is done successfully!"
 
 # Quick and dirty fix for SFC scenatio - will be fixed properly post-release
-if [[ "$DEPLOY_SCENARIO" !~ "os-odl_l2-sfc" ]]; then
+if [[ ! "$DEPLOY_SCENARIO" =~ "os-odl_l2-sfc" ]]; then
     exit 0
 fi
 
@@ -100,11 +100,12 @@ echo "SFC Scenario is deployed"
 # The stuff below is here temporarily and will be fixed once the release is out
 export FUEL_MASTER_IP=10.20.0.2
 export TACKER_SCRIPT_URL="https://git.opnfv.org/cgit/fuel/plain/prototypes/sfc_tacker/poc.tacker-up.sh?h=${GIT_BRANCH##*/}"
-export CONTROLLER_NODE_IP=$(sshpass -pr00tme ssh -t fuel  'fuel node list' | \
-    grep 'controller, opendaylight' | cut -d'|' -f5)
+export CONTROLLER_NODE_IP=$(sshpass -pr00tme /usr/bin/ssh -o UserKnownHostsFile=/dev/null \
+    -o StrictHostKeyChecking=no root@$FUEL_MASTER_IP 'fuel node list' | \
+    grep opendaylight | cut -d'|' -f5)
 
 # we can't do much if we do not have the controller IP
-if [[ "$CONTROLLER_NODE_IP" !~ "^10.20.0" ]]; then
+if [[ ! "$CONTROLLER_NODE_IP" =~ "10.20.0" ]]; then
     echo "Unable to retrieve controller IP"
     exit 1
 fi
