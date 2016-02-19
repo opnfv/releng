@@ -44,7 +44,7 @@ if [[ "$NODE_NAME" =~ "virtual" ]]; then
 fi
 
 # we currently support ericsson, intel, and lf labs
-if [[ ! "$LAB_NAME" =~ (ericsson|intel|lf) ]]; then
+if [[ ! "$LAB_NAME" =~ (ericsson|intel|lf|huawei) ]]; then
     echo "Unsupported/unidentified lab $LAB_NAME. Cannot continue!"
     exit 1
 else
@@ -62,10 +62,19 @@ chmod a+x $TMPDIR
 # clone the securedlab repo
 cd $WORKSPACE
 echo "Cloning securedlab repo ${GIT_BRANCH##origin/}"
-git clone ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab --quiet --branch ${GIT_BRANCH##origin/}
+
+if [[ "$NODE_NAME" =~ 'huawei-us-deploy-vm' ]]; then
+    sed -i 's/value\: kvm/value: qemu' $WORKSPACE/deploy/config/dea_base.yaml
+    BASECONF="file://$WORKSPACE/deploy/config"
+    LAB_NAME="devel-pipeline"
+    POD_NAME="huawei-ch"
+else
+    BASECONF="file://$WORKSPACE/securedlab"
+    git clone ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab --quiet --branch ${GIT_BRANCH##origin/}
+fi
 
 # construct the command
-DEPLOY_COMMAND="sudo $WORKSPACE/ci/deploy.sh -b file://$WORKSPACE/securedlab -l $LAB_NAME -p $POD_NAME -s $DEPLOY_SCENARIO -i file://$WORKSPACE/opnfv.iso -H -B $BRIDGE -S $TMPDIR"
+DEPLOY_COMMAND="sudo $WORKSPACE/ci/deploy.sh -b $BASECONF -l $LAB_NAME -p $POD_NAME -s $DEPLOY_SCENARIO -i file://$WORKSPACE/opnfv.iso -H -B $BRIDGE -S $TMPDIR"
 
 # log info to console
 echo "Deployment parameters"
