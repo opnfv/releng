@@ -44,7 +44,7 @@ if [[ "$NODE_NAME" =~ "virtual" ]]; then
 fi
 
 # we currently support ericsson, intel, and lf labs
-if [[ ! "$LAB_NAME" =~ (ericsson|intel|lf) ]]; then
+if [[ ! "$LAB_NAME" =~ (ericsson|intel|lf|huawei) ]]; then
     echo "Unsupported/unidentified lab $LAB_NAME. Cannot continue!"
     exit 1
 else
@@ -62,6 +62,11 @@ chmod a+x $TMPDIR
 # clone the securedlab repo
 cd $WORKSPACE
 echo "Cloning securedlab repo ${GIT_BRANCH##origin/}"
+
+if [[ ! "$LAB_NAME" =~ 'huawei' ]]; then
+    sed -i 's/value\: kvm/value: qemu' $WORKSPACE/deploy/config/dea_base.yaml
+fi
+
 git clone ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab --quiet --branch ${GIT_BRANCH##origin/}
 
 # construct the command
