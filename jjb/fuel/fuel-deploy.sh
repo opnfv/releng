@@ -95,11 +95,14 @@ if [[ ! "$DEPLOY_SCENARIO" =~ "os-odl_l2-sfc" ]]; then
     exit 0
 fi
 
+echo
 echo "SFC Scenario is deployed"
+echo
 
 # The stuff below is here temporarily and will be fixed once the release is out
+# The stuff below is here temporarily and will be fixed once the release is out
 export FUEL_MASTER_IP=10.20.0.2
-export TACKER_SCRIPT_URL="https://git.opnfv.org/cgit/fuel/plain/prototypes/sfc_tacker/poc.tacker-up.sh?h=${GIT_BRANCH##*/}"
+export TACKER_SCRIPT_URL="https://git.opnfv.org/cgit/fuel/plain/prototypes/sfc_tacker/poc.tacker-up.sh?h=${GIT_BRANCH#*/}"
 export CONTROLLER_NODE_IP=$(sshpass -pr00tme /usr/bin/ssh -o UserKnownHostsFile=/dev/null \
     -o StrictHostKeyChecking=no root@$FUEL_MASTER_IP 'fuel node list' | \
     grep opendaylight | cut -d'|' -f5)
@@ -110,23 +113,26 @@ if [[ ! "$CONTROLLER_NODE_IP" =~ "10.20.0" ]]; then
     exit 1
 fi
 
+echo
 echo "Copying and executing poc.tacker-up.sh script on controller node $CONTROLLER_NODE_IP"
+echo
 
 expect << END
-spawn /usr/bin/ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@\$env(FUEL_MASTER_IP)
+spawn /usr/bin/ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -l root $::env(FUEL_MASTER_IP)
 expect {
   -re ".*sword.*" {
     exp_send "r00tme\r"
   }
 }
 expect "# "
-send "/usr/bin/ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@\$env(CONTROLLER_NODE_IP)\r"
+send "/usr/bin/ssh -l root $::env(CONTROLLER_NODE_IP)\r"
 expect "# "
-send "/usr/bin/curl -o /root/poc.tacker-up.sh \$env(TACKER_SCRIPT_URL)\r"
+send "/usr/bin/curl -o /root/poc.tacker-up.sh $::env(TACKER_SCRIPT_URL)\r"
 expect "# "
 send "/bin/bash /root/poc.tacker-up.sh\r"
 expect "# "
 send "exit\r"
-expect "# "
+expect "Connection to $::env(CONTROLLER_NODE_IP) closed. "
 send "exit\r"
+expect "Connection to $::env(FUEL_MASTER_IP) closed. "
 END
