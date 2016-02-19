@@ -77,6 +77,27 @@ def format_rubbos_for_dashboard(results):
                       'data_set': new_element})
     return test_data
 
+def format_rubbos_probe_for_dashboard(results):
+    """
+    Post processing for the Rubbos test case of one time
+    """
+    test_data = [{'description': 'Rubbos results'}]
+
+    element = []
+    latest_result = results[-1]["details"]
+    for key in sorted(lastest_result):
+        throughput = latest_result[key]["throughput"]
+        client_num = int(key)
+        element.append({'x': client_num,
+                        'y': throughput})
+    #graph
+    test_data.append({'name': "Rubbos throughput vs client number",
+                      'info': {'type': "graph",
+                      'xlabel': 'client number',
+                      'ylabel': 'throughput'},
+                      'data_set': element})
+
+    return test_data
 
 def format_tu1_for_dashboard(results):
     test_data = [{'description': 'Tu-1 performance result'}]
@@ -165,7 +186,7 @@ def _get_results(db_url, test_criteria):
 def _test():
     db_url = "http://213.77.62.197"
     results = _get_results(db_url, {"project": "bottlenecks", "testcase": "rubbos"})
-    test_result = format_rubbos_for_dashboard(results)
+    test_result = format_rubbos_probe_for_dashboard(results)
     print json.dumps(test_result, indent=4)
 
     results = _get_results(db_url, {"project": "bottlenecks", "testcase": "tu1"})
