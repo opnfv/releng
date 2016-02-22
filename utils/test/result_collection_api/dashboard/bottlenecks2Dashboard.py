@@ -62,7 +62,7 @@ def format_rubbos_for_dashboard(results):
     """
     test_data = [{'description': 'Rubbos results'}]
 
-    # Graph 1:
+    # Graph 1:Rubbos maximal throughput
     # ********************************
     new_element = []
     for each_result in results:
@@ -75,29 +75,23 @@ def format_rubbos_for_dashboard(results):
                                'xlabel': 'time',
                                'ylabel': 'maximal throughput'},
                       'data_set': new_element})
-    return test_data
-
-def format_rubbos_probe_for_dashboard(results):
-    """
-    Post processing for the Rubbos test case of one time
-    """
-    test_data = [{'description': 'Rubbos results'}]
-
-    element = []
+    # Graph 2: Rubbos last record
+    # ********************************
+    new_element = []
     latest_result = results[-1]["details"]
-    for key in sorted(lastest_result):
-        throughput = latest_result[key]["throughput"]
-        client_num = int(key)
-        element.append({'x': client_num,
-                        'y': throughput})
-    #graph
+    for data in latest_result:
+        client_num = int(data["client"])
+        throughput = int(data["throughput"])
+        new_element.append({'x': client_num,
+                            'y': throughput})
     test_data.append({'name': "Rubbos throughput vs client number",
                       'info': {'type': "graph",
                       'xlabel': 'client number',
                       'ylabel': 'throughput'},
-                      'data_set': element})
+                      'data_set': new_element})
 
     return test_data
+
 
 def format_tu1_for_dashboard(results):
     test_data = [{'description': 'Tu-1 performance result'}]
@@ -182,11 +176,11 @@ def _get_results(db_url, test_criteria):
     myDataResults = myNewData['test_results']
     return myDataResults
 
-
+#only for local test
 def _test():
-    db_url = "http://213.77.62.197"
+    db_url = "http://testresults.opnfv.org/testapi"
     results = _get_results(db_url, {"project": "bottlenecks", "testcase": "rubbos"})
-    test_result = format_rubbos_probe_for_dashboard(results)
+    test_result = format_rubbos_for_dashboard(results)
     print json.dumps(test_result, indent=4)
 
     results = _get_results(db_url, {"project": "bottlenecks", "testcase": "tu1"})
