@@ -31,14 +31,17 @@ fi
 # get current SHA1
 CURRENT_SHA1=$(git rev-parse HEAD)
 
-if [[ "$CURRENT_SHA1" == "$LATEST_ISO_SHA1" ]]; then
+# set FORCE_BUILD to false for non-daily builds
+FORCE_BUILD=${FORCE_BUILD:-false}
+
+if [[ "$CURRENT_SHA1" == "$LATEST_ISO_SHA1" && "$FORCE_BUILD"="false" ]]; then
     echo "An ISO has already been built for this commit"
     echo "    $LATEST_ISO_URL"
     echo "Nothing new to build. Exiting."
     touch $WORKSPACE/.noupload
     exit 0
 else
-    echo "This commit has not been built yet. Proceeding with the build."
+    echo "This commit has not been built yet or forced build! Proceeding with the build."
     /bin/rm -f $LATEST_ISO_PROPERTIES
     echo
 fi
