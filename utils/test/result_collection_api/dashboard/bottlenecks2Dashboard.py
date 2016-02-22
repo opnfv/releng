@@ -55,29 +55,28 @@ def format_bottlenecks_for_dashboard(case, results):
         print "Test cases not declared"
     return res
 
-
-def format_rubbos_for_dashboard(results):
-    """
-    Post processing for the Rubbos test case
-    """
-    test_data = [{'description': 'Rubbos results'}]
-
+#def format_rubbos_for_dashboard(results):
+#    """
+#    Post processing for the Rubbos test case
+#    """
+#    test_data = [{'description': 'Rubbos results'}]
+#
     # Graph 1:
     # ********************************
-    new_element = []
-    for each_result in results:
-        throughput_data = [record['throughput'] for record in each_result['details']]
-        new_element.append({'x': each_result['creation_date'],
-                            'y': max(throughput_data)})
+#    new_element = []
+#    for each_result in results:
+#        throughput_data = [record['throughput'] for record in each_result['details']]
+#        new_element.append({'x': each_result['creation_date'],
+#                            'y': max(throughput_data)})
+#
+#    test_data.append({'name': "Rubbos max throughput",
+#                      'info': {'type': "graph",
+#                               'xlabel': 'time',
+#                               'ylabel': 'maximal throughput'},
+#                      'data_set': new_element})
+#    return test_data
 
-    test_data.append({'name': "Rubbos max throughput",
-                      'info': {'type': "graph",
-                               'xlabel': 'time',
-                               'ylabel': 'maximal throughput'},
-                      'data_set': new_element})
-    return test_data
-
-def format_rubbos_probe_for_dashboard(results):
+def format_rubbos_for_dashboard(results):
     """
     Post processing for the Rubbos test case of one time
     """
@@ -96,7 +95,6 @@ def format_rubbos_probe_for_dashboard(results):
                       'xlabel': 'client number',
                       'ylabel': 'throughput'},
                       'data_set': element})
-
     return test_data
 
 def format_tu1_for_dashboard(results):
@@ -186,7 +184,7 @@ def _get_results(db_url, test_criteria):
 def _test():
     db_url = "http://213.77.62.197"
     results = _get_results(db_url, {"project": "bottlenecks", "testcase": "rubbos"})
-    test_result = format_rubbos_probe_for_dashboard(results)
+    test_result = format_rubbos_for_dashboard(results)
     print json.dumps(test_result, indent=4)
 
     results = _get_results(db_url, {"project": "bottlenecks", "testcase": "tu1"})
