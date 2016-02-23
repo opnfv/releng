@@ -82,10 +82,27 @@ Writing RST Markdown
 
 See http://sphinx-doc.org/rest.html .
 
-You can add dedicated contents by using 'only' directive with build type
-('html' and 'pdf') for OPNFV document
+**Hint:**
+If you have long table and trouble in rendering it in PDF version due to
+space limitation, you can use 'longtable' as follows:
 
-Example :
+.. code-block:: bash
+
+    .. table::
+        :class: longtable
+
+        +------------------------+------------+----------+----------+
+        | Header row, column 1   | Header 2   | Header 3 | Header 4 |
+        +========================+============+==========+==========+
+        | body row 1, column 1   | column 2   | column 3 | column 4 |
+        +------------------------+------------+----------+----------+
+        | body row 2             | ...        | ...      |          |
+        +------------------------+------------+----------+----------+
+
+**Hint:**
+You can add dedicated contents by using 'only' directive with build type
+('html' and 'pdf') for OPNFV document. But, this is not encouraged to use
+since this may make different views in HTML and PDF version.
 
 .. code-block:: bash
 
