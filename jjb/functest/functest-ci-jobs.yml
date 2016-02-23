@@ -13,10 +13,12 @@
         stream: master
         branch: '{stream}'
         gs-pathname: ''
+        docker-tag: 'latest'
     brahmaputra: &brahmaputra
         stream: brahmaputra
         branch: 'stable/{stream}'
         gs-pathname: '/{stream}'
+        docker-tag: 'brahmaputra.1.0'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
@@ -124,6 +126,10 @@
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-odl_l2-nofeature-ha'
+       - string:
+            name: DOCKER_TAG
+            default: '{docker-tag}'
+            description: 'Tag to pull docker image'
         - functest-parameter:
             gs-pathname: '{gs-pathname}'
 
@@ -261,7 +267,7 @@
             sudo rm -rf ${dir_result}/*
             res_volume="-v ${dir_result}:/home/opnfv/functest/results"
 
-            docker pull opnfv/functest:latest >$redirect
+            docker pull opnfv/functest:$DOCKER_TAG >$redirect
             cmd="sudo docker run --privileged=true -id ${envs} ${labconfig} ${sshkey} ${res_volume} opnfv/functest:latest /bin/bash"
             echo "Functest: Running docker run command: ${cmd}"
             ${cmd}
