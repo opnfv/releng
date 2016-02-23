@@ -13,10 +13,12 @@
         stream: master
         branch: '{stream}'
         gs-pathname: ''
+        docker-tag: 'latest'
     brahmaputra: &brahmaputra
         stream: brahmaputra
         branch: 'stable/{stream}'
         gs-pathname: '{stream}'
+        docker-tag: 'brahmaputra.1.0'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
@@ -176,6 +178,10 @@
             name: DEPLOY_SCENARIO
             default: 'os-odl_l2-nofeature-ha'
         - string:
+            name: DOCKER_TAG
+            default: '{docker-tag}'
+            description: 'Tag to pull docker image'
+        - string:
             name: YARDSTICK_SUITE_NAME
             default: opnfv_${{NODE_NAME}}_{suite}.yaml
             description: 'Path to test suite'
@@ -237,7 +243,7 @@
                 -e YARDSTICK_BRANCH=${GIT_BRANCH##origin/} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO}"
 
             # Pull the latest image
-            docker pull opnfv/yardstick >$redirect
+            docker pull opnfv/yardstick:$DOCKER_TAG >$redirect
 
             # Run docker
             cmd="sudo docker run ${opts} ${envs} ${labconfig} ${sshkey} opnfv/yardstick \
