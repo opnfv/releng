@@ -552,7 +552,7 @@ class TestResultsHandler(GenericApiHandler):
 
                 if period_arg > 0:
                     period = datetime.now() - timedelta(days=period_arg)
-                    obj = {"$gte": period}
+                    obj = {"$gte": str(period)}
                     get_request["creation_date"] = obj
         else:
             get_request["_id"] = result_id
@@ -705,7 +705,7 @@ class DashboardHandler(GenericApiHandler):
                     raise HTTPError(HTTP_BAD_REQUEST)
                 if period_arg > 0:
                     period = datetime.now() - timedelta(days=period_arg)
-                    obj = {"$gte": period}
+                    obj = {"$gte": str(period)}
                     get_request["creation_date"] = obj
         else:
             get_request["_id"] = result_id
