@@ -78,11 +78,13 @@ echo "Current branch: $branch"
 
 if [[ "$branch" == "master" ]]; then
     DOCKER_TAG="master"
+    DOCKER_BRANCH_TAG="latest"
 else
     git clone https://gerrit.opnfv.org/gerrit/releng $WORKSPACE/releng
 
     DOCKER_TAG=$($WORKSPACE/releng/utils/calculate_version.sh -t docker \
         -n $DOCKER_REPO_NAME)
+    DOCKER_BRANCH_TAG="stable"
 
     ret_val=$?
     if [[ $ret_val -ne 0 ]]; then
@@ -94,11 +96,11 @@ echo "Tag version to be build and pushed: $DOCKER_TAG"
 
 
 # Start the build
-echo "Building docker image: $DOCKER_REPO_NAME:latest"
+echo "Building docker image: $DOCKER_REPO_NAME:$DOCKER_BRANCH_TAG"
 
-docker build --no-cache -t $DOCKER_REPO_NAME:latest .
+docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_BRANCH_TAG .
 echo "Creating tag '$DOCKER_TAG'..."
-docker tag -f $DOCKER_REPO_NAME:latest $DOCKER_REPO_NAME:$DOCKER_TAG
+docker tag -f $DOCKER_REPO_NAME:$DOCKER_BRANCH_TAG $DOCKER_REPO_NAME:$DOCKER_TAG
 
 # list the images
 echo "Available images are:"
@@ -110,8 +112,8 @@ if [[ "$PUSH_IMAGE" == "true" ]]; then
     echo "--------------------------------------------------------"
     echo
     # Push to the Dockerhub repository
-    echo "Pushing $DOCKER_REPO_NAME:latest ..."
-    docker push $DOCKER_REPO_NAME:latest
+    echo "Pushing $DOCKER_REPO_NAME:$DOCKER_BRANCH_TAG ..."
+    docker push $DOCKER_REPO_NAME:$DOCKER_BRANCH_TAG
 
     echo "Pushing $DOCKER_REPO_NAME:$DOCKER_TAG ..."
     docker push $DOCKER_REPO_NAME:$DOCKER_TAG
