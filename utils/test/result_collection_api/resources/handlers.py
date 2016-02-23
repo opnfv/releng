@@ -552,7 +552,7 @@ class TestResultsHandler(GenericApiHandler):
 
                 if period_arg > 0:
                     period = datetime.now() - timedelta(days=period_arg)
-                    obj = {"$gte": period}
+                    obj = {"$gte": str(period)}
                     get_request["creation_date"] = obj
         else:
             get_request["_id"] = result_id
@@ -627,6 +627,12 @@ class TestResultsHandler(GenericApiHandler):
         # convert payload to object
         test_result = TestResult.test_result_from_dict(self.json_args)
         test_result.creation_date = datetime.now()
+
+        print test_result.creation_date
+        print " ******** "
+        print test_result.format()
+        print " ******** "
+        print test_result.creation_date
 
         future = self.db.test_results.insert(test_result.format(),
                                              check_keys=False)
@@ -705,7 +711,7 @@ class DashboardHandler(GenericApiHandler):
                     raise HTTPError(HTTP_BAD_REQUEST)
                 if period_arg > 0:
                     period = datetime.now() - timedelta(days=period_arg)
-                    obj = {"$gte": period}
+                    obj = {"$gte": str(period)}
                     get_request["creation_date"] = obj
         else:
             get_request["_id"] = result_id
