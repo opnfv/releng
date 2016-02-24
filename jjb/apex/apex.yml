@@ -101,26 +101,30 @@
         - 'apex-build'
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-odl_l2-nofeature-ha-{stream}'
-            predefined-parameters:
+            predefined-parameters: |
               BUILD_DIRECTORY=apex-verify-{stream}/build_output
+              OPNFV_CLEAN='yes'
             git-revision: false
             block: true
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-onos-nofeature-ha-{stream}'
-            predefined-parameters:
+            predefined-parameters: |
               BUILD_DIRECTORY=apex-verify-{stream}/build_output
+              OPNFV_CLEAN='yes'
             git-revision: false
             block: true
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-odl_l3-nofeature-ha-{stream}'
-            predefined-parameters:
+            predefined-parameters: |
               BUILD_DIRECTORY=apex-verify-{stream}/build_output
+              OPNFV_CLEAN='yes'
             git-revision: false
             block: true
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-odl_l2-sfc-noha-{stream}'
-            predefined-parameters:
+            predefined-parameters: |
               BUILD_DIRECTORY=apex-verify-{stream}/build_output
+              OPNFV_CLEAN='yes'
             git-revision: false
             block: true
         - 'apex-workspace-cleanup'
@@ -162,6 +166,8 @@
     builders:
         - trigger-builds:
           - project: 'apex-deploy-{platform}-{scenario}-{stream}'
+            predefined-parameters:
+              OPNFV_CLEAN='yes'
             git-revision: false
             block: true
         - trigger-builds:
@@ -352,8 +358,9 @@
             block: true
         - trigger-builds:
           - project: 'apex-deploy-baremetal-os-odl_l2-nofeature-ha-{stream}'
-            predefined-parameters:
+            predefined-parameters: |
               BUILD_DIRECTORY=apex-build-{stream}/build_output
+              OPNFV_CLEAN='yes'
             git-revision: true
             block: true
         - trigger-builds:
@@ -453,6 +460,10 @@
             name: GS_URL
             default: artifacts.opnfv.org/$PROJECT{gs-pathname}
             description: "URL to Google Storage."
+        - string:
+            name: OPNFV_CLEAN
+            default: 'no'
+            description: "Use yes in lower case to invoke clean. Indicates if the deploy environment should be cleaned before deployment"
 
 ########################
 # builder macros
@@ -475,21 +486,25 @@
             if echo $BUILD_TAG | grep "apex-verify" 1> /dev/null; then
               if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
                 export OPNFV_ARTIFACT_VERSION=brahmaputra-dev${BUILD_NUMBER}
+                export BUILD_ARGS="-c file://$CACHE_DIRECTORY $BUILD_DIRECTORY"
               else
                 export OPNFV_ARTIFACT_VERSION=dev${BUILD_NUMBER}
+                export BUILD_ARGS="-c file://$CACHE_DIRECTORY"
               fi
             elif [ "$ARTIFACT_VERSION" == "daily" ]; then
               if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
                 export OPNFV_ARTIFACT_VERSION=brahmaputra-$(date -u +"%Y-%m-%d")
+                export BUILD_ARGS="-c file://$CACHE_DIRECTORY $BUILD_DIRECTORY"
               else
                 export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d")
+                export BUILD_ARGS="-c file://$CACHE_DIRECTORY --iso"
               fi
             else
                 export OPNFV_ARTIFACT_VERSION=${ARTIFACT_VERSION}
             fi
             # start the build
             cd $WORKSPACE/ci
-            ./build.sh -v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
+            ./build.sh -v $OPNFV_ARTIFACT_VERSION $BUILD_ARGS
             RPM_VERSION=$(grep Version $BUILD_DIRECTORY/../build/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '_-')
             # list the contents of BUILD_OUTPUT directory
             ls -al $BUILD_DIRECTORY
@@ -505,8 +520,8 @@
                 echo "OPNFV_RPM_MD5SUM=$(md5sum $BUILD_DIRECTORY/opnfv-apex-$RPM_VERSION.noarch.rpm | cut -d' ' -f1)"
                 echo "OPNFV_BUILD_URL=$BUILD_URL"
             ) > $WORKSPACE/opnfv.properties
-            echo
             echo "--------------------------------------------------------"
+            echo "Done!"
 
 - builder:
     name: 'apex-workspace-cleanup'
@@ -575,81 +590,91 @@
             echo "--------------------------------------------------------"
             echo
 
-            if [[ ! "$ARTIFACT_NAME" == "latest" ]]; then
-                # if artifact name is passed the pull a
-                # specific artifact from artifacts.opnfv.org
-                RPM_INSTALL_PATH=$GS_URL/$ARTIFACT_NAME
-            else
-                if [[ $BUILD_DIRECTORY == *verify* ]]; then
-                  BUILD_DIRECTORY=$WORKSPACE/../$BUILD_DIRECTORY
-                  echo "BUILD DIRECTORY modified to $BUILD_DIRECTORY"
-                elif [[ $BUILD_DIRECTORY == *apex-build* ]]; then
-                  BUILD_DIRECTORY=$WORKSPACE/../$BUILD_DIRECTORY
-                  echo "BUILD DIRECTORY modified to $BUILD_DIRECTORY"
-                fi
-
-                if [[ -f ${BUILD_DIRECTORY}/../opnfv.properties ]]; then
-                    # if opnfv.properties exists then use the
-                    # local build. Source the file so we get local OPNFV vars
-                    source ${BUILD_DIRECTORY}/../opnfv.properties
-                    RPM_INSTALL_PATH=${BUILD_DIRECTORY}/$(basename $OPNFV_RPM_URL)
+            if [[ ! "$ARTIFACT_NAME" == "local" ]]; then
+                if [[ ! "$ARTIFACT_NAME" == "latest" && ! "$ARTIFACT_NAME" == "local" ]]; then
+                    # if artifact name is passed the pull a
+                    # specific artifact from artifacts.opnfv.org
+                    RPM_INSTALL_PATH=$GS_URL/$ARTIFACT_NAME
                 else
                     if [[ $BUILD_DIRECTORY == *verify* ]]; then
-                      echo "BUILD_DIRECTORY is from a verify job, so will not use latest from URL"
-                      echo "Check that the slave has opnfv.properties in $BUILD_DIRECTORY"
-                      exit 1
+                      BUILD_DIRECTORY=$WORKSPACE/../$BUILD_DIRECTORY
+                      echo "BUILD DIRECTORY modified to $BUILD_DIRECTORY"
                     elif [[ $BUILD_DIRECTORY == *apex-build* ]]; then
-                      echo "BUILD_DIRECTORY is from a daily job, so will not use latest from URL"
-                      echo "Check that the slave has opnfv.properties in $BUILD_DIRECTORY"
-                      exit 1
+                      BUILD_DIRECTORY=$WORKSPACE/../$BUILD_DIRECTORY
+                      echo "BUILD DIRECTORY modified to $BUILD_DIRECTORY"
                     fi
-                    # no opnfv.properties means use the latest from artifacts.opnfv.org
-                    # get the latest.properties to get the link to the latest artifact
-                    curl -s -o $WORKSPACE/opnfv.properties http://$GS_URL/latest.properties
-                    [[ -f opnfv.properties ]] || exit 1
-                    # source the file so we get OPNFV vars
-                    source opnfv.properties
-                    RPM_INSTALL_PATH=$OPNFV_RPM_URL
+
+                    if [[ -f ${BUILD_DIRECTORY}/../opnfv.properties ]]; then
+                        # if opnfv.properties exists then use the
+                        # local build. Source the file so we get local OPNFV vars
+                        source ${BUILD_DIRECTORY}/../opnfv.properties
+                        RPM_INSTALL_PATH=${BUILD_DIRECTORY}/$(basename $OPNFV_RPM_URL)
+                    else
+                        if [[ $BUILD_DIRECTORY == *verify* ]]; then
+                          echo "BUILD_DIRECTORY is from a verify job, so will not use latest from URL"
+                          echo "Check that the slave has opnfv.properties in $BUILD_DIRECTORY"
+                          exit 1
+                        elif [[ $BUILD_DIRECTORY == *apex-build* ]]; then
+                          echo "BUILD_DIRECTORY is from a daily job, so will not use latest from URL"
+                          echo "Check that the slave has opnfv.properties in $BUILD_DIRECTORY"
+                          exit 1
+                        fi
+                        # no opnfv.properties means use the latest from artifacts.opnfv.org
+                        # get the latest.properties to get the link to the latest artifact
+                        curl -s -o $WORKSPACE/opnfv.properties http://$GS_URL/latest.properties
+                        [[ -f opnfv.properties ]] || exit 1
+                        # source the file so we get OPNFV vars
+                        source opnfv.properties
+                        RPM_INSTALL_PATH=$OPNFV_RPM_URL
+                    fi
                 fi
             fi
 
-            RPM_LIST=$RPM_INSTALL_PATH
-            for pkg in common undercloud opendaylight-sfc; do
-                RPM_LIST+=" ${RPM_INSTALL_PATH/opnfv-apex/opnfv-apex-${pkg}}"
-            done
+            if [ -z "$DEPLOY_SCENARIO" ]; then
+              echo "Deploy scenario not set!"
+              exit 1
+            fi
 
-            # update / install the new rpm
-            if rpm -q opnfv-apex > /dev/null; then
-               if [ $(basename $OPNFV_RPM_URL) == $(rpm -q opnfv-apex).rpm ]; then
-                 echo "RPM is already installed"
-               elif sudo yum update -y $RPM_LIST | grep "does not update installed package"; then
-                   if ! sudo yum downgrade -y $RPM_LIST; then
-                     sudo yum remove -y opnfv-undercloud opnfv-common
-                     sudo yum downgrade -y $RPM_INSTALL_PATH
+            # if local use local files, otherwise update the RPMs
+            if [[ "$ARTIFACT_NAME" == "local" ]]; then
+                if [ ! -e "${WORKSPACE}/build/lib" ]; then ln -s ${WORKSPACE}/lib ${WORKSPACE}/build/lib; fi
+                DEPLOY_CMD="./deploy.sh -c ${WORKSPACE}/build -r ${WORKSPACE}/build/images/"
+                DEPLOY_FILE="${WORKSPACE}/config/deploy/${DEPLOY_SCENARIO}.yaml"
+                NETWORK_FILE="${WORKSPACE}/config/deploy/network/network_settings.yaml"
+            else
+                RPM_LIST=$RPM_INSTALL_PATH
+                for pkg in common undercloud opendaylight-sfc; do
+                    RPM_LIST+=" ${RPM_INSTALL_PATH/opnfv-apex/opnfv-apex-${pkg}}"
+                done
+
+                # update / install the new rpm
+                if rpm -q opnfv-apex > /dev/null; then
+                   if [ $(basename $OPNFV_RPM_URL) == $(rpm -q opnfv-apex).rpm ]; then
+                     echo "RPM is already installed"
+                   elif sudo yum update -y $RPM_LIST | grep "does not update installed package"; then
+                       if ! sudo yum downgrade -y $RPM_LIST; then
+                         sudo yum remove -y opnfv-undercloud opnfv-common
+                         sudo yum downgrade -y $RPM_INSTALL_PATH
+                       fi
                    fi
-               fi
-            else
-               sudo yum install -y $RPM_LIST;
+                else
+                   sudo yum install -y $RPM_LIST;
+                fi
+                DEPLOY_CMD=opnfv-deploy
+                DEPLOY_FILE="/etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml"
+                NETWORK_FILE="/etc/opnfv-apex/network_settings.yaml"
             fi
 
-            # cleanup virtual machines before we start
-            sudo opnfv-clean
+            if [ "$OPNFV_CLEAN" == 'yes' ]; then
+                sudo ./clean.sh
+            fi
             # initiate virtual deployment
-            if [ -e /etc/opnfv-apex/network_settings.yaml ]; then
-              if [ -n "$DEPLOY_SCENARIO" ]; then
-                echo "Deploy Scenario set to ${DEPLOY_SCENARIO}"
-                if [ -e /etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml ]; then
-                  sudo opnfv-deploy -v -d /etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml -n /etc/opnfv-apex/network_settings.yaml --debug
-                else
-                  echo "File does not exist /etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml"
-                  exit 1
-                fi
-              else
-                echo "Deploy scenario not set!"
-                exit 1
-              fi
+            echo "Deploy Scenario set to ${DEPLOY_SCENARIO}"
+            if [ -e $DEPLOY_FILE ]; then
+              sudo $DEPLOY_CMD -v -d ${DEPLOY_FILE}.yaml -n $NETWORK_FILE --debug
             else
-              sudo opnfv-deploy -v
+              echo "File does not exist /etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml"
+              exit 1
             fi
             echo
             echo "--------------------------------------------------------"
