@@ -15,7 +15,7 @@ function format_date(inputDate){
 }
 
 // Draw a single graph for a specific test for a specific installer
-function draw_graph_per_scenario_per_installer (filename, installer, scenario, test_unit){
+function draw_graph_per_scenario_per_installer (filename, installer, pod, scenario, test_unit){
     $.getJSON(filename, function(data) {
     var serie = [];
     index_test = 0;
@@ -86,19 +86,14 @@ function draw_graphs_all_scenarios_per_installer () {
     project = opnfv_dashboard_project;
     test = opnfv_dashboard_test;
     test_unit = opnfv_dashboard_test_unit;
-
-    if (installer.length==0){
-        alert ('select an installer');
-        return;
-    }
-    if (test.length==0){
-        alert ('select a test case');
-        return;
-    }
+    
     for (i=0; i<opnfv_dashboard_installers_scenarios[installer].length; i++){
-        var filename = './' + opnfv_dashboard_file_directory + '/' + installer + '/' + project + '/' + opnfv_dashboard_file_prefix + project+'_'+test+'_'+opnfv_dashboard_installers_scenarios[installer][i]+opnfv_dashboard_file_suffix;
-        console.log(filename);
-        draw_graph_per_scenario_per_installer(filename, installer, opnfv_dashboard_installers_scenarios[installer][i], test_unit);
+        var filename = './' + opnfv_dashboard_file_directory + '/' + installer + '/' + project + '/' + opnfv_dashboard_file_prefix + project+'_'+test+'_'+opnfv_dashboard_installers_scenarios[installer][i];
+        if (opnfv_dashboard_pod!='all')
+		filename += '_' + opnfv_dashboard_pod;
+		filename += opnfv_dashboard_file_suffix;
+		console.log(filename);
+        draw_graph_per_scenario_per_installer(filename, installer, opnfv_dashboard_pod, opnfv_dashboard_installers_scenarios[installer][i], test_unit);
     }
 }
 
@@ -113,7 +108,27 @@ function on_testcase_draw_graph(test, test_unit){
 function on_installer_draw_graph(installer){
    opnfv_dashboard_installer = installer;
    show_installers(installer);
+   opnfv_dashboard_pod = 'all';  // force the new pod to 'all' because there is # pods per installer
+   show_installers_pods(opnfv_dashboard_pod);
    show_divs(installer);
+   draw_graphs_all_scenarios_per_installer ();
+}
+
+function on_pod_draw_graph(pod){
+   opnfv_dashboard_pod = pod;
+   show_installers_pods(pod);
+   show_divs(opnfv_dashboard_installer);
+   draw_graphs_all_scenarios_per_installer ();
+}
+
+function on_ready_draw_graph(){
+   opnfv_dashboard_test = 'vPing';
+   opnfv_dashboard_test_unit = 'vPing duration';
+   opnfv_dashboard_installer = opnfv_dashboard_installers[Math.round((Math.random(opnfv_dashboard_installers.length-1)))];
+   show_installers_pods(opnfv_dashboard_installers_pods[opnfv_dashboard_installer][0]);
+   show_installers(opnfv_dashboard_installer);
+   show_divs(opnfv_dashboard_installer);
+   $("#testcase_selected").html(opnfv_dashboard_test_unit);   
    draw_graphs_all_scenarios_per_installer ();
 }
 
@@ -155,6 +170,20 @@ function show_installers(active_installer)
     $("#installers").html(html_installers);
 }
 
+// generate pods buttons
+function show_installers_pods(active_pod)
+{
+    var html_pods = '';
+    html_pods += '<ul class="nav nav-pills">';
+    for (var i in opnfv_dashboard_installers_pods[opnfv_dashboard_installer])
+        if (opnfv_dashboard_installers_pods[opnfv_dashboard_installer][i]==active_pod)
+            html_pods += '<li class="active"><a href="#" onClick="on_pod_draw_graph(\''+opnfv_dashboard_installers_pods[opnfv_dashboard_installer][i]+'\')">'+opnfv_dashboard_installers_pods_print[opnfv_dashboard_installer][i]+'</a></li>';         
+		else
+		    html_pods += '<li><a href="#" onClick="on_pod_draw_graph(\''+opnfv_dashboard_installers_pods[opnfv_dashboard_installer][i]+'\')">'+opnfv_dashboard_installers_pods_print[opnfv_dashboard_installer][i]+'</a></li>';
+    html_pods += '</ul>';
+    $("#pods").html(html_pods);
+}
+
 // generate a div per installer (to host the graph)
 function show_divs(installer){
   $("#graphs").remove();
@@ -163,14 +192,15 @@ function show_divs(installer){
     var div_scenario = '<div class= "chart" id="' + opnfv_dashboard_installers_scenarios[installer][i] + '"/>';
 console.log(div_scenario);
     var $newdiv = $(div_scenario);
-
     $("#graphs").append($newdiv);
   }
 }
 
 // generate HTML menus and buttons
 $( document ).ready(function(){
-  show_installers('');
-  show_testcases();
   console.log( "ready!" );
+  
+  //show_installers('');
+  show_testcases();
+  on_ready_draw_graph();
 });
