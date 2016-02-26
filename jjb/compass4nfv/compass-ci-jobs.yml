@@ -59,14 +59,14 @@
             auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
 
     jobs:
-        - 'compass-{scenario}-{pod}-daily-{stream}'
+        - 'compass-{scenario}-{pod}-{os-version}-daily-{stream}'
         - 'compass-deploy-{pod}-daily-{stream}'
 
 ########################
 # job templates
 ########################
 - job-template:
-    name: 'compass-{scenario}-{pod}-daily-{stream}'
+    name: 'compass-{scenario}-{pod}-{os-version}-daily-{stream}'
 
     concurrent: true
 
@@ -77,7 +77,7 @@
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - 'compass-os-.*?-{pod}-daily-.*?'
+                - 'compass-os-.*?-{pod}-.*?-daily-.*?'
                 - 'compass-verify-[^-]*'
             block-level: 'NODE'
 
@@ -152,7 +152,7 @@
 
     wrappers:
         - build-name:
-            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO - OS: $COMPASS_OS_VERSION'
         - timeout:
             timeout: 120
             abort: true
