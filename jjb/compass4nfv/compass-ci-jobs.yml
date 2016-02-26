@@ -23,15 +23,22 @@
 #        brahmaputra
 #--------------------------------
         - huawei-us-deploy-bare-1:
+            os-version: 'trusty'
             <<: *brahmaputra
         - huawei-virtual:
+            os-version: 'trusty'
             <<: *brahmaputra
 #--------------------------------
 #        master
 #--------------------------------
+        - huawei-us-deploy-bare-2:
+            os-version: 'centos7'
+            <<: *master
         - intel-pod8:
+            os-version: 'trusty'
             <<: *master
         - huawei-virtual:
+            os-version: 'trusty'
             <<: *master
 
     scenario:
@@ -99,6 +106,7 @@
               current-parameters: false
               predefined-parameters:
                 DEPLOY_SCENARIO={scenario}
+                COMPASS_OS_VERSION={os-version}
               same-node: true
               block: true
         - trigger-builds:
@@ -200,11 +208,6 @@
             choices:
                 - 'liberty'
                 - 'juno'
-        - choice:
-            name: COMPASS_OS_VERSION
-            choices:
-                - 'trusty'
-                - 'centos7'
 
 ########################
 # trigger macros
