@@ -133,6 +133,11 @@
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
+        - huawei-sh-test-2:
+            installer: compass
+            suite: daily
+            auto-trigger-name: 'yardstick-daily-huawei-sh-test-2-trigger'
+            <<: *master
         - virtual:
             installer: joid
             suite: daily
@@ -395,6 +400,14 @@
             default: ''
             description: 'Arguments to use in order to choose the backend DB'
 
+- parameter:
+    name: 'yardstick-params-huawei-sh-test-2'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: ''
+            description: 'Arguments to use in order to choose the backend DB'
+
 #######################
 ## trigger macros
 #######################
@@ -406,5 +419,10 @@
 
 - trigger:
     name: 'yardstick-vtcdaily-ericsson-pod1-trigger'
+    triggers:
+        - timed: '0 1 * * *'
+
+- trigger:
+    name: 'yardstick-daily-huawei-sh-test-2-trigger'
     triggers:
         - timed: '0 1 * * *'
