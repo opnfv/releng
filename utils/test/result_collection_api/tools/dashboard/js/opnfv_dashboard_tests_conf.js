@@ -1,7 +1,8 @@
+var opnfv_dashboard_project = 'functest';
 var opnfv_dashboard_installer = '';
 var opnfv_dashboard_test = '';
 var opnfv_dashboard_test_unit = '';
-var opnfv_dashboard_project = 'functest';
+var opnfv_dashboard_pod = 'all';
 
 var opnfv_dashboard_installers = ['apex', 'compass', 'fuel', 'joid'];
 
@@ -9,7 +10,7 @@ var opnfv_dashboard_installers_scenarios = {};
 opnfv_dashboard_installers_scenarios['apex'] =
     ['os-nosdn-nofeature-ha',
     'os-odl_l2-nofeature-ha',
-	'os-onos-nofeature-ha',
+    'os-onos-nofeature-ha',
     'os-odl_l3-nofeature-ha',
     'os-odl_l2-sfc-ha'];
 
@@ -20,7 +21,7 @@ opnfv_dashboard_installers_scenarios['compass']=
     'os-ocl-nofeature-ha'];
 
 opnfv_dashboard_installers_scenarios['fuel']=
-	['os-nosdn-nofeature-ha','os-odl_l2-nofeature-ha','os-onos-nofeature-ha','os-odl_l3-nofeature-ha','os-odl_l2-bgpvpn-ha','os-nosdn-ovs-ha','os-nosdn-kvm-ha','os-nosdn-ovs_kvm-ha'];
+    ['os-nosdn-nofeature-ha','os-odl_l2-nofeature-ha','os-onos-nofeature-ha','os-odl_l3-nofeature-ha','os-odl_l2-bgpvpn-ha','os-nosdn-ovs-ha','os-nosdn-kvm-ha','os-nosdn-ovs_kvm-ha'];
 
 opnfv_dashboard_installers_scenarios['joid']=
     ['os-nosdn-nofeature-ha',
@@ -30,10 +31,11 @@ opnfv_dashboard_installers_scenarios['joid']=
 
 var opnfv_dashboard_testcases = {
     'VIM': {
-        'tempest': ['Tempest duration',
+        'Tempest': ['Tempest duration',
                 'Tempest nb tests/nb failures'],
         'vPing': ['vPing duration'],
-        'vPing_userdata': ['vPing_userdata duration']
+        'vPing_userdata': ['vPing_userdata duration'],
+        'Rally': ['rally duration']
     },
     'Controller': {
         'ODL': ['ODL nb tests/nb failures'],
@@ -46,11 +48,24 @@ var opnfv_dashboard_testcases = {
         'vIMS': ['vIMS nb tests passed/failed/skipped',
                 'vIMS orchestrator/VNF/test duration'],
         'promise': ['Promise duration ',
-                'Promise nb tests/nb failures']
+                'Promise nb tests/nb failures'],
+		'doctor': ['doctor-notification duration ']
     }
 };
 
-var opnfv_dashboard_file_directory = 'res';
+var opnfv_dashboard_installers_pods = {};
+opnfv_dashboard_installers_pods['apex'] = ['all','intel-pod7','opnfv-jump-1'];
+opnfv_dashboard_installers_pods['compass'] = ['all','huawei-us-deploy-bare-1','huawei-us-deploy-vm-1','huawei-us-deploy-vm2','intel-pod8'];
+opnfv_dashboard_installers_pods['fuel'] = ['all','ericsson-pod2','opnfv-jump-2'];
+opnfv_dashboard_installers_pods['joid'] = ['all','intel-pod5','intel-pod6','orange-fr-pod2'];
+
+var opnfv_dashboard_installers_pods_print = {};
+opnfv_dashboard_installers_pods_print['apex'] = ['all','intelpod7','opnfvjump1'];
+opnfv_dashboard_installers_pods_print['compass'] = ['all','hwusbare1','hwusvm1','hwusvm2','intelpod8'];
+opnfv_dashboard_installers_pods_print['fuel'] = ['all','ericssonpod2','opnfvjump2'];
+opnfv_dashboard_installers_pods_print['joid'] = ['all','intelpod5','intelpod6','orangefrpod2'];
+
+var opnfv_dashboard_file_directory = 'res-test';
 var opnfv_dashboard_file_prefix = 'res_';
 var opnfv_dashboard_file_suffix = '.json';
 
