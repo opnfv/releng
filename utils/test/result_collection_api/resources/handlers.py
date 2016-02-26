@@ -508,6 +508,7 @@ class TestResultsHandler(GenericApiHandler):
          - pod : pod name
          - version : platform version (Arno-R1, ...)
          - installer (fuel, ...)
+         - build_tag : Jenkins build tag name
          - period : x (x last days)
 
 
@@ -524,6 +525,7 @@ class TestResultsHandler(GenericApiHandler):
         pod_arg = self.get_query_argument("pod", None)
         version_arg = self.get_query_argument("version", None)
         installer_arg = self.get_query_argument("installer", None)
+        build_tag_arg = self.get_query_argument("build_tag", None)
         period_arg = self.get_query_argument("period", None)
 
         # prepare request
@@ -543,6 +545,9 @@ class TestResultsHandler(GenericApiHandler):
 
             if installer_arg is not None:
                 get_request["installer"] = installer_arg
+
+            if build_tag_arg is not None:
+                get_request["build_tag"] = build_tag_arg
 
             if period_arg is not None:
                 try:
