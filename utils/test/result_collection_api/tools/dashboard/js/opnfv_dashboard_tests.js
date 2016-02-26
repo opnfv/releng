@@ -176,7 +176,7 @@ function show_installers_pods(active_pod)
     html_pods += '<ul class="nav nav-pills">';
     for (var i in opnfv_dashboard_installers_pods[opnfv_dashboard_installer])
         if (opnfv_dashboard_installers_pods[opnfv_dashboard_installer][i]==active_pod)
-            html_pods += '<li class="active"><a href="#" onClick="on_pod_draw_graph(\''+opnfv_dashboard_installers_pods[opnfv_dashboard_installer][i]+'\')">'+opnfv_dashboard_installers_pods_print[opnfv_dashboard_installer][i]+'</a></li>';         
+            html_pods += '<li class="active"><a href="#" onClick="on_pod_draw_graph(\''+opnfv_dashboard_installers_pods[opnfv_dashboard_installer][i]+'\')">'+opnfv_dashboard_installers_pods_print[opnfv_dashboard_installer][i]+'</a></li>';
         else
             html_pods += '<li><a href="#" onClick="on_pod_draw_graph(\''+opnfv_dashboard_installers_pods[opnfv_dashboard_installer][i]+'\')">'+opnfv_dashboard_installers_pods_print[opnfv_dashboard_installer][i]+'</a></li>';
     html_pods += '</ul>';
@@ -198,7 +198,7 @@ console.log(div_scenario);
 // generate HTML menus and buttons
 $( document ).ready(function(){
   console.log( "ready!" );
-  
+
   //show_installers('');
   show_testcases();
   on_ready_draw_graph();
