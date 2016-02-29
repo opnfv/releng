@@ -167,6 +167,7 @@ class TestResult:
         t.creation_date = str(test_result_dict.get('creation_date'))
         t.details = test_result_dict.get('details')
         t.version = test_result_dict.get('version')
+        t.installer = test_result_dict.get('installer')
         t.build_tag = test_result_dict.get('build_tag')
 
         return t
