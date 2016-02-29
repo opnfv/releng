@@ -15,10 +15,12 @@
             branch: 'master'
             gs-pathname: ''
             block-stream: 'brahmaputra'
+            slave: 'intel-pod7'
         - brahmaputra:
             branch: 'stable/brahmaputra'
             gs-pathname: '/brahmaputra'
             block-stream: 'master'
+            slave: 'opnfv-jump-1'
             disabled: false
 
     project: 'apex'
@@ -37,7 +39,7 @@
 - job-template:
     name: 'apex-verify-{stream}'
 
-    node: opnfv-jump-1
+    node: '{slave}'
 
     parameters:
         - apex-parameter:
@@ -235,7 +237,7 @@
     # Required Variables:
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
-    node: opnfv-jump-1
+    node: '{slave}'
 
     disabled: false
 
