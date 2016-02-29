@@ -70,6 +70,14 @@ if [[ $? -ne 0 ]]; then
     echo "Problem while uploading artifact!"
     echo "Check log $WORKSPACE/gsutil.iso.log on the machine where this build is done."
     exit 1
+
+else
+  gsutil cp gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso \
+    gs://$GS_URL/opnfv-latest.iso
+
+  gsutil -m setmeta \
+    -h "Cache-Control:private, max-age=0, no-transform" \
+    gs://$GS_URL/opnfv-latest.iso > /dev/null 2>&1
 fi
 
 echo "Done!"
