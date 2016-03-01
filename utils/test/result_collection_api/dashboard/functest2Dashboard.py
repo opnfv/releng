@@ -213,6 +213,25 @@ def format_Tempest_for_dashboard(results):
                       'data_set': [{'Run': nbTests,
                                     'Failed': nbFailures}]})
 
+    # Graph 4: (Success rate)=f(time)
+    # ***************************************
+    new_element = []
+    for data in results:
+        try:
+            diff = (int(data['details']['tests']) - int(data['details']['failures']))
+            success_rate = 100*diff/int(data['details']['tests'])
+        except:
+            success_rate = 0
+
+        new_element.append({'x': data['creation_date'],
+                            'y1': success_rate})
+
+    test_data.append({'name': "Tempest success rate",
+                      'info': {'type': "graph",
+                               'xlabel': 'time',
+                               'y1label': 'Success rate'},
+                      'data_set': new_element})
+
     return test_data
 
 
