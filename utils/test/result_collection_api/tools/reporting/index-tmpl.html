@@ -1,0 +1,91 @@
+ <html>
+  <head>
+    <meta charset="utf-8">
+    <!-- Bootstrap core CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+    <link href="default.css" rel="stylesheet">
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+    $(document).ready(function (){
+        $(".btn-more").click(function() {
+            $(this).hide();
+            $(this).parent().find(".panel-default").show();
+        });
+    })
+    </script>
+  </head>
+    <body>
+    <div class="container">
+      <div class="masthead">
+        <h3 class="text-muted">vIMS status page</h3>
+        <nav>
+          <ul class="nav nav-justified">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="index-fuel.html">Fuel</a></li>
+            <li><a href="index-compass.html">Compass</a></li>
+            <li><a href="index-joid.html">JOID</a></li>
+            <li><a href="index-apex.html">APEX</a></li>
+          </ul>
+        </nav>
+      </div>
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+        <div class="page-header">
+            <h2>{{installer}}</h2>
+        </div>
+        {% for scenario_name, results in scenario_results.iteritems() -%}
+        <div class="scenario-part">
+            <div class="page-header">
+                <h3><span class="glyphicon glyphicon-chevron-right"> <b>{{scenario_name}}</b></h3>
+            </div>
+            {% for result in results -%}
+                {% if loop.index > 2 -%}
+                    <div class="panel panel-default" hidden>
+                {%- else -%}
+                    <div class="panel panel-default">
+                {%- endif %}
+                        <div class="panel-heading">
+                            <div class="progress-bar" role="progressbar" aria-valuenow="{{result.pr_step_ok}}" aria-valuemin="0" aria-valuemax="100" style="width: {{result.pr_step_ok}}%"></div>
+                            <span class="panel-header-item">
+                                <h4><b>{{result.creation_date}}</b></h4>
+                            </span>
+                            <span class="badge panel-pod-name">{{result.pod_name}}</span>
+                        </div>
+                        <table class="table">
+                            <tr>
+                                <th width="20%">Step</th>
+                                <th width="10%">Status</th>
+                                <th width="10%">Duration</th>
+                                <th width="60%">Result</th>
+                            </tr>
+                            {% for step_od_name in step_order -%}
+                                {% if step_od_name in result.details.keys() -%}
+                                    {% set step_result = result.details[step_od_name] -%}
+                                    {% if step_result.duration != 0 -%}
+                                        <tr class="tr-ok">
+                                            <td>{{step_od_name}}</td>
+                                            <td><span class="glyphicon glyphicon-ok"></td>
+                                            <td><b>{{step_result.duration_display}}</b></td>
+                                            <td>{{step_result.result}}</td>
+                                        </tr>
+                                    {%- else -%}
+                                        <tr class="tr-danger">
+                                            <td>{{step_od_name}}</td>
+                                            <td><span class="glyphicon glyphicon-remove"></td>
+                                            <td><b>0s</b></td>
+                                            <td>{{step_result.result}}</td>
+                                        </tr>
+                                    {%- endif %}
+                                {%- endif %}
+                            {%- endfor %}
+                        </table>
+                    </div>
+            {%- endfor %}
+            <button type="button" class="btn btn-more">More than two</button>
+        </div>
+        {%- endfor %}
+    </div>
+    <div class="col-md-1"></div>
+</div>
