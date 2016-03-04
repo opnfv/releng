@@ -3,6 +3,7 @@
     jobs:
         - 'builder-verify-jjb'
         - 'builder-merge'
+        - 'artifacts-api'
 
     project: 'releng'
 
@@ -98,4 +99,38 @@
                 cd /opt/jenkins-ci/releng
                 git pull
                 jenkins-jobs update --delete-old jjb/
+
+- job-template:
+    name: 'artifacts-api'
+
+    # Generate and upload the JSON file to used for artifacts site
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: 'master'
+
+    triggers:
+        - timed: '@daily'
+
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+
+            echo "Generating Artifacts API ..."
+            virtualenv $WORKSPACE/releng_artifacts
+            source $WORKSPACE/releng_artifacts/bin/activate
+
+            # install python packages
+            easy_install -U setuptools
+            pip install google-api-python-client
+
+            # generate and upload index file
+            python ./releng/utils/opnfv-artifacts.py > index.json
+            gsutil cp index.json gs://artifacts.opnfv.org/index.json
+
+            deactivate
 
