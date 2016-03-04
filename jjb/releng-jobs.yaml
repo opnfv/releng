@@ -3,6 +3,7 @@
     jobs:
         - 'builder-verify-jjb'
         - 'builder-merge'
+        - 'artifacts-api'
 
     project: 'releng'
 
@@ -99,3 +100,19 @@
                 git pull
                 jenkins-jobs update --delete-old jjb/
 
+- job-template:
+    name: 'artifacts-api'
+
+    # Generate and upload the JSON file to used for artifacts site
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: 'master'
+
+    triggers:
+        - timed: '@hourly'
+
+    builders:
+        - build-and-upload-artifacts-json-api
