@@ -15,7 +15,7 @@
             branch: 'master'
             gs-pathname: ''
             block-stream: 'brahmaputra'
-            slave: 'intel-pod7'
+            slave: 'opnfv-jump-1'
         - brahmaputra:
             branch: 'stable/brahmaputra'
             gs-pathname: '/brahmaputra'
@@ -103,28 +103,28 @@
           - project: 'apex-deploy-virtual-os-odl_l2-nofeature-ha-{stream}'
             predefined-parameters: |
               BUILD_DIRECTORY=apex-verify-{stream}/build_output
-              OPNFV_CLEAN='yes'
+              OPNFV_CLEAN=yes
             git-revision: false
             block: true
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-onos-nofeature-ha-{stream}'
             predefined-parameters: |
               BUILD_DIRECTORY=apex-verify-{stream}/build_output
-              OPNFV_CLEAN='yes'
+              OPNFV_CLEAN=yes
             git-revision: false
             block: true
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-odl_l3-nofeature-ha-{stream}'
             predefined-parameters: |
               BUILD_DIRECTORY=apex-verify-{stream}/build_output
-              OPNFV_CLEAN='yes'
+              OPNFV_CLEAN=yes
             git-revision: false
             block: true
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-odl_l2-sfc-noha-{stream}'
             predefined-parameters: |
               BUILD_DIRECTORY=apex-verify-{stream}/build_output
-              OPNFV_CLEAN='yes'
+              OPNFV_CLEAN=yes
             git-revision: false
             block: true
         - 'apex-workspace-cleanup'
@@ -262,6 +262,10 @@
             name: DEPLOY_SCENARIO
             default: '{scenario}'
             description: "Scenario to deploy with."
+        - string:
+            name: OPNFV_CLEAN
+            default: 'no'
+            description: "Use yes in lower case to invoke clean. Indicates if the deploy environment should be cleaned before deployment"
 
     properties:
         - build-blocker:
@@ -360,7 +364,7 @@
           - project: 'apex-deploy-baremetal-os-odl_l2-nofeature-ha-{stream}'
             predefined-parameters: |
               BUILD_DIRECTORY=apex-build-{stream}/build_output
-              OPNFV_CLEAN='yes'
+              OPNFV_CLEAN=yes
             git-revision: true
             block: true
         - trigger-builds:
@@ -460,10 +464,6 @@
             name: GS_URL
             default: artifacts.opnfv.org/$PROJECT{gs-pathname}
             description: "URL to Google Storage."
-        - string:
-            name: OPNFV_CLEAN
-            default: 'no'
-            description: "Use yes in lower case to invoke clean. Indicates if the deploy environment should be cleaned before deployment"
 
 ########################
 # builder macros
@@ -486,18 +486,18 @@
             if echo $BUILD_TAG | grep "apex-verify" 1> /dev/null; then
               if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
                 export OPNFV_ARTIFACT_VERSION=brahmaputra-dev${BUILD_NUMBER}
-                export BUILD_ARGS="-c file://$CACHE_DIRECTORY $BUILD_DIRECTORY"
+                export BUILD_ARGS="-v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY"
               else
                 export OPNFV_ARTIFACT_VERSION=dev${BUILD_NUMBER}
-                export BUILD_ARGS="-c file://$CACHE_DIRECTORY"
+                export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY"
               fi
             elif [ "$ARTIFACT_VERSION" == "daily" ]; then
               if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
                 export OPNFV_ARTIFACT_VERSION=brahmaputra-$(date -u +"%Y-%m-%d")
-                export BUILD_ARGS="-c file://$CACHE_DIRECTORY $BUILD_DIRECTORY"
+                export BUILD_ARGS="-v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY"
               else
                 export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d")
-                export BUILD_ARGS="-c file://$CACHE_DIRECTORY --iso"
+                export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY --iso"
               fi
             else
                 export OPNFV_ARTIFACT_VERSION=${ARTIFACT_VERSION}
@@ -590,7 +590,12 @@
             echo "--------------------------------------------------------"
             echo
 
-            if [[ ! "$ARTIFACT_NAME" == "latest" ]]; then
+            if [[ $BUILD_DIRECTORY == *verify-master* ]]; then
+                cd $WORKSPACE/../${BUILD_DIRECTORY/build_output/}
+                WORKSPACE=$(pwd)
+                echo "WORKSPACE modified to $WORKSPACE"
+                cd $WORKSPACE/ci
+            elif [[ ! "$ARTIFACT_NAME" == "latest" ]]; then
                 # if artifact name is passed the pull a
                 # specific artifact from artifacts.opnfv.org
                 RPM_INSTALL_PATH=$GS_URL/$ARTIFACT_NAME
@@ -634,11 +639,11 @@
             fi
 
             # use local build for verify
-            if [[ $BUILD_DIRECTORY == *verify* ]]; then
+            if [[ $BUILD_DIRECTORY == *verify-master* ]]; then
                 if [ ! -e "${WORKSPACE}/build/lib" ]; then ln -s ${WORKSPACE}/lib ${WORKSPACE}/build/lib; fi
                 DEPLOY_CMD="./deploy.sh -c ${WORKSPACE}/build -r ${WORKSPACE}/build/images/"
                 DEPLOY_FILE="${WORKSPACE}/config/deploy/${DEPLOY_SCENARIO}.yaml"
-                NETWORK_FILE="${WORKSPACE}/config/deploy/network/network_settings.yaml"
+                NETWORK_FILE="${WORKSPACE}/config/network/network_settings.yaml"
             else
                 RPM_LIST=$RPM_INSTALL_PATH
                 for pkg in common undercloud opendaylight-sfc; do
@@ -664,7 +669,11 @@
             fi
 
             if [ "$OPNFV_CLEAN" == 'yes' ]; then
-                sudo ./clean.sh
+                if [[ $BUILD_DIRECTORY == *verify-master* ]]; then
+                    sudo ./clean.sh
+                else
+                    sudo opnfv-clean
+                if
             fi
             # initiate virtual deployment
             echo "Deploy Scenario set to ${DEPLOY_SCENARIO}"
