@@ -48,10 +48,14 @@ if [[ $(whoami) != "root" && $(whoami) != "$jenkinsuser"  ]]; then
   exit 1
 fi
 
-if [[ $distro == Debian || $distro == Ubuntu ]]; then
+if [ -d /etc/monit/conf.d ]; then
   monitconfdir="/etc/monit/conf.d/"
-elif [[ $distro == Fedora || $distro == CentOS || $distro == Redhat ]]; then
+elif [ -d /etc/monit.d ]; then
   monitconfdir="/etc/monit.d"
+else
+  echo "Could not determine the location of the monit configuration file."
+  echo "Make sure monit is installed."
+  exit 1
 fi
 
 #make pid dir
@@ -186,6 +190,5 @@ do
 done
 
 connectionstring="java -jar slave.jar -jnlpUrl https://build.opnfv.org/ci/computer/"$slave_name"/slave-agent.jnlp -secret "$slave_secret" -noCertificateCheck "
-distro="$(tr -s ' \011' '\012' < /etc/issue | head -n 1)"
 
 main "$@"
