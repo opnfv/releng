@@ -211,12 +211,10 @@
         - shell: |
             #!/bin/bash
             set +e
-            flag="-s"
-            if [ "${PUSH_RESULTS_TO_DB}" == "true" ]; then
-                flag=$flag" -r"
-            fi
+            flags="-s"
+            [[ "$PUSH_RESULTS_TO_DB" == "true" ]] && flags+=" -r"
             echo "Functest: run $FUNCTEST_SUITE_NAME"
-            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test $FUNCTEST_SUITE_NAME ${flag}"
+            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test $FUNCTEST_SUITE_NAME ${flags}"
             container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
             docker exec $container_id $cmd
 
@@ -226,11 +224,9 @@
         - shell: |
             #!/bin/bash
             set +e
-            flag="-s"
-            if [ "${PUSH_RESULTS_TO_DB}" == "true" ]; then
-                flag=$flag" -r"
-            fi
-            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh ${flag}"
+            flags="-s"
+            [[ "$PUSH_RESULTS_TO_DB" == "true" ]] && flags+=" -r"
+            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh ${flags}"
             container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
             docker exec $container_id $cmd
 
