@@ -127,7 +127,7 @@ then echo "pid file found"
         fi
 fi
 
-if [[ run_in_foreground == true ]]; then
+if [[ $run_in_foreground == true ]]; then
   $connectionstring
 else
   exec $connectionstring &
