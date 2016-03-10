@@ -56,14 +56,15 @@ for installer in installers:
             crit_time = False
 
             # Expect that at least 200 tests are run
-            if nb_tests_run > 200:
+            if nb_tests_run >= 200:
                 crit_tests = True
 
             # Expect that at least 90% of success
-            if success_rate > 90:
+            if success_rate >= 90:
                 crit_rate = True
 
-            if result['details']['duration'] < 900:
+            # Expect that the suite duration is inferior to 45m
+            if result['details']['duration'] < 2700:
                 crit_time = True
 
             result['criteria'] = {'tests': crit_tests,
