@@ -82,10 +82,29 @@ Writing RST Markdown
 
 See http://sphinx-doc.org/rest.html .
 
-You can add dedicated contents by using 'only' directive with build type
-('html' and 'pdf') for OPNFV document
+**Hint:**
+Table and its contents won't be adjusted, so you may need to fix your source
+text when your table is truncated in PDF version. Or, you can use 'longtable'
+option that splits your table vertically (by rows) in multiple pages.
+It is useful if you have trouble in rendering table containing many rows.
 
-Example :
+.. code-block:: bash
+
+    .. table::
+        :class: longtable
+
+        +------------------------+------------+----------+----------+
+        | Header row, column 1   | Header 2   | Header 3 | Header 4 |
+        +========================+============+==========+==========+
+        | body row 1, column 1   | column 2   | column 3 | column 4 |
+        +------------------------+------------+----------+----------+
+        | body row 2             | ...        | ...      |          |
+        +------------------------+------------+----------+----------+
+
+**Hint:**
+You can add dedicated contents by using 'only' directive with build type
+('html' and 'pdf') for OPNFV document. But, this is not encouraged to use
+since this may make different views in HTML and PDF version.
 
 .. code-block:: bash
 
@@ -116,8 +135,18 @@ are not set in the conf.py .
 
 See http://sphinx-doc.org/config.html to learn sphinx configuration.
 
-Note: you can leave the file path for OPNFV logo image which will be prepared
+**Note:**
+You can leave the file path for OPNFV logo image which will be prepared
 before each document build.
+
+**Hint:**
+In PDF, figures will be floated to get better view. If you want to avoid such
+automated fixes, just add this option to your conf.py after copying the default
+configuration in to the document directory.
+
+.. code-block:: bash
+
+    latex_elements = {'figure_align': 'H'}
 
 Versioning
 ==========
