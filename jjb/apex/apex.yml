@@ -15,7 +15,7 @@
             branch: 'master'
             gs-pathname: ''
             block-stream: 'brahmaputra'
-            slave: 'opnfv-jump-1'
+            slave: 'intel-pod7'
         - brahmaputra:
             branch: 'stable/brahmaputra'
             gs-pathname: '/brahmaputra'
@@ -167,7 +167,7 @@
         - trigger-builds:
           - project: 'apex-deploy-{platform}-{scenario}-{stream}'
             predefined-parameters:
-              OPNFV_CLEAN='yes'
+              OPNFV_CLEAN=yes
             git-revision: false
             block: true
         - trigger-builds:
@@ -229,8 +229,9 @@
         - 'apex-build'
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-odl_l2-nofeature-ha-{stream}'
-            predefined-parameters:
+            predefined-parameters: |
               BUILD_DIRECTORY=apex-build-{stream}/build_output
+              OPNFV_CLEAN=yes
             git-revision: false
             block: true
         - 'apex-upload-artifact'
@@ -502,9 +503,11 @@
             else
                 export OPNFV_ARTIFACT_VERSION=${ARTIFACT_VERSION}
             fi
+            # clean for stable but doesn't matter for master
+            sudo opnfv-clean || echo ""
             # start the build
             cd $WORKSPACE/ci
-            ./build.sh -v $OPNFV_ARTIFACT_VERSION $BUILD_ARGS
+            ./build.sh $BUILD_ARGS
             RPM_VERSION=$(grep Version $BUILD_DIRECTORY/../build/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '_-')
             # list the contents of BUILD_OUTPUT directory
             ls -al $BUILD_DIRECTORY
