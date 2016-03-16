@@ -14,6 +14,7 @@ INDEX_RST=${INDEX_RST:-index.rst}
 BUILD_DIR=${BUILD_DIR:-docs_build}
 OUTPUT_DIR=${OUTPUT_DIR:-docs_output}
 SRC_DIR=${SRC_DIR:-$BUILD_DIR/_src}
+VENV_DIR=${VENV_DIR:-$BUILD_DIR/_venv}
 RELENG_DIR=${RELENG_DIR:-releng}
 GERRIT_COMMENT=${GERRIT_COMMENT:-}
 
@@ -48,10 +49,6 @@ opnfv_logo='releng/docs/etc/opnfv-logo.png'
 function check_rst_doc() {
     _src="$1"
 
-    if ! which doc8 > /dev/null ; then
-        echo "Error: 'doc8' not found. Exec 'sudo pip install doc8' first."
-        exit 1
-    fi
     # Note: This check may fail in many jobs for building project docs, since
     #       the old sample has lines more than 120. We ignore failures on this
     #       check right now, but these have to be fixed before OPNFV B release.
@@ -140,6 +137,15 @@ fi
 
 prepare_src_files
 
+if ! which virtualenv > /dev/null ; then
+    echo "Error: 'virtualenv' not found. Exec 'sudo pip install virtualenv' first."
+    exit 1
+fi
+
+virtualenv "$VENV_DIR"
+source "$VENV_DIR/bin/activate"
+pip install -r "$RELENG_DIR/docs/etc/requirements.txt"
+
 find $DOCS_DIR -name $INDEX_RST -printf '%h\n' | while read dir
 do
     name=$(generate_name $dir)
@@ -224,3 +230,5 @@ do
     fi
 
 done
+
+deactivate
