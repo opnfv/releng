@@ -123,6 +123,11 @@
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
+        - huawei-us-deploy-bare-2:
+            installer: compass
+            suite: daily
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *master
         - virtual:
             installer: fuel
             suite: daily
@@ -362,6 +367,14 @@
 
 - parameter:
     name: 'yardstick-params-huawei-us-deploy-bare-1'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: '-i 104.197.68.199:8086'
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'yardstick-params-huawei-us-deploy-bare-2'
     parameters:
         - string:
             name: YARDSTICK_DB_BACKEND
