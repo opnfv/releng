@@ -151,6 +151,8 @@ class TestResult:
         self.creation_date = None
         self.details = None
         self.build_tag = None
+        self.scenario = None
+        self.criteria = None
 
     @staticmethod
     def test_result_from_dict(test_result_dict):
@@ -169,6 +171,8 @@ class TestResult:
         t.version = test_result_dict.get('version')
         t.installer = test_result_dict.get('installer')
         t.build_tag = test_result_dict.get('build_tag')
+        t.scenario = test_result_dict.get('scenario')
+        t.criteria = test_result_dict.get('criteria')
 
         return t
 
@@ -182,7 +186,9 @@ class TestResult:
             "version": self.version,
             "installer": self.installer,
             "details": self.details,
-            "build_tag": self.build_tag
+            "build_tag": self.build_tag,
+            "scenario": self.scenario,
+            "criteria": self.criteria
         }
 
     def format_http(self):
@@ -196,6 +202,8 @@ class TestResult:
             "version": self.version,
             "installer": self.installer,
             "details": self.details,
-            "build_tag": self.build_tag
+            "build_tag": self.build_tag,
+            "scenario": self.scenario,
+            "criteria": self.criteria
         }
 

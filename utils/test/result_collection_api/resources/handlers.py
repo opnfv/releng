@@ -510,6 +510,8 @@ class TestResultsHandler(GenericApiHandler):
          - installer (fuel, ...)
          - build_tag : Jenkins build tag name
          - period : x (x last days)
+         - scenario : the test scenario (previously version)
+         - criteria : the global criteria status passed or failed
 
 
         :param result_id: Get a result by ID
@@ -526,6 +528,8 @@ class TestResultsHandler(GenericApiHandler):
         version_arg = self.get_query_argument("version", None)
         installer_arg = self.get_query_argument("installer", None)
         build_tag_arg = self.get_query_argument("build_tag", None)
+        scenario_arg = self.get_query_argument("scenario", None)
+        criteria_arg = self.get_query_argument("criteria", None)
         period_arg = self.get_query_argument("period", None)
 
         # prepare request
@@ -548,6 +552,12 @@ class TestResultsHandler(GenericApiHandler):
 
             if build_tag_arg is not None:
                 get_request["build_tag"] = build_tag_arg
+
+            if scenario_arg is not None:
+                get_request["scenario"] = scenario_arg
+
+            if criteria_arg is not None:
+                get_request["criteria_tag"] = criteria_arg
 
             if period_arg is not None:
                 try:
