@@ -1,0 +1,30 @@
+- project:
+   name: 'opnfv-slave-sysinfo'
+   jobs:
+     - 'opnfv-slave-sysinfo-daily'
+
+-job:
+   name: opnfv-slave-sysinfo-daily
+   disabled: true
+   project-type: freestyle
+
+   parameters:
+       - label:
+           name: node
+           default: opnfv-sysinfo
+           ignore-offline-nodes: true
+           allowed-multiselect: true
+           description: "Run this job on all online nodes"
+
+   logrotate:
+       daysToKeep: -1
+       numToKeep: -1
+       artifactDaysToKeep: -1
+       artifactNumToKeep: -1
+
+   triggers:
+       - timed: '0 2 * * *'
+
+   builders:
+       - shell:
+           !include-raw ../../utils/slave-sysinfo.sh`
