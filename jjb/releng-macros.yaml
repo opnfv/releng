@@ -299,6 +299,28 @@
             fi
 
 - builder:
+    name: build-and-upload-artifacts-json-api
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+
+            echo "Generating Artifacts API ..."
+            virtualenv $WORKSPACE/releng_artifacts
+            source $WORKSPACE/releng_artifacts/bin/activate
+
+            # install python packages
+            easy_install -U setuptools
+            pip install google-api-python-client
+
+            # generate and upload index file
+            python ./releng/utils/opnfv-artifacts.py > index.json
+            gsutil cp index.json gs://artifacts.opnfv.org/index.json
+
+            deactivate
+
+- builder:
     name: upload-review-docs
     builders:
         - build-html-and-pdf-docs-output
