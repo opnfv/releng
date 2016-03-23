@@ -10,7 +10,8 @@
 
 
 usage() {
-    echo "usage: $0 -d <destination> -i <installer_type> -a <installer_ip>" >&2
+    echo "usage: $0 [-v] -d <destination> -i <installer_type> -a <installer_ip>" >&2
+    echo "[-v] Virtualized deployment" >&2
 }
 
 info ()  {
@@ -37,14 +38,15 @@ verify_connectivity() {
     error "Can not talk to $ip."
 }
 
-
+: ${DEPLOY_TYPE:=''}
 
 #Get options
-while getopts ":d:i:a:h:" optchar; do
+while getopts ":d:i:a:h:v" optchar; do
     case "${optchar}" in
         d) dest_path=${OPTARG} ;;
         i) installer_type=${OPTARG} ;;
         a) installer_ip=${OPTARG} ;;
+        v) DEPLOY_TYPE="virt" ;;
         *) echo "Non-option argument: '-${OPTARG}'" >&2
            usage
            exit 2
@@ -99,6 +101,12 @@ if [ "$installer_type" == "fuel" ]; then
         #| grep http | head -1 | cut -d '|' -f 4 | sed 's/v1\/.*/v1\//' | sed 's/ //g') &> /dev/null
     #NOTE: this is super ugly sed 's/v1\/.*/v1\//'OS_AUTH_URL
     # but sometimes the output of endpoint-list is like this: http://172.30.9.70:8004/v1/%(tenant_id)s
+    # Fuel virtual need a fix
+
+    if [ "$DEPLOY_TYPE" == "virt" ]; then
+        echo "INFO: Changing: internalURL -> publicURL in openrc"
+        sed -i 's/internalURL/publicURL/' $dest_path
+    fi
 
 elif [ "$installer_type" == "apex" ]; then
     verify_connectivity $installer_ip
