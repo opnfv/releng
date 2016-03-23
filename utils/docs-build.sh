@@ -177,23 +177,7 @@ do
     mkdir -p "$output"
 
     sphinx-build -b html -t html -E "$src" "$output"
-
-    # Note: PDF creation may fail in project doc builds.
-    #       We allow this build job to be marked as succeeded with
-    #       failure in PDF creation, but leave message to fix it.
-    #       Any failure has to be fixed before OPNFV B release.
-    {
-        sphinx-build -b latex -t pdf -E "$src" "$build" && \
-            make -C "$build" LATEXOPTS='--interaction=nonstopmode' all-pdf
-    } && {
-        mv "$build/$name.pdf" "$output"
-    } || {
-        msg="Error: PDF creation for $dir has failed, please fix source rst file(s)."
-        echo
-        echo "$msg"
-        echo
-        [[ -n "$GERRIT_COMMENT" ]] && echo "$msg" >> "$GERRIT_COMMENT"
-    }
+    sphinx-build -b singlehtml -t html -E "$src" "singlepage""$output"
 
     # TODO: failures in ODT creation should be handled error and
     #       cause 'exit 1' before OPNFV B release.
