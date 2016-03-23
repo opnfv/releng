@@ -100,8 +100,8 @@ if [[ -f $monitconfdir/jenkins ]]; then
   #test for diff
   if [[ "$(diff $monitconfdir/jenkins <(echo "\
 check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
-start program = \"usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $dir; export started_monit=true; $0 $@'\"
-stop program = \" /bin/bash -c '/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)'\"\
+start program = \"/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $dir; export started_monit=true; $0 $@'\"
+stop program = \"/bin/bash -c '/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)'\"\
 ") )" ]]; then
     echo "Updating monit config..."
     makemonit $@
