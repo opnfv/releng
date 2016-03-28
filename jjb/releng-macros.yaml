@@ -285,6 +285,7 @@
 
             gs_path="artifacts.opnfv.org/$PROJECT/review/$GERRIT_CHANGE_NUMBER"
 
+            gsutil update -n
             if gsutil ls "gs://$gs_path" > /dev/null 2>&1 ; then
                 echo
                 echo "Deleting Out-of-dated Documents..."
@@ -316,6 +317,7 @@
 
             # generate and upload index file
             python ./releng/utils/opnfv-artifacts.py > index.json
+            gsutil update -n
             gsutil cp index.json gs://artifacts.opnfv.org/index.json
 
             deactivate

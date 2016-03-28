@@ -41,6 +41,7 @@ echo
 
 cd $WORKSPACE
 # upload artifact and additional files to google storage
+gsutil update -n
 gsutil cp $BUILD_DIRECTORY/opnfv-$OPNFV_ARTIFACT_VERSION.iso \
     gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
 gsutil cp $WORKSPACE/opnfv.properties \

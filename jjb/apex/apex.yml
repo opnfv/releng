@@ -552,6 +552,8 @@
             # source the opnfv.properties to get ARTIFACT_VERSION
             source $WORKSPACE/opnfv.properties
 
+            gsutil update -n
+
             # upload artifact and additional files to google storage
             gsutil cp $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
             RPM_INSTALL_PATH=$BUILD_DIRECTORY/$(basename $OPNFV_RPM_URL)
