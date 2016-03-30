@@ -8,12 +8,12 @@
 
     project:
         - 'functest'
-        - 'yardstick'
         - 'storperf'
         - 'qtip'
 
     jobs:
         - '{project}-docker-build-push-{stream}'
+        - 'yardstick-docker-build-push-{stream}'
 
     stream:
         - master:
@@ -40,6 +40,49 @@
         - string:
             name: BASE_VERSION
             default: "brahmaputra.1"
+            description: "Base version to be used."
+        - string:
+            name: DOCKER_REPO_NAME
+            default: "opnfv/{project}"
+            description: "Dockerhub repo to be pushed to."
+        - string:
+            name: UPDATE_LATEST_STABLE
+            default: "false"
+            description: "This will update the latest_stable image only."
+        - string:
+            name: STABLE_TAG
+            description: "If above option is true, this is the tag to be pulled."
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - shell:
+            !include-raw-escape: ./opnfv-docker.sh
+
+    triggers:
+        - pollscm:
+            cron: "*/30 * * * *"
+
+- job-template:
+    name: 'yardstick-docker-build-push-{stream}'
+
+    disabled: false
+
+    parameters:
+        - project-parameter:
+            project: 'yardstick'
+        - 'ericsson-build-defaults'
+        - string:
+            name: PUSH_IMAGE
+            default: "true"
+            description: "To enable/disable pushing the image to Dockerhub."
+        - string:
+            name: BASE_VERSION
+            default: "brahmaputra.2"
             description: "Base version to be used."
         - string:
             name: DOCKER_REPO_NAME
