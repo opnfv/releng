@@ -143,6 +143,11 @@
             suite: daily
             auto-trigger-name: 'yardstick-daily-huawei-sh-test-2-trigger'
             <<: *master
+        - huawei-sh-pod6:
+            installer: compass
+            suite: daily
+            auto-trigger-name: 'yardstick-daily-huawei-sh-pod6-trigger'
+            <<: *master
         - virtual:
             installer: joid
             suite: daily
@@ -421,6 +426,14 @@
             default: ''
             description: 'Arguments to use in order to choose the backend DB'
 
+- parameter:
+    name: 'yardstick-params-huawei-sh-pod6'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: ''
+            description: 'Arguments to use in order to choose the backend DB'
+
 #######################
 ## trigger macros
 #######################
@@ -437,5 +450,10 @@
 
 - trigger:
     name: 'yardstick-daily-huawei-sh-test-2-trigger'
+    triggers:
+        - timed: '0 1 * * *'
+
+- trigger:
+    name: 'yardstick-daily-huawei-sh-pod6-trigger'
     triggers:
         - timed: '0 1 * * *'
