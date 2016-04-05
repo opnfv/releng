@@ -305,16 +305,16 @@
             #!/bin/bash
             set -o errexit
             set -o pipefail
+            export PATH=$PATH:/usr/local/bin/
 
-            echo "Generating Artifacts API ..."
-            virtualenv $WORKSPACE/releng_artifacts
+            virtualenv -p python2.7 $WORKSPACE/releng_artifacts
             source $WORKSPACE/releng_artifacts/bin/activate
 
             # install python packages
-            easy_install -U setuptools
             pip install google-api-python-client
 
             # generate and upload index file
+            echo "Generating Artifacts API ..."
             python $WORKSPACE/utils/opnfv-artifacts.py > index.json
             gsutil cp index.json gs://artifacts.opnfv.org/index.json
 
