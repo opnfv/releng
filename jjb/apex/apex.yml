@@ -666,7 +666,9 @@
                 export OPNFV_ARTIFACT_VERSION=${ARTIFACT_VERSION}
             fi
             # clean for stable but doesn't matter for master
-            sudo opnfv-clean || echo ""
+            if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
+              sudo opnfv-clean
+            fi
             # start the build
             cd $WORKSPACE/ci
             ./build.sh $BUILD_ARGS
