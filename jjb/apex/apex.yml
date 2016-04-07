@@ -663,7 +663,12 @@
                 export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY --iso"
               fi
             else
-                export OPNFV_ARTIFACT_VERSION=${ARTIFACT_VERSION}
+              export OPNFV_ARTIFACT_VERSION=${ARTIFACT_VERSION}
+              if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
+                export BUILD_ARGS="-v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY"
+              else
+                export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY --iso"
+              fi
             fi
             # clean for stable but doesn't matter for master
             if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
