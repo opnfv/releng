@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "1a486d77_296c009c",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-04-08T15:14:50Z",
+      "side": 1,
+      "message": "It is possible to trigger different jobs from top level installer job but then we will need to handle triggers for cperf differently comparing to the rest of the test projects as they have 1 job. (having 1 job to run everything is not good since you reduce the granularity of the feedback and time it takes to get feedback increases so what you ask is pretty valid.)\n\nWe need to think about how to fix this so I suggest you to continue with basic job structure and we improve it later on if that\u0027s fine by you.\n\nPs. There are quite few things to think about how to fix all this job structuring. Increase in no of scenarios, pods, installers, test projects have potential to make things challenging.",
+      "parentUuid": "1a486d77_66cea785",
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a486d77_667c6721",
         "filename": "jjb/cperf/cperf-cbench-jobs.yml",
         "patchSetId": 7
@@ -30,6 +48,24 @@
       "writtenOn": "2016-04-08T01:29:32Z",
       "side": 1,
       "message": "why we need all these parameters in the test job?",
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a486d77_891414f6",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-04-08T15:14:50Z",
+      "side": 1,
+      "message": "This is your slave.\n\nWe have some differences how slaves can access to OPNFV Gerrit and I\u0027m not sure if they are fixed or not so that\u0027s why we use NODE_LABEL parameter and state slaves in this way together with some slave specific parameters.\n\nMost crucial reason for this is GIT_BASE\n- Some slaves can use ssh to clone.\n- Others can not use ssh and use https instead.\n\nYou can define slave specific parameters as well and do  slave specific stuff in your scripts based on that parameter.\n\nhttps://gerrit.opnfv.org/gerrit/gitweb?p\u003dreleng.git;a\u003dblob;f\u003djjb/opnfv/slave-params.yml",
+      "parentUuid": "1a486d77_667c6721",
       "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
       "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "1a486d77_69f9d8c7",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-04-08T15:14:50Z",
+      "side": 1,
+      "message": "Please take a look at what defaults we set for installers. \n\nhttps://gerrit.opnfv.org/gerrit/gitweb?p\u003dreleng.git;a\u003dblob;f\u003djjb/opnfv/installer-params.yml\n\nThis would make things simpler to maintain if you ever want to support different installers instead of hardcoding IPs etc.",
+      "parentUuid": "1a486d77_46796b2e",
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a486d77_869e4355",
         "filename": "jjb/cperf/cperf-cbench-jobs.yml",
         "patchSetId": 7
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "1a486d77_49f61cd9",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-04-08T15:14:50Z",
+      "side": 1,
+      "message": "This parameter is passed by upstream job and overriden.\n\nIf you ever want to run this job manually multiple times for certain reason (troubleshooting, etc.), you can use it to set the scenario.\n\nApart from this, if you ever plan to test a different SDN controller, this could be useful.",
+      "parentUuid": "1a486d77_869e4355",
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a486d77_66a3479f",
         "filename": "jjb/cperf/cperf-cbench-jobs.yml",
         "patchSetId": 7
@@ -81,6 +153,24 @@
       "writtenOn": "2016-04-08T01:29:32Z",
       "side": 1,
       "message": "This is something we will be using in cperf, why we do not move this to the cperf-parameter section?",
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a486d77_2903e0b9",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-04-08T15:14:50Z",
+      "side": 1,
+      "message": "That\u0027s fine by me.",
+      "parentUuid": "1a486d77_66a3479f",
       "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
       "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
       "unresolved": false
@@ -121,6 +211,24 @@
     },
     {
       "key": {
+        "uuid": "1a486d77_090024a9",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-04-08T15:14:50Z",
+      "side": 1,
+      "message": "you can remove this and any other currently unneeded parameters if you want and keep things even simpler and non-bloated if you want. I suppose this job was based on one of the other test projects so that\u0027s why the stuff from them are here.",
+      "parentUuid": "1a486d77_e68f3722",
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a486d77_46a04b90",
         "filename": "jjb/cperf/cperf-cbench-jobs.yml",
         "patchSetId": 7
@@ -132,6 +240,24 @@
       "writtenOn": "2016-04-08T01:29:32Z",
       "side": 1,
       "message": "This is useful to store logs but can you change the description of this parameter?",
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a486d77_e92ca84c",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-04-08T15:14:50Z",
+      "side": 1,
+      "message": "Please propose an alternative description and we reflect it to other jobs.",
+      "parentUuid": "1a486d77_46a04b90",
       "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
       "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
       "unresolved": false
@@ -155,6 +281,24 @@
     },
     {
       "key": {
+        "uuid": "1a486d77_c931eca3",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-04-08T15:14:50Z",
+      "side": 1,
+      "message": "This is yet another parameter coming from other test projects. You can keep it and push data to db or get rid of it.\n\nYardstick uses influx db and grafana. (they have mongodb as well if you want to use it.) So you can contact yardstick and see how you can use it.\n\nhttp://testdashboard.opnfv.org/grafana/\n\nuser/passwd: opnfv/opnfv",
+      "parentUuid": "1a486d77_26ad4f89",
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a486d77_06aa5370",
         "filename": "jjb/cperf/cperf-cbench-jobs.yml",
         "patchSetId": 7
@@ -166,6 +310,24 @@
       "writtenOn": "2016-04-08T01:29:32Z",
       "side": 1,
       "message": "This should enable some shell debug option I guess.",
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a486d77_a926b066",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-04-08T15:14:50Z",
+      "side": 1,
+      "message": "right",
+      "parentUuid": "1a486d77_06aa5370",
       "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
       "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
       "unresolved": false
@@ -207,6 +369,30 @@
       "side": 1,
       "message": "agree, this is not going to be for just cbench but for all tests we want to run daily. Unless we decide it is better 1 job/test as I explained earlier.",
       "parentUuid": "1a486d77_26be6f00",
+      "range": {
+        "startLine": 120,
+        "startChar": 0,
+        "endLine": 120,
+        "endChar": 26
+      },
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a486d77_892bf42f",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-04-08T15:14:50Z",
+      "side": 1,
+      "message": "ok",
+      "parentUuid": "1a486d77_26766f3f",
       "range": {
         "startLine": 120,
         "startChar": 0,
@@ -266,6 +452,30 @@
     },
     {
       "key": {
+        "uuid": "1a486d77_491dfc0e",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-04-08T15:14:50Z",
+      "side": 1,
+      "message": "installer type is needed as well; apex, fuel, joid, or compass. Please take a look at script above if you haven\u0027t done it yet.",
+      "parentUuid": "1a486d77_66ca2751",
+      "range": {
+        "startLine": 125,
+        "startChar": 12,
+        "endLine": 125,
+        "endChar": 83
+      },
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a486d77_86b523cf",
         "filename": "jjb/cperf/cperf-cbench-jobs.yml",
         "patchSetId": 7
@@ -277,6 +487,24 @@
       "writtenOn": "2016-04-08T01:29:32Z",
       "side": 1,
       "message": "So the idea is to create a docker image with all that we have today in the robot VM in ODL?",
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a486d77_6920b849",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-04-08T15:14:50Z",
+      "side": 1,
+      "message": "yes.\n\nwe poll new changes in your repo and build/push/tag new versions of the images as well.",
+      "parentUuid": "1a486d77_86b523cf",
       "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
       "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
       "unresolved": false
