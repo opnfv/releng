@@ -161,6 +161,24 @@
     },
     {
       "key": {
+        "uuid": "1a486d77_c9bb2cc3",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-04-08T21:20:41Z",
+      "side": 1,
+      "message": "Nope.\n\nEven though upstream jobs have these parameters defined in them, they pass only 1 parameter to downstream jobs, scenario name, and that\u0027s all. \n\nWe try to keep parameter passing at the minimum so we can easily modify upstream job without breaking all the downstream jobs, add new jobs, remove existing jobs, and make it possible to run downstream jobs as standalone jobs for troubleshooting or development purposes.",
+      "parentUuid": "1a486d77_c9d8cc55",
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a486d77_869e4355",
         "filename": "jjb/cperf/cperf-cbench-jobs.yml",
         "patchSetId": 7
@@ -208,6 +226,24 @@
       "side": 1,
       "message": "This is the part I am confused, I thought the scenario was deployed by the upstream job and I just receive this parameter in case i want to do something in the scripts with. Are you saying that we can also deploy scenarios in this job? if so how? this job seems to only run a test.",
       "parentUuid": "1a486d77_49f61cd9",
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a486d77_09c1442e",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-04-08T21:20:41Z",
+      "side": 1,
+      "message": "Yes, this job only runs tests, nothing more.\n\nOPNFV job structure looks like this:\n- 1 upstream job with only one function; triggering 3 downstream jobs and waiting/controlling their execution.\n- 3 downstream jobs each doing what they\u0027re supposed to do: deploy, functest, and yardstick in order and triggered by same upstream job.\n\nPlease take a look at this upstream job for example\nhttps://build.opnfv.org/ci/job/joid-os-odl_l2-nofeature-ha-intel-pod5-daily-brahmaputra/\n\nSo deployment is not going to be done in cperf job and not done by the upstream job. But another job on the same level and coming before cperf job which is the deploy job.\n\nScenario name is passed by the upstream job from downstream jobs in case if the test projects select which test cases to run based on the scenario. For example if the scenario is odl they skip running onos test cases against an onos scenario.\n\nWhen I said running manually which means there might be times you want to do  cperf troubleshooting/development or work with the deployment. In these situations you can skip running deployment job and use the POD in previously deployed state to focus actual problem in the hand. This is the first reason why this parameter is here. 2nd reason is about a limitation with Jenkins Parameterized Build Trigger; if passed parameter is not defined in downstream job, that parameter can not be passed.\n\n\nBUT and this BUT is important.\nEverything explained above is followed by 3 of the installers; compass, fuel and joid.\nApex does things in entirely different and non-standard way. They do not follow the rest of the OPNFV. You either have to make sure Apex is aligned with the rest or you have to work closely with Tim and Dan and do things in non-standard way.",
+      "parentUuid": "1a486d77_a9dd9044",
       "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
       "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
       "unresolved": false
@@ -366,6 +402,24 @@
       "side": 1,
       "message": "I do not see any mention to logs in the below description while you said this path can be used to store logs. I think this is relevant information good to have in the parameter description.",
       "parentUuid": "1a486d77_e92ca84c",
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a486d77_e9ddc815",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-04-08T21:20:41Z",
+      "side": 1,
+      "message": "Well we store anything we produce there; docs, logs, isos, rpms, etc. So a generic description is needed and tbh I don\u0027t have any idea why the description here sucks. Someone probably modified it and it got copied here from there.",
+      "parentUuid": "1a486d77_89e2d401",
       "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
       "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
       "unresolved": false
@@ -649,6 +703,24 @@
       "side": 1,
       "message": "So this docker will run in the POD slave. The robot tools (test control) are fine in the Jenkins slave but the perf/scale tools we plan to install for cperf should be imo in a dedicated system ideally separated from the SUT and the test control system. How do you normally do this in OPNFV? do you have a way to automatically install tools in a host or a VM in the POD?",
       "parentUuid": "1a486d77_6920b849",
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a486d77_c9e20cd5",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-04-08T21:20:41Z",
+      "side": 1,
+      "message": "We do this for other test projects in same way; everything gets put into docker images and run from there.\n\nThere are couple of reasons why I think you should go pure docker way and skip installing stuff on jumphosts if cperf has no technical reasons for not doing so.\n\nWhy this is important and apologies for pointing the obvious and same things over and over; \n\n- we keep the need to deal with jumphosts and put less requirements on it. For test projects tooling, we only require installation of docker and that\u0027s it.\n- we refrain from installing stuff to jumphosts as there are many things needed by different projects and these things might conflict with each other.\n- installing this type of tools creates a mess on the jumphost as we do not have a practice to clean after our job is done. \n- having local installation of the tools on jumphost limits the portability of the jobs/test projects since you have to install those same tools again and again if you want to run on a different jumphost against different POD. Or if the jumphost gets replaced which happens time to time. Or someone accidentally executes yum remove/apt-get remove \u003ccperf tool\u003e on jumphost.\n- we currently have no way to install these dependencies/tools on jumphost automatically - we have plans but those plans might not be realized due to lack of time and hands.\n- this eases the OPNFV users to use different test frameworks without wasting their time to install 10s of different tools on their machines if their only reason to use test frameworks is for running tests. Pull image, run the container and that\u0027s all.\n\nlong story short this is partly in your hands. Our suggestion is to totally dockerize if there are no technical reasons preventing this. If you go to local installation, things would work fine on dedicated jumphost/pod but later on/over time things might get tricky when you want to move around.",
+      "parentUuid": "1a486d77_29f1a0cd",
       "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
       "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
       "unresolved": false
