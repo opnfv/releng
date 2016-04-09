@@ -250,6 +250,24 @@
     },
     {
       "key": {
+        "uuid": "1a486d77_c97e8ce4",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 3717
+      },
+      "writtenOn": "2016-04-09T03:17:11Z",
+      "side": 1,
+      "message": "I guess my point here is apex-defaults (not other installers) already contains a parameter called DEPLOY_SCENARIO so this definition is kind of redundant.",
+      "parentUuid": "1a486d77_09c1442e",
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a486d77_66a3479f",
         "filename": "jjb/cperf/cperf-cbench-jobs.yml",
         "patchSetId": 7
@@ -721,6 +739,24 @@
       "side": 1,
       "message": "We do this for other test projects in same way; everything gets put into docker images and run from there.\n\nThere are couple of reasons why I think you should go pure docker way and skip installing stuff on jumphosts if cperf has no technical reasons for not doing so.\n\nWhy this is important and apologies for pointing the obvious and same things over and over; \n\n- we keep the need to deal with jumphosts and put less requirements on it. For test projects tooling, we only require installation of docker and that\u0027s it.\n- we refrain from installing stuff to jumphosts as there are many things needed by different projects and these things might conflict with each other.\n- installing this type of tools creates a mess on the jumphost as we do not have a practice to clean after our job is done. \n- having local installation of the tools on jumphost limits the portability of the jobs/test projects since you have to install those same tools again and again if you want to run on a different jumphost against different POD. Or if the jumphost gets replaced which happens time to time. Or someone accidentally executes yum remove/apt-get remove \u003ccperf tool\u003e on jumphost.\n- we currently have no way to install these dependencies/tools on jumphost automatically - we have plans but those plans might not be realized due to lack of time and hands.\n- this eases the OPNFV users to use different test frameworks without wasting their time to install 10s of different tools on their machines if their only reason to use test frameworks is for running tests. Pull image, run the container and that\u0027s all.\n\nlong story short this is partly in your hands. Our suggestion is to totally dockerize if there are no technical reasons preventing this. If you go to local installation, things would work fine on dedicated jumphost/pod but later on/over time things might get tricky when you want to move around.",
       "parentUuid": "1a486d77_29f1a0cd",
+      "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a486d77_a98350cb",
+        "filename": "jjb/cperf/cperf-cbench-jobs.yml",
+        "patchSetId": 7
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 3717
+      },
+      "writtenOn": "2016-04-09T03:17:11Z",
+      "side": 1,
+      "message": "So my point is not to install test SW directly in the jump host but internally in another host in the POD using docker if possible. The reason is perf/scale tools can consume lots of CPU/RAM so we may not want to run them in the same shared resource as controller or even robot test control. But maybe this is not the way in OPNFV and tools even when they consume lot of resources are installed in jump host.",
+      "parentUuid": "1a486d77_c9e20cd5",
       "revId": "ea29acbe9b2542d0b29f66777f2838d8addcf2fd",
       "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
       "unresolved": false
