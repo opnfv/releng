@@ -59,14 +59,16 @@ fi
 
 
 # cd to directory where Dockerfile is located
-if [[ "$DOCKER_REPO_NAME" == "opnfv/functest" ]]; then
+elif [[ "$DOCKER_REPO_NAME" == "opnfv/cperf" ]]; then
     cd $WORKSPACE/docker
-elif [[ "$DOCKER_REPO_NAME" == "opnfv/yardstick" ]]; then
-    cd $WORKSPACE/ci/docker/yardstick-ci
-elif [[ "$DOCKER_REPO_NAME" == "opnfv/storperf" ]]; then
+if [[ "$DOCKER_REPO_NAME" == "opnfv/functest" ]]; then
     cd $WORKSPACE/docker
 elif [[ "$DOCKER_REPO_NAME" == "opnfv/qtip" ]]; then
     cd $WORKSPACE/docker
+elif [[ "$DOCKER_REPO_NAME" == "opnfv/storperf" ]]; then
+    cd $WORKSPACE/docker
+elif [[ "$DOCKER_REPO_NAME" == "opnfv/yardstick" ]]; then
+    cd $WORKSPACE/ci/docker/yardstick-ci
 else
     echo "ERROR: DOCKER_REPO_NAME parameter not valid: $DOCKER_REPO_NAME"
     exit 1
