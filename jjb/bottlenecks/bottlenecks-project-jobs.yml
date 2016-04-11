@@ -1,26 +1,17 @@
-####################################
-# Job configuration for bottlenecks
-####################################
+###################################################
+# Non-ci jobs for Bottlenecks project
+# They will only be enabled on request by projects!
+###################################################
 - project:
-    name: bottlenecks
+    name: bottlenecks-project-jobs
+
+    project: 'bottlenecks'
+
     jobs:
         - 'bottlenecks-verify-{stream}'
-        - 'bottlenecks-daily-{installer}-{suite}-{pod}-{stream}'
+        - 'bottlenecks-merge-{stream}'
         - 'bottlenecks-{suite}-upload-artifacts-{stream}'
-    pod:
-        - lf:
-            node: 'opnfv-jump-2'
-            installer_type: 'fuel'
-            installer_ip: '10.20.0.2'
 
-    installer:
-        - 'fuel'
-
-    suite:
-        - 'rubbos'
-        - 'vstf'
-
-# only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
             branch: '{stream}'
@@ -29,10 +20,14 @@
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
 
-    project: 'bottlenecks'
-###############################
-# Job templates
-##############################
+    suite:
+        - 'rubbos'
+        - 'vstf'
+
+################################
+# job templates
+################################
+
 - job-template:
     name: 'bottlenecks-verify-{stream}'
 
@@ -67,13 +62,47 @@
                 branches:
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**|.gitignore'
+    builders:
+         - shell: |
+             echo "bottlenecks: verify job"
+         #TO DO: this should be changed when the unittest ready
+
+- job-template:
+    name: 'bottlenecks-merge-{stream}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-defaults'
+        - string:
+            name: GS_URL
+            default: '$GS_BASE{gs-pathname}'
+            description: "Directory where the build artifact will be located upon the completion of the build."
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/{branch}'
 
     builders:
-        - shell: |
-            echo "Nothing to verify!"
+         - shell: |
+             echo "bottlenecks: merge"
 
 - job-template:
     name: 'bottlenecks-{suite}-upload-artifacts-{stream}'
@@ -104,56 +133,6 @@
         - 'bottlenecks-builder-upload-artifact'
         - 'bottlenecks-workspace-cleanup'
 
-- job-template:
-    name: 'bottlenecks-daily-{installer}-{suite}-{pod}-{stream}'
-
-    disabled: false
-
-    node: '{node}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - 'opnfv-jump-2-defaults'
-        - string:
-            name: POD_NAME
-            default: '{pod}'
-            description: "POD where the job runs"
-        - string:
-            name: INSTALLER_TYPE
-            default: '{installer_type}'
-            description: "Installer name that is used for deployment."
-        - string:
-            name: INSTALLER_IP
-            default: '{installer_ip}'
-            description: "Installer IP."
-        - string:
-            name: GERRIT_REFSPEC_DEBUG
-            default: ''
-            description: "Gerrit refspec for debug."
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    wrappers:
-        - timeout:
-            timeout: 120
-            fail: true
-
-    triggers:
-        - 'bottlenecks-trigger-{pod}'
-
-    builders:
-        - 'bottlenecks-fetch-os-creds'
-        - 'bottlenecks-run-{suite}'
-
-    publishers:
-        - email:
-            recipients: hongbo.tianhongbo@huawei.com matthew.lijun@huawei.com liangqi1@huawei.com liyiting@huawei.com
-
 ####################
 # parameter macros
 ####################
@@ -173,36 +152,9 @@
            default: http://205.177.226.237:9999/bottlenecks/{suite}/
            description: "the url where we store the packages used for bottlenecks rubbos"
 
-###################################
+####################################
 #builders for bottlenecks project
-###################################
-- builder:
-    name: bottlenecks-fetch-os-creds
-    builders:
-        - shell:
-            !include-raw: ../../utils/fetch_os_creds.sh
-
-- builder:
-    name: bottlenecks-run-rubbos
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-
-            echo "Bottlenecks: rubbos running now..."
-            cd $WORKSPACE
-            ./ci/run.sh $GERRIT_REFSPEC_DEBUG
-
-- builder:
-    name: bottlenecks-run-vstf
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-
-            echo "Bottlenecks: vstf running now..."
-            cd $WORKSPACE
-            ./ci/vstf_run.sh $GERRIT_REFSPEC_DEBUG
+####################################
 - builder:
     name: bottlenecks-builder-upload-artifact
     builders:
@@ -234,31 +186,3 @@
             echo "Bottlenecks: cleanup cache used for storage downloaded packages"
 
             /bin/rm -rf $CACHE_DIR
-
-#######################
-#trigger macros
-#######################
-- trigger:
-    name: 'bottlenecks-trigger-lf'
-    triggers:
-#        - timed: '0 6 * * *'
-        - gerrit:
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**|.gitignore'
