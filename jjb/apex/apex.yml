@@ -45,6 +45,7 @@
     scenario:
          - 'os-nosdn-nofeature-ha'
          - 'os-odl_l2-nofeature-ha'
+         - 'os-odl_l2-bgpvpn-ha'
          - 'os-odl_l2-sfc-noha'
          - 'os-odl_l3-nofeature-ha'
          - 'os-onos-nofeature-ha'
@@ -522,6 +523,30 @@
           - project: 'yardstick-apex-{slave}-daily-{stream2}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
+            block: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'apex-deploy-baremetal-os-odl_l2-bgpvpn-ha-{stream2}'
+            predefined-parameters:
+              BUILD_DIRECTORY=apex-build-{stream2}/build_output
+            git-revision: true
+            block: true
+        - trigger-builds:
+          - project: 'functest-apex-{slave}-daily-{stream2}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl_l2-bgpvpn-ha
+            block: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'yardstick-apex-{slave}-daily-{stream2}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl_l2-bgpvpn-ha
             block: true
             block-thresholds:
                 build-step-failure-threshold: 'never'
