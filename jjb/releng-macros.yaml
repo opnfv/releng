@@ -321,6 +321,48 @@
             deactivate
 
 - builder:
+    name: lint-python-code
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+            set -o xtrace
+            export PATH=$PATH:/usr/local/bin/
+
+            virtualenv -p python2.7 $WORKSPACE/releng_flake8
+            source $WORKSPACE/releng_flake8/bin/activate
+
+            # install python packages
+            pip install flake8
+
+            # generate and upload lint log
+            echo "Running flake8 code on $PROJECT ..."
+
+            echo "Flake8 Violations\n-----------------" >> lint.log
+            find . -type f -name "*.py" | \
+                xargs flake8 --exit-zero >> lint.log
+
+            deactivate
+
+- builder:
+    name: report-lint-result-to-gerrit
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+            set -o xtrace
+            export PATH=$PATH:/usr/local/bin/
+            if [[ -e lint.log ]] ; then
+                echo -e "\nposting linting report to gerrit...\n"
+                ssh -p 29418 gerrit.opnfv.org \
+                    "gerrit review -p $GERRIT_PROJECT \
+                     -m '$(cat lint.log)' \
+                     $GERRIT_PATCHSET_REVISION"
+            fi
+
+- builder:
     name: upload-review-docs
     builders:
         - build-html-and-pdf-docs-output
