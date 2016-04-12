@@ -270,10 +270,12 @@
             sudo rm -rf ${dir_result}/*
             res_volume="-v ${dir_result}:/home/opnfv/functest/results"
 
-            docker pull opnfv/functest:$DOCKER_TAG >$redirect
-            cmd="sudo docker run --privileged=true -id ${envs} ${labconfig} ${sshkey} ${res_volume} opnfv/functest:latest /bin/bash"
+            echo "Functest: Pulling image opnfv/functest:${DOCKER_TAG}"
+            docker pull opnfv/functest:$DOCKER_TAG >${redirect}
+
+            cmd="sudo docker run --privileged=true -id ${envs} ${labconfig} ${sshkey} ${res_volume} opnfv/functest:${DOCKER_TAG} /bin/bash"
             echo "Functest: Running docker run command: ${cmd}"
-            ${cmd}
+            ${cmd} >${redirect}
             docker ps -a
             sleep 5
             container_id=$(docker ps | grep 'opnfv/functest:latest' | awk '{print $1}' | head -1)
@@ -312,7 +314,7 @@
             # Remove previous running containers if exist
             if [[ ! -z $(docker ps -a | grep opnfv/functest) ]]; then
                 echo "Removing existing opnfv/functest containers..."
-                docker ps -a | grep opnfv/functest | awk '{print $1}' | xargs docker rm -f >$redirect
+                docker ps -a | grep opnfv/functest | awk '{print $1}' | xargs docker rm -f >${redirect}
             fi
 
             # Remove existing images if exist
@@ -322,6 +324,6 @@
                 image_tags=($(docker images | grep opnfv/functest | awk '{print $2}'))
                 for tag in "${image_tags[@]}"; do
                     echo "Removing docker image opnfv/functest:$tag..."
-                    docker rmi opnfv/functest:$tag >$redirect
+                    docker rmi opnfv/functest:$tag >${redirect}
                 done
             fi
