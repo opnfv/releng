@@ -220,6 +220,12 @@
               OPNFV_CLEAN=yes
             git-revision: false
             block: true
+        - trigger-builds:
+          - project: 'functest-apex-{slave}-suite-{stream}'
+            predefined-parameters: |
+              DEPLOY_SCENARIO=os-nosdn-nofeature-ha
+              FUNCTEST_SUITE_NAME=vping_userdata
+            block: true
         - 'apex-workspace-cleanup'
 
 - job-template:
