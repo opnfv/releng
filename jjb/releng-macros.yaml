@@ -340,7 +340,9 @@
             echo "Running flake8 code on $PROJECT ..."
 
             echo -e "Flake8 Violations\n-----------------" >> lint.log
-            find . -type f -name "*.py" | \
+            find . \
+                -path './releng_flake8' -prune -o \
+                -type f -name "*.py" -print | \
                 xargs flake8 --exit-zero --first >> lint.log
 
             deactivate
@@ -355,12 +357,13 @@
             set -o xtrace
             export PATH=$PATH:/usr/local/bin/
             if [[ -e lint.log ]] ; then
+                sed -r -i 's/^/ /g' lint.log
                 echo -e "\nposting linting report to gerrit...\n"
                 cat lint.log
                 echo
                 ssh -p 29418 gerrit.opnfv.org \
                     "gerrit review -p $GERRIT_PROJECT \
-                     -m '$(cat lint.log)' \
+                     -m \"$(cat lint.log)\" \
                      $GERRIT_PATCHSET_REVISION"
             fi
 
