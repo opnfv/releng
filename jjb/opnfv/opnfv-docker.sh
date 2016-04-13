@@ -67,6 +67,8 @@ elif [[ "$DOCKER_REPO_NAME" == "opnfv/storperf" ]]; then
     cd $WORKSPACE/docker
 elif [[ "$DOCKER_REPO_NAME" == "opnfv/qtip" ]]; then
     cd $WORKSPACE/docker
+elif [[ "$DOCKER_REPO_NAME" == "opnfv/bottlenecks"]]; then
+    cd $WORKSPACE/ci/docker
 else
     echo "ERROR: DOCKER_REPO_NAME parameter not valid: $DOCKER_REPO_NAME"
     exit 1
