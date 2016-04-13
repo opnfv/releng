@@ -12,11 +12,18 @@
     master: &master
         stream: master
         branch: '{stream}'
+        #This is used for common project file storage
         gs-pathname: ''
+        #This is used for different test suite dependent packages storage
+        gs-packagepath: '/{suite}'
+        #docker tag used for version control
+        docker-tag: 'latest'
     brahmaputra: &brahmaputra
         stream: brahmaputra
         branch: 'stable/{stream}'
-        gs-pathname: '{stream}'
+        gs-pathname: '/{stream}'
+        gs-packagepath: '/{stream}/{suite}'
+        docker-tag: 'brahmaputra'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
@@ -81,8 +88,16 @@
         - 'bottlenecks-params-{pod}'
         - string:
             name: GERRIT_REFSPEC_DEBUG
-            default: ''
+            default: 'false'
             description: "Gerrit refspec for debug."
+        - string:
+            name: SUITE_NAME
+            default: '{suite}'
+            description: "test suite name."
+        - string:
+            name: DOCKER_TAG
+            default: '{docker-tag}'
+            description: "docker image tag used for version control"
 
     scm:
         - git-scm:
@@ -91,11 +106,9 @@
             branch: '{branch}'
 
     builders:
-        - shell: |
-            echo "bottlenecks: this builder should be changed"
-        # TO DO, by now the CI job of Bottlenecks has been changed
-        #- 'bottlenecks-fetch-os-creds'
-        #- 'bottlenecks-run-{suite}'
+        - 'bottlenecks-env-cleanup'
+        - 'bottlenecks-fetch-os-creds'
+        - 'bottlenecks-run-suite'
 
     publishers:
         - email:
@@ -104,37 +117,64 @@
 ########################
 # builder macros
 ########################
-#- builder:
-#    name: bottlenecks-fetch-os-creds
-#    builders:
-#        - shell:
-#            !include-raw ../../utils/fetch_os_creds.sh
+- builder:
+    name: bottlenecks-fetch-os-creds
+    builders:
+        - shell:
+            !include-raw ../../utils/fetch_os_creds.sh
 
-#- builder:
-#    name: bottlenecks-run-rubbos
-#    builders:
-#        - shell: |
-#            #!/bin/bash
-#            set -o errexit
-#
-#            echo "Bottlenecks: rubbos running now..."
-#            cd $WORKSPACE
-#            ./ci/run.sh $GERRIT_REFSPEC_DEBUG
+- builder:
+    name: bottlenecks-env-cleanup
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -e
+            [[ $GERRIT_REFSPEC_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 
-#- builder:
-#    name: bottlenecks-run-vstf
-#    builders:
-#        - shell: |
-#            #!/bin/bash
-#            set -o errexit
+            echo "Bottlenecks: docker containers/images cleaning up"
+            if [[ ! -z $(docker ps -a | grep opnfv/bottlenecks) ]]; then
+                echo "removing existing opnfv/bottlenecks containers"
+                docker ps -a | grep opnfv/bottlenecks | awk '{print $1}' | xargs docker rm -f >$redirect
+            fi
 
-#            echo "Bottlenecks: vstf running now..."
-#            cd $WORKSPACE
-#            ./ci/vstf_run.sh $GERRIT_REFSPEC_DEBUG
+            if [[ ! -z $(docker images | grep opnfv/bottlenecks) ]]; then
+                echo "Bottlenecks: docker images to remove:"
+                docker images | head -1 && docker images | grep opnfv/bottlenecks
+                image_tags=($(docker images | grep opnfv/bottlenecks | awk '{print $2}'))
+                for tag in "${image_tags[@]}"; do
+                    echo "Removing docker image opnfv/bottlenecks:$tag..."
+                    docker rmi opnfv/bottlenecks:$tag >$redirect
+                done
+            fi
 
-########################
+- builder:
+    name: bottlenecks-run-suite
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -e
+            [[ $GERRIT_REFSPEC_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
+
+            echo "Bottlenecks: ${SUITE_NAME} running now..."
+
+            # pull latest image
+            docker pull opnfv/bottlenecks:$DOCKER_TAG >$redirect
+
+            # run tests by using docker
+            opts="--privileged=true --rm"
+            envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
+                  -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NET=${EXTERNAL_NETWORK} \
+                  -e BOTTLENECKS_BRANCH=${BOTTLENECKS_BRANCH} -e GERRIT_REFSPEC_DEBUG=${GERRIT_REFSPEC_DEBUG} \
+                  -e BOTTLENECKS_DB_TARGET=${BOTTLENECKS_DB_TARGET} -e PACKAGE_URL=${PACKAGE_URL}"
+            run_testsuite="run_tests.sh -s ${SUITE_NAME}"
+            cmd="sudo docker run ${opts} ${envs} opnfv/bottlenecks ${run_testsuite} >${redirect}"
+            echo "Bottlenecks: docker cmd running: ${cmd}"
+            ${cmd}
+
+####################
 # parameter macros
-########################
+####################
+
 - parameter:
     name: 'bottlenecks-params-intel-pod5'
     parameters:
