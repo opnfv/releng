@@ -144,6 +144,8 @@
         - shell:
             !include-raw-escape: ./fuel-build.sh
         - shell:
+            !include-raw-escape: ./fuel-upload-artifact.sh
+        - shell:
             !include-raw-escape: ./fuel-workspace-cleanup.sh
 
 - job-template:
@@ -308,20 +310,36 @@
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: 'Git URL to use on this Jenkins Slave'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'os-odl_l2-nofeature-ha'
         - node:
             name: SLAVE_NAME
             description: 'Slave name on Jenkins'
             allowed-slaves:
-                - ericsson-pod2
-                - opnfv-jump-2
                 - ericsson-pod1
             default-slaves:
-                - ericsson-pod2
+                - ericsson-pod1
         - fuel-project-parameter:
             gs-pathname: '{gs-pathname}'
+        - string:
+            name: DEPLOY_SCENARIO
+            choices:
+              - 'os-nosdn-nofeature-noha'
+              - 'os-odl_l2-nofeature-ha'
+              - 'os-odl_l2-bgpvpn-ha'
+            description: 'Scenario to deploy'
+        - string:
+            name: GIT_BRANCH
+            choices:
+              - 'master'
+              - 'stable/brahmaputra'
+            description: 'Branch to checkout for securedlab repo'
+        - string:
+            name: GERRIT_CHANGE_NUMBER
+            default: 'none'
+            description: 'Change number on Gerrit.'
+        - string:
+            name: GERRIT_PATCHSET_NUMBER
+            default: 'none'
+            description: 'Patchset number on Gerrit.'
 
     scm:
         - git-scm:
@@ -335,9 +353,7 @@
 
     builders:
         - shell:
-            !include-raw-escape: ./fuel-download-artifact.sh
-        - shell:
-            !include-raw-escape: ./fuel-deploy.sh
+            !include-raw-escape: ./fuel-patchset-deploy.sh
 
 ########################
 # parameter macros
