@@ -48,8 +48,8 @@ gsutil cp $WORKSPACE/opnfv.properties \
 if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
     gsutil cp $WORKSPACE/opnfv.properties \
     gs://$GS_URL/latest.properties > gsutil.latest.log 2>&1
-elif [[ "$JOB_NAME" =~ "merge" ]]; then
-    echo "Uploaded Fuel ISO for a merged change"
+elif [[ "$JOB_NAME" =~ (verify|merge) ]]; then
+    echo "Uploaded Fuel ISO for a patchset or merged change"
 fi
 
 gsutil -m setmeta \
