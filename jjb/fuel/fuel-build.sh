@@ -55,8 +55,8 @@ echo
 mkdir -p $CACHE_DIRECTORY
 
 # set OPNFV_ARTIFACT_VERSION
-if [[ "$JOB_NAME" =~ "merge" ]]; then
-    echo "Building Fuel ISO for a merged change"
+if [[ "$JOB_NAME" =~ (verify|merge) ]]; then
+    echo "Building Fuel ISO for a patchset or merged change"
     export OPNFV_ARTIFACT_VERSION="gerrit-$GERRIT_CHANGE_NUMBER"
 else
     export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
