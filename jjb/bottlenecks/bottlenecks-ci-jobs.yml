@@ -87,6 +87,10 @@
         - '{installer}-defaults'
         - 'bottlenecks-params-{pod}'
         - string:
+            name: REPO_DIR
+            default: "/home/opnfv/bottlenecks"
+            description: "Directory where the repository is cloned"
+        - string:
             name: DEPLOY_SCENARIO
             default: 'os-odl_l2-nofeature-ha'
         - string:
@@ -169,7 +173,7 @@
                   -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NET=${EXTERNAL_NETWORK} \
                   -e BOTTLENECKS_BRANCH=${BOTTLENECKS_BRANCH} -e GERRIT_REFSPEC_DEBUG=${GERRIT_REFSPEC_DEBUG} \
                   -e BOTTLENECKS_DB_TARGET=${BOTTLENECKS_DB_TARGET} -e PACKAGE_URL=${PACKAGE_URL}"
-            run_testsuite="run_tests.sh -s ${SUITE_NAME}"
+            run_testsuite="${REPO_DIR}/run_tests.sh -s ${SUITE_NAME}"
             cmd="sudo docker run ${opts} ${envs} opnfv/bottlenecks ${run_testsuite} >${redirect}"
             echo "Bottlenecks: docker cmd running: ${cmd}"
             ${cmd}
