@@ -59,3 +59,48 @@
     builders:
         - shell: |
             echo "Nothing to verify!"
+
+- job-template:
+    name: 'armband-build-daily-{stream}'
+
+    concurrent: false
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+
+    parameters:
+        - project-parameters:
+            project: '{project}'
+        - 'enea-build-defaults'
+        - choice:
+            name: FORCE_BUILD
+            choices:
+                - 'false'
+                - 'true'
+            description: 'Force build even if there are no changes in the armband repo. Default false'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    triggers:
+        -pollscm:
+            cron: '0 H/4 * * *'
+
+    wrappers:
+        -timeout:
+            timeout: 360
+            fail: true
+
+    builders:
+        - shell:
+            !include-raw-escape: ./armband-build.sh
+
+    publishers:
+        - email:
+            recipients: josep.puigdemont@enea.com armband@enea.com
