@@ -249,10 +249,10 @@
             # labconfig is used only for joid
             labconfig=""
             if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
-                if virsh list | grep instack; then
+                if sudo virsh list | grep instack; then
                     instack_mac=$(sudo virsh domiflist instack | grep default | \
                                   grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
-                elif virsh list | grep undercloud; then
+                elif sudo virsh list | grep undercloud; then
                     instack_mac=$(sudo virsh domiflist undercloud | grep default | \
                                   grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
                 else
