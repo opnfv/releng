@@ -117,12 +117,15 @@ def format_vIMS_for_dashboard(results):
             # Calculate nb of tests run and nb of tests failed
             # vIMS_results = get_vIMSresults(vIMS_test)
             # print vIMS_results
-            if data_test['result'] == "Passed":
-                nbTests += 1
-            elif data_test['result'] == "Failed":
-                nbFailures += 1
-            elif data_test['result'] == "Skipped":
-                nbSkipped += 1
+            try:
+                if data_test['result'] == "Passed":
+                    nbTests += 1
+                elif data_test['result'] == "Failed":
+                    nbFailures += 1
+                elif data_test['result'] == "Skipped":
+                    nbSkipped += 1
+            except:
+                nbTests = 0
 
         new_element.append({'x': data['creation_date'],
                             'y1': nbTests,
@@ -149,10 +152,13 @@ def format_vIMS_for_dashboard(results):
             nbTestsOK = 0
             nbTestsKO = 0
 
-            if data_test['result'] == "Passed":
-                nbTestsOK += 1
-            elif data_test['result'] == "Failed":
-                nbTestsKO += 1
+            try:
+                if data_test['result'] == "Passed":
+                    nbTestsOK += 1
+                elif data_test['result'] == "Failed":
+                    nbTestsKO += 1
+            except:
+                nbTestsOK = 0
 
             nbTests += nbTestsOK + nbTestsKO
             nbFailures += nbTestsKO
@@ -366,7 +372,7 @@ def format_Rally_for_dashboard(results):
     # ********************************
     new_element = []
     for data in results:
-        summary_cursor = len(data)
+        summary_cursor = len(data['details']) - 1
         new_element.append({'x': data['creation_date'],
                             'y': int(data['details'][summary_cursor]['summary']['duration'])})
 
