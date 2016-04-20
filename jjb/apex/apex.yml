@@ -847,6 +847,15 @@
                 DEPLOY_CMD="./deploy.sh -c ${WORKSPACE}/build -r ${WORKSPACE}/build/images/"
                 DEPLOY_FILE="${WORKSPACE}/config/deploy/${DEPLOY_SCENARIO}.yaml"
                 NETWORK_FILE="${WORKSPACE}/config/network/network_settings.yaml"
+                # Make sure python34 is installed
+                if ! rpm -q python34 > /dev/null; then
+                    sudo yum install -y epel-release
+                    if ! sudo yum install -y python34; then
+                        echo "Failed to install python34"
+                        exit 1
+                    fi
+                fi
+                export PYTHONPATH=$PYTHONPATH:${WORKSPACE}/lib/python/apex
             else
                 RPM_LIST=$RPM_INSTALL_PATH
                 for pkg in common undercloud opendaylight-sfc; do
