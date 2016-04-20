@@ -76,12 +76,8 @@
         - project-parameter:
             project: '{project}'
         - 'arm-build1-defaults'
-        - choice:
-            name: FORCE_BUILD
-            choices:
-                - 'false'
-                - 'true'
-            description: 'Force build even if there are no changes in the armband repo. Default false'
+        - armband-project-parameter:
+            gs-pathname: '{gs-pathname}'
 
     scm:
         - git-scm:
@@ -100,8 +96,29 @@
 
     builders:
         - shell:
-            !include-raw-escape: ./armband-build.sh
+            !include-raw-escape: ./build.sh
 
     publishers:
         - email:
             recipients: josep.puigdemont@enea.com armband@enea.com
+
+########################
+# parameter macros
+########################
+- parameter:
+    name: armband-project-parameter
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: GS_URL
+            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+            description: "URL to Google Storage."
+        - choice:
+            name: FORCE_BUILD
+            choices:
+                - 'false'
+                - 'true'
+            description: 'Force build even if there are no changes in the armband repo. Default false'
