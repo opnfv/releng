@@ -855,7 +855,11 @@
                         exit 1
                     fi
                 fi
-                export PYTHONPATH=$PYTHONPATH:${WORKSPACE}/lib/python/apex
+                if [ -z "$PYTHONPATH" ]; then
+                    export PYTHONPATH=${WORKSPACE}/lib/python/apex
+                else
+                    export PYTHONPATH=$PYTHONPATH:${WORKSPACE}/lib/python/apex
+                fi
             else
                 RPM_LIST=$RPM_INSTALL_PATH
                 for pkg in common undercloud opendaylight-sfc; do
