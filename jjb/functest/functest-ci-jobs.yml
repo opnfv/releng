@@ -219,11 +219,9 @@
     builders:
         - shell: |
             #!/bin/bash
-            set +e
-            flags="-s"
-            [[ "$PUSH_RESULTS_TO_DB" == "true" ]] && flags+=" -r"
+            set -e
             echo "Functest: run $FUNCTEST_SUITE_NAME"
-            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test $FUNCTEST_SUITE_NAME ${flags}"
+            cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test $FUNCTEST_SUITE_NAME"
             container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
             docker exec $container_id $cmd
 
@@ -244,7 +242,7 @@
     builders:
         - shell: |
             #!/bin/bash
-            set +e
+            set -e
             [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
             # labconfig is used only for joid
             labconfig=""
