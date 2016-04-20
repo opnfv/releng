@@ -9,6 +9,7 @@
 
     jobs:
         - 'armband-verify-{stream}'
+        - 'armband-build-daily-{stream}'
 
     stream:
         - master:
@@ -72,7 +73,7 @@
             max-per-node: 1
 
     parameters:
-        - project-parameters:
+        - project-parameter:
             project: '{project}'
         - 'arm-build1-defaults'
         - choice:
@@ -89,11 +90,11 @@
             branch: '{branch}'
 
     triggers:
-        -pollscm:
+        - pollscm:
             cron: '0 H/4 * * *'
 
     wrappers:
-        -timeout:
+        - timeout:
             timeout: 360
             fail: true
 
