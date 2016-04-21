@@ -855,10 +855,10 @@
                         exit 1
                     fi
                 fi
-                if [ -z "$PYTHONPATH" ]; then
-                    export PYTHONPATH=${WORKSPACE}/lib/python/apex
+                if [ -z ${PYTHONPATH:-} ]; then
+                    export PYTHONPATH=${WORKSPACE}/lib/python
                 else
-                    export PYTHONPATH=$PYTHONPATH:${WORKSPACE}/lib/python/apex
+                    export PYTHONPATH=$PYTHONPATH:${WORKSPACE}/lib/python
                 fi
             else
                 RPM_LIST=$RPM_INSTALL_PATH
