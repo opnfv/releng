@@ -339,17 +339,27 @@
             # generate and upload lint log
             echo "Running flake8 code on $PROJECT ..."
 
+            # Get number of flake8 violations. If none, this will be an
+            # empty string: ""
             FLAKE_COUNT="$(find . \
                 -path './releng_flake8' -prune -o \
                 -type f -name "*.py" -print | \
                 xargs flake8 --exit-zero -qq --count 2>&1)"
-            echo -e "Flake8 Violations: $FLAKE_COUNT\n---" >> lint.log
-            # At some point this need to handle the case of finding no
-            # violations.
-            find . \
-                -path './releng_flake8' -prune -o \
-                -type f -name "*.py" -print | \
-                xargs flake8 --exit-zero --first >> lint.log
+
+            if [ ! -z $FLAKE_COUNT ]; then
+              echo "Flake8 Violations: $FLAKE_COUNT" >> lint.log
+              find . \
+                  -path './releng_flake8' -prune -o \
+                  -type f -name "*.py" -print | \
+                  xargs flake8 --exit-zero --first >> violation.log
+              SHOWN=$(wc -l violation.log | cut -d' ' -f1)
+              echo -e "$SHOWN shown\n---" >> lint.log
+              cat violation.log >> lint.log
+              sed -r -i '4,$s/^/ /g' lint.log
+              rm violation.log
+            else
+              echo -e "Flake8 Violations: 0" > lint.log
+            fi
 
             deactivate
 
@@ -363,7 +373,6 @@
             set -o xtrace
             export PATH=$PATH:/usr/local/bin/
             if [[ -e lint.log ]] ; then
-                sed -r -i '3,$s/^/ /g' lint.log
                 echo -e "\nposting linting report to gerrit...\n"
                 cat lint.log
                 echo
