@@ -149,8 +149,6 @@
             branch: '{branch}'
 
     builders:
-        - 'functest-cleanup'
-        - 'set-functest-env'
         - 'functest-{testsuite}-builder'
 
 ########################
@@ -291,7 +289,7 @@
             cmd="sudo docker run --privileged=true -id ${envs} ${labconfig} ${sshkey} ${res_volume} opnfv/functest:${DOCKER_TAG} /bin/bash"
             echo "Functest: Running docker run command: ${cmd}"
             ${cmd} >${redirect}
-            docker ps -a
+            docker ps -a >${redirect}
             sleep 5
             container_id=$(docker ps | grep "opnfv/functest:${DOCKER_TAG}" | awk '{print $1}' | head -1)
             echo "Container ID=${container_id}"
@@ -303,7 +301,7 @@
             echo "Starting the container: docker start ${container_id}"
             docker start ${container_id}
             sleep 5
-            docker ps
+            docker ps >${redirect}
             if [ $(docker ps | grep "opnfv/functest:${DOCKER_TAG}" | wc -l) == 0 ]; then
                 echo "The container opnfv/functest with ID=${container_id} has not been properly started. Exiting..."
                 exit 1
@@ -335,7 +333,7 @@
             # Remove existing images if exist
             if [[ ! -z $(docker images | grep opnfv/functest) ]]; then
                 echo "Docker images to remove:"
-                docker images | head -1 && docker images | grep opnfv/functest
+                docker images | head -1 && docker images | grep opnfv/functest >${redirect}
                 image_tags=($(docker images | grep opnfv/functest | awk '{print $2}'))
                 for tag in "${image_tags[@]}"; do
                     echo "Removing docker image opnfv/functest:$tag..."
