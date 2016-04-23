@@ -855,6 +855,13 @@
                         exit 1
                     fi
                 fi
+                if ! rpm -q python34-PyYAML > /dev/null; then
+                    sudo yum install -y epel-release
+                    if ! sudo yum install -y python34-PyYAML; then
+                        echo "Failed to install python34-PyYAML"
+                        exit 1
+                    fi
+                fi
                 if [ -z ${PYTHONPATH:-} ]; then
                     export PYTHONPATH=${WORKSPACE}/lib/python
                 else
