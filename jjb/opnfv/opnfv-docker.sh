@@ -17,6 +17,14 @@ echo "--------------------------------------------------------"
 echo
 
 
+if [[ -n $(ps -ef|grep 'docker build'|grep -v grep) ]]; then
+    echo "There is already another build process in progress:"
+    echo $(ps -ef|grep 'docker build'|grep -v grep)
+    # Abort this job since it will colide and might mess up the current one.
+    echo "Aborting..."
+    exit 1
+fi
+
 # Remove previous running containers if exist
 if [[ -n "$(docker ps -a | grep $DOCKER_REPO_NAME)" ]]; then
     echo "Removing existing $DOCKER_REPO_NAME containers..."
