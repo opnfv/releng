@@ -114,7 +114,6 @@
 
     builders:
         - 'bottlenecks-env-cleanup'
-        - 'bottlenecks-fetch-os-creds'
         - 'bottlenecks-run-suite'
 
     publishers:
@@ -124,12 +123,6 @@
 ########################
 # builder macros
 ########################
-- builder:
-    name: bottlenecks-fetch-os-creds
-    builders:
-        - shell:
-            !include-raw ../../utils/fetch_os_creds.sh
-
 - builder:
     name: bottlenecks-env-cleanup
     builders:
@@ -162,21 +155,36 @@
             set -e
             [[ $GERRIT_REFSPEC_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 
-            echo "Bottlenecks: ${SUITE_NAME} running now..."
+            echo "Bottlenecks: to pull image opnfv/bottlenecks:${DOCKER_TAG}"
+            docker pull opnfv/bottlenecks:$DOCKER_TAG >${redirect}
 
-            # pull latest image
-            docker pull opnfv/bottlenecks:$DOCKER_TAG >$redirect
-
-            # run tests by using docker
-            opts="--privileged=true --rm"
+            echo "Bottlenecks: docker start running"
+            opts="--privileged=true -id"
             envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
                   -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NET=${EXTERNAL_NETWORK} \
                   -e BOTTLENECKS_BRANCH=${BOTTLENECKS_BRANCH} -e GERRIT_REFSPEC_DEBUG=${GERRIT_REFSPEC_DEBUG} \
                   -e BOTTLENECKS_DB_TARGET=${BOTTLENECKS_DB_TARGET} -e PACKAGE_URL=${PACKAGE_URL}"
+            cmd="sudo docker run ${opts} ${envs} opnfv/bottlenecks:${DOCKER_TAG} /bin/bash"
+            echo "Bottlenecks: docker cmd running ${cmd}"
+            ${cmd} >${redirect}
+
+            echo "Bottlenecks: obtain docker id"
+            container_id=$(docker ps | grep "opnfv/bottlenecks:${DOCKER_TAG}" | awk '{print $1}' | head -1)
+            if [ -z ${container_id} ]; then
+                echo "Cannot find opnfv/bottlenecks container ID ${container_id}. Please check if it exists."
+                docker ps -a
+                exit 1
+            fi
+
+            echo "Bottlenecks: to prepare openstack environment"
+            prepare_env="${REPO_DIR}/ci/prepare_env.sh"
+            echo "Bottlenecks: docker cmd running: ${prepare_env}"
+            sudo docker exec ${container_id} ${prepare_env}
+
+            echo "Bottlenecks: to run testsuite ${SUITE_NAME}"
             run_testsuite="${REPO_DIR}/run_tests.sh -s ${SUITE_NAME}"
-            cmd="sudo docker run ${opts} ${envs} opnfv/bottlenecks ${run_testsuite}"
-            echo "Bottlenecks: docker cmd running: ${cmd}"
-            ${cmd}
+            echo "Bottlenecks: docker cmd running: ${run_testsuite}"
+            sudo docker exec ${container_id} ${run_testsuite}
 
 ####################
 # parameter macros
