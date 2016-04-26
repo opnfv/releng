@@ -4,6 +4,7 @@ import jinja2
 import os
 import re
 import requests
+import sys
 import time
 import yaml
 
@@ -12,11 +13,12 @@ functest_test_list = ['vPing', 'vPing_userdata',
                       'Tempest', 'Rally',
                       'ODL', 'ONOS', 'vIMS']
 # functest_test_list = ['vPing']
-# functest_test_list = []
 companion_test_list = ['doctor/doctor-notification', 'promise/promise']
 # companion_test_list = []
 installers = ["apex", "compass", "fuel", "joid"]
-# installers = ["apex"]
+# installers = ["fuel"]
+versions = ["brahmaputra", "master"]
+# versions = ["master"]
 PERIOD = 10
 
 # Correspondance between the name of the test case and the name in the DB
@@ -100,7 +102,7 @@ class TestCase(object):
         self.isRunnable = is_runnable
 
 
-def getApiResults(case, installer, scenario):
+def getApiResults(case, installer, scenario, version):
     case = case.getName()
     results = json.dumps([])
     # to remove proxy (to be removed at the end for local test only)
@@ -111,7 +113,7 @@ def getApiResults(case, installer, scenario):
     #       "&period=30&installer=" + installer
     url = "http://testresults.opnfv.org/testapi/results?case=" + case + \
           "&period=" + str(PERIOD) + "&installer=" + installer + \
-          "&scenario=" + scenario
+          "&scenario=" + scenario + "&version=" + version
     request = Request(url)
 
     try:
@@ -124,11 +126,12 @@ def getApiResults(case, installer, scenario):
     return results
 
 
-def getScenarios(case, installer):
+def getScenarios(case, installer, version):
 
     case = case.getName()
     url = "http://testresults.opnfv.org/testapi/results?case=" + case + \
-          "&period=" + str(PERIOD) + "&installer=" + installer
+          "&period=" + str(PERIOD) + "&installer=" + installer + \
+          "&version=" + version
     request = Request(url)
 
     try:
@@ -147,9 +150,9 @@ def getScenarios(case, installer):
 
         for r in test_results:
             # Retrieve all the scenarios per installer
-            if not r['version'] in scenario_results.keys():
-                scenario_results[r['version']] = []
-            scenario_results[r['version']].append(r)
+            if not r['scenario'] in scenario_results.keys():
+                scenario_results[r['scenario']] = []
+            scenario_results[r['scenario']].append(r)
 
     return scenario_results
 
@@ -174,10 +177,10 @@ def getNbtestOk(results):
     return nb_test_ok
 
 
-def getResult(testCase, installer, scenario):
+def getResult(testCase, installer, scenario, version):
 
     # retrieve raw results
-    results = getApiResults(testCase, installer, scenario)
+    results = getApiResults(testCase, installer, scenario, version)
     # let's concentrate on test results only
     test_results = results['test_results']
 
@@ -230,16 +233,6 @@ def getResult(testCase, installer, scenario):
 # ******************************************************************************
 # ******************************************************************************
 
-# as the criteria are all difference, we shall use a common way to indicate
-# the criteria
-# 100 = 100% = all the test must be OK
-# 90 = 90% = all the test must be above 90% of success rate
-# TODO harmonize success criteria
-# some criteria could be the duration, the success rate, the packet loss,...
-# to be done case by case
-# TODo create TestCriteria Object
-
-
 # init just tempest to get the list of scenarios
 # as all the scenarios run Tempest
 tempest = TestCase("Tempest", "functest", -1)
@@ -252,55 +245,63 @@ functest_yaml_config = yaml.load(response.text)
 print "****************************************"
 print "*   Generating reporting.....          *"
 print "****************************************"
-# For all the installers
-for installer in installers:
-    # get scenarios
-    scenario_results = getScenarios(tempest, installer)
-    scenario_stats = getScenarioStats(scenario_results)
+# For all the versions
+for version in versions:
+    # For all the installers
+    for installer in installers:
+        # get scenarios
+        scenario_results = getScenarios(tempest, installer, version)
+        scenario_stats = getScenarioStats(scenario_results)
 
-    items = {}
-    # For all the scenarios get results
-    for s, s_result in scenario_results.items():
-        testCases = []
-        # For each scenario declare the test cases
-        # Functest cases
-        for test_case in functest_test_list:
-            testCases.append(TestCase(test_case, "functest"))
+        items = {}
+        # For all the scenarios get results
+        for s, s_result in scenario_results.items():
+            testCases = []
+            # For each scenario declare the test cases
+            # Functest cases
+            for test_case in functest_test_list:
+                testCases.append(TestCase(test_case, "functest"))
 
-        # project/case
-        for test_case in companion_test_list:
-            test_split = test_case.split("/")
-            test_project = test_split[0]
-            test_case = test_split[1]
-            testCases.append(TestCase(test_case, test_project))
+            # project/case
+            for test_case in companion_test_list:
+                test_split = test_case.split("/")
+                test_project = test_split[0]
+                test_case = test_split[1]
+                testCases.append(TestCase(test_case, test_project))
 
-        # Check if test case is runnable according to the installer, scenario
-        for test_case in testCases:
-            test_case.checkRunnable(installer, s, functest_yaml_config)
-            # print "testcase %s is %s" % (test_case.getName(),
-            #                              test_case.isRunnable)
+            # Check if test case is runnable / installer, scenario
+            try:
+                for test_case in testCases:
+                    test_case.checkRunnable(installer, s, functest_yaml_config)
+                    # print "testcase %s is %s" % (test_case.getName(),
+                    #                              test_case.isRunnable)
+                print "--------------------------"
+                print "installer %s, version %s, scenario %s:" % (installer, version, s)
+                for testCase in testCases:
+                    time.sleep(1)
+                    if testCase.isRunnable:
+                        print " Searching results for case %s " % (testCase.getName())
+                        result = getResult(testCase, installer, s, version)
+                        testCase.setCriteria(result)
+                        items[s] = testCases
+                print "--------------------------"
+            except:
+                print "installer %s, version %s, scenario %s" % (installer, version, s)
+                print "No data available , error %s " % (sys.exc_info()[0])
 
-        print "--------------------------"
-        print "%s / %s:" % (installer, s)
-        for testCase in testCases:
-            time.sleep(1)
-            if testCase.isRunnable:
-                print "    Searching results for case %s " % testCase.getName()
-                result = getResult(testCase, installer, s)
-                testCase.setCriteria(result)
-                items[s] = testCases
-        print "--------------------------"
-    print "****************************************"
-    templateLoader = jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(__file__)))
-    templateEnv = jinja2.Environment(loader=templateLoader)
+        print "****************************************"
+        templateLoader = jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(__file__)))
+        templateEnv = jinja2.Environment(loader=templateLoader)
 
-    TEMPLATE_FILE = "index-status-tmpl.html"
-    template = templateEnv.get_template(TEMPLATE_FILE)
+        TEMPLATE_FILE = "./template/index-status-tmpl.html"
+        template = templateEnv.get_template(TEMPLATE_FILE)
 
-    outputText = template.render(scenario_stats=scenario_stats,
-                                 items=items,
-                                 installer=installer,
-                                 period=PERIOD)
+        outputText = template.render(scenario_stats=scenario_stats,
+                                     items=items,
+                                     installer=installer,
+                                     period=PERIOD,
+                                     version=version)
 
-    with open("index-status-" + installer + ".html", "wb") as fh:
-        fh.write(outputText)
+        with open("./release/" + version +
+                  "/index-status-" + installer + ".html", "wb") as fh:
+            fh.write(outputText)
