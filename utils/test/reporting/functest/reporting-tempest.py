@@ -88,12 +88,12 @@ for installer in installers:
     templateLoader = jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(__file__)))
     templateEnv = jinja2.Environment(loader=templateLoader)
 
-    TEMPLATE_FILE = "index-tempest-tmpl.html"
+    TEMPLATE_FILE = "./template/index-tempest-tmpl.html"
     template = templateEnv.get_template(TEMPLATE_FILE)
 
     outputText = template.render(scenario_results=scenario_results,
                                  items=items,
                                  installer=installer)
 
-    with open("index-tempest-" + installer + ".html", "wb") as fh:
+    with open("./release/index-tempest-" + installer + ".html", "wb") as fh:
         fh.write(outputText)

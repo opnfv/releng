@@ -72,12 +72,12 @@ for installer in installers:
     templateLoader = jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(__file__)))
     templateEnv = jinja2.Environment( loader=templateLoader )
 
-    TEMPLATE_FILE = "index-vims-tmpl.html"
+    TEMPLATE_FILE = "./template/index-vims-tmpl.html"
     template = templateEnv.get_template( TEMPLATE_FILE )
 
     outputText = template.render( scenario_results = scenario_results, step_order = step_order, installer = installer)
 
-    with open("index-vims" + installer + ".html", "wb") as fh:
+    with open("./release/index-vims" + installer + ".html", "wb") as fh:
         fh.write(outputText)
 
 
