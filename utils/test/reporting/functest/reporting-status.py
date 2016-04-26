@@ -111,9 +111,9 @@ def getApiResults(case, installer, scenario, version):
     # urllib2.install_opener(opener)
     # url = "http://127.0.0.1:8000/results?case=" + case + \
     #       "&period=30&installer=" + installer
-    url = "http://testresults.opnfv.org/testapi/results?case=" + case + \
-          "&period=" + str(PERIOD) + "&installer=" + installer + \
-          "&scenario=" + scenario + "&version=" + version
+    url = ("http://testresults.opnfv.org/testapi/results?case=" + case +
+           "&period=" + str(PERIOD) + "&installer=" + installer +
+           "&scenario=" + scenario + "&version=" + version)
     request = Request(url)
 
     try:
@@ -239,7 +239,8 @@ tempest = TestCase("Tempest", "functest", -1)
 
 # Retrieve the Functest configuration to detect which tests are relevant
 # according to the installer, scenario
-response = requests.get('https://git.opnfv.org/cgit/functest/plain/testcases/config_functest.yaml')
+cf = "https://git.opnfv.org/cgit/functest/plain/testcases/config_functest.yaml"
+response = requests.get(cf)
 functest_yaml_config = yaml.load(response.text)
 
 print "****************************************"
@@ -276,17 +277,20 @@ for version in versions:
                     # print "testcase %s is %s" % (test_case.getName(),
                     #                              test_case.isRunnable)
                 print "--------------------------"
-                print "installer %s, version %s, scenario %s:" % (installer, version, s)
+                print ("installer %s, version %s, scenario %s:" %
+                       (installer, version, s))
                 for testCase in testCases:
                     time.sleep(1)
                     if testCase.isRunnable:
-                        print " Searching results for case %s " % (testCase.getName())
+                        print (" Searching results for case %s " %
+                               (testCase.getName()))
                         result = getResult(testCase, installer, s, version)
                         testCase.setCriteria(result)
                         items[s] = testCases
                 print "--------------------------"
             except:
-                print "installer %s, version %s, scenario %s" % (installer, version, s)
+                print ("installer %s, version %s, scenario %s" %
+                       (installer, version, s))
                 print "No data available , error %s " % (sys.exc_info()[0])
 
         print "****************************************"
