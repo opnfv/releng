@@ -512,6 +512,8 @@ class TestResultsHandler(GenericApiHandler):
          - period : x (x last days)
          - scenario : the test scenario (previously version)
          - criteria : the global criteria status passed or failed
+         - trust_indicator : evaluate the stability of the test case to avoid
+         running systematically long and stable test case
 
 
         :param result_id: Get a result by ID
@@ -531,6 +533,7 @@ class TestResultsHandler(GenericApiHandler):
         scenario_arg = self.get_query_argument("scenario", None)
         criteria_arg = self.get_query_argument("criteria", None)
         period_arg = self.get_query_argument("period", None)
+        trust_indicator_arg = self.get_query_argument("trust_indicator", None)
 
         # prepare request
         get_request = dict()
@@ -558,6 +561,9 @@ class TestResultsHandler(GenericApiHandler):
 
             if criteria_arg is not None:
                 get_request["criteria_tag"] = criteria_arg
+
+            if trust_indicator_arg is not None:
+                get_request["trust_indicator_arg"] = trust_indicator_arg
 
             if period_arg is not None:
                 try:

@@ -153,6 +153,7 @@ class TestResult:
         self.build_tag = None
         self.scenario = None
         self.criteria = None
+        self.trust_indicator = None
 
     @staticmethod
     def test_result_from_dict(test_result_dict):
@@ -173,7 +174,21 @@ class TestResult:
         t.build_tag = test_result_dict.get('build_tag')
         t.scenario = test_result_dict.get('scenario')
         t.criteria = test_result_dict.get('criteria')
-
+        # 0 < trust indicator < 1
+        # if bad value =>  set this indicator to 0
+        if test_result_dict.get('trust_indicator') is not None:
+            if isinstance(test_result_dict.get('trust_indicator'),
+                          (int, long, float)):
+                if test_result_dict.get('trust_indicator') < 0:
+                    t.trust_indicator = 0
+                elif test_result_dict.get('trust_indicator') > 1:
+                    t.trust_indicator = 1
+                else:
+                    t.trust_indicator = test_result_dict.get('trust_indicator')
+            else:
+                t.trust_indicator = 0
+        else:
+            t.trust_indicator = 0
         return t
 
     def format(self):
@@ -188,7 +203,8 @@ class TestResult:
             "details": self.details,
             "build_tag": self.build_tag,
             "scenario": self.scenario,
-            "criteria": self.criteria
+            "criteria": self.criteria,
+            "trust_indicator": self.trust_indicator
         }
 
     def format_http(self):
@@ -204,6 +220,6 @@ class TestResult:
             "details": self.details,
             "build_tag": self.build_tag,
             "scenario": self.scenario,
-            "criteria": self.criteria
+            "criteria": self.criteria,
+            "trust_indicator": self.trust_indicator
         }
-
