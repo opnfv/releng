@@ -222,7 +222,7 @@
             #!/bin/bash
             set -e
             echo "Functest: run $FUNCTEST_SUITE_NAME"
-            if [[ ${branch} == *"brahmaputra"* ]]; then
+            if [[ ${BUILD_TAG} == *"brahmaputra"* ]]; then
                 cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test $FUNCTEST_SUITE_NAME"
             else
                 cmd="python ${FUNCTEST_REPO_DIR}/ci/run_tests.py -t $FUNCTEST_SUITE_NAME"
@@ -237,7 +237,7 @@
             #!/bin/bash
             set +e
             [[ "$PUSH_RESULTS_TO_DB" == "true" ]] && flags+="-r"
-            if [[ ${branch} == *"brahmaputra"* ]]; then
+            if [[ ${BUILD_TAG} == *"brahmaputra"* ]]; then
                 cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh -s ${flags}"
             else
                 cmd="python ${FUNCTEST_REPO_DIR}/ci/run_tests.py -t all ${flags}"
@@ -285,7 +285,7 @@
                 -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
                 -e BUILD_TAG=${BUILD_TAG} -e CI_DEBUG=${CI_DEBUG}"
             branch=${GIT_BRANCH##*/}
-            dir_result="${HOME}/opnfv/functest/results/${branch}"
+            dir_result="${HOME}/opnfv/functest/results/${BUILD_TAG}"
             mkdir -p ${dir_result}
             sudo rm -rf ${dir_result}/*
             res_volume="-v ${dir_result}:/home/opnfv/functest/results"
@@ -313,7 +313,7 @@
                 echo "The container opnfv/functest with ID=${container_id} has not been properly started. Exiting..."
                 exit 1
             fi
-            if [[ ${branch} == *"brahmaputra"* ]]; then
+            if [[ ${BUILD_TAG} == *"brahmaputra"* ]]; then
                 cmd="${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
             else
                 cmd="python ${FUNCTEST_REPO_DIR}/ci/prepare_env.py start"
