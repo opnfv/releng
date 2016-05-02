@@ -221,7 +221,8 @@
         - shell: |
             #!/bin/bash
             set -e
-            echo "Functest: run $FUNCTEST_SUITE_NAME"
+            branch=${GIT_BRANCH##*/}
+            echo "Functest: run $FUNCTEST_SUITE_NAME on branch ${branch}"
             if [[ ${branch} == *"brahmaputra"* ]]; then
                 cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test $FUNCTEST_SUITE_NAME"
             else
@@ -236,6 +237,7 @@
         - shell: |
             #!/bin/bash
             set +e
+            branch=${GIT_BRANCH##*/}
             [[ "$PUSH_RESULTS_TO_DB" == "true" ]] && flags+="-r"
             if [[ ${branch} == *"brahmaputra"* ]]; then
                 cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh -s ${flags}"
