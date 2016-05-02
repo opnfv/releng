@@ -194,7 +194,7 @@
             description: "Push the results of all the tests to the resultDB"
         - string:
             name: CI_DEBUG
-            default: 'false'
+            default: 'true'
             description: "Show debug output information"
 ########################
 # trigger macros
@@ -222,7 +222,7 @@
             #!/bin/bash
             set -e
             echo "Functest: run $FUNCTEST_SUITE_NAME"
-            if [[ ${branch} == *"stable"* ]]; then
+            if [[ ${branch} == *"brahmaputra"* ]]; then
                 cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test $FUNCTEST_SUITE_NAME"
             else
                 cmd="python ${FUNCTEST_REPO_DIR}/ci/run_tests.py -t $FUNCTEST_SUITE_NAME"
@@ -237,7 +237,7 @@
             #!/bin/bash
             set +e
             [[ "$PUSH_RESULTS_TO_DB" == "true" ]] && flags+="-r"
-            if [[ ${branch} == *"stable"* ]]; then
+            if [[ ${branch} == *"brahmaputra"* ]]; then
                 cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh -s ${flags}"
             else
                 cmd="python ${FUNCTEST_REPO_DIR}/ci/run_tests.py -t all ${flags}"
@@ -313,7 +313,7 @@
                 echo "The container opnfv/functest with ID=${container_id} has not been properly started. Exiting..."
                 exit 1
             fi
-            if [[ ${branch} == *"stable"* ]]; then
+            if [[ ${branch} == *"brahmaputra"* ]]; then
                 cmd="${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
             else
                 cmd="python ${FUNCTEST_REPO_DIR}/ci/prepare_env.py start"
