@@ -236,6 +236,7 @@
         - shell: |
             #!/bin/bash
             set +e
+            branch=${GIT_BRANCH##*/}
             [[ "$PUSH_RESULTS_TO_DB" == "true" ]] && flags+="-r"
             if [[ ${branch} == *"brahmaputra"* ]]; then
                 cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh -s ${flags}"
