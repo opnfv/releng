@@ -36,14 +36,15 @@ function docker_version() {
     tag_json=$(curl $url_tag 2>/dev/null | python -mjson.tool | grep ${BASE_VERSION} | head -1)
     #e.g. tag_json= "name": "brahmaputra.0.2",
     if [ "${tag_json}" == "" ]; then
-        error "The Docker Image ${docker_image} does not have a TAG with base version ${BASE_VERSION}"
+        echo ${BASE_VERSION}.0
+    else
+        tag=$(echo $tag_json | awk '{print $2}' | sed 's/\,//' | sed 's/\"//g')
+        #e.g.: tag=brahmaputra.0.2
+        tag_current_version=$(echo $tag | sed 's/.*\.//')
+        tag_new_version=$(($tag_current_version+1))
+        #e.g.: tag=brahmaputra.0.3
+        echo ${BASE_VERSION}.${tag_new_version}
     fi
-    tag=$(echo $tag_json | awk '{print $2}' | sed 's/\,//' | sed 's/\"//g')
-    #e.g.: tag=brahmaputra.0.2
-    tag_current_version=$(echo $tag | sed 's/.*\.//')
-    tag_new_version=$(($tag_current_version+1))
-    #e.g.: tag=brahmaputra.0.3
-    echo ${BASE_VERSION}.${tag_new_version}
 }
 
 
