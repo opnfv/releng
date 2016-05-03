@@ -220,12 +220,12 @@
               OPNFV_CLEAN=yes
             git-revision: false
             block: true
-        - trigger-builds:
-          - project: 'functest-apex-{slave}-suite-{stream1}'
-            predefined-parameters: |
-              DEPLOY_SCENARIO=os-nosdn-nofeature-ha
-              FUNCTEST_SUITE_NAME=vping_userdata
-            block: true
+#        - trigger-builds:
+#          - project: 'functest-apex-{slave}-suite-{stream1}'
+#            predefined-parameters: |
+#              DEPLOY_SCENARIO=os-nosdn-nofeature-ha
+#              FUNCTEST_SUITE_NAME=vping_userdata
+#            block: true
         - 'apex-workspace-cleanup'
 
 - job-template:
@@ -429,7 +429,7 @@
     #     branch:    branch (eg. stable)
     node: '{slave}'
 
-    disabled: false
+    disabled: true
 
     scm:
         - git-scm:
@@ -605,7 +605,7 @@
         - trigger-builds:
           - project: 'apex-deploy-virtual-nosdn-nofeature-ha-{stream1}'
             predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream1}/build_output
+              BUILD_DIRECTORY=apex-build-{stream1}
               OPNFV_CLEAN=yes
             git-revision: true
             block: true
@@ -732,7 +732,7 @@
             # start the build
             cd $WORKSPACE/ci
             ./build.sh $BUILD_ARGS
-            RPM_VERSION=$(grep Version $BUILD_DIRECTORY/../build/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '_-')
+            RPM_VERSION=$(grep Version $BUILD_DIRECTORY/build/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '_-')
             # list the contents of BUILD_OUTPUT directory
             ls -al $BUILD_DIRECTORY
             # save information regarding artifact into file
@@ -859,10 +859,10 @@
                   echo "BUILD DIRECTORY modified to $BUILD_DIRECTORY"
                 fi
 
-                if [[ -f ${BUILD_DIRECTORY}/../opnfv.properties ]]; then
+                if [[ -f ${BUILD_DIRECTORY}/opnfv.properties ]]; then
                     # if opnfv.properties exists then use the
                     # local build. Source the file so we get local OPNFV vars
-                    source ${BUILD_DIRECTORY}/../opnfv.properties
+                    source ${BUILD_DIRECTORY}/opnfv.properties
                     RPM_INSTALL_PATH=${BUILD_DIRECTORY}/$(basename $OPNFV_RPM_URL)
                 else
                     if [[ $BUILD_DIRECTORY == *verify* ]]; then
