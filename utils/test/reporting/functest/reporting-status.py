@@ -1,4 +1,5 @@
 from urllib2 import Request, urlopen, URLError
+import datetime
 import json
 import jinja2
 import os
@@ -20,12 +21,14 @@ installers = ["apex", "compass", "fuel", "joid"]
 versions = ["brahmaputra", "master"]
 # versions = ["master"]
 PERIOD = 10
+MAX_SCENARIO_CRITERIA = 18
 
 # Correspondance between the name of the test case and the name in the DB
 # ideally we should modify the DB to avoid such interface....
 # '<name in the DB':'<name in the config'>
 # I know it is uggly...
-test_match_matrix = {'vPing': 'vping_ssh',
+test_match_matrix = {'healthcheck': 'healthcheck',
+                     'vPing': 'vping_ssh',
                      'vPing_userdata': 'vping_userdata',
                      'ODL': 'odl',
                      'ONOS': 'onos',
@@ -100,6 +103,20 @@ class TestCase(object):
                     is_runnable = False
         # print is_runnable
         self.isRunnable = is_runnable
+
+
+class ScenarioResult(object):
+    def __init__(self, status, score=0):
+        self.status = status
+        self.score = score
+
+    def getStatus(self):
+        return self.status
+
+    def getScore(self):
+        return self.score
+
+# *****************************************************************************
 
 
 def getApiResults(case, installer, scenario, version):
@@ -245,7 +262,10 @@ functest_yaml_config = yaml.load(response.text)
 
 print "****************************************"
 print "*   Generating reporting.....          *"
+print ("*   Data retention = %s days           *" % PERIOD)
+print "*                                      *"
 print "****************************************"
+
 # For all the versions
 for version in versions:
     # For all the installers
@@ -253,11 +273,16 @@ for version in versions:
         # get scenarios
         scenario_results = getScenarios(tempest, installer, version)
         scenario_stats = getScenarioStats(scenario_results)
-
         items = {}
+        scenario_result_criteria = {}
+
         # For all the scenarios get results
         for s, s_result in scenario_results.items():
             testCases = []
+            # Green or Red light for a given scenario
+            nb_test_runnable_for_this_scenario = 0
+            scenario_score = 0
+
             # For each scenario declare the test cases
             # Functest cases
             for test_case in functest_test_list:
@@ -276,31 +301,58 @@ for version in versions:
                     test_case.checkRunnable(installer, s, functest_yaml_config)
                     # print "testcase %s is %s" % (test_case.getName(),
                     #                              test_case.isRunnable)
-                print "--------------------------"
                 print ("installer %s, version %s, scenario %s:" %
                        (installer, version, s))
                 for testCase in testCases:
                     time.sleep(1)
                     if testCase.isRunnable:
+                        nb_test_runnable_for_this_scenario += 1
                         print (" Searching results for case %s " %
                                (testCase.getName()))
                         result = getResult(testCase, installer, s, version)
                         testCase.setCriteria(result)
                         items[s] = testCases
-                print "--------------------------"
+                        scenario_score = scenario_score + result
             except:
                 print ("installer %s, version %s, scenario %s" %
                        (installer, version, s))
                 print "No data available , error %s " % (sys.exc_info()[0])
 
-        print "****************************************"
-        templateLoader = jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(__file__)))
+            # the validation criteria = nb runnable tests x 3
+            scenario_criteria = nb_test_runnable_for_this_scenario * 3
+            # if 0 runnable tests set criteria at a high value
+            if scenario_criteria < 1:
+                scenario_criteria = MAX_SCENARIO_CRITERIA
+
+            s_score = str(scenario_score) + "/" + str(scenario_criteria)
+            s_status = "KO"
+            if scenario_score < scenario_criteria:
+                print (">>>> scenario not OK, score = %s/%s" %
+                       (scenario_score, scenario_criteria))
+                s_status = "KO"
+            else:
+                print ">>>>> scenario OK, save the information"
+                s_status = "OK"
+                with open("./release/" + version +
+                          "/validated_scenario_history.txt", "a") as f:
+                    time_format = "%Y-%m-%d %H:%M"
+                    info = (datetime.datetime.now().strftime(time_format) +
+                            ";" + installer + ";" + s + "\n")
+                    f.write(info)
+
+            scenario_result_criteria[s] = ScenarioResult(s_status, s_score)
+            print "--------------------------"
+
+        templateLoader = jinja2.FileSystemLoader(os.path.dirname
+                                                 (os.path.abspath
+                                                  (__file__)))
         templateEnv = jinja2.Environment(loader=templateLoader)
 
         TEMPLATE_FILE = "./template/index-status-tmpl.html"
         template = templateEnv.get_template(TEMPLATE_FILE)
 
         outputText = template.render(scenario_stats=scenario_stats,
+                                     scenario_results=scenario_result_criteria,
                                      items=items,
                                      installer=installer,
                                      period=PERIOD,
