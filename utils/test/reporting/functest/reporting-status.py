@@ -256,7 +256,7 @@ tempest = TestCase("Tempest", "functest", -1)
 
 # Retrieve the Functest configuration to detect which tests are relevant
 # according to the installer, scenario
-cf = "https://git.opnfv.org/cgit/functest/plain/testcases/config_functest.yaml"
+cf = "https://git.opnfv.org/cgit/functest/plain/ci/config_functest.yaml"
 response = requests.get(cf)
 functest_yaml_config = yaml.load(response.text)
 
