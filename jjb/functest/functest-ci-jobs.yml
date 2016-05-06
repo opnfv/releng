@@ -298,12 +298,11 @@
             test -f ${HOME}/opnfv/functest/custom/params_${DOCKER_TAG} && custom_params=$(cat ${HOME}/opnfv/functest/custom/params_${DOCKER_TAG})
 
             echo "Functest: Pulling image opnfv/functest:${DOCKER_TAG}"
-            docker pull opnfv/functest:$DOCKER_TAG >${redirect}
+            docker pull opnfv/functest:$DOCKER_TAG >/dev/null
 
             cmd="sudo docker run --privileged=true -id ${envs} ${labconfig} ${sshkey} ${res_volume} ${custom_params} opnfv/functest:${DOCKER_TAG} /bin/bash"
             echo "Functest: Running docker run command: ${cmd}"
             ${cmd} >${redirect}
-            docker ps -a >${redirect}
             sleep 5
             container_id=$(docker ps | grep "opnfv/functest:${DOCKER_TAG}" | awk '{print $1}' | head -1)
             echo "Container ID=${container_id}"
@@ -355,6 +354,6 @@
                 image_tags=($(docker images | grep opnfv/functest | awk '{print $2}'))
                 for tag in "${image_tags[@]}"; do
                     echo "Removing docker image opnfv/functest:$tag..."
-                    docker rmi opnfv/functest:$tag >${redirect}
+                    docker rmi opnfv/functest:$tag >/dev/null
                 done
             fi
