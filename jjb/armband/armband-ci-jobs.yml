@@ -1,0 +1,193 @@
+# jenkins job templates for Armband
+- project:
+    name: 'armband-ci'
+    project: '{name}'
+    installer: 'fuel'
+
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+    brahmaputra: &brahmaputra
+        stream: brahmaputra
+        branch: 'stable/{stream}'
+        gs-pathname: '/{stream}'
+#--------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+#        brahmaputra
+#--------------------------------
+    pod:
+        - arm-pod1:
+            <<: *brahmaputra
+#--------------------------------
+#        master
+#--------------------------------
+# No master deploys for now
+#        - arm-pod1:
+#            <<: *master
+#--------------------------------
+#       scenarios
+#--------------------------------
+    scenario:
+        # HA scenarios
+        - 'os-odl_l2-nofeature-ha':
+            auto-trigger-name: 'armband-{scenario}-{pod}-{stream}-trigger'
+
+        # NOHA scenarios
+        - 'os-odl_l2-nofeature-noha':
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+
+    jobs:
+        - 'armband-{scenario}-{pod}-daily-{stream}'
+        - 'armband-deploy-{pod}-daily-{stream}'
+
+########################
+# job templates
+########################
+- job-template:
+    name: 'armband-{scenario}-{pod}-daily-{stream}'
+
+    concurrent: false
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'armband-os-.*?-{pod}-daily-{stream}'
+            block-level: 'NODE'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    triggers:
+        - '{auto-trigger-name}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{installer}-defaults'
+        - '{pod}-defaults':
+            installer: '{installer}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: '{scenario}'
+        - armband-ci-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    builders:
+        - trigger-builds:
+            - project: 'armband-deploy-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'functest-armband-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              block: true
+              same-node: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+
+- job-template:
+    name: 'armband-deploy-{pod}-daily-{stream}'
+
+    concurrent: false
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'armband-deploy-{pod}-daily-{stream}'
+                - 'armband-deploy-generic-daily-.*'
+            block-level: 'NODE'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{installer}-defaults'
+        - '{pod}-defaults':
+            installer: '{installer}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-odl_l2-nofeature-ha'
+        - armband-ci-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    builders:
+        - shell:
+            !include-raw-escape: ./armband-download-artifact.sh
+        - shell:
+            !include-raw-escape: ./armband-deploy.sh
+
+    publishers:
+        - email:
+            recipients: josep.puigdemont@enea.com armband@enea.com
+
+########################
+# parameter macros
+########################
+- parameter:
+    name: armband-ci-parameter
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache/$INSTALLER_TYPE
+            description: "Directory where the cache to be used during the build is located."
+        - string:
+            name: GS_URL
+            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+            description: "URL to Google Storage."
+
+########################
+# trigger macros
+########################
+# CI PODs
+#----------------------------------------------------------
+# Enea Armband POD 1 Triggers running against master branch
+#----------------------------------------------------------
+# No triggers for master for now
+- trigger:
+    name: 'armband-os-odl_l2-nofeature-ha-arm-pod1-master-trigger'
+    triggers:
+        - timed: ''
+
+#---------------------------------------------------------------
+# Enea Armband POD 1 Triggers running against brahmaputra branch
+#---------------------------------------------------------------
+- trigger:
+    name: 'armband-os-odl_l2-nofeature-ha-arm-pod1-brahmaputra-trigger'
+    triggers:
+        - timed: '0 6 * * *'
