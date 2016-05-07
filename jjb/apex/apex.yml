@@ -917,6 +917,12 @@
                         exit 1
                     fi
                 fi
+                if ! rpm -q python34-setuptools > /dev/null; then
+                    if ! sudo yum install -y python34-setuptools; then
+                        echo "Failed to install python34-setuptools"
+                        exit 1
+                    fi
+                fi
                 if [ -z ${PYTHONPATH:-} ]; then
                     export PYTHONPATH=${WORKSPACE}/lib/python
                 else
