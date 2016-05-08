@@ -336,7 +336,7 @@
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-nosdn-nofeature-ha-{stream}'
             predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}
+              BUILD_DIRECTORY=apex-build-{stream}/build
               OPNFV_CLEAN=yes
             git-revision: false
             block: true
@@ -612,7 +612,7 @@
         - trigger-builds:
           - project: 'apex-deploy-virtual-nosdn-nofeature-ha-{stream1}'
             predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream1}
+              BUILD_DIRECTORY=apex-build-{stream1}/build
               OPNFV_CLEAN=yes
             git-revision: true
             block: true
@@ -739,7 +739,7 @@
             # start the build
             cd $WORKSPACE/ci
             ./build.sh $BUILD_ARGS
-            RPM_VERSION=$(grep Version $BUILD_DIRECTORY/build/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '_-')
+            RPM_VERSION=$(grep Version $BUILD_DIRECTORY/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '_-')
             # list the contents of BUILD_OUTPUT directory
             ls -al $BUILD_DIRECTORY
             # save information regarding artifact into file
@@ -751,7 +751,7 @@
                 echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso | cut -d' ' -f1)"
                 echo "OPNFV_SRPM_URL=$GS_URL/opnfv-apex-$RPM_VERSION.src.rpm"
                 echo "OPNFV_RPM_URL=$GS_URL/opnfv-apex-$RPM_VERSION.noarch.rpm"
-                echo "OPNFV_RPM_MD5SUM=$(md5sum $BUILD_DIRECTORY/opnfv-apex-$RPM_VERSION.noarch.rpm | cut -d' ' -f1)"
+                echo "OPNFV_RPM_MD5SUM=$(md5sum $BUILD_DIRECTORY/noarch/opnfv-apex-$RPM_VERSION.noarch.rpm | cut -d' ' -f1)"
                 echo "OPNFV_BUILD_URL=$BUILD_URL"
             ) > $WORKSPACE/opnfv.properties
             echo "--------------------------------------------------------"
@@ -788,15 +788,16 @@
 
             # upload artifact and additional files to google storage
             gsutil cp $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
-            RPM_INSTALL_PATH=$BUILD_DIRECTORY/$(basename $OPNFV_RPM_URL)
-            RPM_LIST=$RPM_INSTALL_PATH
-            for pkg in common undercloud opendaylight-sfc; do
-                RPM_LIST+=" ${RPM_INSTALL_PATH/opnfv-apex/opnfv-apex-${pkg}}"
+            RPM_INSTALL_PATH=$BUILD_DIRECTORY/noarch
+            RPM_LIST=$RPM_INSTALL_PATH/$(basename $OPNFV_RPM_URL)
+            VERSION_EXTENSION=echo $(basename $OPNFV_RPM_URL) | sed 's/opnfv-apex-//'
+            for pkg in common undercloud opendaylight-sfc onos; do
+                RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
             done
-            SRPM_INSTALL_PATH=$BUILD_DIRECTORY/$(basename $OPNFV_SRPM_URL)
-            SRPM_LIST=$SRPM_INSTALL_PATH
-            for pkg in common undercloud opendaylight-sfc; do
-                SRPM_LIST+=" ${SRPM_INSTALL_PATH/opnfv-apex/opnfv-apex-${pkg}}"
+            SRPM_INSTALL_PATH=$BUILD_DIRECTORY
+            SRPM_LIST=$SRPM_INSTALL_PATH/$(basename $OPNFV_SRPM_URL)
+            for pkg in common undercloud opendaylight-sfc onos; do
+                SRPM_LIST+=" ${SRPM_INSTALL_PATH}/opnfv-apex/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
             done
             for artifact in $RPM_LIST $SRPM_LIST; do
               gsutil cp $artifact gs://$GS_URL/$(basename $artifact) > gsutil.iso.log 2>&1
@@ -856,7 +857,8 @@
             elif [[ ! "$ARTIFACT_NAME" == "latest" ]]; then
                 # if artifact name is passed the pull a
                 # specific artifact from artifacts.opnfv.org
-                RPM_INSTALL_PATH=$GS_URL/$ARTIFACT_NAME
+                RPM_INSTALL_PATH=$GS_URL
+                RPM_LIST=$RPM_INSTALL_PATH/$ARTIFACT_NAME
             else
                 if [[ $BUILD_DIRECTORY == *verify* ]]; then
                   BUILD_DIRECTORY=$WORKSPACE/../$BUILD_DIRECTORY
@@ -866,11 +868,12 @@
                   echo "BUILD DIRECTORY modified to $BUILD_DIRECTORY"
                 fi
 
-                if [[ -f ${BUILD_DIRECTORY}/opnfv.properties ]]; then
+                if [[ -f ${BUILD_DIRECTORY}/../opnfv.properties ]]; then
                     # if opnfv.properties exists then use the
                     # local build. Source the file so we get local OPNFV vars
-                    source ${BUILD_DIRECTORY}/opnfv.properties
-                    RPM_INSTALL_PATH=${BUILD_DIRECTORY}/$(basename $OPNFV_RPM_URL)
+                    source ${BUILD_DIRECTORY}/../opnfv.properties
+                    RPM_INSTALL_PATH=${BUILD_DIRECTORY}/noarch
+                    RPM_LIST=$RPM_INSTALL_PATH/$(basename $OPNFV_RPM_URL)
                 else
                     if [[ $BUILD_DIRECTORY == *verify* ]]; then
                       echo "BUILD_DIRECTORY is from a verify job, so will not use latest from URL"
@@ -887,7 +890,8 @@
                     [[ -f opnfv.properties ]] || exit 1
                     # source the file so we get OPNFV vars
                     source opnfv.properties
-                    RPM_INSTALL_PATH=$OPNFV_RPM_URL
+                    RPM_INSTALL_PATH=$(echo $OPNFV_RPM_URL | sed 's/'"$(basename $OPNFV_RPM_URL)"'//')
+                    RPM_LIST=$RPM_INSTALL_PATH/$(basename $OPNFV_RPM_URL)
                 fi
             fi
 
@@ -923,9 +927,9 @@
                     export PYTHONPATH=$PYTHONPATH:${WORKSPACE}/lib/python
                 fi
             else
-                RPM_LIST=$RPM_INSTALL_PATH
-                for pkg in common undercloud opendaylight-sfc; do
-                    RPM_LIST+=" ${RPM_INSTALL_PATH/opnfv-apex/opnfv-apex-${pkg}}"
+                VERSION_EXTENSION=echo $(basename $RPM_LIST) | sed 's/opnfv-apex-//'
+                for pkg in common undercloud opendaylight-sfc onos; do
+                    RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
                 done
 
                 # update / install the new rpm
