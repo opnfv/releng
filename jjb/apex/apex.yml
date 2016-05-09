@@ -675,7 +675,7 @@
             description: "Artifact version type"
         - string:
             name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
+            default: $WORKSPACE/build
             description: "Directory where the build artifact will be located upon the completion of the build."
         - string:
             name: CACHE_DIRECTORY
@@ -748,7 +748,7 @@
                 echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
                 echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
                 echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
-                echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso | cut -d' ' -f1)"
+                echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $BUILD_DIRECTORY/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso | cut -d' ' -f1)"
                 echo "OPNFV_SRPM_URL=$GS_URL/opnfv-apex-$RPM_VERSION.src.rpm"
                 echo "OPNFV_RPM_URL=$GS_URL/opnfv-apex-$RPM_VERSION.noarch.rpm"
                 echo "OPNFV_RPM_MD5SUM=$(md5sum $BUILD_DIRECTORY/noarch/opnfv-apex-$RPM_VERSION.noarch.rpm | cut -d' ' -f1)"
@@ -787,7 +787,7 @@
             source $WORKSPACE/opnfv.properties
 
             # upload artifact and additional files to google storage
-            gsutil cp $BUILD_DIRECTORY/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
+            gsutil cp $BUILD_DIRECTORY/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
             RPM_INSTALL_PATH=$BUILD_DIRECTORY/noarch
             RPM_LIST=$RPM_INSTALL_PATH/$(basename $OPNFV_RPM_URL)
             VERSION_EXTENSION=$(echo $(basename $OPNFV_RPM_URL) | sed 's/opnfv-apex-//')
