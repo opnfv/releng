@@ -49,21 +49,19 @@
                 - comment-added-contains-event:
                     comment-contains-value: 'reverify'
             projects:
-              - project-compare-type: 'ANT'
+              - project-compare-type: 'REG_EXP'
                 project-pattern: '{project}'
                 branches:
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'build/**'
+                  - compare-type: ANT
+                    pattern: 'ci/**'
 
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-
-            cd $WORKSPACE/ci
-            ./build.sh
+        - build-rpms
 
 - job-template:
     name: 'ovsnfv-merge-{stream}'
@@ -97,21 +95,19 @@
                 - comment-added-contains-event:
                     comment-contains-value: 'remerge'
             projects:
-              - project-compare-type: 'ANT'
+              - project-compare-type: 'REG_EXP'
                 project-pattern: '{project}'
                 branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/{branch}'
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'build/**'
+                  - compare-type: ANT
+                    pattern: 'ci/**'
 
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-
-            cd $WORKSPACE/ci
-            ./build.sh
+        - build-rpms
 
 - job-template:
     name: 'ovsnfv-daily-{stream}'
@@ -140,6 +136,15 @@
         - timed: '@midnight'
 
     builders:
+        - build-rpms
+
+    publishers:
+        - email:
+            recipients: therbert@redhat.com mark.d.gray@intel.com billy.o.mahony@intel.com
+
+- builder:
+    name: build-rpms
+    builders:
         - shell: |
             #!/bin/bash
             set -o errexit
@@ -148,7 +153,3 @@
 
             cd $WORKSPACE/ci
             ./build.sh
-
-    publishers:
-        - email:
-            recipients: therbert@redhat.com mark.d.gray@intel.com billy.o.mahony@intel.com
