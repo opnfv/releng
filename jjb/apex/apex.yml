@@ -940,20 +940,33 @@
 
                 # update / install the new rpm
                 if rpm -q opnfv-apex > /dev/null; then
-                   if [ $(basename $OPNFV_RPM_URL) == $(rpm -q opnfv-apex).rpm ]; then
-                     echo "RPM is already installed"
-                   elif sudo yum update -y $RPM_LIST | grep "does not update installed package"; then
-                       if ! sudo yum downgrade -y $RPM_LIST; then
-                         sudo yum remove -y opnfv-undercloud opnfv-common
-                         sudo yum downgrade -y $RPM_INSTALL_PATH
+                   INSTALLED_RPMS=$(rpm -qa | grep apex)
+                   for x in $INSTALLED_RPMS; do
+                     INSTALLED_RPM_VER=$(echo $x | sed 's/opnfv-apex-//').rpm
+                     # Does each RPM's version match the version required for deployment
+                     if [ "$INSTALLED_RPM_VER" == "$VERSION_EXTENSION" ]; then
+                       echo "RPM $x is already installed"
+                     else
+                       echo "RPM $x does not match $VERSION_EXTENSION"
+                       echo "Will upgrade/downgrade RPMs..."
+                       # Try to upgrade/downgrade RPMS
+                       if sudo yum update -y $RPM_LIST | grep "does not update installed package"; then
+                         if ! sudo yum downgrade -y $RPM_LIST; then
+                           sudo yum remove -y opnfv-undercloud opnfv-common
+                           sudo yum downgrade -y $RPM_INSTALL_PATH
+                         fi
                        fi
-                   fi
+                       break
+                     fi
+                   done
                 else
                    sudo yum install -y $RPM_LIST;
                 fi
                 DEPLOY_CMD=opnfv-deploy
                 DEPLOY_FILE="/etc/opnfv-apex/${DEPLOY_SCENARIO}.yaml"
                 NETWORK_FILE="/etc/opnfv-apex/network_settings.yaml"
+                export RESOURCES="/var/opt/opnfv/images"
+                export CONFIG="/var/opt/opnfv"
             fi
 
             if [ "$OPNFV_CLEAN" == 'yes' ]; then
