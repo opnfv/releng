@@ -797,7 +797,7 @@
             SRPM_INSTALL_PATH=$BUILD_DIRECTORY
             SRPM_LIST=$SRPM_INSTALL_PATH/$(basename $OPNFV_SRPM_URL)
             for pkg in common undercloud opendaylight-sfc onos; do
-                SRPM_LIST+=" ${SRPM_INSTALL_PATH}/opnfv-apex/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
+                SRPM_LIST+=" ${SRPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
             done
             for artifact in $RPM_LIST $SRPM_LIST; do
               gsutil cp $artifact gs://$GS_URL/$(basename $artifact) > gsutil.iso.log 2>&1
@@ -935,7 +935,7 @@
             else
                 VERSION_EXTENSION=$(echo $(basename $RPM_LIST) | sed 's/opnfv-apex-//')
                 for pkg in common undercloud opendaylight-sfc onos; do
-                    RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
+                    RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
                 done
 
                 # update / install the new rpm
