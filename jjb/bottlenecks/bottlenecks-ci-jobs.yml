@@ -32,33 +32,42 @@
     pod:
         - opnfv-jump-2:
             installer: fuel
+            disabled: true
             <<: *brahmaputra
         - intel-pod5:
             installer: joid
+            disabled: true
             <<: *brahmaputra
         - huawei-us-deploy-bare-1:
             installer: compass
+            disabled: true
             <<: *brahmaputra
 #--------------------------------
 #        master
 #--------------------------------
         - ericsson-pod1:
             installer: fuel
+            disabled: true
             <<: *master
         - ericsson-pod2:
             installer: fuel
+            disabled: true
             <<: *master
         - intel-pod6:
             installer: joid
+            disabled: true
             <<: *master
         - intel-pod8:
             installer: compass
+            disabled: true
             <<: *master
         - zte-build-1:
             installer: fuel
+            disabled: false
             <<: *master
         - orange-pod2:
             installer: joid
+            disabled: false
             <<: *master
 #--------------------------------
     suite:
@@ -74,7 +83,7 @@
 - job-template:
     name: 'bottlenecks-{installer}-{suite}-{pod}-daily-{stream}'
 
-    disabled: false
+    disabled: '{disabled}'
 
     wrappers:
         - build-name:
