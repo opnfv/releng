@@ -1,0 +1,116 @@
+###################################
+# job configuration for cperf
+###################################
+- project:
+    name: cperf-ci-jobs
+    project: cperf
+
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+        docker-tag: 'latest'
+
+#--------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+    pod:
+#--------------------------------
+#        master
+#--------------------------------
+        - intel-pod2:
+            installer: apex
+            <<: *master
+
+#--------------------------------
+
+    testsuite:
+        - 'daily'
+
+    jobs:
+        - 'cperf-{installer}-{pod}-{testsuite}-{stream}'
+
+################################
+# job template
+################################
+- job-template:
+    name: 'cperf-{installer}-{pod}-{testsuite}-{stream}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-per-node: 1
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER Suite: $CPERF_SUITE_NAME Scenario: $DEPLOY_SCENARIO'
+        - timeout:
+            timeout: 400
+            abort: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{pod}-defaults'
+        - '{installer}-defaults'
+        - cperf-parameter:
+            testsuite: '{testsuite}'
+            gs-pathname: '{gs-pathname}'
+            docker-tag: '{docker-tag}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - 'cperf-{testsuite}-builder'
+
+########################
+# parameter macros
+########################
+- parameter:
+    name: cperf-parameter
+    parameters:
+        - string:
+            name: CPERF_SUITE_NAME
+            default: '{testsuite}'
+            description: "Suite name to run"
+        - string:
+            name: GS_PATHNAME
+            default: '{gs-pathname}'
+            description: "Version directory where the opnfv documents will be stored in gs repository"
+        - string:
+            name: CI_DEBUG
+            default: 'false'
+            description: "Show debug output information"
+        - string:
+            name: DOCKER_TAG
+            default: '{docker-tag}'
+            description: 'Tag to pull docker image'
+
+########################
+# trigger macros
+########################
+
+########################
+# builder macros
+########################
+- builder:
+    name: cperf-daily-builder
+    builders:
+        - shell: |
+            #!/bin/bash
+            set +e
+            # TODO: need to figure out the logic to get ${CONTROLLER_IP} used below
+            docker pull opnfv/cperf:$DOCKER_TAG
+            robot_cmd="pybot -e exclude -v ODL_SYSTEM_IP:${CONTROLLER_IP} -v switch_count:100 -v loops:10 \
+                              -v TOOLS_SYSTEM_IP:localhost -v duration_in_seconds:60"
+            robot_suite="/home/opnfv/repos/test/csit/suites/openflowplugin/Performance/010_Cbench.robot"
+            sudo docker run -t -i opnfv/cperf:$DOCKER_TAG ${robot_cmd} ${robot_suite}
