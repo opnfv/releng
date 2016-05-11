@@ -105,6 +105,12 @@
 - builder:
     name: cperf-daily-builder
     builders:
+        - 'cperf-cleanup'
+        - 'cperf-robot-cbench'
+
+- builder:
+    name: cperf-robot-cbench
+    builders:
         - shell: |
             #!/bin/bash
             set +e
@@ -114,3 +120,28 @@
                               -v TOOLS_SYSTEM_IP:localhost -v duration_in_seconds:60"
             robot_suite="/home/opnfv/repos/test/csit/suites/openflowplugin/Performance/010_Cbench.robot"
             sudo docker run opnfv/cperf:$DOCKER_TAG ${robot_cmd} ${robot_suite}
+
+- builder:
+    name: cperf-cleanup
+    builders:
+        - shell: |
+            #!/bin/bash
+            [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
+
+            echo "Cleaning up docker containers/images..."
+            # Remove previous running containers if exist
+            if [[ ! -z $(docker ps -a | grep opnfv/cperf) ]]; then
+                echo "Removing existing opnfv/cperf containers..."
+                docker ps -a | grep opnfv/cperf | awk '{print $1}' | xargs docker rm -f >${redirect}
+            fi
+
+            # Remove existing images if exist
+            if [[ ! -z $(docker images | grep opnfv/cperf) ]]; then
+                echo "Docker images to remove:"
+                docker images | head -1 && docker images | grep opnfv/cperf >${redirect}
+                image_tags=($(docker images | grep opnfv/cperf | awk '{print $2}'))
+                for tag in "${image_tags[@]}"; do
+                    echo "Removing docker image opnfv/cperf:$tag..."
+                    docker rmi opnfv/cperf:$tag >/dev/null
+                done
+            fi
