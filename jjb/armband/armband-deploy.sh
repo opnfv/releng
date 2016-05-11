@@ -72,6 +72,9 @@ echo "Issuing command"
 echo "$DEPLOY_COMMAND"
 echo
 
+# FIXME
+export TARGET_LAB=${LAB_NAME}
+export TARGET_POD=${POD_NAME}
 $DEPLOY_COMMAND
 
 echo
