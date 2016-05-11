@@ -36,7 +36,7 @@ LAB_NAME=${NODE_NAME/-*}
 POD_NAME=${NODE_NAME/*-}
 
 # we currently support enea
-if [[ ! "$LAB_NAME" =~ "enea" ]]; then
+if [[ ! $LAB_NAME =~ (arm|enea) ]]; then
     echo "Unsupported/unidentified lab $LAB_NAME. Cannot continue!"
     exit 1
 else
