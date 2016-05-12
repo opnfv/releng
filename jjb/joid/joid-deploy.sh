@@ -48,8 +48,6 @@ fi
 ##
     # This part will be removed when pod names will be synced between jenkins and joid config
     case $NODE_NAME in
-        orange-fr-pod2)
-            POD=orange-pod2 ;;
         *virtual*)
             POD=default ;;
         *)
