@@ -28,11 +28,13 @@ class Item:
             In this case we would have property1, name as required parameters and property3 as optional parameter.
         @property property3: Item description
         @ptype property3: L{PropertySubclass}
+        @ptype property4: C{list} of L{PropertySubclass}
     """
-    def __init__(self, property1, property2=None, property3=None):
+    def __init__(self, property1, property2=None, property3=None, property4=None):
         self.property1 = property1
         self.property2 = property2
         self.property3 = property3
+        self.property4 = property4
 
 items = {}
 
@@ -71,9 +73,9 @@ class ItemNoParamHandler(GenericApiHandler):
     @swagger.operation(nickname='create')
     def post(self):
         """
-            @param body: create test results for a pod.
+            @param body: create a item.
             @type body: L{Item}
-            @return 200: pod is created.
+            @return 200: item is created.
             @raise 400: invalid input
         """
         property1 = self.json_args.get('property1')
@@ -99,9 +101,9 @@ class ItemHandler(GenericApiHandler):
     def get(self, arg):
         """
             @rtype: L{Item}
-            @description: get pod's test results
+            @description: get information of a item
             @notes:
-                get a pod test results,
+                get a item,
 
                 This will be added to the Implementation Notes.It lets you put very long text in your api.
         """
@@ -110,9 +112,9 @@ class ItemHandler(GenericApiHandler):
     @swagger.operation(nickname='delete')
     def delete(self, arg):
         """
-            @description: delete pod by pod_id
+            @description: delete a item
             @notes:
-                delete test results of a pod
+                delete a item in items
 
                 This will be added to the Implementation Notes.It lets you put very long text in your api.
         """

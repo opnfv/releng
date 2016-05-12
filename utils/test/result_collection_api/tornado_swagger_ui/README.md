@@ -28,9 +28,9 @@ class ItemNoParamHandler(GenericApiHandler):
     @swagger.operation(nickname='create')
     def post(self):
         """
-            @param body: create test results for a pod.
+            @param body: create test results for a item.
             @type body: L{Item}
-            @return 200: pod is created.
+            @return 200: item is created.
             @raise 400: invalid input
         """
 
@@ -49,9 +49,9 @@ class ItemNoParamHandler(GenericApiHandler):
 
 def make_app():
     return swagger.Application([
-        (r"/pods", ItemNoParamHandler),
-        (r"/pods/([^/]+)", ItemHandler),
-        (r"/projects/([^/]+)/cases/([^/]+)", ItemOptionParamHandler),
+        (r"/items", ItemNoParamHandler),
+        (r"/items/([^/]+)", ItemHandler),
+        (r"/items/([^/]+)/cases/([^/]+)", ItemOptionParamHandler),
     ])
 
 # You define models like this:
@@ -153,6 +153,48 @@ class Item:
                 "property3": {
                     "type": "PropertySubclass"
                     "default": null
+                }
+            ]
+        }
+    }
+
+# if you want to declare an list property, you can do it like this:
+class Item:
+    """
+        @ptype property3: L{PropertySubclass}
+        @ptype property4: C{list} of L{PropertySubclass}
+    """
+    def __init__(self, property1, property2, property3, property4=None):
+        self.property1 = property1
+        self.property2 = property2
+        self.property3 = property3
+        self.property4 = property4
+
+# Swagger json:
+    "models": {
+        "Item": {
+            "description": "A description...",
+            "id": "Item",
+            "required": [
+                "property1",
+            ],
+            "properties": [
+                "property1": {
+                    "type": "string"
+                },
+                "property2": {
+                    "type": "string"
+                },
+                "property3": {
+                    "type": "PropertySubclass"
+                    "default": null
+                },
+                "property4": {
+                    "default": null,
+                    "items": {
+                        "type": "PropertySubclass"},
+                        "type": "array"
+                    }
                 }
             ]
         }
