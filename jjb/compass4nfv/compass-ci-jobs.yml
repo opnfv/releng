@@ -19,44 +19,65 @@
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
     pod:
+        - baremetal
+        - virtual
 #--------------------------------
 #        brahmaputra
 #--------------------------------
-        - huawei-us-deploy-bare-1:
-            os-version: 'trusty'
-            <<: *brahmaputra
-        - huawei-virtual:
-            os-version: 'trusty'
-            <<: *brahmaputra
 #--------------------------------
 #        master
 #--------------------------------
-        - huawei-us-deploy-bare-2:
-            os-version: 'centos7'
-            <<: *master
         - intel-pod8:
-            os-version: 'trusty'
-            <<: *master
-        - huawei-virtual:
-            os-version: 'trusty'
             <<: *master
 
     scenario:
-        - 'os-nosdn-nofeature-ha':
+        - 'os-nosdn-nofeature-ha-trusty':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
-        - 'os-odl_l2-nofeature-ha':
+            os-version: 'trusty'
+        - 'os-odl_l2-nofeature-ha-trusty':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
-        - 'os-odl_l3-nofeature-ha':
+            os-version: 'trusty'
+        - 'os-odl_l3-nofeature-ha-trusty':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
-        - 'os-onos-nofeature-ha':
+            os-version: 'trusty'
+            <<: *master
+        - 'os-onos-nofeature-ha-trusty':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
-        - 'os-ocl-nofeature-ha':
+            os-version: 'trusty'
+        - 'os-ocl-nofeature-ha-trusty':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+            os-version: 'trusty'
+            <<: *master
+        - 'os-nosdn-nofeature-ha-centos7':
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+            os-version: 'centos7'
+            <<: *master
+        - 'os-odl_l2-nofeature-ha-centos7':
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+            os-version: 'centos7'
+            <<: *master
+        - 'os-odl_l3-nofeature-ha-centos7':
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+            os-version: 'centos7'
+            <<: *master
+        - 'os-onos-nofeature-ha-centos7':
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+            os-version: 'centos7'
+            <<: *master
+        - 'os-ocl-nofeature-ha-centos7':
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+            os-version: 'centos7'
+            <<: *master
 
     jobs:
         - 'compass-{scenario}-{pod}-daily-{stream}'
@@ -94,7 +115,7 @@
         - string:
             name: DEPLOY_SCENARIO
             default: '{scenario}'
-        - '{pod}-defaults'
+        - 'huawei-{pod}-defaults'
         - '{installer}-defaults'
 
     triggers:
@@ -163,7 +184,7 @@
         - compass-ci-parameter:
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
-        - '{pod}-defaults'
+        - 'huawei-{pod}-defaults'
         - '{installer}-defaults'
 
     scm:
@@ -213,53 +234,53 @@
 # trigger macros
 ########################
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-huawei-us-deploy-bare-2-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-trusty-baremetal-trigger'
     triggers:
         - timed: '0 3 * * *'
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-huawei-us-deploy-bare-2-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-trusty-baremetal-trigger'
     triggers:
         - timed: '0 21 * * *'
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-huawei-us-deploy-bare-2-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-trusty-baremetal-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-huawei-us-deploy-bare-2-trigger'
+    name: 'compass-os-onos-nofeature-ha-trusty-baremetal-trigger'
     triggers:
         - timed: '0 15 * * *'
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-huawei-us-deploy-bare-2-trigger'
+    name: 'compass-os-ocl-nofeature-ha-trusty-baremetal-trigger'
     triggers:
         - timed: '0 9 * * *'
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-huawei-us-deploy-bare-1-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-centos7-baremetal-trigger'
     triggers:
         - timed: '0 3 * * * '
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-huawei-us-deploy-bare-1-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-centos7-baremetal-trigger'
     triggers:
         - timed: '0 21 * * *'
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-huawei-us-deploy-bare-1-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-centos7-baremetal-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-huawei-us-deploy-bare-1-trigger'
+    name: 'compass-os-onos-nofeature-ha-centos7-baremetal-trigger'
     triggers:
         - timed: '0 15 * * *'
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-huawei-us-deploy-bare-1-trigger'
+    name: 'compass-os-ocl-nofeature-ha-centos7-baremetal-trigger'
     triggers:
         - timed: '0 9 * * *'
 - trigger:
     name: 'compass-os-nosdn-nofeature-ha-intel-pod8-trigger'
     triggers:
-        - timed: '0 3 * * *'
+        - timed: ''
 - trigger:
     name: 'compass-os-odl_l2-nofeature-ha-intel-pod8-trigger'
     triggers:
-        - timed: '0 21 * * *'
+        - timed: ''
 - trigger:
     name: 'compass-os-odl_l3-nofeature-ha-intel-pod8-trigger'
     triggers:
@@ -267,28 +288,48 @@
 - trigger:
     name: 'compass-os-onos-nofeature-ha-intel-pod8-trigger'
     triggers:
-        - timed: '0 15 * * *'
+        - timed: ''
 - trigger:
     name: 'compass-os-ocl-nofeature-ha-intel-pod8-trigger'
     triggers:
-        - timed: '0 9 * * *'
+        - timed: ''
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-huawei-virtual-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-trusty-virtual-trigger'
     triggers:
         - timed: '0 3 * * *'
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-huawei-virtual-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-trusty-virtual-trigger'
     triggers:
         - timed: '0 21 * * *'
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-huawei-virtual-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-trusty-virtual-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-huawei-virtual-trigger'
+    name: 'compass-os-onos-nofeature-ha-trusty-virtual-trigger'
     triggers:
         - timed: '0 15 * * *'
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-huawei-virtual-trigger'
+    name: 'compass-os-ocl-nofeature-ha-trusty-virtual-trigger'
     triggers:
         - timed: '0 9 * * *'
+- trigger:
+    name: 'compass-os-nosdn-nofeature-ha-centos-virtual-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l2-nofeature-ha-centos-virtual-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l3-nofeature-ha-centos-virtual-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-onos-nofeature-ha-centos-virtual-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-ocl-nofeature-ha-centos-virtual-trigger'
+    triggers:
+        - timed: ''
