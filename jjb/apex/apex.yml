@@ -18,12 +18,14 @@
             gs-pathname: ''
             block-stream: 'brahmaputra'
             slave: 'intel-pod7'
+            verify-slave: 'apex-verify-master'
         - brahmaputra:
             branch: 'stable/brahmaputra'
             gs-pathname: '/brahmaputra'
             block-stream: 'master'
             slave: 'opnfv-jump-1'
-            disabled: false
+            verify-slave: 'apex-verify-brahmaputra'
+            disabled: true
 
     stream1:
         - master:
@@ -31,6 +33,7 @@
             gs-pathname: ''
             block-stream: 'brahmaputra'
             slave: 'intel-pod7'
+            verify-slave: 'apex-verify-master'
 
     stream2:
         - brahmaputra:
@@ -38,7 +41,8 @@
             gs-pathname: '/brahmaputra'
             block-stream: 'master'
             slave: 'opnfv-jump-1'
-            disabled: false
+            verify-slave: 'apex-verify-brahmaputra'
+            disabled: true
 
     project: 'apex'
 
@@ -153,7 +157,7 @@
 - job-template:
     name: 'apex-verify-{stream1}'
 
-    node: '{slave}'
+    node: '{verify-slave}'
 
     parameters:
         - apex-parameter:
@@ -220,6 +224,7 @@
               OPNFV_CLEAN=yes
             git-revision: false
             block: true
+            same-node: true
 #        - trigger-builds:
 #          - project: 'functest-apex-{slave}-suite-{stream1}'
 #            predefined-parameters: |
@@ -233,6 +238,7 @@
               OPNFV_CLEAN=yes
             git-revision: false
             block: true
+            same-node: true
         - 'apex-workspace-cleanup'
 
 - job-template:
