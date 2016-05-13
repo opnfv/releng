@@ -199,6 +199,59 @@ class Item:
             ]
         }
     }
+
+# if it is a query:
+class ItemQueryHandler(GenericApiHandler):
+    @swagger.operation(nickname='query')
+    def get(self):
+        """
+           @param property1:
+           @type property1: L{string}
+           @in property1: query
+           @required property1: False
+
+           @param property2:
+           @type property2: L{string}
+           @in property2: query
+           @required property2: True
+           @rtype: L{Item}
+
+           @notes: GET /item?property1=1&property2=1
+        """
+
+# Swagger json:
+    "apis": [
+        {
+            "operations": [
+                {
+                    "parameters": [
+                        {
+                            "name": "property1",
+                            "dataType": "string",
+                            "paramType": "query",
+                            "description": ""
+                        },
+                        {
+                            "name": "property2",
+                            "dataType": "string",
+                            "paramType": "query",
+                            "required": true,
+                            "description": ""
+                        }
+                    ],
+                    "responseClass": "Item",
+                    "notes": null,
+                    "responseMessages": [],
+                    "summary": null,
+                    "httpMethod": "GET",
+                    "nickname": "query"
+                }
+            ],
+            "path": "/item",
+            "description": null
+        },
+        ....
+    ]
 ```
 
 # Running and testing
