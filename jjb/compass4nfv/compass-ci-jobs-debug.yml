@@ -1,0 +1,45 @@
+- project:
+
+    name: compass-ci-debug
+
+    installer: 'compass'
+
+    project: 'compass4nfv'
+
+    stream: 
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+
+#----------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+    pod:
+        - 'intel-pod8'
+
+    scenario:
+        - os-nosdn-nofeature-ha:
+            scenario: 'os-nosdn-nofeature-ha'
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+        - os-odl_l2-nofeature-ha:
+            scenario: 'os-odl_l2-nofeature-ha'
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+        - os-onos-nofeature-ha:
+            scenario: 'os-onos-nofeature-ha'
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+        - os-odl_l3-nofeature-ha:
+            scenario: 'os-odl_l3-nofeature-ha'
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+        - os-ocl-nofeature-ha:
+            scenario: 'os-ocl-nofeature-ha'
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+
+    jobs:
+        - 'compass-{scenario}-{pod}-daily-{stream}'
+        - 'compass-deploy-{pod}-daily-{stream}'
+
