@@ -1,0 +1,37 @@
+- project:
+
+    name: compass-ci-brahmaputra
+
+    installer: 'compass'
+
+    project: 'compass4nfv'
+
+    stream: 
+        - brahmaputra:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
+
+#--------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+    pod:
+        - 'huawei-baremetal'
+        - 'huawei-virtual'
+
+    scenario:
+        - os-nosdn-nofeature-ha:
+            scenario: 'os-nosdn-nofeature-ha'
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+        - os-odl_l2-nofeature-ha:
+            scenario: 'os-odl_l2-nofeature-ha'
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+        - os-onos-nofeature-ha:
+            scenario: 'os-onos-nofeature-ha'
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+
+    jobs:
+        - 'compass-{scenario}-{pod}-daily-{stream}'
+        - 'compass-deploy-{pod}-daily-{stream}'
