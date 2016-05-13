@@ -6,11 +6,11 @@
 
     project: 'compass4nfv'
 
-    master: &master
+    master:
         stream: master
         branch: '{stream}'
         gs-pathname: ''
-    brahmaputra: &brahmaputra
+    brahmaputra:
         stream: brahmaputra
         branch: 'stable/{stream}'
         gs-pathname: '/{stream}'
@@ -18,177 +18,195 @@
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
-    pod:
-#--------------------------------
-#        brahmaputra
-#--------------------------------
-        - huawei-us-deploy-bare-1:
-            os-version: 'trusty'
-            <<: *brahmaputra
-        - huawei-virtual:
-            os-version: 'trusty'
-            <<: *brahmaputra
-#--------------------------------
-#        master
-#--------------------------------
-        - huawei-us-deploy-bare-2:
-            os-version: 'centos7'
-            <<: *master
-        - intel-pod8:
-            os-version: 'trusty'
-            <<: *master
-        - huawei-virtual:
-            os-version: 'trusty'
-            <<: *master
+    pod-ci:
+        - baremetal:
+            pod: 'baremetal'
+        - virtual:
+            pod: 'virtual'
 
-    scenario:
-        - 'os-nosdn-nofeature-ha':
+    pod-debug:
+        - intel-pod8:
+            pod: 'intel-pod8'
+
+    senarios-brahmaputra:
+        - os-nosdn-nofeature-ha:
+            scenario: 'os-nosdn-nofeature-ha'
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
-        - 'os-odl_l2-nofeature-ha':
+        - os-odl_l2-nofeature-ha:
+            scenario: 'os-odl_l2-nofeature-ha'
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
-        - 'os-odl_l3-nofeature-ha':
+        - os-onos-nofeature-ha:
+            scenario: 'os-onos-nofeature-ha'
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
-        - 'os-onos-nofeature-ha':
+
+    senarios-colorado:
+        - os-odl_l3-nofeature-ha:
+            scenario: 'os-odl_l3-nofeature-ha'
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
-        - 'os-ocl-nofeature-ha':
+        - os-ocl-nofeature-ha:
+            scenario: 'os-ocl-nofeature-ha'
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
 
     jobs:
-        - 'compass-{scenario}-{pod}-daily-{stream}'
-        - 'compass-deploy-{pod}-daily-{stream}'
+        - 'compass-{senarios-brahmaputra}-{pod-ci}-daily-{master}'
+        - 'compass-{senarios-colorado}-{pod-ci}-daily-{master}'
+        - 'compass-{senarios-brahmaputra}-{pod-ci}-daily-{brahmaputra}'
+        - 'compass-{senarios-colorado}-{pod-debug}-daily-{master}'
+        - 'compass-deploy-{pod-ci}-daily-{master}'
+        - 'compass-deploy-{pod-ci}-daily-{brahmaputra}'
+        - 'compass-deploy-{pod-debug}-daily-{master}'
+
+    job-ci: &job-ci
+        concurrent: true
+
+        properties:
+            - throttle:
+                enabled: true
+                max-per-node: 1
+            - build-blocker:
+                use-build-blocker: true
+                blocking-jobs:
+                    - 'compass-os-.*?-{pod}-daily-.*?'
+                    - 'compass-verify-[^-]*'
+                block-level: 'NODE'
+
+        wrappers:
+            - build-name:
+                name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+        parameters:
+            - project-parameter:
+                project: '{project}'
+            - gerrit-parameter:
+                branch: '{branch}'
+            - compass-ci-parameter:
+                installer: '{installer}'
+                gs-pathname: '{gs-pathname}'
+            - string:
+                name: DEPLOY_SCENARIO
+                default: '{scenario}'
+            - 'huawei-{pod}-defaults'
+            - '{installer}-defaults'
+
+        triggers:
+            - '{auto-trigger-name}'
+
+        builders:
+            - trigger-builds:
+                - project: 'compass-deploy-{pod}-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    DEPLOY_SCENARIO={scenario}
+                    COMPASS_OS_VERSION={os-version}
+                  same-node: true
+                  block: true
+            - trigger-builds:
+                - project: 'functest-compass-{pod}-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO={scenario}
+                  same-node: true
+                  block: true
+                  block-thresholds:
+                    build-step-failure-threshold: 'never'
+                    failure-threshold: 'never'
+                    unstable-threshold: 'FAILURE'
+            - trigger-builds:
+                - project: 'yardstick-compass-{pod}-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO={scenario}
+                  block: true
+                  same-node: true
+                  block-thresholds:
+                    build-step-failure-threshold: 'never'
+                    failure-threshold: 'never'
+                    unstable-threshold: 'FAILURE'
+
+    job-deploy: &job-deploy
+        disabled: false
+
+        concurrent: true
+
+        properties:
+            - throttle:
+                enabled: true
+                max-per-node: 1
+            - build-blocker:
+                use-build-blocker: true
+                blocking-jobs:
+                    - 'compass-deploy-{pod}-daily-.*?'
+                    - 'compass-verify-deploy-.*?'
+                block-level: 'NODE'
+
+        wrappers:
+            - build-name:
+                name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+            - timeout:
+                timeout: 120
+                abort: true
+
+        parameters:
+            - project-parameter:
+                project: '{project}'
+            - compass-ci-parameter:
+                installer: '{installer}'
+                gs-pathname: '{gs-pathname}'
+            - 'huawei-{pod}-defaults'
+            - '{installer}-defaults'
+
+        scm:
+            - git-scm:
+                credentials-id: '{ssh-credentials}'
+                refspec: ''
+                branch: '{branch}'
+
+        wrappers:
+            - build-name:
+                name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+
+        builders:
+            - shell:
+                !include-raw-escape: ./compass-download-artifact.sh
+            - shell:
+                !include-raw-escape: ./compass-deploy.sh
+
+        publishers:
+            - archive:
+                artifacts: 'ansible.log'
+                allow-empty: 'true'
+                fingerprint: true
 
 ########################
 # job templates
 ########################
 - job-template:
-    name: 'compass-{scenario}-{pod}-daily-{stream}'
-
-    concurrent: true
-
-    properties:
-        - throttle:
-            enabled: true
-            max-per-node: 1
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'compass-os-.*?-{pod}-daily-.*?'
-                - 'compass-verify-[^-]*'
-            block-level: 'NODE'
-
-    wrappers:
-        - build-name:
-            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - compass-ci-parameter:
-            installer: '{installer}'
-            gs-pathname: '{gs-pathname}'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: '{scenario}'
-        - '{pod}-defaults'
-        - '{installer}-defaults'
-
-    triggers:
-        - '{auto-trigger-name}'
-
-    builders:
-        - trigger-builds:
-            - project: 'compass-deploy-{pod}-daily-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                DEPLOY_SCENARIO={scenario}
-                COMPASS_OS_VERSION={os-version}
-              same-node: true
-              block: true
-        - trigger-builds:
-            - project: 'functest-compass-{pod}-daily-{stream}'
-              current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO={scenario}
-              same-node: true
-              block: true
-              block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-            - project: 'yardstick-compass-{pod}-daily-{stream}'
-              current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO={scenario}
-              block: true
-              same-node: true
-              block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-
+    name: 'compass-{senarios-brahmaputra}-{pod-ci}-daily-{master}'
+    <<: *job-ci
 - job-template:
-    name: 'compass-deploy-{pod}-daily-{stream}'
-
-    disabled: false
-
-    concurrent: true
-
-    properties:
-        - throttle:
-            enabled: true
-            max-per-node: 1
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'compass-deploy-{pod}-daily-.*?'
-                - 'compass-verify-deploy-.*?'
-            block-level: 'NODE'
-
-    wrappers:
-        - build-name:
-            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
-        - timeout:
-            timeout: 120
-            abort: true
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - compass-ci-parameter:
-            installer: '{installer}'
-            gs-pathname: '{gs-pathname}'
-        - '{pod}-defaults'
-        - '{installer}-defaults'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    wrappers:
-        - build-name:
-            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
-
-
-    builders:
-        - shell:
-            !include-raw-escape: ./compass-download-artifact.sh
-        - shell:
-            !include-raw-escape: ./compass-deploy.sh
-
-    publishers:
-        - archive:
-            artifacts: 'ansible.log'
-            allow-empty: 'true'
-            fingerprint: true
-
+    name: 'compass-{senarios-colorado}-{pod-ci}-daily-{master}'
+    <<: *job-ci
+- job-template:
+    name: 'compass-{senarios-brahmaputra}-{pod-ci}-daily-{brahmaputra}'
+    <<: *job-ci
+- job-template:
+    name: 'compass-{senarios-colorado}-{pod-debug}-daily-{master}'
+    <<: *job-ci
+- job-template:
+    name: 'compass-deploy-{pod-ci}-daily-{master}'
+    <<: *job-deploy
+- job-template:
+    name: 'compass-deploy-{pod-ci}-daily-{brahmaputra}'
+    <<: *job-deploy
+- job-template:
+    name: 'compass-deploy-{pod-debug}-daily-{master}'
+    <<: *job-deploy
 ########################
 # parameter macros
 ########################
@@ -213,53 +231,53 @@
 # trigger macros
 ########################
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-huawei-us-deploy-bare-2-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-baremetal-trigger'
     triggers:
         - timed: '0 3 * * *'
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-huawei-us-deploy-bare-2-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-baremetal-trigger'
     triggers:
         - timed: '0 21 * * *'
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-huawei-us-deploy-bare-2-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-baremetal-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-huawei-us-deploy-bare-2-trigger'
+    name: 'compass-os-onos-nofeature-ha-baremetal-trigger'
     triggers:
         - timed: '0 15 * * *'
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-huawei-us-deploy-bare-2-trigger'
+    name: 'compass-os-ocl-nofeature-ha-baremetal-trigger'
     triggers:
         - timed: '0 9 * * *'
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-huawei-us-deploy-bare-1-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-baremetal-trigger'
     triggers:
         - timed: '0 3 * * * '
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-huawei-us-deploy-bare-1-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-baremetal-trigger'
     triggers:
         - timed: '0 21 * * *'
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-huawei-us-deploy-bare-1-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-baremetal-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-huawei-us-deploy-bare-1-trigger'
+    name: 'compass-os-onos-nofeature-ha-baremetal-trigger'
     triggers:
         - timed: '0 15 * * *'
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-huawei-us-deploy-bare-1-trigger'
+    name: 'compass-os-ocl-nofeature-ha-baremetal-trigger'
     triggers:
         - timed: '0 9 * * *'
 - trigger:
     name: 'compass-os-nosdn-nofeature-ha-intel-pod8-trigger'
     triggers:
-        - timed: '0 3 * * *'
+        - timed: ''
 - trigger:
     name: 'compass-os-odl_l2-nofeature-ha-intel-pod8-trigger'
     triggers:
-        - timed: '0 21 * * *'
+        - timed: ''
 - trigger:
     name: 'compass-os-odl_l3-nofeature-ha-intel-pod8-trigger'
     triggers:
@@ -267,28 +285,48 @@
 - trigger:
     name: 'compass-os-onos-nofeature-ha-intel-pod8-trigger'
     triggers:
-        - timed: '0 15 * * *'
+        - timed: ''
 - trigger:
     name: 'compass-os-ocl-nofeature-ha-intel-pod8-trigger'
     triggers:
-        - timed: '0 9 * * *'
+        - timed: ''
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-huawei-virtual-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-virtual-trigger'
     triggers:
         - timed: '0 3 * * *'
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-huawei-virtual-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-virtual-trigger'
     triggers:
         - timed: '0 21 * * *'
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-huawei-virtual-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-virtual-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-huawei-virtual-trigger'
+    name: 'compass-os-onos-nofeature-ha-virtual-trigger'
     triggers:
         - timed: '0 15 * * *'
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-huawei-virtual-trigger'
+    name: 'compass-os-ocl-nofeature-ha-virtual-trigger'
     triggers:
         - timed: '0 9 * * *'
+- trigger:
+    name: 'compass-os-nosdn-nofeature-ha-centos-virtual-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l2-nofeature-ha-centos-virtual-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l3-nofeature-ha-centos-virtual-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-onos-nofeature-ha-centos-virtual-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-ocl-nofeature-ha-centos-virtual-trigger'
+    triggers:
+        - timed: ''
