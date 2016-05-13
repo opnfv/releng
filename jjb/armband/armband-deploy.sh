@@ -39,9 +39,9 @@ POD_NAME=${NODE_NAME/*-}
 if [[ ! $LAB_NAME =~ (arm|enea) ]]; then
     echo "Unsupported/unidentified lab $LAB_NAME. Cannot continue!"
     exit 1
-else
-    echo "Using configuration for $LAB_NAME"
 fi
+
+echo "Using configuration for $LAB_NAME"
 
 # create TMPDIR if it doesn't exist
 mkdir -p $TMPDIR
@@ -52,8 +52,12 @@ if [[ $LAB_CONFIG_URL =~ ^git:// ]]; then
     LAB_CONFIG_URL=file://${WORKSPACE}/lab-config
 fi
 
+# ISO_FILE should be defined by download-artifacts and put in latest.properties
+# but if not, use the old default:
+[[ -z $ISO_FILE ]] && ISO_FILE=$WORKSPACE/opnfv.iso
+
 # construct the command
-DEPLOY_COMMAND="$WORKSPACE/ci/deploy.sh -b ${LAB_CONFIG_URL} -l $LAB_NAME -p $POD_NAME -s $DEPLOY_SCENARIO -i file://$WORKSPACE/opnfv.iso -H -B $BRIDGE -S $TMPDIR"
+DEPLOY_COMMAND="$WORKSPACE/ci/deploy.sh -b ${LAB_CONFIG_URL} -l $LAB_NAME -p $POD_NAME -s $DEPLOY_SCENARIO -i file://${ISO_FILE} -H -B $BRIDGE -S $TMPDIR"
 
 # log info to console
 echo "Deployment parameters"
@@ -72,9 +76,6 @@ echo "Issuing command"
 echo "$DEPLOY_COMMAND"
 echo
 
-# FIXME
-export TARGET_LAB=${LAB_NAME}
-export TARGET_POD=${POD_NAME}
 $DEPLOY_COMMAND
 
 echo
