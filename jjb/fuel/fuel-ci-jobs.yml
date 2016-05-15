@@ -24,24 +24,38 @@
 #        brahmaputra
 #--------------------------------
     pod:
+        - baremetal:
+            node: fuel-baremetal
+            <<: *brahmaputra
         - opnfv-jump-2:
+            node: opnfv-jump-2
             <<: *brahmaputra
         - ericsson-pod1:
+            node: ericsson-pod1
             <<: *brahmaputra
         - ericsson-pod2:
+            node: ericsson-pod2
             <<: *brahmaputra
         - virtual:
+            node: fuel-virtual
             <<: *brahmaputra
 #--------------------------------
 #        master
 #--------------------------------
+        - baremetal:
+            node: fuel-baremetal
+            <<: *master
         - opnfv-jump-2:
+            node: opnfv-jump-2
             <<: *master
         - ericsson-pod1:
+            node: ericsson-pod1
             <<: *master
         - ericsson-pod2:
+            node: ericsson-pod2
             <<: *master
         - virtual:
+            node: fuel-virtual
             <<: *master
 #--------------------------------
 #       scenarios
@@ -49,21 +63,21 @@
     scenario:
         # HA scenarios
         - 'os-nosdn-nofeature-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-odl_l2-nofeature-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-odl_l3-nofeature-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-onos-nofeature-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-odl_l2-bgpvpn-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-odl_l2-sfc-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-nosdn-kvm-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-nosdn-ovs-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-nosdn-kvm_ovs-ha':
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-nosdn-vlan-ha':
@@ -122,7 +136,7 @@
         - project-parameter:
             project: '{project}'
         - '{installer}-defaults'
-        - '{pod}-defaults':
+        - '{node}-defaults':
             installer: '{installer}'
         - string:
             name: DEPLOY_SCENARIO
@@ -182,7 +196,7 @@
         - project-parameter:
             project: '{project}'
         - '{installer}-defaults'
-        - '{pod}-defaults':
+        - '{node}-defaults':
             installer: '{installer}'
         - string:
             name: DEPLOY_SCENARIO
