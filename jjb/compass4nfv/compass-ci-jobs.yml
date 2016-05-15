@@ -22,41 +22,42 @@
 #--------------------------------
 #        brahmaputra
 #--------------------------------
-        - huawei-us-deploy-bare-1:
+        - baremetal:
+            label: compass-baremetal
             os-version: 'trusty'
             <<: *brahmaputra
-        - huawei-virtual:
+        - virtual:
+            label: compass-virtual
             os-version: 'trusty'
             <<: *brahmaputra
 #--------------------------------
 #        master
 #--------------------------------
-        - huawei-us-deploy-bare-2:
+        - baremetal:
+            label: compass-baremetal
             os-version: 'centos7'
             <<: *master
-        - intel-pod8:
-            os-version: 'trusty'
-            <<: *master
-        - huawei-virtual:
+        - virtual:
+            label: compass-virtual
             os-version: 'trusty'
             <<: *master
 
     scenario:
         - 'os-nosdn-nofeature-ha':
             disabled: false
-            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-odl_l2-nofeature-ha':
             disabled: false
-            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-odl_l3-nofeature-ha':
             disabled: false
-            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-onos-nofeature-ha':
             disabled: false
-            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-ocl-nofeature-ha':
             disabled: false
-            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
 
     jobs:
         - 'compass-{scenario}-{pod}-daily-{stream}'
@@ -94,7 +95,7 @@
         - string:
             name: DEPLOY_SCENARIO
             default: '{scenario}'
-        - '{pod}-defaults'
+        - '{label}-defaults'
         - '{installer}-defaults'
 
     triggers:
@@ -163,7 +164,7 @@
         - compass-ci-parameter:
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
-        - '{pod}-defaults'
+        - '{label}-defaults'
         - '{installer}-defaults'
 
     scm:
