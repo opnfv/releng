@@ -27,21 +27,28 @@
 #--------------------------------
     pod:
         - intel-pod5:
+            label: intel-pod5
             <<: *brahmaputra
         - orange-pod2:
+            label: orange-pod2
             <<: *brahmaputra
         - virtual:
+            label: joid-virtual
             <<: *brahmaputra
 #--------------------------------
 #           master
 #--------------------------------
         - intel-pod6:
+            label: intel-pod6
             <<: *master
         - orange-pod2:
+            label: orange-pod2
             <<: *master
         - juniper-pod1:
+            label: juniper-pod1
             <<: *master
         - virtual:
+            label: joid-virtual
             <<: *master
 #--------------------------------
 # new scenario descriptions
@@ -49,11 +56,11 @@
         - 'os-nosdn-nofeature-noha':
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-nosdn-nofeature-ha':
-            auto-trigger-name: 'joid-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-odl_l2-nofeature-ha':
-            auto-trigger-name: 'joid-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-onos-nofeature-ha':
-            auto-trigger-name: 'joid-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-odl_l2-nofeature-noha':
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
         - 'os-onos-nofeature-noha':
@@ -96,7 +103,7 @@
         - project-parameter:
             project: '{project}'
         - '{installer}-defaults'
-        - '{pod}-defaults':
+        - '{label}-defaults':
             installer: '{installer}'
         - string:
             name: DEPLOY_SCENARIO
@@ -159,7 +166,7 @@
         - project-parameter:
             project: '{project}'
         - '{installer}-defaults'
-        - '{pod}-defaults':
+        - '{label}-defaults':
             installer: '{installer}'
         - string:
             name: DEPLOY_SCENARIO

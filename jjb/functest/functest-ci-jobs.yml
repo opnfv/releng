@@ -26,81 +26,114 @@
 #--------------------------------
     pod:
         - opnfv-jump-1:
+            label: opnfv-jump-1
             installer: apex
             <<: *brahmaputra
         - intel-pod5:
+            label: intel-pod5
             installer: joid
             <<: *brahmaputra
         - orange-pod2:
+            label: orange-pod2
             installer: joid
             <<: *brahmaputra
         - huawei-us-deploy-bare-1:
+            label: huawei-us-deploy-bare-1
             installer: compass
             <<: *brahmaputra
         - ericsson-pod1:
+            label: ericsson-pod1
             installer: fuel
             <<: *brahmaputra
         - ericsson-pod2:
+            label: ericsson-pod2
             installer: fuel
             <<: *brahmaputra
         - opnfv-jump-2:
+            label: opnfv-jump-2
+            installer: fuel
+            <<: *brahmaputra
+        - baremetal:
+            label: fuel-baremetal
             installer: fuel
             <<: *brahmaputra
         - virtual:
+            label: fuel-virtual
             installer: fuel
             <<: *brahmaputra
         - huawei-virtual:
+            label: huawei-virtual
             installer: compass
             <<: *brahmaputra
         - virtual:
+            label: joid-virtual
             installer: joid
             <<: *brahmaputra
         - arm-pod1:
+            label: arm-pod1
             installer: fuel
             <<: *brahmaputra
 #--------------------------------
 #        master
 #--------------------------------
         - opnfv-jump-2:
+            label: opnfv-jump-2
             installer: fuel
             <<: *master
         - intel-pod6:
+            label: intel-pod6
             installer: joid
             <<: *master
         - intel-pod8:
+            label: intel-pod8
             installer: compass
             <<: *master
         - intel-pod7:
+            label: intel-pod7
             installer: apex
             <<: *master
         - ericsson-pod1:
+            label: ericsson-pod1
             installer: fuel
             <<: *master
         - orange-pod5:
+            label: orange-pod5
             installer: fuel
             <<: *master
         - orange-pod2:
+            label: orange-pod2
             installer: joid
             <<: *master
+        - baremetal:
+            label: fuel-baremetal
+            installer: fuel
+            <<: *master
         - virtual:
+            label: fuel-virtual
             installer: fuel
             <<: *master
         - huawei-virtual:
+            label: huawei-virtual
             installer: compass
             <<: *master
         - virtual:
+            label: joid-virtual
             installer: joid
             <<: *master
         - huawei-us-deploy-bare-2:
+            label: huawei-us-deploy-bare-2
             installer: compass
             <<: *master
         - nokia-pod1:
+            label: nokia-pod1
             installer: apex
             <<: *master
         - arm-pod1:
+            label: arm-pod1
             installer: fuel
             <<: *master
         - zte-pod1:
+            label: zte-pod1
             installer: fuel
             <<: *master
 #--------------------------------
@@ -135,7 +168,7 @@
     parameters:
         - project-parameter:
             project: '{project}'
-        - '{pod}-defaults'
+        - '{label}-defaults'
         - '{installer}-defaults'
         - 'functest-{testsuite}-parameter'
         - string:
