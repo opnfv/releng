@@ -27,129 +27,142 @@
     pod:
         - opnfv-jump-1:
             installer: apex
-            suite: daily
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *brahmaputra
-        - opnfv-jump-2:
-            installer: fuel
+            label: opnfv-jump-1
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *brahmaputra
         - intel-pod5:
             installer: joid
+            label: intel-pod5
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *brahmaputra
         - orange-pod2:
             installer: joid
+            label: orange-pod2
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *brahmaputra
-        - huawei-us-deploy-bare-1:
+        - baremetal:
             installer: compass
+            label: compass-baremetal
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *brahmaputra
         - ericsson-pod1:
             installer: fuel
-            suite: daily
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *brahmaputra
-        - ericsson-pod2:
-            installer: fuel
+            label: ericsson-pod1
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *brahmaputra
         - virtual:
             installer: fuel
+            label: fuel-virtual
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *brahmaputra
-        - huawei-virtual:
+        - baremetal:
+            installer: fuel
+            label: fuel-baremetal
+            suite: daily
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *brahmaputra
+        - virtual:
             installer: compass
+            label: compass-virtual
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *brahmaputra
         - virtual:
             installer: joid
+            label: joid-virtual
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *brahmaputra
 #--------------------------------
 #        master
 #--------------------------------
-        - opnfv-jump-2:
+        - ericsson-pod1:
             installer: fuel
+            label: ericsson-pod1
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
         - ericsson-pod1:
             installer: fuel
-            suite: daily
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *master
-        - ericsson-pod1:
-            installer: fuel
+            label: ericsson-pod1
             suite: vtcdaily
-            auto-trigger-name: 'yardstick-vtcdaily-ericsson-pod1-trigger'
-            <<: *master
-        - ericsson-pod2:
-            installer: fuel
-            suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
         - intel-pod6:
             installer: joid
+            label: intel-pod6
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
         - intel-pod8:
             installer: compass
+            label: intel-pod8
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
         - zte-pod1:
             installer: fuel
+            label: zte-pod1
             suite: daily
             auto-trigger-name: 'yardstick-daily-zte-pod1-trigger'
             <<: *master
         - orange-pod2:
             installer: joid
+            label: orange-pod2
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
         - opnfv-jump-1:
             installer: apex
+            label: opnfv-jump-1
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
-        - huawei-us-deploy-bare-2:
+        - baremetal:
             installer: compass
+            label: compass-baremetal
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
         - virtual:
             installer: fuel
+            label: fuel-virtual
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
-        - huawei-virtual:
+        - baremetal:
+            installer: fuel
+            label: fuel-baremetal
+            suite: daily
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *master
+        - virtual:
             installer: compass
+            label: compass-virtual
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
         - huawei-sh-test-2:
             installer: compass
+            label: huawei-sh-test-2
             suite: daily
             auto-trigger-name: 'yardstick-daily-huawei-sh-test-2-trigger'
             <<: *master
         - huawei-sh-pod6:
             installer: compass
+            label: huawei-sh-pod6
             suite: daily
             auto-trigger-name: 'yardstick-daily-huawei-sh-pod6-trigger'
             <<: *master
         - virtual:
             installer: joid
+            label: joid-virtual
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
@@ -186,7 +199,7 @@
     parameters:
         - project-parameter:
             project: '{project}'
-        - '{pod}-defaults'
+        - '{label}-defaults'
         - '{installer}-defaults'
         - 'yardstick-params-{pod}'
         - string:
@@ -403,6 +416,14 @@
             description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
+    name: 'yardstick-params-baremetal'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: '-i 104.197.68.199:8086'
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
     name: 'yardstick-params-virtual'
     parameters:
         - string:
@@ -411,7 +432,7 @@
             description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
-    name: 'yardstick-params-huawei-virtual'
+    name: 'yardstick-params-compass-virtual'
     parameters:
         - string:
             name: YARDSTICK_DB_BACKEND
