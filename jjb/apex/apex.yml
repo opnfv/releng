@@ -19,12 +19,14 @@
             block-stream: 'brahmaputra'
             slave: 'intel-pod7'
             verify-slave: 'apex-verify-master'
+            daily-slave: 'apex-daily-master'
         - brahmaputra:
             branch: 'stable/brahmaputra'
             gs-pathname: '/brahmaputra'
             block-stream: 'master'
             slave: 'opnfv-jump-1'
             verify-slave: 'apex-verify-brahmaputra'
+            daily-slave: 'apex-daily-brahmaputra'
             disabled: true
 
     stream1:
@@ -34,6 +36,7 @@
             block-stream: 'brahmaputra'
             slave: 'intel-pod7'
             verify-slave: 'apex-verify-master'
+            daily-slave: 'apex-daily-master'
 
     stream2:
         - brahmaputra:
@@ -42,6 +45,7 @@
             block-stream: 'master'
             slave: 'opnfv-jump-1'
             verify-slave: 'apex-verify-brahmaputra'
+            daily-slave: 'apex-daily-brahmaputra'
             disabled: true
 
     project: 'apex'
@@ -581,7 +585,7 @@
     # Required Variables:
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
-    node: '{slave}'
+    node: '{daily-slave}'
 
     disabled: false
 
@@ -621,12 +625,14 @@
               BUILD_DIRECTORY=apex-build-{stream1}/build
               OPNFV_CLEAN=yes
             git-revision: true
+            same-node: true
             block: true
         - trigger-builds:
           - project: 'functest-apex-{slave}-daily-{stream1}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-nosdn-nofeature-ha
             block: true
+            same-node: true
             block-thresholds:
                 build-step-failure-threshold: 'never'
                 failure-threshold: 'never'
@@ -636,6 +642,7 @@
             predefined-parameters:
               DEPLOY_SCENARIO=os-nosdn-nofeature-ha
             block: true
+            same-node: true
             block-thresholds:
                 build-step-failure-threshold: 'never'
                 failure-threshold: 'never'
