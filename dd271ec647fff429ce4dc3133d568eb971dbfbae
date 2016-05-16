@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "9a91bd0f_8bec43c9",
+        "filename": "jjb/armband/armband-download-artifact.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 486
+      },
+      "writtenOn": "2016-05-16T08:31:37Z",
+      "side": 1,
+      "message": "The ISO images may be stored (and in our case are) in the same storage volume in the libvirt server. The time stamp is just to discriminate between them in case they have the same name.\nI can not use the original image name (containing already a time stamp), because two PODs may be using the same ISO, and there could be name collisions, unless we can assume the ISO images are exactly the same, but since we rebuild them before the deploy, I think we should not do.\n\nAn alternative would be to append the Jenkins job ID or cookie instead, if it is available and unique.",
+      "parentUuid": "9a91bd0f_8072e2e3",
+      "range": {
+        "startLine": 31,
+        "startChar": 0,
+        "endLine": 31,
+        "endChar": 51
+      },
+      "revId": "dd271ec647fff429ce4dc3133d568eb971dbfbae",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9a91bd0f_207756d6",
         "filename": "jjb/armband/armband-download-artifact.sh",
         "patchSetId": 1
@@ -36,6 +60,30 @@
       "writtenOn": "2016-05-15T16:35:38Z",
       "side": 1,
       "message": "ok, now I see this.\nBut instead of generating a timestamp, can\u0027t you use the one from the latest properties file? It will be inconsistent.\n\nOr I\u0027m missing something.",
+      "range": {
+        "startLine": 55,
+        "startChar": 35,
+        "endLine": 55,
+        "endChar": 45
+      },
+      "revId": "dd271ec647fff429ce4dc3133d568eb971dbfbae",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a91bd0f_2bd177fb",
+        "filename": "jjb/armband/armband-download-artifact.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 486
+      },
+      "writtenOn": "2016-05-16T08:31:37Z",
+      "side": 1,
+      "message": "The latest.properties file may be the same across two POD deployments, thus I can not use that, but as named above, I could use the Jenkins job ID (or the cookie) if it is accessible and unique.\n\nLet me know if you prefer me to do any changes here.",
+      "parentUuid": "9a91bd0f_207756d6",
       "range": {
         "startLine": 55,
         "startChar": 35,
