@@ -43,8 +43,8 @@ if [[ "$NODE_NAME" =~ "virtual" ]]; then
     POD_NAME="virtual_kvm"
 fi
 
-# we currently support ericsson, intel, and lf labs
-if [[ ! "$LAB_NAME" =~ (ericsson|intel|lf) ]]; then
+# we currently support ericsson, intel, lf and zte labs
+if [[ ! "$LAB_NAME" =~ (ericsson|intel|lf|zte) ]]; then
     echo "Unsupported/unidentified lab $LAB_NAME. Cannot continue!"
     exit 1
 else
