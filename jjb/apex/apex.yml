@@ -314,7 +314,7 @@
     # Required Variables:
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
-    node: '{slave}'
+    node: '{daily-slave}'
 
     disabled: false
 
@@ -350,6 +350,7 @@
               BUILD_DIRECTORY=apex-build-{stream}/build
               OPNFV_CLEAN=yes
             git-revision: false
+            same-node: true
             block: true
         - 'apex-upload-artifact'
 
@@ -619,6 +620,7 @@
           - project: 'apex-build-{stream1}'
             git-revision: true
             current-parameters: true
+            same-node: true
             block: true
         - trigger-builds:
           - project: 'apex-deploy-virtual-nosdn-nofeature-ha-{stream1}'
