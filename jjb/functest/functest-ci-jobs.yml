@@ -224,6 +224,14 @@
 - builder:
     name: functest-suite-builder
     builders:
+        - 'functest-cleanup'
+        - 'set-functest-env'
+        - 'functest-suite'
+
+
+- builder:
+    name: functest-suite
+    builders:
         - shell: |
             #!/bin/bash
             set -e
@@ -236,6 +244,7 @@
             fi
             container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
             docker exec $container_id $cmd
+
 
 - builder:
     name: functest-all
