@@ -123,6 +123,9 @@ class MemDb(object):
             result = executor.submit(self._remove, spec_or_id)
         return result
 
+    def clear(self):
+        self._remove()
+
 pod = MemDb()
 test_projects = MemDb()
 test_cases = MemDb()
