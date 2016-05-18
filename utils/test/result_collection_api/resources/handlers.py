@@ -13,7 +13,8 @@ from tornado.web import RequestHandler, asynchronous, HTTPError
 from tornado import gen
 from datetime import datetime, timedelta
 
-from models import Pod, TestProject, TestCase, TestResult
+from models import TestProject, TestCase, TestResult
+from resources.pod_models import Pod
 from common.constants import DEFAULT_REPRESENTATION, HTTP_BAD_REQUEST, \
     HTTP_NOT_FOUND, HTTP_FORBIDDEN
 from common.config import prepare_put_request
