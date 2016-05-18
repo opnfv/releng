@@ -5,47 +5,41 @@
 # are made available under the terms of the Apache License, Version 2.0
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
+# feng.xiaowei@zte.com.cn  mv Pod to pod_models.py                 6-18-2016
+# feng.xiaowei@zte.com.cn  add MetaCreateResponse/MetaGetResponse  6-18-2016
 ##############################################################################
 
 
-class Pod:
-    """ describes a POD platform """
-    def __init__(self):
-        self._id = ""
-        self.name = ""
-        self.creation_date = ""
-        self.mode = ""
-        self.details = ""
+class MetaCreateResponse(object):
+    def __init__(self, success=True, uri=''):
+        self.success = success
+        self.uri = uri
 
     @staticmethod
-    def pod_from_dict(pod_dict):
-        if pod_dict is None:
+    def from_dict(meta_dict):
+        if meta_dict is None:
             return None
 
-        p = Pod()
-        p._id = pod_dict.get('_id')
-        p.creation_date = str(pod_dict.get('creation_date'))
-        p.name = pod_dict.get('name')
-        p.mode = pod_dict.get('mode')
-        p.details = pod_dict.get('details')
-        return p
+        meta = MetaCreateResponse()
+        meta.success = meta_dict.get('success')
+        meta.uri = meta_dict.get('uri')
+        return meta
 
-    def format(self):
-        return {
-            "name": self.name,
-            "mode": self.mode,
-            "details": self.details,
-            "creation_date": str(self.creation_date),
-        }
 
-    def format_http(self):
-        return {
-            "_id": str(self._id),
-            "name": self.name,
-            "mode": self.mode,
-            "details": self.details,
-            "creation_date": str(self.creation_date),
-        }
+class MetaGetResponse(object):
+    def __init__(self, success=True, total=0):
+        self.success = success
+        self.total = total
+
+    @staticmethod
+    def from_dict(meta_dict):
+        if meta_dict is None:
+            return None
+
+        meta = MetaGetResponse()
+        meta.success = meta_dict.get('success')
+        meta.total = meta_dict.get('total')
+        return meta
 
 
 class TestProject:
