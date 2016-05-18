@@ -58,4 +58,15 @@
 
     builders:
         - shell: |
-            echo "Nothing to verify!"
+            #/bin/bash
+            set -o errexit
+            set -o pipefail
+            set -o xtrace
+            export PATH=$PATH:/usr/local/bin/
+            
+            # pep8 check parser/tosca2heat/tosca-parser
+            echo "Running tox -e pep8 on tosca2heat ..."
+            cd $WORKSPACE/parser/tosca2heat/tosca-parser
+            tox -e pep8
+            cd $WORKSPACE/parser/tosca2heat/heat-translator
+            tox -e pep8
