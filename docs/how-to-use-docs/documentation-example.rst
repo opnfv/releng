@@ -117,21 +117,30 @@ Configuration
 If you need to change the default configuration for document build, create
 new conf.py in the document directory (e.g. 'docs/how-to-use-docs/conf.py')
 that will be used in build process instead of default for OPNFV document
-build. The OPNFV default configuration can be found in releng repo
-(see `docs/etc/conf.py`_).
+build.
+During the build process, the following default parameters are automatically
+added if they are not set in the ``conf.py``.
 
-.. _docs/etc/conf.py:
-    https://gerrit.opnfv.org/gerrit/gitweb?p=releng.git;a=blob;f=docs/etc/conf.py;
-
-In the build process, the following parameters are automatically added if they
-are not set in the conf.py .
-
-* **release**, **version** : ``git last tag name`` (``git last commit hash``)
-* **project** : ``git repo name``
-* **copyright** : ``year``, OPNFV
-* **latex_documents** (set of pdf configuration) :
+* **extensions** =
+  ['sphinxcontrib.httpdomain',
+  'sphinx.ext.autodoc',
+  'sphinx.ext.viewcode',
+  'sphinx.ext.napoleon']
+* **needs_sphinx** = '1.3'
+* **master_doc** = 'index'
+* **pygments_style** = 'sphinx'
+* **html_use_index** = False
+* **numfig** = True
+* **html_logo** = 'opnfv-logo.png'
+* **latex_domain_indices** = False
+* **latex_logo** = 'opnfv-logo.png'
+* **latex_documents** =
   [('index', '``document directory name``.tex',
   '``document title in index.rst``', 'OPNFV', 'manual'),]
+* **release** = '``git last tag name`` (``git last commit hash``)'
+* **version** = '``git last tag name`` (``git last commit hash``)'
+* **project** = '``git repo name``'
+* **copyright** = '``year``, OPNFV'
 
 See http://sphinx-doc.org/config.html to learn sphinx configuration.
 
@@ -180,7 +189,7 @@ Note:
 Developers are encouraged to use "ssh://<username>@gerrit.opnfv.org:29418/releng"
 instead of "https://git.opnfv.org/releng", so that you can quickly start
 development in releng.
-See https://wiki.opnfv.org/developer/getting_started for more detail.
+See https://wiki.opnfv.org/display/DEV/Developer+Getting+Started for more detail.
 
 
 Jenkins Jobs
@@ -239,8 +248,11 @@ You can see available sphinx extension(s) in `docs/etc/requirements.txt`_.
     https://gerrit.opnfv.org/gerrit/gitweb?p=releng.git;a=blob;f=docs/etc/requirements.txt;
 
 You can use other sphinx extensions to improve your documents.
-To share such tips, we encourage you to enable the extension in OPNFV infra
+To share such improvements, we encourage you to enable the extension in OPNFV infra
 by asking releng and opnfvdocs teams to add new sphinx extension via gerrit
-(proposing change in `docs/etc/conf.py`_ and `docs/etc/requirements.txt`_).
-After quick sanity checks, we'll install python package (if needed) and make
-it available in OPNFV document build.
+(proposing change in `utils/docs-build.sh`_ and `docs/etc/requirements.txt`_).
+After quick sanity checks, we'll merge the patch to make it available in OPNFV
+document build.
+
+.. _utils/docs-build.sh:
+    https://gerrit.opnfv.org/gerrit/gitweb?p=releng.git;a=blob;f=utils/docs-build.sh;
