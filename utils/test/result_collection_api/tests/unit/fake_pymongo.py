@@ -126,7 +126,7 @@ class MemDb(object):
     def clear(self):
         self._remove()
 
-pod = MemDb()
-test_projects = MemDb()
+pods = MemDb()
+projects = MemDb()
 test_cases = MemDb()
 test_results = MemDb()

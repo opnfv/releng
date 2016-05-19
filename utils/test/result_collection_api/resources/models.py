@@ -5,80 +5,29 @@
 # are made available under the terms of the Apache License, Version 2.0
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
-# feng.xiaowei@zte.com.cn  mv Pod to pod_models.py                 6-18-2016
-# feng.xiaowei@zte.com.cn  add MetaCreateResponse/MetaGetResponse  6-18-2016
+# feng.xiaowei@zte.com.cn  mv Pod to pod_models.py                 5-18-2016
+# feng.xiaowei@zte.com.cn  add MetaCreateResponse/MetaGetResponse  5-18-2016
+# feng.xiaowei@zte.com.cn  mv TestProject to project_models.py     5-19-2016
+# feng.xiaowei@zte.com.cn  delete meta class                       5-19-2016
+# feng.xiaowei@zte.com.cn  add CreateResponse                      5-19-2016
 ##############################################################################
 
 
-class MetaCreateResponse(object):
-    def __init__(self, success=True, uri=''):
-        self.success = success
-        self.uri = uri
+class CreateResponse(object):
+    def __init__(self, href=''):
+        self.href = href
 
     @staticmethod
-    def from_dict(meta_dict):
-        if meta_dict is None:
+    def from_dict(res_dict):
+        if res_dict is None:
             return None
 
-        meta = MetaCreateResponse()
-        meta.success = meta_dict.get('success')
-        meta.uri = meta_dict.get('uri')
-        return meta
-
-
-class MetaGetResponse(object):
-    def __init__(self, success=True, total=0):
-        self.success = success
-        self.total = total
-
-    @staticmethod
-    def from_dict(meta_dict):
-        if meta_dict is None:
-            return None
-
-        meta = MetaGetResponse()
-        meta.success = meta_dict.get('success')
-        meta.total = meta_dict.get('total')
-        return meta
-
-
-class TestProject:
-    """ Describes a test project"""
-
-    def __init__(self):
-        self._id = None
-        self.name = None
-        self.description = None
-        self.creation_date = None
-
-    @staticmethod
-    def testproject_from_dict(testproject_dict):
-
-        if testproject_dict is None:
-            return None
-
-        t = TestProject()
-        t._id = testproject_dict.get('_id')
-        t.creation_date = testproject_dict.get('creation_date')
-        t.name = testproject_dict.get('name')
-        t.description = testproject_dict.get('description')
-
-        return t
+        res = CreateResponse()
+        res.href = res_dict.get('href')
+        return res
 
     def format(self):
-        return {
-            "name": self.name,
-            "description": self.description,
-            "creation_date": str(self.creation_date)
-        }
-
-    def format_http(self, test_cases=0):
-        return {
-            "_id": str(self._id),
-            "name": self.name,
-            "description": self.description,
-            "creation_date": str(self.creation_date),
-        }
+        return {'href': self.href}
 
 
 class TestCase:
