@@ -74,20 +74,25 @@
                     <table class="table">
                         <tr>
                             {% for test in items[scenario] -%}
-                            <th>{{test.getName() }}</th>
+                            <th>
+                            {% if test.getCriteria() > -1 -%}
+                            {{test.getDbName() }}
+                            {%- endif %}
+							{% if test.getTier() > 3 -%}
+                            *
+                            {%- endif %}
+                             </th>                           
                             {%- endfor %}
                         </tr>
                         <tr class="tr-weather-weather">
-                            {% for test in items[scenario] -%}
-                            {% if test.isRunnable is sameas false -%}
-                                <td>N.R</td>
-                            {% elif test.getCriteria() > 2 -%}
+                            {% for test in items[scenario] -%}                          
+                            {% if test.getCriteria() > 2 -%}
                                 <td><img src="../../img/weather-clear.png"></td>
                             {%- elif test.getCriteria() > 1 -%}
                                 <td><img src="../../img/weather-few-clouds.png"></td>
                             {%- elif test.getCriteria() > 0 -%}
                                 <td><img src="../../img/weather-overcast.png"></td>
-                            {%- else -%}
+                            {%- elif test.getCriteria() > -1 -%}
                                 <td><img src="../../img/weather-storm.png"></td>
                             {%- endif %}
                             {%- endfor %}
@@ -96,6 +101,7 @@
                 </div>
         </div>
         {%- endfor %}
+    *: not used for scenario validation
     </div>
     <div class="col-md-1"></div>
 </div>
