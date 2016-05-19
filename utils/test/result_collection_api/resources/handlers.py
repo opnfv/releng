@@ -5,6 +5,10 @@
 # are made available under the terms of the Apache License, Version 2.0
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
+# feng.xiaowei@zte.com.cn refactor db.pod to db.pods         5-19-2016
+# feng.xiaowei@zte.com.cn refactor test_project to project   5-19-2016
+# feng.xiaowei@zte.com.cn refactor response body             5-19-2016
+# feng.xiaowei@zte.com.cn refactor pod/project response info 5-19-2016
 ##############################################################################
 
 import json
@@ -13,7 +17,8 @@ from tornado.web import RequestHandler, asynchronous, HTTPError
 from tornado import gen
 from datetime import datetime, timedelta
 
-from models import TestProject, TestCase, TestResult
+from models import TestCase, TestResult, CreateResponse
+from resources.project_models import Project
 from resources.pod_models import Pod
 from common.constants import DEFAULT_REPRESENTATION, HTTP_BAD_REQUEST, \
     HTTP_NOT_FOUND, HTTP_FORBIDDEN
@@ -22,6 +27,11 @@ from common.config import prepare_put_request
 from dashboard.dashboard_utils import get_dashboard_cases, \
     check_dashboard_ready_project, check_dashboard_ready_case, \
     get_dashboard_result
+
+
+def format_data(data, cls):
+    cls_data = cls.from_dict(data)
+    return cls_data.format_http()
 
 
 class GenericApiHandler(RequestHandler):
@@ -36,7 +46,7 @@ class GenericApiHandler(RequestHandler):
         self.db = self.settings["db"]
 
     def prepare(self):
-        if not (self.request.method == "GET"):
+        if not (self.request.method == "GET" or self.request.method == "DELETE"):
             if self.request.headers.get("Content-Type") is not None:
                 if self.request.headers["Content-Type"].startswith(
                         DEFAULT_REPRESENTATION):
@@ -49,8 +59,9 @@ class GenericApiHandler(RequestHandler):
                 else:
                     self.json_args = None
 
-    def finish_request(self, json_object):
-        self.write(json.dumps(json_object))
+    def finish_request(self, json_object=None):
+        if json_object:
+            self.write(json.dumps(json_object))
         self.set_header("Content-Type", DEFAULT_REPRESENTATION)
         self.finish()
 
@@ -84,20 +95,19 @@ class PodHandler(GenericApiHandler):
 
         if pod_name is not None:
             get_request["name"] = pod_name
-
-        res = []
-        cursor = self.db.pod.find(get_request)
-        while (yield cursor.fetch_next):
-            pod = Pod.pod_from_dict(cursor.next_object())
-            res.append(pod.format())
-
-        meta = dict()
-        meta["total"] = len(res)
-        meta["success"] = True if len(res) > 0 else False
-
-        answer = dict()
-        answer["pods"] = res
-        answer["meta"] = meta
+            answer = yield self.db.pods.find_one(get_request)
+            if answer is None:
+                raise HTTPError(HTTP_NOT_FOUND,
+                                "{} Not Exist".format(pod_name))
+            else:
+                answer = format_data(answer, Pod)
+        else:
+            res = []
+            cursor = self.db.pods.find(get_request)
+            while (yield cursor.fetch_next):
+                res.append(format_data(cursor.next_object(), Pod))
+            answer = dict()
+            answer['pods'] = res
 
         self.finish_request(answer)
 
@@ -112,28 +122,19 @@ class PodHandler(GenericApiHandler):
         query = {"name": self.json_args.get("name")}
 
         # check for existing name in db
-        mongo_dict = yield self.db.pod.find_one(query)
+        mongo_dict = yield self.db.pods.find_one(query)
         if mongo_dict is not None:
             raise HTTPError(HTTP_FORBIDDEN,
                             "{} already exists as a pod".format(
                                 self.json_args.get("name")))
 
-        pod = Pod.pod_from_dict(self.json_args)
+        pod = Pod.from_dict(self.json_args)
         pod.creation_date = datetime.now()
 
-        future = self.db.pod.insert(pod.format())
-        result = yield future
-        pod._id = result
+        yield self.db.pods.insert(pod.format())
 
-        meta = dict()
-        meta["success"] = True
-        meta["uri"] = "/pods/{}".format(pod.name)
-
-        answer = dict()
-        answer["pod"] = pod.format_http()
-        answer["meta"] = meta
-
-        self.finish_request(answer)
+        res = CreateResponse(self.request.full_url() + '/{}'.format(pod.name))
+        self.finish_request(res.format())
 
     @asynchronous
     @gen.coroutine
@@ -141,7 +142,7 @@ class PodHandler(GenericApiHandler):
         """ Remove a POD
 
         # check for an existing pod to be deleted
-        mongo_dict = yield self.db.pod.find_one(
+        mongo_dict = yield self.db.pods.find_one(
             {'name': pod_name})
         pod = TestProject.pod(mongo_dict)
         if pod is None:
@@ -150,7 +151,7 @@ class PodHandler(GenericApiHandler):
                             .format(pod_name))
 
         # just delete it, or maybe save it elsewhere in a future
-        res = yield self.db.test_projects.remove(
+        res = yield self.db.projects.remove(
             {'name': pod_name})
 
         meta = dict()
@@ -188,28 +189,23 @@ class TestProjectHandler(GenericApiHandler):
         :param project_name:
         """
 
-        if project_name is None:
-            project_name = ""
-
         get_request = dict()
 
-        if len(project_name) > 0:
+        if project_name is not None:
             get_request["name"] = project_name
-
-        res = []
-        cursor = self.db.test_projects.find(get_request)
-        while (yield cursor.fetch_next):
-            test_project = TestProject.testproject_from_dict(
-                cursor.next_object())
-            res.append(test_project.format_http())
-
-        meta = dict()
-        meta["total"] = len(res)
-        meta["success"] = True if len(res) > 0 else False
-
-        answer = dict()
-        answer["test_projects"] = res
-        answer["meta"] = meta
+            answer = yield self.db.projects.find_one(get_request)
+            if answer is None:
+                raise HTTPError(HTTP_NOT_FOUND,
+                                "{} Not Exist".format(project_name))
+            else:
+                answer = format_data(answer, Project)
+        else:
+            res = []
+            cursor = self.db.projects.find(get_request)
+            while (yield cursor.fetch_next):
+                res.append(format_data(cursor.next_object(), Project))
+            answer = dict()
+            answer['projects'] = res
 
         self.finish_request(answer)
 
@@ -224,20 +220,20 @@ class TestProjectHandler(GenericApiHandler):
         query = {"name": self.json_args.get("name")}
 
         # check for name in db
-        mongo_dict = yield self.db.test_projects.find_one(query)
+        mongo_dict = yield self.db.projects.find_one(query)
         if mongo_dict is not None:
             raise HTTPError(HTTP_FORBIDDEN,
                             "{} already exists as a project".format(
                                 self.json_args.get("name")))
 
-        test_project = TestProject.testproject_from_dict(self.json_args)
-        test_project.creation_date = datetime.now()
+        project = Project.from_dict(self.json_args)
+        project.creation_date = datetime.now()
 
-        future = self.db.test_projects.insert(test_project.format())
-        result = yield future
-        test_project._id = result
+        yield self.db.projects.insert(project.format())
 
-        self.finish_request(test_project.format_http())
+        res = CreateResponse(self.request.full_url() + '/{}'.format(project.name))
+        self.finish_request(res.format())
+
 
     @asynchronous
     @gen.coroutine
@@ -246,10 +242,13 @@ class TestProjectHandler(GenericApiHandler):
 
         print "PUT request for : {}".format(project_name)
 
+        if self.json_args is None:
+            raise HTTPError(HTTP_BAD_REQUEST)
+
         query = {'name': project_name}
-        mongo_dict = yield self.db.test_projects.find_one(query)
-        test_project = TestProject.testproject_from_dict(mongo_dict)
-        if test_project is None:
+        mongo_dict = yield self.db.projects.find_one(query)
+        project = Project.from_dict(mongo_dict)
+        if project is None:
             raise HTTPError(HTTP_NOT_FOUND,
                             "{} could not be found".format(project_name))
 
@@ -258,8 +257,8 @@ class TestProjectHandler(GenericApiHandler):
 
         # check for payload name parameter in db
         # avoid a request if the project name has not changed in the payload
-        if new_name != test_project.name:
-            mongo_dict = yield self.db.test_projects.find_one(
+        if new_name != project.name:
+            mongo_dict = yield self.db.projects.find_one(
                 {"name": new_name})
             if mongo_dict is not None:
                 raise HTTPError(HTTP_FORBIDDEN,
@@ -271,28 +270,25 @@ class TestProjectHandler(GenericApiHandler):
         request = prepare_put_request(request,
                                       "name",
                                       new_name,
-                                      test_project.name)
+                                      project.name)
         request = prepare_put_request(request,
                                       "description",
                                       new_description,
-                                      test_project.description)
+                                      project.description)
 
         """ raise exception if there isn't a change """
         if not request:
-            raise HTTPError(HTTP_FORBIDDEN,
-                            "Nothing to update")
+            raise HTTPError(HTTP_FORBIDDEN, "Nothing to update")
 
         """ we merge the whole document """
-        edit_request = test_project.format()
+        edit_request = project.format()
         edit_request.update(request)
 
         """ Updating the DB """
-        res = yield self.db.test_projects.update({'name': project_name},
-                                                 edit_request)
-        print res
-        edit_request["_id"] = str(test_project._id)
+        yield self.db.projects.update({'name': project_name}, edit_request)
+        new_project = yield self.db.projects.find_one({"_id": project._id})
 
-        self.finish_request({"message": "success", "content": edit_request})
+        self.finish_request(format_data(new_project, Project))
 
     @asynchronous
     @gen.coroutine
@@ -302,20 +298,18 @@ class TestProjectHandler(GenericApiHandler):
         print "DELETE request for : {}".format(project_name)
 
         # check for an existing project to be deleted
-        mongo_dict = yield self.db.test_projects.find_one(
+        mongo_dict = yield self.db.projects.find_one(
             {'name': project_name})
-        test_project = TestProject.testproject_from_dict(mongo_dict)
+        test_project = Project.from_dict(mongo_dict)
         if test_project is None:
             raise HTTPError(HTTP_NOT_FOUND,
                             "{} could not be found as a project to be deleted"
                             .format(project_name))
 
         # just delete it, or maybe save it elsewhere in a future
-        res = yield self.db.test_projects.remove(
-            {'name': project_name})
-        print res
+        yield self.db.projects.remove({'name': project_name})
 
-        self.finish_request({"message": "success"})
+        self.finish_request()
 
 
 class TestCasesHandler(GenericApiHandler):
@@ -379,14 +373,14 @@ class TestCasesHandler(GenericApiHandler):
                             "Check your request payload")
 
         # retrieve test project
-        mongo_dict = yield self.db.test_projects.find_one(
+        mongo_dict = yield self.db.projects.find_one(
             {"name": project_name})
         if mongo_dict is None:
             raise HTTPError(HTTP_FORBIDDEN,
                             "Could not find project {}"
                             .format(project_name))
 
-        # test_project = TestProject.testproject_from_dict(self.json_args)
+        # test_project = TestProject.from_dict(self.json_args)
 
         case = TestCase.test_case_from_dict(self.json_args)
         case.project_name = project_name
@@ -470,14 +464,14 @@ class TestCasesHandler(GenericApiHandler):
 
         # check for an existing case to be deleted
         mongo_dict = yield self.db.test_cases.find_one(case_request)
-        test_project = TestProject.testproject_from_dict(mongo_dict)
+        test_project = Project.from_dict(mongo_dict)
         if test_project is None:
             raise HTTPError(HTTP_NOT_FOUND,
                             "{}/{} could not be found as a case to be deleted"
                             .format(project_name, case_name))
 
         # just delete it, or maybe save it elsewhere in a future
-        res = yield self.db.test_projects.remove(case_request)
+        res = yield self.db.projects.remove(case_request)
         print res
 
         self.finish_request({"message": "success"})
@@ -623,7 +617,7 @@ class TestResultsHandler(GenericApiHandler):
 
         # TODO : replace checks with jsonschema
         # check for project
-        mongo_dict = yield self.db.test_projects.find_one(
+        mongo_dict = yield self.db.projects.find_one(
             {"name": self.json_args.get("project_name")})
         if mongo_dict is None:
             raise HTTPError(HTTP_NOT_FOUND,
@@ -639,7 +633,7 @@ class TestResultsHandler(GenericApiHandler):
                             .format(self.json_args.get("case_name")))
 
         # check for pod
-        mongo_dict = yield self.db.pod.find_one(
+        mongo_dict = yield self.db.pods.find_one(
             {"name": self.json_args.get("pod_name")})
         if mongo_dict is None:
             raise HTTPError(HTTP_NOT_FOUND,

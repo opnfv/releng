@@ -19,7 +19,7 @@ TODOs :
   - json args validation with schemes
   - POST/PUT/DELETE for PODs
   - POST/PUT/GET/DELETE for installers, platforms (enrich results info)
-  - count cases for GET on test_projects
+  - count cases for GET on projects
   - count results for GET on cases
   - include objects
   - swagger documentation
@@ -63,16 +63,16 @@ def make_app():
             (r"/pods/([^/]+)", PodHandler),
 
             # few examples:
-            # GET /test_projects
-            # GET /test_projects/yardstick
-            (r"/test_projects", TestProjectHandler),
-            (r"/test_projects/([^/]+)", TestProjectHandler),
+            # GET /projects
+            # GET /projects/yardstick
+            (r"/projects", TestProjectHandler),
+            (r"/projects/([^/]+)", TestProjectHandler),
 
             # few examples
-            # GET /test_projects/qtip/cases => Get cases for qtip
+            # GET /projects/qtip/cases => Get cases for qtip
             #
-            (r"/test_projects/([^/]+)/cases", TestCasesHandler),
-            (r"/test_projects/([^/]+)/cases/([^/]+)", TestCasesHandler),
+            (r"/projects/([^/]+)/cases", TestCasesHandler),
+            (r"/projects/([^/]+)/cases/([^/]+)", TestCasesHandler),
             # (r"/test_cases/([^/]+)", TestCasesHandler),
 
             # new path to avoid a long depth

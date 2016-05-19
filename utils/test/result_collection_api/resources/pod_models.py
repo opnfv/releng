@@ -1,4 +1,4 @@
-from models import MetaCreateResponse, MetaGetResponse
+__author__ = '__serena__'
 
 
 class PodCreateRequest(object):
@@ -14,17 +14,6 @@ class PodCreateRequest(object):
             "details": self.details,
         }
 
-    @staticmethod
-    def from_dict(req_dict):
-        if req_dict is None:
-            return None
-
-        req = PodCreateRequest()
-        req.name = req_dict.get('name')
-        req.mode = req_dict.get('mode')
-        req.details = req_dict.get('details')
-        return req
-
 
 class Pod(PodCreateRequest):
     """ describes a POD platform """
@@ -34,7 +23,7 @@ class Pod(PodCreateRequest):
         self.creation_date = create_date
 
     @staticmethod
-    def pod_from_dict(pod_dict):
+    def from_dict(pod_dict):
         if pod_dict is None:
             return None
 
@@ -57,52 +46,16 @@ class Pod(PodCreateRequest):
         return f
 
 
-class PodCreateResponse(object):
-    def __init__(self, pod=None, meta=None):
-        self.pod = pod
-        self.meta = meta
-
-    @staticmethod
-    def from_dict(res_dict):
-        if res_dict is None:
-            return None
-
-        res = PodCreateResponse()
-        res.pod = Pod.pod_from_dict(res_dict.get('pod'))
-        res.meta = MetaCreateResponse.from_dict(res_dict.get('meta'))
-        return res
-
-
-class PodGetResponse(PodCreateRequest):
-    def __init__(self, name='', mode='', details='', create_date=''):
-        self.creation_date = create_date
-        super(PodGetResponse, self).__init__(name, mode, details)
-
-    @staticmethod
-    def from_dict(req_dict):
-        if req_dict is None:
-            return None
-
-        res = PodGetResponse()
-        res.creation_date = str(req_dict.get('creation_date'))
-        res.name = req_dict.get('name')
-        res.mode = req_dict.get('mode')
-        res.details = req_dict.get('details')
-        return res
-
-
-class PodsGetResponse(object):
-    def __init__(self, pods=[], meta=None):
+class Pods(object):
+    def __init__(self, pods=list()):
         self.pods = pods
-        self.meta = meta
 
     @staticmethod
     def from_dict(res_dict):
         if res_dict is None:
             return None
 
-        res = PodsGetResponse()
+        res = Pods()
         for pod in res_dict.get('pods'):
-            res.pods.append(PodGetResponse.from_dict(pod))
-        res.meta = MetaGetResponse.from_dict(res_dict.get('meta'))
+            res.pods.append(Pod.from_dict(pod))
         return res
