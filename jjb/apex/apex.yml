@@ -51,13 +51,14 @@
     project: 'apex'
 
     scenario:
+         - 'os-nosdn-nofeature-noha'
          - 'os-nosdn-nofeature-ha'
          - 'os-odl_l2-nofeature-ha'
          - 'os-odl_l2-bgpvpn-ha'
          - 'os-odl_l2-sfc-noha'
          - 'os-odl_l3-nofeature-ha'
          - 'os-onos-nofeature-ha'
-         - 'os-opencontrail-nofeature-ha'
+         - 'os-ocl-nofeature-ha'
 
     platform:
          - 'baremetal'
@@ -357,7 +358,7 @@
     builders:
         - 'apex-build'
         - trigger-builds:
-          - project: 'apex-deploy-virtual-os-nosdn-nofeature-ha-{stream}'
+          - project: 'apex-deploy-virtual-os-nosdn-nofeature-noha-{stream}'
             predefined-parameters: |
               BUILD_DIRECTORY=apex-build-{stream}/build
               OPNFV_CLEAN=yes
@@ -642,7 +643,7 @@
             same-node: true
             block: true
         - trigger-builds:
-          - project: 'apex-deploy-virtual-nosdn-nofeature-ha-{stream1}'
+          - project: 'apex-deploy-baremetal-os-nosdn-nofeature-ha-{stream1}'
             predefined-parameters: |
               BUILD_DIRECTORY=apex-build-{stream1}/build
               OPNFV_CLEAN=yes
