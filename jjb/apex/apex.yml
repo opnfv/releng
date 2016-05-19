@@ -163,6 +163,8 @@
 
     node: '{verify-slave}'
 
+    concurrent: true
+
     parameters:
         - apex-parameter:
             gs-pathname: '{gs-pathname}'
@@ -221,6 +223,7 @@
                 - 'apex-verify-{stream1}'
         - throttle:
             max-per-node: 1
+            max-total: 10
 
     builders:
         - 'apex-build'
@@ -321,6 +324,8 @@
 
     disabled: false
 
+    concurrent: true
+
     parameters:
         - project-parameter:
             project: '{project}'
@@ -347,6 +352,7 @@
                 - 'apex-deploy.*{stream}'
         - throttle:
             max-per-node: 1
+            max-total: 10
 
     builders:
         - 'apex-build'
@@ -369,6 +375,8 @@
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
     node: '{slave}'
+
+    concurrent: true
 
     disabled: false
 
@@ -400,6 +408,7 @@
                 - 'apex-deploy.*{stream}'
         - throttle:
             max-per-node: 1
+            max-total: 10
 
     builders:
         - 'apex-deploy-virtual'
