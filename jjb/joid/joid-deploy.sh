@@ -181,7 +181,7 @@ cat << EOF > $JOID_ADMIN_OPENRC
 export OS_USERNAME=admin
 export OS_PASSWORD=$OS_ADMIN_PASSWORD
 export OS_TENANT_NAME=admin
-export OS_AUTH_URL=http://$KEYSTONE:35537/v2.0
+export OS_AUTH_URL=http://$KEYSTONE:35357/v2.0
 export OS_REGION_NAME=Canonical
 export OS_ENDPOINT_TYPE='adminURL'
 export CINDER_ENDPOINT_TYPE='adminURL'
