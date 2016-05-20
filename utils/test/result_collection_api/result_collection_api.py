@@ -34,7 +34,7 @@ import motor
 import argparse
 
 from resources.handlers import VersionHandler, PodHandler, \
-    TestProjectHandler, TestCasesHandler, TestResultsHandler, DashboardHandler
+    ProjectHandler, TestcaseHandler, TestResultsHandler, DashboardHandler
 from common.config import APIConfig
 
 
@@ -65,14 +65,14 @@ def make_app():
             # few examples:
             # GET /projects
             # GET /projects/yardstick
-            (r"/projects", TestProjectHandler),
-            (r"/projects/([^/]+)", TestProjectHandler),
+            (r"/projects", ProjectHandler),
+            (r"/projects/([^/]+)", ProjectHandler),
 
             # few examples
             # GET /projects/qtip/cases => Get cases for qtip
             #
-            (r"/projects/([^/]+)/cases", TestCasesHandler),
-            (r"/projects/([^/]+)/cases/([^/]+)", TestCasesHandler),
+            (r"/projects/([^/]+)/cases", TestcaseHandler),
+            (r"/projects/([^/]+)/cases/([^/]+)", TestcaseHandler),
             # (r"/test_cases/([^/]+)", TestCasesHandler),
 
             # new path to avoid a long depth

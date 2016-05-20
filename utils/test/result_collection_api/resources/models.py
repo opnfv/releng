@@ -10,6 +10,7 @@
 # feng.xiaowei@zte.com.cn  mv TestProject to project_models.py     5-19-2016
 # feng.xiaowei@zte.com.cn  delete meta class                       5-19-2016
 # feng.xiaowei@zte.com.cn  add CreateResponse                      5-19-2016
+# feng.xiaowei@zte.com.cn  mv TestCase to case_models.py           5-20-2016
 ##############################################################################
 
 
@@ -28,56 +29,6 @@ class CreateResponse(object):
 
     def format(self):
         return {'href': self.href}
-
-
-class TestCase:
-    """ Describes a test case"""
-
-    def __init__(self):
-        self._id = None
-        self.name = None
-        self.project_name = None
-        self.description = None
-        self.url = None
-        self.creation_date = None
-
-    @staticmethod
-    def test_case_from_dict(testcase_dict):
-
-        if testcase_dict is None:
-            return None
-
-        t = TestCase()
-        t._id = testcase_dict.get('_id')
-        t.project_name = testcase_dict.get('project_name')
-        t.creation_date = testcase_dict.get('creation_date')
-        t.name = testcase_dict.get('name')
-        t.description = testcase_dict.get('description')
-        t.url = testcase_dict.get('url')
-
-        return t
-
-    def format(self):
-        return {
-            "name": self.name,
-            "description": self.description,
-            "project_name": self.project_name,
-            "creation_date": str(self.creation_date),
-            "url": self.url
-        }
-
-    def format_http(self, test_project=None):
-        res = {
-            "_id": str(self._id),
-            "name": self.name,
-            "description": self.description,
-            "creation_date": str(self.creation_date),
-            "url": self.url,
-        }
-        if test_project is not None:
-            res["test_project"] = test_project
-
-        return res
 
 
 class TestResult:
