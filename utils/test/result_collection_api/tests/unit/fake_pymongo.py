@@ -128,5 +128,5 @@ class MemDb(object):
 
 pods = MemDb()
 projects = MemDb()
-test_cases = MemDb()
+testcases = MemDb()
 test_results = MemDb()

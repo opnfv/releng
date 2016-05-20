@@ -66,23 +66,23 @@ class TestProjectGet(TestProjectBase):
 
 class TestProjectUpdate(TestProjectBase):
     def test_withoutBody(self):
-        code, _ = self.update('noBody')
+        code, _ = self.update(None, 'noBody')
         self.assertEqual(code, HTTP_BAD_REQUEST)
 
     def test_notFound(self):
-        code, _ = self.update('notFound', self.req_e)
+        code, _ = self.update(self.req_e, 'notFound')
         self.assertEqual(code, HTTP_NOT_FOUND)
 
     def test_newNameExist(self):
         self.create_d()
         self.create_e()
-        code, body = self.update(self.req_d.name, self.req_e)
+        code, body = self.update(self.req_e, self.req_d.name)
         self.assertEqual(code, HTTP_FORBIDDEN)
         self.assertIn("already exists", body)
 
     def test_noUpdate(self):
         self.create_d()
-        code, body = self.update(self.req_d.name, self.req_d)
+        code, body = self.update(self.req_d, self.req_d.name)
         self.assertEqual(code, HTTP_FORBIDDEN)
         self.assertIn("Nothing to update", body)
 
@@ -92,7 +92,7 @@ class TestProjectUpdate(TestProjectBase):
         _id = body._id
 
         req = ProjectCreateRequest('newName', 'new description')
-        code, body = self.update(self.req_d.name, req)
+        code, body = self.update(req, self.req_d.name)
         self.assertEqual(code, HTTP_OK)
         self.assertEqual(_id, body._id)
         self.assert_body(body, req)
@@ -104,13 +104,17 @@ class TestProjectUpdate(TestProjectBase):
 
 class TestProjectDelete(TestProjectBase):
     def test_notFound(self):
-        code = self.delete('notFound')
+        code, body = self.delete('notFound')
         self.assertEqual(code, HTTP_NOT_FOUND)
 
     def test_success(self):
         self.create_d()
-        code = self.delete(self.req_d.name)
+        code, body = self.delete(self.req_d.name)
         self.assertEqual(code, HTTP_OK)
+        self.assertEqual(body, '')
+
+        code, body = self.get(self.req_d.name)
+        self.assertEqual(code, HTTP_NOT_FOUND)
 
 if __name__ == '__main__':
     unittest.main()
