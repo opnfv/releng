@@ -1,0 +1,40 @@
+#!/bin/bash
+set -e
+[[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
+
+# labconfig is used only for joid
+labconfig=""
+sshkey=""
+if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
+    instack_mac=$(sudo virsh domiflist instack | grep default | \
+                  grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
+    INSTALLER_IP=$(/usr/sbin/arp -e | grep ${instack_mac} | awk {'print $1'})
+    sshkey="-v /root/.ssh/id_rsa:/root/.ssh/id_rsa"
+    if [[ -n $(sudo iptables -L FORWARD |grep "REJECT"|grep "reject-with icmp-port-unreachable") ]]; then
+        #note: this happens only in opnfv-lf-pod1
+        sudo iptables -D FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable
+        sudo iptables -D FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable
+    fi
+elif [[ ${INSTALLER_TYPE} == 'joid' ]]; then
+    # If production lab then creds may be retrieved dynamically
+    # creds are on the jumphost, always in the same folder
+    labconfig="-v $LAB_CONFIG/admin-openrc:/home/opnfv/openrc"
+    # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
+    # replace the default one by the customized one provided by jenkins config
+fi
+
+opts="--privileged=true --rm"
+envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
+    -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NETWORK=${EXTERNAL_NETWORK} \
+    -e YARDSTICK_BRANCH=${GIT_BRANCH##origin/} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO}"
+
+# Pull the latest image
+docker pull opnfv/yardstick:$DOCKER_TAG >$redirect
+
+# Run docker
+cmd="sudo docker run ${opts} ${envs} ${labconfig} ${sshkey} opnfv/yardstick \
+    run_tests.sh ${YARDSTICK_DB_BACKEND} ${YARDSTICK_SUITE_NAME}"
+echo "Yardstick: Running docker cmd: ${cmd}"
+${cmd}
+
+echo "Yardstick: done!"
