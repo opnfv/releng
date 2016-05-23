@@ -50,23 +50,17 @@ class TestBase(AsyncHTTPTestCase):
         return self.create(self.req_e, *args)
 
     def create(self, req=None, *args):
+        return self.create_help(self.basePath, req, *args)
+
+    def create_help(self, uri, req, *args):
         if req:
             req = req.format()
-
-        res = self.fetch(self._get_uri(*args),
+        res = self.fetch(self._update_uri(uri, *args),
                          method='POST',
                          body=json.dumps(req),
                          headers=self.headers)
 
         return self._get_return(res, self.create_res)
-
-    def create_help(self, uri, req, cls):
-        res = self.fetch(uri,
-                         method='POST',
-                         body=json.dumps(req.format()),
-                         headers=self.headers)
-
-        return self._get_return(res, cls)
 
     def get(self, *args):
         res = self.fetch(self._get_uri(*args),
@@ -75,8 +69,15 @@ class TestBase(AsyncHTTPTestCase):
 
         def inner():
             new_args, num = self._get_valid_args(*args)
-            return self.get_res if num != self._need_arg_num() else self.list_res
+            return self.get_res \
+                if num != self._need_arg_num(self.basePath) else self.list_res
         return self._get_return(res, inner())
+
+    def query(self, query):
+        res = self.fetch(self._get_query_uri(query),
+                         method='GET',
+                         headers=self.headers)
+        return self._get_return(res, self.list_res)
 
     def update(self, new=None, *args):
         if new:
@@ -98,16 +99,22 @@ class TestBase(AsyncHTTPTestCase):
         new_args = tuple(['%s' % arg for arg in args if arg is not None])
         return new_args, len(new_args)
 
-    def _need_arg_num(self):
-        return self.basePath.count('%s')
+    def _need_arg_num(self, uri):
+        return uri.count('%s')
+
+    def _get_query_uri(self, query):
+        return self.basePath + '?' + query
 
     def _get_uri(self, *args):
-        new_args, num = self._get_valid_args(*args)
-        uri = self.basePath
-        if num != self._need_arg_num():
-            uri += '/%s'
+        return self._update_uri(self.basePath, *args)
 
-        return uri % tuple(['%s' % arg for arg in new_args])
+    def _update_uri(self, uri, *args):
+        r_uri = uri
+        new_args, num = self._get_valid_args(*args)
+        if num != self._need_arg_num(uri):
+            r_uri += '/%s'
+
+        return r_uri % tuple(['%s' % arg for arg in new_args])
 
     def _get_return(self, res, cls):
         code = res.code
@@ -116,7 +123,10 @@ class TestBase(AsyncHTTPTestCase):
 
     @staticmethod
     def _get_return_body(code, body, cls):
-        return cls.from_dict(json.loads(body)) if code < 300 else body
+        return cls.from_dict(json.loads(body)) if code < 300 and cls else body
+
+    def assert_href(self, body):
+        self.assertIn(self.basePath, body.href)
 
     def assert_create_body(self, body, req=None, *args):
         if not req:
@@ -129,4 +139,4 @@ class TestBase(AsyncHTTPTestCase):
         fake_pymongo.pods.clear()
         fake_pymongo.projects.clear()
         fake_pymongo.testcases.clear()
-        fake_pymongo.test_results.clear()
+        fake_pymongo.results.clear()
