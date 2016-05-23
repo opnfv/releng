@@ -34,11 +34,6 @@ BRIDGE=pxebr
 LAB_NAME=${NODE_NAME/-*}
 POD_NAME=${NODE_NAME/*-}
 
-if [[ "$NODE_NAME" == "opnfv-jump-2" ]]; then
-    LAB_NAME="lf"
-    POD_NAME="pod2"
-fi
-
 if [[ "$NODE_NAME" =~ "virtual" ]]; then
     POD_NAME="virtual_kvm"
 fi

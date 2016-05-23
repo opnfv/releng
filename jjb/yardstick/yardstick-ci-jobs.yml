@@ -25,12 +25,12 @@
 #        brahmaputra
 #--------------------------------
     pod:
-        - opnfv-jump-1:
+        - lf-pod1:
             installer: apex
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *brahmaputra
-        - opnfv-jump-2:
+        - lf-pod2:
             installer: fuel
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
@@ -78,7 +78,12 @@
 #--------------------------------
 #        master
 #--------------------------------
-        - opnfv-jump-2:
+        - lf-pod1:
+            installer: apex
+            suite: daily
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *master
+        - lf-pod2:
             installer: fuel
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
@@ -115,11 +120,6 @@
             <<: *master
         - orange-pod2:
             installer: joid
-            suite: daily
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *master
-        - opnfv-jump-1:
-            installer: apex
             suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
@@ -355,7 +355,7 @@
             description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
-    name: 'yardstick-params-opnfv-jump-1'
+    name: 'yardstick-params-lf-pod1'
     parameters:
         - string:
             name: YARDSTICK_DB_BACKEND
@@ -363,7 +363,7 @@
             description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
-    name: 'yardstick-params-opnfv-jump-2'
+    name: 'yardstick-params-lf-pod2'
     parameters:
         - string:
             name: YARDSTICK_DB_BACKEND

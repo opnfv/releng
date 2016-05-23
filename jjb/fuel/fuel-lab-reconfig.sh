@@ -68,7 +68,7 @@ if [ "$ping_flag" -eq 1 ]; then
     echo "Slave is pingable, now wait 180 seconds for services to start"
     sleep 180
 else
-    echo "Slave did not come back up after reboot: please check opnfv-jump-2"
+    echo "Slave did not come back up after reboot: please check lf-pod2"
     exit 1
 fi
 
