@@ -6,6 +6,7 @@ Install:
 ```
 pip install testtools
 pip install discover
+pip install futures
 ```
 
 ## How to:
