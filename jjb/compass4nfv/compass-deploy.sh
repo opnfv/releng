@@ -24,12 +24,19 @@ echo 1 > /proc/sys/vm/drop_caches
 
 export CONFDIR=$WORKSPACE/deploy/conf
 export ISO_URL=file://$BUILD_DIRECTORY/compass.iso
+
+if [[ "${DEPLOY_SCENARIO}" =~ "-ocl" ]]
+    export NETWORK_CONF_FILE=network_ocl.yml
+else
+    export NETWORK_CONF_FILE=network.yml
+fi
+
 if [[ "$NODE_NAME" =~ "-virtual" ]]; then
-    export NETWORK_CONF=$CONFDIR/vm_environment/$NODE_NAME/network.yml
+    export NETWORK_CONF=$CONFDIR/vm_environment/$NODE_NAME/${NETWORK_CONF_FILE}
     export DHA_CONF=$CONFDIR/vm_environment/${DEPLOY_SCENARIO}.yml
 else
     export INSTALL_NIC=eth1
-    export NETWORK_CONF=$CONFDIR/hardware_environment/$NODE_NAME/network.yml
+    export NETWORK_CONF=$CONFDIR/hardware_environment/$NODE_NAME/${NETWORK_CONF_FILE}
     export DHA_CONF=$CONFDIR/hardware_environment/$NODE_NAME/${DEPLOY_SCENARIO}.yml
 fi
 
