@@ -6,13 +6,13 @@
 
     project: 'compass4nfv'
 
+    pod: 'huawei-virtual'
+
     stream:
         - master:
-            slave_name: 'huawei-virtual1'
             branch: '{stream}'
             gs-pathname: ''
         - brahmaputra:
-            slave_name: 'huawei-virtual2'
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
 
@@ -60,6 +60,7 @@
             gs-pathname: '{gs-pathname}'
         - 'huawei-virtual-defaults'
         - '{installer}-defaults'
+        - '{pod}-defaults'
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-nosdn-nofeature-ha'
@@ -95,6 +96,17 @@
               current-parameters: true
               same-node: true
               block: true
+        - trigger-builds:
+            - project: 'functest-compass-{pod}-suite-{stream}'
+              current-parameters: true
+              predefined-parameters:
+                FUNCTEST_SUITE_NAME=vping_userdata
+              same-node: true
+              block: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
 
 - job-template:
     name: 'compass-verify-deploy-{stream}'
