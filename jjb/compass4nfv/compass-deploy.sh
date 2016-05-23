@@ -24,7 +24,7 @@ echo 1 > /proc/sys/vm/drop_caches
 
 export CONFDIR=$WORKSPACE/deploy/conf
 export ISO_URL=file://$BUILD_DIRECTORY/compass.iso
-if [[ "$NODE_NAME" =~ "-vm" ]]; then
+if [[ "$NODE_NAME" =~ "-virtual" ]]; then
     export NETWORK_CONF=$CONFDIR/vm_environment/$NODE_NAME/network.yml
     export DHA_CONF=$CONFDIR/vm_environment/${DEPLOY_SCENARIO}.yml
 else
