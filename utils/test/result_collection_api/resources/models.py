@@ -10,7 +10,8 @@
 # feng.xiaowei@zte.com.cn  mv TestProject to project_models.py     5-19-2016
 # feng.xiaowei@zte.com.cn  delete meta class                       5-19-2016
 # feng.xiaowei@zte.com.cn  add CreateResponse                      5-19-2016
-# feng.xiaowei@zte.com.cn  mv TestCase to testcase_models.py           5-20-2016
+# feng.xiaowei@zte.com.cn  mv TestCase to testcase_models.py       5-20-2016
+# feng.xiaowei@zte.com.cn  mv TestResut to result_models.py        5-23-2016
 ##############################################################################
 
 
@@ -29,91 +30,3 @@ class CreateResponse(object):
 
     def format(self):
         return {'href': self.href}
-
-
-class TestResult:
-    """ Describes a test result"""
-
-    def __init__(self):
-        self._id = None
-        self.case_name = None
-        self.project_name = None
-        self.pod_name = None
-        self.installer = None
-        self.version = None
-        self.description = None
-        self.creation_date = None
-        self.details = None
-        self.build_tag = None
-        self.scenario = None
-        self.criteria = None
-        self.trust_indicator = None
-
-    @staticmethod
-    def test_result_from_dict(test_result_dict):
-
-        if test_result_dict is None:
-            return None
-
-        t = TestResult()
-        t._id = test_result_dict.get('_id')
-        t.case_name = test_result_dict.get('case_name')
-        t.pod_name = test_result_dict.get('pod_name')
-        t.project_name = test_result_dict.get('project_name')
-        t.description = test_result_dict.get('description')
-        t.creation_date = str(test_result_dict.get('creation_date'))
-        t.details = test_result_dict.get('details')
-        t.version = test_result_dict.get('version')
-        t.installer = test_result_dict.get('installer')
-        t.build_tag = test_result_dict.get('build_tag')
-        t.scenario = test_result_dict.get('scenario')
-        t.criteria = test_result_dict.get('criteria')
-        # 0 < trust indicator < 1
-        # if bad value =>  set this indicator to 0
-        if test_result_dict.get('trust_indicator') is not None:
-            if isinstance(test_result_dict.get('trust_indicator'),
-                          (int, long, float)):
-                if test_result_dict.get('trust_indicator') < 0:
-                    t.trust_indicator = 0
-                elif test_result_dict.get('trust_indicator') > 1:
-                    t.trust_indicator = 1
-                else:
-                    t.trust_indicator = test_result_dict.get('trust_indicator')
-            else:
-                t.trust_indicator = 0
-        else:
-            t.trust_indicator = 0
-        return t
-
-    def format(self):
-        return {
-            "case_name": self.case_name,
-            "project_name": self.project_name,
-            "pod_name": self.pod_name,
-            "description": self.description,
-            "creation_date": str(self.creation_date),
-            "version": self.version,
-            "installer": self.installer,
-            "details": self.details,
-            "build_tag": self.build_tag,
-            "scenario": self.scenario,
-            "criteria": self.criteria,
-            "trust_indicator": self.trust_indicator
-        }
-
-    def format_http(self):
-        return {
-            "_id": str(self._id),
-            "case_name": self.case_name,
-            "project_name": self.project_name,
-            "pod_name": self.pod_name,
-            "description": self.description,
-            "creation_date": str(self.creation_date),
-            "version": self.version,
-            "installer": self.installer,
-            "details": self.details,
-            "build_tag": self.build_tag,
-            "scenario": self.scenario,
-            "criteria": self.criteria,
-            "trust_indicator": self.trust_indicator
-        }
