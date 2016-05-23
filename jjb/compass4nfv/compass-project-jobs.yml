@@ -34,6 +34,8 @@
 
     concurrent: true
 
+    pod: 'huawei-virtual'
+
     wrappers:
         - timeout:
             timeout: 120
@@ -60,6 +62,7 @@
             gs-pathname: '{gs-pathname}'
         - 'huawei-virtual-defaults'
         - '{installer}-defaults'
+        - '{pod}-defaults'
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-nosdn-nofeature-ha'
@@ -95,6 +98,17 @@
               current-parameters: true
               same-node: true
               block: true
+        - trigger-builds:
+            - project: 'functest-compass-{pod}-suite-{stream}'
+              current-parameters: true
+              predefined-parameters:
+                FUNCTEST_SUITE_NAME=vping_userdata
+              same-node: true
+              block: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
 
 - job-template:
     name: 'compass-verify-deploy-{stream}'
