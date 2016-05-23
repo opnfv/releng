@@ -34,7 +34,8 @@
         - huawei-pod2:
             os-version: 'centos7'
             <<: *master
-        - intel-pod8:
+#        - intel-pod8:
+        - huawei-pod1:
             os-version: 'trusty'
             <<: *master
         - huawei-virtual:
@@ -44,19 +45,19 @@
     scenario:
         - 'os-nosdn-nofeature-ha':
             disabled: false
-            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
         - 'os-odl_l2-nofeature-ha':
             disabled: false
-            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
         - 'os-odl_l3-nofeature-ha':
             disabled: false
-            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
         - 'os-onos-nofeature-ha':
             disabled: false
-            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
         - 'os-ocl-nofeature-ha':
             disabled: false
-            auto-trigger-name: 'compass-{scenario}-{pod}-trigger'
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
 
     jobs:
         - 'compass-{scenario}-{pod}-daily-{stream}'
@@ -213,53 +214,76 @@
 # trigger macros
 ########################
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-huawei-pod2-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-huawei-pod2-master-trigger'
     triggers:
         - timed: '0 3 * * *'
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-huawei-pod2-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-huawei-pod2-master-trigger'
     triggers:
         - timed: '0 21 * * *'
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-huawei-pod2-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-huawei-pod2-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-huawei-pod2-trigger'
+    name: 'compass-os-onos-nofeature-ha-huawei-pod2-master-trigger'
     triggers:
         - timed: '0 15 * * *'
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-huawei-pod2-trigger'
+    name: 'compass-os-ocl-nofeature-ha-huawei-pod2-master-trigger'
     triggers:
-        - timed: '0 9 * * *'
+        - timed: ''
+
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-huawei-pod1-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-huawei-pod1-master-trigger'
     triggers:
-        - timed: '0 3 * * * '
+        - timed: '0 3 * * *'
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-huawei-pod1-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-huawei-pod1-master-trigger'
     triggers:
         - timed: '0 21 * * *'
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-huawei-pod1-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-huawei-pod1-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-huawei-pod1-trigger'
+    name: 'compass-os-onos-nofeature-ha-huawei-pod1-master-trigger'
     triggers:
         - timed: '0 15 * * *'
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-huawei-pod1-trigger'
+    name: 'compass-os-ocl-nofeature-ha-huawei-pod1-master-trigger'
     triggers:
         - timed: '0 9 * * *'
+
+- trigger:
+    name: 'compass-os-nosdn-nofeature-ha-huawei-pod1-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l2-nofeature-ha-huawei-pod1-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l3-nofeature-ha-huawei-pod1-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-onos-nofeature-ha-huawei-pod1-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-ocl-nofeature-ha-huawei-pod1-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+
 - trigger:
     name: 'compass-os-nosdn-nofeature-ha-intel-pod8-trigger'
     triggers:
-        - timed: '0 3 * * *'
+        - timed: ''
 - trigger:
     name: 'compass-os-odl_l2-nofeature-ha-intel-pod8-trigger'
     triggers:
-        - timed: '0 21 * * *'
+        - timed: ''
 - trigger:
     name: 'compass-os-odl_l3-nofeature-ha-intel-pod8-trigger'
     triggers:
@@ -267,28 +291,49 @@
 - trigger:
     name: 'compass-os-onos-nofeature-ha-intel-pod8-trigger'
     triggers:
-        - timed: '0 15 * * *'
+        - timed: ''
 - trigger:
     name: 'compass-os-ocl-nofeature-ha-intel-pod8-trigger'
     triggers:
-        - timed: '0 9 * * *'
+        - timed: ''
+
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-huawei-virtual-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-huawei-virtual-master-trigger'
     triggers:
         - timed: '0 3 * * *'
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-huawei-virtual-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-huawei-virtual-master-trigger'
     triggers:
         - timed: '0 21 * * *'
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-huawei-virtual-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-huawei-virtual-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-huawei-virtual-trigger'
+    name: 'compass-os-onos-nofeature-ha-huawei-virtual-master-trigger'
     triggers:
         - timed: '0 15 * * *'
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-huawei-virtual-trigger'
+    name: 'compass-os-ocl-nofeature-ha-huawei-virtual-master-trigger'
     triggers:
         - timed: '0 9 * * *'
+- trigger:
+    name: 'compass-os-nosdn-nofeature-ha-huawei-virtual-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l2-nofeature-ha-huawei-virtual-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l3-nofeature-ha-huawei-virtual-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-onos-nofeature-ha-huawei-virtual-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-ocl-nofeature-ha-huawei-virtual-brahmaputra-trigger'
+    triggers:
+        - timed: ''
