@@ -1,6 +1,7 @@
 from bson.objectid import ObjectId
 from concurrent.futures import ThreadPoolExecutor
 
+
 __author__ = 'serena'
 
 
@@ -42,7 +43,7 @@ class MemDb(object):
             result = executor.submit(self._find_one, spec_or_id, *args)
         return result
 
-    def _insert(self, doc_or_docs):
+    def _insert(self, doc_or_docs, check_keys=True):
 
         docs = doc_or_docs
         return_one = False
@@ -53,8 +54,8 @@ class MemDb(object):
         ids = []
         for doc in docs:
             if '_id' not in doc:
-                doc['_id'] = ObjectId()
-            if not self._find_one(doc['_id']):
+                doc['_id'] = str(ObjectId())
+            if not check_keys or not self._find_one(doc['_id']):
                 ids.append(doc['_id'])
                 self.contents.append(doc_or_docs)
 
@@ -65,9 +66,9 @@ class MemDb(object):
         else:
             return ids
 
-    def insert(self, doc_or_docs):
+    def insert(self, doc_or_docs, check_keys=True):
         with ThreadPoolExecutor(max_workers=2) as executor:
-            result = executor.submit(self._insert, doc_or_docs)
+            result = executor.submit(self._insert, doc_or_docs, check_keys)
         return result
 
     @staticmethod
@@ -129,4 +130,4 @@ class MemDb(object):
 pods = MemDb()
 projects = MemDb()
 testcases = MemDb()
-test_results = MemDb()
+results = MemDb()
