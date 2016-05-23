@@ -10,6 +10,7 @@ class MyTest(AsyncHTTPTestCase):
     def setUp(self):
         super(MyTest, self).setUp()
         self.db = fake_pymongo
+        self.addCleanup(self._clear)
         self.io_loop.run_sync(self.fixture_setup)
 
     def get_app(self):
@@ -26,6 +27,7 @@ class MyTest(AsyncHTTPTestCase):
     def test_find_one(self):
         user = yield self.db.pods.find_one({'name': 'test1'})
         self.assertEqual(user, self.test1)
+        self.db.pods.remove()
 
     @gen_test
     def test_find(self):
@@ -47,6 +49,20 @@ class MyTest(AsyncHTTPTestCase):
         yield self.db.pods.remove({'_id': '1'})
         user = yield self.db.pods.find_one({'_id': '1'})
         self.assertIsNone(user)
+
+    @gen_test
+    def test_insert_check_keys(self):
+        yield self.db.pods.insert({'_id': '1', 'name': 'test1'},
+                                  check_keys=False)
+        cursor = self.db.pods.find({'_id': '1'})
+        names = []
+        while (yield cursor.fetch_next):
+            ob = cursor.next_object()
+            names.append(ob.get('name'))
+        self.assertItemsEqual(names, ['test1', 'test1'])
+
+    def _clear(self):
+        self.db.pods.clear()
 
 if __name__ == '__main__':
     unittest.main()

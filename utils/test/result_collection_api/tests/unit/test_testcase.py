@@ -3,7 +3,7 @@ import unittest
 from test_base import TestBase
 from resources.testcase_models import TestcaseCreateRequest, \
     Testcase, Testcases, TestcaseUpdateRequest
-from resources.project_models import ProjectCreateRequest, Project
+from resources.project_models import ProjectCreateRequest
 from common.constants import HTTP_OK, HTTP_BAD_REQUEST, \
     HTTP_FORBIDDEN, HTTP_NOT_FOUND
 
@@ -14,10 +14,18 @@ __author__ = '__serena__'
 class TestCaseBase(TestBase):
     def setUp(self):
         super(TestCaseBase, self).setUp()
-        self.req_d = TestcaseCreateRequest('/cases/vping_1', 'vping_1', 'vping-ssh test')
-        self.req_e = TestcaseCreateRequest('/cases/doctor_1', 'doctor_1', 'create doctor')
-        self.update_d = TestcaseUpdateRequest('vping_1', 'vping-ssh test', 'functest')
-        self.update_e = TestcaseUpdateRequest('doctor_1', 'create doctor', 'functest')
+        self.req_d = TestcaseCreateRequest('/cases/vping_1',
+                                           'vping_1',
+                                           'vping-ssh test')
+        self.req_e = TestcaseCreateRequest('/cases/doctor_1',
+                                           'doctor_1',
+                                           'create doctor')
+        self.update_d = TestcaseUpdateRequest('vping_1',
+                                              'vping-ssh test',
+                                              'functest')
+        self.update_e = TestcaseUpdateRequest('doctor_1',
+                                              'create doctor',
+                                              'functest')
         self.get_res = Testcase
         self.list_res = Testcases
         self.update_res = Testcase
@@ -44,7 +52,7 @@ class TestCaseBase(TestBase):
 
     def create_project(self):
         req_p = ProjectCreateRequest('functest', 'vping-ssh test')
-        self.create_help('/projects', req_p, Project)
+        self.create_help('/projects', req_p)
         self.project = req_p.name
 
     def create_d(self):

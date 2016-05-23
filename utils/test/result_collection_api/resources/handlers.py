@@ -9,26 +9,27 @@
 # feng.xiaowei@zte.com.cn refactor test_project to project   5-19-2016
 # feng.xiaowei@zte.com.cn refactor response body             5-19-2016
 # feng.xiaowei@zte.com.cn refactor pod/project response info 5-19-2016
-# feng.xiaowei@zte.com.cn refactor case related handler      5-20-2016
+# feng.xiaowei@zte.com.cn refactor testcase related handler  5-20-2016
+# feng.xiaowei@zte.com.cn refactor result related handler    5-23-2016
+# feng.xiaowei@zte.com.cn refactor dashboard related handler 5-24-2016
 ##############################################################################
 
 import json
+from datetime import datetime, timedelta
 
 from tornado.web import RequestHandler, asynchronous, HTTPError
 from tornado import gen
-from datetime import datetime, timedelta
 
-from models import TestResult, CreateResponse
+from models import CreateResponse
+from resources.result_models import TestResult
 from resources.testcase_models import Testcase
 from resources.project_models import Project
 from resources.pod_models import Pod
 from common.constants import DEFAULT_REPRESENTATION, HTTP_BAD_REQUEST, \
     HTTP_NOT_FOUND, HTTP_FORBIDDEN
 from common.config import prepare_put_request
-
-from dashboard.dashboard_utils import get_dashboard_cases, \
-    check_dashboard_ready_project, check_dashboard_ready_case, \
-    get_dashboard_result
+from dashboard.dashboard_utils import check_dashboard_ready_project, \
+    check_dashboard_ready_case, get_dashboard_result
 
 
 def format_data(data, cls):
@@ -48,7 +49,7 @@ class GenericApiHandler(RequestHandler):
         self.db = self.settings["db"]
 
     def prepare(self):
-        if not (self.request.method == "GET" or self.request.method == "DELETE"):
+        if self.request.method != "GET" and self.request.method != "DELETE":
             if self.request.headers.get("Content-Type") is not None:
                 if self.request.headers["Content-Type"].startswith(
                         DEFAULT_REPRESENTATION):
@@ -66,6 +67,10 @@ class GenericApiHandler(RequestHandler):
             self.write(json.dumps(json_object))
         self.set_header("Content-Type", DEFAULT_REPRESENTATION)
         self.finish()
+
+    def _create_response(self, resource):
+        href = self.request.full_url() + '/' + resource
+        return CreateResponse(href=href).format()
 
 
 class VersionHandler(RequestHandler):
@@ -133,9 +138,7 @@ class PodHandler(GenericApiHandler):
         pod.creation_date = datetime.now()
 
         yield self.db.pods.insert(pod.format())
-
-        res = CreateResponse(self.request.full_url() + '/{}'.format(pod.name))
-        self.finish_request(res.format())
+        self.finish_request(self._create_response(pod.name))
 
     @asynchronous
     @gen.coroutine
@@ -223,10 +226,7 @@ class ProjectHandler(GenericApiHandler):
         project.creation_date = datetime.now()
 
         yield self.db.projects.insert(project.format())
-
-        res = CreateResponse(self.request.full_url() + '/{}'.format(project.name))
-        self.finish_request(res.format())
-
+        self.finish_request(self._create_response(project.name))
 
     @asynchronous
     @gen.coroutine
@@ -372,8 +372,7 @@ class TestcaseHandler(GenericApiHandler):
         testcase.creation_date = datetime.now()
 
         yield self.db.testcases.insert(testcase.format())
-        res = CreateResponse(self.request.full_url() + '/{}'.format(testcase.name))
-        self.finish_request(res.format())
+        self.finish_request(self._create_response(testcase.name))
 
     @asynchronous
     @gen.coroutine
@@ -502,46 +501,55 @@ class TestResultsHandler(GenericApiHandler):
         => get results with optional filters
         """
 
-        project_arg = self.get_query_argument("project", None)
-        case_arg = self.get_query_argument("case", None)
-        pod_arg = self.get_query_argument("pod", None)
-        version_arg = self.get_query_argument("version", None)
-        installer_arg = self.get_query_argument("installer", None)
-        build_tag_arg = self.get_query_argument("build_tag", None)
-        scenario_arg = self.get_query_argument("scenario", None)
-        criteria_arg = self.get_query_argument("criteria", None)
-        period_arg = self.get_query_argument("period", None)
-        trust_indicator_arg = self.get_query_argument("trust_indicator", None)
-
         # prepare request
-        get_request = dict()
-        if result_id is None:
+        query = dict()
+        if result_id is not None:
+            query["_id"] = result_id
+            answer = yield self.db.results.find_one(query)
+            if answer is None:
+                raise HTTPError(HTTP_NOT_FOUND,
+                                "test result {} Not Exist".format(result_id))
+            else:
+                answer = format_data(answer, TestResult)
+        else:
+            pod_arg = self.get_query_argument("pod", None)
+            project_arg = self.get_query_argument("project", None)
+            case_arg = self.get_query_argument("case", None)
+            version_arg = self.get_query_argument("version", None)
+            installer_arg = self.get_query_argument("installer", None)
+            build_tag_arg = self.get_query_argument("build_tag", None)
+            scenario_arg = self.get_query_argument("scenario", None)
+            criteria_arg = self.get_query_argument("criteria", None)
+            period_arg = self.get_query_argument("period", None)
+            trust_indicator_arg = self.get_query_argument("trust_indicator",
+                                                          None)
+
             if project_arg is not None:
-                get_request["project_name"] = project_arg
+                query["project_name"] = project_arg
 
             if case_arg is not None:
-                get_request["case_name"] = case_arg
+                query["case_name"] = case_arg
 
             if pod_arg is not None:
-                get_request["pod_name"] = pod_arg
+                query["pod_name"] = pod_arg
 
             if version_arg is not None:
-                get_request["version"] = version_arg
+                query["version"] = version_arg
 
             if installer_arg is not None:
-                get_request["installer"] = installer_arg
+                query["installer"] = installer_arg
 
             if build_tag_arg is not None:
-                get_request["build_tag"] = build_tag_arg
+                query["build_tag"] = build_tag_arg
 
             if scenario_arg is not None:
-                get_request["scenario"] = scenario_arg
+                query["scenario"] = scenario_arg
 
             if criteria_arg is not None:
-                get_request["criteria_tag"] = criteria_arg
+                query["criteria_tag"] = criteria_arg
 
             if trust_indicator_arg is not None:
-                get_request["trust_indicator_arg"] = trust_indicator_arg
+                query["trust_indicator_arg"] = trust_indicator_arg
 
             if period_arg is not None:
                 try:
@@ -552,27 +560,14 @@ class TestResultsHandler(GenericApiHandler):
                 if period_arg > 0:
                     period = datetime.now() - timedelta(days=period_arg)
                     obj = {"$gte": str(period)}
-                    get_request["creation_date"] = obj
-        else:
-            get_request["_id"] = result_id
+                    query["creation_date"] = obj
 
-        print get_request
-        res = []
-        # fetching results
-        cursor = self.db.test_results.find(get_request)
-        while (yield cursor.fetch_next):
-            test_result = TestResult.test_result_from_dict(
-                cursor.next_object())
-            res.append(test_result.format_http())
+            res = []
+            cursor = self.db.results.find(query)
+            while (yield cursor.fetch_next):
+                res.append(format_data(cursor.next_object(), TestResult))
+            answer = {'results': res}
 
-        # building meta object
-        meta = dict()
-        meta["total"] = len(res)
-
-        # final response object
-        answer = dict()
-        answer["test_results"] = res
-        answer["meta"] = meta
         self.finish_request(answer)
 
     @asynchronous
@@ -586,53 +581,51 @@ class TestResultsHandler(GenericApiHandler):
 
         # check for request payload
         if self.json_args is None:
-            raise HTTPError(HTTP_BAD_REQUEST)
+            raise HTTPError(HTTP_BAD_REQUEST, 'no payload')
 
-        # check for missing parameters in the request payload
-        if self.json_args.get("project_name") is None:
-            raise HTTPError(HTTP_BAD_REQUEST)
-        if self.json_args.get("case_name") is None:
-            raise HTTPError(HTTP_BAD_REQUEST)
+        result = TestResult.from_dict(self.json_args)
+
         # check for pod_name instead of id,
         # keeping id for current implementations
-        if self.json_args.get("pod_name") is None:
-            raise HTTPError(HTTP_BAD_REQUEST)
+        if result.pod_name is None:
+            raise HTTPError(HTTP_BAD_REQUEST, 'pod is not provided')
+
+        # check for missing parameters in the request payload
+        if result.project_name is None:
+            raise HTTPError(HTTP_BAD_REQUEST, 'project is not provided')
+
+        if result.case_name is None:
+            raise HTTPError(HTTP_BAD_REQUEST, 'testcase is not provided')
 
         # TODO : replace checks with jsonschema
-        # check for project
-        mongo_dict = yield self.db.projects.find_one(
-            {"name": self.json_args.get("project_name")})
-        if mongo_dict is None:
-            raise HTTPError(HTTP_NOT_FOUND,
-                            "Could not find project [{}] "
-                            .format(self.json_args.get("project_name")))
-
-        # check for case
-        mongo_dict = yield self.db.testcases.find_one(
-            {"name": self.json_args.get("case_name")})
-        if mongo_dict is None:
-            raise HTTPError(HTTP_NOT_FOUND,
-                            "Could not find case [{}] "
-                            .format(self.json_args.get("case_name")))
-
         # check for pod
-        mongo_dict = yield self.db.pods.find_one(
-            {"name": self.json_args.get("pod_name")})
-        if mongo_dict is None:
+        the_pod = yield self.db.pods.find_one({"name": result.pod_name})
+        if the_pod is None:
             raise HTTPError(HTTP_NOT_FOUND,
                             "Could not find POD [{}] "
                             .format(self.json_args.get("pod_name")))
 
+        # check for project
+        the_project = yield self.db.projects.find_one(
+            {"name": result.project_name})
+        if the_project is None:
+            raise HTTPError(HTTP_NOT_FOUND, "Could not find project [{}] "
+                            .format(result.project_name))
+
+        # check for testcase
+        the_testcase = yield self.db.testcases.find_one(
+            {"name": result.case_name})
+        if the_testcase is None:
+            raise HTTPError(HTTP_NOT_FOUND,
+                            "Could not find testcase [{}] "
+                            .format(result.case_name))
+
         # convert payload to object
-        test_result = TestResult.test_result_from_dict(self.json_args)
-        test_result.creation_date = datetime.now()
+        result.creation_date = datetime.now()
 
-        future = self.db.test_results.insert(test_result.format(),
-                                             check_keys=False)
-        result = yield future
-        test_result._id = result
+        _id = yield self.db.results.insert(result.format(), check_keys=False)
 
-        self.finish_request(test_result.format_http())
+        self.finish_request(self._create_response(_id))
 
 
 class DashboardHandler(GenericApiHandler):
@@ -678,99 +671,61 @@ class DashboardHandler(GenericApiHandler):
         period_arg = self.get_query_argument("period", None)
 
         # prepare request
-        get_request = dict()
+        query = dict()
 
-        # /dashboard?project=<>&pod=<>...
-        if (result_id is None):
-            if project_arg is not None:
-                get_request["project_name"] = project_arg
+        if project_arg is not None:
+            query["project_name"] = project_arg
 
-            if case_arg is not None:
-                get_request["case_name"] = case_arg
+        if case_arg is not None:
+            query["case_name"] = case_arg
 
-            if pod_arg is not None:
-                get_request["pod_name"] = pod_arg
+        if pod_arg is not None:
+            query["pod_name"] = pod_arg
 
-            if version_arg is not None:
-                get_request["version"] = version_arg
+        if version_arg is not None:
+            query["version"] = version_arg
 
-            if installer_arg is not None:
-                get_request["installer"] = installer_arg
+        if installer_arg is not None:
+            query["installer"] = installer_arg
 
-            if period_arg is not None:
-                try:
-                    period_arg = int(period_arg)
-                except:
-                    raise HTTPError(HTTP_BAD_REQUEST)
-                if period_arg > 0:
-                    period = datetime.now() - timedelta(days=period_arg)
-                    obj = {"$gte": str(period)}
-                    get_request["creation_date"] = obj
-        else:
-            get_request["_id"] = result_id
-
-        dashboard = []
+        if period_arg is not None:
+            try:
+                period_arg = int(period_arg)
+            except:
+                raise HTTPError(HTTP_BAD_REQUEST)
+            if period_arg > 0:
+                period = datetime.now() - timedelta(days=period_arg)
+                obj = {"$gte": str(period)}
+                query["creation_date"] = obj
 
         # on /dashboard retrieve the list of projects and testcases
         # ready for dashboard
         if project_arg is None:
+            raise HTTPError(HTTP_NOT_FOUND, "Project name missing")
+
+        if not check_dashboard_ready_project(project_arg):
             raise HTTPError(HTTP_NOT_FOUND,
-                            "error:Project name missing")
-        elif check_dashboard_ready_project(project_arg, "./dashboard"):
-            res = []
+                            'Project [{}] not dashboard ready'
+                            .format(project_arg))
 
-            if case_arg is None:
-                raise HTTPError(
-                    HTTP_NOT_FOUND,
-                    "error:Test case missing for project " + project_arg)
-
-            # special case of status for project
-            if case_arg == "status":
-                del get_request["case_name"]
-                # retention time to be agreed
-                # last five days by default?
-                # TODO move to DB
-                period = datetime.now() - timedelta(days=5)
-                get_request["creation_date"] = {"$gte": period}
-
-            # fetching results
-            cursor = self.db.test_results.find(get_request)
-            while (yield cursor.fetch_next):
-                test_result = TestResult.test_result_from_dict(
-                    cursor.next_object())
-                res.append(test_result.format_http())
-
-            if check_dashboard_ready_case(project_arg, case_arg):
-                dashboard = get_dashboard_result(project_arg, case_arg, res)
-            else:
-                raise HTTPError(
-                    HTTP_NOT_FOUND,
-                    "error:" + case_arg +
-                    " test case not case dashboard ready on project " +
-                    project_arg)
-
-        else:
-            dashboard.append(
-                {"error": "Project not recognized or not dashboard ready"})
-            dashboard.append(
-                {"Dashboard-ready-projects":
-                    get_dashboard_cases("./dashboard")})
+        if case_arg is None:
             raise HTTPError(
                 HTTP_NOT_FOUND,
-                "error: no dashboard ready data for this project")
+                'Test case missing for project [{}]'.format(project_arg))
 
-        # fetching results
-        # cursor = self.db.test_results.find(get_request)
-        # while (yield cursor.fetch_next):
-        #    test_result = TestResult.test_result_from_dict(
-        #        cursor.next_object())
-        #    res.append(test_result.format_http())
+        if not check_dashboard_ready_case(project_arg, case_arg):
+            raise HTTPError(
+                HTTP_NOT_FOUND,
+                'Test case [{}] not dashboard ready for project [{}]'
+                .format(case_arg, project_arg))
 
-        # building meta object
-        meta = dict()
+        # special case of status for project
+        res = []
+        if case_arg != "status":
+            cursor = self.db.results.find(query)
+            while (yield cursor.fetch_next):
+                result = TestResult.from_dict(cursor.next_object())
+                res.append(result.format_http())
 
         # final response object
-        answer = dict()
-        answer["dashboard"] = dashboard
-        answer["meta"] = meta
-        self.finish_request(answer)
+        self.finish_request(get_dashboard_result(project_arg, case_arg, res))
