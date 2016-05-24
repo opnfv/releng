@@ -18,32 +18,35 @@
         stream: brahmaputra
         branch: 'stable/{stream}'
         gs-pathname: '/{stream}'
+        auto-trigger-name: 'daily-trigger-disabled'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
-#        brahmaputra
+#        CI PODs
 #--------------------------------
     pod:
-        - lf-pod2:
-            <<: *brahmaputra
-        - ericsson-pod1:
-            <<: *brahmaputra
-        - ericsson-pod2:
-            <<: *brahmaputra
-        - virtual:
-            <<: *brahmaputra
-#--------------------------------
-#        master
-#--------------------------------
-        - lf-pod2:
-            <<: *master
-        - ericsson-pod1:
-            <<: *master
-        - ericsson-pod2:
+        - baremetal:
+            slave-label: fuel-baremetal
             <<: *master
         - virtual:
+            slave-label: fuel-virtual
             <<: *master
+        - baremetal:
+            slave-label: fuel-baremetal
+            <<: *brahmaputra
+        - virtual:
+            slave-label: fuel-virtual
+            <<: *brahmaputra
+
+# just in case if things go wrong
+        - lf-pod2:
+            slave-label: '{pod}'
+            <<: *master
+#--------------------------------
+#        None-CI PODs
+#--------------------------------
         - zte-pod1:
+            slave-label: zte-pod1
             <<: *master
 #--------------------------------
 #       scenarios
@@ -51,44 +54,23 @@
     scenario:
         # HA scenarios
         - 'os-nosdn-nofeature-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-odl_l2-nofeature-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-odl_l3-nofeature-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-onos-nofeature-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-odl_l2-bgpvpn-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-odl_l2-sfc-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-nosdn-kvm-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-nosdn-ovs-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-nosdn-kvm_ovs-ha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-        - 'os-nosdn-vlan-ha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-        # NOHA scenarios
-        - 'os-odl_l2-nofeature-noha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-        - 'os-odl_l3-nofeature-noha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-        - 'os-onos-nofeature-noha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-        - 'os-nosdn-nofeature-noha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-        - 'os-nosdn-kvm-noha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-        - 'os-nosdn-kvm_ovs-noha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-        - 'os-nosdn-ovs-noha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-        - 'os-odl_l2-bgpvpn-noha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-        - 'os-odl_l2-sfc-noha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            auto-trigger-name: 'daily-trigger-disabled'
 
     jobs:
         - 'fuel-{scenario}-{pod}-daily-{stream}'
@@ -105,7 +87,7 @@
     properties:
         - throttle:
             enabled: true
-            max-total: 1
+            max-total: 4
             max-per-node: 1
         - build-blocker:
             use-build-blocker: true
@@ -124,7 +106,7 @@
         - project-parameter:
             project: '{project}'
         - '{installer}-defaults'
-        - '{pod}-defaults':
+        - '{slave-label}-defaults':
             installer: '{installer}'
         - string:
             name: DEPLOY_SCENARIO
@@ -184,7 +166,7 @@
         - project-parameter:
             project: '{project}'
         - '{installer}-defaults'
-        - '{pod}-defaults':
+        - '{slave-label}-defaults':
             installer: '{installer}'
         - string:
             name: DEPLOY_SCENARIO
@@ -236,352 +218,154 @@
 # os-nosdn-nofeature-ha trigger
 # CI PODs
 #-----------------------------------------------
-# LF POD2 Triggers running against master branch
+# Triggers for job running on fuel-baremetal against master branch
 #-----------------------------------------------
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-lf-pod2-master-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-baremetal-daily-master-trigger'
     triggers:
         - timed: '0 0 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-lf-pod2-master-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-baremetal-daily-master-trigger'
     triggers:
         - timed: '0 3 * * *'
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-lf-pod2-master-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-baremetal-daily-master-trigger'
     triggers:
         - timed: '0 6 * * *'
 - trigger:
-    name: 'fuel-os-onos-nofeature-ha-lf-pod2-master-trigger'
+    name: 'fuel-os-onos-nofeature-ha-baremetal-daily-master-trigger'
     triggers:
         - timed: '0 9 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-lf-pod2-master-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-ha-baremetal-daily-master-trigger'
     triggers:
         - timed: '0 12 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-lf-pod2-master-trigger'
+    name: 'fuel-os-odl_l2-sfc-ha-baremetal-daily-master-trigger'
     triggers:
         - timed: '0 15 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-kvm-ha-lf-pod2-master-trigger'
+    name: 'fuel-os-nosdn-kvm-ha-baremetal-daily-master-trigger'
     triggers:
         - timed: '0 18 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-lf-pod2-master-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-baremetal-daily-master-trigger'
     triggers:
         - timed: '0 21 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-kvm-noha-lf-pod2-master-trigger'
+    name: 'fuel-os-nosdn-kvm-noha-baremetal-daily-master-trigger'
     triggers:
         - timed: ''
 #-----------------------------------------------
-# Ericsson POD2 Triggers running against brahmaputra branch
+# Triggers for job running on lf-pod2 against master branch
 #-----------------------------------------------
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-ericsson-pod2-brahmaputra-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-lf-pod2-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-ericsson-pod2-brahmaputra-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-lf-pod2-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-ericsson-pod2-brahmaputra-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-lf-pod2-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-ha-ericsson-pod2-brahmaputra-trigger'
+    name: 'fuel-os-onos-nofeature-ha-lf-pod2-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-ericsson-pod2-brahmaputra-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-ha-lf-pod2-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-ericsson-pod2-brahmaputra-trigger'
+    name: 'fuel-os-odl_l2-sfc-ha-lf-pod2-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-ha-ericsson-pod2-brahmaputra-trigger'
+    name: 'fuel-os-nosdn-kvm-ha-lf-pod2-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-ericsson-pod2-brahmaputra-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-lf-pod2-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-noha-ericsson-pod2-brahmaputra-trigger'
+    name: 'fuel-os-nosdn-kvm-noha-lf-pod2-daily-master-trigger'
     triggers:
         - timed: ''
-
+#-----------------------------------------------
+# Triggers for job running on fuel-virtual against master branch
+#-----------------------------------------------
+- trigger:
+    name: 'fuel-os-nosdn-nofeature-ha-virtual-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l2-nofeature-ha-virtual-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l3-nofeature-ha-virtual-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-onos-nofeature-ha-virtual-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l2-bgpvpn-ha-virtual-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l2-sfc-ha-virtual-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-kvm-ha-virtual-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-ovs-ha-virtual-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-kvm-noha-virtual-daily-master-trigger'
+    triggers:
+        - timed: ''
 #-----------------------------------------------
 # ZTE POD1 Triggers running against master branch
 #-----------------------------------------------
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-zte-pod1-master-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-zte-pod1-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod1-master-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod1-daily-master-trigger'
     triggers:
         - timed: '0 12 * * *'
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod1-master-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod1-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-ha-zte-pod1-master-trigger'
+    name: 'fuel-os-onos-nofeature-ha-zte-pod1-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod1-master-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod1-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-zte-pod1-master-trigger'
+    name: 'fuel-os-odl_l2-sfc-ha-zte-pod1-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-ha-zte-pod1-master-trigger'
+    name: 'fuel-os-nosdn-kvm-ha-zte-pod1-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-zte-pod1-master-trigger'
-    triggers:
-        - timed: ''
-#-----------------------------------------------
-# Triggers for other PODs
-#-----------------------------------------------
-- trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-ericsson-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-ericsson-pod2-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-lf-pod2-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-ericsson-pod1-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-
-# os-nosdn-kvm-ha trigger
-- trigger:
-    name: 'fuel-os-nosdn-kvm-ha-ericsson-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-kvm-ha-ericsson-pod2-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-kvm-ha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-kvm-ha-lf-pod2-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-kvm-ha-ericsson-pod1-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-kvm-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-
-# os-odl_l2-nofeature-ha trigger
-- trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-ericsson-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-ericsson-pod2-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-lf-pod2-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-ericsson-pod1-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-
-# os-odl_l3-nofeature-ha trigger
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-ericsson-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-ericsson-pod2-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-lf-pod2-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-ericsson-pod1-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-
-# os-onos-nofeature-ha trigger
-- trigger:
-    name: 'fuel-os-onos-nofeature-ha-ericsson-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-onos-nofeature-ha-ericsson-pod2-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-onos-nofeature-ha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-onos-nofeature-ha-lf-pod2-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-onos-nofeature-ha-ericsson-pod1-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-onos-nofeature-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-
-
-# os-nosdn-ovs-ha trigger
-- trigger:
-    name: 'fuel-os-nosdn-ovs-ha-ericsson-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-ovs-ha-ericsson-pod2-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-ovs-ha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-ovs-ha-lf-pod2-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-ovs-ha-ericsson-pod1-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-ovs-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-
-# os-odl_l2-bgpvpn-ha trigger
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-ericsson-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-ericsson-pod2-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-lf-pod2-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-ericsson-pod1-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-
-# os-odl_l2-sfc-ha trigger
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-ericsson-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-ericsson-pod2-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-lf-pod2-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-ericsson-pod1-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-
-# os-nosdn-kvm-ha trigger
-- trigger:
-    name: 'fuel-os-nosdn-kvm-noha-ericsson-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-kvm-noha-ericsson-pod2-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-kvm-noha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-kvm-noha-lf-pod2-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-kvm-noha-ericsson-pod1-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-kvm-noha-virtual-brahmaputra-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-zte-pod1-daily-master-trigger'
     triggers:
         - timed: ''
