@@ -56,13 +56,13 @@ var opnfv_dashboard_testcases = {
 var opnfv_dashboard_installers_pods = {};
 opnfv_dashboard_installers_pods['apex'] = ['all','intel-pod7','opnfv-jump-1'];
 opnfv_dashboard_installers_pods['compass'] = ['all','huawei-us-deploy-bare-1','huawei-us-deploy-vm-1','huawei-us-deploy-vm2','intel-pod8'];
-opnfv_dashboard_installers_pods['fuel'] = ['all','ericsson-pod2','opnfv-jump-2','arm-pod1'];
+opnfv_dashboard_installers_pods['fuel'] = ['all','ericsson-pod2','opnfv-jump-2','arm-pod1','zte-pod1'];
 opnfv_dashboard_installers_pods['joid'] = ['all','intel-pod5','intel-pod6','orange-fr-pod2'];
 
 var opnfv_dashboard_installers_pods_print = {};
 opnfv_dashboard_installers_pods_print['apex'] = ['all','intelpod7','opnfvjump1'];
 opnfv_dashboard_installers_pods_print['compass'] = ['all','hwusbare1','hwusvm1','hwusvm2','intelpod8'];
-opnfv_dashboard_installers_pods_print['fuel'] = ['all','ericssonpod2','opnfvjump2','armpod1'];
+opnfv_dashboard_installers_pods_print['fuel'] = ['all','ericssonpod2','opnfvjump2','armpod1','ztepod1'];
 opnfv_dashboard_installers_pods_print['joid'] = ['all','intelpod5','intelpod6','orangefrpod2'];
 
 var opnfv_dashboard_file_directory = 'res-test';
