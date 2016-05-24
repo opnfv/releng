@@ -75,7 +75,7 @@ elif [[ "$DOCKER_REPO_NAME" == "opnfv/functest" ]]; then
     cd $WORKSPACE/docker
 elif [[ "$DOCKER_REPO_NAME" == "opnfv/qtip" ]]; then
     cd $WORKSPACE/docker
-elif [[ "$DOCKER_REPO_NAME" == "opnfv/storeperf" ]]; then
+elif [[ "$DOCKER_REPO_NAME" == "opnfv/storperf" ]]; then
     cd $WORKSPACE/docker
 elif [[ "$DOCKER_REPO_NAME" == "opnfv/yardstick" ]]; then
     cd $WORKSPACE/ci/docker/yardstick-ci
