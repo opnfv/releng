@@ -25,7 +25,7 @@ echo 1 > /proc/sys/vm/drop_caches
 export CONFDIR=$WORKSPACE/deploy/conf
 export ISO_URL=file://$BUILD_DIRECTORY/compass.iso
 
-if [[ "${DEPLOY_SCENARIO}" =~ "-ocl" ]]
+if [[ "${DEPLOY_SCENARIO}" =~ "-ocl" ]]; then
     export NETWORK_CONF_FILE=network_ocl.yml
 else
     export NETWORK_CONF_FILE=network.yml
