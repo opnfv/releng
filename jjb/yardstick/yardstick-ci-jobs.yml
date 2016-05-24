@@ -22,105 +22,91 @@
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
-#        brahmaputra
+#    Installers using labels
+#            CI PODs
+# This section should only contain the installers
+# that have been switched using labels for slaves
 #--------------------------------
     pod:
-        - lf-pod1:
-            installer: apex
-            suite: daily
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *brahmaputra
-        - lf-pod2:
+        - baremetal:
+            slave-label: fuel-baremetal
             installer: fuel
-            suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *brahmaputra
-        - intel-pod5:
-            installer: joid
-            suite: daily
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *brahmaputra
-        - orange-pod2:
-            installer: joid
-            suite: daily
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *brahmaputra
-        - huawei-pod1:
-            installer: compass
-            suite: daily
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *brahmaputra
-        - ericsson-pod1:
+            <<: *master
+        - virtual:
+            slave-label: fuel-virtual
             installer: fuel
-            suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *brahmaputra
-        - ericsson-pod2:
+            <<: *master
+        - baremetal:
+            slave-label: fuel-baremetal
             installer: fuel
-            suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *brahmaputra
         - virtual:
+            slave-label: fuel-virtual
             installer: fuel
-            suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *brahmaputra
-        - huawei-virtual:
-            installer: compass
-            suite: daily
+
+# just in case if things go wrong
+        - lf-pod2:
+            slave-label: '{pod}'
+            installer: fuel
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *brahmaputra
-        - virtual:
-            installer: joid
-            suite: daily
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *brahmaputra
+            <<: *master
 #--------------------------------
-#        master
+#    Installers not using labels
+#            CI PODs
+# This section should only contain the installers
+# that have not been switched using labels for slaves
 #--------------------------------
         - lf-pod1:
+            slave-label: '{pod}'
             installer: apex
-            suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
-        - lf-pod2:
-            installer: fuel
-            suite: daily
+        - lf-pod1:
+            slave-label: '{pod}'
+            installer: apex
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *master
-        - ericsson-pod1:
-            installer: fuel
-            suite: daily
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *master
-        - ericsson-pod1:
-            installer: fuel
-            suite: vtcdaily
-            auto-trigger-name: 'yardstick-vtcdaily-ericsson-pod1-trigger'
-            <<: *master
-        - ericsson-pod2:
-            installer: fuel
-            suite: daily
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *master
-        - intel-pod6:
-            installer: joid
-            suite: daily
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *master
+            <<: *brahmaputra
         - intel-pod8:
+            slave-label: '{pod}'
             installer: compass
-            suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
+        - huawei-pod1:
+            slave-label: '{pod}'
+            installer: compass
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *brahmaputra
+        - intel-pod6:
+            slave-label: '{pod}'
+            installer: joid
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *master
+        - intel-pod5:
+            slave-label: '{pod}'
+            installer: joid
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *brahmaputra
+#--------------------------------
+#        None-CI PODs
+#--------------------------------
+        - orange-pod2:
+            slave-label: '{pod}'
+            installer: joid
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *brahmaputra
         - zte-pod1:
+            slave-label: '{pod}'
             installer: fuel
-            suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
         - orange-pod2:
+            slave-label: '{pod}'
             installer: joid
-            suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
         - huawei-pod1:
@@ -129,45 +115,54 @@
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
         - huawei-pod2:
+            slave-label: '{pod}'
             installer: compass
-            suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
-        - virtual:
-            installer: fuel
-            suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
         - huawei-virtual:
+            slave-label: '{pod}'
             installer: compass
-            suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
         - huawei-pod3:
+            slave-label: '{pod}'
             installer: compass
-            suite: daily
             auto-trigger-name: 'yardstick-daily-huawei-pod3-trigger'
             <<: *master
         - huawei-pod4:
+            slave-label: '{pod}'
             installer: compass
-            suite: daily
             auto-trigger-name: 'yardstick-daily-huawei-pod4-trigger'
             <<: *master
         - virtual:
+            slave-label: '{pod}'
             installer: joid
-            suite: daily
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
+        - huawei-virtual:
+            slave-label: '{pod}'
+            installer: compass
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *brahmaputra
+        - virtual:
+            slave-label: '{pod}'
+            installer: joid
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *brahmaputra
 #--------------------------------
+    testsuite:
+        - 'daily'
 
     jobs:
-        - 'yardstick-{installer}-{pod}-{suite}-{stream}'
+        - 'yardstick-{installer}-{pod}-{testsuite}-{stream}'
 
 ################################
 # job templates
 ################################
 - job-template:
-    name: 'yardstick-{installer}-{pod}-{suite}-{stream}'
+    name: 'yardstick-{installer}-{pod}-{testsuite}-{stream}'
 
     disabled: false
 
@@ -191,9 +186,9 @@
     parameters:
         - project-parameter:
             project: '{project}'
-        - '{pod}-defaults'
+        - '{slave-label}-defaults'
         - '{installer}-defaults'
-        - 'yardstick-params-{pod}'
+        - 'yardstick-params-{slave-label}'
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-odl_l2-nofeature-ha'
@@ -203,7 +198,7 @@
             description: 'Tag to pull docker image'
         - string:
             name: YARDSTICK_SUITE_NAME
-            default: opnfv_${{NODE_NAME}}_{suite}.yaml
+            default: opnfv_${{NODE_NAME}}_{testsuite}.yaml
             description: 'Path to test suite'
         - string:
             name: CI_DEBUG
@@ -219,7 +214,7 @@
     builders:
         - 'yardstick-cleanup'
         #- 'yardstick-fetch-os-creds'
-        - 'yardstick-{suite}'
+        - 'yardstick-{testsuite}'
 
     publishers:
         - email:
@@ -277,23 +272,6 @@
             name: YARDSTICK_DB_BACKEND
             default: ''
             description: 'Arguments to use in order to choose the backend DB'
-
-- parameter:
-    name: 'yardstick-params-ericsson-pod1'
-    parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
-
-- parameter:
-    name: 'yardstick-params-ericsson-pod2'
-    parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
-
 - parameter:
     name: 'yardstick-params-lf-pod1'
     parameters:
@@ -308,6 +286,21 @@
         - string:
             name: YARDSTICK_DB_BACKEND
             default: '-i 104.197.68.199:8086'
+            description: 'Arguments to use in order to choose the backend DB'
+- parameter:
+    name: 'yardstick-params-fuel-baremetal'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: '-i 104.197.68.199:8086'
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'yardstick-params-fuel-virtual'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: ''
             description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
@@ -378,11 +371,6 @@
 ## trigger macros
 #######################
 # trigger for PODs to only run yardstick test suites
-- trigger:
-    name: 'yardstick-vtcdaily-ericsson-pod1-trigger'
-    triggers:
-        - timed: '0 1 * * *'
-
 - trigger:
     name: 'yardstick-daily-huawei-pod3-trigger'
     triggers:
