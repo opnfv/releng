@@ -22,87 +22,115 @@
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
-#        brahmaputra
+#    Installers using labels
+#            CI PODs
+# This section should only contain the installers
+# that have been switched using labels for slaves
 #--------------------------------
     pod:
-        - lf-pod1:
-            installer: apex
-            <<: *brahmaputra
-        - intel-pod5:
-            installer: joid
-            <<: *brahmaputra
-        - orange-pod2:
-            installer: joid
-            <<: *brahmaputra
-        - huawei-pod1:
-            installer: compass
-            <<: *brahmaputra
-        - ericsson-pod1:
+        - baremetal:
+            slave-label: fuel-baremetal
             installer: fuel
-            <<: *brahmaputra
-        - ericsson-pod2:
+            <<: *master
+        - virtual:
+            slave-label: fuel-virtual
             installer: fuel
-            <<: *brahmaputra
-        - lf-pod2:
+            <<: *master
+        - baremetal:
+            slave-label: fuel-baremetal
             installer: fuel
             <<: *brahmaputra
         - virtual:
+            slave-label: fuel-virtual
             installer: fuel
             <<: *brahmaputra
-        - huawei-virtual:
-            installer: compass
-            <<: *brahmaputra
-        - virtual:
-            installer: joid
-            <<: *brahmaputra
-        - arm-pod1:
-            installer: fuel
-            <<: *brahmaputra
-#--------------------------------
-#        master
-#--------------------------------
+
+# just in case if things go wrong
         - lf-pod2:
+            slave-label: fuel-baremetal
             installer: fuel
             <<: *master
-        - intel-pod6:
-            installer: joid
-            <<: *master
-        - intel-pod8:
-            installer: compass
-            <<: *master
+#--------------------------------
+#    Installers not using labels
+#            CI PODs
+# This section should only contain the installers
+# that have not been switched using labels for slaves
+#--------------------------------
         - intel-pod7:
+            slave-label: '{pod}'
             installer: apex
             <<: *master
-        - ericsson-pod1:
-            installer: fuel
+        - lf-pod1:
+            slave-label: '{pod}'
+            installer: apex
+            <<: *brahmaputra
+        - intel-pod8:
+            slave-label: '{pod}'
+            installer: compass
             <<: *master
+        - huawei-pod1:
+            slave-label: '{pod}'
+            installer: compass
+            <<: *brahmaputra
+        - intel-pod6:
+            slave-label: '{pod}'
+            installer: joid
+            <<: *master
+        - intel-pod5:
+            slave-label: '{pod}'
+            installer: joid
+            <<: *brahmaputra
+#--------------------------------
+#        None-CI PODs
+#--------------------------------
+        - orange-pod2:
+            slave-label: '{pod}'
+            installer: joid
+            <<: *brahmaputra
         - orange-pod5:
+            slave-label: '{pod}'
             installer: fuel
             <<: *master
         - orange-pod2:
+            slave-label: '{pod}'
             installer: joid
             <<: *master
-        - virtual:
-            installer: fuel
-            <<: *master
         - huawei-virtual:
+            slave-label: '{pod}'
             installer: compass
             <<: *master
         - virtual:
+            slave-label: '{pod}'
             installer: joid
             <<: *master
         - huawei-pod2:
+            slave-label: '{pod}'
             installer: compass
             <<: *master
         - nokia-pod1:
+            slave-label: '{pod}'
             installer: apex
             <<: *master
         - arm-pod1:
+            slave-label: '{pod}'
             installer: fuel
             <<: *master
         - zte-pod1:
+            slave-label: '{pod}'
             installer: fuel
             <<: *master
+        - arm-pod1:
+            slave-label: '{pod}'
+            installer: fuel
+            <<: *brahmaputra
+        - huawei-virtual:
+            slave-label: '{pod}'
+            installer: compass
+            <<: *brahmaputra
+        - virtual:
+            slave-label: '{pod}'
+            installer: joid
+            <<: *brahmaputra
 #--------------------------------
 
     testsuite:
@@ -135,7 +163,7 @@
     parameters:
         - project-parameter:
             project: '{project}'
-        - '{pod}-defaults'
+        - '{slave-label}-defaults'
         - '{installer}-defaults'
         - 'functest-{testsuite}-parameter'
         - string:
