@@ -54,25 +54,25 @@ def make_app():
     return tornado.web.Application(
         [
             # GET /version => GET API version
-            (r"/version", VersionHandler),
+            (r"/versions", VersionHandler),
 
             # few examples:
             # GET /pods => Get all pods
             # GET /pods/1 => Get details on POD 1
-            (r"/pods", PodHandler),
-            (r"/pods/([^/]+)", PodHandler),
+            (r"/v1/pods", PodHandler),
+            (r"/v1/pods/([^/]+)", PodHandler),
 
             # few examples:
             # GET /projects
             # GET /projects/yardstick
-            (r"/projects", ProjectHandler),
-            (r"/projects/([^/]+)", ProjectHandler),
+            (r"/v1/projects", ProjectHandler),
+            (r"/v1/projects/([^/]+)", ProjectHandler),
 
             # few examples
             # GET /projects/qtip/cases => Get cases for qtip
             #
-            (r"/projects/([^/]+)/cases", TestcaseHandler),
-            (r"/projects/([^/]+)/cases/([^/]+)", TestcaseHandler),
+            (r"/v1/projects/([^/]+)/cases", TestcaseHandler),
+            (r"/v1/projects/([^/]+)/cases/([^/]+)", TestcaseHandler),
             # (r"/test_cases/([^/]+)", TestCasesHandler),
 
             # new path to avoid a long depth
@@ -81,18 +81,17 @@ def make_app():
             # POST /results =>
             # Push results with mandatory request payload parameters
             # (project, case, and pod)
-            (r"/results", TestResultsHandler),
-            (r"/results([^/]*)", TestResultsHandler),
-            (r"/results/([^/]*)", TestResultsHandler),
+            (r"/v1/results", TestResultsHandler),
+            (r"/v1/results([^/]*)", TestResultsHandler),
+            (r"/v1/results/([^/]*)", TestResultsHandler),
 
             # Method to manage Dashboard ready results
             # GET /dashboard?project=functest&case=vPing&pod=opnfv-jump2
             #  => get results in dasboard ready format
             # get /dashboard
             #  => get the list of project with dashboard ready results
-            (r"/dashboard", DashboardHandler),
-            (r"/dashboard([^/]*)", DashboardHandler),
-            (r"/dashboard/([^/]*)", DashboardHandler),
+            (r"/v1/dashboard", DashboardHandler),
+            (r"/v1/dashboard([^/]*)", DashboardHandler),
         ],
         db=db,
         debug=CONF.api_debug_on,

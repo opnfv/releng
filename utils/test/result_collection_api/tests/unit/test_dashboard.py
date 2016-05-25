@@ -9,9 +9,9 @@ __author__ = '__serena__'
 class TestDashboardBase(TestResultBase):
     def setUp(self):
         super(TestDashboardBase, self).setUp()
-        self.basePath = '/dashboard'
-        self.create_help('/results', self.req_d)
-        self.create_help('/results', self.req_d)
+        self.basePath = '/v1/dashboard'
+        self.create_help('/v1/results', self.req_d)
+        self.create_help('/v1/results', self.req_d)
         self.list_res = None
 
 
