@@ -67,7 +67,7 @@ def format_rubbos_for_dashboard(results):
     #new_element = []
     #for each_result in results:
     #    throughput_data = [record['throughput'] for record in each_result['details']]
-    #    new_element.append({'x': each_result['creation_date'],
+    #    new_element.append({'x': each_result['start_date'],
     #                        'y': max(throughput_data)})
 
     #test_data.append({'name': "Rubbos max throughput",

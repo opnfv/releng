@@ -78,7 +78,7 @@ def format_doctor_notification_case_for_dashboard(results):
     # consider only seconds => 09
     for data in results:
         t = data['details']['duration']
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y': t})
 
     test_data.append({'name': "doctor-notification duration ",

@@ -6,7 +6,8 @@ class ResultCreateRequest(object):
                  case_name=None,
                  installer=None,
                  version=None,
-                 description=None,
+                 start_date=None,
+                 stop_date=None,
                  details=None,
                  build_tag=None,
                  scenario=None,
@@ -17,7 +18,8 @@ class ResultCreateRequest(object):
         self.case_name = case_name
         self.installer = installer
         self.version = version
-        self.description = description
+        self.start_date = start_date
+        self.stop_date = stop_date
         self.details = details
         self.build_tag = build_tag
         self.scenario = scenario
@@ -31,7 +33,8 @@ class ResultCreateRequest(object):
             "case_name": self.case_name,
             "installer": self.installer,
             "version": self.version,
-            "description": self.description,
+            "start_date": self.start_date,
+            "stop_date": self.stop_date,
             "details": self.details,
             "build_tag": self.build_tag,
             "scenario": self.scenario,
@@ -50,8 +53,8 @@ class TestResult:
         self.pod_name = None
         self.installer = None
         self.version = None
-        self.description = None
-        self.creation_date = None
+        self.start_date = None
+        self.stop_date = None
         self.details = None
         self.build_tag = None
         self.scenario = None
@@ -70,7 +73,8 @@ class TestResult:
         t.pod_name = a_dict.get('pod_name')
         t.project_name = a_dict.get('project_name')
         t.description = a_dict.get('description')
-        t.creation_date = str(a_dict.get('creation_date'))
+        t.start_date = str(a_dict.get('start_date'))
+        t.stop_date = str(a_dict.get('stop_date'))
         t.details = a_dict.get('details')
         t.version = a_dict.get('version')
         t.installer = a_dict.get('installer')
@@ -98,7 +102,8 @@ class TestResult:
             "project_name": self.project_name,
             "pod_name": self.pod_name,
             "description": self.description,
-            "creation_date": str(self.creation_date),
+            "start_date": str(self.start_date),
+            "stop_date": str(self.stop_date),
             "version": self.version,
             "installer": self.installer,
             "details": self.details,
@@ -115,7 +120,8 @@ class TestResult:
             "project_name": self.project_name,
             "pod_name": self.pod_name,
             "description": self.description,
-            "creation_date": str(self.creation_date),
+            "start_date": str(self.start_date),
+            "stop_date": str(self.stop_date),
             "version": self.version,
             "installer": self.installer,
             "details": self.details,

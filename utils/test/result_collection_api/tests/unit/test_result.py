@@ -47,8 +47,10 @@ class TestResultBase(TestBase):
         self.version = 'C'
         self.build_tag = 'v3.0'
         self.scenario = 'odl-l2'
-        self.criteria = '10s'
+        self.criteria = 'passed'
         self.trust_indicator = 0.7
+        self.start_date = "2016-05-23 07:16:09.477097"
+        self.stop_date = "2016-05-23 07:16:19.477097"
         super(TestResultBase, self).setUp()
         self.details = Details(timestart='0', duration='9s', status='OK')
         self.req_d = ResultCreateRequest(pod_name=self.pod,
@@ -56,7 +58,8 @@ class TestResultBase(TestBase):
                                          case_name=self.case,
                                          installer=self.installer,
                                          version=self.version,
-                                         description='vping use ssh',
+                                         start_date=self.start_date,
+                                         stop_date=self.stop_date,
                                          details=self.details.format(),
                                          build_tag=self.build_tag,
                                          scenario=self.scenario,
@@ -82,7 +85,6 @@ class TestResultBase(TestBase):
         self.assertEqual(result.case_name, req.case_name)
         self.assertEqual(result.installer, req.installer)
         self.assertEqual(result.version, req.version)
-        self.assertEqual(result.description, req.description)
         details_req = Details.from_dict(req.details)
         details_res = Details.from_dict(result.details)
         self.assertEqual(details_res.duration, details_req.duration)
@@ -92,7 +94,8 @@ class TestResultBase(TestBase):
         self.assertEqual(result.scenario, req.scenario)
         self.assertEqual(result.criteria, req.criteria)
         self.assertEqual(result.trust_indicator, req.trust_indicator)
-        self.assertIsNotNone(result.creation_date)
+        self.assertIsNotNone(result.start_date)
+        self.assertIsNotNone(result.stop_date)
         self.assertIsNotNone(result._id)
 
 
