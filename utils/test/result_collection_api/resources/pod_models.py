@@ -1,24 +1,32 @@
 __author__ = '__serena__'
 
+# name: name of the POD e.g. zte-1
+# mode: metal or virtual
+# details: any detail
+# role: ci-pod or community-pod or single-node
+
 
 class PodCreateRequest(object):
-    def __init__(self, name='', mode='', details=''):
+    def __init__(self, name='', mode='', details='', role=""):
         self.name = name
         self.mode = mode
         self.details = details
+        self.role = role
 
     def format(self):
         return {
             "name": self.name,
             "mode": self.mode,
             "details": self.details,
+            "role": self.role,
         }
 
 
 class Pod(PodCreateRequest):
     """ describes a POD platform """
-    def __init__(self, name='', mode='', details='', _id='', create_date=''):
-        super(Pod, self).__init__(name, mode, details)
+    def __init__(self, name='', mode='', details='', role="",
+                 _id='', create_date=''):
+        super(Pod, self).__init__(name, mode, details, role)
         self._id = _id
         self.creation_date = create_date
 
@@ -33,6 +41,7 @@ class Pod(PodCreateRequest):
         p.name = pod_dict.get('name')
         p.mode = pod_dict.get('mode')
         p.details = pod_dict.get('details')
+        p.role = pod_dict.get('role')
         return p
 
     def format(self):
