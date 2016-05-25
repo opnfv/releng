@@ -89,7 +89,7 @@ def format_vIMS_for_dashboard(results):
     new_element = []
 
     for data in results:
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y1': data['details']['orchestrator']['duration'],
                             'y2': data['details']['vIMS']['duration'],
                             'y3': data['details']['sig_test']['duration']})
@@ -127,7 +127,7 @@ def format_vIMS_for_dashboard(results):
             except:
                 nbTests = 0
 
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y1': nbTests,
                             'y2': nbFailures,
                             'y3': nbSkipped})
@@ -181,7 +181,7 @@ def format_Tempest_for_dashboard(results):
     # ********************************
     new_element = []
     for data in results:
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y': data['details']['duration']})
 
     test_data.append({'name': "Tempest duration",
@@ -194,7 +194,7 @@ def format_Tempest_for_dashboard(results):
     # ***************************************
     new_element = []
     for data in results:
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y1': data['details']['tests'],
                             'y2': data['details']['failures']})
 
@@ -229,7 +229,7 @@ def format_Tempest_for_dashboard(results):
         except:
             success_rate = 0
 
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y1': success_rate})
 
     test_data.append({'name': "Tempest success rate",
@@ -257,7 +257,7 @@ def format_ODL_for_dashboard(results):
         for odl in odl_results:
             if (odl['test_status']['@status'] == "FAIL"):
                 nbFailures += 1
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y1': len(odl_results),
                             'y2': nbFailures})
 
@@ -288,7 +288,7 @@ def format_ONOS_for_dashboard(results):
         new_duration = int(datetime.timedelta(hours=int(h),
                                               minutes=int(m),
                                               seconds=int(s)).total_seconds())
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y': new_duration})
 
     test_data.append({'name': "ONOS FUNCvirNet duration ",
@@ -307,7 +307,7 @@ def format_ONOS_for_dashboard(results):
         for onos in onos_results:
             if (onos['Case result'] == "FAIL"):
                 nbFailures += 1
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y1': len(onos_results),
                             'y2': nbFailures})
 
@@ -331,7 +331,7 @@ def format_ONOS_for_dashboard(results):
         new_duration = int(datetime.timedelta(hours=int(h),
                                               minutes=int(m),
                                               seconds=int(s)).total_seconds())
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y': new_duration})
 
     test_data.append({'name': "ONOS FUNCvirNetL3 duration",
@@ -350,7 +350,7 @@ def format_ONOS_for_dashboard(results):
         for onos in onos_results:
             if (onos['Case result'] == "FAIL"):
                 nbFailures += 1
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y1': len(onos_results),
                             'y2': nbFailures})
 
@@ -373,7 +373,7 @@ def format_Rally_for_dashboard(results):
     new_element = []
     for data in results:
         summary_cursor = len(data['details']) - 1
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y': int(data['details'][summary_cursor]['summary']['duration'])})
 
     test_data.append({'name': "rally duration",
@@ -386,7 +386,7 @@ def format_Rally_for_dashboard(results):
     # ********************************
     new_element = []
     for data in results:
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y': float(data['details'][summary_cursor]['summary']['nb success'])})
 
     test_data.append({'name': "rally success rate",
@@ -408,7 +408,7 @@ def format_vPing_for_dashboard(results):
     # ********************************
     new_element = []
     for data in results:
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y': data['details']['duration']})
 
     test_data.append({'name': "vPing duration",
@@ -445,7 +445,7 @@ def format_vPing_userdata_for_dashboard(results):
     # ********************************
     new_element = []
     for data in results:
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y': data['details']['duration']})
 
     test_data.append({'name': "vPing_userdata duration",

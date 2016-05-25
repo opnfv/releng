@@ -620,9 +620,6 @@ class TestResultsHandler(GenericApiHandler):
                             "Could not find testcase [{}] "
                             .format(result.case_name))
 
-        # convert payload to object
-        result.creation_date = datetime.now()
-
         _id = yield self.db.results.insert(result.format(), check_keys=False)
 
         self.finish_request(self._create_response(_id))

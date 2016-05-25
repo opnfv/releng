@@ -93,7 +93,7 @@ def _get_results(db_url, testcase):
 
         rawresults = datajson['test_results'][x]['details']
         index = rawresults['index']
-        resultarray[str(datajson['test_results'][x]['creation_date'])]=index
+        resultarray[str(datajson['test_results'][x]['start_date'])]=index
 
     return resultarray
 

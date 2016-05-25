@@ -79,7 +79,7 @@ def format_common_for_dashboard(case, results):
     # ********************************
     new_element = []
     for data in results:
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y1': data['details']['64'],
                             'y2': data['details']['128'],
                             'y3': data['details']['512'],
@@ -105,8 +105,8 @@ def format_common_for_dashboard(case, results):
 import os
 
 def _test():
-    ans = [{'creation_date': '2015-09-12', 'project_name': 'vsperf', 'version': 'ovs_master', 'pod_name': 'pod1-vsperf', 'case_name': 'tput_ovsdpdk', 'installer': 'build_sie', 'details': {'64': '26.804', '1024': '1097.284', '512': '178.137', '1518': '12635.860', '128': '100.564'}},
-           {'creation_date': '2015-09-33', 'project_name': 'vsperf', 'version': 'ovs_master', 'pod_name': 'pod1-vsperf', 'case_name': 'tput_ovsdpdk', 'installer': 'build_sie', 'details': {'64': '16.804', '1024': '1087.284', '512': '168.137', '1518': '12625.860', '128': '99.564'}}]
+    ans = [{'start_date': '2015-09-12', 'project_name': 'vsperf', 'version': 'ovs_master', 'pod_name': 'pod1-vsperf', 'case_name': 'tput_ovsdpdk', 'installer': 'build_sie', 'details': {'64': '26.804', '1024': '1097.284', '512': '178.137', '1518': '12635.860', '128': '100.564'}},
+           {'start_date': '2015-09-33', 'project_name': 'vsperf', 'version': 'ovs_master', 'pod_name': 'pod1-vsperf', 'case_name': 'tput_ovsdpdk', 'installer': 'build_sie', 'details': {'64': '16.804', '1024': '1087.284', '512': '168.137', '1518': '12625.860', '128': '99.564'}}]
 
     result = format_vsperf_for_dashboard("pvp_cont_ovsdpdkcuse", ans)
     print result

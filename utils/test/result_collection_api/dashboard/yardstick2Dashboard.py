@@ -84,7 +84,7 @@ def format_Ping_for_dashboard(results):
                         if "benchmark" in record]
 
         avg_rtt = sum(records) / len(records)
-        new_element.append({'x': data['creation_date'],
+        new_element.append({'x': data['start_date'],
                             'y': avg_rtt})
 
     test_data.append({'name': "ping duration",
