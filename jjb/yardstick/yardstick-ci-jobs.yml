@@ -28,6 +28,7 @@
 # that have been switched using labels for slaves
 #--------------------------------
     pod:
+# fuel CI PODs
         - baremetal:
             slave-label: fuel-baremetal
             installer: fuel
@@ -55,6 +56,28 @@
             installer: fuel
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
+
+# joid CI PODs
+        - baremetal:
+            slave-label: joid-baremetal
+            installer: joid
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *master
+        - virtual:
+            slave-label: joid-virtual
+            installer: joid
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *master
+        - baremetal:
+            slave-label: joid-baremetal
+            installer: joid
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *brahmaputra
+        - virtual:
+            slave-label: joid-virtual
+            installer: joid
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *brahmaputra
 #--------------------------------
 #    Installers not using labels
 #            CI PODs
@@ -79,16 +102,6 @@
         - huawei-pod1:
             slave-label: '{pod}'
             installer: compass
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *brahmaputra
-        - intel-pod6:
-            slave-label: '{pod}'
-            installer: joid
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *master
-        - intel-pod5:
-            slave-label: '{pod}'
-            installer: joid
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *brahmaputra
 #--------------------------------
@@ -137,19 +150,9 @@
             installer: compass
             auto-trigger-name: 'yardstick-daily-huawei-pod4-trigger'
             <<: *master
-        - virtual:
-            slave-label: '{pod}'
-            installer: joid
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *master
         - huawei-virtual:
             slave-label: '{pod}'
             installer: compass
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *brahmaputra
-        - virtual:
-            slave-label: '{pod}'
-            installer: joid
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *brahmaputra
 #--------------------------------
@@ -251,21 +254,33 @@
 # parameter macros
 ########################
 - parameter:
-    name: 'yardstick-params-intel-pod5'
+    name: 'yardstick-params-fuel-baremetal'
     parameters:
         - string:
             name: YARDSTICK_DB_BACKEND
             default: '-i 104.197.68.199:8086'
             description: 'Arguments to use in order to choose the backend DB'
-
 - parameter:
-    name: 'yardstick-params-intel-pod6'
+    name: 'yardstick-params-fuel-virtual'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: ''
+            description: 'Arguments to use in order to choose the backend DB'
+- parameter:
+    name: 'yardstick-params-joid-baremetal'
     parameters:
         - string:
             name: YARDSTICK_DB_BACKEND
             default: '-i 104.197.68.199:8086'
             description: 'Arguments to use in order to choose the backend DB'
-
+- parameter:
+    name: 'yardstick-params-joid-virtual'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: ''
+            description: 'Arguments to use in order to choose the backend DB'
 - parameter:
     name: 'yardstick-params-intel-pod8'
     parameters:
@@ -287,21 +302,6 @@
         - string:
             name: YARDSTICK_DB_BACKEND
             default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
-- parameter:
-    name: 'yardstick-params-fuel-baremetal'
-    parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
-
-- parameter:
-    name: 'yardstick-params-fuel-virtual'
-    parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: ''
             description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:

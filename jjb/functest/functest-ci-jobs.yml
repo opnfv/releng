@@ -28,6 +28,7 @@
 # that have been switched using labels for slaves
 #--------------------------------
     pod:
+# fuel CI PODs
         - baremetal:
             slave-label: fuel-baremetal
             installer: fuel
@@ -50,6 +51,24 @@
             slave-label: fuel-baremetal
             installer: fuel
             <<: *master
+
+# joid CI PODs
+        - baremetal:
+            slave-label: joid-baremetal
+            installer: joid
+            <<: *master
+        - virtual:
+            slave-label: joid-virtual
+            installer: joid
+            <<: *master
+        - baremetal:
+            slave-label: joid-baremetal
+            installer: joid
+            <<: *brahmaputra
+        - virtual:
+            slave-label: joid-virtual
+            installer: joid
+            <<: *brahmaputra
 #--------------------------------
 #    Installers not using labels
 #            CI PODs
@@ -72,14 +91,6 @@
             slave-label: '{pod}'
             installer: compass
             <<: *brahmaputra
-        - intel-pod6:
-            slave-label: '{pod}'
-            installer: joid
-            <<: *master
-        - intel-pod5:
-            slave-label: '{pod}'
-            installer: joid
-            <<: *brahmaputra
 #--------------------------------
 #        None-CI PODs
 #--------------------------------
@@ -98,10 +109,6 @@
         - huawei-virtual:
             slave-label: '{pod}'
             installer: compass
-            <<: *master
-        - virtual:
-            slave-label: '{pod}'
-            installer: joid
             <<: *master
         - huawei-pod2:
             slave-label: '{pod}'
@@ -130,10 +137,6 @@
         - huawei-virtual:
             slave-label: '{pod}'
             installer: compass
-            <<: *brahmaputra
-        - virtual:
-            slave-label: '{pod}'
-            installer: joid
             <<: *brahmaputra
 #--------------------------------
 

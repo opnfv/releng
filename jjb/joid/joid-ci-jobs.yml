@@ -23,31 +23,38 @@
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
-#        brahmaputra
+#        CI PODs
 #--------------------------------
     pod:
-        - intel-pod5:
-            <<: *brahmaputra
-        - orange-pod2:
+        - baremetal:
+            slave-label: joid-baremetal
+            <<: *master
+        - virtual:
+            slave-label: joid-virtual
+            <<: *master
+        - baremetal:
+            slave-label: joid-baremetal
             <<: *brahmaputra
         - virtual:
+            slave-label: joid-virtual
             <<: *brahmaputra
 #--------------------------------
-#           master
+#        None-CI PODs
 #--------------------------------
-        - intel-pod6:
-            <<: *master
         - orange-pod2:
+            slave-label: orange-pod2
+            <<: *brahmaputra
+        - orange-pod2:
+            slave-label: orange-pod2
             <<: *master
         - juniper-pod1:
-            <<: *master
-        - virtual:
+            slave-label: juniper-pod1
             <<: *master
 #--------------------------------
 # new scenario descriptions
     scenario:
         - 'os-nosdn-nofeature-noha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            auto-trigger-name: 'daily-trigger-disabled'
         - 'os-nosdn-nofeature-ha':
             auto-trigger-name: 'joid-{scenario}-{pod}-{stream}-trigger'
         - 'os-odl_l2-nofeature-ha':
@@ -55,13 +62,13 @@
         - 'os-onos-nofeature-ha':
             auto-trigger-name: 'joid-{scenario}-{pod}-{stream}-trigger'
         - 'os-odl_l2-nofeature-noha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            auto-trigger-name: 'daily-trigger-disabled'
         - 'os-onos-nofeature-noha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            auto-trigger-name: 'daily-trigger-disabled'
         - 'os-ocl-nofeature-ha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            auto-trigger-name: 'daily-trigger-disabled'
         - 'os-ocl-nofeature-noha':
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            auto-trigger-name: 'daily-trigger-disabled'
 
     jobs:
         - 'joid-{scenario}-{pod}-daily-{stream}'
@@ -78,7 +85,7 @@
     properties:
         - throttle:
             enabled: true
-            max-total: 1
+            max-total: 4
             max-per-node: 1
         - build-blocker:
             use-build-blocker: true
@@ -96,7 +103,7 @@
         - project-parameter:
             project: '{project}'
         - '{installer}-defaults'
-        - '{pod}-defaults':
+        - '{slave-label}-defaults':
             installer: '{installer}'
         - string:
             name: DEPLOY_SCENARIO
@@ -141,7 +148,7 @@
     properties:
         - throttle:
             enabled: true
-            max-total: 1
+            max-total: 4
             max-per-node: 1
         - build-blocker:
             use-build-blocker: true
@@ -159,7 +166,7 @@
         - project-parameter:
             project: '{project}'
         - '{installer}-defaults'
-        - '{pod}-defaults':
+        - '{slave-label}-defaults':
             installer: '{installer}'
         - string:
             name: DEPLOY_SCENARIO
@@ -194,13 +201,13 @@
 ########################
 # os-nosdn-nofeature-ha trigger - branch: master
 - trigger:
-    name: 'joid-os-nosdn-nofeature-ha-intel-pod5-master-trigger'
+    name: 'joid-os-nosdn-nofeature-ha-baremetal-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'joid-os-nosdn-nofeature-ha-intel-pod6-master-trigger'
+    name: 'joid-os-nosdn-nofeature-ha-virtual-master-trigger'
     triggers:
-        - timed: '#0 2 * * *'
+        - timed: ''
 - trigger:
     name: 'joid-os-nosdn-nofeature-ha-orange-pod2-master-trigger'
     triggers:
@@ -209,17 +216,14 @@
     name: 'joid-os-nosdn-nofeature-ha-juniper-pod1-master-trigger'
     triggers:
         - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-nofeature-ha-virtual-master-trigger'
-    triggers:
-        - timed: ''
+
 # os-nosdn-nofeature-ha trigger - branch: stable/brahmaputra
 - trigger:
-    name: 'joid-os-nosdn-nofeature-ha-intel-pod5-brahmaputra-trigger'
+    name: 'joid-os-nosdn-nofeature-ha-baremetal-brahmaputra-trigger'
     triggers:
         - timed: '0 2 * * *'
 - trigger:
-    name: 'joid-os-nosdn-nofeature-ha-intel-pod6-brahmaputra-trigger'
+    name: 'joid-os-nosdn-nofeature-ha-virtual-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -230,21 +234,16 @@
     name: 'joid-os-nosdn-nofeature-ha-juniper-pod1-brahmaputra-trigger'
     triggers:
         - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-nofeature-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-
 
 # os-odl_l2-nofeature-ha trigger - branch: master
 - trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-intel-pod5-master-trigger'
+    name: 'joid-os-odl_l2-nofeature-ha-baremetal-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-intel-pod6-master-trigger'
+    name: 'joid-os-odl_l2-nofeature-ha-virtual-master-trigger'
     triggers:
-        - timed: '#0 10 * * *'
+        - timed: ''
 - trigger:
     name: 'joid-os-odl_l2-nofeature-ha-orange-pod2-master-trigger'
     triggers:
@@ -253,18 +252,14 @@
     name: 'joid-os-odl_l2-nofeature-ha-juniper-pod1-master-trigger'
     triggers:
         - timed: ''
-- trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-virtual-master-trigger'
-    triggers:
-        - timed: ''
 
 # os-odl_l2-nofeature-ha trigger - branch: stable/brahmaputra
 - trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-intel-pod5-brahmaputra-trigger'
+    name: 'joid-os-odl_l2-nofeature-ha-baremetal-brahmaputra-trigger'
     triggers:
         - timed: '0 10 * * *'
 - trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-intel-pod6-brahmaputra-trigger'
+    name: 'joid-os-odl_l2-nofeature-ha-virtual-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -275,20 +270,16 @@
     name: 'joid-os-odl_l2-nofeature-ha-juniper-pod1-brahmaputra-trigger'
     triggers:
         - timed: ''
-- trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
 
 # os-onos-nofeature-ha trigger - branch: master
 - trigger:
-    name: 'joid-os-onos-nofeature-ha-intel-pod5-master-trigger'
+    name: 'joid-os-onos-nofeature-ha-baremetal-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'joid-os-onos-nofeature-ha-intel-pod6-master-trigger'
+    name: 'joid-os-onos-nofeature-ha-virtual-master-trigger'
     triggers:
-        - timed: '#0 18 * * *'
+        - timed: ''
 - trigger:
     name: 'joid-os-onos-nofeature-ha-orange-pod2-master-trigger'
     triggers:
@@ -297,18 +288,14 @@
     name: 'joid-os-onos-nofeature-ha-juniper-pod1-master-trigger'
     triggers:
         - timed: ''
-- trigger:
-    name: 'joid-os-onos-nofeature-ha-virtual-master-trigger'
-    triggers:
-        - timed: ''
 
 # os-onos-nofeature-ha trigger - branch: stable/brahmaputra
 - trigger:
-    name: 'joid-os-onos-nofeature-ha-intel-pod5-brahmaputra-trigger'
+    name: 'joid-os-onos-nofeature-ha-baremetal-brahmaputra-trigger'
     triggers:
         - timed: '0 18 * * *'
 - trigger:
-    name: 'joid-os-onos-nofeature-ha-intel-pod6-brahmaputra-trigger'
+    name: 'joid-os-onos-nofeature-ha-virtual-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -317,9 +304,5 @@
         - timed: ''
 - trigger:
     name: 'joid-os-onos-nofeature-ha-juniper-pod1-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-onos-nofeature-ha-virtual-brahmaputra-trigger'
     triggers:
         - timed: ''
