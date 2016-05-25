@@ -50,6 +50,24 @@
             slave-label: fuel-baremetal
             installer: fuel
             <<: *master
+
+# compass CI PODs
+        - baremetal:
+            slave-label: compass-baremetal
+            installer: compass
+            <<: *master
+        - virtual:
+            slave-label: compass-virtual
+            installer: compass
+            <<: *master
+        - baremetal:
+            slave-label: compass-baremetal
+            installer: compass
+            <<: *brahmaputra
+        - virtual:
+            slave-label: compass-virtual
+            installer: compass
+            <<: *brahmaputra
 #--------------------------------
 #    Installers not using labels
 #            CI PODs
@@ -63,14 +81,6 @@
         - lf-pod1:
             slave-label: '{pod}'
             installer: apex
-            <<: *brahmaputra
-        - intel-pod8:
-            slave-label: '{pod}'
-            installer: compass
-            <<: *master
-        - huawei-pod1:
-            slave-label: '{pod}'
-            installer: compass
             <<: *brahmaputra
         - intel-pod6:
             slave-label: '{pod}'
@@ -95,19 +105,11 @@
             slave-label: '{pod}'
             installer: joid
             <<: *master
-        - huawei-virtual:
-            slave-label: '{pod}'
-            installer: compass
-            <<: *master
         - virtual:
             slave-label: '{pod}'
             installer: joid
             <<: *master
         - huawei-pod2:
-            slave-label: '{pod}'
-            installer: compass
-            <<: *master
-        - huawei-pod1:
             slave-label: '{pod}'
             installer: compass
             <<: *master
@@ -126,10 +128,6 @@
         - arm-pod1:
             slave-label: '{pod}'
             installer: fuel
-            <<: *brahmaputra
-        - huawei-virtual:
-            slave-label: '{pod}'
-            installer: compass
             <<: *brahmaputra
         - virtual:
             slave-label: '{pod}'

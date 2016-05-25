@@ -55,6 +55,28 @@
             installer: fuel
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
+
+# compass CI PODs
+        - baremetal:
+            slave-label: compass-baremetal
+            installer: compass
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *master
+        - virtual:
+            slave-label: compass-virtual
+            installer: compass
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *master
+        - baremetal:
+            slave-label: compass-baremetal
+            installer: compass
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *brahmaputra
+        - virtual:
+            slave-label: compass-virtual
+            installer: compass
+            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
+            <<: *brahmaputra
 #--------------------------------
 #    Installers not using labels
 #            CI PODs
@@ -69,16 +91,6 @@
         - lf-pod1:
             slave-label: '{pod}'
             installer: apex
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *brahmaputra
-        - intel-pod8:
-            slave-label: '{pod}'
-            installer: compass
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *master
-        - huawei-pod1:
-            slave-label: '{pod}'
-            installer: compass
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *brahmaputra
         - intel-pod6:
@@ -109,20 +121,7 @@
             installer: joid
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
-        - huawei-pod1:
-            slave-label: '{pod}'
-            installer: compass
-            suite: daily
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *master
         - huawei-pod2:
-            slave-label: '{pod}'
-            installer: compass
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *master
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *master
-        - huawei-virtual:
             slave-label: '{pod}'
             installer: compass
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
@@ -142,11 +141,6 @@
             installer: joid
             auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
             <<: *master
-        - huawei-virtual:
-            slave-label: '{pod}'
-            installer: compass
-            auto-trigger-name: 'brahmaputra-trigger-daily-disabled'
-            <<: *brahmaputra
         - virtual:
             slave-label: '{pod}'
             installer: joid
@@ -305,7 +299,7 @@
             description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
-    name: 'yardstick-params-huawei-pod1'
+    name: 'yardstick-params-compass-baremetal'
     parameters:
         - string:
             name: YARDSTICK_DB_BACKEND
@@ -345,7 +339,7 @@
             description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
-    name: 'yardstick-params-huawei-virtual'
+    name: 'yardstick-params-compass-virtual'
     parameters:
         - string:
             name: YARDSTICK_DB_BACKEND
