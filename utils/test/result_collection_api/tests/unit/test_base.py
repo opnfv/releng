@@ -25,19 +25,18 @@ class TestBase(AsyncHTTPTestCase):
     def get_app(self):
         return Application(
             [
-                (r"/version", VersionHandler),
-                (r"/pods", PodHandler),
-                (r"/pods/([^/]+)", PodHandler),
-                (r"/projects", ProjectHandler),
-                (r"/projects/([^/]+)", ProjectHandler),
-                (r"/projects/([^/]+)/cases", TestcaseHandler),
-                (r"/projects/([^/]+)/cases/([^/]+)", TestcaseHandler),
-                (r"/results", TestResultsHandler),
-                (r"/results([^/]*)", TestResultsHandler),
-                (r"/results/([^/]*)", TestResultsHandler),
-                (r"/dashboard", DashboardHandler),
-                (r"/dashboard([^/]*)", DashboardHandler),
-                (r"/dashboard/([^/]*)", DashboardHandler),
+                (r"/versions", VersionHandler),
+                (r"/v1/pods", PodHandler),
+                (r"/v1/pods/([^/]+)", PodHandler),
+                (r"/v1/projects", ProjectHandler),
+                (r"/v1/projects/([^/]+)", ProjectHandler),
+                (r"/v1/projects/([^/]+)/cases", TestcaseHandler),
+                (r"/v1/projects/([^/]+)/cases/([^/]+)", TestcaseHandler),
+                (r"/v1/results", TestResultsHandler),
+                (r"/v1/results([^/]*)", TestResultsHandler),
+                (r"/v1/results/([^/]*)", TestResultsHandler),
+                (r"/v1/dashboard", DashboardHandler),
+                (r"/v1/dashboard([^/]*)", DashboardHandler),
             ],
             db=fake_pymongo,
             debug=True,
@@ -63,6 +62,7 @@ class TestBase(AsyncHTTPTestCase):
         return self._get_return(res, self.create_res)
 
     def get(self, *args):
+        print('get: %s' % self._get_uri(*args))
         res = self.fetch(self._get_uri(*args),
                          method='GET',
                          headers=self.headers)

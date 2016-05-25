@@ -29,7 +29,7 @@ class TestCaseBase(TestBase):
         self.get_res = Testcase
         self.list_res = Testcases
         self.update_res = Testcase
-        self.basePath = '/projects/%s/cases'
+        self.basePath = '/v1/projects/%s/cases'
         self.create_project()
 
     def assert_body(self, case, req=None):
@@ -52,7 +52,7 @@ class TestCaseBase(TestBase):
 
     def create_project(self):
         req_p = ProjectCreateRequest('functest', 'vping-ssh test')
-        self.create_help('/projects', req_p)
+        self.create_help('/v1/projects', req_p)
         self.project = req_p.name
 
     def create_d(self):
