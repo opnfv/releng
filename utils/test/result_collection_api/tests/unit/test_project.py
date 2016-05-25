@@ -14,7 +14,7 @@ class TestProjectBase(TestBase):
         self.get_res = Project
         self.list_res = Projects
         self.update_res = Project
-        self.basePath = '/projects'
+        self.basePath = '/api/v1/projects'
 
     def assert_body(self, project, req=None):
         if not req:
