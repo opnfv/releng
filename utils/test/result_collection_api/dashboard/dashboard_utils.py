@@ -16,6 +16,7 @@
 #
 import os
 import re
+import sys
 from functest2Dashboard import format_functest_for_dashboard, \
     check_functest_case_exist
 from yardstick2Dashboard import format_yardstick_for_dashboard, \
@@ -37,16 +38,12 @@ from doctor2Dashboard import format_doctor_for_dashboard, \
 # - check_<Project>_case_exist
 
 
-def check_dashboard_ready_project(test_project, path):
+def check_dashboard_ready_project(test_project):
     # Check that the first param corresponds to a project
     # for whoch dashboard processing is available
-    subdirectories = os.listdir(path)
-    for testfile in subdirectories:
-        m = re.search('^(.*)(2Dashboard.py)$', testfile)
-        if m:
-            if (m.group(1) == test_project):
-                return True
-    return False
+    # print("test_project: %s" % test_project)
+    project_module = 'dashboard.'+test_project + '2Dashboard'
+    return True if project_module in sys.modules else False
 
 
 def check_dashboard_ready_case(project, case):
@@ -54,21 +51,20 @@ def check_dashboard_ready_case(project, case):
     return eval(cmd)
 
 
-def get_dashboard_cases(path):
+def get_dashboard_cases():
     # Retrieve all the test cases that could provide
     # Dashboard ready graphs
     # look in the releng repo
     # search all the project2Dashboard.py files
     # we assume that dashboard processing of project <Project>
     # is performed in the <Project>2Dashboard.py file
-    dashboard_test_cases = []
-    subdirectories = os.listdir(path)
-    for testfile in subdirectories:
-        m = re.search('^(.*)(2Dashboard.py)$', testfile)
-        if m:
-            dashboard_test_cases.append(m.group(1))
+    modules = []
+    cp = re.compile('dashboard.*2Dashboard')
+    for module in sys.modules:
+        if re.match(cp, module):
+            modules.append(module)
 
-    return dashboard_test_cases
+    return modules
 
 
 def get_dashboard_result(project, case, results):
