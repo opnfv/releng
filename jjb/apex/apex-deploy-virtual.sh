@@ -62,7 +62,7 @@ fi
 # use local build for verify
 if [[ $BUILD_DIRECTORY == *verify-master* ]]; then
     if [ ! -e "${WORKSPACE}/build/lib" ]; then ln -s ${WORKSPACE}/lib ${WORKSPACE}/build/lib; fi
-    DEPLOY_CMD="CONFIG=${WORKSPACE}/build RESOURCES=${WORKSPACE}/build/images/ ./deploy.sh -c ${WORKSPACE}/build -r ${WORKSPACE}/build/images/"
+    DEPLOY_CMD="CONFIG=${WORKSPACE}/build LIB=${WORKSPACE}/lib RESOURCES=${WORKSPACE}/build/images/ ./deploy.sh -c ${WORKSPACE}/build -r ${WORKSPACE}/build/images/"
     DEPLOY_FILE="${WORKSPACE}/config/deploy/${DEPLOY_SCENARIO}.yaml"
     NETWORK_FILE="${WORKSPACE}/config/network/network_settings.yaml"
     # Make sure python34 is installed
