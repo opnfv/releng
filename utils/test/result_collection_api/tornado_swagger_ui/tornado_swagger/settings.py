@@ -6,11 +6,12 @@ __author__ = 'serena'
 
 SWAGGER_VERSION = '1.2'
 
-URL_SWAGGER_API_DOCS = 'swagger-api-docs'
-URL_SWAGGER_API_LIST = 'swagger-api-list'
-URL_SWAGGER_API_SPEC = 'swagger-api-spec'
+SWAGGER_API_DOCS = 'swagger-api-docs'
+SWAGGER_API_LIST = 'swagger-api-list'
+SWAGGER_API_SPEC = 'swagger-api-spec'
 
-STATIC_PATH = os.path.join(os.path.dirname(os.path.normpath(__file__)), 'static')
+STATIC_PATH = os.path.join(os.path.dirname(os.path.normpath(__file__)),
+                           'static')
 
 default_settings = {
     'base_url': '/',
