@@ -1,3 +1,5 @@
+from tornado_swagger_ui.tornado_swagger import swagger
+
 __author__ = '__serena__'
 
 # name: name of the POD e.g. zte-1
@@ -6,8 +8,9 @@ __author__ = '__serena__'
 # role: ci-pod or community-pod or single-node
 
 
+@swagger.model()
 class PodCreateRequest(object):
-    def __init__(self, name='', mode='', details='', role=""):
+    def __init__(self, name, mode='', details='', role=""):
         self.name = name
         self.mode = mode
         self.details = details
@@ -22,6 +25,7 @@ class PodCreateRequest(object):
         }
 
 
+@swagger.model()
 class Pod(PodCreateRequest):
     """ describes a POD platform """
     def __init__(self, name='', mode='', details='', role="",
@@ -55,7 +59,11 @@ class Pod(PodCreateRequest):
         return f
 
 
+@swagger.model()
 class Pods(object):
+    """
+        @ptype pods: C{list} of L{Pod}
+    """
     def __init__(self, pods=list()):
         self.pods = pods
 

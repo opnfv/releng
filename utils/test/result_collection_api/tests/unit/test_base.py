@@ -2,7 +2,8 @@ import json
 from tornado.web import Application
 from tornado.testing import AsyncHTTPTestCase
 
-from resources.handlers import VersionHandler, PodHandler, \
+from resources.pod_handler import PodCLHandler, PodGURHandler
+from resources.handlers import VersionHandler, \
     ProjectHandler, TestcaseHandler, TestResultsHandler, DashboardHandler
 from resources.models import CreateResponse
 import fake_pymongo
@@ -26,8 +27,8 @@ class TestBase(AsyncHTTPTestCase):
         return Application(
             [
                 (r"/versions", VersionHandler),
-                (r"/api/v1/pods", PodHandler),
-                (r"/api/v1/pods/([^/]+)", PodHandler),
+                (r"/api/v1/pods", PodCLHandler),
+                (r"/api/v1/pods/([^/]+)", PodGURHandler),
                 (r"/api/v1/projects", ProjectHandler),
                 (r"/api/v1/projects/([^/]+)", ProjectHandler),
                 (r"/api/v1/projects/([^/]+)/cases", TestcaseHandler),
