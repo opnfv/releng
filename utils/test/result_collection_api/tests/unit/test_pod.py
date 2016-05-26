@@ -9,11 +9,12 @@ from common.constants import HTTP_OK, HTTP_BAD_REQUEST, \
 class TestPodBase(TestBase):
     def setUp(self):
         super(TestPodBase, self).setUp()
-        self.req_d = PodCreateRequest('zte-1', 'virtual', 'zte pod 1','ci-pod')
+        self.req_d = PodCreateRequest('zte-1', 'virtual',
+                                      'zte pod 1', 'ci-pod')
         self.req_e = PodCreateRequest('zte-2', 'metal', 'zte pod 2')
         self.get_res = Pod
         self.list_res = Pods
-        self.basePath = '/pods'
+        self.basePath = '/api/v1/pods'
 
     def assert_get_body(self, pod, req=None):
         if not req:
@@ -21,7 +22,7 @@ class TestPodBase(TestBase):
         self.assertEqual(pod.name, req.name)
         self.assertEqual(pod.mode, req.mode)
         self.assertEqual(pod.details, req.details)
-        self.assertEqual(pod.role, req.role)        
+        self.assertEqual(pod.role, req.role)
         self.assertIsNotNone(pod.creation_date)
         self.assertIsNotNone(pod._id)
 
@@ -41,11 +42,6 @@ class TestPodCreate(TestPodBase):
         code, body = self.create_d()
         self.assertEqual(code, HTTP_FORBIDDEN)
         self.assertIn('already exists', body)
-
-    def _assertMeta(self, meta, success):
-        self.assertEqual(meta.success, success)
-        if success:
-            self.assertEqual(meta.uri, '/pods/{}'.format(self.req_d.name))
 
 
 class TestPodGet(TestPodBase):

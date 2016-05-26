@@ -73,10 +73,10 @@ class GenericApiHandler(RequestHandler):
         return CreateResponse(href=href).format()
 
 
-class VersionHandler(RequestHandler):
+class VersionHandler(GenericApiHandler):
     """ Display a message for the API version """
     def get(self):
-        self.write("Collection of test result API, v1")
+        self.finish_request([{'v1': 'basics'}])
 
 
 class PodHandler(GenericApiHandler):

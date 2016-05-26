@@ -67,15 +67,17 @@ class TestResultBase(TestBase):
                                          trust_indicator=self.trust_indicator)
         self.get_res = TestResult
         self.list_res = TestResults
-        self.basePath = '/results'
+        self.basePath = '/api/v1/results'
         self.req_pod = PodCreateRequest(self.pod, 'metal', 'zte pod 1')
         self.req_project = ProjectCreateRequest(self.project, 'vping test')
         self.req_testcase = TestcaseCreateRequest('/cases/vping',
                                                   self.case,
                                                   'vping-ssh test')
-        self.create_help('/pods', self.req_pod)
-        self.create_help('/projects', self.req_project)
-        self.create_help('/projects/%s/cases', self.req_testcase, self.project)
+        self.create_help('/api/v1/pods', self.req_pod)
+        self.create_help('/api/v1/projects', self.req_project)
+        self.create_help('/api/v1/projects/%s/cases',
+                         self.req_testcase,
+                         self.project)
 
     def assert_res(self, code, result):
         self.assertEqual(code, HTTP_OK)
