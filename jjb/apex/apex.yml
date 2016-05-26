@@ -412,7 +412,7 @@
             max-total: 10
 
     builders:
-        - 'apex-deploy-virtual'
+        - 'apex-deploy'
         - 'apex-workspace-cleanup'
 
 - job-template:
@@ -453,7 +453,7 @@
 
 
     builders:
-        - 'apex-deploy-baremetal'
+        - 'apex-deploy'
         - 'apex-workspace-cleanup'
 
 # Brahmaputra Daily
@@ -754,16 +754,11 @@
             !include-raw: ./apex-gs-cleanup.sh
 
 - builder:
-    name: 'apex-deploy-virtual'
+    name: 'apex-deploy'
     builders:
         - shell:
-            !include-raw: ./apex-deploy-virtual.sh
+            !include-raw: ./apex-deploy.sh
 
-- builder:
-    name: 'apex-deploy-baremetal'
-    builders:
-        - shell:
-            !include-raw: ./apex-deploy-baremetal.sh
 
 #######################
 # trigger macros
