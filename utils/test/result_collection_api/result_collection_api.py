@@ -29,14 +29,16 @@ TODOs :
 
 """
 
-import tornado.ioloop
-import motor
 import argparse
 
-from resources.handlers import VersionHandler, PodHandler, \
-    ProjectHandler, TestcaseHandler, TestResultsHandler, DashboardHandler
-from common.config import APIConfig
+import tornado.ioloop
+import motor
 
+from resources.handlers import VersionHandler, \
+    ProjectHandler, TestcaseHandler, TestResultsHandler, DashboardHandler
+from resources.pod_handler import PodCLHandler, PodGURHandler
+from common.config import APIConfig
+from tornado_swagger_ui.tornado_swagger import swagger
 
 # optionally get config file from command line
 parser = argparse.ArgumentParser()
@@ -51,16 +53,16 @@ db = client[CONF.mongo_dbname]
 
 
 def make_app():
-    return tornado.web.Application(
+    return swagger.Application(
         [
             # GET /version => GET API version
             (r"/versions", VersionHandler),
 
             # few examples:
-            # GET /pods => Get all pods
-            # GET /pods/1 => Get details on POD 1
-            (r"/api/v1/pods", PodHandler),
-            (r"/api/v1/pods/([^/]+)", PodHandler),
+            # GET /api/v1/pods => Get all pods
+            # GET /api/v1/pods/1 => Get details on POD 1
+            (r"/api/v1/pods", PodCLHandler),
+            (r"/api/v1/pods/([^/]+)", PodGURHandler),
 
             # few examples:
             # GET /projects
@@ -70,10 +72,8 @@ def make_app():
 
             # few examples
             # GET /projects/qtip/cases => Get cases for qtip
-            #
             (r"/api/v1/projects/([^/]+)/cases", TestcaseHandler),
             (r"/api/v1/projects/([^/]+)/cases/([^/]+)", TestcaseHandler),
-            # (r"/test_cases/([^/]+)", TestCasesHandler),
 
             # new path to avoid a long depth
             # GET /results?project=functest&case=keystone.catalog&pod=1

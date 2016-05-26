@@ -32,6 +32,18 @@ class TestPodCreate(TestPodBase):
         (code, body) = self.create()
         self.assertEqual(code, HTTP_BAD_REQUEST)
 
+    def test_emptyName(self):
+        req_empty = PodCreateRequest('')
+        (code, body) = self.create(req_empty)
+        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertIn('pod name missing', body)
+
+    def test_noneName(self):
+        req_none = PodCreateRequest(None)
+        (code, body) = self.create(req_none)
+        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertIn('pod name missing', body)
+
     def test_success(self):
         code, body = self.create_d()
         self.assertEqual(code, HTTP_OK)

@@ -12,6 +12,8 @@
 # feng.xiaowei@zte.com.cn refactor testcase related handler  5-20-2016
 # feng.xiaowei@zte.com.cn refactor result related handler    5-23-2016
 # feng.xiaowei@zte.com.cn refactor dashboard related handler 5-24-2016
+# feng.xiaowei@zte.com.cn add methods to GenericApiHandler   5-26-2016
+# feng.xiaowei@zte.com.cn remove PodHandler                  5-26-2016
 ##############################################################################
 
 import json
@@ -24,7 +26,6 @@ from models import CreateResponse
 from resources.result_models import TestResult
 from resources.testcase_models import Testcase
 from resources.project_models import Project
-from resources.pod_models import Pod
 from common.constants import DEFAULT_REPRESENTATION, HTTP_BAD_REQUEST, \
     HTTP_NOT_FOUND, HTTP_FORBIDDEN
 from common.config import prepare_put_request
@@ -72,95 +73,43 @@ class GenericApiHandler(RequestHandler):
         href = self.request.full_url() + '/' + resource
         return CreateResponse(href=href).format()
 
+    @asynchronous
+    @gen.coroutine
+    def _create(self, table, data, mark):
+        data.creation_date = datetime.now()
+        _id = yield self._eval_db(table, 'insert', data.format())
+        if mark is None:
+            mark = _id
+        self.finish_request(self._create_response(mark))
+
+    @asynchronous
+    @gen.coroutine
+    def _list(self, table, format_cls, query=None):
+        if query is None:
+            query = {}
+        res = []
+        cursor = self._eval_db(table, 'find', query)
+        while (yield cursor.fetch_next):
+            res.append(format_data(cursor.next_object(), format_cls))
+        self.finish_request({table: res})
+
+    @asynchronous
+    @gen.coroutine
+    def _get_one(self, table, format_cls, query):
+        data = yield self._eval_db(table, 'find_one', query)
+        if data is None:
+            raise HTTPError(HTTP_NOT_FOUND,
+                            "{} Not Exist".format(query))
+        self.finish_request(format_data(data, format_cls))
+
+    def _eval_db(self, table, method, param):
+        return eval('self.db.%s.%s(param)' % (table, method))
+
 
 class VersionHandler(GenericApiHandler):
     """ Display a message for the API version """
     def get(self):
         self.finish_request([{'v1': 'basics'}])
-
-
-class PodHandler(GenericApiHandler):
-    """ Handle the requests about the POD Platforms
-    HTTP Methdods :
-        - GET : Get PODS
-        - POST : Create a pod
-        - DELETE : DELETE POD
-    """
-
-    def initialize(self):
-        """ Prepares the database for the entire class """
-        super(PodHandler, self).initialize()
-
-    @asynchronous
-    @gen.coroutine
-    def get(self, pod_name=None):
-        """
-        Get all pods or a single pod
-        :param pod_id:
-        """
-        query = dict()
-
-        if pod_name is not None:
-            query["name"] = pod_name
-            answer = yield self.db.pods.find_one(query)
-            if answer is None:
-                raise HTTPError(HTTP_NOT_FOUND,
-                                "{} Not Exist".format(pod_name))
-            else:
-                answer = format_data(answer, Pod)
-        else:
-            res = []
-            cursor = self.db.pods.find(query)
-            while (yield cursor.fetch_next):
-                res.append(format_data(cursor.next_object(), Pod))
-            answer = {'pods': res}
-
-        self.finish_request(answer)
-
-    @asynchronous
-    @gen.coroutine
-    def post(self):
-        """ Create a POD"""
-
-        if self.json_args is None:
-            raise HTTPError(HTTP_BAD_REQUEST)
-
-        query = {"name": self.json_args.get("name")}
-
-        # check for existing name in db
-        the_pod = yield self.db.pods.find_one(query)
-        if the_pod is not None:
-            raise HTTPError(HTTP_FORBIDDEN,
-                            "{} already exists as a pod".format(
-                                self.json_args.get("name")))
-
-        pod = Pod.from_dict(self.json_args)
-        pod.creation_date = datetime.now()
-
-        yield self.db.pods.insert(pod.format())
-        self.finish_request(self._create_response(pod.name))
-
-    @asynchronous
-    @gen.coroutine
-    def delete(self, pod_name):
-        """ Remove a POD
-
-        # check for an existing pod to be deleted
-        mongo_dict = yield self.db.pods.find_one(
-            {'name': pod_name})
-        pod = TestProject.pod(mongo_dict)
-        if pod is None:
-            raise HTTPError(HTTP_NOT_FOUND,
-                            "{} could not be found as a pod to be deleted"
-                            .format(pod_name))
-
-        # just delete it, or maybe save it elsewhere in a future
-        res = yield self.db.projects.remove(
-            {'name': pod_name})
-
-        self.finish_request(answer)
-        """
-        pass
 
 
 class ProjectHandler(GenericApiHandler):
