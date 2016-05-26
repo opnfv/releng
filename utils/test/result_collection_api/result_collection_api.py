@@ -35,8 +35,9 @@ import tornado.ioloop
 import motor
 
 from resources.handlers import VersionHandler, \
-    ProjectHandler, TestcaseHandler, TestResultsHandler, DashboardHandler
-from resources.pod_handler import PodCLHandler, PodGURHandler
+    TestcaseHandler, TestResultsHandler, DashboardHandler
+from resources.pod_handlers import PodCLHandler, PodGURHandler
+from resources.project_handlers import ProjectCLHandler, ProjectGURHandler
 from common.config import APIConfig
 from tornado_swagger_ui.tornado_swagger import swagger
 
@@ -67,8 +68,8 @@ def make_app():
             # few examples:
             # GET /projects
             # GET /projects/yardstick
-            (r"/api/v1/projects", ProjectHandler),
-            (r"/api/v1/projects/([^/]+)", ProjectHandler),
+            (r"/api/v1/projects", ProjectCLHandler),
+            (r"/api/v1/projects/([^/]+)", ProjectGURHandler),
 
             # few examples
             # GET /projects/qtip/cases => Get cases for qtip

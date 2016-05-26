@@ -1,7 +1,23 @@
+from tornado_swagger_ui.tornado_swagger import swagger
+
 __author__ = '__serena__'
 
 
+@swagger.model()
 class ProjectCreateRequest(object):
+    def __init__(self, name, description=''):
+        self.name = name
+        self.description = description
+
+    def format(self):
+        return {
+            "name": self.name,
+            "description": self.description,
+        }
+
+
+@swagger.model()
+class ProjectUpdateRequest(object):
     def __init__(self, name='', description=''):
         self.name = name
         self.description = description
@@ -13,14 +29,14 @@ class ProjectCreateRequest(object):
         }
 
 
+@swagger.model()
 class Project:
-    """ Describes a test project"""
-
-    def __init__(self):
-        self._id = None
-        self.name = None
-        self.description = None
-        self.creation_date = None
+    def __init__(self,
+                 name=None, _id=None, description=None, create_date=None):
+        self._id = _id
+        self.name = name
+        self.description = description
+        self.creation_date = create_date
 
     @staticmethod
     def from_dict(res_dict):
@@ -52,7 +68,11 @@ class Project:
         }
 
 
+@swagger.model()
 class Projects(object):
+    """
+        @ptype projects: C{list} of L{Project}
+    """
     def __init__(self, projects=list()):
         self.projects = projects
 
