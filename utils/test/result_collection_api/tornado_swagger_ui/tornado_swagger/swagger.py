@@ -128,7 +128,7 @@ class DocParser(object):
         if code is None:
             self.properties.setdefault(arg, {}).update({
                 'type': link
-           })
+            })
         elif code == 'list':
             self.properties.setdefault(arg, {}).update({
                 'type': 'array',
@@ -184,7 +184,7 @@ class model(DocParser):
         self.required = []
         self.cls = None
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args):
         if self.cls:
             return self.cls
 
@@ -206,17 +206,21 @@ class model(DocParser):
         argspec.args.remove("self")
         defaults = {}
         if argspec.defaults:
-            defaults = list(zip(argspec.args[-len(argspec.defaults):], argspec.defaults))
+            defaults = list(zip(argspec.args[-len(argspec.defaults):],
+                                argspec.defaults))
         required_args_count = len(argspec.args) - len(defaults)
         for arg in argspec.args[:required_args_count]:
             self.required.append(arg)
             self.properties.setdefault(arg, {'type': 'string'})
         for arg, default in defaults:
-            self.properties.setdefault(arg, {'type': 'string', "default": default})
+            self.properties.setdefault(arg, {
+                'type': 'string',
+                "default": default
+            })
 
 
 class operation(DocParser):
-    def __init__(self, nickname=None, **kwds):
+    def __init__(self, nickname='apis', **kwds):
         super(operation, self).__init__()
         self.nickname = nickname
         self.func = None
@@ -271,5 +275,11 @@ def docs(**opts):
 
 
 class Application(tornado.web.Application):
-    def __init__(self, handlers=None, default_host="", transforms=None, **settings):
-        super(Application, self).__init__(swagger_handlers() + handlers, default_host, transforms, **settings)
+    def __init__(self, handlers=None,
+                 default_host="",
+                 transforms=None,
+                 **settings):
+        super(Application, self).__init__(swagger_handlers() + handlers,
+                                          default_host,
+                                          transforms,
+                                          **settings)

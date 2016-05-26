@@ -5,13 +5,17 @@ import json
 import inspect
 import tornado.web
 import tornado.template
-from settings import SWAGGER_VERSION, URL_SWAGGER_API_LIST, URL_SWAGGER_API_SPEC, models
+from settings import SWAGGER_VERSION, \
+    SWAGGER_API_LIST, \
+    SWAGGER_API_SPEC
+from settings import models
 
 __author__ = 'serena'
 
 
 def json_dumps(obj, pretty=False):
-    return json.dumps(obj, sort_keys=True, indent=4, separators=(',', ': ')) if pretty else json.dumps(obj)
+    return json.dumps(obj, sort_keys=True, indent=4, separators=(',', ': ')) \
+        if pretty else json.dumps(obj)
 
 
 class SwaggerUIHandler(tornado.web.RequestHandler):
@@ -22,7 +26,9 @@ class SwaggerUIHandler(tornado.web.RequestHandler):
         return self.static_path
 
     def get(self):
-        discovery_url = urlparse.urljoin(self.request.full_url(), self.reverse_url(URL_SWAGGER_API_LIST))
+        discovery_url = \
+            urlparse.urljoin(self.request.full_url(),
+                             self.reverse_url(SWAGGER_API_LIST))
         self.render('index.html', discovery_url=discovery_url)
 
 
@@ -41,7 +47,7 @@ class SwaggerResourcesHandler(tornado.web.RequestHandler):
             'produces': ["application/json"],
             'description': 'Test Api Spec',
             'apis': [{
-                'path': self.reverse_url(URL_SWAGGER_API_SPEC),
+                'path': self.reverse_url(SWAGGER_API_SPEC),
                 'description': 'Test Api Spec'
             }]
         }
@@ -60,11 +66,14 @@ class SwaggerApiHandler(tornado.web.RequestHandler):
         if apis is None:
             raise tornado.web.HTTPError(404)
 
+        base_path = urlparse.urljoin(self.request.full_url(),
+                                     self.base_url)[:-1]
         specs = {
             'apiVersion': self.api_version,
             'swaggerVersion': SWAGGER_VERSION,
-            'basePath': urlparse.urljoin(self.request.full_url(), self.base_url)[:-1],
-            'apis': [self.__get_api_spec__(path, spec, operations) for path, spec, operations in apis],
+            'basePath': base_path,
+            'apis': [self.__get_api_spec__(path, spec, operations)
+                     for path, spec, operations in apis],
             'models': self.__get_models_spec(models)
         }
         self.finish(json_dumps(specs, self.get_arguments('pretty')))
@@ -103,14 +112,19 @@ class SwaggerApiHandler(tornado.web.RequestHandler):
 
     @staticmethod
     def find_api(host_handlers):
+        def get_path(url, args):
+            return url % tuple(['{%s}' % arg for arg in args])
+
+        def get_operations(cls):
+            return [member.rest_api
+                    for (_, member) in inspect.getmembers(cls)
+                    if hasattr(member, 'rest_api')]
+
         for host, handlers in host_handlers:
             for spec in handlers:
-                for (name, member) in inspect.getmembers(spec.handler_class):
-                    if inspect.ismethod(member) and hasattr(member, 'rest_api'):
-                        spec_path = spec._path % tuple(['{%s}' % arg for arg in member.rest_api.func_args])
-                        operations = [member.rest_api for (name, member) in inspect.getmembers(spec.handler_class)
-                                      if hasattr(member, 'rest_api')]
-                        yield spec_path, spec, operations
+                for (_, mbr) in inspect.getmembers(spec.handler_class):
+                    if inspect.ismethod(mbr) and hasattr(mbr, 'rest_api'):
+                        path = get_path(spec._path, mbr.rest_api.func_args)
+                        operations = get_operations(spec.handler_class)
+                        yield path, spec, operations
                         break
-
-
