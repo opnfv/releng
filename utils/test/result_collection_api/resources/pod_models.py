@@ -27,9 +27,9 @@ class PodCreateRequest(object):
 
 @swagger.model()
 class Pod(PodCreateRequest):
-    """ describes a POD platform """
-    def __init__(self, name='', mode='', details='', role="",
-                 _id='', create_date=''):
+    def __init__(self,
+                 name='', mode='', details='',
+                 role="", _id='', create_date=''):
         super(Pod, self).__init__(name, mode, details, role)
         self._id = _id
         self.creation_date = create_date
