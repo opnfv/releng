@@ -17,11 +17,13 @@ res_build_date=${1:-$(date -u +"%Y-%m-%d_%H-%M-%S")}
 project=$PROJECT
 branch=${GIT_BRANCH##*/}
 testbed=$NODE_NAME
-dir_result="${HOME}/opnfv/$project/results/$branch"
+dir_result="${HOME}/opnfv/$project/results"
+# src: https://wiki.opnfv.org/display/INF/Hardware+Infrastructure
+# + intel-pod3 (vsperf)
 node_list=(\
-'opnfv-jump-1' 'opnfv-jump-2' 'ericsson-pod1' 'ericsson-pod2' \
-'intelpod2-jumphost' 'intel-pod3' 'intel-pod5' 'intel-pod6' \
-'intel-pod8' 'huawei-us-deploy-bare-1' 'orange-fr-pod2')
+'lf-pod1' 'lf-pod2' 'intel-pod2' 'intel-pod3' \
+'intel-pod5' 'intel-pod6' 'intel-pod7' 'intel-pod8' \
+'ericsson-pod2' 'huawei-pod1')
 
 if [[ ! " ${node_list[@]} " =~ " ${testbed} " ]]; then
     echo "This is not a CI POD. Aborting pushing the logs to artifacts."
