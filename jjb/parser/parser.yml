@@ -64,6 +64,12 @@
             set -o xtrace
             export PATH=$PATH:/usr/local/bin/
 
+            virtualenv -p python2.7 $WORKSPACE/parser
+            source $WORKSPACE/parser/bin/activate
+
+            # Install tox
+            pip install tox
+
             # pep8 check parser/tosca2heat/tosca-parser
             echo "Running tox -e pep8 on tosca2heat ..."
             cd $WORKSPACE/tosca2heat/tosca-parser && tox -e pep8
