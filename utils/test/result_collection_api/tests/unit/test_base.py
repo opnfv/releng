@@ -5,7 +5,8 @@ from tornado.testing import AsyncHTTPTestCase
 from resources.pod_handlers import PodCLHandler, PodGURHandler
 from resources.project_handlers import ProjectCLHandler, ProjectGURHandler
 from resources.handlers import VersionHandler, \
-    TestcaseHandler, TestResultsHandler, DashboardHandler
+    TestResultsHandler, DashboardHandler
+from resources.testcase_handlers import TestcaseCLHandler, TestcaseGURHandler
 from resources.models import CreateResponse
 import fake_pymongo
 
@@ -32,8 +33,9 @@ class TestBase(AsyncHTTPTestCase):
                 (r"/api/v1/pods/([^/]+)", PodGURHandler),
                 (r"/api/v1/projects", ProjectCLHandler),
                 (r"/api/v1/projects/([^/]+)", ProjectGURHandler),
-                (r"/api/v1/projects/([^/]+)/cases", TestcaseHandler),
-                (r"/api/v1/projects/([^/]+)/cases/([^/]+)", TestcaseHandler),
+                (r"/api/v1/projects/([^/]+)/cases", TestcaseCLHandler),
+                (r"/api/v1/projects/([^/]+)/cases/([^/]+)",
+                 TestcaseGURHandler),
                 (r"/api/v1/results", TestResultsHandler),
                 (r"/api/v1/results([^/]*)", TestResultsHandler),
                 (r"/api/v1/results/([^/]*)", TestResultsHandler),

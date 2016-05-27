@@ -1,9 +1,7 @@
-from tornado import gen
-from tornado.web import asynchronous
-
 from tornado_swagger_ui.tornado_swagger import swagger
 from handlers import GenericApiHandler
 from pod_models import Pod
+from common.constants import HTTP_FORBIDDEN
 
 
 class GenericPodHandler(GenericApiHandler):
@@ -23,7 +21,6 @@ class PodCLHandler(GenericPodHandler):
         """
         self._list()
 
-    @gen.coroutine
     @swagger.operation(nickname='create')
     def post(self):
         """
@@ -36,7 +33,15 @@ class PodCLHandler(GenericPodHandler):
             @raise 403: pod already exists
             @raise 400: post without body
         """
-        self._create('{} already exists as a {}')
+        def query(data):
+            return {'name': data.name}
+
+        def error(data):
+            message = '{} already exists as a pod'.format(data.name)
+            return HTTP_FORBIDDEN, message
+
+        db_check = [(self.table, False, query, error)]
+        self._create(db_check)
 
 
 class PodGURHandler(GenericPodHandler):
@@ -52,8 +57,6 @@ class PodGURHandler(GenericPodHandler):
         query['name'] = pod_name
         self._get_one(query)
 
-    @asynchronous
-    @gen.coroutine
     def delete(self, pod_name):
         """ Remove a POD
 
