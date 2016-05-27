@@ -30,7 +30,7 @@ class ProjectUpdateRequest(object):
 
 
 @swagger.model()
-class Project:
+class Project(object):
     def __init__(self,
                  name=None, _id=None, description=None, create_date=None):
         self._id = _id

@@ -1,5 +1,11 @@
+from tornado_swagger_ui.tornado_swagger import swagger
+
+__author__ = '__serena__'
+
+
+@swagger.model()
 class TestcaseCreateRequest(object):
-    def __init__(self, url=None, name=None, description=None):
+    def __init__(self, name, url=None, description=None):
         self.name = name
         self.url = url
         self.description = description
@@ -12,6 +18,7 @@ class TestcaseCreateRequest(object):
         }
 
 
+@swagger.model()
 class TestcaseUpdateRequest(object):
     def __init__(self, name=None, description=None, project_name=None):
         self.name = name
@@ -26,7 +33,8 @@ class TestcaseUpdateRequest(object):
         }
 
 
-class Testcase:
+@swagger.model()
+class Testcase(object):
     """ Describes a test case"""
 
     def __init__(self):
@@ -73,7 +81,11 @@ class Testcase:
         }
 
 
+@swagger.model()
 class Testcases(object):
+    """
+        @ptype testcases: C{list} of L{Testcase}
+    """
     def __init__(self, testcases=list()):
         self.testcases = testcases
 

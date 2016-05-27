@@ -70,8 +70,8 @@ class TestResultBase(TestBase):
         self.basePath = '/api/v1/results'
         self.req_pod = PodCreateRequest(self.pod, 'metal', 'zte pod 1')
         self.req_project = ProjectCreateRequest(self.project, 'vping test')
-        self.req_testcase = TestcaseCreateRequest('/cases/vping',
-                                                  self.case,
+        self.req_testcase = TestcaseCreateRequest(self.case,
+                                                  '/cases/vping',
                                                   'vping-ssh test')
         self.create_help('/api/v1/pods', self.req_pod)
         self.create_help('/api/v1/projects', self.req_project)
