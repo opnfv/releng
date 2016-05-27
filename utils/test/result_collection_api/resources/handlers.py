@@ -24,7 +24,6 @@ from tornado import gen
 
 from models import CreateResponse
 from resources.result_models import TestResult
-from resources.testcase_models import Testcase
 from common.constants import DEFAULT_REPRESENTATION, HTTP_BAD_REQUEST, \
     HTTP_NOT_FOUND, HTTP_FORBIDDEN
 from common.config import prepare_put_request
@@ -44,6 +43,10 @@ class GenericApiHandler(RequestHandler):
         self.json_args = None
         self.table = None
         self.table_cls = None
+        self.db_projects = 'projects'
+        self.db_pods = 'pods'
+        self.db_testcases = 'testcases'
+        self.db_results = 'results'
 
     def prepare(self):
         if self.request.method != "GET" and self.request.method != "DELETE":
@@ -69,9 +72,15 @@ class GenericApiHandler(RequestHandler):
 
     @asynchronous
     @gen.coroutine
-    def _create(self, error):
+    def _create(self, db_checks, **kwargs):
+        """
+        :param db_checks: [(table, exist, query, (error, message))]
+        :param db_op: (insert/remove)
+        :param res_op: (_create_response/None)
+        :return:
+        """
         if self.json_args is None:
-            raise HTTPError(HTTP_BAD_REQUEST, 'no body')
+            raise HTTPError(HTTP_BAD_REQUEST, "no body")
 
         data = self.table_cls.from_dict(self.json_args)
         name = data.name
@@ -79,11 +88,15 @@ class GenericApiHandler(RequestHandler):
             raise HTTPError(HTTP_BAD_REQUEST,
                             '{} name missing'.format(self.table[:-1]))
 
-        exist_data = yield self._eval_db(self.table, 'find_one',
-                                         {"name": name})
-        if exist_data is not None:
-            raise HTTPError(HTTP_FORBIDDEN,
-                            error.format(name, self.table[:-1]))
+        for k, v in kwargs.iteritems():
+            data.__setattr__(k, v)
+
+        for table, exist, query, error in db_checks:
+            check = yield self._eval_db(table, 'find_one', query(data))
+            if (exist and not check) or (not exist and check):
+                code, message = error(data)
+                raise HTTPError(code, message)
+
         data.creation_date = datetime.now()
         yield self._eval_db(self.table, 'insert', data.format())
         self.finish_request(self._create_response(name))
@@ -121,173 +134,68 @@ class GenericApiHandler(RequestHandler):
         yield self._eval_db(self.table, 'remove', query)
         self.finish_request()
 
-    def _eval_db(self, table, method, param):
-        return eval('self.db.%s.%s(param)' % (table, method))
+    @asynchronous
+    @gen.coroutine
+    def _update(self, query, db_keys):
+        if self.json_args is None:
+            raise HTTPError(HTTP_BAD_REQUEST, "No payload")
+
+        # check old data exist
+        from_data = yield self._eval_db(self.table, 'find_one', query)
+        if from_data is None:
+            raise HTTPError(HTTP_NOT_FOUND,
+                            "{} could not be found in table [{}]"
+                            .format(query, self.table))
+
+        data = self.table_cls.from_dict(from_data)
+        # check new data exist
+        equal, new_query = self._update_query(db_keys, data)
+        if not equal:
+            to_data = yield self._eval_db(self.table, 'find_one', new_query)
+            if to_data is not None:
+                raise HTTPError(HTTP_FORBIDDEN,
+                                "{} already exists in table [{}]"
+                                .format(new_query, self.table))
+
+        # we merge the whole document """
+        edit_request = data.format()
+        edit_request.update(self._update_request(data))
+
+        """ Updating the DB """
+        yield self._eval_db(self.table, 'update', query, edit_request)
+        edit_request['_id'] = str(data._id)
+        self.finish_request(edit_request)
+
+    def _update_request(self, data):
+        request = dict()
+        for k, v in self.json_args.iteritems():
+            request = prepare_put_request(request, k, v,
+                                          data.__getattribute__(k))
+        if not request:
+            raise HTTPError(HTTP_FORBIDDEN, "Nothing to update")
+        return request
+
+    def _update_query(self, keys, data):
+        query = dict()
+        equal = True
+        for key in keys:
+            new = self.json_args.get(key)
+            old = data.__getattribute__(key)
+            if new is None:
+                new = old
+            elif new != old:
+                equal = False
+            query[key] = new
+        return equal, query
+
+    def _eval_db(self, table, method, *args):
+        return eval('self.db.%s.%s(*args)' % (table, method))
 
 
 class VersionHandler(GenericApiHandler):
     """ Display a message for the API version """
     def get(self):
         self.finish_request([{'v1': 'basics'}])
-
-
-class TestcaseHandler(GenericApiHandler):
-    """
-    TestCasesHandler Class
-    Handle the requests about the Test cases for test projects
-    HTTP Methdods :
-        - GET : Get all test cases and details about a specific one
-        - POST : Add a test project
-        - PUT : Edit test projects information (name and/or description)
-    """
-
-    def initialize(self):
-        """ Prepares the database for the entire class """
-        super(TestcaseHandler, self).initialize()
-
-    @asynchronous
-    @gen.coroutine
-    def get(self, project_name, case_name=None):
-        """
-        Get testcases(s) info
-        :param project_name:
-        :param case_name:
-        """
-
-        query = {'project_name': project_name}
-
-        if case_name is not None:
-            query["name"] = case_name
-            answer = yield self.db.testcases.find_one(query)
-            if answer is None:
-                raise HTTPError(HTTP_NOT_FOUND,
-                                "{} Not Exist".format(case_name))
-            else:
-                answer = format_data(answer, Testcase)
-        else:
-            res = []
-            cursor = self.db.testcases.find(query)
-            while (yield cursor.fetch_next):
-                res.append(format_data(cursor.next_object(), Testcase))
-            answer = {'testcases': res}
-
-        self.finish_request(answer)
-
-    @asynchronous
-    @gen.coroutine
-    def post(self, project_name):
-        """ Create a test case"""
-
-        if self.json_args is None:
-            raise HTTPError(HTTP_BAD_REQUEST,
-                            "Check your request payload")
-
-        # retrieve test project
-        project = yield self.db.projects.find_one(
-            {"name": project_name})
-        if project is None:
-            raise HTTPError(HTTP_FORBIDDEN,
-                            "Could not find project {}"
-                            .format(project_name))
-
-        case_name = self.json_args.get('name')
-        the_testcase = yield self.db.testcases.find_one(
-            {"project_name": project_name, 'name': case_name})
-        if the_testcase:
-            raise HTTPError(HTTP_FORBIDDEN,
-                            "{} already exists as a case in project {}"
-                            .format(case_name, project_name))
-
-        testcase = Testcase.from_dict(self.json_args)
-        testcase.project_name = project_name
-        testcase.creation_date = datetime.now()
-
-        yield self.db.testcases.insert(testcase.format())
-        self.finish_request(self._create_response(testcase.name))
-
-    @asynchronous
-    @gen.coroutine
-    def put(self, project_name, case_name):
-        """
-        Updates the name and description of a test case
-        :raises HTTPError (HTTP_NOT_FOUND, HTTP_FORBIDDEN)
-        """
-
-        query = {'project_name': project_name, 'name': case_name}
-
-        if self.json_args is None:
-            raise HTTPError(HTTP_BAD_REQUEST, "No payload")
-
-        # check if there is a case for the project in url parameters
-        from_testcase = yield self.db.testcases.find_one(query)
-        if from_testcase is None:
-            raise HTTPError(HTTP_NOT_FOUND,
-                            "{} could not be found as a {} case to be updated"
-                            .format(case_name, project_name))
-
-        testcase = Testcase.from_dict(from_testcase)
-        new_name = self.json_args.get("name")
-        new_project_name = self.json_args.get("project_name")
-        if not new_project_name:
-            new_project_name = project_name
-        new_description = self.json_args.get("description")
-
-        # check if there is not an existing test case
-        # with the name provided in the json payload
-        if new_name != case_name or new_project_name != project_name:
-            to_testcase = yield self.db.testcases.find_one(
-                {'project_name': new_project_name, 'name': new_name})
-            if to_testcase is not None:
-                raise HTTPError(HTTP_FORBIDDEN,
-                                "{} already exists as a case in project"
-                                .format(new_name, new_project_name))
-
-        # new dict for changes
-        request = dict()
-        request = prepare_put_request(request,
-                                      "name",
-                                      new_name,
-                                      testcase.name)
-        request = prepare_put_request(request,
-                                      "project_name",
-                                      new_project_name,
-                                      testcase.project_name)
-        request = prepare_put_request(request,
-                                      "description",
-                                      new_description,
-                                      testcase.description)
-
-        # we raise an exception if there isn't a change
-        if not request:
-            raise HTTPError(HTTP_FORBIDDEN,
-                            "Nothing to update")
-
-        # we merge the whole document """
-        edit_request = testcase.format()
-        edit_request.update(request)
-
-        """ Updating the DB """
-        yield self.db.testcases.update(query, edit_request)
-        new_case = yield self.db.testcases.find_one({"_id": testcase._id})
-        self.finish_request(format_data(new_case, Testcase))
-
-    @asynchronous
-    @gen.coroutine
-    def delete(self, project_name, case_name):
-        """ Remove a test case"""
-
-        query = {'project_name': project_name, 'name': case_name}
-
-        # check for an existing case to be deleted
-        testcase = yield self.db.testcases.find_one(query)
-        if testcase is None:
-            raise HTTPError(HTTP_NOT_FOUND,
-                            "{}/{} could not be found as a case to be deleted"
-                            .format(project_name, case_name))
-
-        # just delete it, or maybe save it elsewhere in a future
-        yield self.db.testcases.remove(query)
-        self.finish_request()
 
 
 class TestResultsHandler(GenericApiHandler):

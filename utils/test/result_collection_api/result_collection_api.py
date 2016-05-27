@@ -35,7 +35,8 @@ import tornado.ioloop
 import motor
 
 from resources.handlers import VersionHandler, \
-    TestcaseHandler, TestResultsHandler, DashboardHandler
+    TestResultsHandler, DashboardHandler
+from resources.testcase_handlers import TestcaseCLHandler, TestcaseGURHandler
 from resources.pod_handlers import PodCLHandler, PodGURHandler
 from resources.project_handlers import ProjectCLHandler, ProjectGURHandler
 from common.config import APIConfig
@@ -73,8 +74,8 @@ def make_app():
 
             # few examples
             # GET /projects/qtip/cases => Get cases for qtip
-            (r"/api/v1/projects/([^/]+)/cases", TestcaseHandler),
-            (r"/api/v1/projects/([^/]+)/cases/([^/]+)", TestcaseHandler),
+            (r"/api/v1/projects/([^/]+)/cases", TestcaseCLHandler),
+            (r"/api/v1/projects/([^/]+)/cases/([^/]+)", TestcaseGURHandler),
 
             # new path to avoid a long depth
             # GET /results?project=functest&case=keystone.catalog&pod=1

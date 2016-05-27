@@ -14,11 +14,11 @@ __author__ = '__serena__'
 class TestCaseBase(TestBase):
     def setUp(self):
         super(TestCaseBase, self).setUp()
-        self.req_d = TestcaseCreateRequest('/cases/vping_1',
-                                           'vping_1',
+        self.req_d = TestcaseCreateRequest('vping_1',
+                                           '/cases/vping_1',
                                            'vping-ssh test')
-        self.req_e = TestcaseCreateRequest('/cases/doctor_1',
-                                           'doctor_1',
+        self.req_e = TestcaseCreateRequest('doctor_1',
+                                           '/cases/doctor_1',
                                            'create doctor')
         self.update_d = TestcaseUpdateRequest('vping_1',
                                               'vping-ssh test',
@@ -80,6 +80,18 @@ class TestCaseCreate(TestCaseBase):
         code, body = self.create(self.req_d, 'noProject')
         self.assertEqual(code, HTTP_FORBIDDEN)
         self.assertIn('Could not find project', body)
+
+    def test_emptyName(self):
+        req_empty = TestcaseCreateRequest('')
+        (code, body) = self.create(req_empty, self.project)
+        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertIn('testcase name missing', body)
+
+    def test_noneName(self):
+        req_none = TestcaseCreateRequest(None)
+        (code, body) = self.create(req_none, self.project)
+        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertIn('testcase name missing', body)
 
     def test_success(self):
         code, body = self.create_d()
@@ -148,6 +160,7 @@ class TestCaseUpdate(TestCaseBase):
         self.assert_update_body(self.req_d, body, self.update_e)
 
         _, new_body = self.get(self.req_e.name)
+        print(new_body)
         self.assertEqual(_id, new_body._id)
         self.assert_update_body(self.req_d, new_body, self.update_e)
 
