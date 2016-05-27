@@ -9,6 +9,8 @@
 
     jobs:
         - 'fastpathmetrics-verify-{stream}'
+        - 'fastpathmetrics-merge-{stream}'
+        - 'fastpathmetrics-daily-{stream}'
 
     stream:
         - master:
@@ -58,4 +60,105 @@
 
     builders:
         - shell: |
-            echo "Nothing to verify!"
+            pwd
+            cd src
+            make clobber
+            make
+
+- job-template:
+    name: 'fastpathmetrics-merge-{stream}'
+
+    project-type: freestyle
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 3
+            max-per-node: 2
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-defaults'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/{branch}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**'
+
+    builders:
+        - shell: |
+            pwd
+            cd src
+            make clobber
+            make
+
+- job-template:
+    name: 'fastpathmetrics-daily-{stream}'
+
+    project-type: freestyle
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 3
+            max-per-node: 2
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-defaults'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/{branch}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**'
+
+    builders:
+        - shell: |
+            pwd
+            cd src
+            make clobber
+            make
