@@ -71,9 +71,9 @@ if [[ "$BUILD_DIRECTORY" == *verify* ]]; then
     DEPLOY_SETTINGS_DIR="${WORKSPACE}/config/deploy"
     NETWORK_SETTINGS_DIR="${WORKSPACE}/config/network"
     DEPLOY_CMD="$(pwd)/deploy.sh"
-    export RESOURCES="${WORKSPACE}/build/images/"
-    export CONFIG="${WORKSPACE}/build"
-    export LIB="${WORKSPACE}/lib"
+    RESOURCES="${WORKSPACE}/build/images/"
+    CONFIG="${WORKSPACE}/build"
+    LIB="${WORKSPACE}/lib"
     # Make sure python34 deps are installed
     for dep_pkg in epel-release python34 python34-PyYAML python34-setuptools; do
       if ! rpm -q ${dep_pkg} > /dev/null; then
@@ -114,16 +114,20 @@ else
     DEPLOY_CMD=opnfv-deploy
     DEPLOY_SETTINGS_DIR="/etc/opnfv-apex/"
     NETWORK_SETTINGS_DIR="/etc/opnfv-apex/"
-    export RESOURCES="/var/opt/opnfv/images"
-    export CONFIG="/var/opt/opnfv"
+    RESOURCES="/var/opt/opnfv/images"
+    CONFIG="/var/opt/opnfv"
+    LIB="/var/opt/opnfv/lib"
 fi
 
+# set env vars to deploy cmd
+DEPLOY_CMD="CONFIG=${CONFIG} RESOURCES=${RESOURCES} LIB=${LIB} ${DEPLOY_CMD}"
+
 if [ "$OPNFV_CLEAN" == 'yes' ]; then
-    if [[ "$BUILD_DIRECTORY" == *verify* ]]; then
-        sudo ./clean.sh
-    else
-        sudo opnfv-clean
-    fi
+  if [[ "$BUILD_DIRECTORY" == *verify* ]]; then
+    sudo CONFIG=${CONFIG} LIB=${LIB} ./clean.sh
+  else
+    sudo CONFIG=${CONFIG} LIB=${LIB} opnfv-clean
+  fi
 fi
 
 echo "Deploy Scenario set to ${DEPLOY_SCENARIO}"
