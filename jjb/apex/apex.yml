@@ -34,7 +34,7 @@
             branch: 'master'
             gs-pathname: ''
             block-stream: 'brahmaputra'
-            slave: 'intel-pod7'
+            slave: 'lf-pod1'
             verify-slave: 'apex-verify-master'
             daily-slave: 'apex-daily-master'
 
@@ -665,6 +665,34 @@
           - project: 'yardstick-apex-{slave}-daily-{stream1}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-nosdn-nofeature-ha
+            block: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'apex-deploy-baremetal-os-odl_l2-nofeature-ha-{stream1}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-build-{stream1}/build
+              OPNFV_CLEAN=yes
+            git-revision: true
+            same-node: true
+            block: true
+        - trigger-builds:
+          - project: 'functest-apex-{slave}-daily-{stream1}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl_l2-nofeature-ha
+            block: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'yardstick-apex-{slave}-daily-{stream1}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl_l2-nofeature-ha
             block: true
             same-node: true
             block-thresholds:
