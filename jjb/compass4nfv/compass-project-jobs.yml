@@ -6,7 +6,7 @@
 
     project: 'compass4nfv'
 
-    pod: 'compass-virtual'
+    slave-label: 'compass-virtual'
 
     stream:
         - master:
@@ -59,7 +59,7 @@
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
         - '{installer}-defaults'
-        - '{pod}-defaults'
+        - '{slave-label}-defaults'
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-nosdn-nofeature-ha'
@@ -96,7 +96,7 @@
               same-node: true
               block: true
         - trigger-builds:
-            - project: 'functest-compass-{pod}-suite-{stream}'
+            - project: 'functest-{slave-label}-suite-{stream}'
               current-parameters: true
               predefined-parameters:
                 FUNCTEST_SUITE_NAME=vping_userdata
