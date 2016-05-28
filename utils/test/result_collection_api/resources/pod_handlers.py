@@ -31,7 +31,7 @@ class PodCLHandler(GenericPodHandler):
             @rtype: L{Pod}
             @return 200: pod is created.
             @raise 403: pod already exists
-            @raise 400: post without body
+            @raise 400: body or name not provided
         """
         def query(data):
             return {'name': data.name}
@@ -40,8 +40,9 @@ class PodCLHandler(GenericPodHandler):
             message = '{} already exists as a pod'.format(data.name)
             return HTTP_FORBIDDEN, message
 
-        db_check = [(self.table, False, query, error)]
-        self._create(db_check)
+        miss_checks = ['name']
+        db_checks = [(self.table, False, query, error)]
+        self._create(miss_checks, db_checks)
 
 
 class PodGURHandler(GenericPodHandler):
