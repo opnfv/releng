@@ -33,7 +33,7 @@ class ProjectCLHandler(GenericProjectHandler):
             @rtype: L{Project}
             @return 200: project is created.
             @raise 403: project already exists
-            @raise 400: post without body
+            @raise 400:  body or name not provided
         """
         def query(data):
             return {'name': data.name}
@@ -42,8 +42,9 @@ class ProjectCLHandler(GenericProjectHandler):
             message = '{} already exists as a project'.format(data.name)
             return HTTP_FORBIDDEN, message
 
-        db_check = [(self.table, False, query, error)]
-        self._create(db_check)
+        miss_checks = ['name']
+        db_checks = [(self.table, False, query, error)]
+        self._create(miss_checks, db_checks)
 
 
 class ProjectGURHandler(GenericProjectHandler):

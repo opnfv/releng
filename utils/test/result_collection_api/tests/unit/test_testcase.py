@@ -85,13 +85,13 @@ class TestCaseCreate(TestCaseBase):
         req_empty = TestcaseCreateRequest('')
         (code, body) = self.create(req_empty, self.project)
         self.assertEqual(code, HTTP_BAD_REQUEST)
-        self.assertIn('testcase name missing', body)
+        self.assertIn('name missing', body)
 
     def test_noneName(self):
         req_none = TestcaseCreateRequest(None)
         (code, body) = self.create(req_none, self.project)
         self.assertEqual(code, HTTP_BAD_REQUEST)
-        self.assertIn('testcase name missing', body)
+        self.assertIn('name missing', body)
 
     def test_success(self):
         code, body = self.create_d()

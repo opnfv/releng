@@ -1,4 +1,6 @@
+from tornado_swagger_ui.tornado_swagger import swagger
 
+@swagger.model()
 class ResultCreateRequest(object):
     def __init__(self,
                  pod_name=None,
@@ -43,9 +45,8 @@ class ResultCreateRequest(object):
         }
 
 
-class TestResult:
-    """ Describes a test result"""
-
+@swagger.model()
+class TestResult(object):
     def __init__(self):
         self._id = None
         self.case_name = None
@@ -132,7 +133,11 @@ class TestResult:
         }
 
 
+@swagger.model()
 class TestResults(object):
+    """
+        @ptype testcases: C{list} of L{TestResult}
+    """
     def __init__(self, results=list()):
         self.results = results
 
