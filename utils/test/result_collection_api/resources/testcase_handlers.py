@@ -37,7 +37,7 @@ class TestcaseCLHandler(GenericTestcaseHandler):
             @return 200: testcase is created in this project.
             @raise 403: project not exist
                         or testcase already exists in this project
-            @raise 400: post without body
+            @raise 400: body or name not provided
         """
         def p_query(data):
             return {'name': data.project_name}
@@ -57,9 +57,10 @@ class TestcaseCLHandler(GenericTestcaseHandler):
                 .format(data.name, data.project_name)
             return HTTP_FORBIDDEN, message
 
+        miss_checks = ['name']
         db_checks = [(self.db_projects, True, p_query, p_error),
                      (self.db_testcases, False, tc_query, tc_error)]
-        self._create(db_checks, project_name=project_name)
+        self._create(miss_checks, db_checks, project_name=project_name)
 
 
 class TestcaseGURHandler(GenericTestcaseHandler):

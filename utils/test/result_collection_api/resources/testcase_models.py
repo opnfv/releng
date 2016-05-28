@@ -35,8 +35,6 @@ class TestcaseUpdateRequest(object):
 
 @swagger.model()
 class Testcase(object):
-    """ Describes a test case"""
-
     def __init__(self):
         self._id = None
         self.name = None

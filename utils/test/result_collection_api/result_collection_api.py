@@ -34,11 +34,11 @@ import argparse
 import tornado.ioloop
 import motor
 
-from resources.handlers import VersionHandler, \
-    TestResultsHandler, DashboardHandler
+from resources.handlers import VersionHandler, DashboardHandler
 from resources.testcase_handlers import TestcaseCLHandler, TestcaseGURHandler
 from resources.pod_handlers import PodCLHandler, PodGURHandler
 from resources.project_handlers import ProjectCLHandler, ProjectGURHandler
+from resources.result_handlers import ResultsCLHandler, ResultsGURHandler
 from common.config import APIConfig
 from tornado_swagger_ui.tornado_swagger import swagger
 
@@ -83,9 +83,8 @@ def make_app():
             # POST /results =>
             # Push results with mandatory request payload parameters
             # (project, case, and pod)
-            (r"/api/v1/results", TestResultsHandler),
-            (r"/api/v1/results([^/]*)", TestResultsHandler),
-            (r"/api/v1/results/([^/]*)", TestResultsHandler),
+            (r"/api/v1/results", ResultsCLHandler),
+            (r"/api/v1/results/([^/]+)", ResultsGURHandler),
 
             # Method to manage Dashboard ready results
             # GET /dashboard?project=functest&case=vPing&pod=opnfv-jump2

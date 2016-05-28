@@ -33,6 +33,8 @@ class MemDb(object):
     def _find_one(self, spec_or_id=None, *args):
         if spec_or_id is not None and not isinstance(spec_or_id, dict):
             spec_or_id = {"_id": spec_or_id}
+        if '_id' in spec_or_id:
+            spec_or_id['_id'] = str(spec_or_id['_id'])
         cursor = self._find(spec_or_id, *args)
         for result in cursor:
             return result
