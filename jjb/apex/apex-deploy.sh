@@ -146,17 +146,17 @@ else
   NETWORK_FILE="/root/network/network_settings.yaml"
   INVENTORY_FILE="/root/inventory/pod_settings.yaml"
 
-  if [ ! -e "$INVENTORY_FILE" ]; then
+  if ! sudo test -e "$INVENTORY_FILE"; then
     echo "ERROR: Required settings file missing: Inventory settings file ${INVENTORY_FILE}"
+    exit 1
   fi
   # include inventory file for bare metal deployment
   DEPLOY_CMD="${DEPLOY_CMD} -i ${INVENTORY_FILE}"
 fi
 
 # Check that network settings file exists
-if [ ! -e "$NETWORK_FILE" ]; then
-  echo "ERROR: Required settings file missing for Network Settings"
-  echo "Network settings file: ${NETWORK_FILE}"
+if ! sudo test -e "$NETWORK_FILE"; then
+  echo "ERROR: Required settings file missing: Network Settings file ${NETWORK_FILE}"
   exit 1
 fi
 
