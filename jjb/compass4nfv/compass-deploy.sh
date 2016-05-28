@@ -42,7 +42,11 @@ fi
 
 cd $WORKSPACE
 
-export OS_VERSION=${COMPASS_OS_VERSION}
+if [[ "$COMPASS_OS_VERSION" =~ "ubuntu1404" ]]; then
+    export OS_VERSION="trusty"
+else
+    export OS_VERSION=${COMPASS_OS_VERSION}
+fi
 export OPENSTACK_VERSION=${COMPASS_OPENSTACK_VERSION}
 ./deploy.sh --dha ${DHA_CONF} --network ${NETWORK_CONF}
 if [ $? -ne 0 ]; then

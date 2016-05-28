@@ -22,42 +22,64 @@
     pod:
         - baremetal:
             slave-label: compass-baremetal
-            os-version: 'trusty'
             <<: *master
         - virtual:
             slave-label: compass-virtual
-            os-version: 'trusty'
             <<: *master
         - baremetal:
             slave-label: compass-baremetal
-            os-version: 'trusty'
             <<: *brahmaputra
         - virtual:
             slave-label: compass-virtual
-            os-version: 'trusty'
             <<: *brahmaputra
 #--------------------------------
-#        master
+#       NONE-CI PODS
 #--------------------------------
-        - huawei-pod2:
-            slave-label: '{pod}'
-            os-version: 'centos7'
-            <<: *master
 
     scenario:
-        - 'os-nosdn-nofeature-ha':
+        - 'os-nosdn-nofeature-ha-ubuntu1404':
+            deploy-scenario: 'os-nosdn-nofeature-ha'
+            os-version: 'ubuntu1404'
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
-        - 'os-odl_l2-nofeature-ha':
+        - 'os-odl_l2-nofeature-ha-ubuntu1404':
+            deploy-scenario: 'os-odl_l2-nofeature-ha'
+            os-version: 'ubuntu1404'
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
-        - 'os-odl_l3-nofeature-ha':
+        - 'os-odl_l3-nofeature-ha-ubuntu1404':
+            deploy-scenario: 'os-odl_l3-nofeature-ha'
+            os-version: 'ubuntu1404'
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
-        - 'os-onos-nofeature-ha':
+        - 'os-onos-nofeature-ha-ubuntu1404':
+            deploy-scenario: 'os-onos-nofeature-ha'
+            os-version: 'ubuntu1404'
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
-        - 'os-ocl-nofeature-ha':
+        - 'os-ocl-nofeature-ha-ubuntu1404':
+            deploy-scenario: 'os-ocl-nofeature-ha'
+            os-version: 'ubuntu1404'
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
+        - 'os-nosdn-nofeature-ha-centos7':
+            deploy-scenario: 'os-nosdn-nofeature-ha'
+            os-version: 'centos7'
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
+        - 'os-odl_l2-nofeature-ha-centos7':
+            deploy-scenario: 'os-odl_l2-nofeature-ha'
+            os-version: 'centos7'
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
+        - 'os-odl_l3-nofeature-ha-centos7':
+            deploy-scenario: 'os-odl_l3-nofeature-ha'
+            os-version: 'centos7'
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
+        - 'os-onos-nofeature-ha-centos7':
+            deploy-scenario: 'os-onos-nofeature-ha'
+            os-version: 'centos7'
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
 
@@ -108,7 +130,7 @@
             - project: 'compass-deploy-{pod}-daily-{stream}'
               current-parameters: false
               predefined-parameters: |
-                DEPLOY_SCENARIO={scenario}
+                DEPLOY_SCENARIO={deploy-scenario}
                 COMPASS_OS_VERSION={os-version}
               same-node: true
               block: true
@@ -216,105 +238,165 @@
 # trigger macros
 ########################
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-huawei-pod2-master-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-ubuntu1404-baremetal-master-trigger'
     triggers:
         - timed: '0 3 * * *'
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-huawei-pod2-master-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-ubuntu1404-baremetal-master-trigger'
     triggers:
         - timed: '0 21 * * *'
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-huawei-pod2-master-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-ubuntu1404-baremetal-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-huawei-pod2-master-trigger'
+    name: 'compass-os-onos-nofeature-ha-ubuntu1404-baremetal-master-trigger'
     triggers:
         - timed: '0 15 * * *'
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-huawei-pod2-master-trigger'
-    triggers:
-        - timed: ''
-
-- trigger:
-    name: 'compass-os-nosdn-nofeature-ha-baremetal-master-trigger'
-    triggers:
-        - timed: '0 3 * * *'
-- trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-baremetal-master-trigger'
-    triggers:
-        - timed: '0 21 * * *'
-- trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-baremetal-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'compass-os-onos-nofeature-ha-baremetal-master-trigger'
-    triggers:
-        - timed: '0 15 * * *'
-- trigger:
-    name: 'compass-os-ocl-nofeature-ha-baremetal-master-trigger'
+    name: 'compass-os-ocl-nofeature-ha-ubuntu1404-baremetal-master-trigger'
     triggers:
         - timed: '0 9 * * *'
 
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-baremetal-brahmaputra-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-centos7-baremetal-master-trigger'
+    triggers:
+        - timed: '0 3 * * *'
+- trigger:
+    name: 'compass-os-odl_l2-nofeature-ha-centos7-baremetal-master-trigger'
+    triggers:
+        - timed: '0 21 * * *'
+- trigger:
+    name: 'compass-os-odl_l3-nofeature-ha-centos7-baremetal-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-baremetal-brahmaputra-trigger'
+    name: 'compass-os-onos-nofeature-ha-centos7-baremetal-master-trigger'
+    triggers:
+        - timed: '0 15 * * *'
+- trigger:
+    name: 'compass-os-ocl-nofeature-ha-centos7-baremetal-master-trigger'
+    triggers:
+        - timed: '0 9 * * *'
+
+- trigger:
+    name: 'compass-os-nosdn-nofeature-ha-ubuntu1404-baremetal-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-baremetal-brahmaputra-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-ubuntu1404-baremetal-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-baremetal-brahmaputra-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-ubuntu1404-baremetal-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-baremetal-brahmaputra-trigger'
+    name: 'compass-os-onos-nofeature-ha-ubuntu1404-baremetal-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-ocl-nofeature-ha-ubuntu1404-baremetal-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-nosdn-nofeature-ha-centos7-baremetal-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l2-nofeature-ha-centos7-baremetal-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l3-nofeature-ha-centos7-baremetal-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-onos-nofeature-ha-centos7-baremetal-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-ocl-nofeature-ha-centos7-baremetal-brahmaputra-trigger'
     triggers:
         - timed: ''
 
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-virtual-master-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-ubuntu1404-virtual-master-trigger'
     triggers:
         - timed: '0 3 * * *'
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-virtual-master-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-ubuntu1404-virtual-master-trigger'
     triggers:
         - timed: '0 21 * * *'
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-virtual-master-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-ubuntu1404-virtual-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-virtual-master-trigger'
+    name: 'compass-os-onos-nofeature-ha-ubuntu1404-virtual-master-trigger'
     triggers:
         - timed: '0 15 * * *'
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-virtual-master-trigger'
+    name: 'compass-os-ocl-nofeature-ha-ubuntu1404-virtual-master-trigger'
     triggers:
         - timed: '0 9 * * *'
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-virtual-brahmaputra-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-ubuntu1404-virtual-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-virtual-brahmaputra-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-ubuntu1404-virtual-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-virtual-brahmaputra-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-ubuntu1404-virtual-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-virtual-brahmaputra-trigger'
+    name: 'compass-os-onos-nofeature-ha-ubuntu1404-virtual-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-virtual-brahmaputra-trigger'
+    name: 'compass-os-ocl-nofeature-ha-ubuntu1404-virtual-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-nosdn-nofeature-ha-centos7-virtual-master-trigger'
+    triggers:
+        - timed: '0 3 * * *'
+- trigger:
+    name: 'compass-os-odl_l2-nofeature-ha-centos7-virtual-master-trigger'
+    triggers:
+        - timed: '0 21 * * *'
+- trigger:
+    name: 'compass-os-odl_l3-nofeature-ha-centos7-virtual-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-onos-nofeature-ha-centos7-virtual-master-trigger'
+    triggers:
+        - timed: '0 15 * * *'
+- trigger:
+    name: 'compass-os-ocl-nofeature-ha-centos7-virtual-master-trigger'
+    triggers:
+        - timed: '0 9 * * *'
+- trigger:
+    name: 'compass-os-nosdn-nofeature-ha-centos7-virtual-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l2-nofeature-ha-centos7-virtual-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l3-nofeature-ha-centos7-virtual-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-onos-nofeature-ha-centos7-virtual-brahmaputra-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-ocl-nofeature-ha-centos7-virtual-brahmaputra-trigger'
     triggers:
         - timed: ''
