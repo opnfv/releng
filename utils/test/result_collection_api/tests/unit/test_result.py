@@ -155,18 +155,6 @@ class TestResultCreate(TestResultBase):
         self.assert_href(body)
 
     def test_createSameResults(self):
-        # req_again = ResultCreateRequest(pod_name=self.pod,
-        #                                  project_name=self.project,
-        #                                  case_name=self.case,
-        #                                  installer=self.installer,
-        #                                  version=self.version,
-        #                                  start_date="2016-05-23 08:16:09.477097",
-        #                                  stop_date=self.stop_date,
-        #                                  details=self.details.format(),
-        #                                  build_tag=self.build_tag,
-        #                                  scenario=self.scenario,
-        #                                  criteria=self.criteria,
-        #                                  trust_indicator=self.trust_indicator)
         req_again = copy.deepcopy(self.req_d)
         req_again.start_date = "2016-05-23 08:16:09.477097"
         req_again.stop_date = "2016-05-23 08:16:19.477097"

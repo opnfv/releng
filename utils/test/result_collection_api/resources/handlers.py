@@ -177,7 +177,7 @@ class GenericApiHandler(RequestHandler):
         request = dict()
         for k, v in self.json_args.iteritems():
             request = self._update_request(request, k, v,
-                                          data.__getattribute__(k))
+                                           data.__getattribute__(k))
         if not request:
             raise HTTPError(HTTP_FORBIDDEN, "Nothing to update")
         return request

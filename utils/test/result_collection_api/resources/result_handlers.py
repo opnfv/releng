@@ -54,8 +54,8 @@ class ResultsCLHandler(GenericResultHandler):
                  - period : x (x last days)
                  - scenario : the test scenario (previously version)
                  - criteria : the global criteria status passed or failed
-                 - trust_indicator : evaluate the stability of the test case to avoid
-                 running systematically long and stable test case
+                 - trust_indicator : evaluate the stability of the test case
+                   to avoid running systematically long and stable test case
 
                 GET /results/project=functest&case=vPing&version=Arno-R1 \
                 &pod=pod_name&period=15
