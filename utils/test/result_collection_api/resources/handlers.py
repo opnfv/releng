@@ -67,13 +67,14 @@ class GenericApiHandler(RequestHandler):
         self.finish()
 
     def _create_response(self, resource):
-        href = self.request.full_url() + '/' + resource
+        href = self.request.full_url() + '/' + str(resource)
         return CreateResponse(href=href).format()
 
     @asynchronous
     @gen.coroutine
-    def _create(self, db_checks, **kwargs):
+    def _create(self, miss_checks, db_checks, **kwargs):
         """
+        :param miss_checks: [miss1, miss2]
         :param db_checks: [(table, exist, query, (error, message))]
         :param db_op: (insert/remove)
         :param res_op: (_create_response/None)
@@ -83,10 +84,11 @@ class GenericApiHandler(RequestHandler):
             raise HTTPError(HTTP_BAD_REQUEST, "no body")
 
         data = self.table_cls.from_dict(self.json_args)
-        name = data.name
-        if name is None or name == '':
-            raise HTTPError(HTTP_BAD_REQUEST,
-                            '{} name missing'.format(self.table[:-1]))
+        for miss in miss_checks:
+            miss_data = data.__getattribute__(miss)
+            if miss_data is None or miss_data == '':
+                raise HTTPError(HTTP_BAD_REQUEST,
+                                '{} missing'.format(miss))
 
         for k, v in kwargs.iteritems():
             data.__setattr__(k, v)
@@ -98,8 +100,12 @@ class GenericApiHandler(RequestHandler):
                 raise HTTPError(code, message)
 
         data.creation_date = datetime.now()
-        yield self._eval_db(self.table, 'insert', data.format())
-        self.finish_request(self._create_response(name))
+        _id = yield self._eval_db(self.table, 'insert', data.format())
+        if 'name' in self.json_args:
+            resource = data.name
+        else:
+            resource = _id
+        self.finish_request(self._create_response(resource))
 
     @asynchronous
     @gen.coroutine
@@ -196,172 +202,6 @@ class VersionHandler(GenericApiHandler):
     """ Display a message for the API version """
     def get(self):
         self.finish_request([{'v1': 'basics'}])
-
-
-class TestResultsHandler(GenericApiHandler):
-    """
-    TestResultsHandler Class
-    Handle the requests about the Test project's results
-    HTTP Methdods :
-        - GET : Get all test results and details about a specific one
-        - POST : Add a test results
-        - DELETE : Remove a test result
-    """
-
-    def initialize(self):
-        """ Prepares the database for the entire class """
-        super(TestResultsHandler, self).initialize()
-        self.name = "test_result"
-
-    @asynchronous
-    @gen.coroutine
-    def get(self, result_id=None):
-        """
-        Retrieve result(s) for a test project on a specific POD.
-        Available filters for this request are :
-         - project : project name
-         - case : case name
-         - pod : pod name
-         - version : platform version (Arno-R1, ...)
-         - installer (fuel, ...)
-         - build_tag : Jenkins build tag name
-         - period : x (x last days)
-         - scenario : the test scenario (previously version)
-         - criteria : the global criteria status passed or failed
-         - trust_indicator : evaluate the stability of the test case to avoid
-         running systematically long and stable test case
-
-
-        :param result_id: Get a result by ID
-        :raise HTTPError
-
-        GET /results/project=functest&case=vPing&version=Arno-R1 \
-        &pod=pod_name&period=15
-        => get results with optional filters
-        """
-
-        # prepare request
-        query = dict()
-        if result_id is not None:
-            query["_id"] = result_id
-            answer = yield self.db.results.find_one(query)
-            if answer is None:
-                raise HTTPError(HTTP_NOT_FOUND,
-                                "test result {} Not Exist".format(result_id))
-            else:
-                answer = format_data(answer, TestResult)
-        else:
-            pod_arg = self.get_query_argument("pod", None)
-            project_arg = self.get_query_argument("project", None)
-            case_arg = self.get_query_argument("case", None)
-            version_arg = self.get_query_argument("version", None)
-            installer_arg = self.get_query_argument("installer", None)
-            build_tag_arg = self.get_query_argument("build_tag", None)
-            scenario_arg = self.get_query_argument("scenario", None)
-            criteria_arg = self.get_query_argument("criteria", None)
-            period_arg = self.get_query_argument("period", None)
-            trust_indicator_arg = self.get_query_argument("trust_indicator",
-                                                          None)
-
-            if project_arg is not None:
-                query["project_name"] = project_arg
-
-            if case_arg is not None:
-                query["case_name"] = case_arg
-
-            if pod_arg is not None:
-                query["pod_name"] = pod_arg
-
-            if version_arg is not None:
-                query["version"] = version_arg
-
-            if installer_arg is not None:
-                query["installer"] = installer_arg
-
-            if build_tag_arg is not None:
-                query["build_tag"] = build_tag_arg
-
-            if scenario_arg is not None:
-                query["scenario"] = scenario_arg
-
-            if criteria_arg is not None:
-                query["criteria_tag"] = criteria_arg
-
-            if trust_indicator_arg is not None:
-                query["trust_indicator_arg"] = trust_indicator_arg
-
-            if period_arg is not None:
-                try:
-                    period_arg = int(period_arg)
-                except:
-                    raise HTTPError(HTTP_BAD_REQUEST)
-
-                if period_arg > 0:
-                    period = datetime.now() - timedelta(days=period_arg)
-                    obj = {"$gte": str(period)}
-                    query["creation_date"] = obj
-
-            res = []
-            cursor = self.db.results.find(query)
-            while (yield cursor.fetch_next):
-                res.append(format_data(cursor.next_object(), TestResult))
-            answer = {'results': res}
-
-        self.finish_request(answer)
-
-    @asynchronous
-    @gen.coroutine
-    def post(self):
-        """
-        Create a new test result
-        :return: status of the request
-        :raise HTTPError
-        """
-
-        # check for request payload
-        if self.json_args is None:
-            raise HTTPError(HTTP_BAD_REQUEST, 'no payload')
-
-        result = TestResult.from_dict(self.json_args)
-
-        # check for pod_name instead of id,
-        # keeping id for current implementations
-        if result.pod_name is None:
-            raise HTTPError(HTTP_BAD_REQUEST, 'pod is not provided')
-
-        # check for missing parameters in the request payload
-        if result.project_name is None:
-            raise HTTPError(HTTP_BAD_REQUEST, 'project is not provided')
-
-        if result.case_name is None:
-            raise HTTPError(HTTP_BAD_REQUEST, 'testcase is not provided')
-
-        # TODO : replace checks with jsonschema
-        # check for pod
-        the_pod = yield self.db.pods.find_one({"name": result.pod_name})
-        if the_pod is None:
-            raise HTTPError(HTTP_NOT_FOUND,
-                            "Could not find POD [{}] "
-                            .format(self.json_args.get("pod_name")))
-
-        # check for project
-        the_project = yield self.db.projects.find_one(
-            {"name": result.project_name})
-        if the_project is None:
-            raise HTTPError(HTTP_NOT_FOUND, "Could not find project [{}] "
-                            .format(result.project_name))
-
-        # check for testcase
-        the_testcase = yield self.db.testcases.find_one(
-            {"name": result.case_name})
-        if the_testcase is None:
-            raise HTTPError(HTTP_NOT_FOUND,
-                            "Could not find testcase [{}] "
-                            .format(result.case_name))
-
-        _id = yield self.db.results.insert(result.format(), check_keys=False)
-
-        self.finish_request(self._create_response(_id))
 
 
 class DashboardHandler(GenericApiHandler):

@@ -34,13 +34,13 @@ class TestProjectCreate(TestProjectBase):
         req_empty = ProjectCreateRequest('')
         (code, body) = self.create(req_empty)
         self.assertEqual(code, HTTP_BAD_REQUEST)
-        self.assertIn('project name missing', body)
+        self.assertIn('name missing', body)
 
     def test_noneName(self):
         req_none = ProjectCreateRequest(None)
         (code, body) = self.create(req_none)
         self.assertEqual(code, HTTP_BAD_REQUEST)
-        self.assertIn('project name missing', body)
+        self.assertIn('name missing', body)
 
     def test_success(self):
         (code, body) = self.create_d()

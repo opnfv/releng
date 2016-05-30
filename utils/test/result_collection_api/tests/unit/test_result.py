@@ -105,35 +105,35 @@ class TestResultCreate(TestResultBase):
     def test_nobody(self):
         (code, body) = self.create(None)
         self.assertEqual(code, HTTP_BAD_REQUEST)
-        self.assertIn('no payload', body)
+        self.assertIn('no body', body)
 
     def test_podNotProvided(self):
         req = self.req_d
         req.pod_name = None
         (code, body) = self.create(req)
         self.assertEqual(code, HTTP_BAD_REQUEST)
-        self.assertIn('pod is not provided', body)
+        self.assertIn('pod_name missing', body)
 
     def test_projectNotProvided(self):
         req = self.req_d
         req.project_name = None
         (code, body) = self.create(req)
         self.assertEqual(code, HTTP_BAD_REQUEST)
-        self.assertIn('project is not provided', body)
+        self.assertIn('project_name missing', body)
 
     def test_testcaseNotProvided(self):
         req = self.req_d
         req.case_name = None
         (code, body) = self.create(req)
         self.assertEqual(code, HTTP_BAD_REQUEST)
-        self.assertIn('testcase is not provided', body)
+        self.assertIn('case_name missing', body)
 
     def test_noPod(self):
         req = self.req_d
         req.pod_name = 'notExistPod'
         (code, body) = self.create(req)
         self.assertEqual(code, HTTP_NOT_FOUND)
-        self.assertIn('Could not find POD', body)
+        self.assertIn('Could not find pod', body)
 
     def test_noProject(self):
         req = self.req_d
