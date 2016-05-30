@@ -6,7 +6,7 @@ set -e
 labconfig=""
 sshkey=""
 if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
-    instack_mac=$(sudo virsh domiflist instack | grep default | \
+    instack_mac=$(sudo virsh domiflist undercloud | grep default | \
                   grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
     INSTALLER_IP=$(/usr/sbin/arp -e | grep ${instack_mac} | awk {'print $1'})
     sshkey="-v /root/.ssh/id_rsa:/root/.ssh/id_rsa"
