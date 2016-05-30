@@ -34,11 +34,12 @@ import argparse
 import tornado.ioloop
 import motor
 
-from resources.handlers import VersionHandler, DashboardHandler
+from resources.handlers import VersionHandler
 from resources.testcase_handlers import TestcaseCLHandler, TestcaseGURHandler
 from resources.pod_handlers import PodCLHandler, PodGURHandler
 from resources.project_handlers import ProjectCLHandler, ProjectGURHandler
 from resources.result_handlers import ResultsCLHandler, ResultsGURHandler
+from resources.dashboard_handlers import DashboardHandler
 from common.config import APIConfig
 from tornado_swagger_ui.tornado_swagger import swagger
 
@@ -92,7 +93,6 @@ def make_app():
             # get /dashboard
             #  => get the list of project with dashboard ready results
             (r"/dashboard/v1/results", DashboardHandler),
-            (r"/dashboard/v1/results([^/]*)", DashboardHandler),
         ],
         db=db,
         debug=CONF.api_debug_on,

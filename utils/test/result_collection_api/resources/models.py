@@ -13,6 +13,7 @@
 # feng.xiaowei@zte.com.cn  mv TestCase to testcase_models.py       5-20-2016
 # feng.xiaowei@zte.com.cn  mv TestResut to result_models.py        5-23-2016
 ##############################################################################
+from tornado_swagger_ui.tornado_swagger import swagger
 
 
 class CreateResponse(object):
@@ -30,3 +31,19 @@ class CreateResponse(object):
 
     def format(self):
         return {'href': self.href}
+
+
+@swagger.model()
+class Versions(object):
+    """
+        @ptype versions: C{list} of L{Version}
+    """
+    def __init__(self, versions):
+        self.versions = versions
+
+
+@swagger.model()
+class Version(object):
+    def __init__(self, version=None, description=None):
+        self.version = version
+        self.description = description

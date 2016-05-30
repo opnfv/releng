@@ -1,4 +1,5 @@
 import unittest
+import copy
 
 from test_base import TestBase
 from resources.pod_models import PodCreateRequest
@@ -7,7 +8,6 @@ from resources.testcase_models import TestcaseCreateRequest
 from resources.result_models import ResultCreateRequest, \
     TestResult, TestResults
 from common.constants import HTTP_OK, HTTP_BAD_REQUEST, HTTP_NOT_FOUND
-
 
 __author__ = '__serena__'
 
@@ -151,6 +151,27 @@ class TestResultCreate(TestResultBase):
 
     def test_success(self):
         (code, body) = self.create_d()
+        self.assertEqual(code, HTTP_OK)
+        self.assert_href(body)
+
+    def test_createSameResults(self):
+        # req_again = ResultCreateRequest(pod_name=self.pod,
+        #                                  project_name=self.project,
+        #                                  case_name=self.case,
+        #                                  installer=self.installer,
+        #                                  version=self.version,
+        #                                  start_date="2016-05-23 08:16:09.477097",
+        #                                  stop_date=self.stop_date,
+        #                                  details=self.details.format(),
+        #                                  build_tag=self.build_tag,
+        #                                  scenario=self.scenario,
+        #                                  criteria=self.criteria,
+        #                                  trust_indicator=self.trust_indicator)
+        req_again = copy.deepcopy(self.req_d)
+        req_again.start_date = "2016-05-23 08:16:09.477097"
+        req_again.stop_date = "2016-05-23 08:16:19.477097"
+
+        (code, body) = self.create(req_again)
         self.assertEqual(code, HTTP_OK)
         self.assert_href(body)
 
