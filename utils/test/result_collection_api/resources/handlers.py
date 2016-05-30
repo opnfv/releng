@@ -14,21 +14,23 @@
 # feng.xiaowei@zte.com.cn refactor dashboard related handler 5-24-2016
 # feng.xiaowei@zte.com.cn add methods to GenericApiHandler   5-26-2016
 # feng.xiaowei@zte.com.cn remove PodHandler                  5-26-2016
+# feng.xiaowei@zte.com.cn remove ProjectHandler              5-26-2016
+# feng.xiaowei@zte.com.cn remove TestcaseHandler             5-27-2016
+# feng.xiaowei@zte.com.cn remove ResultHandler               5-29-2016
+# feng.xiaowei@zte.com.cn remove DashboardHandler            5-30-2016
 ##############################################################################
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from tornado.web import RequestHandler, asynchronous, HTTPError
 from tornado import gen
 
 from models import CreateResponse
-from resources.result_models import TestResult
 from common.constants import DEFAULT_REPRESENTATION, HTTP_BAD_REQUEST, \
     HTTP_NOT_FOUND, HTTP_FORBIDDEN
 from common.config import prepare_put_request
-from dashboard.dashboard_utils import check_dashboard_ready_project, \
-    check_dashboard_ready_case, get_dashboard_result
+from tornado_swagger_ui.tornado_swagger import swagger
 
 
 def format_data(data, cls):
@@ -75,7 +77,7 @@ class GenericApiHandler(RequestHandler):
     def _create(self, miss_checks, db_checks, **kwargs):
         """
         :param miss_checks: [miss1, miss2]
-        :param db_checks: [(table, exist, query, (error, message))]
+        :param db_checks: [(table, exist, query, error)]
         :param db_op: (insert/remove)
         :param res_op: (_create_response/None)
         :return:
@@ -109,14 +111,18 @@ class GenericApiHandler(RequestHandler):
 
     @asynchronous
     @gen.coroutine
-    def _list(self, query=None):
+    def _list(self, query=None, res_op=None, *args):
         if query is None:
             query = {}
-        res = []
+        data = []
         cursor = self._eval_db(self.table, 'find', query)
         while (yield cursor.fetch_next):
-            res.append(format_data(cursor.next_object(), self.table_cls))
-        self.finish_request({self.table: res})
+            data.append(format_data(cursor.next_object(), self.table_cls))
+        if res_op is None:
+            res = {self.table: data}
+        else:
+            res = res_op(data, *args)
+        self.finish_request(res)
 
     @asynchronous
     @gen.coroutine
@@ -199,109 +205,10 @@ class GenericApiHandler(RequestHandler):
 
 
 class VersionHandler(GenericApiHandler):
-    """ Display a message for the API version """
+    @swagger.operation(nickname='list')
     def get(self):
+        """
+            @description: Display a message for the API version
+            @rtype: L{Versions}
+        """
         self.finish_request([{'v1': 'basics'}])
-
-
-class DashboardHandler(GenericApiHandler):
-    """
-    DashboardHandler Class
-    Handle the requests about the Test project's results
-    in a dahboard ready format
-    HTTP Methdods :
-        - GET : Get all test results and details about a specific one
-    """
-    def initialize(self):
-        """ Prepares the database for the entire class """
-        super(DashboardHandler, self).initialize()
-        self.name = "dashboard"
-
-    @asynchronous
-    @gen.coroutine
-    def get(self):
-        """
-        Retrieve dashboard ready result(s) for a test project
-        Available filters for this request are :
-         - project : project name
-         - case : case name
-         - pod : pod name
-         - version : platform version (Arno-R1, ...)
-         - installer (fuel, ...)
-         - period : x (x last days)
-
-
-        :param result_id: Get a result by ID
-        :raise HTTPError
-
-        GET /dashboard?project=functest&case=vPing&version=Arno-R1 \
-        &pod=pod_name&period=15
-        => get results with optional filters
-        """
-
-        project_arg = self.get_query_argument("project", None)
-        case_arg = self.get_query_argument("case", None)
-        pod_arg = self.get_query_argument("pod", None)
-        version_arg = self.get_query_argument("version", None)
-        installer_arg = self.get_query_argument("installer", None)
-        period_arg = self.get_query_argument("period", None)
-
-        # prepare request
-        query = dict()
-
-        if project_arg is not None:
-            query["project_name"] = project_arg
-
-        if case_arg is not None:
-            query["case_name"] = case_arg
-
-        if pod_arg is not None:
-            query["pod_name"] = pod_arg
-
-        if version_arg is not None:
-            query["version"] = version_arg
-
-        if installer_arg is not None:
-            query["installer"] = installer_arg
-
-        if period_arg is not None:
-            try:
-                period_arg = int(period_arg)
-            except:
-                raise HTTPError(HTTP_BAD_REQUEST)
-            if period_arg > 0:
-                period = datetime.now() - timedelta(days=period_arg)
-                obj = {"$gte": str(period)}
-                query["creation_date"] = obj
-
-        # on /dashboard retrieve the list of projects and testcases
-        # ready for dashboard
-        if project_arg is None:
-            raise HTTPError(HTTP_NOT_FOUND, "Project name missing")
-
-        if not check_dashboard_ready_project(project_arg):
-            raise HTTPError(HTTP_NOT_FOUND,
-                            'Project [{}] not dashboard ready'
-                            .format(project_arg))
-
-        if case_arg is None:
-            raise HTTPError(
-                HTTP_NOT_FOUND,
-                'Test case missing for project [{}]'.format(project_arg))
-
-        if not check_dashboard_ready_case(project_arg, case_arg):
-            raise HTTPError(
-                HTTP_NOT_FOUND,
-                'Test case [{}] not dashboard ready for project [{}]'
-                .format(case_arg, project_arg))
-
-        # special case of status for project
-        res = []
-        if case_arg != "status":
-            cursor = self.db.results.find(query)
-            while (yield cursor.fetch_next):
-                result = TestResult.from_dict(cursor.next_object())
-                res.append(result.format_http())
-
-        # final response object
-        self.finish_request(get_dashboard_result(project_arg, case_arg, res))

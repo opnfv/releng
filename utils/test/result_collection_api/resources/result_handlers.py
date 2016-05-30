@@ -17,67 +17,93 @@ class GenericResultHandler(GenericApiHandler):
         self.table = self.db_results
         self.table_cls = TestResult
 
+    def set_query(self):
+        query = dict()
+        for k in self.request.query_arguments.keys():
+            v = self.get_query_argument(k)
+            if k == 'project' or k == 'pod' or k == 'case':
+                query[k + '_name'] = v
+            elif k == 'period':
+                try:
+                    v = int(v)
+                except:
+                    raise HTTPError(HTTP_BAD_REQUEST, 'period must be int')
+                if v > 0:
+                    period = datetime.now() - timedelta(days=v)
+                    obj = {"$gte": str(period)}
+                    query['creation_date'] = obj
+            else:
+                query[k] = v
+        return query
+
 
 class ResultsCLHandler(GenericResultHandler):
     @swagger.operation(nickname="list-all")
     def get(self):
         """
-            @description: list all test results consist with query
+            @description: Retrieve result(s) for a test project
+                          on a specific pod.
+            @notes: Retrieve result(s) for a test project on a specific pod.
+                Available filters for this request are :
+                 - project : project name
+                 - case : case name
+                 - pod : pod name
+                 - version : platform version (Arno-R1, ...)
+                 - installer (fuel, ...)
+                 - build_tag : Jenkins build tag name
+                 - period : x (x last days)
+                 - scenario : the test scenario (previously version)
+                 - criteria : the global criteria status passed or failed
+                 - trust_indicator : evaluate the stability of the test case to avoid
+                 running systematically long and stable test case
+
+                GET /results/project=functest&case=vPing&version=Arno-R1 \
+                &pod=pod_name&period=15
             @return 200: all test results consist with query,
                          empty list if no result is found
             @rtype: L{TestResults}
+            @param pod: pod name
+            @type pod: L{string}
+            @in pod: query
+            @required pod: False
+            @param project: project name
+            @type project: L{string}
+            @in project: query
+            @required project: True
+            @param case: case name
+            @type case: L{string}
+            @in case: query
+            @required case: True
+            @param version: i.e. Colorado
+            @type version: L{string}
+            @in version: query
+            @required version: False
+            @param installer: fuel/apex/joid/compass
+            @type installer: L{string}
+            @in installer: query
+            @required installer: False
+            @param build_tag: i.e. v3.0
+            @type build_tag: L{string}
+            @in build_tag: query
+            @required build_tag: False
+            @param scenario: i.e. odl
+            @type scenario: L{string}
+            @in scenario: query
+            @required scenario: False
+            @param criteria: i.e. passed
+            @type criteria: L{string}
+            @in criteria: query
+            @required criteria: False
+            @param period: last days
+            @type period: L{string}
+            @in period: query
+            @required period: False
+            @param trust_indicator: must be integer
+            @type trust_indicator: L{string}
+            @in trust_indicator: query
+            @required trust_indicator: False
         """
-        query = dict()
-        pod_arg = self.get_query_argument("pod", None)
-        project_arg = self.get_query_argument("project", None)
-        case_arg = self.get_query_argument("case", None)
-        version_arg = self.get_query_argument("version", None)
-        installer_arg = self.get_query_argument("installer", None)
-        build_tag_arg = self.get_query_argument("build_tag", None)
-        scenario_arg = self.get_query_argument("scenario", None)
-        criteria_arg = self.get_query_argument("criteria", None)
-        period_arg = self.get_query_argument("period", None)
-        trust_indicator_arg = self.get_query_argument("trust_indicator", None)
-
-        if project_arg is not None:
-            query["project_name"] = project_arg
-
-        if case_arg is not None:
-            query["case_name"] = case_arg
-
-        if pod_arg is not None:
-            query["pod_name"] = pod_arg
-
-        if version_arg is not None:
-            query["version"] = version_arg
-
-        if installer_arg is not None:
-            query["installer"] = installer_arg
-
-        if build_tag_arg is not None:
-            query["build_tag"] = build_tag_arg
-
-        if scenario_arg is not None:
-            query["scenario"] = scenario_arg
-
-        if criteria_arg is not None:
-            query["criteria_tag"] = criteria_arg
-
-        if trust_indicator_arg is not None:
-            query["trust_indicator_arg"] = trust_indicator_arg
-
-        if period_arg is not None:
-            try:
-                period_arg = int(period_arg)
-            except:
-                raise HTTPError(HTTP_BAD_REQUEST)
-
-            if period_arg > 0:
-                period = datetime.now() - timedelta(days=period_arg)
-                obj = {"$gte": str(period)}
-                query["creation_date"] = obj
-
-        self._list(query)
+        self._list(self.set_query())
 
     @swagger.operation(nickname="create")
     def post(self):

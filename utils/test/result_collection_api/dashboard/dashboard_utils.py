@@ -67,7 +67,7 @@ def get_dashboard_cases():
     return modules
 
 
-def get_dashboard_result(project, case, results):
+def get_dashboard_result(project, case, results=None):
     # get the dashboard ready results
     # paramters are:
     # project: project name

@@ -1,12 +1,14 @@
 import json
+
 from tornado.web import Application
 from tornado.testing import AsyncHTTPTestCase
 
 from resources.pod_handlers import PodCLHandler, PodGURHandler
 from resources.project_handlers import ProjectCLHandler, ProjectGURHandler
-from resources.handlers import VersionHandler, DashboardHandler
+from resources.handlers import VersionHandler
 from resources.testcase_handlers import TestcaseCLHandler, TestcaseGURHandler
 from resources.result_handlers import ResultsCLHandler, ResultsGURHandler
+from resources.dashboard_handlers import DashboardHandler
 from resources.models import CreateResponse
 import fake_pymongo
 
@@ -39,7 +41,6 @@ class TestBase(AsyncHTTPTestCase):
                 (r"/api/v1/results", ResultsCLHandler),
                 (r"/api/v1/results/([^/]+)", ResultsGURHandler),
                 (r"/dashboard/v1/results", DashboardHandler),
-                (r"/dashboard/v1/results([^/]*)", DashboardHandler),
             ],
             db=fake_pymongo,
             debug=True,
