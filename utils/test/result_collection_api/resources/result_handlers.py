@@ -31,7 +31,7 @@ class GenericResultHandler(GenericApiHandler):
                 if v > 0:
                     period = datetime.now() - timedelta(days=v)
                     obj = {"$gte": str(period)}
-                    query['creation_date'] = obj
+                    query['start_date'] = obj
             elif k == 'trust_indicator':
                 query[k] = float(v)
             else:

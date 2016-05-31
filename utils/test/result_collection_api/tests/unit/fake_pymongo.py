@@ -74,10 +74,23 @@ class MemDb(object):
         return thread_execute(self._insert, doc_or_docs, check_keys)
 
     @staticmethod
+    def _compare_date(spec, value):
+        for k, v in spec.iteritems():
+            if k == '$gte' and value >= v:
+                return True
+        return False
+
+    @staticmethod
     def _in(content, *args):
         for arg in args:
             for k, v in arg.iteritems():
-                if k != 'creation_date' and content.get(k, None) != v:
+                if k == 'start_date':
+                    if not MemDb._compare_date(v, content.get(k)):
+                        return False
+                elif k == 'trust_indicator':
+                    if float(content.get(k)) != float(v):
+                        return False
+                elif content.get(k, None) != v:
                     return False
 
         return True

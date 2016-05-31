@@ -199,8 +199,15 @@ class TestResultGet(TestResultBase):
     def test_queryCriteria(self):
         self._query_and_assert(self._set_query('criteria'))
 
-    def test_queryPeriod(self):
-        self._query_and_assert(self._set_query('period=1'))
+    def test_queryPeriodFail(self):
+        self._query_and_assert(self._set_query('period=1'),
+                               aheadof=True,
+                               found=False)
+
+    def test_queryPeriodSuccess(self):
+        self._query_and_assert(self._set_query('period=1'),
+                               aheadof=False,
+                               found=True)
 
     def test_combination(self):
         self._query_and_assert(self._set_query('pod',
@@ -227,8 +234,17 @@ class TestResultGet(TestResultBase):
                                                'period=1'),
                                found=False)
 
-    def _query_and_assert(self, query, found=True):
-        _, res = self.create_d()
+    def _query_and_assert(self, query, aheadof=False, found=True):
+        import copy
+        from datetime import datetime, timedelta
+        req = copy.deepcopy(self.req_d)
+        if aheadof:
+            req.start_date = datetime.now() - timedelta(days=10)
+        else:
+            req.start_date = datetime.now()
+        req.stop_date = str(req.start_date + timedelta(minutes=10))
+        req.start_date = str(req.start_date)
+        _, res = self.create(req)
         code, body = self.query(query)
         if not found:
             self.assertEqual(code, HTTP_OK)
@@ -236,7 +252,7 @@ class TestResultGet(TestResultBase):
         else:
             self.assertEqual(1, len(body.results))
             for result in body.results:
-                self.assert_res(code, result)
+                self.assert_res(code, result, req)
 
     def _set_query(self, *args):
         uri = ''
