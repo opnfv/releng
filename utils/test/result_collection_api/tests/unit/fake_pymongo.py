@@ -5,6 +5,12 @@ from concurrent.futures import ThreadPoolExecutor
 __author__ = 'serena'
 
 
+def thread_execute(method, *args, **kwargs):
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            result = executor.submit(method, *args, **kwargs)
+        return result
+
+
 class MemCursor(object):
     def __init__(self, collection):
         self.collection = collection
@@ -15,9 +21,7 @@ class MemCursor(object):
 
     @property
     def fetch_next(self):
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            result = executor.submit(self._is_next_exist)
-        return result
+        return thread_execute(self._is_next_exist)
 
     def next_object(self):
         self.count -= 1
@@ -41,9 +45,7 @@ class MemDb(object):
         return None
 
     def find_one(self, spec_or_id=None, *args):
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            result = executor.submit(self._find_one, spec_or_id, *args)
-        return result
+        return thread_execute(self._find_one, spec_or_id, *args)
 
     def _insert(self, doc_or_docs, check_keys=True):
 
@@ -69,9 +71,7 @@ class MemDb(object):
             return ids
 
     def insert(self, doc_or_docs, check_keys=True):
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            result = executor.submit(self._insert, doc_or_docs, check_keys)
-        return result
+        return thread_execute(self._insert, doc_or_docs, check_keys)
 
     @staticmethod
     def _in(content, *args):
@@ -105,9 +105,7 @@ class MemDb(object):
         return updated
 
     def update(self, spec, document):
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            result = executor.submit(self._update, spec, document)
-        return result
+        return thread_execute(self._update, spec, document)
 
     def _remove(self, spec_or_id=None):
         if spec_or_id is None:
@@ -122,9 +120,7 @@ class MemDb(object):
         return False
 
     def remove(self, spec_or_id=None):
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            result = executor.submit(self._remove, spec_or_id)
-        return result
+        return thread_execute(self._remove, spec_or_id)
 
     def clear(self):
         self._remove()
