@@ -6,10 +6,13 @@ import os
 installers = ["apex", "compass", "fuel", "joid"]
 items = ["tests", "Success rate", "duration"]
 
+PERIOD = 7
+
 for installer in installers:
-    # we consider the Tempest results of the last 7 days
+    # we consider the Tempest results of the last PERIOD days
     url = "http://testresults.opnfv.org/testapi/results?case=Tempest"
-    request = Request(url + '&period=7&installer=' + installer)
+    request = Request(url + '&period=' + str(PERIOD)
+                      + '&installer=' + installer + '&version=master')
 
     try:
         response = urlopen(request)
@@ -27,9 +30,11 @@ for installer in installers:
 
     for r in test_results:
         # Retrieve all the scenarios per installer
-        if not r['version'] in scenario_results.keys():
-            scenario_results[r['version']] = []
-        scenario_results[r['version']].append(r)
+        # In Brahmaputra use version
+        # Since Colorado use scenario
+        if not r['scenario'] in scenario_results.keys():
+            scenario_results[r['scenario']] = []
+        scenario_results[r['scenario']].append(r)
 
     for s, s_result in scenario_results.items():
         scenario_results[s] = s_result[0:5]
@@ -41,8 +46,10 @@ for installer in installers:
             # retrieve results
             # ****************
             nb_tests_run = result['details']['tests']
+            nb_tests_failed = result['details']['failures']
             if nb_tests_run != 0:
-                success_rate = 100*(int(result['details']['tests']) - int(result['details']['failures']))/int(result['details']['tests'])
+                success_rate = 100*(int(nb_tests_run)
+                                    - int(nb_tests_failed))/int(nb_tests_run)
             else:
                 success_rate = 0
 
@@ -55,38 +62,32 @@ for installer in installers:
             crit_rate = False
             crit_time = False
 
-            # Expect that at least 200 tests are run
-            if nb_tests_run >= 200:
+            # Expect that at least 165 tests are run
+            if nb_tests_run >= 165:
                 crit_tests = True
 
             # Expect that at least 90% of success
             if success_rate >= 90:
                 crit_rate = True
 
-            # Expect that the suite duration is inferior to 45m
-            if result['details']['duration'] < 2700:
+            # Expect that the suite duration is inferior to 30m
+            if result['details']['duration'] < 1800:
                 crit_time = True
 
             result['criteria'] = {'tests': crit_tests,
                                   'Success rate': crit_rate,
                                   'duration': crit_time}
-
             # error management
             # ****************
+            try:
+                errors = result['details']['errors']
+                result['errors'] = errors.replace('{0}', '')
+            except:
+                print "Error field not present (Brahamputra runs?)"
 
-            # TODO get information from artefact based on build tag
-            # to identify errors of the associated run
-            # build tag needed to wget errors on the artifacts
-            # the idea is to list the tests in errors and provide the link
-            # towards complete artifact
-            # another option will be to put the errors in the DB
-            # (in the detail section)...
-            result['errors'] = {'tests': "",
-                                'Success rate': "",
-                                'duration': ""}
-
-    templateLoader = jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(__file__)))
-    templateEnv = jinja2.Environment(loader=templateLoader)
+    mypath = os.path.abspath(__file__)
+    tplLoader = jinja2.FileSystemLoader(os.path.dirname(mypath))
+    templateEnv = jinja2.Environment(loader=tplLoader)
 
     TEMPLATE_FILE = "./template/index-tempest-tmpl.html"
     template = templateEnv.get_template(TEMPLATE_FILE)
