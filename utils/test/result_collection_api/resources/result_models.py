@@ -48,6 +48,10 @@ class ResultCreateRequest(object):
 
 @swagger.model()
 class TestResult(object):
+    """
+        @property trust_indicator: must be int/long/float
+        @ptype trust_indicator: L{float}
+    """
     def __init__(self, _id=None, case_name=None, project_name=None,
                  pod_name=None, installer=None, version=None,
                  start_date=None, stop_date=None, details=None,

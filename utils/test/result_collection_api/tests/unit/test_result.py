@@ -79,9 +79,10 @@ class TestResultBase(TestBase):
                          self.req_testcase,
                          self.project)
 
-    def assert_res(self, code, result):
+    def assert_res(self, code, result, req=None):
         self.assertEqual(code, HTTP_OK)
-        req = self.req_d
+        if req is None:
+            req = self.req_d
         self.assertEqual(result.pod_name, req.pod_name)
         self.assertEqual(result.project_name, req.project_name)
         self.assertEqual(result.case_name, req.case_name)
@@ -96,8 +97,8 @@ class TestResultBase(TestBase):
         self.assertEqual(result.scenario, req.scenario)
         self.assertEqual(result.criteria, req.criteria)
         self.assertEqual(result.trust_indicator, req.trust_indicator)
-        self.assertIsNotNone(result.start_date)
-        self.assertIsNotNone(result.stop_date)
+        self.assertEqual(result.start_date, req.start_date)
+        self.assertEqual(result.stop_date, req.stop_date)
         self.assertIsNotNone(result._id)
 
 
@@ -233,8 +234,8 @@ class TestResultGet(TestResultBase):
             self.assertEqual(code, HTTP_OK)
             self.assertEqual(0, len(body.results))
         else:
+            self.assertEqual(1, len(body.results))
             for result in body.results:
-                self.assertEqual(1, len(body.results))
                 self.assert_res(code, result)
 
     def _set_query(self, *args):

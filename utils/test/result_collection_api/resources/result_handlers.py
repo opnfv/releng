@@ -32,6 +32,8 @@ class GenericResultHandler(GenericApiHandler):
                     period = datetime.now() - timedelta(days=v)
                     obj = {"$gte": str(period)}
                     query['creation_date'] = obj
+            elif k == 'trust_indicator':
+                query[k] = float(v)
             else:
                 query[k] = v
         return query
@@ -98,7 +100,7 @@ class ResultsCLHandler(GenericResultHandler):
             @type period: L{string}
             @in period: query
             @required period: False
-            @param trust_indicator: must be integer
+            @param trust_indicator: must be int/long/float
             @type trust_indicator: L{string}
             @in trust_indicator: query
             @required trust_indicator: False
