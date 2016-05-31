@@ -226,4 +226,4 @@ class VersionHandler(GenericApiHandler):
             @description: Display a message for the API version
             @rtype: L{Versions}
         """
-        self.finish_request([{'v1': 'basics'}])
+        self.finish_request([{'version': 'v1.0', 'description': 'basics'}])

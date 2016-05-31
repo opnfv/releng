@@ -71,10 +71,11 @@ class Project(object):
 @swagger.model()
 class Projects(object):
     """
+        @property projects:
         @ptype projects: C{list} of L{Project}
     """
-    def __init__(self, projects=list()):
-        self.projects = projects
+    def __init__(self):
+        self.projects = list()
 
     @staticmethod
     def from_dict(res_dict):

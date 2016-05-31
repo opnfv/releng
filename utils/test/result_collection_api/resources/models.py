@@ -38,8 +38,8 @@ class Versions(object):
     """
         @ptype versions: C{list} of L{Version}
     """
-    def __init__(self, versions):
-        self.versions = versions
+    def __init__(self):
+        self.versions = list()
 
 
 @swagger.model()

@@ -19,7 +19,9 @@ class TestVersion(TestVersionbBase):
         self.assertEqual(200, code)
         json_body = json.loads(body)
         self.assertEqual(len(json_body), 1)
-        self.assertEqual('basics', json_body[0].get('v1'))
+        self.assertEqual('v1.0', json_body[0].get('version'))
+        self.assertEqual('basics', json_body[0].get('description'))
+
 
 if __name__ == '__main__':
     unittest.main()

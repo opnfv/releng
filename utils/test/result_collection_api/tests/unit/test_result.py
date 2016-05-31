@@ -234,6 +234,7 @@ class TestResultGet(TestResultBase):
             self.assertEqual(0, len(body.results))
         else:
             for result in body.results:
+                self.assertEqual(1, len(body.results))
                 self.assert_res(code, result)
 
     def _set_query(self, *args):
