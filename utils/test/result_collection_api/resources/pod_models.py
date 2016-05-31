@@ -62,10 +62,11 @@ class Pod(PodCreateRequest):
 @swagger.model()
 class Pods(object):
     """
+        @property pods:
         @ptype pods: C{list} of L{Pod}
     """
-    def __init__(self, pods=list()):
-        self.pods = pods
+    def __init__(self):
+        self.pods = list()
 
     @staticmethod
     def from_dict(res_dict):

@@ -48,20 +48,24 @@ class ResultCreateRequest(object):
 
 @swagger.model()
 class TestResult(object):
-    def __init__(self):
-        self._id = None
-        self.case_name = None
-        self.project_name = None
-        self.pod_name = None
-        self.installer = None
-        self.version = None
-        self.start_date = None
-        self.stop_date = None
-        self.details = None
-        self.build_tag = None
-        self.scenario = None
-        self.criteria = None
-        self.trust_indicator = None
+    def __init__(self, _id=None, case_name=None, project_name=None,
+                 pod_name=None, installer=None, version=None,
+                 start_date=None, stop_date=None, details=None,
+                 build_tag=None, scenario=None, criteria=None,
+                 trust_indicator=None):
+        self._id = _id
+        self.case_name = case_name
+        self.project_name = project_name
+        self.pod_name = pod_name
+        self.installer = installer
+        self.version = version
+        self.start_date = start_date
+        self.stop_date = stop_date
+        self.details = details
+        self.build_tag = build_tag
+        self.scenario = scenario
+        self.criteria = criteria
+        self.trust_indicator = trust_indicator
 
     @staticmethod
     def from_dict(a_dict):
@@ -137,10 +141,11 @@ class TestResult(object):
 @swagger.model()
 class TestResults(object):
     """
-        @ptype testcases: C{list} of L{TestResult}
+        @property results:
+        @ptype results: C{list} of L{TestResult}
     """
-    def __init__(self, results=list()):
-        self.results = results
+    def __init__(self):
+        self.results = list()
 
     @staticmethod
     def from_dict(a_dict):
