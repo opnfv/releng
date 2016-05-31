@@ -44,7 +44,6 @@ class TestDashboardQuery(TestDashboardBase):
     def test_success(self):
         code, body = self.query(self._set_query())
         self.assertEqual(code, HTTP_OK)
-        print(body)
         self.assertIn('{"description": "vPing results for Dashboard"}', body)
 
     def test_caseIsStatus(self):

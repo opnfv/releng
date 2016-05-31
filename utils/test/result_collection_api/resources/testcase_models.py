@@ -82,10 +82,11 @@ class Testcase(object):
 @swagger.model()
 class Testcases(object):
     """
+        @property testcases:
         @ptype testcases: C{list} of L{Testcase}
     """
-    def __init__(self, testcases=list()):
-        self.testcases = testcases
+    def __init__(self):
+        self.testcases = list()
 
     @staticmethod
     def from_dict(res_dict):
