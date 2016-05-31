@@ -1,15 +1,14 @@
-import json
 import unittest
 
 from test_base import TestBase
-
+from resources.models import Versions
 __author__ = 'serena'
 
 
 class TestVersionbBase(TestBase):
     def setUp(self):
         super(TestVersionbBase, self).setUp()
-        self.list_res = None
+        self.list_res = Versions
         self.basePath = '/versions'
 
 
@@ -17,9 +16,9 @@ class TestVersion(TestVersionbBase):
     def test_success(self):
         code, body = self.get()
         self.assertEqual(200, code)
-        json_body = json.loads(body)
-        self.assertEqual(len(json_body), 1)
-        self.assertEqual('basics', json_body[0].get('v1'))
+        self.assertEqual(len(body.versions), 1)
+        self.assertEqual(body.versions[0].version, 'v1.0')
+        self.assertEqual(body.versions[0].description, 'basics')
 
 if __name__ == '__main__':
     unittest.main()

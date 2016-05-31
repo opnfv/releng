@@ -223,7 +223,8 @@ class VersionHandler(GenericApiHandler):
     @swagger.operation(nickname='list')
     def get(self):
         """
-            @description: Display a message for the API version
+            @description: list all supported versions
             @rtype: L{Versions}
         """
-        self.finish_request([{'v1': 'basics'}])
+        versions = [{'version': 'v1.0', 'description': 'basics'}]
+        self.finish_request({'versions': versions})

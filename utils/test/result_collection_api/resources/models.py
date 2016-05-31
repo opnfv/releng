@@ -36,10 +36,21 @@ class CreateResponse(object):
 @swagger.model()
 class Versions(object):
     """
+        @property versions:
         @ptype versions: C{list} of L{Version}
     """
-    def __init__(self, versions):
-        self.versions = versions
+    def __init__(self):
+        self.versions = list()
+
+    @staticmethod
+    def from_dict(res_dict):
+        if res_dict is None:
+            return None
+
+        res = Versions()
+        for version in res_dict.get('versions'):
+            res.versions.append(Version.from_dict(version))
+        return res
 
 
 @swagger.model()
@@ -47,3 +58,13 @@ class Version(object):
     def __init__(self, version=None, description=None):
         self.version = version
         self.description = description
+
+    @staticmethod
+    def from_dict(a_dict):
+        if a_dict is None:
+            return None
+
+        ver = Version()
+        ver.version = a_dict.get('version')
+        ver.description = str(a_dict.get('description'))
+        return ver
