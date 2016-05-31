@@ -27,52 +27,54 @@
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
-#        brahmaputra
+#    Installers using labels
+#            CI PODs
+# This section should only contain the installers
+# that have been switched using labels for slaves
 #--------------------------------
     pod:
-        - lf-pod2:
-            installer: fuel
-            disabled: true
-            <<: *brahmaputra
-        - intel-pod5:
-            installer: joid
-            disabled: true
-            <<: *brahmaputra
-        - huawei-pod1:
+#compass CI PODs
+        - baremetal:
+            slave-label: compass-baremetal
             installer: compass
-            disabled: true
-            <<: *brahmaputra
-#--------------------------------
-#        master
-#--------------------------------
-        - lf-pod2:
-            installer: fuel
+            auto-trigger-name: 'daily-trigger-disabled'
             <<: *master
-        - ericsson-pod1:
-            installer: fuel
-            disabled: true
-            <<: *master
-        - ericsson-pod2:
-            installer: fuel
-            disabled: true
-            <<: *master
-        - intel-pod6:
-            installer: joid
-            disabled: true
-            <<: *master
-        - intel-pod8:
+        - virtual:
+            slave-label: compass-virtual
             installer: compass
-            disabled: true
+            auto-trigger-name: 'daily-trigger-disabled'
             <<: *master
-        - zte-pod1:
-            installer: fuel
-            disabled: true
-            <<: *master
+        - baremetal:
+            slave-label: compass-baremetal
+            installer: compass
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *brahmaputra
+        - virtual:
+            slave-label: compass-virtual
+            installer: compass
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *brahmaputra
+
+#--------------------------------
+#        None-CI PODs
+#--------------------------------
         - orange-pod2:
+            slave-label: '{pod}'
             installer: joid
-            disabled: false
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *brahmaputra
+        - orange-pod2:
+            slave-label: '{pod}'
+            installer: joid
+            auto-trigger-name: 'daily-trigger-disabled'
             <<: *master
-#--------------------------------
+        - huawei-pod2:
+            slave-label: '{pod}'
+            installer: compass
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
+
+#--------------------------------------------
     suite:
         - 'rubbos'
         - 'vstf'
@@ -86,18 +88,19 @@
 - job-template:
     name: 'bottlenecks-{installer}-{suite}-{pod}-daily-{stream}'
 
-    disabled: '{disabled}'
-
     wrappers:
         - build-name:
             name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
 
+    triggers:
+        -'{auto-trigger-name}'
+
     parameters:
         - project-parameter:
             project: '{project}'
-        - '{pod}-defaults'
+        - '{slave-label}-defaults'
         - '{installer}-defaults'
-        - 'bottlenecks-params-{pod}'
+        - 'bottlenecks-params-{slave-label}'
         - string:
             name: REPO_DIR
             default: "/home/opnfv/bottlenecks"
@@ -203,67 +206,27 @@
 ####################
 
 - parameter:
-    name: 'bottlenecks-params-intel-pod5'
+    name: 'bottlenecks-params-compass-baremetal'
     parameters:
         - string:
             name: BOTTLENECKS_DB_TARGET
-            default: '213.77.62.197'
+            default: '104.197.68.199:8086'
             description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
-    name: 'bottlenecks-params-intel-pod6'
+    name: 'bottlenecks-params-compass-virtual'
     parameters:
         - string:
             name: BOTTLENECKS_DB_TARGET
-            default: '213.77.62.197'
+            default: ''
             description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
-    name: 'bottlenecks-params-intel-pod8'
+    name: 'bottlenecks-params-huawei-pod2'
     parameters:
         - string:
             name: BOTTLENECKS_DB_TARGET
-            default: '213.77.62.197'
-            description: 'Arguments to use in order to choose the backend DB'
-
-- parameter:
-    name: 'bottlenecks-params-ericsson-pod1'
-    parameters:
-        - string:
-            name: BOTTLENECKS_DB_TARGET
-            default: '213.77.62.197'
-            description: 'Arguments to use in order to choose the backend DB'
-
-- parameter:
-    name: 'bottlenecks-params-ericsson-pod2'
-    parameters:
-        - string:
-            name: BOTTLENECKS_DB_TARGET
-            default: '213.77.62.197'
-            description: 'Arguments to use in order to choose the backend DB'
-
-- parameter:
-    name: 'bottlenecks-params-lf-pod2'
-    parameters:
-        - string:
-            name: BOTTLENECKS_DB_TARGET
-            default: '213.77.62.197'
-            description: 'Arguments to use in order to choose the backend DB'
-
-- parameter:
-    name: 'bottlenecks-params-huawei-pod1'
-    parameters:
-        - string:
-            name: BOTTLENECKS_DB_TARGET
-            default: '213.77.62.197'
-            description: 'Arguments to use in order to choose the backend DB'
-
-- parameter:
-    name: 'bottlenecks-params-zte-pod1'
-    parameters:
-        - string:
-            name: BOTTLENECKS_DB_TARGET
-            default: '213.77.62.197'
+            default: '104.197.68.199:8086'
             description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
@@ -271,5 +234,5 @@
     parameters:
         - string:
             name: BOTTLENECKS_DB_TARGET
-            default: '213.77.62.197'
+            default: '104.197.68.199:8086'
             description: 'Arguments to use in order to choose the backend DB'
