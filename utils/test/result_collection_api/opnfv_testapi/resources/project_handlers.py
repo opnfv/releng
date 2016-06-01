@@ -1,4 +1,4 @@
-from opnfv_testapi.tornado_swagger_ui.tornado_swagger import swagger
+from opnfv_testapi.tornado_swagger import swagger
 from handlers import GenericApiHandler
 from opnfv_testapi.common.constants import HTTP_FORBIDDEN
 from project_models import Project

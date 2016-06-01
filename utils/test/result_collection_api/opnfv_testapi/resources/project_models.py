@@ -1,4 +1,4 @@
-from opnfv_testapi.tornado_swagger_ui.tornado_swagger import swagger
+from opnfv_testapi.tornado_swagger import swagger
 
 __author__ = '__serena__'
 
