@@ -13,7 +13,7 @@
 # feng.xiaowei@zte.com.cn  mv TestCase to testcase_models.py       5-20-2016
 # feng.xiaowei@zte.com.cn  mv TestResut to result_models.py        5-23-2016
 ##############################################################################
-from opnfv_testapi.tornado_swagger_ui.tornado_swagger import swagger
+from opnfv_testapi.tornado_swagger import swagger
 
 
 class CreateResponse(object):

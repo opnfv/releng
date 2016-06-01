@@ -6,7 +6,7 @@ from opnfv_testapi.dashboard.dashboard_utils import \
     check_dashboard_ready_case, get_dashboard_result
 from opnfv_testapi.resources.result_handlers import GenericResultHandler
 from opnfv_testapi.resources.result_models import TestResult
-from opnfv_testapi.tornado_swagger_ui.tornado_swagger import swagger
+from opnfv_testapi.tornado_swagger import swagger
 
 
 class GenericDashboardHandler(GenericResultHandler):

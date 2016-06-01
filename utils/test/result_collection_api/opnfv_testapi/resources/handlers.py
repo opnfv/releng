@@ -29,7 +29,7 @@ from tornado import gen
 from models import CreateResponse
 from opnfv_testapi.common.constants import DEFAULT_REPRESENTATION, \
     HTTP_BAD_REQUEST, HTTP_NOT_FOUND, HTTP_FORBIDDEN
-from opnfv_testapi.tornado_swagger_ui.tornado_swagger import swagger
+from opnfv_testapi.tornado_swagger import swagger
 
 
 class GenericApiHandler(RequestHandler):
