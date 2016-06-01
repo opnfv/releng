@@ -1,7 +1,7 @@
 from opnfv_testapi.common.constants import HTTP_FORBIDDEN
 from opnfv_testapi.resources.handlers import GenericApiHandler
 from opnfv_testapi.resources.testcase_models import Testcase
-from opnfv_testapi.tornado_swagger_ui.tornado_swagger import swagger
+from opnfv_testapi.tornado_swagger import swagger
 
 
 class GenericTestcaseHandler(GenericApiHandler):
