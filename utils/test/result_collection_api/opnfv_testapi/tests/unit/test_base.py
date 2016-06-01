@@ -3,15 +3,7 @@ import json
 from tornado.web import Application
 from tornado.testing import AsyncHTTPTestCase
 
-from opnfv_testapi.resources.pod_handlers import PodCLHandler, PodGURHandler
-from opnfv_testapi.resources.project_handlers import ProjectCLHandler, \
-    ProjectGURHandler
-from opnfv_testapi.resources.handlers import VersionHandler
-from opnfv_testapi.resources.testcase_handlers import TestcaseCLHandler, \
-    TestcaseGURHandler
-from opnfv_testapi.resources.result_handlers import ResultsCLHandler, \
-    ResultsGURHandler
-from opnfv_testapi.resources.dashboard_handlers import DashboardHandler
+from opnfv_testapi.router import url_mappings
 from opnfv_testapi.resources.models import CreateResponse
 import fake_pymongo
 
@@ -32,19 +24,7 @@ class TestBase(AsyncHTTPTestCase):
 
     def get_app(self):
         return Application(
-            [
-                (r"/versions", VersionHandler),
-                (r"/api/v1/pods", PodCLHandler),
-                (r"/api/v1/pods/([^/]+)", PodGURHandler),
-                (r"/api/v1/projects", ProjectCLHandler),
-                (r"/api/v1/projects/([^/]+)", ProjectGURHandler),
-                (r"/api/v1/projects/([^/]+)/cases", TestcaseCLHandler),
-                (r"/api/v1/projects/([^/]+)/cases/([^/]+)",
-                 TestcaseGURHandler),
-                (r"/api/v1/results", ResultsCLHandler),
-                (r"/api/v1/results/([^/]+)", ResultsGURHandler),
-                (r"/dashboard/v1/results", DashboardHandler),
-            ],
+            url_mappings.mappings,
             db=fake_pymongo,
             debug=True,
         )
