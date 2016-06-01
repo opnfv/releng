@@ -6,5 +6,5 @@
 # pip install testtools, discover
 
 find . -type f -name "*.pyc" -delete
-testrargs="discover ./tests/unit"
+testrargs="discover ./opnfv_testapi/tests/unit"
 python -m testtools.run $testrargs
