@@ -35,7 +35,7 @@ import tornado.ioloop
 import motor
 
 from opnfv_testapi.common.config import APIConfig
-from opnfv_testapi.tornado_swagger_ui.tornado_swagger import swagger
+from opnfv_testapi.tornado_swagger import swagger
 from opnfv_testapi.router import url_mappings
 
 # optionally get config file from command line
