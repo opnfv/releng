@@ -7,7 +7,8 @@ from opnfv_testapi.resources.project_models import ProjectCreateRequest
 from opnfv_testapi.resources.testcase_models import TestcaseCreateRequest
 from opnfv_testapi.resources.result_models import ResultCreateRequest, \
     TestResult, TestResults
-from opnfv_testapi.common.constants import HTTP_OK, HTTP_BAD_REQUEST, HTTP_NOT_FOUND
+from opnfv_testapi.common.constants import HTTP_OK, HTTP_BAD_REQUEST, \
+    HTTP_NOT_FOUND
 
 __author__ = '__serena__'
 
