@@ -6,14 +6,14 @@ from opnfv_testapi.resources.models import Versions
 __author__ = 'serena'
 
 
-class TestVersionbBase(TestBase):
+class TestVersionBase(TestBase):
     def setUp(self):
-        super(TestVersionbBase, self).setUp()
+        super(TestVersionBase, self).setUp()
         self.list_res = Versions
         self.basePath = '/versions'
 
 
-class TestVersion(TestVersionbBase):
+class TestVersion(TestVersionBase):
     def test_success(self):
         code, body = self.get()
         self.assertEqual(200, code)
