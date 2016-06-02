@@ -1,16 +1,20 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+##############################################################################
+# Copyright (c) 2016 ZTE Corporation
+# feng.xiaowei@zte.com.cn
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
 import urlparse
 import json
 import inspect
+
 import tornado.web
 import tornado.template
-from settings import SWAGGER_VERSION, \
-    SWAGGER_API_LIST, \
-    SWAGGER_API_SPEC
-from settings import models
 
-__author__ = 'serena'
+from settings import SWAGGER_VERSION, SWAGGER_API_LIST, SWAGGER_API_SPEC
+from settings import models
 
 
 def json_dumps(obj, pretty=False):
