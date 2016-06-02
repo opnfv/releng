@@ -156,15 +156,6 @@ class TestResultCreate(TestResultBase):
         self.assertEqual(code, HTTP_OK)
         self.assert_href(body)
 
-    def test_createSameResults(self):
-        req_again = copy.deepcopy(self.req_d)
-        req_again.start_date = "2016-05-23 08:16:09.477097"
-        req_again.stop_date = "2016-05-23 08:16:19.477097"
-
-        (code, body) = self.create(req_again)
-        self.assertEqual(code, HTTP_OK)
-        self.assert_href(body)
-
 
 class TestResultGet(TestResultBase):
     def test_getOne(self):
