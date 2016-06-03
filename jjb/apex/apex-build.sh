@@ -10,33 +10,16 @@ echo
 [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
 # set OPNFV_ARTIFACT_VERSION
 if echo $BUILD_TAG | grep "apex-verify" 1> /dev/null; then
-  if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
-    export OPNFV_ARTIFACT_VERSION=brahmaputra-dev${BUILD_NUMBER}
-    export BUILD_ARGS="-v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY"
-  else
-    export OPNFV_ARTIFACT_VERSION=dev${BUILD_NUMBER}
-    export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY"
-  fi
+  export OPNFV_ARTIFACT_VERSION=dev${BUILD_NUMBER}
+  export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY"
 elif [ "$ARTIFACT_VERSION" == "daily" ]; then
-  if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
-    export OPNFV_ARTIFACT_VERSION=brahmaputra-$(date -u +"%Y-%m-%d")
-    export BUILD_ARGS="-v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY"
-  else
-    export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d")
-    export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY --iso"
-  fi
+  export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d")
+  export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY --iso"
 else
   export OPNFV_ARTIFACT_VERSION=${ARTIFACT_VERSION}
-  if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
-    export BUILD_ARGS="-v $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY"
-  else
-    export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c file://$CACHE_DIRECTORY --iso"
-  fi
+  export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY --iso"
 fi
-# clean for stable but doesn't matter for master
-if echo $GERRIT_BRANCH | grep "brahmaputra" 1> /dev/null; then
-  sudo opnfv-clean
-fi
+
 # start the build
 cd $WORKSPACE/ci
 ./build.sh $BUILD_ARGS
