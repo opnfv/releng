@@ -84,6 +84,17 @@ if [[ "$BUILD_DIRECTORY" == *verify* ]]; then
       fi
     done
 
+    # Make sure jinja2 is installed
+    for python_pkg in jinja2; do
+      if ! python3.4 -c "import $python_pkg"; then
+        echo "$python_pkg package not found for python3.4, attempting to install..."
+        if ! sudo easy_install-3.4 $python_pkg; then
+          echo -e "Failed to install $python_pkg package for python3.4"
+          exit 1
+        fi
+      fi
+    done
+
     if [ -z ${PYTHONPATH:-} ]; then
         export PYTHONPATH=${WORKSPACE}/lib/python
     else
