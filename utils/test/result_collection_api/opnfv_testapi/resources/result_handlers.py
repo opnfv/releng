@@ -79,11 +79,11 @@ class ResultsCLHandler(GenericResultHandler):
             @param project: project name
             @type project: L{string}
             @in project: query
-            @required project: True
+            @required project: False
             @param case: case name
             @type case: L{string}
             @in case: query
-            @required case: True
+            @required case: False
             @param version: i.e. Colorado
             @type version: L{string}
             @in version: query
