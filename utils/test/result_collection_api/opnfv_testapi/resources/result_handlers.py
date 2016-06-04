@@ -42,7 +42,7 @@ class GenericResultHandler(GenericApiHandler):
                     query['start_date'] = obj
             elif k == 'trust_indicator':
                 query[k] = float(v)
-            else:
+            elif k != 'last':
                 query[k] = v
         return query
 
@@ -108,12 +108,23 @@ class ResultsCLHandler(GenericResultHandler):
             @type period: L{string}
             @in period: query
             @required period: False
+            @param last: last days
+            @type last: L{string}
+            @in last: query
+            @required last: False
             @param trust_indicator: must be int/long/float
             @type trust_indicator: L{string}
             @in trust_indicator: query
             @required trust_indicator: False
         """
-        self._list(self.set_query())
+        last = self.get_query_argument('last', 0)
+        if last is not None:
+            try:
+                last = int(last)
+            except:
+                raise HTTPError(HTTP_BAD_REQUEST, 'last must be int')
+
+        self._list(self.set_query(), sort=[{'start_date', -1}], last=last)
 
     @swagger.operation(nickname="create")
     def post(self):
