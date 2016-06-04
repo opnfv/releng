@@ -106,16 +106,21 @@ class GenericApiHandler(RequestHandler):
 
     @asynchronous
     @gen.coroutine
-    def _list(self, query=None, res_op=None, *args):
+    def _list(self, query=None, res_op=None, *args, **kwargs):
         if query is None:
             query = {}
         data = []
         cursor = self._eval_db(self.table, 'find', query)
+        if 'sort' in kwargs:
+            cursor = cursor.sort(kwargs.get('sort'))
+        if 'last' in kwargs:
+            cursor = cursor.limit(kwargs.get('last'))
         while (yield cursor.fetch_next):
             data.append(self.format_data(cursor.next_object()))
         if res_op is None:
             res = {self.table: data}
         else:
+            print(args)
             res = res_op(data, *args)
         self.finish_request(res)
 
