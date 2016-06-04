@@ -32,6 +32,12 @@ class MemCursor(object):
         self.count -= 1
         return self.collection.pop()
 
+    def sort(self, key_or_list, direction=None):
+        return self
+
+    def limit(self, limit):
+        return self
+
 
 class MemDb(object):
 
