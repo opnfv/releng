@@ -11,8 +11,8 @@ from tornado.web import HTTPError
 
 from opnfv_testapi.common.constants import HTTP_NOT_FOUND
 from opnfv_testapi.dashboard.dashboard_utils import \
-    check_dashboard_ready_project, \
-    check_dashboard_ready_case, get_dashboard_result
+    check_dashboard_ready_project, check_dashboard_ready_case, \
+    get_dashboard_result, get_dashboard_projects
 from opnfv_testapi.resources.result_handlers import GenericResultHandler
 from opnfv_testapi.resources.result_models import TestResult
 from opnfv_testapi.tornado_swagger import swagger
@@ -107,3 +107,14 @@ class DashboardHandler(GenericDashboardHandler):
                 return get_dashboard_result(project, case, res)
 
             self._list(self.set_query(), get_result, project_arg, case_arg)
+
+
+class DashboardProjectsHandler(GenericDashboardHandler):
+    @swagger.operation(nickname='list')
+    def get(self):
+        """
+            @description: Retrieve dashboard ready project(s)
+            @rtype: L{list}
+            @return 200: return all dashboard ready project(s)
+        """
+        self.finish_request(get_dashboard_projects())

@@ -14,7 +14,8 @@ from opnfv_testapi.resources.project_handlers import ProjectCLHandler, \
     ProjectGURHandler
 from opnfv_testapi.resources.result_handlers import ResultsCLHandler, \
     ResultsGURHandler
-from opnfv_testapi.resources.dashboard_handlers import DashboardHandler
+from opnfv_testapi.resources.dashboard_handlers import DashboardHandler, \
+    DashboardProjectsHandler
 
 
 mappings = [
@@ -53,4 +54,5 @@ mappings = [
     # get /dashboard
     #  => get the list of project with dashboard ready results
     (r"/dashboard/v1/results", DashboardHandler),
+    (r"/dashboard/v1/projects", DashboardProjectsHandler),
 ]
