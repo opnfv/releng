@@ -51,22 +51,6 @@ def check_dashboard_ready_case(project, case):
     return eval(cmd)
 
 
-def get_dashboard_cases():
-    # Retrieve all the test cases that could provide
-    # Dashboard ready graphs
-    # look in the releng repo
-    # search all the project2Dashboard.py files
-    # we assume that dashboard processing of project <Project>
-    # is performed in the <Project>2Dashboard.py file
-    modules = []
-    cp = re.compile('dashboard.*2Dashboard')
-    for module in sys.modules:
-        if re.match(cp, module):
-            modules.append(module)
-
-    return modules
-
-
 def get_dashboard_projects():
     # Retrieve all the projects that could provide
     # Dashboard ready graphs
