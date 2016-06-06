@@ -196,15 +196,29 @@ class TestResultGet(TestResultBase):
     def test_queryCriteria(self):
         self._query_and_assert(self._set_query('criteria'))
 
+    def test_queryPeriodNotInt(self):
+        code, body = self.query(self._set_query('period=a'))
+        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertIn('period must be int', body)
+
     def test_queryPeriodFail(self):
         self._query_and_assert(self._set_query('period=1'),
-                               aheadof=True,
-                               found=False)
+                               found=False, days=-10)
 
     def test_queryPeriodSuccess(self):
         self._query_and_assert(self._set_query('period=1'),
-                               aheadof=False,
                                found=True)
+
+    def test_queryLastNotInt(self):
+        code, body = self.query(self._set_query('last=a'))
+        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertIn('last must be int', body)
+
+    def test_queryLast(self):
+        self._create_changed_date()
+        req = self._create_changed_date(minutes=20)
+        self._create_changed_date(minutes=-20)
+        self._query_and_assert(self._set_query('last=1'), req=req)
 
     def test_combination(self):
         self._query_and_assert(self._set_query('pod',
@@ -231,17 +245,9 @@ class TestResultGet(TestResultBase):
                                                'period=1'),
                                found=False)
 
-    def _query_and_assert(self, query, aheadof=False, found=True):
-        import copy
-        from datetime import datetime, timedelta
-        req = copy.deepcopy(self.req_d)
-        if aheadof:
-            req.start_date = datetime.now() - timedelta(days=10)
-        else:
-            req.start_date = datetime.now()
-        req.stop_date = str(req.start_date + timedelta(minutes=10))
-        req.start_date = str(req.start_date)
-        _, res = self.create(req)
+    def _query_and_assert(self, query, found=True, req=None, **kwargs):
+        if req is None:
+            req = self._create_changed_date(**kwargs)
         code, body = self.query(query)
         if not found:
             self.assertEqual(code, HTTP_OK)
@@ -250,6 +256,16 @@ class TestResultGet(TestResultBase):
             self.assertEqual(1, len(body.results))
             for result in body.results:
                 self.assert_res(code, result, req)
+
+    def _create_changed_date(self, **kwargs):
+        import copy
+        from datetime import datetime, timedelta
+        req = copy.deepcopy(self.req_d)
+        req.start_date = datetime.now() + timedelta(**kwargs)
+        req.stop_date = str(req.start_date + timedelta(minutes=10))
+        req.start_date = str(req.start_date)
+        self.create(req)
+        return req
 
     def _set_query(self, *args):
         uri = ''

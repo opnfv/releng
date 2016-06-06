@@ -8,6 +8,7 @@
 ##############################################################################
 from bson.objectid import ObjectId
 from concurrent.futures import ThreadPoolExecutor
+from operator import itemgetter
 
 
 def thread_execute(method, *args, **kwargs):
@@ -20,6 +21,7 @@ class MemCursor(object):
     def __init__(self, collection):
         self.collection = collection
         self.count = len(self.collection)
+        self.sorted = []
 
     def _is_next_exist(self):
         return self.count != 0
@@ -32,10 +34,22 @@ class MemCursor(object):
         self.count -= 1
         return self.collection.pop()
 
-    def sort(self, key_or_list, direction=None):
+    def sort(self, key_or_list):
+        key = key_or_list[0][0]
+        if key_or_list[0][1] == -1:
+            reverse = True
+        else:
+            reverse = False
+
+        if key_or_list is not None:
+            self.collection = sorted(self.collection,
+                                     key=itemgetter(key), reverse=reverse)
         return self
 
     def limit(self, limit):
+        if limit != 0 and limit < len(self.collection):
+            self.collection = self.collection[0:limit]
+            self.count = limit
         return self
 
 

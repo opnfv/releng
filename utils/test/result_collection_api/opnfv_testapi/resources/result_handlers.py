@@ -29,7 +29,7 @@ class GenericResultHandler(GenericApiHandler):
         try:
             value = int(value)
         except:
-            raise HTTPError(HTTP_BAD_REQUEST, '{} must be int', key)
+            raise HTTPError(HTTP_BAD_REQUEST, '{} must be int'.format(key))
         return value
 
     def set_query(self):
@@ -125,7 +125,7 @@ class ResultsCLHandler(GenericResultHandler):
         if last is not None:
             last = self.get_int('last', last)
 
-        self._list(self.set_query(), sort=[{'start_date', -1}], last=last)
+        self._list(self.set_query(), sort=[('start_date', -1)], last=last)
 
     @swagger.operation(nickname="create")
     def post(self):
