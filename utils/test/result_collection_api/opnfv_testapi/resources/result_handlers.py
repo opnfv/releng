@@ -25,6 +25,13 @@ class GenericResultHandler(GenericApiHandler):
         self.table = self.db_results
         self.table_cls = TestResult
 
+    def get_int(self, key, value):
+        try:
+            value = int(value)
+        except:
+            raise HTTPError(HTTP_BAD_REQUEST, '{} must be int', key)
+        return value
+
     def set_query(self):
         query = dict()
         for k in self.request.query_arguments.keys():
@@ -32,10 +39,7 @@ class GenericResultHandler(GenericApiHandler):
             if k == 'project' or k == 'pod' or k == 'case':
                 query[k + '_name'] = v
             elif k == 'period':
-                try:
-                    v = int(v)
-                except:
-                    raise HTTPError(HTTP_BAD_REQUEST, 'period must be int')
+                v = self.get_int(k, v)
                 if v > 0:
                     period = datetime.now() - timedelta(days=v)
                     obj = {"$gte": str(period)}
@@ -119,10 +123,7 @@ class ResultsCLHandler(GenericResultHandler):
         """
         last = self.get_query_argument('last', 0)
         if last is not None:
-            try:
-                last = int(last)
-            except:
-                raise HTTPError(HTTP_BAD_REQUEST, 'last must be int')
+            last = self.get_int('last', last)
 
         self._list(self.set_query(), sort=[{'start_date', -1}], last=last)
 
