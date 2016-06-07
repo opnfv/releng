@@ -16,10 +16,14 @@ def get_abspath(path):
     return os.path.abspath(path)
 
 
-def url_parse(url):
+def parse_mongodb_url(url):
     url = urlparse.urlparse(url)
     assert url.scheme == 'mongodb', 'URL must be a MongoDB URL'
+    return url
 
+
+def url_parse(url):
+    url = parse_mongodb_url(url)
     return url.username, url.password, url.hostname, url.port
 
 
