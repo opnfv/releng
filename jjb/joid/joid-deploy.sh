@@ -228,23 +228,25 @@ exit_on_error $? "Deploy FAILED to auth to openstack"
 ## Create external network if needed
 ##
 
+#disabling the creation of external network as now joid deploy.sh will
+#create the external network.
 # If we have more information than only the name, try to create it
-if [ -z "$EXTNET_TYPE" ]; then
-    echo "------ No data for external network creation, pass ------"
-elif [[ "$DEPLOY_SCENARIO" =~ "onos" ]]; then
-    echo "------ ONOS have created the external network, pass ------"
-else
-    echo "------ External network creation ------"
-    neutron net-create $EXTNET_NAME --router:external True \
-      --provider:physical_network external --provider:network_type $EXTNET_TYPE
-    exit_on_error $? "External network creation failed"
-    neutron subnet-create $EXTNET_NAME --name $EXTNET_NAME \
-      --allocation-pool start=$EXTNET_FIP,end=$EXTNET_LIP \
-      --disable-dhcp --gateway $EXTNET_GW $EXTNET_NET
-    exit_on_error $? "External subnet creation failed"
-    neutron net-update $EXTNET_NAME --shared
-    exit_on_error $? "External network sharing failed"
-fi
+#if [ -z "$EXTNET_TYPE" ]; then
+#    echo "------ No data for external network creation, pass ------"
+#elif [[ "$DEPLOY_SCENARIO" =~ "onos" ]]; then
+#    echo "------ ONOS have created the external network, pass ------"
+#else
+#    echo "------ External network creation ------"
+#    neutron net-create $EXTNET_NAME --router:external True \
+#      --provider:physical_network external --provider:network_type $EXTNET_TYPE
+#    exit_on_error $? "External network creation failed"
+#    neutron subnet-create $EXTNET_NAME --name $EXTNET_NAME \
+#      --allocation-pool start=$EXTNET_FIP,end=$EXTNET_LIP \
+#      --disable-dhcp --gateway $EXTNET_GW $EXTNET_NET
+#    exit_on_error $? "External subnet creation failed"
+#    neutron net-update $EXTNET_NAME --shared
+#    exit_on_error $? "External network sharing failed"
+#fi
 
 ##
 ## Exit success
