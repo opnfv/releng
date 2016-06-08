@@ -19,14 +19,13 @@ parser.add_argument('-u', '--url',
                     help='Mongo DB URL for Backup')
 parser.add_argument('-i', '--input_dir',
                     type=str,
-                    required=False,
-                    default='./',
+                    required=True,
                     help='Input directory for the Restore.')
 parser.add_argument('-d', '--db',
                     type=str,
                     required=False,
                     default=None,
-                    help='database for the restore.')
+                    help='database name after the restore.')
 
 
 def restore(args):
