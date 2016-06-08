@@ -16,7 +16,7 @@ STATIC_PATH = os.path.join(os.path.dirname(os.path.normpath(__file__)),
                            'static')
 
 default_settings = {
-    'base_url': '/',
+    'base_url': '',
     'static_path': STATIC_PATH,
     'swagger_prefix': '/swagger',
     'api_version': 'v1.0',
@@ -26,3 +26,7 @@ default_settings = {
 }
 
 models = []
+
+
+def basePath():
+    return default_settings.get('base_url')

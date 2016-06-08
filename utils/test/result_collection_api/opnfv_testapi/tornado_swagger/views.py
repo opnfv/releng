@@ -6,15 +6,14 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-import urlparse
-import json
 import inspect
+import json
 
-import tornado.web
 import tornado.template
+import tornado.web
 
 from settings import SWAGGER_VERSION, SWAGGER_API_LIST, SWAGGER_API_SPEC
-from settings import models
+from settings import models, basePath
 
 
 def json_dumps(obj, pretty=False):
@@ -30,9 +29,7 @@ class SwaggerUIHandler(tornado.web.RequestHandler):
         return self.static_path
 
     def get(self):
-        discovery_url = \
-            urlparse.urljoin(self.request.full_url(),
-                             self.reverse_url(SWAGGER_API_LIST))
+        discovery_url = basePath() + self.reverse_url(SWAGGER_API_LIST)
         self.render('index.html', discovery_url=discovery_url)
 
 
@@ -43,11 +40,10 @@ class SwaggerResourcesHandler(tornado.web.RequestHandler):
 
     def get(self):
         self.set_header('content-type', 'application/json')
-        u = urlparse.urlparse(self.request.full_url())
         resources = {
             'apiVersion': self.api_version,
             'swaggerVersion': SWAGGER_VERSION,
-            'basePath': '%s://%s' % (u.scheme, u.netloc),
+            'basePath': basePath(),
             'produces': ["application/json"],
             'description': 'Test Api Spec',
             'apis': [{
@@ -70,12 +66,10 @@ class SwaggerApiHandler(tornado.web.RequestHandler):
         if apis is None:
             raise tornado.web.HTTPError(404)
 
-        base_path = urlparse.urljoin(self.request.full_url(),
-                                     self.base_url)[:-1]
         specs = {
             'apiVersion': self.api_version,
             'swaggerVersion': SWAGGER_VERSION,
-            'basePath': base_path,
+            'basePath': basePath(),
             'apis': [self.__get_api_spec__(path, spec, operations)
                      for path, spec, operations in apis],
             'models': self.__get_models_spec(models)
