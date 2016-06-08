@@ -37,6 +37,7 @@ class APIConfig:
         self.api_port = None
         self.api_debug_on = None
         self._parser = None
+        self.swagger_base_url = None
 
     def _get_parameter(self, section, param):
         try:
@@ -78,6 +79,7 @@ class APIConfig:
 
         obj.api_port = obj._get_int_parameter("api", "port")
         obj.api_debug_on = obj._get_bool_parameter("api", "debug")
+        obj.swagger_base_url = obj._get_parameter("swagger", "base_url")
 
         return obj
 
@@ -85,7 +87,9 @@ class APIConfig:
         return "mongo_url = %s \n" \
                "mongo_dbname = %s \n" \
                "api_port = %s \n" \
-               "api_debug_on = %s \n" % (self.mongo_url,
-                                         self.mongo_dbname,
-                                         self.api_port,
-                                         self.api_debug_on)
+               "api_debug_on = %s \n" \
+               "swagger_base_url = %s \n" % (self.mongo_url,
+                                             self.mongo_dbname,
+                                             self.api_port,
+                                             self.api_debug_on,
+                                             self.swagger_base_url)
