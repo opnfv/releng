@@ -33,7 +33,7 @@ docker pull opnfv/yardstick:$DOCKER_TAG >$redirect
 
 # Run docker
 cmd="sudo docker run ${opts} ${envs} ${labconfig} ${sshkey} opnfv/yardstick \
-    run_tests.sh ${YARDSTICK_DB_BACKEND} ${YARDSTICK_SUITE_NAME}"
+    exec_tests.sh ${YARDSTICK_DB_BACKEND} ${YARDSTICK_SUITE_NAME}"
 echo "Yardstick: Running docker cmd: ${cmd}"
 ${cmd}
 
