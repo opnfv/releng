@@ -49,6 +49,8 @@ CONF = APIConfig().parse(args.config_file)
 client = motor.MotorClient(CONF.mongo_url)
 db = client[CONF.mongo_dbname]
 
+swagger.docs(base_url=CONF.swagger_base_url)
+
 
 def make_app():
     return swagger.Application(
