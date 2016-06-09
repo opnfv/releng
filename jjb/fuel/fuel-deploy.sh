@@ -30,7 +30,7 @@ fi
 
 # set deployment parameters
 export TMPDIR=$HOME/tmpdir
-BRIDGE=pxebr
+BRIDGE=admin
 LAB_NAME=${NODE_NAME/-*}
 POD_NAME=${NODE_NAME/*-}
 
