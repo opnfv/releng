@@ -30,8 +30,7 @@ else
 fi
 
 # set deployment parameters
-export TMPDIR=$HOME/tmpdir
-BRIDGE=${DEFAULT_BRIDGE:-pxebr}
+export TMPDIR=${WORKSPACE}/tmpdir
 LAB_NAME=${NODE_NAME/-*}
 POD_NAME=${NODE_NAME/*-}
 
@@ -47,7 +46,8 @@ echo "Using configuration for $LAB_NAME"
 mkdir -p $TMPDIR
 
 cd $WORKSPACE
-if [[ $LAB_CONFIG_URL =~ ^git:// ]]; then
+if [[ $LAB_CONFIG_URL =~ ^(git|ssh):// ]]; then
+    echo "cloning $LAB_CONFIG_URL"
     git clone --quiet --branch ${GIT_BRANCH##origin/} $LAB_CONFIG_URL lab-config
     LAB_CONFIG_URL=file://${WORKSPACE}/lab-config
 fi
@@ -56,7 +56,7 @@ fi
 ISO_FILE=$WORKSPACE/opnfv.iso
 
 # construct the command
-DEPLOY_COMMAND="$WORKSPACE/ci/deploy.sh -l $LAB_NAME -p $POD_NAME -b ${LAB_CONFIG_URL} -s $DEPLOY_SCENARIO -i file://${ISO_FILE} -H -B $BRIDGE -S $TMPDIR"
+DEPLOY_COMMAND="$WORKSPACE/ci/deploy.sh -l $LAB_NAME -p $POD_NAME -b ${LAB_CONFIG_URL} -s $DEPLOY_SCENARIO -i file://${ISO_FILE} -H -B ${DEFAULT_BRIDGE:-pxebr} -S $TMPDIR"
 
 # log info to console
 echo "Deployment parameters"
