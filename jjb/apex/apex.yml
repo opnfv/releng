@@ -127,6 +127,7 @@
                 - 'apex-verify-{stream2}'
 
     builders:
+        - 'apex-unit-test'
         - 'apex-build'
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-odl_l2-nofeature-ha-{stream2}'
@@ -227,6 +228,7 @@
             max-total: 10
 
     builders:
+        - 'apex-unit-test'
         - 'apex-build'
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-nosdn-nofeature-ha-{stream1}'
@@ -786,6 +788,12 @@
 ########################
 # builder macros
 ########################
+- builder:
+    name: 'apex-unit-test'
+    builders:
+        - shell:
+            !include-raw: ./apex-unit-test.sh
+
 - builder:
     name: 'apex-build'
     builders:
