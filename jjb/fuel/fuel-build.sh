@@ -13,6 +13,9 @@ set -o pipefail
 
 cd $WORKSPACE
 
+# remove the expired items from cache
+./ci/clean_cache.sh $CACHE_DIRECTORY
+
 LATEST_ISO_PROPERTIES=$WORKSPACE/latest.iso.properties
 if [[ "$JOB_NAME" =~ "daily" ]]; then
     # check to see if we already have an artifact on artifacts.opnfv.org
