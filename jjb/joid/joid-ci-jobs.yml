@@ -91,6 +91,7 @@
             use-build-blocker: true
             blocking-jobs:
                 - 'joid-os-.*?-{pod}-daily-{stream}'
+            block-level: 'NODE'
 
     wrappers:
         - build-name:
@@ -143,7 +144,7 @@
 - job-template:
     name: 'joid-deploy-{pod}-daily-{stream}'
 
-    concurrent: false
+    concurrent: true
 
     properties:
         - throttle:
@@ -154,6 +155,7 @@
             use-build-blocker: true
             blocking-jobs:
                 - 'joid-deploy-{pod}-daily-{stream}'
+            block-level: 'NODE'
 
     wrappers:
         - build-name:
