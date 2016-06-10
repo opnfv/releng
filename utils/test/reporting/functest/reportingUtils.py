@@ -19,7 +19,7 @@ def getApiResults(case, installer, scenario, version):
     # urllib2.install_opener(opener)
     # url = "http://127.0.0.1:8000/results?case=" + case + \
     #       "&period=30&installer=" + installer
-    url = ("http://testresults.opnfv.org/testapi/results?case=" + case +
+    url = ("http://testresults.opnfv.org/test/api/v1/results?case=" + case +
            "&period=" + str(reportingConf.PERIOD) + "&installer=" + installer +
            "&scenario=" + scenario + "&version=" + version)
     request = Request(url)
@@ -37,7 +37,8 @@ def getApiResults(case, installer, scenario, version):
 def getScenarios(case, installer, version):
 
     case = case.getName()
-    url = ("http://testresults.opnfv.org/testapi/results?case=" + case +
+    print case
+    url = ("http://testresults.opnfv.org/test/api/v1/results?case=" + case +
            "&period=" + str(reportingConf.PERIOD) + "&installer=" + installer +
            "&version=" + version)
     request = Request(url)
@@ -46,10 +47,9 @@ def getScenarios(case, installer, version):
         response = urlopen(request)
         k = response.read()
         results = json.loads(k)
+        test_results = results['results']
     except URLError, e:
         print 'Got an error code:', e
-
-    test_results = results['test_results']
 
     if test_results is not None:
         test_results.reverse()
@@ -78,7 +78,7 @@ def getNbtestOk(results):
     for r in results:
         for k, v in r.iteritems():
             try:
-                if "passed" in v:
+                if "PASS" in v:
                     nb_test_ok += 1
             except:
                 print "Cannot retrieve test status"
@@ -90,7 +90,7 @@ def getResult(testCase, installer, scenario, version):
     # retrieve raw results
     results = getApiResults(testCase, installer, scenario, version)
     # let's concentrate on test results only
-    test_results = results['test_results']
+    test_results = results['results']
 
     # if results found, analyze them
     if test_results is not None:
@@ -106,7 +106,7 @@ def getResult(testCase, installer, scenario, version):
         for r in test_results:
             # print r["creation_date"]
             # print r["criteria"]
-            scenario_results.append({r["creation_date"]: r["criteria"]})
+            scenario_results.append({r["start_date"]: r["criteria"]})
         # sort results
         scenario_results.sort()
         # 4 levels for the results

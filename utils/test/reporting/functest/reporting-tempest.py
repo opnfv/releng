@@ -7,10 +7,10 @@ installers = ["apex", "compass", "fuel", "joid"]
 items = ["tests", "Success rate", "duration"]
 
 PERIOD = 7
-
+print "Generate Tempest automatic reporting"
 for installer in installers:
     # we consider the Tempest results of the last PERIOD days
-    url = "http://testresults.opnfv.org/testapi/results?case=Tempest"
+    url = "http://testresults.opnfv.org/test/api/v1/results?case=Tempest"
     request = Request(url + '&period=' + str(PERIOD)
                       + '&installer=' + installer + '&version=master')
 
@@ -21,7 +21,7 @@ for installer in installers:
     except URLError, e:
         print 'No kittez. Got an error code:', e
 
-    test_results = results['test_results']
+    test_results = results['results']
     test_results.reverse()
 
     scenario_results = {}
@@ -41,7 +41,7 @@ for installer in installers:
         # For each scenario, we build a result object to deal with
         # results, criteria and error handling
         for result in scenario_results[s]:
-            result["creation_date"] = result["creation_date"].split(".")[0]
+            result["start_date"] = result["start_date"].split(".")[0]
 
             # retrieve results
             # ****************
@@ -96,5 +96,7 @@ for installer in installers:
                                  items=items,
                                  installer=installer)
 
-    with open("./release/index-tempest-" + installer + ".html", "wb") as fh:
+    with open("./release/master/index-tempest-" +
+              installer + ".html", "wb") as fh:
         fh.write(outputText)
+print "Tempest automatic reporting Done"

@@ -24,7 +24,7 @@ installers = ["fuel", "compass", "joid", "apex"]
 step_order = ["initialisation", "orchestrator", "vIMS", "sig_test"]
 
 for installer in installers:
-    request = Request('http://testresults.opnfv.org/testapi/results?case=vIMS&installer=' + installer)
+    request = Request('http://testresults.opnfv.org/test/api/v1/results?case=vIMS&installer=' + installer)
 
     try:
         response = urlopen(request)
@@ -33,7 +33,7 @@ for installer in installers:
     except URLError, e:
         print 'No kittez. Got an error code:', e
 
-    test_results = results['test_results']
+    test_results = results['results']
     test_results.reverse()
 
     scenario_results = {}
@@ -45,7 +45,7 @@ for installer in installers:
     for s, s_result in scenario_results.items():
         scenario_results[s] = s_result[0:5]
         for result in scenario_results[s]:
-            result["creation_date"] = result["creation_date"].split(".")[0]
+            result["start_date"] = result["start_date"].split(".")[0]
             sig_test = result['details']['sig_test']['result']
             if not sig_test == "" and isinstance(sig_test, list):
                 format_result = sig_test_format(sig_test)
@@ -77,7 +77,7 @@ for installer in installers:
 
     outputText = template.render( scenario_results = scenario_results, step_order = step_order, installer = installer)
 
-    with open("./release/index-vims" + installer + ".html", "wb") as fh:
+    with open("./release/master/index-vims-" + installer + ".html", "wb") as fh:
         fh.write(outputText)
 
 
