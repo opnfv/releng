@@ -38,9 +38,10 @@
             installer: joid
             <<: *master
             auto-trigger-name: 'daily-trigger-disabled'
-#      - zte-pod1:   #would be confirmed with the ZTE lab by tomorrow
-#            installer: fuel
-#            <<: *master
+        - zte-pod1:
+            installer: fuel
+            auto-trigger-name: 'qtip-daily-zte-pod1-trigger'
+            <<: *master
 
 #--------------------------------
     jobs:
@@ -180,4 +181,7 @@
 #   triggers:
 #       - timed : ' 0 0 * * *'
 
-
+- trigger:
+    name: 'qtip-daily-zte-pod1-trigger'
+    triggers:
+        - timed: '0 5 * * *'
