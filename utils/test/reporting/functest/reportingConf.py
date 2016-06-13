@@ -11,7 +11,7 @@
 # ****************************************************
 installers = ["apex", "compass", "fuel", "joid"]
 # installers = ["compass"]
-versions = ["brahmaputra", "master"]
-# versions = ["master"]
+# versions = ["brahmaputra", "master"]
+versions = ["master"]
 PERIOD = 10
 MAX_SCENARIO_CRITERIA = 18
