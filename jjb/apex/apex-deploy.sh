@@ -95,6 +95,10 @@ if [[ "$BUILD_DIRECTORY" == *verify* ]]; then
       fi
     done
 
+    # Make sure ipxe-roms-qemu package is updated to latest.
+    # This package is needed for multi virtio nic PXE boot in virtual environment.
+    sudo yum update -y ipxe-roms-qemu
+
     if [ -z ${PYTHONPATH:-} ]; then
         export PYTHONPATH=${WORKSPACE}/lib/python
     else
