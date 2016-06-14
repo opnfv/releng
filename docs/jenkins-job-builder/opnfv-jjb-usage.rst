@@ -53,7 +53,7 @@ reviewed and submitted.
 * morgan.richomme@orange.com
 * vlaza@cloudbasesolutions.com
 * matthew.lijun@huawei.com
-* pbandzi@cisco.com
+* meimei@huawei.com
 * jose.lausuch@ericsson.com
 * koffirodrigue@gmail.com
 * r-mibu@cq.jp.nec.com
