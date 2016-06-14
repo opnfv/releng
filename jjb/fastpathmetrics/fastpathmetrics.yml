@@ -141,20 +141,8 @@
             choosing-strategy: 'default'
 
     triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/{branch}'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**'
+         - pollscm:
+             cron: '@midnight'
 
     builders:
         - shell: |
