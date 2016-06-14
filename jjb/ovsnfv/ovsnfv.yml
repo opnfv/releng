@@ -12,9 +12,11 @@
         - master:
             branch: '{stream}'
             gs-pathname: ''
+            disabled: false
         - brahmaputra:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
+            disabled: true
 
 - job-template:
     name: 'ovsnfv-verify-{stream}'
@@ -24,7 +26,7 @@
             project: '{project}'
         - gerrit-parameter:
             branch: '{branch}'
-        - 'intel-build2-defaults'
+        - 'opnfv-build-centos-defaults'
         - string:
             name: GS_URL
             default: '$GS_BASE{gs-pathname}'
@@ -71,7 +73,7 @@
             project: '{project}'
         - gerrit-parameter:
             branch: '{branch}'
-        - 'intel-build2-defaults'
+        - 'opnfv-build-centos-defaults'
         - string:
             name: GS_URL
             default: '$GS_BASE{gs-pathname}'
@@ -112,10 +114,12 @@
 - job-template:
     name: 'ovsnfv-daily-{stream}'
 
+    disabled: '{disabled}'
+
     parameters:
         - project-parameter:
             project: '{project}'
-        - 'intel-build2-defaults'
+        - 'opnfv-build-centos-defaults'
         - string:
             name: GS_URL
             default: '$GS_BASE{gs-pathname}'
