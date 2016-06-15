@@ -80,11 +80,15 @@ class MemDb(object):
             return_one = True
             docs = [docs]
 
+        if check_keys:
+            for doc in docs:
+                self._check_keys(doc)
+
         ids = []
         for doc in docs:
             if '_id' not in doc:
                 doc['_id'] = str(ObjectId())
-            if not check_keys or not self._find_one(doc['_id']):
+            if not self._find_one(doc['_id']):
                 ids.append(doc['_id'])
                 self.contents.append(doc_or_docs)
 
@@ -131,8 +135,12 @@ class MemDb(object):
     def find(self, *args):
         return MemCursor(self._find(*args))
 
-    def _update(self, spec, document):
+    def _update(self, spec, document, check_keys=True):
         updated = False
+
+        if check_keys:
+            self._check_keys(document)
+
         for index in range(len(self.contents)):
             content = self.contents[index]
             if self._in(content, spec):
@@ -142,8 +150,8 @@ class MemDb(object):
             self.contents[index] = content
         return updated
 
-    def update(self, spec, document):
-        return thread_execute(self._update, spec, document)
+    def update(self, spec, document, check_keys=True):
+        return thread_execute(self._update, spec, document, check_keys)
 
     def _remove(self, spec_or_id=None):
         if spec_or_id is None:
@@ -162,6 +170,15 @@ class MemDb(object):
 
     def clear(self):
         self._remove()
+
+    @staticmethod
+    def _check_keys(doc):
+        for key in doc.keys():
+            if '.' in key:
+                raise NameError('key {} must not contain .'.format(key))
+            if key.startswith('$'):
+                raise NameError('key {} must not start with $'.format(key))
+
 
 pods = MemDb()
 projects = MemDb()
