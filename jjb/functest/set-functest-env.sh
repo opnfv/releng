@@ -8,14 +8,19 @@ if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
     if sudo virsh list | grep instack; then
         instack_mac=$(sudo virsh domiflist instack | grep default | \
                       grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
+        admin_mac=$(sudo virsh domiflist instack | grep admin_network | \
+                      grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
     elif sudo virsh list | grep undercloud; then
         instack_mac=$(sudo virsh domiflist undercloud | grep default | \
+                      grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
+        admin_mac=$(sudo virsh domiflist undercloud | grep admin_network | \
                       grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
     else
         echo "No available installer VM exists...exiting"
         exit 1
     fi
     INSTALLER_IP=$(/usr/sbin/arp -e | grep ${instack_mac} | awk {'print $1'})
+    ADMIN_IP=$(/usr/sbin/arp -e | grep ${admin_mac} | awk {'print $1'})
     sshkey="-v /root/.ssh/id_rsa:/root/.ssh/id_rsa"
     if sudo iptables -C FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable 2> ${redirect}; then
         sudo iptables -D FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable
