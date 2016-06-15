@@ -96,7 +96,8 @@ class GenericApiHandler(RequestHandler):
                 code, message = error(data)
                 raise HTTPError(code, message)
 
-        data.creation_date = datetime.now()
+        if self.table != 'results':
+            data.creation_date = datetime.now()
         _id = yield self._eval_db(self.table, 'insert', data.format())
         if 'name' in self.json_args:
             resource = data.name
