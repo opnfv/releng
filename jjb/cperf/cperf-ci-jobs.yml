@@ -107,6 +107,11 @@
     name: cperf-daily-builder
     builders:
         - 'cperf-cleanup'
+        - trigger-builds:
+          - project: 'apex-deploy-baremetal-os-odl_l3-nofeature-ha-master'
+            predefined-parameters: BUILD_DIRECTORY=apex-build-{stream2}/build_output
+            git-revision: true
+            block: true
         - 'cperf-robot-cbench'
 
 - builder:
