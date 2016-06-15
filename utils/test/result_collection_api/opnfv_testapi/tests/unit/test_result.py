@@ -7,6 +7,7 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 import unittest
+import copy
 
 from opnfv_testapi.common.constants import HTTP_OK, HTTP_BAD_REQUEST, \
     HTTP_NOT_FOUND
@@ -158,6 +159,13 @@ class TestResultCreate(TestResultBase):
 
     def test_success(self):
         (code, body) = self.create_d()
+        self.assertEqual(code, HTTP_OK)
+        self.assert_href(body)
+
+    def test_key_with_doc(self):
+        req = copy.deepcopy(self.req_d)
+        req.details = {'1.name': 'dot_name'}
+        (code, body) = self.create(req)
         self.assertEqual(code, HTTP_OK)
         self.assert_href(body)
 

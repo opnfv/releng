@@ -7,6 +7,7 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 import unittest
+import copy
 
 from test_base import TestBase
 from opnfv_testapi.resources.testcase_models import TestcaseCreateRequest, \
@@ -167,6 +168,13 @@ class TestCaseUpdate(TestCaseBase):
         _, new_body = self.get(self.req_e.name)
         self.assertEqual(_id, new_body._id)
         self.assert_update_body(self.req_d, new_body, self.update_e)
+
+    def test_with_dollar(self):
+        self.create_d()
+        update = copy.deepcopy(self.update_d)
+        update.description = {'2. change': 'dollar change'}
+        code, body = self.update(update, self.req_d.name)
+        self.assertEqual(code, HTTP_OK)
 
 
 class TestCaseDelete(TestCaseBase):
