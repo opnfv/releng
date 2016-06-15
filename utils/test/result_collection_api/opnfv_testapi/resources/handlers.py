@@ -98,7 +98,8 @@ class GenericApiHandler(RequestHandler):
 
         if self.table != 'results':
             data.creation_date = datetime.now()
-        _id = yield self._eval_db(self.table, 'insert', data.format())
+        _id = yield self._eval_db(self.table, 'insert', data.format(),
+                                  check_keys=False)
         if 'name' in self.json_args:
             resource = data.name
         else:
@@ -174,7 +175,8 @@ class GenericApiHandler(RequestHandler):
         edit_request.update(self._update_requests(data))
 
         """ Updating the DB """
-        yield self._eval_db(self.table, 'update', query, edit_request)
+        yield self._eval_db(self.table, 'update', query, edit_request,
+                            check_keys=False)
         edit_request['_id'] = str(data._id)
         self.finish_request(edit_request)
 
@@ -215,8 +217,8 @@ class GenericApiHandler(RequestHandler):
             query[key] = new
         return equal, query
 
-    def _eval_db(self, table, method, *args):
-        return eval('self.db.%s.%s(*args)' % (table, method))
+    def _eval_db(self, table, method, *args, **kwargs):
+        return eval('self.db.%s.%s(*args, **kwargs)' % (table, method))
 
     def _eval_db_find_one(self, query, table=None):
         if table is None:
