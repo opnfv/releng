@@ -16,12 +16,16 @@
         - master:
             branch: '{stream}'
             gs-pathname: ''
+            disabled: false
         - brahmaputra:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: true
 
 - job-template:
     name: 'fastpathmetrics-verify-{stream}'
+
+    disabled: '{obj:disabled}'
 
     parameters:
         - project-parameter:
@@ -69,6 +73,8 @@
     name: 'fastpathmetrics-merge-{stream}'
 
     project-type: freestyle
+
+    disabled: '{obj:disabled}'
 
     concurrent: true
 
@@ -118,6 +124,8 @@
     name: 'fastpathmetrics-daily-{stream}'
 
     project-type: freestyle
+
+    disabled: '{obj:disabled}'
 
     concurrent: true
 
