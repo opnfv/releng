@@ -19,7 +19,7 @@ def getApiResults(case, installer, scenario, version):
     # urllib2.install_opener(opener)
     # url = "http://127.0.0.1:8000/results?case=" + case + \
     #       "&period=30&installer=" + installer
-    url = ("http://testresults.opnfv.org/test/api/v1/results?case=" + case +
+    url = (URL_BASE + "?case=" + case +
            "&period=" + str(reportingConf.PERIOD) + "&installer=" + installer +
            "&scenario=" + scenario + "&version=" + version)
     request = Request(url)
@@ -38,7 +38,7 @@ def getScenarios(case, installer, version):
 
     case = case.getName()
     print case
-    url = ("http://testresults.opnfv.org/test/api/v1/results?case=" + case +
+    url = (URL_BASE + "?case=" + case +
            "&period=" + str(reportingConf.PERIOD) + "&installer=" + installer +
            "&version=" + version)
     request = Request(url)

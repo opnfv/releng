@@ -86,19 +86,41 @@ class TestCase(object):
         # '<name in the config>':'<name in the DB>'
         # I know it is uggly...
         test_match_matrix = {'healthcheck': 'healthcheck',
-                             'vping_ssh': 'vPing',
-                             'vping_userdata': 'vPing_userdata',
-                             'odl': 'ODL',
-                             'onos': 'ONOS',
-                             'ovno': 'ovno',
-                             'tempest_smoke_serial': 'Tempest',
+                             'vping_ssh': 'vping_ssh',
+                             'vping_userdata': 'vping_userdata',
+                             'odl': 'odl',
+                             'onos': 'onos',
+                             'ocl': 'ocl',
+                             'tempest_smoke_serial': 'tempest_smoke_serial',
                              'tempest_full_parallel': 'tempest_full_parallel',
-                             'rally_sanity': 'Rally',
+                             'rally_sanity': 'rally_sanity',
                              'bgpvpn': 'bgpvpn',
                              'rally_full': 'rally_full',
-                             'vims': 'vIMS',
+                             'vims': 'vims',
                              'doctor': 'doctor-notification',
                              'promise': 'promise'
+                             }
+        try:
+            return test_match_matrix[self.name]
+        except:
+            return "unknown"
+
+    def getTestDisplayName(self):
+        # Correspondance name of the test case / name in the DB
+        test_match_matrix = {'healthcheck': 'healthcheck',
+                             'vping_ssh': 'vPing (ssh)',
+                             'vping_userdata': 'vPing (userdata)',
+                             'odl': 'ODL',
+                             'onos': 'ONOS',
+                             'ocl': 'OCL',
+                             'tempest_smoke_serial': 'Tempest (smoke)',
+                             'tempest_full_parallel': 'Tempest (full)',
+                             'rally_sanity': 'Rally (smoke)',
+                             'bgpvpn': 'bgpvpn',
+                             'rally_full': 'Rally (full)',
+                             'vims': 'vIMS',
+                             'doctor': 'Doctor',
+                             'promise': 'Promise'
                              }
         try:
             return test_match_matrix[self.name]
