@@ -140,9 +140,9 @@ sed -i -r -- "s/^(\s+osd-reformat: )'no'/\1'$CEPH_REFORMAT'/" $SRCBUNDLE
 ##
 
 echo "------ Deploy with juju ------"
-echo "Execute: ./deploy.sh -t $HA_MODE -o $OS_RELEASE -s $SDN_CONTROLLER -l $POD_NAME -d $UBUNTU_DISTRO"
+echo "Execute: ./deploy.sh -t $HA_MODE -o $OS_RELEASE -s $SDN_CONTROLLER -l $POD_NAME -d $UBUNTU_DISTRO -f $NFV_FEATURES"
 
-./deploy.sh -t $HA_MODE -o $OS_RELEASE -s $SDN_CONTROLLER -l $POD_NAME -d $UBUNTU_DISTRO
+./deploy.sh -t $HA_MODE -o $OS_RELEASE -s $SDN_CONTROLLER -l $POD_NAME -d $UBUNTU_DISTRO -f $NFV_FEATURES
 exit_on_error $? "Main deploy FAILED"
 
 ##
