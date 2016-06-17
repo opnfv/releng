@@ -24,7 +24,7 @@ parser.add_argument('-i', '--input_dir',
 parser.add_argument('-d', '--db',
                     type=str,
                     required=False,
-                    default=None,
+                    default='test_results_collection',
                     help='database name after the restore.')
 
 
