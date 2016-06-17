@@ -45,9 +45,16 @@ def _get_results_from_list_of_dicts(list_of_dict_statuses, dict_indexes, expecte
     return test_results
 
 
+def _convert_value(value):
+    return value if value != '' else 0
+
+
 def _convert_duration(duration):
     if (isinstance(duration, str) or isinstance(duration, unicode)) and ':' in duration:
         hours, minutes, seconds = duration.split(":")
+        hours = _convert_value(hours)
+        minutes = _convert_value(minutes)
+        seconds = _convert_value(seconds)
         int_duration = 3600 * int(hours) + 60 * int(minutes) + float(seconds)
     else:
         int_duration = duration
