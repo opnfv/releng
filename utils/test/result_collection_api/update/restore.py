@@ -24,13 +24,14 @@ parser.add_argument('-i', '--input_dir',
 parser.add_argument('-d', '--db',
                     type=str,
                     required=False,
-                    default=None,
+                    default='test_results_collection',
                     help='database name after the restore.')
 
 
 def restore(args):
     input_dir = get_abspath(args.input_dir)
     cmd = ['mongorestore', '%s' % input_dir]
+    print cmd
     execute(cmd, args)
 
 
