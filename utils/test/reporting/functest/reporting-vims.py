@@ -24,7 +24,7 @@ installers = ["fuel", "compass", "joid", "apex"]
 step_order = ["initialisation", "orchestrator", "vIMS", "sig_test"]
 
 for installer in installers:
-    request = Request('http://testresults.opnfv.org/test/api/v1/results?case=vIMS&installer=' + installer)
+    request = Request('http://testresults.opnfv.org/test/api/v1/results?case=vims&installer=' + installer)
 
     try:
         response = urlopen(request)
@@ -34,7 +34,6 @@ for installer in installers:
         print 'No kittez. Got an error code:', e
 
     test_results = results['results']
-    test_results.reverse()
 
     scenario_results = {}
     for r in test_results:

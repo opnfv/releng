@@ -10,7 +10,7 @@ PERIOD = 7
 print "Generate Tempest automatic reporting"
 for installer in installers:
     # we consider the Tempest results of the last PERIOD days
-    url = "http://testresults.opnfv.org/test/api/v1/results?case=Tempest"
+    url = "http://testresults.opnfv.org/test/api/v1/results?case=tempest_smoke_serial"
     request = Request(url + '&period=' + str(PERIOD)
                       + '&installer=' + installer + '&version=master')
 
