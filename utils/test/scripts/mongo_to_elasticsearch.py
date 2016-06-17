@@ -354,7 +354,7 @@ def modify_mongo_entry(testcase):
 def publish_mongo_data(output_destination):
     tmp_filename = 'mongo-{}.log'.format(uuid.uuid4())
     try:
-        subprocess.check_call(['mongoexport', '--db', 'test_results_collection', '-c', 'test_results', '--out',
+        subprocess.check_call(['mongoexport', '--db', 'test_results_collection', '-c', 'results', '--out',
                                tmp_filename])
         with open(tmp_filename) as fobj:
             for mongo_json_line in fobj:
@@ -368,7 +368,7 @@ def publish_mongo_data(output_destination):
 
 def get_mongo_data(days):
     past_time = datetime.datetime.today() - datetime.timedelta(days=days)
-    mongo_json_lines = subprocess.check_output(['mongoexport', '--db', 'test_results_collection', '-c', 'test_results',
+    mongo_json_lines = subprocess.check_output(['mongoexport', '--db', 'test_results_collection', '-c', 'results',
                                                 '--query', '{{"creation_date":{{$gt:"{}"}}}}'
                                                .format(past_time)]).splitlines()
 
@@ -417,7 +417,7 @@ if __name__ == '__main__':
                         help='the url of mongodb, defaults to http://localhost:8082')
 
     args = parser.parse_args()
-    base_elastic_url = urlparse.urljoin(args.elasticsearch_url, '/test_results/mongo2elastic')
+    base_elastic_url = urlparse.urljoin(args.elasticsearch_url, '/results/mongo2elastic')
     output_destination = args.output_destination
     days = args.merge_latest
     es_user = args.elasticsearch_username
