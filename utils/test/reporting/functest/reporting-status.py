@@ -24,7 +24,7 @@ otherTestCases = []
 
 # init just tempest to get the list of scenarios
 # as all the scenarios run Tempest
-tempest = tc.TestCase("Tempest", "functest", -1)
+tempest = tc.TestCase("tempest_smoke_serial", "functest", -1)
 
 # Retrieve the Functest configuration to detect which tests are relevant
 # according to the installer, scenario
