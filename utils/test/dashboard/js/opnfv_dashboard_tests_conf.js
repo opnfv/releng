@@ -31,21 +31,21 @@ opnfv_dashboard_installers_scenarios['joid']=
 
 var opnfv_dashboard_testcases = {
     'VIM': {
-        'Tempest': ['Tempest duration',
+        'vping_ssh': ['vPing duration'],
+        'vping_userdata': ['vPing_userdata duration'],
+        'tempest': ['Tempest duration',
                 'Tempest nb tests/nb failures'],
-        'vPing': ['vPing duration'],
-        'vPing_userdata': ['vPing_userdata duration'],
-        'Rally': ['rally duration']
+        'rally_sanity': ['rally duration']
     },
     'Controller': {
-        'ODL': ['ODL nb tests/nb failures'],
-        'ONOS': ['ONOS FUNCvirNet duration ',
+        'odl': ['ODL nb tests/nb failures'],
+        'onos': ['ONOS FUNCvirNet duration ',
                 'ONOS FUNCvirNet nb tests/nb failures',
                 'ONOS FUNCvirNetL3 duration',
                 'ONOS FUNCvirNetL3 nb tests/nb failures']
     },
     'Features': {
-        'vIMS': ['vIMS nb tests passed/failed/skipped',
+        'vims': ['vIMS nb tests passed/failed/skipped',
                 'vIMS orchestrator/VNF/test duration'],
         'promise': ['Promise duration ',
                 'Promise nb tests/nb failures'],

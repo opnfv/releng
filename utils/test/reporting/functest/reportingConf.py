@@ -15,3 +15,4 @@ installers = ["apex", "compass", "fuel", "joid"]
 versions = ["master"]
 PERIOD = 10
 MAX_SCENARIO_CRITERIA = 18
+URL_BASE = 'http://testresults.opnfv.org/test/api/v1/results'
