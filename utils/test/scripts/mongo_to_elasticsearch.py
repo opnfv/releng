@@ -16,10 +16,13 @@ file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(messag
 logger.addHandler(file_handler)
 
 
-def _get_dicts_from_list(dict_list, keys):
+def _get_dicts_from_list(testcase, dict_list, keys):
     dicts = []
     for dictionary in dict_list:
         # iterate over dictionaries in input list
+        if not isinstance(dictionary, dict):
+            logger.info("Skipping non-dict details testcase [{}]".format(testcase))
+            continue
         if keys == set(dictionary.keys()):
             # check the dictionary structure
             dicts.append(dictionary)
@@ -86,7 +89,7 @@ def modify_functest_vims(testcase):
         -> details.orchestrator.duration
     """
     testcase_details = testcase['details']
-    sig_test_results = _get_dicts_from_list(testcase_details['sig_test']['result'],
+    sig_test_results = _get_dicts_from_list(testcase, testcase_details['sig_test']['result'],
                                             {'duration', 'result', 'name', 'error'})
     if len(sig_test_results) < 1:
         logger.info("No 'result' from 'sig_test' found in vIMS details, skipping")
@@ -134,10 +137,10 @@ def modify_functest_onos(testcase):
     testcase_details = testcase['details']
 
     funcvirnet_details = testcase_details['FUNCvirNet']['status']
-    funcvirnet_statuses = _get_dicts_from_list(funcvirnet_details, {'Case result', 'Case name:'})
+    funcvirnet_statuses = _get_dicts_from_list(testcase, funcvirnet_details, {'Case result', 'Case name:'})
 
     funcvirnetl3_details = testcase_details['FUNCvirNetL3']['status']
-    funcvirnetl3_statuses = _get_dicts_from_list(funcvirnetl3_details, {'Case result', 'Case name:'})
+    funcvirnetl3_statuses = _get_dicts_from_list(testcase, funcvirnetl3_details, {'Case result', 'Case name:'})
 
     if len(funcvirnet_statuses) < 0:
         logger.info("No results found in 'FUNCvirNet' part of ONOS results")
@@ -186,7 +189,7 @@ def modify_functest_rally(testcase):
         -> details.tests
         -> details.success_percentage
     """
-    summaries = _get_dicts_from_list(testcase['details'], {'summary'})
+    summaries = _get_dicts_from_list(testcase, testcase['details'], {'summary'})
 
     if len(summaries) != 1:
         logger.info("Found zero or more than one 'summaries' in Rally details, skipping")
@@ -211,7 +214,8 @@ def modify_functest_odl(testcase):
         -> details.failures
         -> details.success_percentage?
     """
-    test_statuses = _get_dicts_from_list(testcase['details']['details'], {'test_status', 'test_doc', 'test_name'})
+    test_statuses = _get_dicts_from_list(testcase, testcase['details']['details'],
+                                         {'test_status', 'test_doc', 'test_name'})
     if len(test_statuses) < 1:
         logger.info("No 'test_status' found in ODL details, skipping")
         return False
