@@ -134,7 +134,7 @@ class ResultsCLHandler(GenericResultHandler):
             @param body: result to be created
             @type body: L{ResultCreateRequest}
             @in body: body
-            @rtype: L{TestResult}
+            @rtype: L{CreateResponse}
             @return 200: result is created.
             @raise 404: pod/project/testcase not exist
             @raise 400: body/pod_name/project_name/case_name not provided
