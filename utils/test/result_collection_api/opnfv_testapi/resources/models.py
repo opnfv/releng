@@ -16,6 +16,7 @@
 from opnfv_testapi.tornado_swagger import swagger
 
 
+@swagger.model()
 class CreateResponse(object):
     def __init__(self, href=''):
         self.href = href

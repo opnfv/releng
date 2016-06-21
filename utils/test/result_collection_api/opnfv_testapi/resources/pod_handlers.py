@@ -36,7 +36,7 @@ class PodCLHandler(GenericPodHandler):
             @param body: pod to be created
             @type body: L{PodCreateRequest}
             @in body: body
-            @rtype: L{Pod}
+            @rtype: L{CreateResponse}
             @return 200: pod is created.
             @raise 403: pod already exists
             @raise 400: body or name not provided
