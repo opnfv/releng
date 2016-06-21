@@ -11,7 +11,7 @@ import datetime
 
 logger = logging.getLogger('mongo_to_elasticsearch')
 logger.setLevel(logging.DEBUG)
-file_handler = logging.FileHandler('/var/log/{}.log'.format(__name__))
+file_handler = logging.FileHandler('/var/log/{}.log'.format('mongo_to_elasticsearch'))
 file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
 logger.addHandler(file_handler)
 
@@ -21,7 +21,7 @@ def _get_dicts_from_list(testcase, dict_list, keys):
     for dictionary in dict_list:
         # iterate over dictionaries in input list
         if not isinstance(dictionary, dict):
-            logger.info("Skipping non-dict details testcase [{}]".format(testcase))
+            logger.info("Skipping non-dict details testcase '{}'".format(testcase))
             continue
         if keys == set(dictionary.keys()):
             # check the dictionary structure
@@ -143,6 +143,9 @@ def modify_functest_onos(testcase):
     """
     testcase_details = testcase['details']
 
+    if 'FUNCvirNet' not in testcase_details:
+        return modify_default_entry(testcase)
+
     funcvirnet_details = testcase_details['FUNCvirNet']['status']
     funcvirnet_statuses = _get_dicts_from_list(testcase, funcvirnet_details, {'Case result', 'Case name:'})
 
@@ -238,6 +241,7 @@ def modify_functest_odl(testcase):
             'failures': failed_tests,
             'success_percentage': 100 * passed_tests / float(all_tests)
         }
+        logger.debug("Modified odl testcase: '{}'".format(json.dumps(testcase, indent=2)))
         return True
 
 
@@ -296,7 +300,8 @@ def verify_mongo_entry(testcase):
                         'case_name',
                         'project_name',
                         'details']
-    mandatory_fields_to_modify = {'creation_date': _fix_date}
+    mandatory_fields_to_modify = {'start_date': _fix_date}
+    fields_to_swap_or_add = {'scenario': 'version'}
     if '_id' in testcase:
         mongo_id = testcase['_id']
     else:
@@ -320,6 +325,15 @@ def verify_mongo_entry(testcase):
             else:
                 testcase[key] = mandatory_fields_to_modify[key](value)
                 del mandatory_fields_to_modify[key]
+        elif key in fields_to_swap_or_add:
+            if value is None:
+                swapped_key = fields_to_swap_or_add[key]
+                swapped_value = testcase[swapped_key]
+                logger.info("Swapping field '{}' with value None for '{}' with value '{}'.".format(key, swapped_key, swapped_value))
+                testcase[key] = swapped_value
+                del fields_to_swap_or_add[key]
+            else:
+                del fields_to_swap_or_add[key]
         elif key in optional_fields:
             if value is None:
                 # empty optional field, remove
@@ -334,7 +348,16 @@ def verify_mongo_entry(testcase):
         logger.info("Skipping testcase with mongo _id '{}' because the testcase was missing"
                     " mandatory field(s) '{}'".format(mongo_id, mandatory_fields))
         return False
+    elif len(mandatory_fields_to_modify) > 0:
+        # some mandatory fields are missing
+        logger.info("Skipping testcase with mongo _id '{}' because the testcase was missing"
+                    " mandatory field(s) '{}'".format(mongo_id, mandatory_fields_to_modify.keys()))
+        return False
     else:
+        if len(fields_to_swap_or_add) > 0:
+            for key, swap_key in fields_to_swap_or_add.iteritems():
+                testcase[key] = testcase[swap_key]
+
         return True
 
 
@@ -346,16 +369,17 @@ def modify_mongo_entry(testcase):
     if verify_mongo_entry(testcase):
         project = testcase['project_name']
         case_name = testcase['case_name']
+        logger.info("Processing mongo test case '{}'".format(case_name))
         if project == 'functest':
-            if case_name == 'Rally':
+            if case_name == 'rally_sanity':
                 return modify_functest_rally(testcase)
-            elif case_name == 'ODL':
+            elif case_name.lower() == 'odl':
                 return modify_functest_odl(testcase)
-            elif case_name == 'ONOS':
+            elif case_name.lower() == 'onos':
                 return modify_functest_onos(testcase)
-            elif case_name == 'vIMS':
+            elif case_name.lower() == 'vims':
                 return modify_functest_vims(testcase)
-            elif case_name == 'Tempest':
+            elif case_name == 'tempest_smoke_serial':
                 return modify_functest_tempest(testcase)
         return modify_default_entry(testcase)
     else:
@@ -371,7 +395,7 @@ def publish_mongo_data(output_destination):
             for mongo_json_line in fobj:
                 test_result = json.loads(mongo_json_line)
                 if modify_mongo_entry(test_result):
-                    shared_utils.publish_json(test_result, es_user, es_passwd, output_destination)
+                    shared_utils.publish_json(test_result, es_creds, output_destination)
     finally:
         if os.path.exists(tmp_filename):
             os.remove(tmp_filename)
@@ -380,7 +404,7 @@ def publish_mongo_data(output_destination):
 def get_mongo_data(days):
     past_time = datetime.datetime.today() - datetime.timedelta(days=days)
     mongo_json_lines = subprocess.check_output(['mongoexport', '--db', 'test_results_collection', '-c', 'results',
-                                                '--query', '{{"creation_date":{{$gt:"{}"}}}}'
+                                                '--query', '{{"start_date":{{$gt:"{}"}}}}'
                                                .format(past_time)]).splitlines()
 
     mongo_data = []
@@ -392,7 +416,7 @@ def get_mongo_data(days):
     return mongo_data
 
 
-def publish_difference(mongo_data, elastic_data, output_destination, es_user, es_passwd):
+def publish_difference(mongo_data, elastic_data, output_destination, es_creds):
     for elastic_entry in elastic_data:
         if elastic_entry in mongo_data:
             mongo_data.remove(elastic_entry)
@@ -400,7 +424,7 @@ def publish_difference(mongo_data, elastic_data, output_destination, es_user, es
     logger.info('number of parsed test results: {}'.format(len(mongo_data)))
 
     for parsed_test_result in mongo_data:
-        shared_utils.publish_json(parsed_test_result, es_user, es_passwd, output_destination)
+        shared_utils.publish_json(parsed_test_result, es_creds, output_destination)
 
 
 if __name__ == '__main__':
@@ -418,42 +442,35 @@ if __name__ == '__main__':
     parser.add_argument('-e', '--elasticsearch-url', default='http://localhost:9200',
                         help='the url of elasticsearch, defaults to http://localhost:9200')
 
-    parser.add_argument('-u', '--elasticsearch-username',
-                        help='the username for elasticsearch')
-
-    parser.add_argument('-p', '--elasticsearch-password',
-                        help='the password for elasticsearch')
-
-    parser.add_argument('-m', '--mongodb-url', default='http://localhost:8082',
-                        help='the url of mongodb, defaults to http://localhost:8082')
+    parser.add_argument('-u', '--elasticsearch-username', default=None,
+                        help='The username with password for elasticsearch in format username:password')
 
     args = parser.parse_args()
-    base_elastic_url = urlparse.urljoin(args.elasticsearch_url, '/results/mongo2elastic')
+    base_elastic_url = urlparse.urljoin(args.elasticsearch_url, '/test_results/mongo2elastic')
     output_destination = args.output_destination
     days = args.merge_latest
-    es_user = args.elasticsearch_username
-    es_passwd = args.elasticsearch_password
+    es_creds = args.elasticsearch_username
 
     if output_destination == 'elasticsearch':
         output_destination = base_elastic_url
 
     # parsed_test_results will be printed/sent to elasticsearch
     if days == 0:
-        # TODO get everything from mongo
         publish_mongo_data(output_destination)
     elif days > 0:
         body = '''{{
     "query" : {{
         "range" : {{
-            "creation_date" : {{
+            "start_date" : {{
                 "gte" : "now-{}d"
             }}
         }}
     }}
 }}'''.format(days)
-        elastic_data = shared_utils.get_elastic_data(base_elastic_url, es_user, es_passwd, body)
+        elastic_data = shared_utils.get_elastic_data(base_elastic_url, es_creds, body)
         logger.info('number of hits in elasticsearch for now-{}d: {}'.format(days, len(elastic_data)))
         mongo_data = get_mongo_data(days)
-        publish_difference(mongo_data, elastic_data, output_destination, es_user, es_passwd)
+        publish_difference(mongo_data, elastic_data, output_destination, es_creds)
     else:
         raise Exception('Update must be non-negative')
+

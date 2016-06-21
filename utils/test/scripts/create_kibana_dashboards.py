@@ -7,7 +7,7 @@ import urlparse
 
 logger = logging.getLogger('create_kibana_dashboards')
 logger.setLevel(logging.DEBUG)
-file_handler = logging.FileHandler('/var/log/{}.log'.format(__name__))
+file_handler = logging.FileHandler('/var/log/{}.log'.format('create_kibana_dashboards'))
 file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
 logger.addHandler(file_handler)
 
@@ -15,7 +15,7 @@ _installers = {'fuel', 'apex', 'compass', 'joid'}
 
 # see class VisualizationState for details on format
 _testcases = [
-    ('functest', 'Tempest',
+    ('functest', 'tempest_smoke_serial',
      [
          {
              "metrics": [
@@ -28,7 +28,7 @@ _testcases = [
              ],
              "type": "line",
              "metadata": {
-                 "label": "Tempest duration",
+                 "label": "tempest_smoke_serial duration",
                  "test_family": "VIM"
              }
          },
@@ -50,7 +50,7 @@ _testcases = [
              ],
              "type": "histogram",
              "metadata": {
-                 "label": "Tempest nr of tests/failures",
+                 "label": "tempest_smoke_serial nr of tests/failures",
                  "test_family": "VIM"
              }
          },
@@ -66,14 +66,14 @@ _testcases = [
              ],
              "type": "line",
              "metadata": {
-                 "label": "Tempest success percentage",
+                 "label": "tempest_smoke_serial success percentage",
                  "test_family": "VIM"
              }
          }
      ]
      ),
 
-    ('functest', 'Rally',
+    ('functest', 'rally_sanity',
      [
          {
              "metrics": [
@@ -86,7 +86,7 @@ _testcases = [
              ],
              "type": "line",
              "metadata": {
-                 "label": "Rally duration",
+                 "label": "rally_sanity duration",
                  "test_family": "VIM"
              }
          },
@@ -102,7 +102,7 @@ _testcases = [
              ],
              "type": "histogram",
              "metadata": {
-                 "label": "Rally nr of tests",
+                 "label": "rally_sanity nr of tests",
                  "test_family": "VIM"
              }
          },
@@ -118,14 +118,14 @@ _testcases = [
              ],
              "type": "line",
              "metadata": {
-                 "label": "Rally success percentage",
+                 "label": "rally_sanity success percentage",
                  "test_family": "VIM"
              }
          }
      ]
      ),
 
-    ('functest', 'vPing',
+    ('functest', 'vping_ssh',
      [
          {
              "metrics": [
@@ -145,7 +145,7 @@ _testcases = [
      ]
      ),
 
-    ('functest', 'vPing_userdata',
+    ('functest', 'vping_userdata',
      [
          {
              "metrics": [
@@ -165,7 +165,7 @@ _testcases = [
      ]
      ),
 
-    ('functest', 'ODL',
+    ('functest', 'odl',
      [
          {
              "metrics": [
@@ -207,7 +207,7 @@ _testcases = [
      ]
      ),
 
-    ('functest', 'ONOS',
+    ('functest', 'onos',
      [
          {
              "metrics": [
@@ -287,7 +287,7 @@ _testcases = [
      ]
      ),
 
-    ('functest', 'vIMS',
+    ('functest', 'vims',
      [
          {
              "metrics": [
@@ -418,13 +418,13 @@ _testcases = [
 
 
 class KibanaDashboard(dict):
-    def __init__(self, project_name, case_name, installer, pod, versions, visualization_detail):
+    def __init__(self, project_name, case_name, installer, pod, scenarios, visualization_detail):
         super(KibanaDashboard, self).__init__()
         self.project_name = project_name
         self.case_name = case_name
         self.installer = installer
         self.pod = pod
-        self.versions = versions
+        self.scenarios = scenarios
         self.visualization_detail = visualization_detail
         self._visualization_title = None
         self._kibana_visualizations = []
@@ -433,12 +433,12 @@ class KibanaDashboard(dict):
         self._create()
 
     def _create_visualizations(self):
-        for version in self.versions:
+        for scenario in self.scenarios:
             self._kibana_visualizations.append(KibanaVisualization(self.project_name,
                                                                    self.case_name,
                                                                    self.installer,
                                                                    self.pod,
-                                                                   version,
+                                                                   scenario,
                                                                    self.visualization_detail))
 
         self._visualization_title = self._kibana_visualizations[0].vis_state_title
@@ -447,7 +447,7 @@ class KibanaDashboard(dict):
         for visualization in self._kibana_visualizations:
             url = urlparse.urljoin(base_elastic_url, '/.kibana/visualization/{}'.format(visualization.id))
             logger.debug("publishing visualization '{}'".format(url))
-            shared_utils.publish_json(visualization, es_user, es_passwd, url)
+            shared_utils.publish_json(visualization, es_creds, url)
 
     def _construct_panels(self):
         size_x = 6
@@ -495,7 +495,7 @@ class KibanaDashboard(dict):
         },
             separators=(',', ':'))
         self['uiStateJSON'] = "{}"
-        self['version'] = 1
+        self['scenario'] = 1
         self['timeRestore'] = False
         self['kibanaSavedObjectMeta'] = {
             'searchSourceJSON': json.dumps({
@@ -517,7 +517,7 @@ class KibanaDashboard(dict):
     def _publish(self):
         url = urlparse.urljoin(base_elastic_url, '/.kibana/dashboard/{}'.format(self.id))
         logger.debug("publishing dashboard '{}'".format(url))
-        shared_utils.publish_json(self, es_user, es_passwd, url)
+        shared_utils.publish_json(self, es_creds, url)
 
     def publish(self):
         self._publish_visualizations()
@@ -533,13 +533,13 @@ class KibanaSearchSourceJSON(dict):
                 ]
     """
 
-    def __init__(self, project_name, case_name, installer, pod, version):
+    def __init__(self, project_name, case_name, installer, pod, scenario):
         super(KibanaSearchSourceJSON, self).__init__()
         self["filter"] = [
             {"match": {"project_name": {"query": project_name, "type": "phrase"}}},
             {"match": {"case_name": {"query": case_name, "type": "phrase"}}},
             {"match": {"installer": {"query": installer, "type": "phrase"}}},
-            {"match": {"version": {"query": version, "type": "phrase"}}}
+            {"match": {"scenario": {"query": scenario, "type": "phrase"}}}
         ]
         if pod != 'all':
             self["filter"].append({"match": {"pod_name": {"query": pod, "type": "phrase"}}})
@@ -564,14 +564,14 @@ class VisualizationState(dict):
                     {
                         "type": type,           # default date_histogram
                         "params": {
-                            "field": field      # default creation_date
+                            "field": field      # default start_date
                     },
                     {segment2}
                 ],
             "type": type,                       # default area
             "mode": mode,                       # default grouped for type 'histogram', stacked for other types
             "metadata": {
-                    "label": "Tempest duration",# mandatory, no default
+                    "label": "tempest_smoke_serial duration",# mandatory, no default
                     "test_family": "VIM"        # mandatory, no default
                 }
             }
@@ -634,7 +634,7 @@ class VisualizationState(dict):
                     "type": 'date_histogram' if 'type' not in segment else segment['type'],
                     "schema": "metric",
                     "params": {
-                        "field": "creation_date" if ('params' not in segment or 'field' not in segment['params'])
+                        "field": "start_date" if ('params' not in segment or 'field' not in segment['params'])
                         else segment['params']['field'],
                         "interval": "auto",
                         "customInterval": "2h",
@@ -649,7 +649,7 @@ class VisualizationState(dict):
                 "type": 'date_histogram',
                 "schema": "segment",
                 "params": {
-                    "field": "creation_date",
+                    "field": "start_date",
                     "interval": "auto",
                     "customInterval": "2h",
                     "min_doc_count": 1,
@@ -663,7 +663,7 @@ class VisualizationState(dict):
 
 
 class KibanaVisualization(dict):
-    def __init__(self, project_name, case_name, installer, pod, version, detail):
+    def __init__(self, project_name, case_name, installer, pod, scenario, detail):
         """
         We need two things
         1. filter created from
@@ -671,7 +671,7 @@ class KibanaVisualization(dict):
             case_name
             installer
             pod
-            version
+            scenario
         2. visualization state
             field for y axis (metric) with type (avg, sum, etc.)
             field for x axis (segment) with type (date_histogram)
@@ -686,27 +686,27 @@ class KibanaVisualization(dict):
                                                    self.vis_state_title,
                                                    installer,
                                                    pod,
-                                                   version)
+                                                   scenario)
         self.id = self['title'].replace(' ', '-').replace('/', '-')
         self['visState'] = json.dumps(vis_state, separators=(',', ':'))
         self['uiStateJSON'] = "{}"
         self['description'] = "Kibana visualization for project_name '{}', case_name '{}', data '{}', installer '{}'," \
-                              " pod '{}' and version '{}'".format(project_name,
+                              " pod '{}' and scenario '{}'".format(project_name,
                                                                   case_name,
                                                                   self.vis_state_title,
                                                                   installer,
                                                                   pod,
-                                                                  version)
-        self['version'] = 1
+                                                                  scenario)
+        self['scenario'] = 1
         self['kibanaSavedObjectMeta'] = {"searchSourceJSON": json.dumps(KibanaSearchSourceJSON(project_name,
                                                                                                case_name,
                                                                                                installer,
                                                                                                pod,
-                                                                                               version),
+                                                                                               scenario),
                                                                         separators=(',', ':'))}
 
 
-def _get_pods_and_versions(project_name, case_name, installer):
+def _get_pods_and_scenarios(project_name, case_name, installer):
     query_json = json.JSONEncoder().encode({
         "query": {
             "bool": {
@@ -723,30 +723,30 @@ def _get_pods_and_versions(project_name, case_name, installer):
     })
 
     elastic_data = shared_utils.get_elastic_data(urlparse.urljoin(base_elastic_url, '/test_results/mongo2elastic'),
-                                                 es_user, es_passwd, query_json)
+                                                 es_creds, query_json)
 
-    pods_and_versions = {}
+    pods_and_scenarios = {}
 
     for data in elastic_data:
         pod = data['pod_name']
-        if pod in pods_and_versions:
-            pods_and_versions[pod].add(data['version'])
+        if pod in pods_and_scenarios:
+            pods_and_scenarios[pod].add(data['scenario'])
         else:
-            pods_and_versions[pod] = {data['version']}
+            pods_and_scenarios[pod] = {data['scenario']}
 
-        if 'all' in pods_and_versions:
-            pods_and_versions['all'].add(data['version'])
+        if 'all' in pods_and_scenarios:
+            pods_and_scenarios['all'].add(data['scenario'])
         else:
-            pods_and_versions['all'] = {data['version']}
+            pods_and_scenarios['all'] = {data['scenario']}
 
-    return pods_and_versions
+    return pods_and_scenarios
 
 
 def construct_dashboards():
     """
     iterate over testcase and installer
     1. get available pods for each testcase/installer pair
-    2. get available version for each testcase/installer/pod tuple
+    2. get available scenario for each testcase/installer/pod tuple
     3. construct KibanaInput and append
 
     :return: list of KibanaDashboards
@@ -754,10 +754,10 @@ def construct_dashboards():
     kibana_dashboards = []
     for project_name, case_name, visualization_details in _testcases:
         for installer in _installers:
-            pods_and_versions = _get_pods_and_versions(project_name, case_name, installer)
+            pods_and_scenarios = _get_pods_and_scenarios(project_name, case_name, installer)
             for visualization_detail in visualization_details:
-                for pod, versions in pods_and_versions.iteritems():
-                    kibana_dashboards.append(KibanaDashboard(project_name, case_name, installer, pod, versions,
+                for pod, scenarios in pods_and_scenarios.iteritems():
+                    kibana_dashboards.append(KibanaDashboard(project_name, case_name, installer, pod, scenarios,
                                                              visualization_detail))
     return kibana_dashboards
 
@@ -794,26 +794,25 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Create Kibana dashboards from data in elasticsearch')
     parser.add_argument('-e', '--elasticsearch-url', default='http://localhost:9200',
                         help='the url of elasticsearch, defaults to http://localhost:9200')
+
     parser.add_argument('-js', '--generate_js_inputs', action='store_true',
                         help='Use this argument to generate javascript inputs for kibana landing page')
+
     parser.add_argument('--js_path', default='/usr/share/nginx/html/kibana_dashboards/conf.js',
                         help='Path of javascript file with inputs for kibana landing page')
+
     parser.add_argument('-k', '--kibana_url', default='https://testresults.opnfv.org/kibana/app/kibana',
                         help='The url of kibana for javascript inputs')
 
-    parser.add_argument('-u', '--elasticsearch-username',
-                        help='the username for elasticsearch')
-
-    parser.add_argument('-p', '--elasticsearch-password',
-                        help='the password for elasticsearch')
+    parser.add_argument('-u', '--elasticsearch-username', default=None,
+                        help='The username with password for elasticsearch in format username:password')
 
     args = parser.parse_args()
     base_elastic_url = args.elasticsearch_url
     generate_inputs = args.generate_js_inputs
     input_file_path = args.js_path
     kibana_url = args.kibana_url
-    es_user = args.elasticsearch_username
-    es_passwd = args.elasticsearch_password
+    es_creds = args.elasticsearch_username
 
     dashboards = construct_dashboards()
 
@@ -822,3 +821,4 @@ if __name__ == '__main__':
 
     if generate_inputs:
         generate_js_inputs(input_file_path, kibana_url, dashboards)
+
