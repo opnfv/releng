@@ -5,6 +5,7 @@ set -e
 # labconfig is used only for joid
 labconfig=""
 if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
+    ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
     if sudo virsh list | grep instack; then
         instack_mac=$(sudo virsh domiflist instack | grep default | \
                       grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
@@ -17,7 +18,7 @@ if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
     fi
     INSTALLER_IP=$(/usr/sbin/arp -e | grep ${instack_mac} | awk {'print $1'})
     sshkey="-v /root/.ssh/id_rsa:/root/.ssh/id_rsa"
-    sudo scp root@${INSTALLER_IP}:/home/stack/stackrc .
+    sudo scp $ssh_options root@${INSTALLER_IP}:/home/stack/stackrc .
     stackrc="-v ./stackrc:/home/opnfv/functest/conf/stackrc"
 
     if sudo iptables -C FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable 2> ${redirect}; then
