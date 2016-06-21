@@ -38,7 +38,7 @@ class ProjectCLHandler(GenericProjectHandler):
             @param body: project to be created
             @type body: L{ProjectCreateRequest}
             @in body: body
-            @rtype: L{Project}
+            @rtype: L{CreateResponse}
             @return 200: project is created.
             @raise 403: project already exists
             @raise 400:  body or name not provided
