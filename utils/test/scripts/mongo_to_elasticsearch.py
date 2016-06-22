@@ -371,7 +371,12 @@ def publish_mongo_data(output_destination):
             for mongo_json_line in fobj:
                 test_result = json.loads(mongo_json_line)
                 if modify_mongo_entry(test_result):
-                    shared_utils.publish_json(test_result, es_user, es_passwd, output_destination)
+                    status, data = shared_utils.publish_json(test_result, es_user, es_passwd, output_destination)
+                    if status > 300:
+                        project = test_result['project_name']
+                        case_name = test_result['case_name']
+                        logger.info('project {} case {} publish failed, due to [{}]'
+                                    .format(project, case_name, json.loads(data)['error']['reason']))
     finally:
         if os.path.exists(tmp_filename):
             os.remove(tmp_filename)

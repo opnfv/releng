@@ -12,9 +12,11 @@ def publish_json(json_ojb, username, password, output_destination):
     json_dump = json.dumps(json_ojb)
     if output_destination == 'stdout':
         print json_dump
+        return 200, None
     else:
         headers = urllib3.util.make_headers(basic_auth=':'.join([username, password]))
-        http.request('POST', output_destination, headers=headers, body=json_dump)
+        result = http.request('POST', output_destination, headers=headers, body=json_dump)
+        return result.status, result.data
 
 
 def _get_nr_of_hits(elastic_json):
