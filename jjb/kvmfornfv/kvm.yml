@@ -1,0 +1,33 @@
+- job:
+    name: "JJB_KVM_Test"
+    node: fuel-slave
+
+    scm:
+      - git:
+         url: http://{gerrit_username}:{gerrit_password}@10.138.77.57:8090/test
+         refspec: '$GERRIT_REFSPEC'
+         name: origin
+         branches:
+          - master
+         choosing-strategy: 'gerrit'
+
+    triggers:
+      - gerrit:
+         trigger-on:
+          - patchset-created-event:
+             exclude-drafts: true
+             exclude-trivial-rebase: true
+             exclude-no-code-change: true
+         projects:
+          - project-compare-type: 'PLAIN'
+            project-pattern: 'test'
+            branch-compare-type: 'PLAIN'
+            branch-pattern: 'master'
+         server-name: '__ANY__'
+
+    builders:
+      - shell: |
+         #!/bin/bash -x
+         cd /home/tcs/kvmfornfv/fuel-plugin
+         sudo ./pre_build_hook
+         echo "Build created inside local fuel-plugin repositories"

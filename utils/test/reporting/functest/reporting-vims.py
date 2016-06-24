@@ -34,12 +34,13 @@ for installer in installers:
         print 'No kittez. Got an error code:', e
 
     test_results = results['results']
+    test_results.reverse()
 
     scenario_results = {}
     for r in test_results:
-        if not r['version'] in scenario_results.keys():
-            scenario_results[r['version']] = []
-        scenario_results[r['version']].append(r)
+        if not r['scenario'] in scenario_results.keys():
+            scenario_results[r['scenario']] = []
+        scenario_results[r['scenario']].append(r)
 
     for s, s_result in scenario_results.items():
         scenario_results[s] = s_result[0:5]
