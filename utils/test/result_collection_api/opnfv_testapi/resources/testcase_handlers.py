@@ -41,7 +41,7 @@ class TestcaseCLHandler(GenericTestcaseHandler):
             @param body: testcase to be created
             @type body: L{TestcaseCreateRequest}
             @in body: body
-            @rtype: L{Testcase}
+            @rtype: L{CreateResponse}
             @return 200: testcase is created in this project.
             @raise 403: project not exist
                         or testcase already exists in this project
