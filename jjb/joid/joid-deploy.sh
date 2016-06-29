@@ -154,7 +154,7 @@ echo "------ Create OpenRC file [$JOID_ADMIN_OPENRC] ------"
 # get Keystone ip
 case "$HA_MODE" in
     "ha")
-        KEYSTONE=$(cat bundles.yaml |shyaml get-value openstack-phase2.services.keystone.options.vip)
+        KEYSTONE=$(cat bundles.yaml |shyaml get-value openstack-phase1.services.keystone.options.vip)
         ;;
     *)
         KEYSTONE=$(juju status keystone |grep public-address|sed -- 's/.*\: //')
