@@ -732,6 +732,34 @@
                 build-step-failure-threshold: 'never'
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'apex-deploy-baremetal-os-onos-nofeature-ha-{stream1}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-build-{stream1}/build
+              OPNFV_CLEAN=yes
+            git-revision: true
+            same-node: true
+            block: true
+        - trigger-builds:
+          - project: 'functest-apex-{daily-slave}-daily-{stream1}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-onos-nofeature-ha
+            block: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'yardstick-apex-{slave}-daily-{stream1}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-onos-nofeature-ha
+            block: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
 
 - job-template:
     name: 'apex-gs-clean-{stream}'
