@@ -90,7 +90,6 @@ class TestResult(object):
         t.case_name = a_dict.get('case_name')
         t.pod_name = a_dict.get('pod_name')
         t.project_name = a_dict.get('project_name')
-        t.description = a_dict.get('description')
         t.start_date = str(a_dict.get('start_date'))
         t.stop_date = str(a_dict.get('stop_date'))
         t.details = a_dict.get('details')
@@ -119,7 +118,6 @@ class TestResult(object):
             "case_name": self.case_name,
             "project_name": self.project_name,
             "pod_name": self.pod_name,
-            "description": self.description,
             "start_date": str(self.start_date),
             "stop_date": str(self.stop_date),
             "version": self.version,
@@ -137,7 +135,6 @@ class TestResult(object):
             "case_name": self.case_name,
             "project_name": self.project_name,
             "pod_name": self.pod_name,
-            "description": self.description,
             "start_date": str(self.start_date),
             "stop_date": str(self.stop_date),
             "version": self.version,
