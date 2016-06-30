@@ -27,6 +27,11 @@ if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
     if sudo iptables -C FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable 2> ${redirect}; then
         sudo iptables -D FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable
     fi
+
+    if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect}; then
+        sudo iptables -I FORWARD -j RETURN
+    fi
+
 elif [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     # If production lab then creds may be retrieved dynamically
     # creds are on the jumphost, always in the same folder
