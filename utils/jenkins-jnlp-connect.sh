@@ -48,6 +48,14 @@ main () {
         exit 1
     fi
 
+    if [[ $(whoami) != "root" ]]; then
+      if grep "Defaults requiretty" /etc/sudoers
+        then echo "please comment out Defaults requiretty from /etc/sudoers"
+        exit 1
+      fi
+    fi
+
+
     if [ -d /etc/monit/conf.d ]; then
         monitconfdir="/etc/monit/conf.d/"
     elif [ -d /etc/monit.d ]; then
