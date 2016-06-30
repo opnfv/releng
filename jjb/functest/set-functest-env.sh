@@ -27,6 +27,7 @@ if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
     if sudo iptables -C FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable 2> ${redirect}; then
         sudo iptables -D FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable
     fi
+
 elif [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     # If production lab then creds may be retrieved dynamically
     # creds are on the jumphost, always in the same folder
@@ -34,6 +35,12 @@ elif [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
     # replace the default one by the customized one provided by jenkins config
 fi
+
+# Set iptables rule to allow forwarding return traffic for container
+if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect}; then
+    sudo iptables -I FORWARD -j RETURN
+fi
+
 echo "Functest: Start Docker and prepare environment"
 envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
     -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
