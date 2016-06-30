@@ -112,7 +112,7 @@ class ResultsCLHandler(GenericResultHandler):
             @type period: L{string}
             @in period: query
             @required period: False
-            @param last: last days
+            @param last: last records sorted by start_date
             @type last: L{string}
             @in last: query
             @required last: False
