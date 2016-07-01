@@ -10,7 +10,7 @@ import unittest
 
 from test_base import TestBase
 from opnfv_testapi.resources.project_models import ProjectCreateRequest, \
-    Project, Projects
+    Project, Projects, ProjectUpdateRequest
 from opnfv_testapi.common.constants import HTTP_OK, HTTP_BAD_REQUEST, \
     HTTP_FORBIDDEN, HTTP_NOT_FOUND
 
@@ -112,7 +112,7 @@ class TestProjectUpdate(TestProjectBase):
         code, body = self.get(self.req_d.name)
         _id = body._id
 
-        req = ProjectCreateRequest('newName', 'new description')
+        req = ProjectUpdateRequest('newName', 'new description')
         code, body = self.update(req, self.req_d.name)
         self.assertEqual(code, HTTP_OK)
         self.assertEqual(_id, body._id)
