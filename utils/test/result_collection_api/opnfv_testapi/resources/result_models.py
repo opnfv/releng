@@ -23,7 +23,7 @@ class ResultCreateRequest(object):
                  build_tag=None,
                  scenario=None,
                  criteria=None,
-                 trust_indicator=None):
+                 trust_indicator=0):
         self.pod_name = pod_name
         self.project_name = project_name
         self.case_name = case_name
@@ -55,6 +55,17 @@ class ResultCreateRequest(object):
 
 
 @swagger.model()
+class ResultUpdateRequest(object):
+    def __init__(self, trust_indicator=0):
+        self.trust_indicator = trust_indicator
+
+    def format(self):
+        return {
+            "trust_indicator": self.trust_indicator,
+        }
+
+
+@swagger.model()
 class TestResult(object):
     """
         @property trust_indicator: must be int/long/float
@@ -64,7 +75,7 @@ class TestResult(object):
                  pod_name=None, installer=None, version=None,
                  start_date=None, stop_date=None, details=None,
                  build_tag=None, scenario=None, criteria=None,
-                 trust_indicator=None):
+                 trust_indicator=0):
         self._id = _id
         self.case_name = case_name
         self.project_name = project_name

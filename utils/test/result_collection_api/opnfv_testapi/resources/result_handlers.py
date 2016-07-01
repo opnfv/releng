@@ -180,3 +180,19 @@ class ResultsGURHandler(GenericResultHandler):
         query = dict()
         query["_id"] = ObjectId(result_id)
         self._get_one(query)
+
+    @swagger.operation(nickname="update")
+    def put(self, result_id):
+        """
+            @description: update a single result by _id
+            @param body: fields to be updated
+            @type body: L{ResultUpdateRequest}
+            @in body: body
+            @rtype: L{Result}
+            @return 200: update success
+            @raise 404: result not exist
+            @raise 403: nothing to update
+        """
+        query = {'_id': ObjectId(result_id)}
+        db_keys = []
+        self._update(query, db_keys)
