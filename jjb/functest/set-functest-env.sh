@@ -37,7 +37,7 @@ elif [[ ${INSTALLER_TYPE} == 'joid' ]]; then
 fi
 
 # Set iptables rule to allow forwarding return traffic for container
-if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect}; then
+if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FORWARD | awk 'NR==3' | grep RETURN 2> ${redirect}; then
     sudo iptables -I FORWARD -j RETURN
 fi
 
