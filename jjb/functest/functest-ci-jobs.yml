@@ -134,6 +134,7 @@
 
     testsuite:
         - 'daily'
+        - 'weekly'
         - 'suite'
 
     jobs:
@@ -196,7 +197,14 @@
         - string:
             name: FUNCTEST_SUITE_NAME
             default: 'daily'
-            description: "Suite name to run"
+            description: "Daily suite name to run"
+- parameter:
+    name: functest-weekly-parameter
+    parameters:
+        - string:
+            name: FUNCTEST_SUITE_NAME
+            default: 'weekly'
+            description: "Weekly suite name to run"
 - parameter:
     name: functest-suite-parameter
     parameters:
@@ -204,16 +212,19 @@
             name: FUNCTEST_SUITE_NAME
             choices:
                 - 'healthcheck'
-                - 'tempest'
-                - 'rally'
-                - 'odl'
-                - 'onos'
-                - 'ovno'
-                - 'promise'
-                - 'doctor'
-                - 'vims'
                 - 'vping_userdata'
                 - 'vping_ssh'
+                - 'tempest_smoke_serial'
+                - 'rally_sanity'
+                - 'odl'
+                - 'onos'
+                - 'promise'
+                - 'doctor'
+                - 'bgpvpn'
+                - 'security_scan'
+                - 'tempest_full_parallel'
+                - 'rally_full'
+                - 'vims'
 - parameter:
     name: functest-parameter
     parameters:
@@ -253,6 +264,14 @@
         - 'functest-store-results'
 
 - builder:
+    name: functest-weekly-builder
+    builders:
+        - 'functest-cleanup'
+        - 'set-functest-env'
+        - 'functest-weekly'
+        - 'functest-store-results'
+
+- builder:
     name: functest-suite-builder
     builders:
         - 'functest-cleanup'
@@ -260,16 +279,22 @@
         - 'functest-suite'
 
 - builder:
+    name: functest-daily
+    builders:
+        - shell:
+            !include-raw: ./functest-loop.sh
+
+- builder:
+    name: functest-weekly
+    builders:
+        - shell:
+            !include-raw: ./functest-loop.sh
+
+- builder:
     name: functest-suite
     builders:
         - shell:
             !include-raw: ./functest-suite.sh
-
-- builder:
-    name: functest-daily
-    builders:
-        - shell:
-            !include-raw: ./functest-daily.sh
 
 - builder:
     name: set-functest-env
