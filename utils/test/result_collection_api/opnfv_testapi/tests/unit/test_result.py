@@ -10,11 +10,11 @@ import unittest
 import copy
 
 from opnfv_testapi.common.constants import HTTP_OK, HTTP_BAD_REQUEST, \
-    HTTP_NOT_FOUND
+    HTTP_NOT_FOUND, HTTP_FORBIDDEN
 from opnfv_testapi.resources.pod_models import PodCreateRequest
 from opnfv_testapi.resources.project_models import ProjectCreateRequest
 from opnfv_testapi.resources.result_models import ResultCreateRequest, \
-    TestResult, TestResults
+    TestResult, TestResults, ResultUpdateRequest
 from opnfv_testapi.resources.testcase_models import TestcaseCreateRequest
 from test_base import TestBase
 
@@ -74,6 +74,7 @@ class TestResultBase(TestBase):
                                          trust_indicator=self.trust_indicator)
         self.get_res = TestResult
         self.list_res = TestResults
+        self.update_res = TestResult
         self.basePath = '/api/v1/results'
         self.req_pod = PodCreateRequest(self.pod, 'metal', 'zte pod 1')
         self.req_project = ProjectCreateRequest(self.project, 'vping test')
@@ -283,6 +284,28 @@ class TestResultGet(TestResultBase):
             else:
                 uri += '{}={}&'.format(arg, eval('self.' + arg))
         return uri[0: -1]
+
+
+class TestResultUpdate(TestResultBase):
+    def test_success(self):
+        new_ti = self.trust_indicator + 0.2
+        new_data = copy.deepcopy(self.req_d)
+        new_data.trust_indicator = new_ti
+        _id = self._create_d()
+        update = ResultUpdateRequest(trust_indicator=new_ti)
+        code, body = self.update(update, _id)
+        self.assertEqual(_id, body._id)
+        self.assert_res(code, body, new_data)
+
+        code, new_body = self.get(_id)
+        self.assertEqual(_id, new_body._id)
+        self.assert_res(code, new_body, new_data)
+
+    def _create_d(self):
+        _, res = self.create_d()
+        return res.href.split('/')[-1]
+
+
 
 if __name__ == '__main__':
     unittest.main()

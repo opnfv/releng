@@ -54,6 +54,16 @@ class ResultCreateRequest(object):
         }
 
 
+class ResultUpdateRequest(object):
+    def __init__(self, trust_indicator=0):
+        self.trust_indicator = trust_indicator
+
+    def format(self):
+        return {
+            "trust_indicator": self.trust_indicator,
+        }
+
+
 @swagger.model()
 class TestResult(object):
     """

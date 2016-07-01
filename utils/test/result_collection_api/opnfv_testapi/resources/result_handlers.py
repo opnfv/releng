@@ -180,3 +180,10 @@ class ResultsGURHandler(GenericResultHandler):
         query = dict()
         query["_id"] = ObjectId(result_id)
         self._get_one(query)
+
+    def put(self, _id):
+        query = {'_id': _id}
+        db_keys = []
+        self._update(query, db_keys)
+
+
