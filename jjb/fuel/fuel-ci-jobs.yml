@@ -113,6 +113,8 @@
             gs-pathname: '{gs-pathname}'
 
     builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
         - trigger-builds:
             - project: 'fuel-deploy-{pod}-daily-{stream}'
               current-parameters: false
@@ -188,6 +190,8 @@
             name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
 
     builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
         - shell:
             !include-raw-escape: ./fuel-download-artifact.sh
         - shell:
