@@ -198,9 +198,8 @@ class GenericApiHandler(RequestHandler):
         comparing values
         """
         if not (new_value is None):
-            if len(new_value) > 0:
-                if new_value != old_value:
-                    edit_request[key] = new_value
+            if new_value != old_value:
+                edit_request[key] = new_value
 
         return edit_request
 

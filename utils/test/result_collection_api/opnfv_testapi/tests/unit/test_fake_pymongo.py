@@ -8,9 +8,9 @@
 ##############################################################################
 import unittest
 
-from tornado.web import Application
 from tornado import gen
 from tornado.testing import AsyncHTTPTestCase, gen_test
+from tornado.web import Application
 
 import fake_pymongo
 
