@@ -45,7 +45,7 @@ class GenericResultHandler(GenericApiHandler):
                     obj = {"$gte": str(period)}
                     query['start_date'] = obj
             elif k == 'trust_indicator':
-                query[k] = float(v)
+                query[k + '.current'] = float(v)
             elif k != 'last':
                 query[k] = v
         return query
@@ -116,8 +116,8 @@ class ResultsCLHandler(GenericResultHandler):
             @type last: L{string}
             @in last: query
             @required last: False
-            @param trust_indicator: must be int/long/float
-            @type trust_indicator: L{string}
+            @param trust_indicator: must be float
+            @type trust_indicator: L{float}
             @in trust_indicator: query
             @required trust_indicator: False
         """
@@ -180,3 +180,19 @@ class ResultsGURHandler(GenericResultHandler):
         query = dict()
         query["_id"] = ObjectId(result_id)
         self._get_one(query)
+
+    @swagger.operation(nickname="update")
+    def put(self, result_id):
+        """
+            @description: update a single result by _id
+            @param body: fields to be updated
+            @type body: L{ResultUpdateRequest}
+            @in body: body
+            @rtype: L{Result}
+            @return 200: update success
+            @raise 404: result not exist
+            @raise 403: nothing to update
+        """
+        query = {'_id': ObjectId(result_id)}
+        db_keys = []
+        self._update(query, db_keys)

@@ -10,7 +10,69 @@ from opnfv_testapi.tornado_swagger import swagger
 
 
 @swagger.model()
+class TIHistory(object):
+    """
+        @ptype step: L{float}
+    """
+    def __init__(self, date=None, step=0):
+        self.date = date
+        self.step = step
+
+    def format(self):
+        return {
+            "date": self.date,
+            "step": self.step
+        }
+
+    @staticmethod
+    def from_dict(a_dict):
+        if a_dict is None:
+            return None
+
+        return TIHistory(a_dict.get('date'), a_dict.get('step'))
+
+
+@swagger.model()
+class TI(object):
+    """
+        @property histories: trust_indicator update histories
+        @ptype histories: C{list} of L{TIHistory}
+        @ptype current: L{float}
+    """
+    def __init__(self, current=0):
+        self.current = current
+        self.histories = list()
+
+    def format(self):
+        hs = []
+        for h in self.histories:
+            hs.append(h.format())
+
+        return {
+            "current": self.current,
+            "histories": hs
+        }
+
+    @staticmethod
+    def from_dict(a_dict):
+        if a_dict is None:
+            return None
+        t = TI()
+        t.current = a_dict.get('current')
+        if 'histories' in a_dict.keys():
+            for history in a_dict.get('histories', None):
+                t.histories.append(TIHistory.from_dict(history))
+        else:
+            t.histories = []
+        return t
+
+
+@swagger.model()
 class ResultCreateRequest(object):
+    """
+        @property trust_indicator:
+        @ptype trust_indicator: L{TI}
+    """
     def __init__(self,
                  pod_name=None,
                  project_name=None,
@@ -50,15 +112,30 @@ class ResultCreateRequest(object):
             "build_tag": self.build_tag,
             "scenario": self.scenario,
             "criteria": self.criteria,
-            "trust_indicator": self.trust_indicator
+            "trust_indicator": self.trust_indicator.format()
+        }
+
+
+@swagger.model()
+class ResultUpdateRequest(object):
+    """
+        @property trust_indicator:
+        @ptype trust_indicator: L{TI}
+    """
+    def __init__(self, trust_indicator=None):
+        self.trust_indicator = trust_indicator
+
+    def format(self):
+        return {
+            "trust_indicator": self.trust_indicator.format(),
         }
 
 
 @swagger.model()
 class TestResult(object):
     """
-        @property trust_indicator: must be int/long/float
-        @ptype trust_indicator: L{float}
+        @property trust_indicator: used for long duration test case
+        @ptype trust_indicator: L{TI}
     """
     def __init__(self, _id=None, case_name=None, project_name=None,
                  pod_name=None, installer=None, version=None,
@@ -98,19 +175,20 @@ class TestResult(object):
         t.build_tag = a_dict.get('build_tag')
         t.scenario = a_dict.get('scenario')
         t.criteria = a_dict.get('criteria')
+        t.trust_indicator = TI.from_dict(a_dict.get('trust_indicator'))
         # 0 < trust indicator < 1
         # if bad value =>  set this indicator to 0
-        t.trust_indicator = a_dict.get('trust_indicator')
-        if t.trust_indicator is not None:
-            if isinstance(t.trust_indicator, (int, long, float)):
-                if t.trust_indicator < 0:
-                    t.trust_indicator = 0
-                elif t.trust_indicator > 1:
-                    t.trust_indicator = 1
-            else:
-                t.trust_indicator = 0
-        else:
-            t.trust_indicator = 0
+        # t.trust_indicator = a_dict.get('trust_indicator')
+        # if t.trust_indicator is not None:
+        #     if isinstance(t.trust_indicator, (int, long, float)):
+        #         if t.trust_indicator < 0:
+        #             t.trust_indicator = 0
+        #         elif t.trust_indicator > 1:
+        #             t.trust_indicator = 1
+        #     else:
+        #         t.trust_indicator = 0
+        # else:
+        #     t.trust_indicator = 0
         return t
 
     def format(self):
@@ -126,7 +204,7 @@ class TestResult(object):
             "build_tag": self.build_tag,
             "scenario": self.scenario,
             "criteria": self.criteria,
-            "trust_indicator": self.trust_indicator
+            "trust_indicator": self.trust_indicator.format()
         }
 
     def format_http(self):
@@ -143,7 +221,7 @@ class TestResult(object):
             "build_tag": self.build_tag,
             "scenario": self.scenario,
             "criteria": self.criteria,
-            "trust_indicator": self.trust_indicator
+            "trust_indicator": self.trust_indicator.format()
         }
 
 

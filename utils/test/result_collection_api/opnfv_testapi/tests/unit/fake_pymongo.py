@@ -116,8 +116,8 @@ class MemDb(object):
                 if k == 'start_date':
                     if not MemDb._compare_date(v, content.get(k)):
                         return False
-                elif k == 'trust_indicator':
-                    if float(content.get(k)) != float(v):
+                elif k == 'trust_indicator.current':
+                    if content.get('trust_indicator').get('current') != v:
                         return False
                 elif content.get(k, None) != v:
                     return False
@@ -173,7 +173,6 @@ class MemDb(object):
 
     def _check_keys(self, doc):
         for key in doc.keys():
-            print('key', key, 'value', doc.get(key))
             if '.' in key:
                 raise NameError('key {} must not contain .'.format(key))
             if key.startswith('$'):
