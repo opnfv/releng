@@ -1,0 +1,206 @@
+- project:
+    name: 'joid-weekly-jobs'
+
+    project: 'joid'
+
+    installer: 'joid'
+
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+    brahmaputra: &brahmaputra
+        stream: brahmaputra
+        branch: 'stable/{stream}'
+        gs-pathname: '/{stream}'
+#--------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+#        CI PODs
+#--------------------------------
+    pod:
+        - baremetal:
+            slave-label: joid-baremetal
+            <<: *master
+        - virtual:
+            slave-label: joid-virtual
+            <<: *master
+        - baremetal:
+            slave-label: joid-baremetal
+            <<: *brahmaputra
+        - virtual:
+            slave-label: joid-virtual
+            <<: *brahmaputra
+#--------------------------------
+#        None-CI PODs
+#--------------------------------
+        - orange-pod2:
+            slave-label: orange-pod2
+            <<: *brahmaputra
+        - orange-pod2:
+            slave-label: orange-pod2
+            <<: *master
+        - juniper-pod1:
+            slave-label: juniper-pod1
+            <<: *master
+#--------------------------------
+# new scenario descriptions
+    scenario:
+        - 'os-nosdn-nofeature-noha':
+            auto-trigger-name: 'weekly-trigger-disabled'
+        - 'os-nosdn-nofeature-ha':
+            auto-trigger-name: 'weekly-trigger-disabled'
+        - 'os-nosdn-lxd-ha':
+            auto-trigger-name: 'weekly-trigger-disabled'
+            auto-trigger-name: 'weekly-trigger-disabled'
+        - 'os-nosdn-lxd-noha':
+            auto-trigger-name: 'weekly-trigger-disabled'
+        - 'os-odl_l2-nofeature-ha':
+            auto-trigger-name: 'weekly-trigger-disabled'
+        - 'os-onos-nofeature-ha':
+            auto-trigger-name: 'weekly-trigger-disabled'
+        - 'os-odl_l2-nofeature-noha':
+            auto-trigger-name: 'weekly-trigger-disabled'
+        - 'os-onos-nofeature-noha':
+            auto-trigger-name: 'weekly-trigger-disabled'
+        - 'os-ocl-nofeature-ha':
+            auto-trigger-name: 'weekly-trigger-disabled'
+        - 'os-ocl-nofeature-noha':
+            auto-trigger-name: 'weekly-trigger-disabled'
+
+    jobs:
+        - 'joid-{scenario}-{pod}-weekly-{stream}'
+        - 'joid-deploy-{pod}-weekly-{stream}'
+
+########################
+# job templates
+########################
+- job-template:
+    name: 'joid-{scenario}-{pod}-weekly-{stream}'
+
+    concurrent: false
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 4
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'joid-os-.*?-{pod}-weekly-{stream}'
+            block-level: 'NODE'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    triggers:
+        - '{auto-trigger-name}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{installer}-defaults'
+        - '{slave-label}-defaults':
+            installer: '{installer}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: '{scenario}'
+
+    builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
+        - trigger-builds:
+            - project: 'joid-deploy-{pod}-weekly-{stream}'
+              current-parameters: true
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'yardstick-joid-{pod}-weekly-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              block: true
+              same-node: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+            - project: 'functest-joid-{pod}-weekly-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              block: true
+              same-node: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+
+- job-template:
+    name: 'joid-deploy-{pod}-weekly-{stream}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 4
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'joid-deploy-{pod}-weekly-{stream}'
+            block-level: 'NODE'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+        - timeout:
+            timeout: 180
+            fail: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{installer}-defaults'
+        - '{slave-label}-defaults':
+            installer: '{installer}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-odl_l2-nofeature-ha'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
+        - 'weekly-builder'
+########################
+# builder macros
+########################
+- builder:
+    name: 'weekly-builder'
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Running $INSTALLER_TYPE with controller $SDN_CONTROLLER"
+            echo
+            echo "------ First Executing clean.sh ------"
+            cd $WORKSPACE/ci
+            ./clean.sh
+        - shell:
+            !include-raw: ./joid-deploy.sh
