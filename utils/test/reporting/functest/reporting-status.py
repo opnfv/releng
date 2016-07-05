@@ -8,6 +8,7 @@
 #
 import datetime
 import jinja2
+import logging
 import os
 import requests
 import sys
@@ -19,7 +20,21 @@ import reportingConf as conf
 import testCase as tc
 import scenarioResult as sr
 
-testCases4Validation = []
+# Logger
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+logger = logging.getLogger()
+
+fileHandler = logging.FileHandler("{0}/{1}".format('.', conf.LOG_FILE))
+fileHandler.setFormatter(logFormatter)
+logger.addHandler(fileHandler)
+
+consoleHandler = logging.StreamHandler()
+consoleHandler.setFormatter(logFormatter)
+logger.addHandler(consoleHandler)
+logger.setLevel(conf.LOG_LEVEL)
+
+# Initialization
+testValid = []
 otherTestCases = []
 
 # init just tempest to get the list of scenarios
@@ -28,16 +43,16 @@ tempest = tc.TestCase("tempest_smoke_serial", "functest", -1)
 
 # Retrieve the Functest configuration to detect which tests are relevant
 # according to the installer, scenario
-# cf = "https://git.opnfv.org/cgit/functest/plain/ci/config_functest.yaml"
-cf = "https://git.opnfv.org/cgit/functest/plain/ci/testcases.yaml"
+cf = conf.TEST_CONF
 response = requests.get(cf)
+
 functest_yaml_config = yaml.load(response.text)
 
-print "****************************************"
-print "*   Generating reporting.....          *"
-print ("*   Data retention = %s days           *" % conf.PERIOD)
-print "*                                      *"
-print "****************************************"
+logger.info("****************************************")
+logger.info("*   Generating reporting.....          *")
+logger.info("*   Data retention = %s days           *" % conf.PERIOD)
+logger.info("*                                      *")
+logger.info("****************************************")
 
 # Retrieve test cases of Tier 1 (smoke)
 config_tiers = functest_yaml_config.get("tiers")
@@ -50,19 +65,22 @@ config_tiers = functest_yaml_config.get("tiers")
 for tier in config_tiers:
     if tier['order'] > 0 and tier['order'] < 3:
         for case in tier['testcases']:
-            testCases4Validation.append(tc.TestCase(case['name'],
-                                                    "functest",
-                                                    case['dependencies']))
+			if case['name'] not in conf.blacklist:
+				testValid.append(tc.TestCase(case['name'],
+                                             "functest",
+                                             case['dependencies']))
     elif tier['order'] == 3:
         for case in tier['testcases']:
-            testCases4Validation.append(tc.TestCase(case['name'],
-                                                    case['name'],
-                                                    case['dependencies']))
+			if case['name'] not in conf.blacklist:
+				testValid.append(tc.TestCase(case['name'],
+                                             case['name'],
+                                             case['dependencies']))
     elif tier['order'] > 3:
         for case in tier['testcases']:
-            otherTestCases.append(tc.TestCase(case['name'],
-                                              "functest",
-                                              case['dependencies']))
+			if case['name'] not in conf.blacklist:
+				otherTestCases.append(tc.TestCase(case['name'],
+                                                  "functest",
+                                                  case['dependencies']))
 
 # For all the versions
 for version in conf.versions:
@@ -84,27 +102,27 @@ for version in conf.versions:
             # Check if test case is runnable / installer, scenario
             # for the test case used for Scenario validation
             try:
-                print ("---------------------------------")
-                print ("installer %s, version %s, scenario %s:" %
+                logger.info("---------------------------------")
+                logger.info("installer %s, version %s, scenario %s:" %
                        (installer, version, s))
 
                 # 1) Manage the test cases for the scenario validation
                 # concretely Tiers 0-3
-                for test_case in testCases4Validation:
+                for test_case in testValid:
                     test_case.checkRunnable(installer, s,
                                             test_case.getConstraints())
-                    print ("testcase %s is %s" % (test_case.getName(),
-                                                  test_case.isRunnable))
+                    logger.debug("testcase %s is %s" % (test_case.getName(),
+                                                        test_case.isRunnable))
                     time.sleep(1)
                     if test_case.isRunnable:
                         dbName = test_case.getDbName()
                         name = test_case.getName()
                         project = test_case.getProject()
                         nb_test_runnable_for_this_scenario += 1
-                        print (" Searching results for case %s " %
+                        logger.info(" Searching results for case %s " %
                                (dbName))
                         result = utils.getResult(dbName, installer, s, version)
-                        print " >>>> Test result=" + str(result)
+                        logger.info(" >>>> Test score = " + str(result))
                         test_case.setCriteria(result)
                         test_case.setIsRunnable(True)
                         testCases2BeDisplayed.append(tc.TestCase(name,
@@ -120,15 +138,15 @@ for version in conf.versions:
                 for test_case in otherTestCases:
                     test_case.checkRunnable(installer, s,
                                             test_case.getConstraints())
-                    print ("testcase %s is %s" % (test_case.getName(),
-                                                  test_case.isRunnable))
+                    logger.info("testcase %s is %s" % (test_case.getName(),
+                                                        test_case.isRunnable))
                     time.sleep(1)
                     if test_case.isRunnable:
                         dbName = test_case.getDbName()
                         name = test_case.getName()
                         project = test_case.getProject()
-                        print (" Searching results for case %s " %
-                               (dbName))
+                        logger.info(" Searching results for case %s " %
+                                     (dbName))
                         result = utils.getResult(dbName, installer, s, version)
                         test_case.setCriteria(result)
                         test_case.setIsRunnable(True)
@@ -141,9 +159,9 @@ for version in conf.versions:
 
                     items[s] = testCases2BeDisplayed
             except:
-                print ("Error: installer %s, version %s, scenario %s" %
+                logger.error("Error: installer %s, version %s, scenario %s" %
                        (installer, version, s))
-                print "No data available , error %s " % (sys.exc_info()[0])
+                logger.error("No data available , error %s " % (sys.exc_info()[0]))
 
             # **********************************************
             # Evaluate the results for scenario validation
@@ -158,11 +176,11 @@ for version in conf.versions:
             s_score = str(scenario_score) + "/" + str(scenario_criteria)
             s_status = "KO"
             if scenario_score < scenario_criteria:
-                print (">>>> scenario not OK, score = %s/%s" %
+                logger.info(">>>> scenario not OK, score = %s/%s" %
                        (scenario_score, scenario_criteria))
                 s_status = "KO"
             else:
-                print ">>>>> scenario OK, save the information"
+                logger.info(">>>>> scenario OK, save the information")
                 s_status = "OK"
                 path_validation_file = ("./release/" + version +
                                         "/validated_scenario_history.txt")
@@ -173,7 +191,7 @@ for version in conf.versions:
                     f.write(info)
 
             scenario_result_criteria[s] = sr.ScenarioResult(s_status, s_score)
-            print "--------------------------"
+            logger.info("--------------------------")
 
         templateLoader = jinja2.FileSystemLoader(os.path.dirname
                                                  (os.path.abspath
