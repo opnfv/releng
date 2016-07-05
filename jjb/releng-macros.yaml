@@ -373,14 +373,26 @@
             set -o pipefail
             set -o xtrace
             export PATH=$PATH:/usr/local/bin/
+
+            VERIFIED='-1'
+
             if [[ -e lint.log ]] ; then
                 echo -e "\nposting linting report to gerrit...\n"
+
                 cat lint.log
                 echo
+
+                # One line in the file means no violations were reported
+                LINT_LINES=$(wc -l lint.log | awk '{ print $1 }')
+                if [ "$LINT_LINES" == "1" ]; then
+                    VERIFIED='+1'
+                fi
+
                 ssh -p 29418 gerrit.opnfv.org \
                     "gerrit review -p $GERRIT_PROJECT \
                      -m \"$(cat lint.log)\" \
                      $GERRIT_PATCHSET_REVISION \
+                     --verified $VERIFIED \
                      --notify NONE"
             fi
 
