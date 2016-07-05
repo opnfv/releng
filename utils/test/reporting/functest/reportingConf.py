@@ -10,9 +10,17 @@
 #
 # ****************************************************
 installers = ["apex", "compass", "fuel", "joid"]
-# installers = ["compass"]
+# installers = ["apex"]
+# list of test cases declared in testcases.yaml but that must not be
+# taken into account for the scoring
+blacklist = ["odl", "ovno", "security_scan"]
 # versions = ["brahmaputra", "master"]
 versions = ["master"]
 PERIOD = 10
 MAX_SCENARIO_CRITERIA = 18
+# get the last 5 test results to determinate the success criteria
+NB_TESTS = 5
 URL_BASE = 'http://testresults.opnfv.org/test/api/v1/results'
+TEST_CONF = "https://git.opnfv.org/cgit/functest/plain/ci/testcases.yaml"
+LOG_LEVEL = "INFO"
+LOG_FILE = "reporting.log"

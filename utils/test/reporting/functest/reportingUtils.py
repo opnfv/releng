@@ -21,7 +21,8 @@ def getApiResults(case, installer, scenario, version):
     #       "&period=30&installer=" + installer
     url = (reportingConf.URL_BASE + "?case=" + case +
            "&period=" + str(reportingConf.PERIOD) + "&installer=" + installer +
-           "&scenario=" + scenario + "&version=" + version)
+           "&scenario=" + scenario + "&version=" + version +
+           "&last=" + str(reportingConf.NB_TESTS))
     request = Request(url)
 
     try:
@@ -104,7 +105,7 @@ def getResult(testCase, installer, scenario, version):
         # print "nb of results:" + str(len(test_results))
 
         for r in test_results:
-            # print r["creation_date"]
+            # print r["start_date"]
             # print r["criteria"]
             scenario_results.append({r["start_date"]: r["criteria"]})
         # sort results
@@ -116,7 +117,7 @@ def getResult(testCase, installer, scenario, version):
         # 0: 0% success, not passing
         test_result_indicator = 0
         nbTestOk = getNbtestOk(scenario_results)
-        # print "Nb test OK:"+ str(nbTestOk)
+        # print "Nb test OK (last 10 days):"+ str(nbTestOk)
         # check that we have at least 4 runs
         if nbTestOk < 1:
             test_result_indicator = 0
@@ -126,7 +127,9 @@ def getResult(testCase, installer, scenario, version):
             # Test the last 4 run
             if (len(scenario_results) > 3):
                 last4runResults = scenario_results[-4:]
-                if getNbtestOk(last4runResults):
+                nbTestOkLast4 = getNbtestOk(last4runResults)
+                # print "Nb test OK (last 4 run):"+ str(nbTestOkLast4)
+                if nbTestOkLast4 > 3:
                     test_result_indicator = 3
                 else:
                     test_result_indicator = 2
