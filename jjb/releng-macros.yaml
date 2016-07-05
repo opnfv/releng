@@ -347,8 +347,11 @@
                 -type f -name "*.py" -print | \
                 xargs flake8 --exit-zero -qq --count 2>&1)"
 
+            # Ensure we start with a clean environment
+            rm -f lint.log
+
             if [ ! -z $FLAKE_COUNT ]; then
-              echo "Flake8 Violations: $FLAKE_COUNT" >> lint.log
+              echo "Flake8 Violations: $FLAKE_COUNT" > lint.log
               find . \
                   -path './releng_flake8' -prune -o \
                   -type f -name "*.py" -print | \
@@ -358,8 +361,6 @@
               cat violation.log >> lint.log
               sed -r -i '4,$s/^/ /g' lint.log
               rm violation.log
-            else
-              echo -e "Flake8 Violations: 0" > lint.log
             fi
 
             deactivate
@@ -373,15 +374,21 @@
             set -o pipefail
             set -o xtrace
             export PATH=$PATH:/usr/local/bin/
+
+            # If no violations were found, no lint log will exist.
             if [[ -e lint.log ]] ; then
                 echo -e "\nposting linting report to gerrit...\n"
+
                 cat lint.log
                 echo
+
                 ssh -p 29418 gerrit.opnfv.org \
                     "gerrit review -p $GERRIT_PROJECT \
                      -m \"$(cat lint.log)\" \
                      $GERRIT_PATCHSET_REVISION \
                      --notify NONE"
+
+                exit 1
             fi
 
 - builder:
