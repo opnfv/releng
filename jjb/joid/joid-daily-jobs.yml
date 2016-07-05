@@ -1,13 +1,9 @@
-########################
-# Job configuration for joid
-########################
 - project:
+    name: 'joid-daily-jobs'
 
-    name: 'joid'
+    project: 'joid'
 
-    project: '{name}'
-
-    installer: '{name}'
+    installer: 'joid'
 
 #--------------------------------
 # BRANCH ANCHORS
@@ -191,12 +187,12 @@
     builders:
         - description-setter:
             description: "POD: $NODE_NAME"
-        - 'builder-macro'
+        - 'daily-builder'
 ########################
 # builder macros
 ########################
 - builder:
-    name: 'builder-macro'
+    name: 'daily-builder'
     builders:
         - shell: |
             #!/bin/bash
