@@ -9,6 +9,9 @@
 ##############################################################################
 set -o pipefail
 
+# configurable environment variables:
+# ISOSTORE (/iso_mount/opnfv_ci)
+
 # check if we built something
 if [ -f $WORKSPACE/.noupload ]; then
     echo "Nothing new to upload. Exiting."
@@ -19,11 +22,15 @@ fi
 # source the opnfv.properties to get ARTIFACT_VERSION
 source $WORKSPACE/opnfv.properties
 
+
 # storing ISOs for verify & merge jobs will be done once we get the disk array
 if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
     # store ISO locally on NFS first
-    ISOSTORE="/home/jenkins/opnfv/iso_store"
+    ISOSTORE=${ISOSTORE:-/iso_mount/opnfv_ci}
     if [[ -d "$ISOSTORE" ]]; then
+        ISOSTORE=${ISOSTORE}/${GIT_BRANCH##*/}
+        mkdir -p $ISOSTORE
+
         # remove all but most recent 3 ISOs first to keep iso_mount clean & tidy
         cd $ISOSTORE
         ls -tp | grep -v '/' | tail -n +4 | xargs -d '\n' /bin/rm -f --
