@@ -6,15 +6,16 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-import unittest
 import copy
+import unittest
+from datetime import datetime, timedelta
 
 from opnfv_testapi.common.constants import HTTP_OK, HTTP_BAD_REQUEST, \
     HTTP_NOT_FOUND
 from opnfv_testapi.resources.pod_models import PodCreateRequest
 from opnfv_testapi.resources.project_models import ProjectCreateRequest
 from opnfv_testapi.resources.result_models import ResultCreateRequest, \
-    TestResult, TestResults
+    TestResult, TestResults, ResultUpdateRequest, TI, TIHistory
 from opnfv_testapi.resources.testcase_models import TestcaseCreateRequest
 from test_base import TestBase
 
@@ -55,9 +56,11 @@ class TestResultBase(TestBase):
         self.build_tag = 'v3.0'
         self.scenario = 'odl-l2'
         self.criteria = 'passed'
-        self.trust_indicator = 0.7
+        self.trust_indicator = TI(0.7)
         self.start_date = "2016-05-23 07:16:09.477097"
         self.stop_date = "2016-05-23 07:16:19.477097"
+        self.update_date = "2016-05-24 07:16:19.477097"
+        self.update_step = -0.05
         super(TestResultBase, self).setUp()
         self.details = Details(timestart='0', duration='9s', status='OK')
         self.req_d = ResultCreateRequest(pod_name=self.pod,
@@ -74,6 +77,7 @@ class TestResultBase(TestBase):
                                          trust_indicator=self.trust_indicator)
         self.get_res = TestResult
         self.list_res = TestResults
+        self.update_res = TestResult
         self.basePath = '/api/v1/results'
         self.req_pod = PodCreateRequest(self.pod, 'metal', 'zte pod 1')
         self.req_project = ProjectCreateRequest(self.project, 'vping test')
@@ -103,10 +107,19 @@ class TestResultBase(TestBase):
         self.assertEqual(result.build_tag, req.build_tag)
         self.assertEqual(result.scenario, req.scenario)
         self.assertEqual(result.criteria, req.criteria)
-        self.assertEqual(result.trust_indicator, req.trust_indicator)
         self.assertEqual(result.start_date, req.start_date)
         self.assertEqual(result.stop_date, req.stop_date)
         self.assertIsNotNone(result._id)
+        ti = result.trust_indicator
+        self.assertEqual(ti.current, req.trust_indicator.current)
+        if ti.histories:
+            history = ti.histories[0]
+            self.assertEqual(history.date, self.update_date)
+            self.assertEqual(history.step, self.update_step)
+
+    def _create_d(self):
+        _, res = self.create_d()
+        return res.href.split('/')[-1]
 
 
 class TestResultCreate(TestResultBase):
@@ -172,8 +185,7 @@ class TestResultCreate(TestResultBase):
 
 class TestResultGet(TestResultBase):
     def test_getOne(self):
-        _, res = self.create_d()
-        _id = res.href.split('/')[-1]
+        _id = self._create_d()
         code, body = self.get(_id)
         self.assert_res(code, body)
 
@@ -266,8 +278,6 @@ class TestResultGet(TestResultBase):
                 self.assert_res(code, result, req)
 
     def _create_changed_date(self, **kwargs):
-        import copy
-        from datetime import datetime, timedelta
         req = copy.deepcopy(self.req_d)
         req.start_date = datetime.now() + timedelta(**kwargs)
         req.stop_date = str(req.start_date + timedelta(minutes=10))
@@ -276,13 +286,36 @@ class TestResultGet(TestResultBase):
         return req
 
     def _set_query(self, *args):
+        def get_value(arg):
+            return eval('self.' + arg) \
+                if arg != 'trust_indicator' else self.trust_indicator.current
         uri = ''
         for arg in args:
             if '=' in arg:
                 uri += arg + '&'
             else:
-                uri += '{}={}&'.format(arg, eval('self.' + arg))
+                uri += '{}={}&'.format(arg, get_value(arg))
         return uri[0: -1]
+
+
+class TestResultUpdate(TestResultBase):
+    def test_success(self):
+        _id = self._create_d()
+
+        new_ti = copy.deepcopy(self.trust_indicator)
+        new_ti.current += self.update_step
+        new_ti.histories.append(TIHistory(self.update_date, self.update_step))
+        new_data = copy.deepcopy(self.req_d)
+        new_data.trust_indicator = new_ti
+        update = ResultUpdateRequest(trust_indicator=new_ti)
+        code, body = self.update(update, _id)
+        self.assertEqual(_id, body._id)
+        self.assert_res(code, body, new_data)
+
+        code, new_body = self.get(_id)
+        self.assertEqual(_id, new_body._id)
+        self.assert_res(code, new_body, new_data)
+
 
 if __name__ == '__main__':
     unittest.main()
