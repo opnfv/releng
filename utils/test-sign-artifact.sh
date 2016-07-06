@@ -20,7 +20,6 @@ testsign () {
     --default-key opnfv-helpdesk@rt.linuxfoundation.org  \
     --passphrase besteffort \
     --detach-sig $artifact
-done
 }
 
 testsign
