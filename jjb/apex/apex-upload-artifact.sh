@@ -23,8 +23,8 @@ fi
 signrpm () {
 for artifact in $RPM_LIST $SRPM_LIST; do
   echo "Signing artifact: ${artifact}"
-  gpg2 -vvv --batch \
-    --default-key opnfv-helpdesk@rt.linuxfoundation.org  \
+  gpg2 -vvv --batch --yes --no-tty \
+    --default-key opnfv-helpdesk@rt.linuxfoundation.org \
     --passphrase besteffort \
     --detach-sig $artifact
     gsutil cp "$artifact".sig gs://$GS_URL/$(basename "$artifact".sig)
@@ -33,7 +33,7 @@ done
 }
 
 signiso () {
-time gpg2 -vvv --batch \
+time gpg2 -vvv --batch --yes --no-tty \
   --default-key opnfv-helpdesk@rt.linuxfoundation.org  \
   --passphrase notreallysecure \
   --detach-sig $BUILD_DIRECTORY/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso
