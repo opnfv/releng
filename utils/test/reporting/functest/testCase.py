@@ -19,6 +19,28 @@ class TestCase(object):
         self.criteria = criteria
         self.isRunnable = isRunnable
         self.tier = tier
+        display_name_matrix = {'healthcheck': 'healthcheck',
+                               'vping_ssh': 'vPing (ssh)',
+                               'vping_userdata': 'vPing (userdata)',
+                               'odl': 'ODL',
+                               'onos': 'ONOS',
+                               'ocl': 'OCL',
+                               'tempest_smoke_serial': 'Tempest (smoke)',
+                               'tempest_full_parallel': 'Tempest (full)',
+                               'rally_sanity': 'Rally (smoke)',
+                               'bgpvpn': 'bgpvpn',
+                               'rally_full': 'Rally (full)',
+                               'vims': 'vIMS',
+                               'doctor': 'Doctor',
+                               'promise': 'Promise',
+                               'moon': 'moon',
+                               'copper': 'copper',
+                               'security_scan': 'security'
+                               }        
+        try:
+            self.displayName = display_name_matrix[self.name]
+        except:
+            self.displayName = "unknown"        
 
     def getName(self):
         return self.name
@@ -74,10 +96,10 @@ class TestCase(object):
         self.isRunnable = is_runnable
 
     def toString(self):
-        testcase = ("Name=" + self.name + ";Criteria=" + str(self.criteria)
-                    + ";Project=" + self.project + ";Constraints="
-                    + str(self.constraints) + ";IsRunnable"
-                    + str(self.isRunnable))
+        testcase = ("Name=" + self.name + ";Criteria=" +
+                    str(self.criteria) + ";Project=" + self.project +
+                    ";Constraints=" + str(self.constraints) +
+                    ";IsRunnable" + str(self.isRunnable))
         return testcase
 
     def getDbName(self):
@@ -98,31 +120,15 @@ class TestCase(object):
                              'rally_full': 'rally_full',
                              'vims': 'vims',
                              'doctor': 'doctor-notification',
-                             'promise': 'promise'
+                             'promise': 'promise',
+                             'moon': 'moon',
+                             'copper': 'copper',
+                             'security_scan': 'security'
                              }
         try:
             return test_match_matrix[self.name]
         except:
             return "unknown"
 
-    def getTestDisplayName(self):
-        # Correspondance name of the test case / name in the DB
-        test_match_matrix = {'healthcheck': 'healthcheck',
-                             'vping_ssh': 'vPing (ssh)',
-                             'vping_userdata': 'vPing (userdata)',
-                             'odl': 'ODL',
-                             'onos': 'ONOS',
-                             'ocl': 'OCL',
-                             'tempest_smoke_serial': 'Tempest (smoke)',
-                             'tempest_full_parallel': 'Tempest (full)',
-                             'rally_sanity': 'Rally (smoke)',
-                             'bgpvpn': 'bgpvpn',
-                             'rally_full': 'Rally (full)',
-                             'vims': 'vIMS',
-                             'doctor': 'Doctor',
-                             'promise': 'Promise'
-                             }
-        try:
-            return test_match_matrix[self.name]
-        except:
-            return "unknown"
+    def getDisplayName(self):
+        return self.displayName

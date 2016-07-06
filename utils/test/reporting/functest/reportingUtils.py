@@ -7,8 +7,26 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 #
 from urllib2 import Request, urlopen, URLError
+import logging
 import json
-import reportingConf
+import reportingConf as conf
+
+
+def getLogger(module):
+    logFormatter = logging.Formatter("%(asctime)s [" +
+                                     module +
+                                     "] [%(levelname)-5.5s]  %(message)s")
+    logger = logging.getLogger()
+
+    fileHandler = logging.FileHandler("{0}/{1}".format('.', conf.LOG_FILE))
+    fileHandler.setFormatter(logFormatter)
+    logger.addHandler(fileHandler)
+
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setFormatter(logFormatter)
+    logger.addHandler(consoleHandler)
+    logger.setLevel(conf.LOG_LEVEL)
+    return logger
 
 
 def getApiResults(case, installer, scenario, version):
@@ -19,10 +37,10 @@ def getApiResults(case, installer, scenario, version):
     # urllib2.install_opener(opener)
     # url = "http://127.0.0.1:8000/results?case=" + case + \
     #       "&period=30&installer=" + installer
-    url = (reportingConf.URL_BASE + "?case=" + case +
-           "&period=" + str(reportingConf.PERIOD) + "&installer=" + installer +
+    url = (conf.URL_BASE + "?case=" + case +
+           "&period=" + str(conf.PERIOD) + "&installer=" + installer +
            "&scenario=" + scenario + "&version=" + version +
-           "&last=" + str(reportingConf.NB_TESTS))
+           "&last=" + str(conf.NB_TESTS))
     request = Request(url)
 
     try:
@@ -38,9 +56,8 @@ def getApiResults(case, installer, scenario, version):
 def getScenarios(case, installer, version):
 
     case = case.getName()
-    print case
-    url = (reportingConf.URL_BASE + "?case=" + case +
-           "&period=" + str(reportingConf.PERIOD) + "&installer=" + installer +
+    url = (conf.URL_BASE + "?case=" + case +
+           "&period=" + str(conf.PERIOD) + "&installer=" + installer +
            "&version=" + version)
     request = Request(url)
 
@@ -115,11 +132,15 @@ def getResult(testCase, installer, scenario, version):
         # 2: <4 successful consecutive runs but passing the criteria
         # 1: close to pass the success criteria
         # 0: 0% success, not passing
+        # -1: no run available
         test_result_indicator = 0
         nbTestOk = getNbtestOk(scenario_results)
+
         # print "Nb test OK (last 10 days):"+ str(nbTestOk)
         # check that we have at least 4 runs
-        if nbTestOk < 1:
+        if len(scenario_results) < 1:
+			test_result_indicator = -1 # no results available
+        elif nbTestOk < 1:
             test_result_indicator = 0
         elif nbTestOk < 2:
             test_result_indicator = 1

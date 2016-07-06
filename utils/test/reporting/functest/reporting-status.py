@@ -8,8 +8,6 @@
 #
 import datetime
 import jinja2
-import logging
-import os
 import requests
 import sys
 import time
@@ -21,17 +19,7 @@ import testCase as tc
 import scenarioResult as sr
 
 # Logger
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-logger = logging.getLogger()
-
-fileHandler = logging.FileHandler("{0}/{1}".format('.', conf.LOG_FILE))
-fileHandler.setFormatter(logFormatter)
-logger.addHandler(fileHandler)
-
-consoleHandler = logging.StreamHandler()
-consoleHandler.setFormatter(logFormatter)
-logger.addHandler(consoleHandler)
-logger.setLevel(conf.LOG_LEVEL)
+logger = utils.getLogger("Status")
 
 # Initialization
 testValid = []
@@ -48,11 +36,11 @@ response = requests.get(cf)
 
 functest_yaml_config = yaml.load(response.text)
 
-logger.info("****************************************")
-logger.info("*   Generating reporting.....          *")
-logger.info("*   Data retention = %s days           *" % conf.PERIOD)
-logger.info("*                                      *")
-logger.info("****************************************")
+logger.info("*******************************************")
+logger.info("*   Generating reporting scenario status  *")
+logger.info("*   Data retention = %s days              *" % conf.PERIOD)
+logger.info("*                                         *")
+logger.info("*******************************************")
 
 # Retrieve test cases of Tier 1 (smoke)
 config_tiers = functest_yaml_config.get("tiers")
@@ -111,27 +99,32 @@ for version in conf.versions:
                 for test_case in testValid:
                     test_case.checkRunnable(installer, s,
                                             test_case.getConstraints())
-                    logger.debug("testcase %s is %s" % (test_case.getName(),
+                    logger.debug("testcase %s is %s" % (test_case.getDisplayName(),
                                                         test_case.isRunnable))
                     time.sleep(1)
                     if test_case.isRunnable:
                         dbName = test_case.getDbName()
                         name = test_case.getName()
+                        displayName = test_case.getDisplayName()
                         project = test_case.getProject()
                         nb_test_runnable_for_this_scenario += 1
                         logger.info(" Searching results for case %s " %
-                                    (dbName))
+                                    (displayName))
                         result = utils.getResult(dbName, installer, s, version)
-                        logger.info(" >>>> Test score = " + str(result))
-                        test_case.setCriteria(result)
-                        test_case.setIsRunnable(True)
-                        testCases2BeDisplayed.append(tc.TestCase(name,
-                                                                 project,
-                                                                 "",
-                                                                 result,
-                                                                 True,
-                                                                 1))
-                        scenario_score = scenario_score + result
+                        # at least 1 result for the test
+                        if result > -1:
+                            logger.info(" >>>> Test score = " + str(result))
+                            test_case.setCriteria(result)
+                            test_case.setIsRunnable(True)
+                            testCases2BeDisplayed.append(tc.TestCase(name,
+                                                                     project,
+                                                                     "",
+                                                                     result,
+                                                                     True,
+                                                                     1))
+                            scenario_score = scenario_score + result
+                        else:
+							logger.debug("No results found")
 
                 # 2) Manage the test cases for the scenario qualification
                 # concretely Tiers > 3
@@ -144,18 +137,23 @@ for version in conf.versions:
                     if test_case.isRunnable:
                         dbName = test_case.getDbName()
                         name = test_case.getName()
+                        displayName = test_case.getDisplayName()
                         project = test_case.getProject()
                         logger.info(" Searching results for case %s " %
-                                    (dbName))
+                                    (displayName))
                         result = utils.getResult(dbName, installer, s, version)
-                        test_case.setCriteria(result)
-                        test_case.setIsRunnable(True)
-                        testCases2BeDisplayed.append(tc.TestCase(name,
-                                                                 project,
-                                                                 "",
-                                                                 result,
-                                                                 True,
-                                                                 4))
+                        # at least 1 result for the test
+                        if result > -1:
+							test_case.setCriteria(result)
+							test_case.setIsRunnable(True)
+							testCases2BeDisplayed.append(tc.TestCase(name,
+                                                                     project,
+                                                                     "",
+                                                                     result,
+                                                                     True,
+                                                                     4))
+                        else:
+						    logger.debug("No results found")
 
                     items[s] = testCases2BeDisplayed
             except:
@@ -193,12 +191,10 @@ for version in conf.versions:
             scenario_result_criteria[s] = sr.ScenarioResult(s_status, s_score)
             logger.info("--------------------------")
 
-        templateLoader = jinja2.FileSystemLoader(os.path.dirname
-                                                 (os.path.abspath
-                                                  (__file__)))
+        templateLoader = jinja2.FileSystemLoader(conf.REPORTING_PATH)
         templateEnv = jinja2.Environment(loader=templateLoader)
 
-        TEMPLATE_FILE = "./template/index-status-tmpl.html"
+        TEMPLATE_FILE = "/template/index-status-tmpl.html"
         template = templateEnv.get_template(TEMPLATE_FILE)
 
         outputText = template.render(scenario_stats=scenario_stats,
@@ -208,6 +204,6 @@ for version in conf.versions:
                                      period=conf.PERIOD,
                                      version=version)
 
-        with open("./release/" + version +
+        with open(conf.REPORTING_PATH + "/release/" + version +
                   "/index-status-" + installer + ".html", "wb") as fh:
             fh.write(outputText)
