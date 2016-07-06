@@ -51,8 +51,9 @@
                     branch-pattern: '**/{branch}'
 
     builders:
-        - shell:
-            !include-raw: ./kvmfornfv-build.sh
+        - shell: |
+             cd ../../..
+             sudo ./pre_build_hook
 
 - job-template:
     name: 'kvmfornfv-merge-{stream}'
