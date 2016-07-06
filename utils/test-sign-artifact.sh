@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export PATH=$PATH:/usr/local/bin/
+
 # clone releng repository
 echo "Cloning releng repository..."
 [ -d releng ] && rm -rf releng
