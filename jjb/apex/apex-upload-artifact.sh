@@ -11,6 +11,10 @@ echo
 # source the opnfv.properties to get ARTIFACT_VERSION
 source $WORKSPACE/opnfv.properties
 
+# clone releng repository
+echo "Cloning releng repository..."
+[ -d releng ] && rm -rf releng
+git clone https://gerrit.opnfv.org/gerrit/releng &> /dev/null
 #this is where we import the siging key
 source $WORKSPACE/releng/utils/gpg_import_key.sh
 
