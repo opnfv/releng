@@ -1,7 +1,11 @@
 from urllib2 import Request, urlopen, URLError
 import json
 import jinja2
-import os
+import reportingConf as conf
+import reportingUtils as utils
+
+logger = utils.getLogger("vIMS")
+
 
 def sig_test_format(sig_test):
     nbPassed = 0
@@ -9,7 +13,7 @@ def sig_test_format(sig_test):
     nbSkipped = 0
     for data_test in sig_test:
         if data_test['result'] == "Passed":
-            nbPassed+= 1
+            nbPassed += 1
         elif data_test['result'] == "Failed":
             nbFailures += 1
         elif data_test['result'] == "Skipped":
@@ -20,21 +24,29 @@ def sig_test_format(sig_test):
     total_sig_test_result['skipped'] = nbSkipped
     return total_sig_test_result
 
-installers = ["fuel", "compass", "joid", "apex"]
-step_order = ["initialisation", "orchestrator", "vIMS", "sig_test"]
+logger.info("****************************************")
+logger.info("*   Generating reporting vIMS          *")
+logger.info("*   Data retention = %s days           *" % conf.PERIOD)
+logger.info("*                                      *")
+logger.info("****************************************")
 
+installers = conf.installers
+step_order = ["initialisation", "orchestrator", "vIMS", "sig_test"]
+logger.info("Start processing....")
 for installer in installers:
-    request = Request('http://testresults.opnfv.org/test/api/v1/results?case=vims&installer=' + installer)
+    logger.info("Search vIMS results for installer %s" % installer)
+    request = Request(conf.URL_BASE + '?case=vims&installer=' + installer)
 
     try:
         response = urlopen(request)
         k = response.read()
         results = json.loads(k)
     except URLError, e:
-        print 'No kittez. Got an error code:', e
+        logger.error("Error code: %s" % e)
 
     test_results = results['results']
-    test_results.reverse()
+
+    logger.debug("Results found: %s" % test_results)
 
     scenario_results = {}
     for r in test_results:
@@ -44,6 +56,7 @@ for installer in installers:
 
     for s, s_result in scenario_results.items():
         scenario_results[s] = s_result[0:5]
+        logger.debug("Search for success criteria")
         for result in scenario_results[s]:
             result["start_date"] = result["start_date"].split(".")[0]
             sig_test = result['details']['sig_test']['result']
@@ -67,17 +80,34 @@ for installer in installers:
             result['pr_step_ok'] = 0
             if nb_step != 0:
                 result['pr_step_ok'] = (float(nb_step_ok)/nb_step)*100
+            try:
+                logger.debug("Scenario %s, Installer %s"
+                             % (s_result[1]['scenario'], installer))
+                logger.debug("Orchestrator deployment: %s s"
+                             % result['details']['orchestrator']['duration'])
+                logger.debug("vIMS deployment: %s s"
+                             % result['details']['vIMS']['duration'])
+                logger.debug("Signaling testing: %s s"
+                             % result['details']['sig_test']['duration'])
+                logger.debug("Signaling testing results: %s"
+                             % format_result)
+            except:
+                logger.error("Data badly formatted")
+            logger.debug("------------------------------------------------")
 
+    templateLoader = jinja2.FileSystemLoader(conf.REPORTING_PATH)
+    templateEnv = jinja2.Environment(loader=templateLoader)
 
-    templateLoader = jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(__file__)))
-    templateEnv = jinja2.Environment( loader=templateLoader )
+    TEMPLATE_FILE = "/template/index-vims-tmpl.html"
+    template = templateEnv.get_template(TEMPLATE_FILE)
 
-    TEMPLATE_FILE = "./template/index-vims-tmpl.html"
-    template = templateEnv.get_template( TEMPLATE_FILE )
+    outputText = template.render(scenario_results=scenario_results,
+                                 step_order=step_order,
+                                 installer=installer)
 
-    outputText = template.render( scenario_results = scenario_results, step_order = step_order, installer = installer)
-
-    with open("./release/master/index-vims-" + installer + ".html", "wb") as fh:
+    with open(conf.REPORTING_PATH +
+              "/release/master/index-vims-" +
+              installer + ".html", "wb") as fh:
         fh.write(outputText)
 
-
+logger.info("vIMS report succesfully generated")
