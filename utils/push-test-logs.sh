@@ -17,7 +17,7 @@ res_build_date=${1:-$(date -u +"%Y-%m-%d_%H-%M-%S")}
 project=$PROJECT
 branch=${GIT_BRANCH##*/}
 testbed=$NODE_NAME
-dir_result="${HOME}/opnfv/$project/results"
+dir_result="${HOME}/opnfv/$project/results/${branch}"
 # src: https://wiki.opnfv.org/display/INF/Hardware+Infrastructure
 # + intel-pod3 (vsperf)
 node_list=(\
