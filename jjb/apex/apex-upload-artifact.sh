@@ -12,6 +12,11 @@ echo
 source $WORKSPACE/opnfv.properties
 
 #this is where we import the siging key
+
+# clone releng repository
+echo "Cloning releng repository..."
+[ -d releng ] && rm -rf releng
+git clone https://gerrit.opnfv.org/gerrit/releng &> /dev/null
 source $WORKSPACE/releng/utils/gpg_import_key.sh
 
 signrpm () {
