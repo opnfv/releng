@@ -19,11 +19,10 @@ logger.info("*   Data retention = %s days                   *" % PERIOD)
 logger.info("*                                              *")
 logger.info("************************************************")
 
-logger.info("Success criteria: nb tests executed > %s s," +
-            "test duration < %s s," +
-            "success rate > %s " % (criteria_nb_test,
-                                    criteria_duration,
-                                    criteria_success_rate))
+logger.info("Success criteria:")
+logger.info("nb tests executed > %s s " % criteria_nb_test)
+logger.info("test duration < %s s " % criteria_duration)
+logger.info("success rate > %s " % criteria_success_rate)
 
 for installer in installers:
     # we consider the Tempest results of the last PERIOD days
@@ -40,7 +39,6 @@ for installer in installers:
         logger.error("Error code: %s" % e)
 
     test_results = results['results']
-    test_results.reverse()
 
     scenario_results = {}
     criteria = {}
