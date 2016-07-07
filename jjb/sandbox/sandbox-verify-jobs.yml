@@ -13,9 +13,9 @@
 # what are the verification activities we do for this installer
     activity:
         - 'basic'
-#        - 'build'
-#        - 'deploy'
-#        - 'test'
+        - 'build'
+        - 'deploy'
+        - 'test'
 
     jobs:
         - 'sandbox-verify-{stream}'
@@ -30,6 +30,20 @@
         - gerrit-parameter:
             branch: '{branch}'
         - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 360
+            fail: true
 
     triggers:
         - gerrit:
@@ -86,14 +100,25 @@
 - job-template:
     name: 'sandbox-verify-{activity}-{stream}'
 
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
     wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
         - timeout:
-            timeout: 180
+            timeout: 360
             fail: true
 
     parameters:
         - project-parameter:
             project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
         - '{installer}-defaults'
         - '{project}-verify-{activity}-parameter'
 
