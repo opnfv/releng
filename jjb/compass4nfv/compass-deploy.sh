@@ -27,6 +27,8 @@ export ISO_URL=file://$BUILD_DIRECTORY/compass.iso
 
 if [[ "${DEPLOY_SCENARIO}" =~ "-ocl" ]]; then
     export NETWORK_CONF_FILE=network_ocl.yml
+else if [[ "${DEPLOY_SCENARIO}" =~ "-onos" ]]; then
+    export NETWORK_CONF_FILE=network_onos.yml
 else
     export NETWORK_CONF_FILE=network.yml
 fi
