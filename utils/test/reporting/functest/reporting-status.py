@@ -112,20 +112,19 @@ for version in conf.versions:
                         logger.info(" Searching results for case %s " %
                                     (displayName))
                         result = utils.getResult(dbName, installer, s, version)
-                        # at least 1 result for the test
-                        if result > -1:
-                            logger.info(" >>>> Test score = " + str(result))
-                            test_case.setCriteria(result)
-                            test_case.setIsRunnable(True)
-                            testCases2BeDisplayed.append(tc.TestCase(name,
-                                                                     project,
-                                                                     "",
-                                                                     result,
-                                                                     True,
-                                                                     1))
-                            scenario_score = scenario_score + result
-                        else:
-                            logger.debug("No results found")
+                        # if no result set the value to 0
+                        if result < 0:
+                            result = 0
+                        logger.info(" >>>> Test score = " + str(result))
+                        test_case.setCriteria(result)
+                        test_case.setIsRunnable(True)
+                        testCases2BeDisplayed.append(tc.TestCase(name,
+                                                                 project,
+                                                                 "",
+                                                                 result,
+                                                                 True,
+                                                                 1))
+                        scenario_score = scenario_score + result
 
                 # 2) Manage the test cases for the scenario qualification
                 # concretely Tiers > 3
@@ -181,7 +180,7 @@ for version in conf.versions:
             else:
                 logger.info(">>>>> scenario OK, save the information")
                 s_status = "OK"
-                path_validation_file = ("./release/" + version +
+                path_validation_file = (conf.REPORTING_PATH + "/release/" + version +
                                         "/validated_scenario_history.txt")
                 with open(path_validation_file, "a") as f:
                     time_format = "%Y-%m-%d %H:%M"
