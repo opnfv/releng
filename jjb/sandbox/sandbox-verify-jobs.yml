@@ -1,0 +1,179 @@
+- project:
+    name: 'sandbox-verify-jobs'
+
+    project: 'sandbox'
+
+    installer: 'sandbox'
+
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+
+# what are the verification activities we do for this installer
+    activity:
+        - 'basic'
+#        - 'build'
+#        - 'deploy'
+#        - 'test'
+
+    jobs:
+        - 'sandbox-verify-{stream}'
+        - 'sandbox-verify-{activity}-{stream}'
+
+- job-template:
+    name: 'sandbox-verify-{stream}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**|.gitignore'
+            readable-message: true
+
+    builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
+        - '{project}-verify-builder'
+        - trigger-builds:
+            - project: 'sandbox-verify-basic-{stream}'
+              current-parameters: true
+              same-node: true
+              git-revision: true
+              block: true
+        - trigger-builds:
+            - project: 'sandbox-verify-build-{stream}'
+              current-parameters: false
+              block: true
+              git-revision: true
+              same-node: true
+        - trigger-builds:
+            - project: 'sandbox-verify-deploy-{stream}'
+              current-parameters: false
+              block: true
+              git-revision: true
+              same-node: false
+        - trigger-builds:
+            - project: 'sandbox-verify-test-{stream}'
+              current-parameters: false
+              block: true
+              git-revision: true
+              same-node: false
+
+- job-template:
+    name: 'sandbox-verify-{activity}-{stream}'
+
+    wrappers:
+        - timeout:
+            timeout: 180
+            fail: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{installer}-defaults'
+        - '{project}-verify-{activity}-parameter'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
+        - '{project}-verify-{activity}-builder'
+
+#####################################
+# parameter builders
+#####################################
+- parameter:
+    name: 'sandbox-verify-basic-parameter'
+    parameters:
+        - 'opnfv-build-ubuntu-defaults'
+
+- parameter:
+    name: 'sandbox-verify-build-parameter'
+    parameters:
+        - 'opnfv-build-ubuntu-defaults'
+
+- parameter:
+    name: 'sandbox-verify-deploy-parameter'
+    parameters:
+        - 'opnfv-build-centos-defaults'
+
+- parameter:
+    name: 'sandbox-verify-test-parameter'
+    parameters:
+        - 'opnfv-build-centos-defaults'
+#####################################
+# builder builders
+#####################################
+- builder:
+    name: 'sandbox-verify-builder'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            # this is the builder for the parent/upstream job which we do nothing
+            echo "Hello World"
+
+- builder:
+    name: 'sandbox-verify-basic-builder'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            # this is where we check the commit message, unit test, etc.
+            echo "Hello World"
+
+- builder:
+    name: 'sandbox-verify-build-builder'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            # this is where we do the build
+            echo "Hello World"
+
+- builder:
+    name: 'sandbox-verify-deploy-builder'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            # this is where we start the virtual deployment
+            echo "Hello World"
+
+- builder:
+    name: 'sandbox-verify-test-builder'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            # this is where we do functest smoketest
+            echo "Hello World"
