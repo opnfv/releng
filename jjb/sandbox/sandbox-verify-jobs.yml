@@ -31,12 +31,6 @@
             branch: '{branch}'
         - 'opnfv-build-ubuntu-defaults'
 
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: '$GERRIT_REFSPEC'
-            choosing-strategy: 'gerrit'
-
     wrappers:
         - ssh-agent-credentials:
             users:
@@ -74,28 +68,16 @@
         - '{project}-verify-builder'
         - trigger-builds:
             - project: 'sandbox-verify-basic-{stream}'
-              current-parameters: true
-              same-node: true
-              git-revision: true
               block: true
         - trigger-builds:
             - project: 'sandbox-verify-build-{stream}'
-              current-parameters: false
               block: true
-              git-revision: true
-              same-node: true
         - trigger-builds:
             - project: 'sandbox-verify-deploy-{stream}'
-              current-parameters: false
               block: true
-              git-revision: true
-              same-node: false
         - trigger-builds:
             - project: 'sandbox-verify-test-{stream}'
-              current-parameters: false
               block: true
-              git-revision: true
-              same-node: false
 
 - job-template:
     name: 'sandbox-verify-{activity}-{stream}'
@@ -121,12 +103,6 @@
             branch: '{branch}'
         - '{installer}-defaults'
         - '{project}-verify-{activity}-parameter'
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
 
     builders:
         - description-setter:
@@ -165,7 +141,27 @@
             #!/bin/bash
 
             # this is the builder for the parent/upstream job which we do nothing
-            echo "Hello World"
+            cd $WORKSPACE
+            echo
+            echo "Commit Message is"
+            echo "-------------------------------------"
+            echo $GERRIT_CHANGE_COMMIT_MESSAGE
+            echo "-------------------------------------"
+            echo
+            echo "Repo contents"
+            echo "-------------------------------------"
+            ls -al
+            echo "-------------------------------------"
+            echo
+            echo "Changed files are"
+            echo "-------------------------------------"
+            git diff origin/master --name-only
+            echo "-------------------------------------"
+            echo
+            echo "Change introduced"
+            echo "-------------------------------------"
+            git diff origin/master
+            echo "-------------------------------------"
 
 - builder:
     name: 'sandbox-verify-basic-builder'
@@ -174,7 +170,27 @@
             #!/bin/bash
 
             # this is where we check the commit message, unit test, etc.
-            echo "Hello World"
+            cd $WORKSPACE
+            echo
+            echo "Commit Message is"
+            echo "-------------------------------------"
+            echo $GERRIT_CHANGE_COMMIT_MESSAGE
+            echo "-------------------------------------"
+            echo
+            echo "Repo contents"
+            echo "-------------------------------------"
+            ls -al
+            echo "-------------------------------------"
+            echo
+            echo "Changed files are"
+            echo "-------------------------------------"
+            git diff origin/master --name-only
+            echo "-------------------------------------"
+            echo
+            echo "Change introduced"
+            echo "-------------------------------------"
+            git diff origin/master
+            echo "-------------------------------------"
 
 - builder:
     name: 'sandbox-verify-build-builder'
@@ -183,7 +199,27 @@
             #!/bin/bash
 
             # this is where we do the build
-            echo "Hello World"
+            cd $WORKSPACE
+            echo
+            echo "Commit Message is"
+            echo "-------------------------------------"
+            echo $GERRIT_CHANGE_COMMIT_MESSAGE
+            echo "-------------------------------------"
+            echo
+            echo "Repo contents"
+            echo "-------------------------------------"
+            ls -al
+            echo "-------------------------------------"
+            echo
+            echo "Changed files are"
+            echo "-------------------------------------"
+            git diff origin/master --name-only
+            echo "-------------------------------------"
+            echo
+            echo "Change introduced"
+            echo "-------------------------------------"
+            git diff origin/master
+            echo "-------------------------------------"
 
 - builder:
     name: 'sandbox-verify-deploy-builder'
@@ -192,7 +228,27 @@
             #!/bin/bash
 
             # this is where we start the virtual deployment
-            echo "Hello World"
+            cd $WORKSPACE
+            echo
+            echo "Commit Message is"
+            echo "-------------------------------------"
+            echo $GERRIT_CHANGE_COMMIT_MESSAGE
+            echo "-------------------------------------"
+            echo
+            echo "Repo contents"
+            echo "-------------------------------------"
+            ls -al
+            echo "-------------------------------------"
+            echo
+            echo "Changed files are"
+            echo "-------------------------------------"
+            git diff origin/master --name-only
+            echo "-------------------------------------"
+            echo
+            echo "Change introduced"
+            echo "-------------------------------------"
+            git diff origin/master
+            echo "-------------------------------------"
 
 - builder:
     name: 'sandbox-verify-test-builder'
@@ -201,4 +257,24 @@
             #!/bin/bash
 
             # this is where we do functest smoketest
-            echo "Hello World"
+            cd $WORKSPACE
+            echo
+            echo "Commit Message is"
+            echo "-------------------------------------"
+            echo $GERRIT_CHANGE_COMMIT_MESSAGE
+            echo "-------------------------------------"
+            echo
+            echo "Repo contents"
+            echo "-------------------------------------"
+            ls -al
+            echo "-------------------------------------"
+            echo
+            echo "Changed files are"
+            echo "-------------------------------------"
+            git diff origin/master --name-only
+            echo "-------------------------------------"
+            echo
+            echo "Change introduced"
+            echo "-------------------------------------"
+            git diff origin/master
+            echo "-------------------------------------"
