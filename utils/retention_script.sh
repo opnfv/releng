@@ -28,9 +28,9 @@ do
     daysold=$(($age/86400))
 
     if [[ "$daysold" -gt "10" ]]; then
-      echo "$daysold Days old Deleting: $(basename $artifact)"
+      echo "$daysold Days old deleting: $(basename $artifact)"
     else
-      echo "$daysold Days old Retaining: $(basename $artifact)"
+      echo "$daysold Days old retaining: $(basename $artifact)"
     fi
 
   done < <(gsutil ls gs://artifacts.opnfv.org/"$x" |grep -v "/$")
