@@ -1,0 +1,264 @@
+- project:
+    name: 'sandbox-weekly-jobs'
+
+    project: 'sandbox'
+
+    installer: 'sandbox'
+
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+#--------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+#        CI PODs
+#--------------------------------
+    pod:
+        - baremetal:
+            slave-label: sandbox-baremetal
+            <<: *master
+        - virtual:
+            slave-label: fuel-virtual
+            <<: *master
+#--------------------------------
+#        None-CI PODs
+#--------------------------------
+        - dummy-pod1:
+            slave-label: dummy-pod1
+            <<: *master
+#--------------------------------
+#       scenarios
+#--------------------------------
+    scenario:
+        # HA scenarios
+        - 'os-nosdn-nofeature-ha':
+            auto-trigger-name: 'weekly-trigger-disabled'
+        - 'os-odl_l2-nofeature-ha':
+            auto-trigger-name: 'weekly-trigger-disabled'
+
+    jobs:
+        - 'sandbox-{scenario}-{pod}-weekly-{stream}'
+        - 'sandbox-deploy-{pod}-weekly-{stream}'
+        - 'yardstick-sandbox-{pod}-weekly-{stream}'
+        - 'functest-sandbox-{pod}-weekly-{stream}'
+
+########################
+# job templates
+########################
+- job-template:
+    name: 'sandbox-{scenario}-{pod}-weekly-{stream}'
+
+    concurrent: false
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 4
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'sandbox-os-.*?-{pod}-weekly-{stream}'
+            block-level: 'NODE'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    triggers:
+        - '{auto-trigger-name}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{installer}-defaults'
+        - '{slave-label}-defaults'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: '{scenario}'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - trigger-builds:
+            - project: 'sandbox-deploy-{pod}-weekly-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'yardstick-sandbox-{pod}-weekly-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+            - project: 'functest-sandbox-{pod}-weekly-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              block: true
+              same-node: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+
+- job-template:
+    name: 'sandbox-deploy-{pod}-weekly-{stream}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 4
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'fuel-deploy-{pod}-weekly-{stream}'
+                - 'fuel-deploy-generic-weekly-.*'
+            block-level: 'NODE'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{installer}-defaults'
+        - '{slave-label}-defaults'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-odl_l2-nofeature-ha'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - 'sandbox-deploy-weekly-builder'
+
+- job-template:
+    name: 'yardstick-sandbox-{pod}-weekly-{stream}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-per-node: 1
+            option: 'project'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER Suite: $YARDSTICK_SUITE_NAME Scenario: $DEPLOY_SCENARIO'
+        - timeout:
+            timeout: 400
+            abort: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{installer}-defaults'
+        - '{slave-label}-defaults':
+            installer: '{installer}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-odl_l2-nofeature-ha'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - 'yardstick-sandbox-weekly-builder'
+
+- job-template:
+    name: 'functest-sandbox-{pod}-weekly-{stream}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-per-node: 1
+            option: 'project'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER Suite: $FUNCTEST_SUITE_NAME Scenario: $DEPLOY_SCENARIO'
+        - timeout:
+            timeout: 400
+            abort: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{slave-label}-defaults'
+        - '{installer}-defaults'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-odl_l2-nofeature-ha'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - 'functest-sandbox-weekly-builder'
+
+#####################################
+# builder macros
+#####################################
+- builder:
+    name: 'sandbox-deploy-weekly-builder'
+    builders:
+        - shell:
+            !include-raw: ./deploy.sh
+
+- builder:
+    name: 'functest-sandbox-weekly-builder'
+    builders:
+        - shell:
+            !include-raw: ./functest.sh
+
+- builder:
+    name: 'yardstick-sandbox-weekly-builder'
+    builders:
+        - shell:
+            !include-raw: ./yardstick.sh
