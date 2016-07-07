@@ -48,6 +48,14 @@ main () {
         exit 1
     fi
 
+    if [[ $(whoami) != "root" ]]; then
+      if grep "^Defaults requiretty" /etc/sudoers
+        then echo "please comment out Defaults requiretty from /etc/sudoers"
+        exit 1
+      fi
+    fi
+
+
     if [ -d /etc/monit/conf.d ]; then
         monitconfdir="/etc/monit/conf.d/"
     elif [ -d /etc/monit.d ]; then
@@ -87,7 +95,7 @@ main () {
         echo "Writing the following as monit config:"
         cat << EOF | tee $monitconfdir/jenkins
 check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
-start program = "/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $dir; export started_monit=true; $0 $@'"
+start program = "/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $dir; export started_monit=true; $0 $@' with timeout 60 seconds"
 stop program = "/bin/bash -c '/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)'"
 EOF
     }
@@ -96,7 +104,7 @@ EOF
         #test for diff
         if [[ "$(diff $monitconfdir/jenkins <(echo "\
 check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
-start program = \"/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $dir; export started_monit=true; $0 $@'\"
+start program = \"/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $dir; export started_monit=true; $0 $@' with timeout 60 seconds\"
 stop program = \"/bin/bash -c '/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)'\"\
 ") )" ]]; then
             echo "Updating monit config..."
