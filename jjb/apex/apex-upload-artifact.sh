@@ -35,7 +35,7 @@ done
 signiso () {
 time gpg2 -vvv --batch --yes --no-tty \
   --default-key opnfv-helpdesk@rt.linuxfoundation.org  \
-  --passphrase notreallysecure \
+  --passphrase besteffort \
   --detach-sig $BUILD_DIRECTORY/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso
 
 gsutil cp $BUILD_DIRECTORY/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso.sig gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso.sig 
