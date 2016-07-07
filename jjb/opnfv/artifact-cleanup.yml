@@ -1,0 +1,42 @@
+- project:
+    name: artifact-cleanup
+
+    project: 'releng'
+
+    jobs:
+        - 'artifact-cleanup-daily-{stream}'
+
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+
+
+- job-template:
+    name: 'artifact-cleanup-daily-{stream}'
+
+    # Job template for daily builders
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: master
+
+    disabled: false
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    triggers:
+        - timed: 'H H * * *'
+
+    builders:
+        - shell: |
+            $WORKSPACE/utils/retention_script.sh
