@@ -15,7 +15,7 @@
 # limitations under the License.
 ##############################################################################
 
-PATH=$PATH:/usr/local/bin/gsutil
+PATH=$PATH:/usr/local/bin/
 
 #These are the only projects that generate artifacts
 for x in armband ovsnfv fuel apex compass4nfv
