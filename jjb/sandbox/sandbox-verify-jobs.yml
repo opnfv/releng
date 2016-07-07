@@ -64,19 +64,35 @@
 
     builders:
         - description-setter:
-            description: "POD: $NODE_NAME"
+            description: "Built on $NODE_NAME"
         - '{project}-verify-builder'
         - trigger-builds:
             - project: 'sandbox-verify-basic-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
               block: true
         - trigger-builds:
             - project: 'sandbox-verify-build-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
               block: true
         - trigger-builds:
             - project: 'sandbox-verify-deploy-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
               block: true
         - trigger-builds:
             - project: 'sandbox-verify-test-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
               block: true
 
 - job-template:
@@ -106,7 +122,7 @@
 
     builders:
         - description-setter:
-            description: "POD: $NODE_NAME"
+            description: "Built on $NODE_NAME"
         - '{project}-verify-{activity}-builder'
 
 #####################################
@@ -137,144 +153,29 @@
 - builder:
     name: 'sandbox-verify-builder'
     builders:
-        - shell: |
-            #!/bin/bash
-
-            # this is the builder for the parent/upstream job which we do nothing
-            cd $WORKSPACE
-            echo
-            echo "Commit Message is"
-            echo "-------------------------------------"
-            echo $GERRIT_CHANGE_COMMIT_MESSAGE
-            echo "-------------------------------------"
-            echo
-            echo "Repo contents"
-            echo "-------------------------------------"
-            ls -al
-            echo "-------------------------------------"
-            echo
-            echo "Changed files are"
-            echo "-------------------------------------"
-            git diff origin/master --name-only
-            echo "-------------------------------------"
-            echo
-            echo "Change introduced"
-            echo "-------------------------------------"
-            git diff origin/master
-            echo "-------------------------------------"
+        - shell:
+            !include-raw: ./sandbox-verify.sh
 
 - builder:
     name: 'sandbox-verify-basic-builder'
     builders:
-        - shell: |
-            #!/bin/bash
-
-            # this is where we check the commit message, unit test, etc.
-            cd $WORKSPACE
-            echo
-            echo "Commit Message is"
-            echo "-------------------------------------"
-            echo $GERRIT_CHANGE_COMMIT_MESSAGE
-            echo "-------------------------------------"
-            echo
-            echo "Repo contents"
-            echo "-------------------------------------"
-            ls -al
-            echo "-------------------------------------"
-            echo
-            echo "Changed files are"
-            echo "-------------------------------------"
-            git diff origin/master --name-only
-            echo "-------------------------------------"
-            echo
-            echo "Change introduced"
-            echo "-------------------------------------"
-            git diff origin/master
-            echo "-------------------------------------"
+        - shell:
+            !include-raw: ./sandbox-verify-basic.sh
 
 - builder:
     name: 'sandbox-verify-build-builder'
     builders:
-        - shell: |
-            #!/bin/bash
-
-            # this is where we do the build
-            cd $WORKSPACE
-            echo
-            echo "Commit Message is"
-            echo "-------------------------------------"
-            echo $GERRIT_CHANGE_COMMIT_MESSAGE
-            echo "-------------------------------------"
-            echo
-            echo "Repo contents"
-            echo "-------------------------------------"
-            ls -al
-            echo "-------------------------------------"
-            echo
-            echo "Changed files are"
-            echo "-------------------------------------"
-            git diff origin/master --name-only
-            echo "-------------------------------------"
-            echo
-            echo "Change introduced"
-            echo "-------------------------------------"
-            git diff origin/master
-            echo "-------------------------------------"
+        - shell:
+            !include-raw: ./sandbox-verify-build.sh
 
 - builder:
     name: 'sandbox-verify-deploy-builder'
     builders:
-        - shell: |
-            #!/bin/bash
-
-            # this is where we start the virtual deployment
-            cd $WORKSPACE
-            echo
-            echo "Commit Message is"
-            echo "-------------------------------------"
-            echo $GERRIT_CHANGE_COMMIT_MESSAGE
-            echo "-------------------------------------"
-            echo
-            echo "Repo contents"
-            echo "-------------------------------------"
-            ls -al
-            echo "-------------------------------------"
-            echo
-            echo "Changed files are"
-            echo "-------------------------------------"
-            git diff origin/master --name-only
-            echo "-------------------------------------"
-            echo
-            echo "Change introduced"
-            echo "-------------------------------------"
-            git diff origin/master
-            echo "-------------------------------------"
+        - shell:
+            !include-raw: ./sandbox-verify-deploy.sh
 
 - builder:
     name: 'sandbox-verify-test-builder'
     builders:
-        - shell: |
-            #!/bin/bash
-
-            # this is where we do functest smoketest
-            cd $WORKSPACE
-            echo
-            echo "Commit Message is"
-            echo "-------------------------------------"
-            echo $GERRIT_CHANGE_COMMIT_MESSAGE
-            echo "-------------------------------------"
-            echo
-            echo "Repo contents"
-            echo "-------------------------------------"
-            ls -al
-            echo "-------------------------------------"
-            echo
-            echo "Changed files are"
-            echo "-------------------------------------"
-            git diff origin/master --name-only
-            echo "-------------------------------------"
-            echo
-            echo "Change introduced"
-            echo "-------------------------------------"
-            git diff origin/master
-            echo "-------------------------------------"
+        - shell:
+            !include-raw: ./sandbox-verify-test.sh
