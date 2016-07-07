@@ -1,5 +1,5 @@
 - project:
-    name: 'sandbox-verify-jobs'
+    name: 'sandbox-merge-jobs'
 
     project: 'sandbox'
 
@@ -14,15 +14,14 @@
     activity:
         - 'basic'
         - 'build'
-        - 'deploy'
-        - 'test'
+        - 'promote'
 
     jobs:
-        - 'sandbox-verify-{stream}'
-        - 'sandbox-verify-{activity}-{stream}'
+        - 'sandbox-merge-{stream}'
+        - 'sandbox-merge-{activity}-{stream}'
 
 - job-template:
-    name: 'sandbox-verify-{stream}'
+    name: 'sandbox-merge-{stream}'
 
     parameters:
         - project-parameter:
@@ -42,32 +41,26 @@
     triggers:
         - gerrit:
             trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
+                - change-merged-event
                 - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
+                    comment-contains-value: 'remerge'
             projects:
               - project-compare-type: 'ANT'
                 project-pattern: '{project}'
                 branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/{branch}'
                 forbidden-file-paths:
                   - compare-type: ANT
-                    pattern: 'docs/**|.gitignore'
+                    pattern: 'docs/**'
             readable-message: true
 
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
-        - '{project}-verify-builder'
+        - '{project}-merge-builder'
         - trigger-builds:
-            - project: 'sandbox-verify-basic-{stream}'
+            - project: 'sandbox-merge-basic-{stream}'
               current-parameters: false
               predefined-parameters:
                 GERRIT_BRANCH=$GERRIT_BRANCH
@@ -75,7 +68,7 @@
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
               block: true
         - trigger-builds:
-            - project: 'sandbox-verify-build-{stream}'
+            - project: 'sandbox-merge-build-{stream}'
               current-parameters: false
               predefined-parameters:
                 GERRIT_BRANCH=$GERRIT_BRANCH
@@ -83,15 +76,7 @@
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
               block: true
         - trigger-builds:
-            - project: 'sandbox-verify-deploy-{stream}'
-              current-parameters: false
-              predefined-parameters:
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-              block: true
-        - trigger-builds:
-            - project: 'sandbox-verify-test-{stream}'
+            - project: 'sandbox-merge-promote-{stream}'
               current-parameters: false
               predefined-parameters:
                 GERRIT_BRANCH=$GERRIT_BRANCH
@@ -100,13 +85,13 @@
               block: true
 
 - job-template:
-    name: 'sandbox-verify-{activity}-{stream}'
+    name: 'sandbox-merge-{activity}-{stream}'
 
     scm:
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
-            refspec: '$GERRIT_REFSPEC'
-            choosing-strategy: 'gerrit'
+            refspec: ''
+            choosing-strategy: 'default'
 
     wrappers:
         - ssh-agent-credentials:
@@ -122,64 +107,53 @@
         - gerrit-parameter:
             branch: '{branch}'
         - '{installer}-defaults'
-        - '{project}-verify-{activity}-parameter'
+        - '{project}-merge-{activity}-parameter'
 
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
-        - '{project}-verify-{activity}-builder'
+        - '{project}-merge-{activity}-builder'
 
 #####################################
 # parameter builders
 #####################################
 - parameter:
-    name: 'sandbox-verify-basic-parameter'
+    name: 'sandbox-merge-basic-parameter'
     parameters:
         - 'opnfv-build-ubuntu-defaults'
 
 - parameter:
-    name: 'sandbox-verify-build-parameter'
+    name: 'sandbox-merge-build-parameter'
     parameters:
         - 'opnfv-build-ubuntu-defaults'
 
 - parameter:
-    name: 'sandbox-verify-deploy-parameter'
-    parameters:
-        - 'opnfv-build-centos-defaults'
-
-- parameter:
-    name: 'sandbox-verify-test-parameter'
+    name: 'sandbox-merge-promote-parameter'
     parameters:
         - 'opnfv-build-centos-defaults'
 #####################################
 # builder builders
 #####################################
 - builder:
-    name: 'sandbox-verify-builder'
+    name: 'sandbox-merge-builder'
     builders:
         - shell:
-            !include-raw: ./verify.sh
+            !include-raw: ./merge.sh
 
 - builder:
-    name: 'sandbox-verify-basic-builder'
+    name: 'sandbox-merge-basic-builder'
     builders:
         - shell:
             !include-raw: ./basic.sh
 
 - builder:
-    name: 'sandbox-verify-build-builder'
+    name: 'sandbox-merge-build-builder'
     builders:
         - shell:
             !include-raw: ./build.sh
 
 - builder:
-    name: 'sandbox-verify-deploy-builder'
+    name: 'sandbox-merge-promote-builder'
     builders:
         - shell:
-            !include-raw: ./deploy.sh
-
-- builder:
-    name: 'sandbox-verify-test-builder'
-    builders:
-        - shell:
-            !include-raw: ./test.sh
+            !include-raw: ./promote.sh
