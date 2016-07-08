@@ -1,13 +1,13 @@
+#####################################################
+# Parameters for slaves using old labels
+# This will be cleaned up once the new job structure is in place
+#####################################################
 - parameter:
     name: 'apex-daily-master-defaults'
     parameters:
         - label:
             name: SLAVE_LABEL
             default: 'apex-daily-master'
-        - string:
-            name: INSTALLER_VERSION
-            default: latest
-            description: 'Version of the installer to deploy'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -23,9 +23,22 @@
             name: SLAVE_LABEL
             default: 'apex-verify-master'
         - string:
-            name: INSTALLER_VERSION
-            default: latest
-            description: 'Version of the installer to deploy'
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+        - string:
+            name: SSH_KEY
+            default: /root/.ssh/id_rsa
+            description: 'SSH key to use for Apex'
+#####################################################
+# Parameters for CI baremetal PODs
+#####################################################
+- parameter:
+    name: 'apex-baremetal-defaults'
+    parameters:
+        - label:
+            name: SLAVE_LABEL
+            default: 'apex-baremetal'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -35,21 +48,21 @@
             default: /root/.ssh/id_rsa
             description: 'SSH key to use for Apex'
 - parameter:
-    name: 'fuel-baremetal-defaults'
+    name: 'compass-baremetal-defaults'
     parameters:
         - label:
             name: SLAVE_LABEL
-            default: 'fuel-baremetal'
+            default: 'compass-baremetal'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: 'Git URL to use on this Jenkins Slave'
 - parameter:
-    name: 'fuel-virtual-defaults'
+    name: 'fuel-baremetal-defaults'
     parameters:
         - label:
             name: SLAVE_LABEL
-            default: 'fuel-virtual'
+            default: 'fuel-baremetal'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -72,26 +85,23 @@
             name: EXTERNAL_NETWORK
             default: ext-net;flat;10.5.15.5;10.5.15.250;10.5.15.254;10.5.15.0/24
             description: "External network to create for pod5 (name;type;first ip;last ip; gateway;network)"
+#####################################################
+# Parameters for CI virtual PODs
+#####################################################
 - parameter:
-    name: 'joid-virtual-defaults'
+    name: 'apex-virtual-defaults'
     parameters:
         - label:
             name: SLAVE_LABEL
-            default: 'joid-virtual'
+            default: 'apex-virtual'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: 'Git URL to use on this Jenkins Slave'
-- parameter:
-    name: 'compass-baremetal-defaults'
-    parameters:
-        - label:
-            name: SLAVE_LABEL
-            default: 'compass-baremetal'
         - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
+            name: SSH_KEY
+            default: /root/.ssh/id_rsa
+            description: 'SSH key to use for Apex'
 - parameter:
     name: 'compass-virtual-defaults'
     parameters:
@@ -103,552 +113,42 @@
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: 'Git URL to use on this Jenkins Slave'
 - parameter:
-    name: 'lf-pod1-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - lf-pod1
-            default-slaves:
-                - lf-pod1
-        - string:
-            name: INSTALLER_VERSION
-            default: latest
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-        - string:
-            name: SSH_KEY
-            default: /root/.ssh/id_rsa
-            description: 'SSH key to use for Apex'
-- parameter:
-    name: 'lf-pod2-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - lf-pod2
-            default-slaves:
-                - lf-pod2
-        - string:
-            name: GIT_BASE
-            default: ssh://gerrit.opnfv.org:29418/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-- parameter:
-    name: 'ericsson-pod1-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - ericsson-pod1
-            default-slaves:
-                - ericsson-pod1
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-- parameter:
-    name: 'ericsson-pod2-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - ericsson-pod2
-            default-slaves:
-                - ericsson-pod2
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-
-- parameter:
-    name: 'intel-pod2-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - intel-pod2
-            default-slaves:
-                - intel-pod2
-        - string:
-            name: INSTALLER_VERSION
-            default: stable
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-        - string:
-            name: SSH_KEY
-            default: /root/.ssh/id_rsa
-            description: 'SSH key to use for Apex'
-
-- parameter:
-    name: 'intel-pod3-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - intel-pod3
-            default-slaves:
-                - intel-pod3
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-
-- parameter:
-    name: 'intel-pod5-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - intel-pod5
-            default-slaves:
-                - intel-pod5
-        - string:
-            name: INSTALLER_VERSION
-            default: stable
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-        - string:
-            name: CEPH_DISKS
-            default: /srv
-            description: "Disks to use by ceph (comma separated list)"
-        - string:
-            name: EXTERNAL_NETWORK
-            default: ext-net;flat;10.5.15.5;10.5.15.250;10.5.15.254;10.5.15.0/24
-            description: "External network to create for pod5 (name;type;first ip;last ip; gateway;network)"
-
-- parameter:
-    name: 'intel-pod6-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - intel-pod6
-            default-slaves:
-                - intel-pod6
-        - string:
-            name: INSTALLER_VERSION
-            default: latest
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-        - string:
-            name: CEPH_DISKS
-            default: /srv
-            description: "Disks to use by ceph (comma separated list)"
-        - string:
-            name: EXTERNAL_NETWORK
-            default: ext-net;flat;10.6.15.5;10.6.15.250;10.6.15.254;10.6.15.0/24
-            description: "External network to create for pod6 (name;type;first ip;last ip; gateway;network)"
-
-- parameter:
-    name: 'intel-pod7-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - intel-pod7
-            default-slaves:
-                - intel-pod7
-        - string:
-            name: INSTALLER_VERSION
-            default: latest
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-        - string:
-            name: SSH_KEY
-            default: /root/.ssh/id_rsa
-            description: 'SSH key to use for Apex'
-
-- parameter:
-    name: 'intel-pod8-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - intel-pod8
-            default-slaves:
-                - intel-pod8
-        - string:
-            name: INSTALLER_VERSION
-            default: latest
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-
-- parameter:
-    name: 'huawei-build-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - huawei-build
-            default-slaves:
-                - huawei-build
-        - string:
-            name: INSTALLER_VERSION
-            default: stable
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-
-- parameter:
-    name: 'huawei-pod1-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - huawei-pod1
-            default-slaves:
-                - huawei-pod1
-        - string:
-            name: INSTALLER_VERSION
-            default: stable
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-
-- parameter:
-    name: 'huawei-pod2-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - huawei-pod2
-            default-slaves:
-                - huawei-pod2
-        - string:
-            name: INSTALLER_VERSION
-            default: stable
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-
-- parameter:
-    name: 'huawei-pod3-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - huawei-pod3
-            default-slaves:
-                - huawei-pod3
-        - label:
-            name: SLAVE_LABEL
-            default: 'huawei-test'
-        - string:
-            name: INSTALLER_VERSION
-            default: stable
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-
-- parameter:
-    name: 'huawei-pod4-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - huawei-pod4
-            default-slaves:
-                - huawei-pod4
-        - label:
-            name: SLAVE_LABEL
-            default: 'huawei-test'
-        - string:
-            name: INSTALLER_VERSION
-            default: stable
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-- parameter:
-    name: 'zte-pod1-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - zte-pod1
-            default-slaves:
-                - zte-pod1
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-
-- parameter:
-    name: 'juniper-pod1-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - juniper-pod1
-            default-slaves:
-                - juniper-pod1
-        - string:
-            name: INSTALLER_VERSION
-            default: latest
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-        - string:
-            name: CEPH_DISKS
-            default: /srv
-            description: "Disks to use by ceph (comma separated list)"
-
-- parameter:
-    name: 'orange-pod2-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - orange-pod2
-            default-slaves:
-                - orange-pod2
-        - string:
-            name: INSTALLER_VERSION
-            default: latest
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-        - string:
-            name: CEPH_DISKS
-            default: /dev/sdb /dev/sdc
-            description: "Disks to use by ceph by default (space separated list)"
-        - string:
-            name: EXTERNAL_NETWORK
-            default: ext-net;flat;161.105.231.2;161.105.231.62;161.105.231.1;161.105.231.0/26
-            description: "External network to create (name;type;first ip;last ip; gateway;network)"
-
-- parameter:
-    name: 'orange-pod5-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - orange-pod5
-            default-slaves:
-                - orange-pod5
-        - string:
-            name: INSTALLER_VERSION
-            default: latest
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-
-- parameter:
-    name: 'ericsson-build-defaults'
+    name: 'fuel-virtual-defaults'
     parameters:
         - label:
             name: SLAVE_LABEL
-            default: 'ericsson-build'
+            default: 'fuel-virtual'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on these Jenkins Slaves'
-
+            description: 'Git URL to use on this Jenkins Slave'
 - parameter:
-    name: 'intel-virtual2-defaults'
+    name: 'joid-virtual-defaults'
     parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - intel-virtual2
-            default-slaves:
-                - intel-virtual2
+        - label:
+            name: SLAVE_LABEL
+            default: 'joid-virtual'
         - string:
-            name: INSTALLER_VERSION
-            default: latest
-            description: 'Version of the installer to deploy'
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+#####################################################
+# Parameters for build slaves
+#####################################################
+- parameter:
+    name: 'opnfv-build-arm-defaults'
+    parameters:
+        - label:
+            name: SLAVE_LABEL
+            default: 'opnfv-build-arm'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: 'Git URL to use on this Jenkins Slave'
         - string:
-            name: SSH_KEY
-            default: /root/.ssh/id_rsa
-            description: 'SSH key to use for Apex'
-
-- parameter:
-    name: 'dell-pod1-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - dell-pod1
-            default-slaves:
-                - dell-pod1
-        - string:
-            name: INSTALLER_VERSION
-            default: latest
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-
-- parameter:
-    name: 'dell-pod2-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - dell-pod2
-            default-slaves:
-                - dell-pod2
-        - string:
-            name: INSTALLER_VERSION
-            default: latest
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-
-- parameter:
-    name: 'nokia-pod1-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - nokia-pod1
-            default-slaves:
-                - nokia-pod1
-        - string:
-            name: INSTALLER_VERSION
-            default: stable
-            description: 'Version of the installer to deploy'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-        - string:
-            name: SSH_KEY
-            default: /root/.ssh/id_rsa
-            description: 'SSH key to use for Apex'
-
-- parameter:
-    name: 'arm-build1-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - arm-build1
-            default-slaves:
-                - arm-build1
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-
-- parameter:
-    name: 'arm-pod1-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - arm-pod1
-            default-slaves:
-                - arm-pod1
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-        - string:
-            name: DEFAULT_BRIDGE
-            default: 'admin6_br0,public6_br0'
-            desciption: 'The bridge to use for Fuel PXE booting. It can be a comma sparated list of bridges, in which case the first is the PXE boot bridge, and all subsequent interfaces that will be added to the VM. If left empty, most deploy scripts will default to pxebr.'
-        - string:
-            name: DEPLOY_TIMEOUT
-            default: '360'
-            description: 'Deployment timeout in minutes'
-        - string:
-            name: LAB_CONFIG_URL
-            default: ssh://git@git.enea.com/pharos/lab-config
-            description: 'Base URI to the configuration directory'
-
-- parameter:
-    name: 'arm-pod2-defaults'
-    parameters:
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - arm-pod2
-            default-slaves:
-                - arm-pod2
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-        - string:
-            name: DEFAULT_BRIDGE
-            default: 'admin_br0,public_br0'
-            desciption: 'The bridge to use for Fuel PXE booting. It can be a comma sparated list of bridges, in which case the first is the PXE boot bridge, and all subsequent interfaces that will be added to the VM. If left empty, most deploy scripts will default to pxebr.'
-        - string:
-            name: DEPLOY_TIMEOUT
-            default: '360'
-            description: 'Deployment timeout in minutes'
-        - string:
-            name: LAB_CONFIG_URL
-            default: ssh://git@git.enea.com/pharos/lab-config
-            description: 'Base URI to the configuration directory'
-
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
 - parameter:
     name: 'opnfv-build-centos-defaults'
     parameters:
@@ -678,6 +178,283 @@
             name: BUILD_DIRECTORY
             default: $WORKSPACE/build_output
             description: "Directory where the build artifact will be located upon the completion of the build."
+- parameter:
+    name: 'huawei-build-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - huawei-build
+            default-slaves:
+                - huawei-build
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+#####################################################
+# Parameters for none-CI PODs
+#####################################################
+- parameter:
+    name: 'ericsson-pod1-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - ericsson-pod1
+            default-slaves:
+                - ericsson-pod1
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+- parameter:
+    name: 'intel-pod2-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - intel-pod2
+            default-slaves:
+                - intel-pod2
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+        - string:
+            name: SSH_KEY
+            default: /root/.ssh/id_rsa
+            description: 'SSH key to use for Apex'
+- parameter:
+    name: 'intel-pod3-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - intel-pod3
+            default-slaves:
+                - intel-pod3
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+- parameter:
+    name: 'huawei-pod2-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - huawei-pod2
+            default-slaves:
+                - huawei-pod2
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+- parameter:
+    name: 'huawei-pod3-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - huawei-pod3
+            default-slaves:
+                - huawei-pod3
+        - label:
+            name: SLAVE_LABEL
+            default: 'huawei-test'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+- parameter:
+    name: 'huawei-pod4-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - huawei-pod4
+            default-slaves:
+                - huawei-pod4
+        - label:
+            name: SLAVE_LABEL
+            default: 'huawei-test'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+- parameter:
+    name: 'zte-pod1-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - zte-pod1
+            default-slaves:
+                - zte-pod1
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+- parameter:
+    name: 'juniper-pod1-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - juniper-pod1
+            default-slaves:
+                - juniper-pod1
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+        - string:
+            name: CEPH_DISKS
+            default: /srv
+            description: "Disks to use by ceph (comma separated list)"
+- parameter:
+    name: 'orange-pod2-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - orange-pod2
+            default-slaves:
+                - orange-pod2
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+        - string:
+            name: CEPH_DISKS
+            default: /dev/sdb /dev/sdc
+            description: "Disks to use by ceph by default (space separated list)"
+        - string:
+            name: EXTERNAL_NETWORK
+            default: ext-net;flat;161.105.231.2;161.105.231.62;161.105.231.1;161.105.231.0/26
+            description: "External network to create (name;type;first ip;last ip; gateway;network)"
+- parameter:
+    name: 'orange-pod5-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - orange-pod5
+            default-slaves:
+                - orange-pod5
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+- parameter:
+    name: 'dell-pod1-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - dell-pod1
+            default-slaves:
+                - dell-pod1
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+- parameter:
+    name: 'dell-pod2-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - dell-pod2
+            default-slaves:
+                - dell-pod2
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+- parameter:
+    name: 'nokia-pod1-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - nokia-pod1
+            default-slaves:
+                - nokia-pod1
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+        - string:
+            name: SSH_KEY
+            default: /root/.ssh/id_rsa
+            description: 'SSH key to use for Apex'
+- parameter:
+    name: 'arm-pod1-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - arm-pod1
+            default-slaves:
+                - arm-pod1
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+        - string:
+            name: DEFAULT_BRIDGE
+            default: 'admin6_br0,public6_br0'
+            desciption: 'The bridge to use for Fuel PXE booting. It can be a comma sparated list of bridges, in which case the first is the PXE boot bridge, and all subsequent interfaces that will be added to the VM. If left empty, most deploy scripts will default to pxebr.'
+        - string:
+            name: DEPLOY_TIMEOUT
+            default: '360'
+            description: 'Deployment timeout in minutes'
+        - string:
+            name: LAB_CONFIG_URL
+            default: ssh://git@git.enea.com/pharos/lab-config
+            description: 'Base URI to the configuration directory'
+- parameter:
+    name: 'arm-pod2-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - arm-pod2
+            default-slaves:
+                - arm-pod2
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+        - string:
+            name: DEFAULT_BRIDGE
+            default: 'admin_br0,public_br0'
+            desciption: 'The bridge to use for Fuel PXE booting. It can be a comma sparated list of bridges, in which case the first is the PXE boot bridge, and all subsequent interfaces that will be added to the VM. If left empty, most deploy scripts will default to pxebr.'
+        - string:
+            name: DEPLOY_TIMEOUT
+            default: '360'
+            description: 'Deployment timeout in minutes'
+        - string:
+            name: LAB_CONFIG_URL
+            default: ssh://git@git.enea.com/pharos/lab-config
+            description: 'Base URI to the configuration directory'
 #####################################################
 # These slaves are just dummy slaves for sandbox jobs
 #####################################################
