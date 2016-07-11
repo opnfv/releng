@@ -24,16 +24,16 @@ docs_old2New = {
     #    ({'criteria': 'failed'}, {'criteria': 'FAILED'}),
     #    ({'criteria': 'passed'}, {'criteria': 'PASS'})
     # ]
-    'testcases': [
-        ({'name': 'vPing'}, {'name': 'vping_ssh'}),
-        ({'name': 'Tempest'}, {'name': 'tempest_smoke_serial'}),
-        ({'name': 'Rally'}, {'name': 'rally_sanity'}),
-        ({'name': 'ODL'}, {'name': 'odl'}),
-        ({'name': 'vIMS'}, {'name': 'vims'}),
-        ({'name': 'ONOS'}, {'name': 'onos'}),
-        ({'name': 'vPing_userdata'}, {'name': 'vping_userdata'}),
-        ({'name': 'ovno'}, {'name': 'ocl'})
-    ],
+    # 'testcases': [
+    #     ({'name': 'vPing'}, {'name': 'vping_ssh'}),
+    #     ({'name': 'Tempest'}, {'name': 'tempest_smoke_serial'}),
+    #     ({'name': 'Rally'}, {'name': 'rally_sanity'}),
+    #     ({'name': 'ODL'}, {'name': 'odl'}),
+    #     ({'name': 'vIMS'}, {'name': 'vims'}),
+    #     ({'name': 'ONOS'}, {'name': 'onos'}),
+    #     ({'name': 'vPing_userdata'}, {'name': 'vping_userdata'}),
+    #     ({'name': 'ovno'}, {'name': 'ocl'})
+    # ],
     'results': [
         ({'case_name': 'vPing'}, {'case_name': 'vping_ssh'}),
         ({'case_name': 'Tempest'}, {'case_name': 'tempest_smoke_serial'}),

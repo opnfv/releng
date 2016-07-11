@@ -1,0 +1,41 @@
+---
+- hosts: "{{ host }}"
+  remote_user: "{{ user }}"
+  become: yes
+  become_method: sudo
+  vars:
+    user: "root"
+    port: "8000"
+    update_path: "/tmp/testapi"
+    image: "opnfv/testapi"
+    mongodb_url: "mongodb://172.17.0.1:27017"
+    swagger_url: "http://{{ host }}:{{ port }}"
+  tasks:
+    - name: create temporary update directory
+      file:
+        path: "{{ update_path }}"
+        state: directory
+    - name: transfer files in templates
+      copy:
+        src: templates/
+        dest: "{{ update_path }}"
+    - name: backup mongodb database
+      command: "python {{ update_path }}/backup_mongodb.py -u {{ mongodb_url }} -o {{ update_path }}"
+    - name: stop and remove old versions
+      command: bash "{{ update_path }}/rm_olds.sh"
+      register: rm_result
+    - debug: msg="{{ rm_result.stderr }}"
+    - name: delete old docker images
+      command: docker rmi "{{ image }}"
+      ignore_errors: true
+    - name: update mongodb
+      command: "python {{ update_path }}/update_mongodb.py -u {{ mongodb_url }}"
+    - name: docker start testapi server
+      command: docker run -dti -p "{{ port }}:8000"
+               -e "mongodb_url={{ mongodb_url }}"
+               -e "swagger_url={{ swagger_url }}"
+               "{{ image }}"
+    - name: remove temporary update directory
+      file:
+        path: "{{ update_path }}"
+        state: absent
