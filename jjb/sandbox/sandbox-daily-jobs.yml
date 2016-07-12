@@ -6,12 +6,17 @@
     installer: 'sandbox'
 
 #--------------------------------
-# BRANCH ANCHORS
+# BRANCH DEFINITIONS
 #--------------------------------
-    master: &master
-        stream: master
-        branch: '{stream}'
-        gs-pathname: ''
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+        - colorado:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
+            disabled: false
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
@@ -20,27 +25,27 @@
     pod:
         - baremetal:
             slave-label: sandbox-baremetal
-            <<: *master
         - virtual:
-            slave-label: fuel-virtual
-            <<: *master
+            slave-label: sandbox-virtual
 #--------------------------------
 #        None-CI PODs
 #--------------------------------
         - dummy-pod1:
             slave-label: dummy-pod1
-            <<: *master
+        - dummy-pod2:
+            slave-label: dummy-pod2
 #--------------------------------
 #       scenarios
 #--------------------------------
     scenario:
         # HA scenarios
         - 'os-nosdn-nofeature-ha':
-            auto-trigger-name: 'daily-trigger-disabled'
+            auto-trigger-name: 'sandbox-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-odl_l2-nofeature-ha':
             auto-trigger-name: 'daily-trigger-disabled'
 
     jobs:
+        - 'sandbox-build-daily-{stream}'
         - 'sandbox-{scenario}-{pod}-daily-{stream}'
         - 'sandbox-deploy-{pod}-daily-{stream}'
         - 'yardstick-sandbox-{pod}-daily-{stream}'
@@ -49,6 +54,33 @@
 ########################
 # job templates
 ########################
+########################
+# job templates
+########################
+- job-template:
+    name: 'sandbox-build-daily-{stream}'
+
+    disabled: false
+
+    concurrent: false
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{installer}-defaults':
+            gs-pathname: '{gs-pathname}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - 'sandbox-build'
+        - 'sandbox-upload-artifact'
+
 - job-template:
     name: 'sandbox-{scenario}-{pod}-daily-{stream}'
 
@@ -246,6 +278,16 @@
 # builder macros
 #####################################
 - builder:
+    name: 'sandbox-build'
+    builders:
+        - shell:
+            !include-raw: ./build.sh
+- builder:
+    name: 'sandbox-upload-artifact'
+    builders:
+        - shell:
+            !include-raw: ./upload.sh
+- builder:
     name: 'sandbox-deploy-daily-builder'
     builders:
         - shell:
@@ -262,3 +304,38 @@
     builders:
         - shell:
             !include-raw: ./yardstick.sh
+#-----------------------------------------------
+# Sandbox Triggers running against master branch
+#-----------------------------------------------
+- trigger:
+    name: 'sandbox-os-nosdn-nofeature-ha-baremetal-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'sandbox-os-nosdn-nofeature-ha-virtual-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'sandbox-os-nosdn-nofeature-ha-dummy-pod1-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'sandbox-os-nosdn-nofeature-ha-dummy-pod2-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'sandbox-os-nosdn-nofeature-ha-baremetal-daily-colorado-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'sandbox-os-nosdn-nofeature-ha-virtual-daily-colorado-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'sandbox-os-nosdn-nofeature-ha-dummy-pod1-daily-colorado-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'sandbox-os-nosdn-nofeature-ha-dummy-pod2-daily-colorado-trigger'
+    triggers:
+        - timed: ''
