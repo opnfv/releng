@@ -6,12 +6,28 @@
     installer: 'sandbox'
 
 #--------------------------------
+# BRANCH DEFINITIONS FOR DAILY BUILD JOBS
+#--------------------------------
+    branch:
+        - master:
+            gs-pathname: ''
+            disabled: false
+        - colorado:
+            gs-pathname: '/{branch}'
+            disabled: false
+
+#--------------------------------
 # BRANCH ANCHORS
+# FOR DAILY DEPLOY, FUNCTEST, YARDSTICK JOBS
 #--------------------------------
     master: &master
         stream: master
         branch: '{stream}'
         gs-pathname: ''
+    colorado: &colorado
+        stream: colorado
+        branch: 'stable/{stream}'
+        gs-pathname: '/{stream}'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
@@ -24,12 +40,21 @@
         - virtual:
             slave-label: fuel-virtual
             <<: *master
+        - baremetal:
+            slave-label: sandbox-baremetal
+            <<: *colorado
+        - virtual:
+            slave-label: fuel-virtual
+            <<: *colorado
 #--------------------------------
 #        None-CI PODs
 #--------------------------------
         - dummy-pod1:
             slave-label: dummy-pod1
             <<: *master
+        - dummy-pod2:
+            slave-label: dummy-pod2
+            <<: *colorado
 #--------------------------------
 #       scenarios
 #--------------------------------
@@ -41,6 +66,7 @@
             auto-trigger-name: 'daily-trigger-disabled'
 
     jobs:
+        - 'sandbox-build-daily-{branch}'
         - 'sandbox-{scenario}-{pod}-daily-{stream}'
         - 'sandbox-deploy-{pod}-daily-{stream}'
         - 'yardstick-sandbox-{pod}-daily-{stream}'
@@ -49,6 +75,33 @@
 ########################
 # job templates
 ########################
+########################
+# job templates
+########################
+- job-template:
+    name: 'sandbox-build-daily-{branch}'
+
+    disabled: false
+
+    concurrent: false
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{installer}-defaults':
+            gs-pathname: '{gs-pathname}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - 'sandbox-build'
+        - 'sandbox-upload-artifact'
+
 - job-template:
     name: 'sandbox-{scenario}-{pod}-daily-{stream}'
 
@@ -245,6 +298,16 @@
 #####################################
 # builder macros
 #####################################
+- builder:
+    name: 'sandbox-build'
+    builders:
+        - shell:
+            !include-raw: ./yardstick.sh
+- builder:
+    name: 'sandbox-upload-artifact'
+    builders:
+        - shell:
+            !include-raw: ./yardstick.sh
 - builder:
     name: 'sandbox-deploy-daily-builder'
     builders:
