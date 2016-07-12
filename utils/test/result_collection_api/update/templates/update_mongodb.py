@@ -10,8 +10,8 @@ import argparse
 
 from pymongo import MongoClient
 
+from changes_in_mongodb import collections_old2New, fields_old2New, docs_old2New
 from utils import main, parse_mongodb_url
-from changes import collections_old2New, fields_old2New, docs_old2New
 
 parser = argparse.ArgumentParser(description='Update MongoDBs')
 

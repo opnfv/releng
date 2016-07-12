@@ -6,9 +6,9 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-import os
 import argparse
 import datetime
+import os
 
 from utils import execute, main, get_abspath
 
