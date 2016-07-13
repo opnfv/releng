@@ -4,32 +4,69 @@
     project: 'sandbox'
 
     installer: 'sandbox'
-
+#####################################
+# branch definitions
+#####################################
     stream:
         - master:
             branch: '{stream}'
             gs-pathname: ''
-
-# what are the verification activities we do for this installer
+            disabled: false
+        - colorado:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
+            disabled: true
+#####################################
+# patch verification activities
+#####################################
     activity:
-        - 'basic'
-        - 'build'
-        - 'deploy'
-        - 'test'
-
+        - 'basic':
+            dependency-jobs: ''
+            slave-label: 'opnfv-build-ubuntu'
+        - 'build':
+            dependency-jobs: 'sandbox-verify-basic-{stream}'
+            slave-label: 'opnfv-build-ubuntu'
+        - 'deploy':
+            dependency-jobs: 'sandbox-verify-build-{stream}'
+            slave-label: 'sandbox-virtual'
+        - 'test':
+            dependency-jobs: 'sandbox-verify-deploy-{stream}'
+            slave-label: 'sandbox-virtual'
+#####################################
+# jobs
+#####################################
     jobs:
-        - 'sandbox-verify-{stream}'
         - 'sandbox-verify-{activity}-{stream}'
-
+#####################################
+# job templates
+#####################################
 - job-template:
-    name: 'sandbox-verify-{stream}'
+    name: 'sandbox-verify-{activity}-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'sandbox-verify-deploy-.*'
+                - 'sandbox-verify-test-.*'
+            block-level: 'NODE'
 
     parameters:
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
             branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+        - '{slave-label}-defaults'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
 
     wrappers:
         - ssh-agent-credentials:
@@ -61,125 +98,35 @@
                   - compare-type: ANT
                     pattern: 'docs/**|.gitignore'
             readable-message: true
+            dependency-jobs: '{dependency-jobs}'
 
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
-        - '{project}-verify-builder'
-        - trigger-builds:
-            - project: 'sandbox-verify-basic-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-              block: true
-        - trigger-builds:
-            - project: 'sandbox-verify-build-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-              block: true
-        - trigger-builds:
-            - project: 'sandbox-verify-deploy-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-              block: true
-        - trigger-builds:
-            - project: 'sandbox-verify-test-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-              block: true
-
-- job-template:
-    name: 'sandbox-verify-{activity}-{stream}'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: '$GERRIT_REFSPEC'
-            choosing-strategy: 'gerrit'
-
-    wrappers:
-        - ssh-agent-credentials:
-            users:
-                - '{ssh-credentials}'
-        - timeout:
-            timeout: 360
-            fail: true
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: '{branch}'
-        - '{installer}-defaults'
-        - '{project}-verify-{activity}-parameter'
-
-    builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - '{project}-verify-{activity}-builder'
-
+        - '{project}-verify-{activity}-macro'
 #####################################
-# parameter builders
-#####################################
-- parameter:
-    name: 'sandbox-verify-basic-parameter'
-    parameters:
-        - 'opnfv-build-ubuntu-defaults'
-
-- parameter:
-    name: 'sandbox-verify-build-parameter'
-    parameters:
-        - 'opnfv-build-ubuntu-defaults'
-
-- parameter:
-    name: 'sandbox-verify-deploy-parameter'
-    parameters:
-        - 'opnfv-build-centos-defaults'
-
-- parameter:
-    name: 'sandbox-verify-test-parameter'
-    parameters:
-        - 'opnfv-build-centos-defaults'
-#####################################
-# builder builders
+# builder macros
 #####################################
 - builder:
-    name: 'sandbox-verify-builder'
-    builders:
-        - shell:
-            !include-raw: ./verify.sh
-
-- builder:
-    name: 'sandbox-verify-basic-builder'
+    name: 'sandbox-verify-basic-macro'
     builders:
         - shell:
             !include-raw: ./basic.sh
 
 - builder:
-    name: 'sandbox-verify-build-builder'
+    name: 'sandbox-verify-build-macro'
     builders:
         - shell:
             !include-raw: ./build.sh
 
 - builder:
-    name: 'sandbox-verify-deploy-builder'
+    name: 'sandbox-verify-deploy-macro'
     builders:
         - shell:
             !include-raw: ./deploy.sh
 
 - builder:
-    name: 'sandbox-verify-test-builder'
+    name: 'sandbox-verify-test-macro'
     builders:
         - shell:
             !include-raw: ./test.sh
