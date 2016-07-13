@@ -11,56 +11,53 @@
         - master:
             branch: '{stream}'
             gs-pathname: ''
-            disabled: true
+            disabled: false
         - colorado:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
             disabled: true
 #####################################
-# patch verification activities
+# patch verification phases
 #####################################
-    activity:
+    phase:
         - 'basic':
-            dependency-jobs: ''
             slave-label: 'opnfv-build-ubuntu'
         - 'build':
-            dependency-jobs: 'sandbox-verify-basic-{stream}'
             slave-label: 'opnfv-build-ubuntu'
-        - 'deploy':
-            dependency-jobs: 'sandbox-verify-build-{stream}'
+        - 'deploy-virtual':
             slave-label: 'sandbox-virtual'
-        - 'test':
-            dependency-jobs: 'sandbox-verify-deploy-{stream}'
+        - 'smoke-test':
             slave-label: 'sandbox-virtual'
 #####################################
 # jobs
 #####################################
     jobs:
-        - 'sandbox-verify-{activity}-{stream}'
+        - 'sandbox-verify-{stream}'
+        - 'sandbox-verify-{phase}-{stream}'
 #####################################
 # job templates
 #####################################
 - job-template:
-    name: 'sandbox-verify-{activity}-{stream}'
+    name: 'sandbox-verify-{stream}'
+
+    project-type: multijob
 
     disabled: '{obj:disabled}'
 
     concurrent: true
 
     properties:
+        - throttle:
+            enabled: true
+            max-total: 2
+            max-per-node: 1
+            option: 'project'
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - 'sandbox-verify-deploy-.*'
-                - 'sandbox-verify-test-.*'
+                - 'sandbox-verify-master'
+                - 'sandbox-verify-colorado'
             block-level: 'NODE'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: '{branch}'
-        - '{slave-label}-defaults'
 
     scm:
         - gerrit-trigger-scm:
@@ -98,12 +95,117 @@
                   - compare-type: ANT
                     pattern: 'docs/**|.gitignore'
             readable-message: true
-            dependency-jobs: '{dependency-jobs}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'sandbox-virtual-defaults'
 
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
-        - '{project}-verify-{activity}-macro'
+        - multijob:
+            name: basic
+            condition: SUCCESSFUL
+            projects:
+                - name: 'sandbox-verify-basic-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'sandbox-verify-build-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: deploy
+            condition: SUCCESSFUL
+            projects:
+                - name: 'sandbox-verify-deploy-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'sandbox-verify-test-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+
+- job-template:
+    name: 'sandbox-verify-{phase}-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 2
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'sandbox-verify-deploy-.*'
+                - 'sandbox-verify-test-.*'
+            block-level: 'NODE'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 360
+            fail: true
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - '{installer}-defaults'
+        - '{slave-label}-defaults'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - '{project}-verify-{phase}-macro'
 #####################################
 # builder macros
 #####################################
