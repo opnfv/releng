@@ -1,0 +1,122 @@
+###################################################
+# All the jobs except verify have been removed!
+# They will only be enabled on request by projects!
+###################################################
+- project:
+    name: multisite
+
+    project: '{name}'
+
+    jobs:
+        - 'multisite-verify-{stream}'
+        - 'multisite-kingbird-daily-{stream}'
+
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+
+- job-template:
+    name: 'multisite-verify-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**|.gitignore'
+
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Hello World"
+
+- job-template:
+    name: 'multisite-kingbird-daily-{stream}'
+
+    project-type: freestyle
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 3
+            max-per-node: 2
+            option: 'project'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - string:
+            name: KINGBIRD_LOG_FILE
+            default: $WORKSPACE/kingbird.log
+        - 'intel-virtual6-defaults'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    triggers:
+         - timed: '@midnight'
+
+    builders:
+        - 'multisite-kingbird-deploy'
+        - 'multisite-kingbird-log-upload'
+########################
+# builder macros
+########################
+- builder:
+    name: 'multisite-kingbird-deploy'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            $WORKSPACE/tools/kingbird/deploy.sh
+- builder:
+    name: 'multisite-kingbird-log-upload'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Here is where we upload kingbird logs to artifact repo"
+            echo "We just check the existence of log file"
+            ls -al $KINGBIRD_LOG_FILE
