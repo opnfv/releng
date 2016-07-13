@@ -17,9 +17,9 @@
             gs-pathname: '/{stream}'
             disabled: true
 #####################################
-# patch verification activities
+# patch verification phases
 #####################################
-    activity:
+    phase:
         - 'basic':
             slave-label: 'opnfv-build-ubuntu'
         - 'build':
@@ -112,6 +112,7 @@
             projects:
                 - name: 'sandbox-verify-build-{stream}-multijob'
                   current-parameters: false
+                  predefined-parameters: |
                     GERRIT_BRANCH=$GERRIT_BRANCH
                     GERRIT_REFSPEC=$GERRIT_REFSPEC
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
@@ -124,6 +125,7 @@
             projects:
                 - name: 'sandbox-verify-deploy-{stream}-multijob'
                   current-parameters: false
+                  predefined-parameters: |
                     GERRIT_BRANCH=$GERRIT_BRANCH
                     GERRIT_REFSPEC=$GERRIT_REFSPEC
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
@@ -136,6 +138,7 @@
             projects:
                 - name: 'sandbox-verify-test-{stream}-multijob'
                   current-parameters: false
+                  predefined-parameters: |
                     GERRIT_BRANCH=$GERRIT_BRANCH
                     GERRIT_REFSPEC=$GERRIT_REFSPEC
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
@@ -144,7 +147,7 @@
                   abort-all-job: true
 
 - job-template:
-    name: 'sandbox-verify-{activity}-{stream}-multijob'
+    name: 'sandbox-verify-{phase}-{stream}-multijob'
 
     disabled: '{obj:disabled}'
 
