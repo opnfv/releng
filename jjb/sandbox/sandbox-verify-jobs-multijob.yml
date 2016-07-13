@@ -46,12 +46,18 @@
 
     concurrent: true
 
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 2
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'sandbox-verify-master-multijob'
+                - 'sandbox-verify-colorado-multijob'
+            block-level: 'NODE'
 
     scm:
         - gerrit-trigger-scm:
@@ -89,6 +95,13 @@
                   - compare-type: ANT
                     pattern: 'docs/**|.gitignore'
             readable-message: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'sandbox-virtual-defaults'
 
     builders:
         - description-setter:
@@ -130,6 +143,7 @@
                     GERRIT_REFSPEC=$GERRIT_REFSPEC
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                     GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
@@ -143,6 +157,7 @@
                     GERRIT_REFSPEC=$GERRIT_REFSPEC
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                     GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
 
@@ -150,6 +165,21 @@
     name: 'sandbox-verify-{phase}-{stream}-multijob'
 
     disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 2
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'sandbox-verify-deploy-.*'
+                - 'sandbox-verify-test-.*'
+            block-level: 'NODE'
 
     scm:
         - gerrit-trigger-scm:
@@ -164,17 +194,6 @@
         - timeout:
             timeout: 360
             fail: true
-
-    concurrent: true
-
-    properties:
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'sandbox-verify-deploy-.*'
-                - 'sandbox-verify-test-.*'
-            block-level: 'NODE'
-
     parameters:
         - project-parameter:
             project: '{project}'
