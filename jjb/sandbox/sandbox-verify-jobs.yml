@@ -133,10 +133,10 @@
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
-            name: deploy
+            name: deploy-virtual
             condition: SUCCESSFUL
             projects:
-                - name: 'sandbox-verify-deploy-{stream}'
+                - name: 'sandbox-verify-deploy-virtual-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     GERRIT_BRANCH=$GERRIT_BRANCH
@@ -147,10 +147,10 @@
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
-            name: test
+            name: smoke-test
             condition: SUCCESSFUL
             projects:
-                - name: 'sandbox-verify-test-{stream}'
+                - name: 'sandbox-verify-smoke-test-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     GERRIT_BRANCH=$GERRIT_BRANCH
