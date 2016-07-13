@@ -1,0 +1,212 @@
+- project:
+    name: 'sandbox-verify-jobs-multijob'
+
+    project: 'sandbox'
+
+    installer: 'sandbox'
+#####################################
+# branch definitions
+#####################################
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+        - colorado:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
+            disabled: true
+#####################################
+# patch verification activities
+#####################################
+    activity:
+        - 'basic':
+            slave-label: 'opnfv-build-ubuntu'
+        - 'build':
+            slave-label: 'opnfv-build-ubuntu'
+        - 'deploy':
+            slave-label: 'sandbox-virtual'
+        - 'test':
+            slave-label: 'sandbox-virtual'
+#####################################
+# jobs
+#####################################
+    jobs:
+        - 'sandbox-verify-{stream}-multijob'
+        - 'sandbox-verify-{activity}-{stream}-multijob'
+#####################################
+# job templates
+#####################################
+- job-template:
+    name: 'sandbox-verify-{stream}-multijob'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 360
+            fail: true
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**|.gitignore'
+            readable-message: true
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: basic
+            condition: SUCCESSFUL
+            projects:
+                - name: 'sandbox-verify-basic-{stream}-multijob'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'sandbox-verify-build-{stream}-multijob'
+                  current-parameters: false
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: deploy
+            condition: SUCCESSFUL
+            projects:
+                - name: 'sandbox-verify-deploy-{stream}-multijob'
+                  current-parameters: false
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'sandbox-verify-test-{stream}-multijob'
+                  current-parameters: false
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+
+- job-template:
+    name: 'sandbox-verify-{activity}-{stream}-multijob'
+
+    disabled: '{obj:disabled}'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 360
+            fail: true
+
+    concurrent: true
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'sandbox-verify-deploy-.*'
+                - 'sandbox-verify-test-.*'
+            block-level: 'NODE'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - '{installer}-defaults'
+        - '{slave-label}-defaults'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - '{project}-verify-{activity}-builder'
+#####################################
+# builder macros
+#####################################
+- builder:
+    name: 'sandbox-verify-basic-builder'
+    builders:
+        - shell:
+            !include-raw: ./basic.sh
+
+- builder:
+    name: 'sandbox-verify-build-builder'
+    builders:
+        - shell:
+            !include-raw: ./build.sh
+
+- builder:
+    name: 'sandbox-verify-deploy-builder'
+    builders:
+        - shell:
+            !include-raw: ./deploy.sh
+
+- builder:
+    name: 'sandbox-verify-test-builder'
+    builders:
+        - shell:
+            !include-raw: ./test.sh
