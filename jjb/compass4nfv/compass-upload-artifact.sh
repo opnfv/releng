@@ -10,6 +10,27 @@ echo
 # source the opnfv.properties to get ARTIFACT_VERSION
 source $BUILD_DIRECTORY/opnfv.properties
 
+# clone releng repository
+echo "Cloning releng repository..."
+[ -d releng ] && rm -rf releng
+git clone https://gerrit.opnfv.org/gerrit/releng $WORKSPACE/releng/ &> /dev/null
+#this is where we import the siging key
+if [ -f $WORKSPACE/releng/utils/gpg_import_key.sh ]; then
+  source $WORKSPACE/releng/utils/gpg_import_key.sh
+fi
+
+signiso () {
+time gpg2 -vvv --batch --yes --no-tty \
+  --default-key opnfv-helpdesk@rt.linuxfoundation.org  \
+  --passphrase besteffort \
+  --detach-sig $BUILD_DIRECTORY/compass.iso
+
+gsutil cp $BUILD_DIRECTORY/compass.iso.sig gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso.sig
+echo "ISO signature Upload Complete!"
+}
+
+signiso
+
 # upload artifact and additional files to google storage
 gsutil cp $BUILD_DIRECTORY/compass.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
 gsutil cp $BUILD_DIRECTORY/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
