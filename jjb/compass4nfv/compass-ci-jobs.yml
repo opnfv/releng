@@ -10,10 +10,6 @@
         stream: master
         branch: '{stream}'
         gs-pathname: ''
-    brahmaputra: &brahmaputra
-        stream: brahmaputra
-        branch: 'stable/{stream}'
-        gs-pathname: '/{stream}'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
@@ -28,14 +24,6 @@
             slave-label: compass-virtual
             os-version: 'trusty'
             <<: *master
-        - baremetal:
-            slave-label: compass-baremetal
-            os-version: 'trusty'
-            <<: *brahmaputra
-        - virtual:
-            slave-label: compass-virtual
-            os-version: 'trusty'
-            <<: *brahmaputra
 #--------------------------------
 #        master
 #--------------------------------
@@ -264,27 +252,6 @@
         - timed: '0 9 * * *'
 
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-baremetal-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-baremetal-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-baremetal-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'compass-os-onos-nofeature-ha-baremetal-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'compass-os-ocl-nofeature-ha-baremetal-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-
-- trigger:
     name: 'compass-os-nosdn-nofeature-ha-virtual-master-trigger'
     triggers:
         - timed: '0 3 * * *'
@@ -304,23 +271,3 @@
     name: 'compass-os-ocl-nofeature-ha-virtual-master-trigger'
     triggers:
         - timed: '0 9 * * *'
-- trigger:
-    name: 'compass-os-nosdn-nofeature-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'compass-os-onos-nofeature-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'compass-os-ocl-nofeature-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''

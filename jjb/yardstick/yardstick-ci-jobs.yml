@@ -14,11 +14,6 @@
         branch: '{stream}'
         gs-pathname: ''
         docker-tag: 'latest'
-    brahmaputra: &brahmaputra
-        stream: brahmaputra
-        branch: 'stable/{stream}'
-        gs-pathname: '{stream}'
-        docker-tag: 'brahmaputra.1.0'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
@@ -39,16 +34,6 @@
             installer: fuel
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *master
-        - baremetal:
-            slave-label: fuel-baremetal
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *brahmaputra
-        - virtual:
-            slave-label: fuel-virtual
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *brahmaputra
 # joid CI PODs
         - baremetal:
             slave-label: joid-baremetal
@@ -60,17 +45,6 @@
             installer: joid
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *master
-        - baremetal:
-            slave-label: joid-baremetal
-            installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *brahmaputra
-        - virtual:
-            slave-label: joid-virtual
-            installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *brahmaputra
-
 # compass CI PODs
         - baremetal:
             slave-label: compass-baremetal
@@ -82,16 +56,6 @@
             installer: compass
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *master
-        - baremetal:
-            slave-label: compass-baremetal
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *brahmaputra
-        - virtual:
-            slave-label: compass-virtual
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *brahmaputra
 #--------------------------------
 #    Installers not using labels
 #            CI PODs
@@ -103,19 +67,9 @@
             installer: apex
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *master
-        - lf-pod1:
-            slave-label: '{pod}'
-            installer: apex
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *brahmaputra
 #--------------------------------
 #        None-CI PODs
 #--------------------------------
-        - orange-pod2:
-            slave-label: '{pod}'
-            installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *brahmaputra
         - zte-pod1:
             slave-label: '{pod}'
             installer: fuel

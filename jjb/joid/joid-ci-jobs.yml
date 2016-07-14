@@ -16,10 +16,6 @@
         stream: master
         branch: '{stream}'
         gs-pathname: ''
-    brahmaputra: &brahmaputra
-        stream: brahmaputra
-        branch: 'stable/{stream}'
-        gs-pathname: '/{stream}'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
@@ -32,18 +28,9 @@
         - virtual:
             slave-label: joid-virtual
             <<: *master
-        - baremetal:
-            slave-label: joid-baremetal
-            <<: *brahmaputra
-        - virtual:
-            slave-label: joid-virtual
-            <<: *brahmaputra
 #--------------------------------
 #        None-CI PODs
 #--------------------------------
-        - orange-pod2:
-            slave-label: orange-pod2
-            <<: *brahmaputra
         - orange-pod2:
             slave-label: orange-pod2
             <<: *master
@@ -229,24 +216,6 @@
     triggers:
         - timed: ''
 
-# os-nosdn-nofeature-ha trigger - branch: stable/brahmaputra
-- trigger:
-    name: 'joid-os-nosdn-nofeature-ha-baremetal-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-nofeature-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-nofeature-ha-orange-pod2-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-nofeature-ha-juniper-pod1-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-
 # os-odl_l2-nofeature-ha trigger - branch: master
 - trigger:
     name: 'joid-os-odl_l2-nofeature-ha-baremetal-master-trigger'
@@ -262,24 +231,6 @@
         - timed: ''
 - trigger:
     name: 'joid-os-odl_l2-nofeature-ha-juniper-pod1-master-trigger'
-    triggers:
-        - timed: ''
-
-# os-odl_l2-nofeature-ha trigger - branch: stable/brahmaputra
-- trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-baremetal-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-orange-pod2-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-juniper-pod1-brahmaputra-trigger'
     triggers:
         - timed: ''
 
@@ -301,24 +252,6 @@
     triggers:
         - timed: ''
 
-# os-onos-nofeature-ha trigger - branch: stable/brahmaputra
-- trigger:
-    name: 'joid-os-onos-nofeature-ha-baremetal-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-onos-nofeature-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-onos-nofeature-ha-orange-pod2-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-onos-nofeature-ha-juniper-pod1-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-
 # os-nosdn-lxd-noha trigger - branch: master
 - trigger:
     name: 'joid-os-nosdn-lxd-noha-baremetal-master-trigger'
@@ -337,24 +270,6 @@
     triggers:
         - timed: ''
 
-# os-nosdn-lxd-noha trigger - branch: stable/brahmaputra
-- trigger:
-    name: 'joid-os-nosdn-lxd-noha-baremetal-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-lxd-noha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-lxd-noha-orange-pod2-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-lxd-noha-juniper-pod1-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-
 # os-nosdn-lxd-ha trigger - branch: master
 - trigger:
     name: 'joid-os-nosdn-lxd-ha-baremetal-master-trigger'
@@ -370,23 +285,5 @@
         - timed: ''
 - trigger:
     name: 'joid-os-nosdn-lxd-ha-juniper-pod1-master-trigger'
-    triggers:
-        - timed: ''
-
-# os-nosdn-lxd-ha trigger - branch: stable/brahmaputra
-- trigger:
-    name: 'joid-os-nosdn-lxd-ha-baremetal-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-lxd-ha-virtual-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-lxd-ha-orange-pod2-brahmaputra-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-lxd-ha-juniper-pod1-brahmaputra-trigger'
     triggers:
         - timed: ''

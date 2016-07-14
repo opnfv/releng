@@ -18,12 +18,6 @@
         gs-packagepath: '/{suite}'
         #docker tag used for version control
         docker-tag: 'latest'
-    brahmaputra: &brahmaputra
-        stream: brahmaputra
-        branch: 'stable/{stream}'
-        gs-pathname: '/{stream}'
-        gs-packagepath: '/{stream}/{suite}'
-        docker-tag: 'stable'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
@@ -44,25 +38,9 @@
             installer: compass
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *master
-        - baremetal:
-            slave-label: compass-baremetal
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *brahmaputra
-        - virtual:
-            slave-label: compass-virtual
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *brahmaputra
-
 #--------------------------------
 #        None-CI PODs
 #--------------------------------
-        - orange-pod2:
-            slave-label: '{pod}'
-            installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *brahmaputra
         - orange-pod2:
             slave-label: '{pod}'
             installer: joid
