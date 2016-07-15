@@ -94,8 +94,10 @@
             echo "Qtip: Start Docker and prepare environment"
             envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} -e NODE_NAME=${NODE_NAME}"
             suite="TEST_CASE=all"
+            dir_imgstore="${HOME}/imgstore"
+            img_volume="-v ${dir_imgstore}:/home/opnfv/imgstore"
             docker pull opnfv/qtip:latest
-            cmd=" docker run -id -e $envs -e $suite opnfv/qtip:latest /bin/bash"
+            cmd=" docker run -id -e $envs -e $suite ${img_volume} opnfv/qtip:latest /bin/bash"
             echo "Qtip: Running docker run command: ${cmd}"
             ${cmd}
             docker ps -a
