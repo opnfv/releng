@@ -55,4 +55,11 @@
 
     builders:
         - shell: |
-            echo "Nothing to verify!"
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+            set -o xtrace
+            export PATH=$PATH:/usr/local/bin/
+ 
+            echo "PEP8 checking for all the python files"
+            cd $WORKSPACE && tox -e pep8
