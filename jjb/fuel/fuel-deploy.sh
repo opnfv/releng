@@ -7,7 +7,6 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-set -o errexit
 set -o nounset
 set -o pipefail
 
@@ -57,10 +56,16 @@ chmod a+x $TMPDIR
 # clone the securedlab repo
 cd $WORKSPACE
 echo "Cloning securedlab repo ${GIT_BRANCH##origin/}"
-git clone ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab --quiet --branch ${GIT_BRANCH##origin/}
+git clone ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab --quiet \
+    --branch ${GIT_BRANCH##origin/}
+
+# log file name
+FUEL_LOG_FILENAME="${JOB_NAME}_${BUILD_NUMBER}.log.tar.gz"
 
 # construct the command
-DEPLOY_COMMAND="sudo $WORKSPACE/ci/deploy.sh -b file://$WORKSPACE/securedlab -l $LAB_NAME -p $POD_NAME -s $DEPLOY_SCENARIO -i file://$WORKSPACE/opnfv.iso -H -B $BRIDGE -S $TMPDIR"
+DEPLOY_COMMAND="sudo $WORKSPACE/ci/deploy.sh -b file://$WORKSPACE/securedlab \
+    -l $LAB_NAME -p $POD_NAME -s $DEPLOY_SCENARIO -i file://$WORKSPACE/opnfv.iso \
+    -H -B $BRIDGE -S $TMPDIR -log $WORKSPACE/$FUEL_LOG_FILENAME"
 
 # log info to console
 echo "Deployment parameters"
@@ -80,10 +85,26 @@ echo "$DEPLOY_COMMAND"
 echo
 
 $DEPLOY_COMMAND
+exit_code=$?
 
 echo
 echo "--------------------------------------------------------"
-echo "Deployment is done successfully!"
+echo "Deployment is done!"
+
+# upload logs for baremetal deployments
+# work with virtual deployments is still going on so we skip that for the timebeing
+if [[ "$JOB_NAME" =~ "baremetal-daily" ]]; then
+    echo "Uploading deployment logs"
+    gsutil cp $WORKSPACE/$FUEL_LOG_FILENAME gs://$GS_URL/logs/$FUEL_LOG_FILENAME > /dev/null 2>&1
+    echo "Logs are available as http://$GS_URL/logs/$FUEL_LOG_FILENAME"
+fi
+
+if [[ $exit_code -ne 0 ]]; then
+    echo "Deployment failed!"
+    exit $exit_code
+else
+    echo "Deployment is successful!"
+fi
 
 # Quick and dirty fix for SFC scenatio - will be fixed properly post-release
 if [[ ! "$DEPLOY_SCENARIO" =~ "os-odl_l2-sfc" ]]; then
