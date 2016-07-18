@@ -7,15 +7,32 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-
 function isinstalled {
-if rpm -q "$@" >/dev/null 2>&1; then
-  true
-    else
-      echo installing "$1"
-      sudo yum install "$1"
-  false
+
+source /etc/os-release; echo ${ID/*, /}
+
+if [[ ${ID/*, /} =~ "centos" ]]; then
+  if rpm -q "$@" >/dev/null 2>&1; then
+    true
+      else
+        echo installing "$1"
+        sudo yum install "$1"
+    false
+  fi
+
+elif [[ ${ID/*, /} =~ "ubuntu" ]]; then
+  if dpkg-query -W -f'${Status}' "$@" 2>/dev/null | grep -q "ok installed"; then
+    true
+      else
+        echo installing "$1"
+        sudo apt-get install "$1"
+    false
+  fi
+else
+  echo "Distro not supported"
+  exit 0
 fi
+
 }
 
 if ! isinstalled gnupg2; then
