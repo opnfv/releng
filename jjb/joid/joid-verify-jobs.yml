@@ -1,0 +1,220 @@
+- project:
+    name: 'joid-verify-jobs'
+
+    project: 'joid'
+
+    installer: 'joid'
+#####################################
+# branch definitions
+#####################################
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+        - colorado:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
+            disabled: true
+#####################################
+# patch verification phases
+#####################################
+    phase:
+        - 'basic':
+            slave-label: 'opnfv-build-ubuntu'
+        - 'deploy-virtual':
+            slave-label: 'joid-virtual'
+        - 'smoke-test':
+            slave-label: 'joid-virtual'
+#####################################
+# jobs
+#####################################
+    jobs:
+        - 'joid-verify-{stream}'
+        - 'joid-verify-{phase}-{stream}'
+#####################################
+# job templates
+#####################################
+- job-template:
+    name: 'joid-verify-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 4
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'joid-verify-master'
+                - 'joid-verify-colorado'
+            block-level: 'NODE'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 360
+            fail: true
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**|.gitignore'
+            readable-message: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'joid-virtual-defaults'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: basic
+            condition: SUCCESSFUL
+            projects:
+                - name: 'joid-verify-basic-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: deploy-virtual
+            condition: SUCCESSFUL
+            projects:
+                - name: 'joid-verify-deploy-virtual-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: smoke-test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'joid-verify-smoke-test-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+
+- job-template:
+    name: 'joid-verify-{phase}-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 4
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'joid-verify-deploy-.*'
+                - 'joid-verify-test-.*'
+            block-level: 'NODE'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 360
+            fail: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - '{installer}-defaults'
+        - '{slave-label}-defaults'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - '{project}-verify-{phase}-macro'
+#####################################
+# builder macros
+#####################################
+- builder:
+    name: 'joid-verify-basic-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Nothing to verify!"
+
+- builder:
+    name: 'joid-verify-deploy-virtual-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Nothing to verify!"
+
+- builder:
+    name: 'joid-verify-smoke-test-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Nothing to verify!"
