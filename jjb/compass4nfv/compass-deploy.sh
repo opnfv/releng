@@ -46,6 +46,9 @@ cd $WORKSPACE
 
 export OS_VERSION=${COMPASS_OS_VERSION}
 export OPENSTACK_VERSION=${COMPASS_OPENSTACK_VERSION}
+if [[ "${COMPASS_OS_VERSION_OPTION}" = "xenial" ]] && [[ "${OPENSTACK_VERSION}" = "mitaka" ]]; then
+    export OPENSTACK_VERSION=${OPENSTACK_VERSION}_${OS_VERSION}
+fi
 ./deploy.sh --dha ${DHA_CONF} --network ${NETWORK_CONF}
 if [ $? -ne 0 ]; then
     echo "depolyment failed!"
