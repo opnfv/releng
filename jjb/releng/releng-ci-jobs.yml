@@ -2,6 +2,7 @@
     name: builder-jobs
     jobs:
         - 'builder-verify-jjb'
+        - 'builder-sandbox'
         - 'builder-merge'
         - 'artifacts-api'
 
@@ -99,6 +100,55 @@
                 cd /opt/jenkins-ci/releng
                 git pull
                 jenkins-jobs update --delete-old jjb/
+
+- job-template:
+    name: 'builder-sandbox'
+
+    # Upload all jjb jobs to sandbox instance, excluding jobs jjb
+    # builder jobs
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: 'master'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'releng'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/sandbox'
+                file-paths:
+                    - compare-type: ANT
+                      pattern: jjb/**
+                    - compare-type: ANT
+                      pattern: utils/**
+
+    builders:
+        - shell:
+            !include-raw: verify-releng.sh
+        - shell: |
+                #!/bin/bash
+                source /opt/virtualenv/jenkins-job-builder/bin/activate
+                cd /opt/jenkins-ci/releng
+                git pull
+                cp /etc/jenkins_jobs/jenkins_jobs.ini jenkins_sandbox.ini
+                sed -i 's/url=.*/url=https:\/\/sandbox.opnfv.org\//g' jenkins_sandbox.ini
+                jenkins-jobs --conf jenkins_sandbox.ini update -r -x jjb/releng --delete-old jjb
+                rm -f jenkins_sandbox.ini
 
 - job-template:
     name: 'artifacts-api'
