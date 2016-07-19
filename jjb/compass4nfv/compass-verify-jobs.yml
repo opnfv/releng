@@ -1,0 +1,238 @@
+- project:
+    name: 'compass-verify-jobs'
+
+    project: 'compass4nfv'
+
+    installer: 'compass'
+#####################################
+# branch definitions
+#####################################
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+        - colorado:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
+            disabled: true
+#####################################
+# patch verification phases
+#####################################
+    phase:
+        - 'basic'
+        - 'deploy-virtual'
+#####################################
+# jobs
+#####################################
+    jobs:
+        - 'compass-verify-{stream}'
+        - 'compass-verify-{phase}-{stream}'
+#####################################
+# job templates
+#####################################
+- job-template:
+    name: 'compass-verify-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 4
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'compass-verify-master'
+                - 'compass-verify-colorado'
+                - 'compass-os-.*?-virtual-daily-.*?'
+            block-level: 'NODE'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 120
+            fail: true
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: '**/*'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**'
+            readable-message: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'compass-virtual-defaults'
+        - 'compass-verify-defaults':
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-nofeature-ha'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: basic
+            condition: SUCCESSFUL
+            projects:
+                - name: 'compass-verify-basic-{stream}'
+                  current-parameters: true
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: deploy-virtual
+            condition: SUCCESSFUL
+            projects:
+                - name: 'compass-verify-deploy-virtual-{stream}'
+                  current-parameters: true
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: smoke-test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'functest-compass-virtual-suite-{stream}'
+                  current-parameters: true
+                  predefined-parameters:
+                    FUNCTEST_SUITE_NAME=healthcheck
+                  node-parameters: true
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+
+- job-template:
+    name: 'compass-verify-{phase}-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'compass-os-.*?-virtual-daily-.*?'
+                - 'compass-verify-deploy-.*'
+                - 'functest-compass-virtual.*'
+            block-level: 'NODE'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 120
+            fail: true
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - '{project}-verify-{phase}-macro'
+
+    publishers:
+        - archive:
+            artifacts: 'ansible.log'
+            allow-empty: 'true'
+            fingerprint: true
+#####################################
+# builder macros
+#####################################
+- builder:
+    name: 'compass4nfv-verify-basic-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Not activated!"
+
+- builder:
+    name: 'compass4nfv-verify-deploy-virtual-macro'
+    builders:
+        - shell:
+            !include-raw: ./compass-build.sh
+        - shell:
+            !include-raw: ./compass-deploy.sh
+#####################################
+# parameter macros
+#####################################
+- parameter:
+    name: 'compass-verify-defaults'
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: "$HOME/opnfv/cache/$PROJECT{gs-pathname}"
+            description: "Directory where the cache to be used during the build is located."
+        - string:
+            name: GS_URL
+            default: '$GS_BASE{gs-pathname}'
+            description: "URL to Google Storage."
+        - string:
+            name: PPA_REPO
+            default: "http://205.177.226.237:9999{gs-pathname}"
+        - string:
+            name: PPA_CACHE
+            default: "$WORKSPACE/work/repo/"
+        - choice:
+            name: COMPASS_OPENSTACK_VERSION
+            choices:
+                - 'mitaka'
+                - 'liberty'
+        - choice:
+            name: COMPASS_OS_VERSION
+            choices:
+                - 'trusty'
+                - 'centos7'
