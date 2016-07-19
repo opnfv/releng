@@ -324,6 +324,58 @@
                 unstable-threshold: 'FAILURE'
 
 - job-template:
+    name: 'apex-runner-cperf-{stream1}'
+
+    # runner cperf job
+
+    node: 'intel-pod2'
+
+    disabled: false
+
+    parameters:
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    properties:
+        - build-blocker:
+            use-build-blocker: false
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-deploy.*{stream}'
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - trigger-builds:
+          - project: 'apex-deploy-baremetal-os-odl_l2-nofeature-ha-{stream1}'
+            predefined-parameters:
+              OPNFV_CLEAN=yes
+            git-revision: false
+            block: true
+        - trigger-builds:
+          - project: 'cperf-apex-intel-pod2-daily-{stream1}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl_l2-nofeature-ha
+            block: true
+            same-node: true
+
+- job-template:
     name: 'apex-build-{stream}'
 
     # Job template for builds
