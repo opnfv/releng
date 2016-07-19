@@ -65,7 +65,7 @@ FUEL_LOG_FILENAME="${JOB_NAME}_${BUILD_NUMBER}.log.tar.gz"
 # construct the command
 DEPLOY_COMMAND="sudo $WORKSPACE/ci/deploy.sh -b file://$WORKSPACE/securedlab \
     -l $LAB_NAME -p $POD_NAME -s $DEPLOY_SCENARIO -i file://$WORKSPACE/opnfv.iso \
-    -H -B $BRIDGE -S $TMPDIR -log $WORKSPACE/$FUEL_LOG_FILENAME"
+    -H -B $BRIDGE -S $TMPDIR -L $WORKSPACE/$FUEL_LOG_FILENAME"
 
 # log info to console
 echo "Deployment parameters"
