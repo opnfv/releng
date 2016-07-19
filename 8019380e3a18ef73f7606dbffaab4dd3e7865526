@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "1a76adc5_3c7235e6",
+        "filename": "jjb/fuel/fuel-verify-jobs.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-07-19T17:32:12Z",
+      "side": 1,
+      "message": "Yep, that\u0027s good but not in this case cause commit message check is something we will need to do in order to see if it contains the patterns we agreed.\n\nIf you think this scenario; I send a change to Gerrit but forget to include which scenario that change impacts. The patch verification fails since it misses the scenario name. I notice this, update the commit message and include the scenario name in commit message this time without touching any file. In this case, the job will not be triggered, causing change not to be verified by Jenkins job.",
+      "parentUuid": "1a76adc5_9cf10998",
+      "range": {
+        "startLine": 82,
+        "startChar": 20,
+        "endLine": 82,
+        "endChar": 51
+      },
+      "revId": "8019380e3a18ef73f7606dbffaab4dd3e7865526",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a76adc5_1c0c1994",
         "filename": "jjb/fuel/fuel-verify-jobs.yml",
         "patchSetId": 1
@@ -36,6 +60,30 @@
       "writtenOn": "2016-07-19T15:53:50Z",
       "side": 1,
       "message": "no difference among basic, build deploy-virtual and smoke-test? to use a common settings?",
+      "range": {
+        "startLine": 119,
+        "startChar": 12,
+        "endLine": 119,
+        "endChar": 23
+      },
+      "revId": "8019380e3a18ef73f7606dbffaab4dd3e7865526",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_1c441973",
+        "filename": "jjb/fuel/fuel-verify-jobs.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-07-19T17:32:12Z",
+      "side": 1,
+      "message": "As you say, all settings are same except the node parameter.\n\nbasic: this job runs on any ubuntu build server, doing basic verification such as commit message, unit test (if valid).  (node-parameters: false)\nbuild: this job runs on any ubuntu build server, doing build verification.  (node-parameters: false)\ndeploy: this job runs on slave that\u0027s capable of running fuel virtual deployments. (node-parameters: true)\ntest: this job runs on same slave that got fuel deployed virtually. (node-parameters: true)\n\nThe builders are currently empty since this is only the first step: getting job structure in place.\n\nPlease let me know if this was what you were asking or not and I will try to clarify it further. And please feel free to send a new change, improving the situation and reducing the duplication.",
+      "parentUuid": "1a76adc5_1c0c1994",
       "range": {
         "startLine": 119,
         "startChar": 12,
