@@ -52,7 +52,7 @@ if [ -d "$dir_result" ]; then
                 echo "Not possible to push results to artifact: gsutil not installed.";
             else
                 echo "copy result files to artifact $project_artifact"
-                gsutil -m cp -r "$dir_result" gs://artifacts.opnfv.org/"$project_artifact"/
+                gsutil -m cp -r "$dir_result" gs://artifacts.opnfv.org/"$project_artifact"/ >/dev/null 2>&1
             fi
         fi
     else
