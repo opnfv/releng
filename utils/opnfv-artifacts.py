@@ -130,14 +130,6 @@ def has_logs(gerrit_review):
     return False
 
 
-def has_md5hash(item):
-    """
-    If a file has an md5hash available, grab it
-    """
-    if 'md5Hash' in item:
-        return item['md5Hash']
-    return False
-
 
 def has_ignorable_extension(filename):
     for extension in ignore_extensions:
@@ -158,7 +150,6 @@ def get_results(key):
                                           'items('
                                               'name,'
                                               'mediaLink,'
-                                              'md5Hash,'
                                               'updated,'
                                               'contentType,'
                                               'size'
@@ -189,7 +180,6 @@ def get_results(key):
             else:
                 href = site['mediaLink']
                 href_type = 'download'
-            md5 = has_md5hash(site)
 
             gerrit = has_gerrit_review(site_split)
             logs = False  # has_logs(gerrit)
@@ -215,7 +205,6 @@ def get_results(key):
                 'href': href,
                 'href_type': href_type,
                 'proxy_href': proxy,
-                'md5hash': md5,
             }
 
             if project in releases:
