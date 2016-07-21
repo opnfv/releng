@@ -37,12 +37,12 @@ fi
 
 if ! isinstalled gnupg2; then
   echo "error with install"
-  exit 1
+  exit 0
 fi
 
 if ! which gsutil;
   then echo "error gsutil not installed";
-  exit 1
+  exit 0
 fi
 
 if gpg2 --list-keys | grep "opnfv-helpdesk@rt.linuxfoundation.org"; then
@@ -50,7 +50,7 @@ if gpg2 --list-keys | grep "opnfv-helpdesk@rt.linuxfoundation.org"; then
 else
   if [ -z "$NODE_NAME" ];
     then echo "Cannot find node name"
-      exit 1
+      exit 0
     else echo "Importing key for '$NODE_NAME'";
      gsutil cp gs://opnfv-signing-keys/"$NODE_NAME"-subkey .
      gpg2 --import "$NODE_NAME"-subkey
