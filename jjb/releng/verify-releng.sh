@@ -18,4 +18,4 @@ for x in $(find . -name *\.yml); do
 done
 
 source /opt/virtualenv/jenkins-job-builder/bin/activate
-jenkins-jobs test -o job_output jjb/
+jenkins-jobs test -o job_output -r jjb/
