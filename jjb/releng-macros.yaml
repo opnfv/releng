@@ -349,6 +349,7 @@
             # empty string: ""
             FLAKE_COUNT="$(find . \
                 -path './releng_flake8' -prune -o \
+                -path './.tox' -prune -o \
                 -type f -name "*.py" -print | \
                 xargs flake8 --exit-zero -qq --count 2>&1)"
 
@@ -359,6 +360,7 @@
               echo "Flake8 Violations: $FLAKE_COUNT" > lint.log
               find . \
                   -path './releng_flake8' -prune -o \
+                  -path './.tox' -prune -o \
                   -type f -name "*.py" -print | \
                   xargs flake8 --exit-zero --first >> violation.log
               SHOWN=$(wc -l violation.log | cut -d' ' -f1)
