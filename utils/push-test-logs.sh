@@ -23,8 +23,8 @@ dir_result="${HOME}/opnfv/$project/results/${branch}"
 node_list=(\
 'lf-pod1' 'lf-pod2' 'intel-pod2' 'intel-pod3' \
 'intel-pod5' 'intel-pod6' 'intel-pod7' 'intel-pod8' \
-'ericsson-pod2' )
-#'huawei-pod1' 'huawei-pod2' 'huawei-virtual1' 'huawei-virtual2' 'huawei-virtual3' 'huawei-virtual4'
+'ericsson-pod2' \
+'huawei-pod1' 'huawei-pod2' 'huawei-virtual1' 'huawei-virtual2' 'huawei-virtual3' 'huawei-virtual4')
 
 
 if [[ ! " ${node_list[@]} " =~ " ${testbed} " ]]; then
