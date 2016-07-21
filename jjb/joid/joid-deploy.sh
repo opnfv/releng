@@ -135,6 +135,11 @@ echo "------ Set ceph disks ------"
 sed -i -- "s@osd-devices: /srv@osd-devices: $CEPH_DISKS@" $SRCBUNDLE
 sed -i -r -- "s/^(\s+osd-reformat: )'no'/\1'$CEPH_REFORMAT'/" $SRCBUNDLE
 
+# temporary sfc feature is availble only on onos and trusty
+if [ "$NFV_FEATURES" == 'sfc' ] && [ "$SDN_CONTROLLER" == 'onos' ];then
+    UBUNTU_DISTRO=trusty
+fi
+
 ##
 ## Configure Joid deployment
 ##
@@ -182,7 +187,7 @@ export OS_USERNAME=admin
 export OS_PASSWORD=$OS_ADMIN_PASSWORD
 export OS_TENANT_NAME=admin
 export OS_AUTH_URL=http://$KEYSTONE:35357/v2.0
-export OS_REGION_NAME=Canonical
+export OS_REGION_NAME=RegionOne
 export OS_ENDPOINT_TYPE='adminURL'
 export CINDER_ENDPOINT_TYPE='adminURL'
 export GLANCE_ENDPOINT_TYPE='adminURL'
