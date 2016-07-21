@@ -18,7 +18,7 @@ if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
     fi
     INSTALLER_IP=$(/usr/sbin/arp -e | grep ${instack_mac} | awk {'print $1'})
     sshkey="-v /root/.ssh/id_rsa:/root/.ssh/id_rsa"
-    sudo scp $ssh_options root@${INSTALLER_IP}:/home/stack/stackrc ${HOME}/stackrc
+    sudo scp $ssh_options root@${INSTALLER_IP}:/home/stack/overcloudrc ${HOME}/stackrc
     stackrc="-v ${HOME}/stackrc:/home/opnfv/functest/conf/stackrc"
 
     if sudo iptables -C FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable 2> ${redirect}; then
