@@ -22,6 +22,7 @@ for x in armband ovsnfv fuel apex compass4nfv
 do
 
   echo "Looking at artifacts for project $x"
+  echo "In path gs://artifacts.opnfv.org/$x"
 
   while IFS= read -r artifact; do
 
@@ -31,6 +32,7 @@ do
 
     if [[ "$daysold" -gt "10" ]]; then
       echo "$daysold Days old deleting: $(basename $artifact)"
+      gsutil rm "$artifact"
     else
       echo "$daysold Days old retaining: $(basename $artifact)"
     fi
