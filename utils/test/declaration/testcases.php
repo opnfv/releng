@@ -28,7 +28,7 @@
         	$column_str=$column_str."<td>".$testcase->description."</td>";
 		$column_str=$column_str."</tr>";
 
-    	}	
+    	}
         $column_str=$column_str."</table>";
         echo $column_str;
 

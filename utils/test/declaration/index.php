@@ -18,10 +18,11 @@ $(function() {
     var new_url="http://testresults.opnfv.org:80/test/api/v1/projects/"+selected+"/cases";
     $.post("addtestcase.php", {"project":selected,"url":uri,"name":name,"description":desc}, function(result){
         $("div#result").html(result);
-});	
+    });
+  });
+
 });
-  
-});
+
 $(function() {
 
   $('select#sel1').on('change', function(){
@@ -34,13 +35,12 @@ $(function() {
     });
 
   });
-  
+
 });
 </script>
 <style>
 body {
   padding : 10px ;
-  
 }
 
 #exTab1 .tab-content {
@@ -92,7 +92,6 @@ body {
     <li><a href="http://testresults.opnfv.org/kibana_dashboards/" >RESULTS</a>
     </li>
   </ul>
-
   <div class="tab-content clearfix">
     <div class="tab-pane active" id="1a">
 	<table class="table table-striped">
@@ -112,7 +111,7 @@ body {
 	$pods = $data->pods;
 	$i=1;
 	foreach ( $pods as $pod ){
-	
+
 		$column_str="";
 		$column_str="<tr><td>".$i."</td>";
 		$column_str=$column_str."<td>".$pod->name."</td>";
@@ -122,9 +121,7 @@ body {
 		$column_str= $column_str."</tr>";
 		echo $column_str;
 		$i=$i+1;
-		
 	}
-	
 	?>
 	</table>
     </div>
@@ -137,7 +134,6 @@ body {
       <th>Creation Date</th>
     </tr>
   </thead>
-
  <?php
         $url = "http://testresults.opnfv.org:80/test/api/v1/projects";
         $response = file_get_contents($url);
@@ -153,9 +149,7 @@ body {
                 $column_str= $column_str."</tr>";
                 echo $column_str;
                 $i=$i+1;
-
         }
-
 ?>
 	</table>
     </div>
@@ -171,17 +165,13 @@ body {
         $i=0;
 	$firstvalue=$projects[0]->name;
         foreach ( $projects as $project ){
-
                 $column_str="";
                 $column_str="<option>".$project->name."</option>";
                 echo $column_str;
-
         }
 
 ?>
 </select>
-
-
 </div>
     <div class="tab-pane" id="4a">
 	<?php
@@ -202,19 +192,13 @@ body {
         $i=0;
         $firstvalue=$projects[0]->name;
         foreach ( $projects as $project ){
-
                 $column_str="";
                 $column_str="<option>".$project->name."</option>";
                 echo $column_str;
-
         }
-
 ?>
 </select>
-
-
 </div>
-
 <div class="form-group"> <!-- Name field -->
 		<label class="control-label " for="name">TestCase URI</label>
 		<input class="form-control" id="uri" name="uri" type="text"/>
@@ -233,6 +217,5 @@ body {
 <div class="container" id="result"></div>
   </div>
 </div>
-
 </body>
 </html>
