@@ -126,9 +126,12 @@
 #--------------------------------
 
     testsuite:
-        - 'daily'
-        - 'weekly'
-        - 'suite'
+        - 'suite':
+            job-timeout: 60
+        - 'daily':
+            job-timeout: 120
+        - 'weekly':
+            job-timeout: 400
 
     jobs:
         - 'functest-{installer}-{pod}-{testsuite}-{stream}'
@@ -151,7 +154,7 @@
         - build-name:
             name: '$BUILD_NUMBER Suite: $FUNCTEST_SUITE_NAME Scenario: $DEPLOY_SCENARIO'
         - timeout:
-            timeout: 400
+            timeout: '{job-timeout}'
             abort: true
 
     parameters:
