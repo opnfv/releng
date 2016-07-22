@@ -13,7 +13,14 @@
     master: &master
         stream: master
         branch: '{stream}'
+        disabled: false
         gs-pathname: ''
+    colorado: &colorado
+        stream: colorado
+        branch: 'stable/{stream}'
+        disabled: false
+        gs-pathname: '/{stream}'
+        auto-trigger-name: 'daily-trigger-disabled'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
@@ -26,6 +33,12 @@
         - virtual:
             slave-label: fuel-virtual
             <<: *master
+        - baremetal:
+            slave-label: fuel-baremetal
+            <<: *colorado
+        - virtual:
+            slave-label: fuel-virtual
+            <<: *colorado
 #--------------------------------
 #        None-CI PODs
 #--------------------------------
@@ -92,6 +105,8 @@
 ########################
 - job-template:
     name: 'fuel-{scenario}-{pod}-daily-{stream}'
+
+    disabled: '{obj:disabled}'
 
     concurrent: false
 
@@ -165,6 +180,8 @@
 
 - job-template:
     name: 'fuel-deploy-{pod}-daily-{stream}'
+
+    disabled: '{obj:disabled}'
 
     concurrent: true
 
