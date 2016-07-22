@@ -13,7 +13,7 @@
             branch: '{stream}'
             gs-pathname: ''
             disabled: false
-        - brahmaputra:
+        - colorado:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
             disabled: false
@@ -29,6 +29,8 @@
 ########################
 - job-template:
     name: 'fuel-build-daily-{stream}'
+
+    disabled: '{obj:disabled}'
 
     concurrent: false
 
@@ -223,7 +225,7 @@
 
     concurrent: true
 
-    disabled: false
+    disabled: '{obj:disabled}'
 
     properties:
         - throttle:
