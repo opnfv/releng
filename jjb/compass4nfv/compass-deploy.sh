@@ -61,6 +61,6 @@ echo "--------------------------------------------------------"
 echo "Done!"
 
 ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-sshpass -p root scp 2>/dev/null $ssh_options root@${INSTALLER_IP}:/var/ansible/run/openstack_${COMPASS_OPENSTACK_VERSION}-opnfv2/ansible.log ./  &> /dev/null
+sshpass -p root scp 2>/dev/null $ssh_options root@${INSTALLER_IP}:/var/ansible/run/openstack_${OPENSTACK_VERSION}-opnfv2/ansible.log ./  &> /dev/null
 
 exit $deploy_ret
