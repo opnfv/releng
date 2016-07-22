@@ -10,6 +10,7 @@
     jobs:
         - 'multisite-verify-{stream}'
         - 'multisite-kingbird-daily-{stream}'
+        - 'multisite-kingbird-deploy-{stream}'
 
     stream:
         - master:
@@ -75,9 +76,13 @@
     properties:
         - throttle:
             enabled: true
-            max-total: 3
-            max-per-node: 2
+            max-per-node: 1
             option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'multisite-kingbird-deploy--[^-]*'
+            block-level: 'NODE'
 
     parameters:
         - project-parameter:
@@ -99,8 +104,49 @@
          - timed: '@midnight'
 
     builders:
+        - trigger-builds:
+            - project: 'multisite-kingbird-deploy-{stream}'
+              current-parameters: true
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'functest-{slave-label}-suite-{stream}'
+              current-parameters: true
+              predefined-parameters:
+                FUNCTEST_SUITE_NAME=multisite
+              same-node: true
+              block: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+
+- job-template:
+    name: 'multisite-kingbird-deploy-{stream}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'multisite-kingbird-deploy-.*?'
+            block-level: 'NODE'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    builders:
         - 'multisite-kingbird-deploy'
         - 'multisite-kingbird-log-upload'
+
 ########################
 # builder macros
 ########################
