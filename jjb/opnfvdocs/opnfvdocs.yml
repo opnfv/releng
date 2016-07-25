@@ -61,14 +61,9 @@
                 branches:
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**'
 
     builders:
-        - build-opnfv-composite-docs
-        - upload-under-review-docs-to-opnfv-artifacts
-        - report-docs-build-result-to-gerrit
+        - check-bash-syntax
 
 - job-template:
     name: 'opnfvdocs-merge-{stream}'
@@ -105,15 +100,9 @@
                 branches:
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**'
 
     builders:
-        - build-opnfv-composite-docs
-        - upload-generated-docs-to-opnfv-artifacts
-        - report-docs-build-result-to-gerrit
-        - remove-old-docs-from-opnfv-artifacts
+        - check-bash-syntax
 
 - job-template:
     name: 'opnfvdocs-daily-{stream}'
@@ -146,13 +135,6 @@
         - timed: '0 H/6 * * *'
 
     builders:
-        - build-opnfv-composite-docs
+        - build-html-and-pdf-docs-output
 #        - upload-generated-docs-to-opnfv-artifacts
 
-- builder:
-    name: build-opnfv-composite-docs
-    builders:
-        - shell: |
-            #!/bin/bash -e
-            export PATH=$PATH:/usr/local/bin/
-            GERRIT_COMMENT=gerrit_comment.txt ./build-composite.sh

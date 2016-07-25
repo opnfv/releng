@@ -51,15 +51,19 @@
                 - comment-added-contains-event:
                     comment-contains-value: 'reverify'
             projects:
-              - project-compare-type: 'REG_EXP'
-#Left out arno projects oscar|octopus|functest|genesis
-                project-pattern: 'vswitchperf|apex|armband|availability|bottlenecks|compass4nfv|conductor|copper|doctor|dovetail|dpacc|escalator|fastpathmetrics|fuel|inspector|ipv6|joid|kvmfornfv|lsoapi|moon|movie|multisite|octopus|onosfw|ovsnfv|parser|prediction|promise|qtip|releng|rs|sdnvpn|sfc|vnf_forwarding_graph|enfv|pinpoint|pharos|cperf|functest|genesisreq|models|domino|netready'
+              - project-compare-type: 'ANT'
+                project-pattern: '(?!yardstick)'
                 branches:
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: ANT
                     pattern: 'docs/**'
+              - project-compare-type: 'ANT'
+                project-pattern: 'yardstick'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
 
     builders:
         - upload-review-docs
@@ -90,14 +94,19 @@
                 - comment-added-contains-event:
                     comment-contains-value: 'remerge'
             projects:
-              - project-compare-type: 'REG_EXP'
-                project-pattern: 'vswitchperf|apex|armband|availability|bottlenecks|compass4nfv|conductor|copper|doctor|dovetail|dpacc|escalator|fastpathmetrics|fuel|inspector|ipv6|joid|kvmfornfv|lsoapi|moon|movie|multisite|octopus|onosfw|ovsnfv|parser|prediction|promise|qtip|releng|rs|sdnvpn|sfc|vnf_forwarding_graph|enfv|pinpoint|pharos|cperf|functest|genesisreq|models|domino|netready'
+              - project-compare-type: 'ANT'
+                project-pattern: '(?!yardstick)'
                 branches:
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: ANT
                     pattern: 'docs/**'
+              - project-compare-type: 'ANT'
+                project-pattern: 'yardstick'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
 
     builders:
         - upload-merged-docs
