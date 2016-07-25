@@ -79,10 +79,10 @@ ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 if [ "$installer_type" == "fuel" ]; then
     #ip_fuel="10.20.0.2"
     verify_connectivity $installer_ip
-
+    env_id="${FUEL_ENV:-1}"
     # Check if controller is alive (online='True')
     controller_ip=$(sshpass -p r00tme ssh 2>/dev/null $ssh_options root@${installer_ip} \
-        'fuel node -env 1 | grep controller | grep "True\|  1" | awk -F\| "{print \$5}" | tail -1' | \
+        'fuel node --env ${env_id} | grep controller | grep "True\|  1" | awk -F\| "{print \$5}" | tail -1' | \
         sed 's/ //g') &> /dev/null
 
     if [ -z $controller_ip ]; then
