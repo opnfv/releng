@@ -19,6 +19,7 @@ fi
 # source the opnfv.properties to get ARTIFACT_VERSION
 source $WORKSPACE/opnfv.properties
 
+nfsstore () {
 # storing ISOs for verify & merge jobs will be done once we get the disk array
 if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
     # store ISO locally on NFS first
@@ -34,7 +35,30 @@ if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
             $ISOSTORE/opnfv-$OPNFV_ARTIFACT_VERSION.iso
     fi
 fi
+}
 
+importkey () {
+# clone releng repository
+echo "Cloning releng repository..."
+[ -d releng ] && rm -rf releng
+git clone https://gerrit.opnfv.org/gerrit/releng $WORKSPACE/releng/ &> /dev/null
+#this is where we import the siging key
+if [ -f $WORKSPACE/releng/utils/gpg_import_key.sh ]; then
+  source $WORKSPACE/releng/utils/gpg_import_key.sh
+fi
+}
+
+signiso () {
+gpg2 -vvv --batch --yes --no-tty \
+  --default-key opnfv-helpdesk@rt.linuxfoundation.org  \
+  --passphrase besteffort \
+  --detach-sig $BUILD_DIRECTORY/opnfv-$OPNFV_ARTIFACT_VERSION.iso
+
+gsutil cp $BUILD_DIRECTORY/opnfv-$OPNFV_ARTIFACT_VERSION.iso.sig gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso.sig
+echo "ISO signature Upload Complete!"
+}
+
+uploadiso () {
 # log info to console
 echo "Uploading $INSTALLER_TYPE artifact. This could take some time..."
 echo
@@ -80,3 +104,17 @@ echo "Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
 echo
 echo "--------------------------------------------------------"
 echo
+}
+
+nfsstore
+
+if [[ ! "$JOB_NAME" =~ merge ]]; then
+    importkey
+    signiso
+    uploadiso
+fi
+
+if [[ ! "$JOB_NAME" =~ verify ]]; then
+    uploadiso
+fi
+
