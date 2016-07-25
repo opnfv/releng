@@ -80,9 +80,16 @@ if [ "$installer_type" == "fuel" ]; then
     #ip_fuel="10.20.0.2"
     verify_connectivity $installer_ip
 
+    env=$(sshpass -p r00tme ssh 2>/dev/null $ssh_options root@${installer_ip} \
+        'fuel env'|grep operational|tail -1|awk '{print $1}') &> /dev/null
+    if [ -z $env ]; then
+        error "No operational environment detected in Fuel"
+    fi
+    env_id="${FUEL_ENV:-$env}"
+
     # Check if controller is alive (online='True')
     controller_ip=$(sshpass -p r00tme ssh 2>/dev/null $ssh_options root@${installer_ip} \
-        'fuel node -env 1 | grep controller | grep "True\|  1" | awk -F\| "{print \$5}" | tail -1' | \
+        'fuel node --env ${env_id} | grep controller | grep "True\|  1" | awk -F\| "{print \$5}" | tail -1' | \
         sed 's/ //g') &> /dev/null
 
     if [ -z $controller_ip ]; then
