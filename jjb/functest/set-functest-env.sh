@@ -41,10 +41,13 @@ if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FOR
     sudo iptables -I FORWARD -j RETURN
 fi
 
+
+DEPLOY_TYPE=$([[ $BUILD_TAG =~ "virtual" ]] && echo virt || echo baremetal)
+
 echo "Functest: Start Docker and prepare environment"
 envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
     -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
-    -e BUILD_TAG=${BUILD_TAG} -e CI_DEBUG=${CI_DEBUG}"
+    -e BUILD_TAG=${BUILD_TAG} -e CI_DEBUG=${CI_DEBUG} -e DEPLOY_TYPE=${DEPLOY_TYPE}"
 branch=${GIT_BRANCH##*/}
 dir_result="${HOME}/opnfv/functest/results/${branch}"
 mkdir -p ${dir_result}
