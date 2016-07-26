@@ -10,6 +10,7 @@
     jobs:
         - 'multisite-verify-{stream}'
         - 'multisite-kingbird-daily-{stream}'
+        - 'multisite-kingbird-deploy-{stream}'
 
     stream:
         - master:
@@ -70,14 +71,7 @@
 
     disabled: '{obj:disabled}'
 
-    concurrent: true
-
-    properties:
-        - throttle:
-            enabled: true
-            max-total: 3
-            max-per-node: 2
-            option: 'project'
+    concurrent: false
 
     parameters:
         - project-parameter:
@@ -99,8 +93,49 @@
          - timed: '@midnight'
 
     builders:
+        - trigger-builds:
+            - project: 'multisite-kingbird-deploy-{stream}'
+              current-parameters: true
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'functest-fuel-virtual-suite-{stream}'
+              current-parameters: true
+              predefined-parameters:
+                FUNCTEST_SUITE_NAME=healthcheck
+              same-node: true
+              block: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+            - project: 'functest-fuel-virtual-suite-{stream}'
+              current-parameters: true
+              predefined-parameters:
+                FUNCTEST_SUITE_NAME=multisite
+              same-node: true
+              block: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+
+- job-template:
+    name: 'multisite-kingbird-deploy-{stream}'
+
+    concurrent: false
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'gerrit'
+
+    builders:
         - 'multisite-kingbird-deploy'
         - 'multisite-kingbird-log-upload'
+
 ########################
 # builder macros
 ########################
