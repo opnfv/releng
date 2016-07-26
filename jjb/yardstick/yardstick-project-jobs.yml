@@ -59,8 +59,6 @@
                     branch-pattern: '**/{branch}'
     builders:
         - yardstick-unit-tests-and-docs-build
-        - upload-under-review-docs-to-opnfv-artifacts
-        - report-docs-build-result-to-gerrit
 
 - job-template:
     name: 'yardstick-merge-{stream}'
@@ -97,9 +95,6 @@
 
     builders:
         - yardstick-unit-tests-and-docs-build
-        - upload-generated-docs-to-opnfv-artifacts
-        - report-docs-build-result-to-gerrit
-        - remove-old-docs-from-opnfv-artifacts
 
 ################################
 # job builders
@@ -126,14 +121,5 @@
 
             # unit tests
             ./run_tests.sh
-
-            pip install Sphinx==1.3.1 doc8 docutils sphinxcontrib-httpdomain
-
-            # generate api doc sources
-            sphinx-apidoc -o docs/apidocs yardstick
-
-            # build docs
-            git clone ssh://gerrit.opnfv.org:29418/opnfvdocs docs_build/_opnfvdocs
-            GERRIT_COMMENT=gerrit_comment.txt ./docs_build/_opnfvdocs/scripts/docs-build.sh
 
             deactivate
