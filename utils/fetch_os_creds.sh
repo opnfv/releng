@@ -89,7 +89,7 @@ if [ "$installer_type" == "fuel" ]; then
 
     # Check if controller is alive (online='True')
     controller_ip=$(sshpass -p r00tme ssh 2>/dev/null $ssh_options root@${installer_ip} \
-        'fuel node --env ${env_id} | grep controller | grep "True\|  1" | awk -F\| "{print \$5}" | tail -1' | \
+        "fuel node --env ${env_id} | grep controller | grep 'True\|  1' | awk -F\| '{print \$5}' | tail -1" | \
         sed 's/ //g') &> /dev/null
 
     if [ -z $controller_ip ]; then
