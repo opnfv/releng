@@ -50,24 +50,34 @@
         # HA scenarios
         - 'os-nosdn-nofeature-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            slave-append: ''
         - 'os-odl_l2-nofeature-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            slave-append: ''
         - 'os-odl_l3-nofeature-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            slave-append: ''
         - 'os-onos-sfc-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            slave-append: ''
         - 'os-onos-nofeature-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            slave-append: ''
         - 'os-odl_l2-sfc-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            slave-append: ''
         - 'os-odl_l2-bgpvpn-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            slave-append: ''
         - 'os-nosdn-kvm-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            slave-append: ''
         - 'os-nosdn-ovs-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            slave-append: '-vlan'
         - 'os-nosdn-kvm_ovs-ha':
             auto-trigger-name: 'daily-trigger-disabled'
+            slave-append: '-vlan'
 
     jobs:
         - 'fuel-{scenario}-{pod}-daily-{stream}'
@@ -104,7 +114,7 @@
         - project-parameter:
             project: '{project}'
         - '{installer}-defaults'
-        - '{slave-label}-defaults':
+        - '{slave-label}{slave-append}-defaults':
             installer: '{installer}'
         - string:
             name: DEPLOY_SCENARIO
