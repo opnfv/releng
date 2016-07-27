@@ -55,15 +55,14 @@ class TI(object):
 
     @staticmethod
     def from_dict(a_dict):
-        if a_dict is None:
-            return None
         t = TI()
-        t.current = a_dict.get('current')
-        if 'histories' in a_dict.keys():
-            for history in a_dict.get('histories', None):
-                t.histories.append(TIHistory.from_dict(history))
-        else:
-            t.histories = []
+        if a_dict:
+            t.current = a_dict.get('current')
+            if 'histories' in a_dict.keys():
+                for history in a_dict.get('histories', None):
+                    t.histories.append(TIHistory.from_dict(history))
+            else:
+                t.histories = []
         return t
 
 
@@ -97,7 +96,7 @@ class ResultCreateRequest(object):
         self.build_tag = build_tag
         self.scenario = scenario
         self.criteria = criteria
-        self.trust_indicator = trust_indicator
+        self.trust_indicator = trust_indicator if trust_indicator else TI(0)
 
     def format(self):
         return {

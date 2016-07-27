@@ -182,6 +182,24 @@ class TestResultCreate(TestResultBase):
         self.assertEqual(code, HTTP_OK)
         self.assert_href(body)
 
+    def test_no_ti(self):
+        req = ResultCreateRequest(pod_name=self.pod,
+                                  project_name=self.project,
+                                  case_name=self.case,
+                                  installer=self.installer,
+                                  version=self.version,
+                                  start_date=self.start_date,
+                                  stop_date=self.stop_date,
+                                  details=self.details.format(),
+                                  build_tag=self.build_tag,
+                                  scenario=self.scenario,
+                                  criteria=self.criteria)
+        (code, res) = self.create(req)
+        _id = res.href.split('/')[-1]
+        self.assertEqual(code, HTTP_OK)
+        code, body = self.get(_id)
+        self.assert_res(code, body, req)
+
 
 class TestResultGet(TestResultBase):
     def test_getOne(self):
