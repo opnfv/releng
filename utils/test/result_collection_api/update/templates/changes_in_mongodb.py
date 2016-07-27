@@ -24,24 +24,27 @@ docs_old2New = {
     #    ({'criteria': 'failed'}, {'criteria': 'FAILED'}),
     #    ({'criteria': 'passed'}, {'criteria': 'PASS'})
     # ]
-    'testcases': [
-        ({'name': 'vPing'}, {'name': 'vping_ssh'}),
-        ({'name': 'Tempest'}, {'name': 'tempest_smoke_serial'}),
-        ({'name': 'Rally'}, {'name': 'rally_sanity'}),
-        ({'name': 'ODL'}, {'name': 'odl'}),
-        ({'name': 'vIMS'}, {'name': 'vims'}),
-        ({'name': 'ONOS'}, {'name': 'onos'}),
-        ({'name': 'vPing_userdata'}, {'name': 'vping_userdata'}),
-        ({'name': 'ovno'}, {'name': 'ocl'})
-    ],
+    # 'testcases': [
+    #     ({'name': 'vPing'}, {'name': 'vping_ssh'}),
+    #     ({'name': 'Tempest'}, {'name': 'tempest_smoke_serial'}),
+    #     ({'name': 'Rally'}, {'name': 'rally_sanity'}),
+    #     ({'name': 'ODL'}, {'name': 'odl'}),
+    #     ({'name': 'vIMS'}, {'name': 'vims'}),
+    #     ({'name': 'ONOS'}, {'name': 'onos'}),
+    #     ({'name': 'vPing_userdata'}, {'name': 'vping_userdata'}),
+    #     ({'name': 'ovno'}, {'name': 'ocl'})
+    # ],
+    # 'results': [
+    #     ({'case_name': 'vPing'}, {'case_name': 'vping_ssh'}),
+    #     ({'case_name': 'Tempest'}, {'case_name': 'tempest_smoke_serial'}),
+    #     ({'case_name': 'Rally'}, {'case_name': 'rally_sanity'}),
+    #     ({'case_name': 'ODL'}, {'case_name': 'odl'}),
+    #     ({'case_name': 'vIMS'}, {'case_name': 'vims'}),
+    #     ({'case_name': 'ONOS'}, {'case_name': 'onos'}),
+    #     ({'case_name': 'vPing_userdata'}, {'case_name': 'vping_userdata'}),
+    #     ({'case_name': 'ovno'}, {'case_name': 'ocl'})
+    # ]
     'results': [
-        ({'case_name': 'vPing'}, {'case_name': 'vping_ssh'}),
-        ({'case_name': 'Tempest'}, {'case_name': 'tempest_smoke_serial'}),
-        ({'case_name': 'Rally'}, {'case_name': 'rally_sanity'}),
-        ({'case_name': 'ODL'}, {'case_name': 'odl'}),
-        ({'case_name': 'vIMS'}, {'case_name': 'vims'}),
-        ({'case_name': 'ONOS'}, {'case_name': 'onos'}),
-        ({'case_name': 'vPing_userdata'}, {'case_name': 'vping_userdata'}),
-        ({'case_name': 'ovno'}, {'case_name': 'ocl'})
+        ({'trust_indicator': 0}, {'trust_indicator': {'current': 0, 'histories': []}})
     ]
 }
