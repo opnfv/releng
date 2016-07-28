@@ -6,17 +6,22 @@
     jobs:
         - 'kvmfornfv-verify-{stream}'
         - 'kvmfornfv-merge-{stream}'
+        - 'kvmfornfv-daily-{stream}'
 
     stream:
         - master:
             branch: '{stream}'
             gs-pathname: ''
+            disabled: false
         - brahmaputra:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
+            disabled: true
 
 - job-template:
     name: 'kvmfornfv-verify-{stream}'
+
+    disabled: '{obj:disabled}'
 
     parameters:
         - project-parameter:
@@ -57,6 +62,8 @@
 - job-template:
     name: 'kvmfornfv-merge-{stream}'
 
+    disabled: '{obj:disabled}'
+
     parameters:
         - project-parameter:
             project: '{project}'
@@ -86,3 +93,34 @@
     builders:
         - shell:
             !include-raw: ./kvmfornfv-build.sh
+
+- job-template:
+    name: 'kvmfornfv-daily-{stream}'
+
+    project-type: freestyle
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    triggers:
+         - timed: '@midnight'
+
+    builders:
+        - shell:
+            !include-raw: ./kvmfornfv-build.sh
+        - shell:
+            !include-raw: ./kvmfornfv-upload-artifact.sh
