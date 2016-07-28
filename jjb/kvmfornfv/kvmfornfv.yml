@@ -12,7 +12,6 @@
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
             disabled: true
-
 #####################################
 # patch verification phases
 #####################################
@@ -28,6 +27,7 @@
         - 'kvmfornfv-verify-{stream}'
         - 'kvmfornfv-verify-{phase}-{stream}'
         - 'kvmfornfv-merge-{stream}'
+        - 'kvmfornfv-daily-{stream}'
 #####################################
 # job templates
 #####################################
@@ -128,6 +128,8 @@
         - gerrit-parameter:
             branch: '{branch}'
         - '{slave-label}-defaults'
+        - 'kvmfornfv-defaults':
+            gs-pathname: '{gs-pathname}'
 
     builders:
         - description-setter:
@@ -168,6 +170,39 @@
     builders:
         - shell:
             !include-raw: ./kvmfornfv-build.sh
+
+- job-template:
+    name: 'kvmfornfv-daily-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+        - 'kvmfornfv-defaults':
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    triggers:
+         - timed: '@midnight'
+
+    builders:
+        - shell:
+            !include-raw-escape: ./kvmfornfv-build.sh
+        - shell:
+            !include-raw-escape: ./kvmfornfv-upload-artifact.sh
 #####################################
 # builder macros
 #####################################
