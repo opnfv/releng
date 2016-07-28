@@ -148,7 +148,7 @@ elif [ "$installer_type" == "compass" ]; then
     admin_ip=$(cat $dest_path | grep "OS_AUTH_URL" | sed 's/^.*\=//' | sed "s/^\([\"']\)\(.*\)\1\$/\2/g" | sed s'/\/$//')
     info "admin_ip: $admin_ip"
     public_ip=$(sshpass -p root ssh $ssh_options root@${installer_ip} \
-        "ssh ${controller_ip} 'source /opt/admin-openrc.sh; keystone endpoint-list'" \
+        "ssh ${controller_ip} 'source /opt/admin-openrc.sh; openstack endpoint list --long '" \
         | grep $admin_ip | sed 's/ /\n/g' | grep ^http | head -1)
     info "public_ip: $public_ip"
 
