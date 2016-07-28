@@ -96,6 +96,7 @@ host=10.63.243.17
 user=zte
 port=8000
 image=opnfv/testapi
+mode=build
 update_path=/tmp/testapi
 mongodb_url=mongodb://172.17.0.1:27017
 swagger_url=http://10.63.243.17:8000"```
