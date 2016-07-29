@@ -3,20 +3,46 @@
 
     project: '{name}'
 
-    jobs:
-        - 'kvmfornfv-verify-{stream}'
-        - 'kvmfornfv-merge-{stream}'
-
     stream:
         - master:
             branch: '{stream}'
             gs-pathname: ''
+            disabled: false
         - brahmaputra:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
+            disabled: true
 
+#####################################
+# patch verification phases
+#####################################
+    phase:
+        - 'build':
+            slave-label: 'opnfv-build-ubuntu'
+        - 'test':
+            slave-label: 'intel-pod1'
+#####################################
+# patch verification phases
+#####################################
+    jobs:
+        - 'kvmfornfv-verify-{stream}'
+        - 'kvmfornfv-verify-{phase}-{stream}'
+        - 'kvmfornfv-merge-{stream}'
+#####################################
+# job templates
+#####################################
 - job-template:
     name: 'kvmfornfv-verify-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 3
+            option: 'project'
 
     parameters:
         - project-parameter:
@@ -51,8 +77,66 @@
                     branch-pattern: '**/{branch}'
 
     builders:
-        - shell:
-            !include-raw: ./kvmfornfv-build.sh
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'kvmfornfv-verify-build-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'kvmfornfv-verify-test-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+
+- job-template:
+    name: 'kvmfornfv-verify-{phase}-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 360
+            fail: true
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - '{slave-label}-defaults'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - '{project}-verify-{phase}-macro'
 
 - job-template:
     name: 'kvmfornfv-merge-{stream}'
@@ -63,6 +147,8 @@
         - gerrit-parameter:
             branch: '{branch}'
         - 'opnfv-build-ubuntu-defaults'
+        - 'kvmfornfv-defaults':
+            gs-pathname: '{gs-pathname}'
 
     scm:
         - gerrit-trigger-scm:
@@ -86,3 +172,30 @@
     builders:
         - shell:
             !include-raw: ./kvmfornfv-build.sh
+#####################################
+# builder macros
+#####################################
+- builder:
+    name: 'kvmfornfv-verify-build-macro'
+    builders:
+        - shell:
+            !include-raw: ./kvmfornfv-build.sh
+        - shell:
+            !include-raw: ./kvmfornfv-upload-artifact.sh
+- builder:
+    name: 'kvmfornfv-verify-test-macro'
+    builders:
+        - shell:
+            !include-raw: ./kvmfornfv-download-artifact.sh
+        - shell:
+            !include-raw: ./kvmfornfv-test.sh
+#####################################
+# parameter macros
+#####################################
+- parameter:
+    name: 'kvmfornfv-defaults'
+    parameters:
+        - string:
+            name: GS_URL
+            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+            description: "URL to Google Storage."
