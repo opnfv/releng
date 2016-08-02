@@ -42,6 +42,10 @@
             installer: fuel
             auto-trigger-name: 'qtip-daily-zte-pod1-trigger'
             <<: *master
+        - zte-pod2:
+            installer: fuel
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
 
 #--------------------------------
     jobs:
@@ -58,8 +62,8 @@
     parameters:
         - project-parameter:
             project: '{project}'
-        - '{pod}-defaults'
         - '{installer}-defaults'
+        - '{pod}-defaults'
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-nosdn-nofeature-ha'
