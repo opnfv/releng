@@ -14,11 +14,6 @@
         stream: master
         branch: '{stream}'
         gs-pathname: ''
-    brahmaputra: &brahmaputra
-        stream: brahmaputra
-        branch: 'stable/{stream}'
-        gs-pathname: '/{stream}'
-        auto-trigger-name: 'daily-trigger-disabled'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
@@ -31,12 +26,6 @@
         - virtual:
             slave-label: fuel-virtual
             <<: *master
-        - baremetal:
-            slave-label: fuel-baremetal
-            <<: *brahmaputra
-        - virtual:
-            slave-label: fuel-virtual
-            <<: *brahmaputra
 #--------------------------------
 #        None-CI PODs
 #--------------------------------
@@ -68,6 +57,25 @@
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-nosdn-kvm_ovs-ha':
             auto-trigger-name: 'daily-trigger-disabled'
+        # NOHA scenarios
+        - 'os-nosdn-nofeature-noha':
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+        - 'os-odl_l2-nofeature-noha':
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+        - 'os-odl_l3-nofeature-noha':
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+        - 'os-onos-sfc-noha':
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+        - 'os-onos-nofeature-noha':
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+        - 'os-odl_l2-sfc-noha':
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+        - 'os-odl_l2-bgpvpn-noha':
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+        - 'os-nosdn-kvm-noha':
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+        - 'os-nosdn-ovs-noha':
+            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
 
     jobs:
         - 'fuel-{scenario}-{pod}-daily-{stream}'
@@ -227,6 +235,8 @@
 #-----------------------------------------------
 # Triggers for job running on fuel-baremetal against master branch
 #-----------------------------------------------
+
+# HA Scenarios
 - trigger:
     name: 'fuel-os-nosdn-nofeature-ha-baremetal-daily-master-trigger'
     triggers:
@@ -263,8 +273,42 @@
     name: 'fuel-os-nosdn-ovs-ha-baremetal-daily-master-trigger'
     triggers:
         - timed: ''
+
+# NOHA Scenarios
+- trigger:
+    name: 'fuel-os-nosdn-nofeature-noha-baremetal-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l2-nofeature-noha-baremetal-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l3-nofeature-noha-baremetal-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-onos-sfc-noha-baremetal-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-onos-nofeature-noha-baremetal-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l2-sfc-noha-baremetal-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l2-bgpvpn-noha-baremetal-daily-master-trigger'
+    triggers:
+        - timed: ''
 - trigger:
     name: 'fuel-os-nosdn-kvm-noha-baremetal-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-ovs-noha-baremetal-daily-master-trigger'
     triggers:
         - timed: ''
 #-----------------------------------------------
@@ -306,10 +350,44 @@
     name: 'fuel-os-nosdn-ovs-ha-virtual-daily-master-trigger'
     triggers:
         - timed: ''
+
+# NOHA Scenarios
+- trigger:
+    name: 'fuel-os-nosdn-nofeature-noha-virtual-daily-master-trigger'
+    triggers:
+        - timed: '0 13 * * *'
+- trigger:
+    name: 'fuel-os-odl_l2-nofeature-noha-virtual-daily-master-trigger'
+    triggers:
+        - timed: '30 15 * * *'
+- trigger:
+    name: 'fuel-os-odl_l3-nofeature-noha-virtual-daily-master-trigger'
+    triggers:
+        - timed: '0 18 * * *'
+- trigger:
+    name: 'fuel-os-onos-sfc-noha-virtual-daily-master-trigger'
+    triggers:
+        - timed: '30 20 * * *'
+- trigger:
+    name: 'fuel-os-onos-nofeature-noha-virtual-daily-master-trigger'
+    triggers:
+        - timed: '0 23 * * *'
+- trigger:
+    name: 'fuel-os-odl_l2-sfc-noha-virtual-daily-master-trigger'
+    triggers:
+        - timed: '30 1 * * *'
+- trigger:
+    name: 'fuel-os-odl_l2-bgpvpn-noha-virtual-daily-master-trigger'
+    triggers:
+        - timed: '0 4 * * *'
 - trigger:
     name: 'fuel-os-nosdn-kvm-noha-virtual-daily-master-trigger'
     triggers:
-        - timed: ''
+        - timed: '30 6 * * *'
+- trigger:
+    name: 'fuel-os-nosdn-ovs-noha-virtual-daily-master-trigger'
+    triggers:
+        - timed: '0 9 * * *'
 #-----------------------------------------------
 # ZTE POD1 Triggers running against master branch
 #-----------------------------------------------
@@ -347,5 +425,42 @@
         - timed: ''
 - trigger:
     name: 'fuel-os-nosdn-ovs-ha-zte-pod1-daily-master-trigger'
+    triggers:
+        - timed: ''
+# NOHA Scenarios
+- trigger:
+    name: 'fuel-os-nosdn-nofeature-noha-zte-pod1-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l2-nofeature-noha-zte-pod1-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l3-nofeature-noha-zte-pod1-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-onos-sfc-noha-zte-pod1-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-onos-nofeature-noha-zte-pod1-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l2-sfc-noha-zte-pod1-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-odl_l2-bgpvpn-noha-zte-pod1-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-kvm-noha-zte-pod1-daily-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-ovs-noha-zte-pod1-daily-master-trigger'
     triggers:
         - timed: ''
