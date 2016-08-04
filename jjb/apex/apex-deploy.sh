@@ -4,6 +4,7 @@ set -o nounset
 set -o pipefail
 
 APEX_PKGS="common undercloud opendaylight-sfc onos"
+IPV6_FLAG=False
 
 # log info to console
 echo "Starting the Apex virtual deployment."
@@ -145,6 +146,12 @@ if [ "$OPNFV_CLEAN" == 'yes' ]; then
   fi
 fi
 
+if echo ${DEPLOY_SCENARIO} | grep ipv6; then
+  IPV6_FLAG=True
+  DEPLOY_SCENARIO=$(echo ${DEPLOY_SCENARIO} |  sed 's/-ipv6//')
+  echo "INFO: IPV6 Enabled"
+fi
+
 echo "Deploy Scenario set to ${DEPLOY_SCENARIO}"
 DEPLOY_FILE="${DEPLOY_SETTINGS_DIR}/${DEPLOY_SCENARIO}.yaml"
 
@@ -154,11 +161,19 @@ fi
 
 if [[ "$JOB_NAME" == *virtual* ]]; then
   # settings for virtual deployment
-  NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings.yaml"
+  if [ "$IPV6_FLAG" == "True" ]; then
+    NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings_v6.yaml"
+  else
+    NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings.yaml"
+  fi
   DEPLOY_CMD="${DEPLOY_CMD} -v"
 else
   # settings for bare metal deployment
-  NETWORK_FILE="/root/network/network_settings.yaml"
+  if [ "$IPV6_FLAG" == "True" ]; then
+    NETWORK_FILE="/root/network/network_settings_v6.yaml"
+  else
+    NETWORK_FILE="/root/network/network_settings.yaml"
+  fi
   INVENTORY_FILE="/root/inventory/pod_settings.yaml"
 
   if ! sudo test -e "$INVENTORY_FILE"; then
