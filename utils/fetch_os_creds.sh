@@ -145,11 +145,9 @@ elif [ "$installer_type" == "compass" ]; then
     echo 'export OS_REGION_NAME=regionOne' >> $dest_path
 
     info "This file contains the mgmt keystone API, we need the public one for our rc file"
-    admin_ip=$(cat $dest_path | grep "OS_AUTH_URL" | sed 's/^.*\=//' | sed "s/^\([\"']\)\(.*\)\1\$/\2/g" | sed s'/\/$//')
-    info "admin_ip: $admin_ip"
     public_ip=$(sshpass -p root ssh $ssh_options root@${installer_ip} \
-        "ssh ${controller_ip} 'source /opt/admin-openrc.sh; keystone endpoint-list'" \
-        | grep $admin_ip | sed 's/ /\n/g' | grep ^http | head -1)
+        "ssh ${controller_ip} 'source /opt/admin-openrc.sh; openstack endpoint show identity '" \
+        | grep publicurl | awk '{print $4}')
     info "public_ip: $public_ip"
 
 
