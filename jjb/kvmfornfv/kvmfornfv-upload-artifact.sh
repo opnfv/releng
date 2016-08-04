@@ -8,8 +8,8 @@ else
 fi
 
 if [[ "$JOB_TYPE" == "verify" ]]; then
-    echo "Uploding artifacts for the change $GERRIT_CHANGE_NUMBER. This could take some time..."
-    GS_URL="gs://artifacts.opnfv.org/review/$GERRIT_CHANGE_NUMBER"
+    echo "Uploading artifacts for the change $GERRIT_CHANGE_NUMBER. This could take some time..."
+    GS_URL="gs://artifacts.opnfv.org/$PROJECT/review/$GERRIT_CHANGE_NUMBER"
 else
     echo "Artifact upload is not enabled for $JOB_TYPE jobs"
     exit 1
