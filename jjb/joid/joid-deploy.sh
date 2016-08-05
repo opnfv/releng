@@ -83,7 +83,7 @@ else
     sed -i -- "s/user: ubuntu/user: $MAAS_USER/" $MAASCONFIG
     sed -i -- "s/password: ubuntu/password: $MAAS_PASSWORD/" $MAASCONFIG
     echo "------ Redeploy MAAS ------"
-    ./02-maasdeploy.sh $POD_NAME
+    ./00-maasdeploy.sh $POD_NAME
     exit_on_error $? "MAAS Deploy FAILED"
 fi
 
