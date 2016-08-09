@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "1a76adc5_37db141d",
+        "filename": "jjb/fuel/fuel-ci-jobs.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 478,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-08-09T11:31:52Z",
+      "side": 1,
+      "message": "Julien, this is one of the things I haven\u0027t been able to find solution for yet. \n\nYou perhaps know that, different PODs run different scenarios during different times and branches. So if you look at the scenarios list between lines 41 to 81, all the scenarios need to have triggers defined to support these combinations; {scenario}-{pod}-{branch}-trigger. As a result of this, we have to have empty triggers listed in the file or jjb will complain.\n\nBtw, if you can find another way of doing this supporting this many combinations, I would be more than happy to take a look. :)",
+      "parentUuid": "1a76adc5_37ad5489",
+      "range": {
+        "startLine": 475,
+        "startChar": 0,
+        "endLine": 478,
+        "endChar": 19
+      },
+      "revId": "f499d9f20b0b95cc54e09fbdb9437ad6e01942f3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a76adc5_17bcd8ba",
         "filename": "jjb/opnfv/slave-params.yml",
         "patchSetId": 1
@@ -36,6 +60,30 @@
       "writtenOn": "2016-08-09T11:13:06Z",
       "side": 1,
       "message": "@fatih\n\nCan these 4 lines can be deleted? I think these lines are defined in ci-jobs.yml",
+      "range": {
+        "startLine": 367,
+        "startChar": 0,
+        "endLine": 370,
+        "endChar": 63
+      },
+      "revId": "f499d9f20b0b95cc54e09fbdb9437ad6e01942f3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a76adc5_57d8101d",
+        "filename": "jjb/opnfv/slave-params.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 370,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2016-08-09T11:31:52Z",
+      "side": 1,
+      "message": "Nope. This is POD specific and needs to stay here. \n\nThe reason for this is historical. During the first release, we found out that most of the PODs can clone git repos using https and not via ssh and vice versa. Due to this, we needed to override the default clone url ssh with https to make things work on all the PODs. We can perhaps go over all the PODs and check if they can clone git repos in same way. If so, we can totally get rid of this. (But we need someone to do this work.)",
+      "parentUuid": "1a76adc5_17bcd8ba",
       "range": {
         "startLine": 367,
         "startChar": 0,
