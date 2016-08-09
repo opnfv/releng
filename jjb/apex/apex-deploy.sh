@@ -139,6 +139,7 @@ fi
 
 # set env vars to deploy cmd
 DEPLOY_CMD="CONFIG=${CONFIG} RESOURCES=${RESOURCES} LIB=${LIB} ${DEPLOY_CMD}"
+UTIL_CMD="CONFIG=${CONFIG} RESOURCES=${RESOURCES} LIB=${LIB} ${UTIL_CMD}"
 
 if [ "$OPNFV_CLEAN" == 'yes' ]; then
   if [[ "$BUILD_DIRECTORY" == *verify* ]]; then
