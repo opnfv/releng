@@ -72,7 +72,6 @@ if [[ "$BUILD_DIRECTORY" == *verify* ]]; then
     DEPLOY_SETTINGS_DIR="${WORKSPACE}/config/deploy"
     NETWORK_SETTINGS_DIR="${WORKSPACE}/config/network"
     DEPLOY_CMD="$(pwd)/deploy.sh"
-    UTIL_CMD="$(pwd)/util.sh"
     RESOURCES="${WORKSPACE}/build/images/"
     CONFIG="${WORKSPACE}/build"
     LIB="${WORKSPACE}/lib"
@@ -130,7 +129,6 @@ else
 
     DEPLOY_CMD=opnfv-deploy
     DEPLOY_SETTINGS_DIR="/etc/opnfv-apex/"
-    UTIL_CMD=opnfv-util
     NETWORK_SETTINGS_DIR="/etc/opnfv-apex/"
     RESOURCES="/var/opt/opnfv/images"
     CONFIG="/var/opt/opnfv"
@@ -192,12 +190,8 @@ if ! sudo test -e "$NETWORK_FILE"; then
   exit 1
 fi
 
-# mock detached state for deploy
-sudo $UTIL_CMD mock-detached on
 # start deployment
 sudo ${DEPLOY_CMD} -d ${DEPLOY_FILE} -n ${NETWORK_FILE} --debug
-# turn of mock detached state
-sudo $UTIL_CMD mock-detached off
 
 echo
 echo "--------------------------------------------------------"
