@@ -10,6 +10,43 @@
 set -o nounset
 set -o pipefail
 
+usage()
+{
+cat << EOF
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+`basename $0`: Deploys the Fuel@OPNFV stack
+
+usage: `basename $0` [-B PXE Bridge]
+
+OPTIONS:
+  -B  PXE Bridge for booting of Fuel master
+  -h  Print this message and exit
+
+Description:
+
+-B PXE Bridge for booting of Fuel master. fuel/ci/deploy.sh can support this
+   parameter several times, or as a comma separated list of bridges, or
+   both: -B br1 -B br2,br3. This script supports only one bridge here.
+
+EOF
+}
+
+while getopts "B:h" OPTION
+do
+    case $OPTION in
+        B)
+            BRIDGE=$OPTARG
+            ;;
+        h)
+            usage
+            ;;
+        *)
+            echo "${OPTION} is not a valid argument"
+            exit 0
+            ;;
+    esac
+done
+
 # source the file so we get OPNFV vars
 source latest.properties
 
@@ -29,7 +66,7 @@ fi
 
 # set deployment parameters
 export TMPDIR=$HOME/tmpdir
-BRIDGE=pxebr
+BRIDGE=${BRIDGE:-pxebr}
 LAB_NAME=${NODE_NAME/-*}
 POD_NAME=${NODE_NAME/*-}
 
