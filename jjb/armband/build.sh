@@ -1,6 +1,8 @@
 #!/bin/bash
+# SPDX-license-identifier: Apache-2.0
 ##############################################################################
 # Copyright (c) 2016 Ericsson AB and others.
+# Copyright (c) 2016 Enea AB.
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Apache License, Version 2.0
 # which accompanies this distribution, and is available at
@@ -12,13 +14,48 @@ set -o pipefail
 
 cd $WORKSPACE
 
+# remove the expired items from cache
+test -f $WORKSPACE/ci/clean_cache.sh && $WORKSPACE/ci/clean_cache.sh $CACHE_DIRECTORY
+
+LATEST_ISO_PROPERTIES=$WORKSPACE/latest.iso.properties
+if [[ "$JOB_NAME" =~ "daily" ]]; then
+    # check to see if we already have an artifact on artifacts.opnfv.org
+    # for this commit during daily builds
+    echo "Checking to see if we already built and stored Armband Fuel ISO for this commit"
+
+    curl -s -o $LATEST_ISO_PROPERTIES http://$GS_URL/latest.properties 2>/dev/null
+
+    # get metadata of latest ISO
+    LATEST_ISO_SHA1=$(grep OPNFV_GIT_SHA1 $LATEST_ISO_PROPERTIES | cut -d'=' -f2)
+    LATEST_ISO_URL=$(grep OPNFV_ARTIFACT_URL $LATEST_ISO_PROPERTIES | cut -d'=' -f2)
+else
+    LATEST_ISO_SHA1=none
+fi
+
 # get current SHA1
 CURRENT_SHA1=$(git rev-parse HEAD)
 
+# set FORCE_BUILD to false for non-daily builds
+FORCE_BUILD=${FORCE_BUILD:-false}
+
+if [[ "$CURRENT_SHA1" == "$LATEST_ISO_SHA1" && "$FORCE_BUILD" == "false" ]]; then
+    echo "***************************************************"
+    echo "   An ISO has already been built for this commit"
+    echo "   $LATEST_ISO_URL"
+    echo "***************************************************"
+else
+    echo "This commit has not been built yet or forced build! Proceeding with the build."
+    /bin/rm -f $LATEST_ISO_PROPERTIES
+    echo
+fi
+
 # log info to console
-echo "Starting the build of Armband. This could take some time..."
+echo "Starting the build of Armband $INSTALLER_TYPE. This could take some time..."
 echo "-----------------------------------------------------------"
 echo
+
+# create the cache directory if it doesn't exist
+mkdir -p $CACHE_DIRECTORY
 
 # set OPNFV_ARTIFACT_VERSION
 if [[ "$JOB_NAME" =~ "merge" ]]; then
@@ -39,7 +76,7 @@ NOCACHE_ARG=${NOCACHE_ARG:-}
 
 # start the build
 cd $WORKSPACE/ci
-./build.sh $BUILD_DIRECTORY
+./build.sh -v $OPNFV_ARTIFACT_VERSION $NOCACHE_ARG -c file://$CACHE_DIRECTORY $BUILD_DIRECTORY
 
 # list the build artifacts
 ls -al $BUILD_DIRECTORY
