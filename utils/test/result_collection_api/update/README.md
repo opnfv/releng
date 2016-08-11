@@ -75,11 +75,7 @@ python update_api.py
 Here ansible-playbook is used to implement auto update.
 Please make sure that the remote server is accessible via ssh.
 
-install ansible, please refer:
-```
-http://docs.ansible.com/ansible/intro_installation.html
-```
-run update.yml
+update.yml
 arguments:
 : host: remote server, must provide
 user: user used to access to remote server, default to root
@@ -98,7 +94,26 @@ port=8000
 image=opnfv/testapi
 update_path=/tmp/testapi
 mongodb_url=mongodb://172.17.0.1:27017
-swagger_url=http://10.63.243.17:8000"```
+swagger_url=http://10.63.243.17:8000"
+```
+
+install ansible, please refer:
+```
+http://docs.ansible.com/ansible/intro_installation.html
+```
+
+play-update.sh
+arguments:
+: host: remote server, must provide
+username: user used to access to remote server using ssh
+identityfile: PublicKey file used to access to remote server using ssh
+
+usage:
+```
+ssh-agent ./playbook-update.sh testresults.opnfv.org serena ~/.ssh/id_rsa
+```
+
+
 > **Note:**
 
 > - If documents need to be changed, please modify file
