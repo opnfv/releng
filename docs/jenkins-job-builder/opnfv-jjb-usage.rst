@@ -2,6 +2,12 @@
 Creating/Configuring/Verifying Jenkins Jobs
 ===========================================
 
+`Save to PDF - normal <//pdfcrowd.com/api/pdf/convert/uri/>`_
+`Save to PDF - pdf_scaling_factor=0.7 <//pdfcrowd.com/api/pdf/convert/uri/?pdf_scaling_factor=0.7>`_
+`Save to PDF - pdfcrowd_logo=false <//pdfcrowd.com/api/pdf/convert/uri/?pdfcrowd_logo=false>`_
+`Save to PDF - footer_html=build:%202016-08 <//pdfcrowd.com/api/pdf/convert/uri/?footer_html=build:%202016-08>`_
+`Save to PDF - all <//pdfcrowd.com/api/pdf/convert/uri/?pdf_scaling_factor=0.7&pdfcrowd_logo=false&footer_html=build:%202016-08>`_
+
 Clone and setup the repo::
 
     git clone ssh://YOU@gerrit.opnfv.org:29418/releng
