@@ -79,27 +79,21 @@ install ansible, please refer:
 ```
 http://docs.ansible.com/ansible/intro_installation.html
 ```
-run update.yml
+
+playbook-update.sh
+
 arguments:
-: host: remote server, must provide
-user: user used to access to remote server, default to root
-port: exposed port used to access to testapi, default to 8000
-image: testapi's docker image, default to opnfv/testapi:latest
-update_path: templates directory in remote server, default to /tmp/testapi
-mongodb_url: url of mongodb, default to 172.17.0.1, docker0 ip
-swagger_url: swagger access url, default to http://host:port
+: -h|--help           show this help text
+-r|--remote         remote server
+-u|--user           ssh username used to access to remote server
+-i|--identity       ssh PublicKey file used to access to remote server
+-e|--execute        execute update, if not set just check the ansible connectivity
 
 usage:
 ```
-ansible-playbook update.yml --extra-vars "
-host=10.63.243.17
-user=zte
-port=8000
-image=opnfv/testapi
-mode=build
-update_path=/tmp/testapi
-mongodb_url=mongodb://172.17.0.1:27017
-swagger_url=http://10.63.243.17:8000"```
+ssh-agent ./playbook-update.sh -r testresults.opnfv.org -u serena -i ~/.ssh/id_rsa -e
+```
+
 > **Note:**
 
 > - If documents need to be changed, please modify file
