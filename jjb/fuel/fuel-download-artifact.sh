@@ -10,6 +10,9 @@
 set -o errexit
 set -o pipefail
 
+# use proxy url to replace the nomral URL, for googleusercontent.com will be blocked randomly
+[[ "$NODE_NAME" =~ (zte) ]] && GS_URL=$GS_BASE_PROXY
+
 if [[ "$JOB_NAME" =~ "merge" ]]; then
     echo "Downloading http://$GS_URL/opnfv-gerrit-$GERRIT_CHANGE_NUMBER.properties"
     # get the properties file for the Fuel ISO built for a merged change
@@ -46,6 +49,8 @@ if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
         exit 0
     fi
 fi
+
+[[ "$NODE_NAME" =~ (zte) ]] && OPNFV_ARTIFACT_URL=${GS_BASE_PROXY%%/*}/$OPNFV_ARTIFACT_URL
 
 # log info to console
 echo "Downloading the $INSTALLER_TYPE artifact using URL http://$OPNFV_ARTIFACT_URL"
