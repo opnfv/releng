@@ -99,8 +99,9 @@ for version in conf.versions:
                 for test_case in testValid:
                     test_case.checkRunnable(installer, s,
                                             test_case.getConstraints())
-                    logger.debug("testcase %s is %s" %
+                    logger.debug("testcase %s (%s) is %s" %
                                  (test_case.getDisplayName(),
+                                  test_case.getName(),
                                   test_case.isRunnable))
                     time.sleep(1)
                     if test_case.isRunnable:
@@ -131,8 +132,10 @@ for version in conf.versions:
                 for test_case in otherTestCases:
                     test_case.checkRunnable(installer, s,
                                             test_case.getConstraints())
-                    logger.info("testcase %s is %s" %
-                                (test_case.getName(), test_case.isRunnable))
+                    logger.debug("testcase %s (%s) is %s" %
+                                 (test_case.getDisplayName(),
+                                  test_case.getName(),
+                                  test_case.isRunnable))
                     time.sleep(1)
                     if test_case.isRunnable:
                         dbName = test_case.getDbName()

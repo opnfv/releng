@@ -35,7 +35,11 @@ class TestCase(object):
                                'promise': 'Promise',
                                'moon': 'moon',
                                'copper': 'copper',
-                               'security_scan': 'security'
+                               'security_scan': 'security',
+                               'multisite': 'multisite',
+                               'domino': 'domino',
+                               'odl-sfc': 'SFC',
+                               'onos_sfc': 'SFC'
                                }
         try:
             self.displayName = display_name_matrix[self.name]
@@ -123,7 +127,11 @@ class TestCase(object):
                              'promise': 'promise',
                              'moon': 'moon',
                              'copper': 'copper',
-                             'security_scan': 'security'
+                             'security_scan': 'security',
+                             'multisite': 'multisite',
+                             'domino': 'domino-multinode',
+                             'odl-sfc': 'odl-sfc',
+                             'onos_sfc': 'onos_sfc'
                              }
         try:
             return test_match_matrix[self.name]
