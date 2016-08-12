@@ -126,7 +126,7 @@ class TestCase(object):
                              'doctor': 'doctor-notification',
                              'promise': 'promise',
                              'moon': 'moon',
-                             'copper': 'copper',
+                             'copper': 'copper-notification',
                              'security_scan': 'security',
                              'multisite': 'multisite',
                              'domino': 'domino-multinode',
