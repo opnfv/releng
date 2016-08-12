@@ -23,6 +23,11 @@ elif [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     # replace the default one by the customized one provided by jenkins config
 fi
 
+# Set iptables rule to allow forwarding return traffic for container
+if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FORWARD | awk 'NR==3' | grep RETURN 2> ${redirect}; then
+    sudo iptables -I FORWARD -j RETURN
+fi
+
 opts="--privileged=true --rm"
 envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
     -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NETWORK=${EXTERNAL_NETWORK} \
