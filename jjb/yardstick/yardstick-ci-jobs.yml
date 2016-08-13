@@ -121,6 +121,11 @@
             installer: fuel
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *master
+        - zte-pod2:
+            slave-label: '{pod}'
+            installer: fuel
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
         - orange-pod2:
             slave-label: '{pod}'
             installer: joid
@@ -311,6 +316,14 @@
 
 - parameter:
     name: 'yardstick-params-zte-pod1'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: '-i 104.197.68.199:8086'
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'yardstick-params-zte-pod2'
     parameters:
         - string:
             name: YARDSTICK_DB_BACKEND
