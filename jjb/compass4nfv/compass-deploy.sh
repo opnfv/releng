@@ -25,8 +25,18 @@ echo 1 > /proc/sys/vm/drop_caches
 export CONFDIR=$WORKSPACE/deploy/conf
 export ISO_URL=file://$BUILD_DIRECTORY/compass.iso
 
+cd $WORKSPACE
+
+export OS_VERSION=${COMPASS_OS_VERSION}
+export OPENSTACK_VERSION=${COMPASS_OPENSTACK_VERSION}
+if [[ "${COMPASS_OS_VERSION_OPTION}" = "xenial" ]] && [[ "${OPENSTACK_VERSION}" = "mitaka" ]]; then
+    export OPENSTACK_VERSION=${OPENSTACK_VERSION}_${COMPASS_OS_VERSION_OPTION}
+    export OS_VERSION=${COMPASS_OS_VERSION_OPTION}
+fi
+
 if [[ "${DEPLOY_SCENARIO}" =~ "-ocl" ]]; then
     export NETWORK_CONF_FILE=network_ocl.yml
+    export OPENSTACK_VERSION=liberty
 elif [[ "${DEPLOY_SCENARIO}" =~ "-onos" ]]; then
     export NETWORK_CONF_FILE=network_onos.yml
 else
@@ -42,14 +52,6 @@ else
     export DHA_CONF=$CONFDIR/hardware_environment/$NODE_NAME/${DEPLOY_SCENARIO}.yml
 fi
 
-cd $WORKSPACE
-
-export OS_VERSION=${COMPASS_OS_VERSION}
-export OPENSTACK_VERSION=${COMPASS_OPENSTACK_VERSION}
-if [[ "${COMPASS_OS_VERSION_OPTION}" = "xenial" ]] && [[ "${OPENSTACK_VERSION}" = "mitaka" ]]; then
-    export OPENSTACK_VERSION=${OPENSTACK_VERSION}_${COMPASS_OS_VERSION_OPTION}
-    export OS_VERSION=${COMPASS_OS_VERSION_OPTION}
-fi
 ./deploy.sh --dha ${DHA_CONF} --network ${NETWORK_CONF}
 if [ $? -ne 0 ]; then
     echo "depolyment failed!"
