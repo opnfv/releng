@@ -49,8 +49,8 @@ main () {
     fi
 
     if [[ $(whoami) != "root" ]]; then
-      if grep "^Defaults requiretty" /etc/sudoers
-        then echo "please comment out Defaults requiretty from /etc/sudoers"
+      if sudo -l | grep "requiretty"; then
+        echo "please comment out Defaults requiretty from /etc/sudoers"
         exit 1
       fi
     fi
