@@ -12,7 +12,7 @@
 installers = ["apex", "compass", "fuel", "joid"]
 # list of test cases declared in testcases.yaml but that must not be
 # taken into account for the scoring
-blacklist = ["ovno", "security_scan"]
+blacklist = ["ovno", "odl", "security_scan"]
 # versions = ["brahmaputra", "master"]
 versions = ["master"]
 PERIOD = 50
@@ -23,5 +23,5 @@ NB_TESTS = 5
 REPORTING_PATH = "."
 URL_BASE = 'http://testresults.opnfv.org/test/api/v1/results'
 TEST_CONF = "https://git.opnfv.org/cgit/functest/plain/ci/testcases.yaml"
-LOG_LEVEL = "DEBUG"
+LOG_LEVEL = "ERROR"
 LOG_FILE = REPORTING_PATH + "/reporting.log"
