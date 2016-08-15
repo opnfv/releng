@@ -142,7 +142,6 @@ elif [ "$installer_type" == "compass" ]; then
     sshpass -p root ssh 2>/dev/null $ssh_options root@${installer_ip} \
         "scp $ssh_options ${controller_ip}:/opt/admin-openrc.sh ." &> /dev/null
     sshpass -p root scp 2>/dev/null $ssh_options root@${installer_ip}:~/admin-openrc.sh $dest_path &> /dev/null
-    echo 'export OS_REGION_NAME=regionOne' >> $dest_path
 
     info "This file contains the mgmt keystone API, we need the public one for our rc file"
     public_ip=$(sshpass -p root ssh $ssh_options root@${installer_ip} \
