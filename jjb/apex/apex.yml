@@ -484,6 +484,11 @@
         - 'apex-deploy'
         - 'apex-workspace-cleanup'
 
+    publishers:
+        - postbuildscript:
+            generic-script:
+                - 'LIB=lib ci/util.sh mock-detached off'
+
 - job-template:
     name: 'apex-deploy-baremetal-{scenario}-{stream}'
 
@@ -525,6 +530,11 @@
     builders:
         - 'apex-deploy'
         - 'apex-workspace-cleanup'
+
+    publishers:
+        - postbuildscript:
+            generic-script:
+                - 'LIB=lib ci/util.sh mock-detached off'
 
 # Brahmaputra Daily
 - job-template:
