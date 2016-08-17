@@ -1,7 +1,6 @@
 #!/bin/bash
 set -o errexit
 set -o nounset
-set -o pipefail
 
 if [[ "$JOB_NAME" =~ (verify|merge|daily|weekly) ]]; then
     JOB_TYPE=${BASH_REMATCH[0]}
@@ -15,7 +14,7 @@ case "$JOB_TYPE" in
         echo "Uploading artifacts for the change $GERRIT_CHANGE_NUMBER. This could take some time..."
         GS_UPLOAD_LOCATION="gs://artifacts.opnfv.org/$PROJECT/review/$GERRIT_CHANGE_NUMBER"
         echo "Removing artifacts produced for the previous patch for the change $GERRIT_CHANGE_NUMBER"
-        gsutil rm -r $GS_UPLOAD_LOCATION
+        gsutil ls $GS_UPLOAD_LOCATION > /dev/null 2>&1 && gsutil rm -r $GS_UPLOAD_LOCATION
         ;;
     daily)
         echo "Uploding daily artifacts This could take some time..."
