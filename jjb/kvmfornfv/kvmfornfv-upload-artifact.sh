@@ -11,13 +11,13 @@ fi
 
 case "$JOB_TYPE" in
     verify)
-        echo "Uploading artifacts for the change $GERRIT_CHANGE_NUMBER. This could take some time..."
         GS_UPLOAD_LOCATION="gs://artifacts.opnfv.org/$PROJECT/review/$GERRIT_CHANGE_NUMBER"
-        echo "Removing artifacts produced for the previous patch for the change $GERRIT_CHANGE_NUMBER"
+        echo "Removing outdated artifacts produced for the previous patch for the change $GERRIT_CHANGE_NUMBER"
         gsutil ls $GS_UPLOAD_LOCATION > /dev/null 2>&1 && gsutil rm -r $GS_UPLOAD_LOCATION
+        echo "Uploading artifacts for the change $GERRIT_CHANGE_NUMBER. This could take some time..."
         ;;
     daily)
-        echo "Uploding daily artifacts This could take some time..."
+        echo "Uploading daily artifacts This could take some time..."
         OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
         GS_UPLOAD_LOCATION="gs://$GS_URL/$OPNFV_ARTIFACT_VERSION"
         ;;
