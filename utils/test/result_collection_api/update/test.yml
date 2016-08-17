@@ -1,0 +1,12 @@
+---
+- hosts: "{{ host }}"
+  remote_user: "{{ user }}"
+  become: yes
+  become_method: sudo
+  vars:
+    user: "root"
+  tasks:
+    - name: test connectivity
+      command: "echo hello {{ host }}"
+      register: result
+    - debug: msg="{{ result }}"
