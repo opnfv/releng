@@ -1,4 +1,7 @@
 #!/bin/bash
+set -o errexit
+set -o nounset
+set -o pipefail
 
 if [[ "$JOB_NAME" =~ (verify|merge|daily|weekly) ]]; then
     JOB_TYPE=${BASH_REMATCH[0]}
