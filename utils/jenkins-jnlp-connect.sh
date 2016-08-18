@@ -38,6 +38,11 @@ main () {
         exit 1
     fi
 
+    if [[ $(pwd) != "$jenkinshome" ]]; then
+        echo "This script needs to be run from the jenkins users home dir"
+        exit 1
+    fi
+
     if [[ -z $slave_name || -z $slave_secret ]]; then
         echo "slave name or secret not defined, please edit this file to define it"
         exit 1
