@@ -35,7 +35,7 @@ ls -al $BUILD_DIRECTORY
     echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
     echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
     echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
-    echo "OPNFV_ARTIFACT_MD5SUM=$(md5sum $BUILD_DIRECTORY/compass.iso | cut -d' ' -f1)"
+    echo "OPNFV_ARTIFACT_SHA512SUM=$(sha512sum $BUILD_DIRECTORY/compass.iso | cut -d' ' -f1)"
     echo "OPNFV_BUILD_URL=$BUILD_URL"
 ) > $BUILD_DIRECTORY/opnfv.properties
 echo

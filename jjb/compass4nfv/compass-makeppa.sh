@@ -6,12 +6,12 @@ set -o pipefail
 # make ppa
 cd $WORKSPACE/
 ./build/make_repo.sh
-# calc MD5 of ppa
+# calc SHA512 of ppa
 cd $PPA_CACHE
 for i in $(find *.gz *.iso *.img -type f)
 do
-    md5=$(md5sum $i | cut -d ' ' -f1)
-    echo $md5 > $i.md5
+    sha512sum=$(sha512sum $i | cut -d ' ' -f1)
+    echo $sha512sum > $i.sha512
     curl -T $i $PPA_REPO
-    curl -T $i.md5 $PPA_REPO
+    curl -T $i.sha512 $PPA_REPO
 done
