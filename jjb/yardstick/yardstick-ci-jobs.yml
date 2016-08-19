@@ -111,11 +111,11 @@
 #--------------------------------
 #        None-CI PODs
 #--------------------------------
-        - orange-pod2:
+        - orange-pod1:
             slave-label: '{pod}'
             installer: joid
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *brahmaputra
+            <<: *master
         - zte-pod1:
             slave-label: '{pod}'
             installer: fuel
@@ -342,6 +342,14 @@
 
 - parameter:
     name: 'yardstick-params-zte-pod3'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: '-i 104.197.68.199:8086'
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'yardstick-params-orange-pod1'
     parameters:
         - string:
             name: YARDSTICK_DB_BACKEND

@@ -403,6 +403,28 @@
             default: /srv
             description: "Disks to use by ceph (comma separated list)"
 - parameter:
+    name: 'orange-pod1-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - orange-pod1
+            default-slaves:
+                - orange-pod1
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+        - string:
+            name: CEPH_DISKS
+            default: /dev/sdb /dev/sdc
+            description: "Disks to use by ceph by default (space separated list)"
+        - string:
+            name: EXTERNAL_NETWORK
+            default: ext-net;flat;161.105.231.2;161.105.231.62;161.105.231.1;161.105.231.0/26
+            description: "External network to create (name;type;first ip;last ip; gateway;network)"
+- parameter:
     name: 'orange-pod2-defaults'
     parameters:
         - node:
