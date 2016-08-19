@@ -23,7 +23,7 @@ fi
 # start the build
 cd $WORKSPACE/ci
 ./build.sh $BUILD_ARGS
-RPM_VERSION=$(grep Version: $BUILD_DIRECTORY/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '_-')
+RPM_VERSION=$(grep Version: $BUILD_DIRECTORY/rpm_specs/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '_-')
 # list the contents of BUILD_OUTPUT directory
 echo "Build Directory is ${BUILD_DIRECTORY}"
 echo "Build Directory Contents:"
