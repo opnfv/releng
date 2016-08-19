@@ -7,6 +7,8 @@
 
     project: '{name}'
 
+    installer: 'fuel'
+
     jobs:
         - 'armband-verify-{stream}'
         - 'armband-build-daily-{stream}'
@@ -77,6 +79,7 @@
         - project-parameter:
             project: '{project}'
         - 'opnfv-build-arm-defaults'
+        - '{installer}-defaults'
         - armband-project-parameter:
             gs-pathname: '{gs-pathname}'
 
@@ -103,7 +106,7 @@
 
     publishers:
         - email:
-            recipients: josep.puigdemont@enea.com armband@enea.com
+            recipients: armband@enea.com
 
 ########################
 # parameter macros
@@ -115,6 +118,10 @@
             name: BUILD_DIRECTORY
             default: $WORKSPACE/build_output
             description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache/$INSTALLER_TYPE
+            description: "Directory where the cache to be used during the build is located."
         - string:
             name: GS_URL
             default: artifacts.opnfv.org/$PROJECT{gs-pathname}
