@@ -10,6 +10,8 @@
 set -o errexit
 set -o pipefail
 
+echo "Host info: $(hostname) ($(hostname -i))"
+
 # Configurable environment variables:
 # ISOSTORE (/iso_mount/opnfv_ci)
 

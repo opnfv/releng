@@ -12,6 +12,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+echo "Host info: $(hostname) ($(hostname -i))"
+
 cd $WORKSPACE
 
 # remove the expired items from cache
