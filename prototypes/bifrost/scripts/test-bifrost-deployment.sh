@@ -33,6 +33,7 @@ BUILD_IMAGE=true
 TEST_VM_NUM_NODES=3
 export TEST_VM_NODE_NAMES="jumphost.opnfvlocal controller00.opnfvlocal compute00.opnfvlocal"
 export VM_DOMAIN_TYPE="kvm"
+export VM_CPU=4
 TEST_PLAYBOOK="test-bifrost-infracloud.yaml"
 USE_INSPECTOR=true
 USE_CIRROS=false
