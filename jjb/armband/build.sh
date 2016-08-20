@@ -16,6 +16,9 @@ echo "Host info: $(hostname) $(hostname -I)"
 
 cd $WORKSPACE
 
+# Armband requires initializing git submodules (e.g. for Fuel's clean_cache.sh)
+make submodules-init
+
 # remove the expired items from cache
 test -f $WORKSPACE/ci/clean_cache.sh && $WORKSPACE/ci/clean_cache.sh $CACHE_DIRECTORY
 
