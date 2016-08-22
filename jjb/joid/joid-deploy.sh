@@ -89,6 +89,11 @@ if [ "$HA_MODE" == 'noha' ]; then
     HA_MODE='nonha'
 fi
 
+# temporary sfc feature is availble only on onos and trusty
+if [ "$NFV_FEATURES" == 'sfc' ] && [ "$SDN_CONTROLLER" == 'onos' ];then
+    UBUNTU_DISTRO=trusty
+fi
+
 # Add extra to features
 if [ "$EXTRA" != "" ];then
     NFV_FEATURES="${NFV_FEATURES}_${EXTRA}"
