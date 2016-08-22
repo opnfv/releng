@@ -12,7 +12,7 @@
 installers = ["apex", "compass", "fuel", "joid"]
 # list of test cases declared in testcases.yaml but that must not be
 # taken into account for the scoring
-blacklist = ["ovno", "odl", "security_scan"]
+blacklist = ["ovno", "security_scan", 'odl-sfc']
 # versions = ["brahmaputra", "master"]
 versions = ["master"]
 PERIOD = 50
