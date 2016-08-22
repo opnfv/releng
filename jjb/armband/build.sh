@@ -29,8 +29,10 @@ if [[ "$JOB_NAME" =~ "daily" ]]; then
     echo "Checking to see if we already built and stored Armband Fuel ISO for this commit"
 
     curl -s -o $LATEST_ISO_PROPERTIES http://$GS_URL/latest.properties 2>/dev/null
+fi
 
-    # get metadata of latest ISO
+# get metadata of latest ISO
+if grep -q OPNFV_GIT_SHA1 $LATEST_ISO_PROPERTIES 2>/dev/null; then
     LATEST_ISO_SHA1=$(grep OPNFV_GIT_SHA1 $LATEST_ISO_PROPERTIES | cut -d'=' -f2)
     LATEST_ISO_URL=$(grep OPNFV_ARTIFACT_URL $LATEST_ISO_PROPERTIES | cut -d'=' -f2)
 else
