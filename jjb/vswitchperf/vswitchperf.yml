@@ -13,13 +13,17 @@
         - master:
             branch: '{stream}'
             gs-pathname: ''
-        - brahmaputra:
+            disabled: false
+        - colorado:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
+            disabled: false
 
 - job-template:
 
     name: 'vswitchperf-daily-{stream}'
+
+    disabled: '{obj:disabled}'
 
     parameters:
         - project-parameter:
@@ -49,6 +53,8 @@
 
 - job-template:
     name: 'vswitchperf-verify-{stream}'
+
+    disabled: '{obj:disabled}'
 
     project-type: freestyle
 
@@ -107,6 +113,8 @@
 
 - job-template:
     name: 'vswitchperf-merge-{stream}'
+
+    disabled: '{obj:disabled}'
 
     project-type: freestyle
 

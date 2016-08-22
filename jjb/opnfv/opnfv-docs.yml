@@ -15,9 +15,11 @@
         - master:
             branch: '{stream}'
             gs-pathname: ''
-        - brahmaputra:
+            disabled: false
+        - colorado:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
+            disabled: false
 
 ########################
 # job templates
@@ -25,6 +27,8 @@
 
 - job-template:
     name: 'opnfv-docs-verify-{stream}'
+
+    disabled: '{obj:disabled}'
 
     parameters:
         - project-parameter:
@@ -67,6 +71,8 @@
 
 - job-template:
     name: 'opnfv-docs-merge-{stream}'
+
+    disabled: '{obj:disabled}'
 
     parameters:
         - project-parameter:

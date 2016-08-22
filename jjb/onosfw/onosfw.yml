@@ -10,11 +10,13 @@
 # only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
-            branch: 'master'
+            branch: '{stream}'
             gs-pathname: ''
-#        - brahmaputra:
-#            branch: 'stable/brahmaputra'
-#            gs-pathname: '/brahmaputra'
+            disabled: false
+        - colorado:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
+            disabled: false
 
     project: 'onosfw'
 
@@ -23,6 +25,8 @@
 ########################
 - job-template:
     name: 'onosfw-verify-{stream}'
+
+    disabled: '{obj:disabled}'
 
     parameters:
         - project-parameter:
@@ -65,6 +69,8 @@
 - job-template:
     name: 'onosfw-daily-{stream}'
 
+    disabled: '{obj:disabled}'
+
     parameters:
         - project-parameter:
             project: '{project}'
@@ -87,6 +93,8 @@
 
 - job-template:
     name: 'onosfw-build-{stream}'
+
+    disabled: '{obj:disabled}'
 
     parameters:
         - project-parameter:
