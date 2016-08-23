@@ -15,7 +15,14 @@
     master: &master
         stream: master
         branch: '{stream}'
+        disabled: false
         gs-pathname: ''
+    colorado: &colorado
+        stream: colorado
+        branch: 'stable/{stream}'
+        disabled: false
+        gs-pathname: '/{stream}'
+        auto-trigger-name: 'daily-trigger-disabled'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
@@ -28,6 +35,12 @@
         - virtual:
             slave-label: joid-virtual
             <<: *master
+        - baremetal:
+            slave-label: joid-baremetal
+            <<: *colorado
+        - virtual:
+            slave-label: joid-virtual
+            <<: *colorado
 #--------------------------------
 #        None-CI PODs
 #--------------------------------
@@ -75,6 +88,8 @@
 ########################
 - job-template:
     name: 'joid-{scenario}-{pod}-daily-{stream}'
+
+    disabled: '{obj:disabled}'
 
     concurrent: false
 
@@ -142,6 +157,8 @@
 
 - job-template:
     name: 'joid-deploy-{pod}-daily-{stream}'
+
+    disabled: '{obj:disabled}'
 
     concurrent: true
 
