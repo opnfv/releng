@@ -1,15 +1,13 @@
 - project:
     name: apex
     jobs:
-        - 'apex-verify-{stream1}'
-        - 'apex-verify-{stream2}'
+        - 'apex-verify-{stream}'
         - 'apex-runner-{platform}-{scenario}-{stream}'
-        - 'apex-runner-cperf-{stream1}'
+        - 'apex-runner-cperf-{stream}'
         - 'apex-build-{stream}'
         - 'apex-deploy-virtual-{scenario}-{stream}'
         - 'apex-deploy-baremetal-{scenario}-{stream}'
-        - 'apex-daily-{stream1}'
-        - 'apex-daily-{stream2}'
+        - 'apex-daily-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
@@ -17,37 +15,37 @@
         - master:
             branch: 'master'
             gs-pathname: ''
-            block-stream: 'brahmaputra'
-            slave: 'intel-pod7'
+            block-stream: 'colorado'
+            slave: 'lf-pod1'
             verify-slave: 'apex-verify-master'
             daily-slave: 'apex-daily-master'
-        - brahmaputra:
-            branch: 'stable/brahmaputra'
-            gs-pathname: '/brahmaputra'
+        - colorado:
+            branch: 'stable/colorado'
+            gs-pathname: '/colorado'
             block-stream: 'master'
             slave: 'lf-pod1'
-            verify-slave: 'apex-verify-brahmaputra'
-            daily-slave: 'apex-daily-brahmaputra'
-            disabled: true
+            verify-slave: 'apex-verify-colorado'
+            daily-slave: 'apex-daily-colorado'
+            disabled: false
 
     stream1:
         - master:
             branch: 'master'
             gs-pathname: ''
-            block-stream: 'brahmaputra'
+            block-stream: 'colorado'
             slave: 'lf-pod1'
             verify-slave: 'apex-verify-master'
             daily-slave: 'apex-daily-master'
 
     stream2:
-        - brahmaputra:
-            branch: 'stable/brahmaputra'
-            gs-pathname: '/brahmaputra'
+        - colorado:
+            branch: 'stable/colorado'
+            gs-pathname: '/colorado'
             block-stream: 'master'
             slave: 'lf-pod1'
-            verify-slave: 'apex-verify-brahmaputra'
-            daily-slave: 'apex-daily-brahmaputra'
-            disabled: true
+            verify-slave: 'apex-verify-colorado'
+            daily-slave: 'apex-daily-colorado'
+            disabled: false
 
     project: 'apex'
 
@@ -70,104 +68,9 @@
          - 'baremetal'
          - 'virtual'
 
-# Brahmaputra Verify
+# Verify
 - job-template:
-    name: 'apex-verify-{stream2}'
-
-    node: '{slave}'
-
-    parameters:
-        - apex-parameter:
-            gs-pathname: '{gs-pathname}'
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: '{branch}'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Used for overriding the GIT URL coming from parameters macro."
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: '$GERRIT_REFSPEC'
-            choosing-strategy: 'gerrit'
-
-    triggers:
-        - gerrit:
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'true'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'apex'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'ci/**'
-                  - compare-type: ANT
-                    pattern: 'build/**'
-                  - compare-type: ANT
-                    pattern: 'lib/**'
-                  - compare-type: ANT
-                    pattern: 'config/**'
-
-    properties:
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'apex-daily.*{stream2}'
-                - 'apex-deploy.*{stream2}'
-                - 'apex-build.*{stream2}'
-                - 'apex-runner.*{stream2}'
-                - 'apex-verify-{stream2}'
-
-    builders:
-        - 'apex-unit-test'
-        - 'apex-build'
-        - trigger-builds:
-          - project: 'apex-deploy-virtual-os-odl_l2-nofeature-ha-{stream2}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-verify-{stream2}/build_output
-              OPNFV_CLEAN=yes
-            git-revision: false
-            block: true
-        - trigger-builds:
-          - project: 'apex-deploy-virtual-os-onos-nofeature-ha-{stream2}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-verify-{stream2}/build_output
-              OPNFV_CLEAN=yes
-            git-revision: false
-            block: true
-        - trigger-builds:
-          - project: 'apex-deploy-virtual-os-odl_l3-nofeature-ha-{stream2}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-verify-{stream2}/build_output
-              OPNFV_CLEAN=yes
-            git-revision: false
-            block: true
-        - trigger-builds:
-          - project: 'apex-deploy-virtual-os-odl_l2-sfc-noha-{stream2}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-verify-{stream2}/build_output
-              OPNFV_CLEAN=yes
-            git-revision: false
-            block: true
-        - 'apex-workspace-cleanup'
-
-# Master Verify
-- job-template:
-    name: 'apex-verify-{stream1}'
+    name: 'apex-verify-{stream}'
 
     node: '{verify-slave}'
 
@@ -224,11 +127,11 @@
             use-build-blocker: true
             block-level: 'NODE'
             blocking-jobs:
-                - 'apex-daily.*{stream1}'
-                - 'apex-deploy.*{stream1}'
-                - 'apex-build.*{stream1}'
-                - 'apex-runner.*{stream1}'
-                - 'apex-verify-{stream1}'
+                - 'apex-daily.*'
+                - 'apex-deploy.*'
+                - 'apex-build.*'
+                - 'apex-runner.*'
+                - 'apex-verify'
         - throttle:
             max-per-node: 1
             max-total: 10
@@ -238,30 +141,30 @@
         - 'apex-unit-test'
         - 'apex-build'
         - trigger-builds:
-          - project: 'apex-deploy-virtual-os-nosdn-nofeature-ha-{stream1}'
+          - project: 'apex-deploy-virtual-os-nosdn-nofeature-ha-{stream}'
             predefined-parameters: |
-              BUILD_DIRECTORY=apex-verify-{stream1}
+              BUILD_DIRECTORY=apex-verify-{stream}
               OPNFV_CLEAN=yes
             git-revision: false
             block: true
             same-node: true
         - trigger-builds:
-          - project: 'functest-apex-{verify-slave}-suite-{stream1}'
+          - project: 'functest-apex-{verify-slave}-suite-{stream}'
             predefined-parameters: |
               DEPLOY_SCENARIO=os-nosdn-nofeature-ha
               FUNCTEST_SUITE_NAME=healthcheck
             block: true
             same-node: true
         - trigger-builds:
-          - project: 'apex-deploy-virtual-os-odl_l2-nofeature-ha-{stream1}'
+          - project: 'apex-deploy-virtual-os-odl_l2-nofeature-ha-{stream}'
             predefined-parameters: |
-              BUILD_DIRECTORY=apex-verify-{stream1}
+              BUILD_DIRECTORY=apex-verify-{stream}
               OPNFV_CLEAN=yes
             git-revision: false
             block: true
             same-node: true
         - trigger-builds:
-          - project: 'functest-apex-{verify-slave}-suite-{stream1}'
+          - project: 'functest-apex-{verify-slave}-suite-{stream}'
             predefined-parameters: |
               DEPLOY_SCENARIO=os-odl_l2-nofeature-ha
               FUNCTEST_SUITE_NAME=healthcheck
@@ -330,7 +233,7 @@
                 unstable-threshold: 'FAILURE'
 
 - job-template:
-    name: 'apex-runner-cperf-{stream1}'
+    name: 'apex-runner-cperf-{stream}'
 
     # runner cperf job
 
@@ -361,7 +264,7 @@
             use-build-blocker: false
             block-level: 'NODE'
             blocking-jobs:
-                - 'apex-deploy.*{stream}'
+                - 'apex-deploy.*'
         - throttle:
             max-per-node: 1
             max-total: 10
@@ -369,13 +272,13 @@
 
     builders:
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l2-nofeature-ha-{stream1}'
+          - project: 'apex-deploy-baremetal-os-odl_l2-nofeature-ha-{stream}'
             predefined-parameters:
               OPNFV_CLEAN=yes
             git-revision: false
             block: true
         - trigger-builds:
-          - project: 'cperf-apex-intel-pod2-daily-{stream1}'
+          - project: 'cperf-apex-intel-pod2-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-odl_l2-nofeature-ha
             block: true
@@ -527,150 +430,9 @@
         - 'apex-deploy'
         - 'apex-workspace-cleanup'
 
-# Brahmaputra Daily
+# Daily
 - job-template:
-    name: 'apex-daily-{stream2}'
-
-    # Job template for daily build
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-    node: '{slave}'
-
-    disabled: true
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - apex-parameter:
-            gs-pathname: '{gs-pathname}'
-
-    properties:
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'apex-verify.*{stream2}'
-                - 'apex-deploy.*{stream2}'
-                - 'apex-build.*{stream2}'
-                - 'apex-runner.*{stream2}'
-
-    triggers:
-        - 'apex-{stream2}'
-
-    builders:
-        - trigger-builds:
-          - project: 'apex-build-{stream2}'
-            git-revision: true
-            current-parameters: true
-            block: true
-        - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l2-nofeature-ha-{stream2}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream2}/build_output
-              OPNFV_CLEAN=yes
-            git-revision: true
-            block: true
-        - trigger-builds:
-          - project: 'functest-apex-{slave}-daily-{stream2}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l2-nofeature-ha
-            block: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream2}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l2-nofeature-ha
-            block: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-onos-nofeature-ha-{stream2}'
-            predefined-parameters:
-              BUILD_DIRECTORY=apex-build-{stream2}/build_output
-            git-revision: true
-            block: true
-        - trigger-builds:
-          - project: 'functest-apex-{slave}-daily-{stream2}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-onos-nofeature-ha
-            block: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream2}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-onos-nofeature-ha
-            block: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l3-nofeature-ha-{stream2}'
-            predefined-parameters:
-              BUILD_DIRECTORY=apex-build-{stream2}/build_output
-            git-revision: true
-            block: true
-        - trigger-builds:
-          - project: 'functest-apex-{slave}-daily-{stream2}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
-            block: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream2}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
-            block: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l2-bgpvpn-ha-{stream2}'
-            predefined-parameters:
-              BUILD_DIRECTORY=apex-build-{stream2}/build_output
-            git-revision: true
-            block: true
-        - trigger-builds:
-          - project: 'functest-apex-{slave}-daily-{stream2}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l2-bgpvpn-ha
-            block: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream2}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l2-bgpvpn-ha
-            block: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-
-# Master Daily
-- job-template:
-    name: 'apex-daily-{stream1}'
+    name: 'apex-daily-{stream}'
 
     # Job template for daily build
     #
@@ -698,25 +460,25 @@
             use-build-blocker: true
             block-level: 'NODE'
             blocking-jobs:
-                - 'apex-verify.*{stream1}'
-                - 'apex-deploy.*{stream1}'
-                - 'apex-build.*{stream1}'
-                - 'apex-runner.*{stream1}'
+                - 'apex-verify.*{stream}'
+                - 'apex-deploy.*{stream}'
+                - 'apex-build.*{stream}'
+                - 'apex-runner.*{stream}'
 
     triggers:
-        - 'apex-{stream1}'
+        - 'apex-{stream}'
 
     builders:
         - trigger-builds:
-          - project: 'apex-build-{stream1}'
+          - project: 'apex-build-{stream}'
             git-revision: true
             current-parameters: true
             same-node: true
             block: true
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-nosdn-nofeature-ha-{stream1}'
+          - project: 'apex-deploy-baremetal-os-nosdn-nofeature-ha-{stream}'
             predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream1}/build
+              BUILD_DIRECTORY=apex-build-{stream}/build
               OPNFV_CLEAN=yes
             git-revision: true
             same-node: true
@@ -724,7 +486,7 @@
                 build-step-failure-threshold: 'never'
             block: true
         - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream1}'
+          - project: 'functest-apex-{daily-slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-nosdn-nofeature-ha
             block: true
@@ -734,7 +496,7 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream1}'
+          - project: 'yardstick-apex-{slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-nosdn-nofeature-ha
             block: true
@@ -744,9 +506,9 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l2-nofeature-ha-{stream1}'
+          - project: 'apex-deploy-baremetal-os-odl_l2-nofeature-ha-{stream}'
             predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream1}/build
+              BUILD_DIRECTORY=apex-build-{stream}/build
               OPNFV_CLEAN=yes
             git-revision: true
             same-node: true
@@ -754,7 +516,7 @@
                 build-step-failure-threshold: 'never'
             block: true
         - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream1}'
+          - project: 'functest-apex-{daily-slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-odl_l2-nofeature-ha
             block: true
@@ -764,7 +526,7 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream1}'
+          - project: 'yardstick-apex-{slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-odl_l2-nofeature-ha
             block: true
@@ -774,9 +536,9 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l3-nofeature-ha-{stream1}'
+          - project: 'apex-deploy-baremetal-os-odl_l3-nofeature-ha-{stream}'
             predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream1}/build
+              BUILD_DIRECTORY=apex-build-{stream}/build
               OPNFV_CLEAN=yes
             git-revision: true
             same-node: true
@@ -784,7 +546,7 @@
                 build-step-failure-threshold: 'never'
             block: true
         - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream1}'
+          - project: 'functest-apex-{daily-slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
             block: true
@@ -794,7 +556,7 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream1}'
+          - project: 'yardstick-apex-{slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
             block: true
@@ -804,9 +566,9 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-onos-nofeature-ha-{stream1}'
+          - project: 'apex-deploy-baremetal-os-onos-nofeature-ha-{stream}'
             predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream1}/build
+              BUILD_DIRECTORY=apex-build-{stream}/build
               OPNFV_CLEAN=yes
             git-revision: true
             same-node: true
@@ -814,7 +576,7 @@
                 build-step-failure-threshold: 'never'
             block: true
         - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream1}'
+          - project: 'functest-apex-{daily-slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-onos-nofeature-ha
             block: true
@@ -824,7 +586,7 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream1}'
+          - project: 'yardstick-apex-{slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-onos-nofeature-ha
             block: true
@@ -834,9 +596,9 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l2-bgpvpn-ha-{stream1}'
+          - project: 'apex-deploy-baremetal-os-odl_l2-bgpvpn-ha-{stream}'
             predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream1}/build
+              BUILD_DIRECTORY=apex-build-{stream}/build
               OPNFV_CLEAN=yes
             git-revision: true
             same-node: true
@@ -844,7 +606,7 @@
                 build-step-failure-threshold: 'never'
             block: true
         - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream1}'
+          - project: 'functest-apex-{daily-slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-odl_l2-bgpvpn-ha
             block: true
@@ -854,7 +616,7 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream1}'
+          - project: 'yardstick-apex-{slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-odl_l2-bgpvpn-ha
             block: true
@@ -864,9 +626,9 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-onos-sfc-ha-{stream1}'
+          - project: 'apex-deploy-baremetal-os-onos-sfc-ha-{stream}'
             predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream1}/build
+              BUILD_DIRECTORY=apex-build-{stream}/build
               OPNFV_CLEAN=yes
             git-revision: true
             same-node: true
@@ -874,7 +636,7 @@
                 build-step-failure-threshold: 'never'
             block: true
         - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream1}'
+          - project: 'functest-apex-{daily-slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-onos-sfc-ha
             block: true
@@ -884,7 +646,7 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream1}'
+          - project: 'yardstick-apex-{slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-onos-sfc-ha
             block: true
@@ -894,9 +656,9 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l2-sfc-noha-{stream1}'
+          - project: 'apex-deploy-baremetal-os-odl_l2-sfc-noha-{stream}'
             predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream1}/build
+              BUILD_DIRECTORY=apex-build-{stream}/build
               OPNFV_CLEAN=yes
             git-revision: true
             same-node: true
@@ -904,7 +666,7 @@
                 build-step-failure-threshold: 'never'
             block: true
         - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream1}'
+          - project: 'functest-apex-{daily-slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-odl_l2-sfc-noha
             block: true
@@ -914,7 +676,7 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream1}'
+          - project: 'yardstick-apex-{slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-odl_l2-sfc-noha
             block: true
@@ -924,9 +686,9 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l2-fdio-noha-{stream1}'
+          - project: 'apex-deploy-baremetal-os-odl_l2-fdio-noha-{stream}'
             predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream1}/build
+              BUILD_DIRECTORY=apex-build-{stream}/build
               OPNFV_CLEAN=yes
             git-revision: true
             same-node: true
@@ -934,7 +696,7 @@
                 build-step-failure-threshold: 'never'
             block: true
         - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream1}'
+          - project: 'functest-apex-{daily-slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-odl_l2-fdio-noha
             block: true
@@ -944,7 +706,7 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream1}'
+          - project: 'yardstick-apex-{slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-odl_l2-fdio-noha
             block: true
@@ -954,9 +716,9 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-nosdn-fdio-noha-{stream1}'
+          - project: 'apex-deploy-baremetal-os-nosdn-fdio-noha-{stream}'
             predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream1}/build
+              BUILD_DIRECTORY=apex-build-{stream}/build
               OPNFV_CLEAN=yes
             git-revision: true
             same-node: true
@@ -964,7 +726,7 @@
                 build-step-failure-threshold: 'never'
             block: true
         - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream1}'
+          - project: 'functest-apex-{daily-slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-nosdn-fdio-noha
             block: true
@@ -974,7 +736,7 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream1}'
+          - project: 'yardstick-apex-{slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-nosdn-fdio-noha
             block: true
@@ -984,9 +746,9 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'apex-deploy-virtual-os-nosdn-nofeature-ha-ipv6-{stream1}'
+          - project: 'apex-deploy-virtual-os-nosdn-nofeature-ha-ipv6-{stream}'
             predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream1}/build
+              BUILD_DIRECTORY=apex-build-{stream}/build
               OPNFV_CLEAN=yes
             git-revision: true
             same-node: true
@@ -994,9 +756,9 @@
                 build-step-failure-threshold: 'never'
             block: true
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-nosdn-ovs-noha-{stream1}'
+          - project: 'apex-deploy-baremetal-os-nosdn-ovs-noha-{stream}'
             predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream1}/build
+              BUILD_DIRECTORY=apex-build-{stream}/build
               OPNFV_CLEAN=yes
             git-revision: true
             same-node: true
@@ -1004,7 +766,7 @@
                 build-step-failure-threshold: 'never'
             block: true
         - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream1}'
+          - project: 'functest-apex-{daily-slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-nosdn-ovs-noha
             block: true
@@ -1014,7 +776,7 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream1}'
+          - project: 'yardstick-apex-{slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-nosdn-ovs-noha
             block: true
@@ -1125,9 +887,9 @@
 - trigger:
     name: 'apex-master'
     triggers:
-        - timed: '0 3 * * *'
+        - timed: '0 0 20 8 *'
 - trigger:
-    name: 'apex-brahmaputra'
+    name: 'apex-colorado'
     triggers:
         - timed: '0 3 * * *'
 - trigger:
