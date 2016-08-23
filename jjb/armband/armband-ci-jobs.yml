@@ -11,8 +11,8 @@
         stream: master
         branch: '{stream}'
         gs-pathname: ''
-    brahmaputra: &brahmaputra
-        stream: brahmaputra
+    colorado: &colorado
+        stream: colorado
         branch: 'stable/{stream}'
         gs-pathname: '/{stream}'
 #--------------------------------
@@ -22,16 +22,20 @@
 #--------------------------------
     pod:
         - arm-pod1:
-            <<: *brahmaputra
+            installer: fuel
+            <<: *colorado
+            installer: fuel
         - arm-pod2:
-            <<: *brahmaputra
+            <<: *colorado
 #--------------------------------
 #        master
 #--------------------------------
     pod:
         - arm-pod1:
+            installer: fuel
             <<: *master
         - arm-pod2:
+            installer: fuel
             <<: *master
 #--------------------------------
 #       scenarios
@@ -39,27 +43,27 @@
     scenario:
         # HA scenarios
         - 'os-nosdn-nofeature-ha':
-            auto-trigger-name: 'armband-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'armband-{installer}-{scenario}-{pod}-{stream}-trigger'
         - 'os-odl_l2-nofeature-ha':
-            auto-trigger-name: 'armband-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'armband-{installer}-{scenario}-{pod}-{stream}-trigger'
         - 'os-odl_l3-nofeature-ha':
-            auto-trigger-name: 'armband-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'armband-{installer}-{scenario}-{pod}-{stream}-trigger'
         - 'os-odl_l2-bgpvpn-ha':
-            auto-trigger-name: 'armband-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'armband-{installer}-{scenario}-{pod}-{stream}-trigger'
 
         # NOHA scenarios
         - 'os-odl_l2-nofeature-noha':
-            auto-trigger-name: 'armband-{scenario}-{pod}-{stream}-trigger'
+            auto-trigger-name: 'armband-{installer}-{scenario}-{pod}-{stream}-trigger'
 
     jobs:
-        - 'armband-{scenario}-{pod}-daily-{stream}'
-        - 'armband-deploy-{pod}-daily-{stream}'
+        - 'armband-{installer}-{scenario}-{pod}-daily-{stream}'
+        - 'armband-{installer}-deploy-{pod}-daily-{stream}'
 
 ########################
 # job templates
 ########################
 - job-template:
-    name: 'armband-{scenario}-{pod}-daily-{stream}'
+    name: 'armband-{installer}-{scenario}-{pod}-daily-{stream}'
 
     concurrent: false
 
@@ -115,7 +119,7 @@
                 unstable-threshold: 'FAILURE'
 
 - job-template:
-    name: 'armband-deploy-{pod}-daily-{stream}'
+    name: 'armband-{installer}-deploy-{pod}-daily-{stream}'
 
     concurrent: false
 
@@ -128,8 +132,8 @@
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - 'armband-deploy-{pod}-daily-{stream}'
-                - 'armband-deploy-generic-daily-.*'
+                - 'armband-{installer}-deploy-{pod}-daily-{stream}'
+                - 'armband-{installer}-deploy-generic-daily-.*'
             block-level: 'NODE'
 
     parameters:
@@ -191,46 +195,46 @@
 # Enea Armband POD 1 Triggers running against master branch
 #----------------------------------------------------------
 - trigger:
-    name: 'armband-os-odl_l2-nofeature-ha-arm-pod1-master-trigger'
+    name: 'armband-fuel-os-odl_l2-nofeature-ha-arm-pod1-master-trigger'
     triggers:
         - timed: '0 3 * * 1,4'
 - trigger:
-    name: 'armband-os-nosdn-nofeature-ha-arm-pod1-master-trigger'
+    name: 'armband-fuel-os-nosdn-nofeature-ha-arm-pod1-master-trigger'
     triggers:
         - timed: '0 15 * * 1,4'
 - trigger:
-    name: 'armband-os-odl_l3-nofeature-ha-arm-pod1-master-trigger'
+    name: 'armband-fuel-os-odl_l3-nofeature-ha-arm-pod1-master-trigger'
     triggers:
         - timed: '0 3 * * 2,5'
 - trigger:
-    name: 'armband-os-odl_l2-bgpvpn-ha-arm-pod1-master-trigger'
+    name: 'armband-fuel-os-odl_l2-bgpvpn-ha-arm-pod1-master-trigger'
     triggers:
         - timed: '0 15 * * 2,5'
 - trigger:
-    name: 'armband-os-odl_l2-nofeature-noha-arm-pod1-master-trigger'
+    name: 'armband-fuel-os-odl_l2-nofeature-noha-arm-pod1-master-trigger'
     triggers:
         - timed: '0 3 * * 3,6'
 #---------------------------------------------------------------
 # Enea Armband POD 1 Triggers running against brahmaputra branch
 #---------------------------------------------------------------
 - trigger:
-    name: 'armband-os-odl_l2-nofeature-ha-arm-pod1-brahmaputra-trigger'
+    name: 'armband-fuel-os-odl_l2-nofeature-ha-arm-pod1-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-os-nosdn-nofeature-ha-arm-pod1-brahmaputra-trigger'
+    name: 'armband-fuel-os-nosdn-nofeature-ha-arm-pod1-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-os-odl_l3-nofeature-ha-arm-pod1-brahmaputra-trigger'
+    name: 'armband-fuel-os-odl_l3-nofeature-ha-arm-pod1-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-os-odl_l2-bgpvpn-ha-arm-pod1-brahmaputra-trigger'
+    name: 'armband-fuel-os-odl_l2-bgpvpn-ha-arm-pod1-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-os-odl_l2-nofeature-noha-arm-pod1-brahmaputra-trigger'
+    name: 'armband-fuel-os-odl_l2-nofeature-noha-arm-pod1-brahmaputra-trigger'
     triggers:
         - timed: ''
 #----------------------------------------------------------
@@ -238,45 +242,45 @@
 #----------------------------------------------------------
 # No triggers for master for now
 - trigger:
-    name: 'armband-os-odl_l2-nofeature-ha-arm-pod2-master-trigger'
+    name: 'armband-fuel-os-odl_l2-nofeature-ha-arm-pod2-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-os-nosdn-nofeature-ha-arm-pod2-master-trigger'
+    name: 'armband-fuel-os-nosdn-nofeature-ha-arm-pod2-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-os-odl_l3-nofeature-ha-arm-pod2-master-trigger'
+    name: 'armband-fuel-os-odl_l3-nofeature-ha-arm-pod2-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-os-odl_l2-bgpvpn-ha-arm-pod2-master-trigger'
+    name: 'armband-fuel-os-odl_l2-bgpvpn-ha-arm-pod2-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-os-odl_l2-nofeature-noha-arm-pod2-master-trigger'
+    name: 'armband-fuel-os-odl_l2-nofeature-noha-arm-pod2-master-trigger'
     triggers:
         - timed: ''
 #---------------------------------------------------------------
 # Enea Armband POD 2 Triggers running against brahmaputra branch
 #---------------------------------------------------------------
 - trigger:
-    name: 'armband-os-odl_l2-nofeature-ha-arm-pod2-brahmaputra-trigger'
+    name: 'armband-fuel-os-odl_l2-nofeature-ha-arm-pod2-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-os-nosdn-nofeature-ha-arm-pod2-brahmaputra-trigger'
+    name: 'armband-fuel-os-nosdn-nofeature-ha-arm-pod2-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-os-odl_l3-nofeature-ha-arm-pod2-brahmaputra-trigger'
+    name: 'armband-fuel-os-odl_l3-nofeature-ha-arm-pod2-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-os-odl_l2-bgpvpn-ha-arm-pod2-brahmaputra-trigger'
+    name: 'armband-fuel-os-odl_l2-bgpvpn-ha-arm-pod2-brahmaputra-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-os-odl_l2-nofeature-noha-arm-pod2-brahmaputra-trigger'
+    name: 'armband-fuel-os-odl_l2-nofeature-noha-arm-pod2-brahmaputra-trigger'
     triggers:
         - timed: ''
