@@ -19,10 +19,12 @@
             gs-pathname: ''
             #This is used for different test suite dependent packages storage
             gs-packagepath: '/{suite}'
-        - brahmaputra:
+            disabled: false
+        - colorado:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
             gs-packagepath: '/{stream}/{suite}'
+            disabled: false
 
     suite:
         - 'rubbos'
@@ -34,6 +36,8 @@
 
 - job-template:
     name: 'bottlenecks-verify-{stream}'
+
+    disabled: '{obj:disabled}'
 
     parameters:
         - project-parameter:
@@ -74,6 +78,8 @@
 - job-template:
     name: 'bottlenecks-merge-{stream}'
 
+    disabled: '{obj:disabled}'
+
     parameters:
         - project-parameter:
             project: '{project}'
@@ -106,6 +112,9 @@
 
 - job-template:
     name: 'bottlenecks-{suite}-upload-artifacts-{stream}'
+
+
+    disabled: '{obj:disabled}'
 
     concurrent: true
 

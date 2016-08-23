@@ -20,8 +20,10 @@
     stream:
         - master:
             branch: '{stream}'
-        - brahmaputra:
+            disabled: false
+        - colorado:
             branch: 'stable/{stream}'
+            disabled: false
 
 ########################
 # job templates
@@ -29,7 +31,7 @@
 - job-template:
     name: '{project}-docker-build-push-{stream}'
 
-    disabled: false
+    disabled: '{obj:disabled}'
 
     parameters:
         - project-parameter:
@@ -41,7 +43,7 @@
             description: "To enable/disable pushing the image to Dockerhub."
         - string:
             name: BASE_VERSION
-            default: "brahmaputra.3"
+            default: "colorado.0"
             description: "Base version to be used."
         - string:
             name: DOCKER_REPO_NAME
@@ -72,7 +74,7 @@
 - job-template:
     name: 'yardstick-docker-build-push-{stream}'
 
-    disabled: false
+    disabled: '{obj:disabled}'
 
     parameters:
         - project-parameter:
@@ -84,7 +86,7 @@
             description: "To enable/disable pushing the image to Dockerhub."
         - string:
             name: BASE_VERSION
-            default: "brahmaputra.3"
+            default: "colorado.0"
             description: "Base version to be used."
         - string:
             name: DOCKER_REPO_NAME

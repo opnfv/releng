@@ -13,13 +13,15 @@
             branch: '{stream}'
             gs-pathname: ''
             disabled: false
-        - brahmaputra:
+        - colorado:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
-            disabled: true
+            disabled: false
 
 - job-template:
     name: 'ovsnfv-verify-{stream}'
+
+    disabled: '{obj:disabled}'
 
     parameters:
         - project-parameter:
@@ -67,6 +69,8 @@
 
 - job-template:
     name: 'ovsnfv-merge-{stream}'
+
+    disabled: '{obj:disabled}'
 
     parameters:
         - project-parameter:
