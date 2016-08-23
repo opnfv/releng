@@ -58,43 +58,62 @@
         # HA scenarios
         - 'os-nosdn-nofeature-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'default-builder'
         - 'os-odl_l2-nofeature-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'default-builder'
         - 'os-odl_l3-nofeature-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'default-builder'
         - 'os-onos-sfc-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'default-builder'
         - 'os-onos-nofeature-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'default-builder'
         - 'os-odl_l2-sfc-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'default-builder'
         - 'os-odl_l2-bgpvpn-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'os-odl_l2-bgpvpn-builder'
         - 'os-nosdn-kvm-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'default-builder'
         - 'os-nosdn-ovs-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'default-builder'
         - 'os-nosdn-kvm_ovs-ha':
             auto-trigger-name: 'daily-trigger-disabled'
+            scenario-builder: 'default-builder'
         # NOHA scenarios
         - 'os-nosdn-nofeature-noha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'default-builder'
         - 'os-odl_l2-nofeature-noha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'default-builder'
         - 'os-odl_l3-nofeature-noha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'default-builder'
         - 'os-onos-sfc-noha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'default-builder'
         - 'os-onos-nofeature-noha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'default-builder'
         - 'os-odl_l2-sfc-noha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'default-builder'
         - 'os-odl_l2-bgpvpn-noha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'os-odl_l2-bgpvpn-builder'
         - 'os-nosdn-kvm-noha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'default-builder'
         - 'os-nosdn-ovs-noha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+            scenario-builder: 'default-builder'
 
     jobs:
         - 'fuel-{scenario}-{pod}-daily-{stream}'
@@ -142,37 +161,7 @@
             gs-pathname: '{gs-pathname}'
 
     builders:
-        - description-setter:
-            description: "POD: $NODE_NAME"
-        - trigger-builds:
-            - project: 'fuel-deploy-{pod}-daily-{stream}'
-              current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO={scenario}
-              same-node: true
-              block: true
-        - trigger-builds:
-            - project: 'functest-fuel-{pod}-daily-{stream}'
-              current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO={scenario}
-              same-node: true
-              block: true
-              block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-            - project: 'yardstick-fuel-{pod}-daily-{stream}'
-              current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO={scenario}
-              block: true
-              same-node: true
-              block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
+        - '{scenario-builder}'
 
     publishers:
         - email:
@@ -253,6 +242,65 @@
             name: GS_URL
             default: artifacts.opnfv.org/$PROJECT{gs-pathname}
             description: "URL to Google Storage."
+
+# selective build steps
+- builder:
+    name: default-builder
+    builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
+        - trigger-builds:
+            - project: 'fuel-deploy-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'functest-fuel-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+            - project: 'yardstick-fuel-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              block: true
+              same-node: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+- builder:
+    name: os-odl_l2-bgpvpn-builder
+    builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
+        - trigger-builds:
+            - project: 'fuel-deploy-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'functest-fuel-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
 ########################
 # trigger macros
 ########################
