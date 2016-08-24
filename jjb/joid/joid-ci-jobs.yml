@@ -22,7 +22,6 @@
         branch: 'stable/{stream}'
         disabled: false
         gs-pathname: '/{stream}'
-        auto-trigger-name: 'daily-trigger-disabled'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
@@ -47,14 +46,9 @@
         - orange-pod1:
             slave-label: orange-pod1
             <<: *master
-        - orange-pod2:
-            slave-label: orange-pod2
-            <<: *master
-        - juniper-pod1:
-            slave-label: juniper-pod1
-            <<: *master
 #--------------------------------
-# new scenario descriptions
+# scenarios
+#--------------------------------
     scenario:
         - 'os-nosdn-nofeature-noha':
             auto-trigger-name: 'joid-{scenario}-{pod}-{stream}-trigger'
@@ -224,7 +218,7 @@
 - trigger:
     name: 'joid-os-nosdn-nofeature-ha-baremetal-master-trigger'
     triggers:
-        - timed: '0 2 * * *'
+        - timed: '5 2 * * *'
 - trigger:
     name: 'joid-os-nosdn-nofeature-ha-virtual-master-trigger'
     triggers:
@@ -233,20 +227,24 @@
     name: 'joid-os-nosdn-nofeature-ha-orange-pod1-master-trigger'
     triggers:
         - timed: ''
+# os-nosdn-nofeature-ha trigger - branch: colorado
 - trigger:
-    name: 'joid-os-nosdn-nofeature-ha-orange-pod2-master-trigger'
+    name: 'joid-os-nosdn-nofeature-ha-baremetal-colorado-trigger'
+    triggers:
+        - timed: '0 2 * * *'
+- trigger:
+    name: 'joid-os-nosdn-nofeature-ha-virtual-colorado-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'joid-os-nosdn-nofeature-ha-juniper-pod1-master-trigger'
+    name: 'joid-os-nosdn-nofeature-ha-orange-pod1-colorado-trigger'
     triggers:
         - timed: ''
-
 # os-odl_l2-nofeature-ha trigger - branch: master
 - trigger:
     name: 'joid-os-odl_l2-nofeature-ha-baremetal-master-trigger'
     triggers:
-        - timed: '0 7 * * *'
+        - timed: '5 7 * * *'
 - trigger:
     name: 'joid-os-odl_l2-nofeature-ha-virtual-master-trigger'
     triggers:
@@ -255,20 +253,24 @@
     name: 'joid-os-odl_l2-nofeature-ha-orange-pod1-master-trigger'
     triggers:
         - timed: ''
+# os-odl_l2-nofeature-ha trigger - branch: colorado
 - trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-orange-pod2-master-trigger'
+    name: 'joid-os-odl_l2-nofeature-ha-baremetal-colorado-trigger'
+    triggers:
+        - timed: '0 7 * * *'
+- trigger:
+    name: 'joid-os-odl_l2-nofeature-ha-virtual-colorado-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-juniper-pod1-master-trigger'
+    name: 'joid-os-odl_l2-nofeature-ha-orange-pod1-colorado-trigger'
     triggers:
         - timed: ''
-
 # os-onos-nofeature-ha trigger - branch: master
 - trigger:
     name: 'joid-os-onos-nofeature-ha-baremetal-master-trigger'
     triggers:
-        - timed: '0 12 * * *'
+        - timed: '5 12 * * *'
 - trigger:
     name: 'joid-os-onos-nofeature-ha-virtual-master-trigger'
     triggers:
@@ -277,20 +279,24 @@
     name: 'joid-os-onos-nofeature-ha-orange-pod1-master-trigger'
     triggers:
         - timed: ''
+# os-onos-nofeature-ha trigger - branch: colorado
 - trigger:
-    name: 'joid-os-onos-nofeature-ha-orange-pod2-master-trigger'
+    name: 'joid-os-onos-nofeature-ha-baremetal-colorado-trigger'
+    triggers:
+        - timed: '0 12 * * *'
+- trigger:
+    name: 'joid-os-onos-nofeature-ha-virtual-colorado-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'joid-os-onos-nofeature-ha-juniper-pod1-master-trigger'
+    name: 'joid-os-onos-nofeature-ha-orange-pod1-colorado-trigger'
     triggers:
         - timed: ''
-
 # os-onos-sfc-ha trigger - branch: master
 - trigger:
     name: 'joid-os-onos-sfc-ha-baremetal-master-trigger'
     triggers:
-        - timed: '0 17 * * *'
+        - timed: '5 17 * * *'
 - trigger:
     name: 'joid-os-onos-sfc-ha-virtual-master-trigger'
     triggers:
@@ -299,20 +305,24 @@
     name: 'joid-os-onos-sfc-ha-orange-pod1-master-trigger'
     triggers:
         - timed: ''
+# os-onos-sfc-ha trigger - branch: colorado
 - trigger:
-    name: 'joid-os-onos-sfc-ha-orange-pod2-master-trigger'
+    name: 'joid-os-onos-sfc-ha-baremetal-colorado-trigger'
+    triggers:
+        - timed: '0 17 * * *'
+- trigger:
+    name: 'joid-os-onos-sfc-ha-virtual-colorado-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'joid-os-onos-sfc-ha-juniper-pod1-master-trigger'
+    name: 'joid-os-onos-sfc-ha-orange-pod1-colorado-trigger'
     triggers:
         - timed: ''
-
 # os-nosdn-lxd-noha trigger - branch: master
 - trigger:
     name: 'joid-os-nosdn-lxd-noha-baremetal-master-trigger'
     triggers:
-        - timed: '0 22 * * *'
+        - timed: '5 22 * * *'
 - trigger:
     name: 'joid-os-nosdn-lxd-noha-virtual-master-trigger'
     triggers:
@@ -321,20 +331,24 @@
     name: 'joid-os-nosdn-lxd-noha-orange-pod1-master-trigger'
     triggers:
         - timed: ''
+# os-nosdn-lxd-noha trigger - branch: colorado
 - trigger:
-    name: 'joid-os-nosdn-lxd-noha-orange-pod2-master-trigger'
+    name: 'joid-os-nosdn-lxd-noha-baremetal-colorado-trigger'
+    triggers:
+        - timed: '0 22 * * *'
+- trigger:
+    name: 'joid-os-nosdn-lxd-noha-virtual-colorado-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'joid-os-nosdn-lxd-noha-juniper-pod1-master-trigger'
+    name: 'joid-os-nosdn-lxd-noha-orange-pod1-colorado-trigger'
     triggers:
         - timed: ''
-
 # os-nosdn-lxd-ha trigger - branch: master
 - trigger:
     name: 'joid-os-nosdn-lxd-ha-baremetal-master-trigger'
     triggers:
-        - timed: '0 10 * * *'
+        - timed: '5 10 * * *'
 - trigger:
     name: 'joid-os-nosdn-lxd-ha-virtual-master-trigger'
     triggers:
@@ -343,20 +357,24 @@
     name: 'joid-os-nosdn-lxd-ha-orange-pod1-master-trigger'
     triggers:
         - timed: ''
+# os-nosdn-lxd-ha trigger - branch: colorado
 - trigger:
-    name: 'joid-os-nosdn-lxd-ha-orange-pod2-master-trigger'
+    name: 'joid-os-nosdn-lxd-ha-baremetal-colorado-trigger'
+    triggers:
+        - timed: '0 10 * * *'
+- trigger:
+    name: 'joid-os-nosdn-lxd-ha-virtual-colorado-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'joid-os-nosdn-lxd-ha-juniper-pod1-master-trigger'
+    name: 'joid-os-nosdn-lxd-ha-orange-pod1-colorado-trigger'
     triggers:
         - timed: ''
-
 # os-nosdn-nofeature-noha trigger - branch: master
 - trigger:
     name: 'joid-os-nosdn-nofeature-noha-baremetal-master-trigger'
     triggers:
-        - timed: '0 4 * * *'
+        - timed: '5 4 * * *'
 - trigger:
     name: 'joid-os-nosdn-nofeature-noha-virtual-master-trigger'
     triggers:
@@ -365,11 +383,16 @@
     name: 'joid-os-nosdn-nofeature-noha-orange-pod1-master-trigger'
     triggers:
         - timed: ''
+# os-nosdn-nofeature-noha trigger - branch: colorado
 - trigger:
-    name: 'joid-os-nosdn-nofeature-noha-orange-pod2-master-trigger'
+    name: 'joid-os-nosdn-nofeature-noha-baremetal-colorado-trigger'
+    triggers:
+        - timed: '0 4 * * *'
+- trigger:
+    name: 'joid-os-nosdn-nofeature-noha-virtual-colorado-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'joid-os-nosdn-nofeature-noha-juniper-pod1-master-trigger'
+    name: 'joid-os-nosdn-nofeature-noha-orange-pod1-colorado-trigger'
     triggers:
         - timed: ''
