@@ -13,27 +13,20 @@
         stream: master
         branch: '{stream}'
         gs-pathname: ''
-    brahmaputra: &brahmaputra
-        stream: brahmaputra
-        branch: 'stable/{stream}'
-        gs-pathname: '{stream}'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
-#        brahmaputra
+#        master
 #--------------------------------
     pod:
         - dell-pod1:
             installer: compass
-            auto-trigger-name: 'qtip-daily-dell-pod1-trigger'
-            <<: *brahmaputra
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
         - orange-pod2:
             installer: joid
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *brahmaputra
-#--------------------------------
-#        master
-#--------------------------------
+            <<: *master
         - juniper-pod1:
             installer: joid
             <<: *master
@@ -172,10 +165,10 @@
 #trigger macros
 #################
 
-- trigger:
-    name: 'qtip-daily-dell-pod1-trigger'
-    triggers:
-        - timed: '0 3 * * *'
+#- trigger:
+#    name: 'qtip-daily-dell-pod1-trigger'
+#    triggers:
+#        - timed: '0 3 * * *'
 
 #- trigger:
 #    name: 'qtip-daily-juniper-pod1-trigger'
