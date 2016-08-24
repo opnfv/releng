@@ -34,10 +34,11 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
     -e YARDSTICK_BRANCH=${GIT_BRANCH##origin/} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO}"
 
 # Pull the latest image
+echo "Yardstick: Pulling image opnfv/yardstick:${DOCKER_TAG}"
 docker pull opnfv/yardstick:$DOCKER_TAG >$redirect
 
 # Run docker
-cmd="sudo docker run ${opts} ${envs} ${labconfig} ${sshkey} opnfv/yardstick \
+cmd="sudo docker run ${opts} ${envs} ${labconfig} ${sshkey} opnfv/yardstick:${DOCKER_TAG} \
     exec_tests.sh ${YARDSTICK_DB_BACKEND} ${YARDSTICK_SCENARIO_SUITE_NAME}"
 echo "Yardstick: Running docker cmd: ${cmd}"
 ${cmd}
