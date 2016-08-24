@@ -1,7 +1,9 @@
 =====================
 How to deploy bifrost
 =====================
-The scripts and playbooks defined on this repo, need to be combined with proper `Bifrost <http://git.openstack.org/cgit/openstack/bifrost>`_ code.
+
+The scripts and playbooks defined on this repo, need to be combined with proper
+`Bifrost <http://git.openstack.org/cgit/openstack/bifrost>`_ code.
 
 Please follow that steps:
 
@@ -31,7 +33,8 @@ Please follow that steps:
     cd /opt/bifrost
     ./scripts/test-bifrost-deployment.sh
 
-It is likely that the script will show some errors due to timeout. Please ignore the errors, and wait until the vms are completely bootstrapped. To verify it you can check with ironic::
+It is likely that the script will show some errors due to timeout. Please ignore the errors, and
+wait until the vms are completely bootstrapped. To verify it you can check with ironic::
 
     cd /opt/bifrost
     source env-vars
