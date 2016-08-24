@@ -34,12 +34,15 @@ main () {
 
     #tests
     if [[ -z $jenkinsuser || -z $jenkinshome ]]; then
-        echo "jenkinsuser or home not defined, please edit this file to define it"
+        echo "jenkinsuser or home not defined please pass with -j and -u"
         exit 1
     fi
 
-    if [[ $(pwd) != "$jenkinshome" ]]; then
+    if [[ "$PWD" != "${jenkinshome%/}" ]]; then
         echo "This script needs to be run from the jenkins users home dir"
+        echo "You should call this script from ${jenkinshome%/}"
+        echo "Additionally $0 should be somewhere in ${jenkinshome%/}"
+        echo "This check is to stop you from running this from eg: /root/"
         exit 1
     fi
 
