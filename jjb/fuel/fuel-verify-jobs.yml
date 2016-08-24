@@ -21,13 +21,13 @@
 #####################################
     phase:
         - 'basic':
-            slave-label: 'opnfv-build-ubuntu'
+            slave-label: 'opnfv-build'
         - 'build':
             slave-label: 'opnfv-build-ubuntu'
         - 'deploy-virtual':
-            slave-label: 'fuel-virtual'
+            slave-label: 'opnfv-build'
         - 'smoke-test':
-            slave-label: 'fuel-virtual'
+            slave-label: 'opnfv-build'
 #####################################
 # jobs
 #####################################
@@ -50,14 +50,7 @@
         - throttle:
             enabled: true
             max-total: 4
-            max-per-node: 1
             option: 'project'
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'fuel-verify-master'
-                - 'fuel-verify-colorado'
-            block-level: 'NODE'
 
     scm:
         - gerrit-trigger-scm:
@@ -108,7 +101,7 @@
             project: '{project}'
         - gerrit-parameter:
             branch: '{branch}'
-        - 'fuel-virtual-defaults'
+        - 'opnfv-build-defaults'
         - 'fuel-verify-defaults':
             gs-pathname: '{gs-pathname}'
 
@@ -154,7 +147,7 @@
                     GERRIT_REFSPEC=$GERRIT_REFSPEC
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                     GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: true
+                  node-parameters: false
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
@@ -168,7 +161,7 @@
                     GERRIT_REFSPEC=$GERRIT_REFSPEC
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                     GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: true
+                  node-parameters: false
                   kill-phase-on: FAILURE
                   abort-all-job: true
 
