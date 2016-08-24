@@ -2,6 +2,7 @@
     name: apex
     jobs:
         - 'apex-verify-{stream}'
+        - 'apex-verify-unit-tests-{stream}'
         - 'apex-runner-{platform}-{scenario}-{stream}'
         - 'apex-runner-cperf-{stream}'
         - 'apex-build-{stream}'
@@ -67,6 +68,62 @@
     platform:
          - 'baremetal'
          - 'virtual'
+
+# Unit Test
+- job-template:
+    name: 'apex-verify-unit-tests-{stream}'
+
+    node: '{verify-slave}'
+
+    concurrent: true
+
+    parameters:
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'true'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'apex'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'tests/**'
+
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - 'apex-unit-test'
 
 # Verify
 - job-template:
