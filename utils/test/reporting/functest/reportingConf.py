@@ -14,7 +14,7 @@ installers = ["apex", "compass", "fuel", "joid"]
 # taken into account for the scoring
 blacklist = ["ovno", "security_scan", 'odl-sfc']
 # versions = ["brahmaputra", "master"]
-versions = ["master"]
+versions = ["master", "colorado"]
 PERIOD = 50
 MAX_SCENARIO_CRITERIA = 50
 # get the last 5 test results to determinate the success criteria
