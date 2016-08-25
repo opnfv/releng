@@ -30,6 +30,14 @@ class opnfv::controller (
   $opnfv_password,
   $opnfv_email = 'opnfvuser@gmail.com',
 ) {
+  # disable selinux if needed
+  if $::osfamily == 'RedHat' {
+    class { 'selinux':
+      mode   => 'permissive',
+      before => Class['::infracloud::controller'],
+    }
+  }
+
   class { '::infracloud::controller':
     keystone_rabbit_password         => $keystone_rabbit_password,
     neutron_rabbit_password          => $neutron_rabbit_password,
