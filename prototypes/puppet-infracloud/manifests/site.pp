@@ -61,3 +61,10 @@ node 'compute00.opnfvlocal' {
   }
 }
 
+node 'jumphost.opnfvlocal' {
+  class { 'opnfv::server':
+    sysadmins                 => hiera('sysadmins', []),
+    enable_unbound            => false,
+    purge_apt_sources         => false,
+  }
+}
