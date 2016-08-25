@@ -30,7 +30,7 @@ node 'controller00.opnfvlocal' {
     keystone_admin_token             => hiera('keystone_admin_token'),
     ssl_key_file_contents            => hiera('ssl_key_file_contents'),
     ssl_cert_file_contents           => hiera('ssl_cert_file_contents'),
-    br_name                          => 'br-eth0',
+    br_name                          => hiera('bridge_name'),
     controller_public_address        => $::fqdn,
     neutron_subnet_cidr              => '192.168.122.0/24',
     neutron_subnet_gateway           => '192.168.122.1',
@@ -55,7 +55,7 @@ node 'compute00.opnfvlocal' {
     neutron_admin_password           => hiera('neutron_admin_password'),
     ssl_cert_file_contents           => hiera('ssl_cert_file_contents'),
     ssl_key_file_contents            => hiera('ssl_key_file_contents'),
-    br_name                          => 'br-eth0',
+    br_name                          => hiera('bridge_name'),
     controller_public_address        => 'controller00.opnfvlocal',
     virt_type                        => 'qemu',
   }
