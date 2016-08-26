@@ -1,3 +1,4 @@
+#!/bin/bash
 # SPDX-license-identifier: Apache-2.0
 ##############################################################################
 # Copyright (c) 2016 RedHat and others.
@@ -6,7 +7,6 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-#!/bin/bash
 virsh destroy jumphost.opnfvlocal || true
 virsh destroy controller00.opnfvlocal || true
 virsh destroy compute00.opnfvlocal || true
