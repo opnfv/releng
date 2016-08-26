@@ -1,0 +1,153 @@
+- project:
+    name: 'infra-daily-jobs'
+
+    project: 'releng'
+
+    installer: 'infra'
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+#--------------------------------
+#        CI Slaves
+#--------------------------------
+    pod:
+        - virtual:
+            slave-label: infra-virtual
+            <<: *master
+#--------------------------------
+#       phases
+#--------------------------------
+    phase:
+        - 'provision'
+        - 'deploy'
+        - 'smoketest'
+#--------------------------------
+#       scenarios
+#--------------------------------
+    scenario:
+        - 'os-nosdn-nofeature-noha'
+#--------------------------------
+#       jobs
+#--------------------------------
+    jobs:
+        - 'infra-{scenario}-{pod}-daily-{stream}'
+        - 'infra-{phase}-{pod}-daily-{stream}'
+########################
+# job templates
+########################
+- job-template:
+    name: 'infra-{scenario}-{pod}-daily-{stream}'
+
+    concurrent: false
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'infra-os-.*?-{pod}-daily-{stream}'
+            block-level: 'NODE'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    triggers:
+        - timed: 'H */3 * * *'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{installer}-defaults'
+        - '{slave-label}-defaults'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: '{scenario}'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - trigger-builds:
+            - project: 'infra-provision-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'infra-deploy-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'infra-smoketest-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              block: true
+              same-node: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+
+- job-template:
+    name: 'infra-{phase}-{pod}-daily-{stream}'
+
+    concurrent: false
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'infra-provision-{pod}-daily-{stream}'
+                - 'infra-deploy-{pod}-daily-{stream}'
+                - 'infra-smoketest-{pod}-daily-{stream}'
+            block-level: 'NODE'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{installer}-defaults'
+        - '{slave-label}-defaults'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-nofeature-noha'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - 'infra-{phase}-daily-builder'
+#####################################
+# builder macros
+#####################################
+- builder:
+    name: 'infra-provision-daily-builder'
+    builders:
+        - shell:
+            !include-raw: ./infra-provision.sh
+- builder:
+    name: 'infra-deploy-daily-builder'
+    builders:
+        - shell:
+            !include-raw: ./infra-deploy.sh
+- builder:
+    name: 'infra-smoketest-daily-builder'
+    builders:
+        - shell:
+            !include-raw: ./infra-smoketest.sh
