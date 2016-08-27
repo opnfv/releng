@@ -17,10 +17,12 @@
             branch: '{stream}'
             gs-pathname: ''
             disabled: false
+            timed: '@midnight'
         - colorado:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
             disabled: false
+            timed: ''
 
 - job-template:
     name: 'multisite-verify-{stream}'
@@ -99,7 +101,7 @@
             choosing-strategy: 'default'
 
     triggers:
-         - timed: '@midnight'
+         - timed: '{timed}'
 
     builders:
         - trigger-builds:
