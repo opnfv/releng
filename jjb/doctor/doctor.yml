@@ -5,6 +5,7 @@
 
     jobs:
         - 'doctor-verify-{stream}'
+        - 'doctor-verify-{installer}-{inspector}-master'
 
     stream:
         - master:
@@ -13,6 +14,18 @@
         - brahmaputra:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
+
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+
+    pod:
+        - ool-virtual1:
+            slave-label: 'ool-virtual1'
+            installer: 'apex'
+            inspector: 'sample'
+            <<: *master
 
 - job-template:
     name: 'doctor-verify-{stream}'
@@ -54,3 +67,44 @@
 
     builders:
         - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+
+- job-template:
+    name: 'doctor-verify-{installer}-{inspector}-{stream}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'tests/**'
+
+    builders:
+        - shell:
+            !include-raw: ./doctor-verify.sh
