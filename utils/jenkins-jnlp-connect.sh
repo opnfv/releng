@@ -38,7 +38,7 @@ main () {
         exit 1
     fi
 
-    if [[ $(pwd) != "$jenkinshome" ]]; then
+    if [[ "$jenkinshome" =~ $(pwd) ]]; then
         echo "This script needs to be run from the jenkins users home dir"
         exit 1
     fi
