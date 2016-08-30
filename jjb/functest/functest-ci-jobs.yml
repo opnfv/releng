@@ -276,6 +276,7 @@
         - 'set-functest-env'
         - 'functest-daily'
         - 'functest-store-results'
+        - 'functest-exit'
 
 - builder:
     name: functest-weekly-builder
@@ -284,6 +285,7 @@
         - 'set-functest-env'
         - 'functest-weekly'
         - 'functest-store-results'
+        - 'functest-exit'
 
 - builder:
     name: functest-suite-builder
@@ -291,6 +293,7 @@
         - 'functest-cleanup'
         - 'set-functest-env'
         - 'functest-suite'
+        - 'functest-exit'
 
 - builder:
     name: functest-daily
@@ -327,3 +330,9 @@
     builders:
         - shell:
             !include-raw: ./functest-cleanup.sh
+
+- builder:
+    name: functest-exit
+    builders:
+        - shell:
+            !include-raw: ./functest-exit.sh
