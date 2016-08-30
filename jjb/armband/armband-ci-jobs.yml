@@ -17,23 +17,27 @@
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
-#        brahmaputra
+#        colorado
 #--------------------------------
     pod:
-        - arm-pod1:
+        - baremetal:
+            slave-label: armband-baremetal
             installer: fuel
             <<: *colorado
-        - arm-pod2:
+        - virtual:
+            slave-label: armband-virtual
             installer: fuel
             <<: *colorado
 #--------------------------------
 #        master
 #--------------------------------
     pod:
-        - arm-pod1:
+        - baremetal:
+            slave-label: armband-baremetal
             installer: fuel
             <<: *master
-        - arm-pod2:
+        - virtual:
+            slave-label: armband-virtual
             installer: fuel
             <<: *master
 #--------------------------------
@@ -89,7 +93,7 @@
         - project-parameter:
             project: '{project}'
         - '{installer}-defaults'
-        - '{pod}-defaults':
+        - '{slave-label}-defaults':
             installer: '{installer}'
         - string:
             name: DEPLOY_SCENARIO
@@ -194,92 +198,91 @@
 # Enea Armband POD 1 Triggers running against master branch
 #----------------------------------------------------------
 - trigger:
-    name: 'armband-fuel-os-odl_l2-nofeature-ha-arm-pod1-master-trigger'
+    name: 'armband-fuel-os-odl_l2-nofeature-ha-baremetal-master-trigger'
     triggers:
-        - timed: '0 3 * * 1,4'
+        - timed: '0 3 * * 1'
 - trigger:
-    name: 'armband-fuel-os-nosdn-nofeature-ha-arm-pod1-master-trigger'
+    name: 'armband-fuel-os-nosdn-nofeature-ha-baremetal-master-trigger'
     triggers:
-        - timed: '0 15 * * 1,4'
+        - timed: '0 3 * * 2'
 - trigger:
-    name: 'armband-fuel-os-odl_l3-nofeature-ha-arm-pod1-master-trigger'
+    name: 'armband-fuel-os-odl_l3-nofeature-ha-baremetal-master-trigger'
     triggers:
-        - timed: '0 3 * * 2,5'
+        - timed: '0 3 * * 3'
 - trigger:
-    name: 'armband-fuel-os-odl_l2-bgpvpn-ha-arm-pod1-master-trigger'
+    name: 'armband-fuel-os-odl_l2-bgpvpn-ha-baremetal-master-trigger'
     triggers:
-        - timed: '0 15 * * 2,5'
+        - timed: '0 3 * * 4'
 - trigger:
-    name: 'armband-fuel-os-odl_l2-nofeature-noha-arm-pod1-master-trigger'
+    name: 'armband-fuel-os-odl_l2-nofeature-noha-baremetal-master-trigger'
     triggers:
-        - timed: '0 3 * * 3,6'
+        - timed: '0 3 * * 5'
 #---------------------------------------------------------------
 # Enea Armband POD 1 Triggers running against brahmaputra branch
 #---------------------------------------------------------------
 - trigger:
-    name: 'armband-fuel-os-odl_l2-nofeature-ha-arm-pod1-colorado-trigger'
+    name: 'armband-fuel-os-odl_l2-nofeature-ha-baremetal-colorado-trigger'
     triggers:
-        - timed: ''
+        - timed: '0 15 * * 1'
 - trigger:
-    name: 'armband-fuel-os-nosdn-nofeature-ha-arm-pod1-colorado-trigger'
+    name: 'armband-fuel-os-nosdn-nofeature-ha-baremetal-colorado-trigger'
     triggers:
-        - timed: ''
+        - timed: '0 15 * * 2'
 - trigger:
-    name: 'armband-fuel-os-odl_l3-nofeature-ha-arm-pod1-colorado-trigger'
+    name: 'armband-fuel-os-odl_l3-nofeature-ha-baremetal-colorado-trigger'
     triggers:
-        - timed: ''
+        - timed: '0 15 * * 3'
 - trigger:
-    name: 'armband-fuel-os-odl_l2-bgpvpn-ha-arm-pod1-colorado-trigger'
+    name: 'armband-fuel-os-odl_l2-bgpvpn-ha-baremetal-colorado-trigger'
     triggers:
-        - timed: ''
+        - timed: '0 15 * * 4'
 - trigger:
-    name: 'armband-fuel-os-odl_l2-nofeature-noha-arm-pod1-colorado-trigger'
+    name: 'armband-fuel-os-odl_l2-nofeature-noha-baremetal-colorado-trigger'
     triggers:
-        - timed: ''
+        - timed: '0 15 * * 5'
 #----------------------------------------------------------
-# Enea Armband POD 2 Triggers running against master branch
+# Enea Armband POD 1 Triggers running against master branch
 #----------------------------------------------------------
-# No triggers for master for now
 - trigger:
-    name: 'armband-fuel-os-odl_l2-nofeature-ha-arm-pod2-master-trigger'
+    name: 'armband-fuel-os-odl_l2-nofeature-ha-virtual-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-fuel-os-nosdn-nofeature-ha-arm-pod2-master-trigger'
+    name: 'armband-fuel-os-nosdn-nofeature-ha-virtual-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-fuel-os-odl_l3-nofeature-ha-arm-pod2-master-trigger'
+    name: 'armband-fuel-os-odl_l3-nofeature-ha-virtual-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-fuel-os-odl_l2-bgpvpn-ha-arm-pod2-master-trigger'
+    name: 'armband-fuel-os-odl_l2-bgpvpn-ha-virtual-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-fuel-os-odl_l2-nofeature-noha-arm-pod2-master-trigger'
+    name: 'armband-fuel-os-odl_l2-nofeature-noha-virtual-master-trigger'
     triggers:
         - timed: ''
 #---------------------------------------------------------------
-# Enea Armband POD 2 Triggers running against brahmaputra branch
+# Enea Armband POD 1 Triggers running against brahmaputra branch
 #---------------------------------------------------------------
 - trigger:
-    name: 'armband-fuel-os-odl_l2-nofeature-ha-arm-pod2-colorado-trigger'
+    name: 'armband-fuel-os-odl_l2-nofeature-ha-virtual-colorado-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-fuel-os-nosdn-nofeature-ha-arm-pod2-colorado-trigger'
+    name: 'armband-fuel-os-nosdn-nofeature-ha-virtual-colorado-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-fuel-os-odl_l3-nofeature-ha-arm-pod2-colorado-trigger'
+    name: 'armband-fuel-os-odl_l3-nofeature-ha-virtual-colorado-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-fuel-os-odl_l2-bgpvpn-ha-arm-pod2-colorado-trigger'
+    name: 'armband-fuel-os-odl_l2-bgpvpn-ha-virtual-colorado-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'armband-fuel-os-odl_l2-nofeature-noha-arm-pod2-colorado-trigger'
+    name: 'armband-fuel-os-odl_l2-nofeature-noha-virtual-colorado-trigger'
     triggers:
         - timed: ''
