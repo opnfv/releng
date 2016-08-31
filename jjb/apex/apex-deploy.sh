@@ -139,10 +139,15 @@ fi
 DEPLOY_CMD="CONFIG=${CONFIG} RESOURCES=${RESOURCES} LIB=${LIB} ${DEPLOY_CMD}"
 
 if [ "$OPNFV_CLEAN" == 'yes' ]; then
-  if [[ "$BUILD_DIRECTORY" == *verify* ]]; then
-    sudo CONFIG=${CONFIG} LIB=${LIB} ./clean.sh
+  if [ -f '/root/inventory/pod_settings.yaml' ]; then
+    clean_opts='-f /root/inventory/pod_settings.yaml'
   else
-    sudo CONFIG=${CONFIG} LIB=${LIB} opnfv-clean
+    clean_opts=''
+  fi
+  if [[ "$BUILD_DIRECTORY" == *verify* ]]; then
+    sudo CONFIG=${CONFIG} LIB=${LIB} ./clean.sh ${clean_opts}
+  else
+    sudo CONFIG=${CONFIG} LIB=${LIB} opnfv-clean ${clean_opts}
   fi
 fi
 
