@@ -140,7 +140,7 @@ DEPLOY_CMD="CONFIG=${CONFIG} RESOURCES=${RESOURCES} LIB=${LIB} ${DEPLOY_CMD}"
 
 if [ "$OPNFV_CLEAN" == 'yes' ]; then
   if sudo test -e '/root/inventory/pod_settings.yaml'; then
-    clean_opts='-f /root/inventory/pod_settings.yaml'
+    clean_opts='-i /root/inventory/pod_settings.yaml'
   else
     clean_opts=''
   fi
