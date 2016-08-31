@@ -9,4 +9,4 @@ fi
 
 ret_val=`cat ${ret_val_file}`
 
-exit ret_val
+exit ${ret_val}
