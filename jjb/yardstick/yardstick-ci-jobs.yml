@@ -49,6 +49,27 @@
             installer: fuel
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *colorado
+# armband CI PODs
+        - armband-baremetal:
+            slave-label: armband-baremetal
+            installer: fuel
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
+        - armband-virtual:
+            slave-label: armband-virtual
+            installer: fuel
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
+        - armband-baremetal:
+            slave-label: armband-baremetal
+            installer: fuel
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *colorado
+        - armband-virtual:
+            slave-label: armband-virtual
+            installer: fuel
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *colorado
 # joid CI PODs
         - baremetal:
             slave-label: joid-baremetal
@@ -141,7 +162,7 @@
             installer: fuel
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *colorado
-        - arm-pod1:
+        - arm-pod2:
             slave-label: '{pod}'
             installer: fuel
             auto-trigger-name: 'daily-trigger-disabled'
@@ -276,6 +297,20 @@
             description: 'Arguments to use in order to choose the backend DB'
 - parameter:
     name: 'yardstick-params-fuel-virtual'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: ''
+            description: 'Arguments to use in order to choose the backend DB'
+- parameter:
+    name: 'yardstick-params-armband-baremetal'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: '-i 104.197.68.199:8086'
+            description: 'Arguments to use in order to choose the backend DB'
+- parameter:
+    name: 'yardstick-params-armband-virtual'
     parameters:
         - string:
             name: YARDSTICK_DB_BACKEND
