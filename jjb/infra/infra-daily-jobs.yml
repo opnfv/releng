@@ -96,6 +96,10 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
 
+    publishers:
+        - email:
+            recipients: fatih.degirmenci@ericsson.com yroblamo@redhat.com mchandras@suse.de jack.morgan@intel.com zhang.jun3g@zte.com.cn
+
 - job-template:
     name: 'infra-{phase}-{pod}-daily-{stream}'
 
@@ -118,6 +122,9 @@
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-nosdn-nofeature-noha'
+        - string:
+            name: CLEAN_DIB_IMAGES
+            default: 'false'
 
     scm:
         - git-scm:

@@ -26,9 +26,13 @@ echo "removing leases"
 echo "removing logs"
 rm -rf /var/log/libvirt/baremetal_logs/*.log
 
-# clean up images
-rm -rf /httpboot/*
-rm -rf /tftpboot/*
+# clean up dib images only if requested explicitly
+if [ $CLEAN_DIB_IMAGES = "true" ]; then
+    rm -rf /httpboot/*
+    rm -rf /tftpboot/*
+fi
+
+# remove VM disk images
 rm -rf /var/lib/libvirt/images/*.qcow2
 
 echo "restarting services"
