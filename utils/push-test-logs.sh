@@ -54,8 +54,14 @@ if [ -d "$dir_result" ]; then
             if [ $? != 0 ]; then
                 echo "Not possible to push results to artifact: gsutil not installed.";
             else
-                echo "copy result files to artifact $project_artifact"
+                echo "Copying logs to artifact $project_artifact"
                 gsutil -m cp -r "$dir_result" gs://artifacts.opnfv.org/"$project_artifact"/ >/dev/null 2>&1
+                echo "Logs can be found in "http://artifacts.opnfv.org/logs_functest_"$testbed".html
+                cd $dir_result
+                files=($(find . -name \* -print|sed 's/\.//g'|sed '/^\s*$/d')
+                for f in ${files[@]}; do
+                    echo "http://artifacts.opnfv.org/"$project_artifact"/"$f
+                done
             fi
         fi
     else
