@@ -12,7 +12,7 @@ fi
 
 # do stuff differently based on the job type
 case "$JOB_TYPE" in
-    verify)
+    verify|daily)
         echo "Downloading artifacts for the change $GERRIT_CHANGE_NUMBER. This could take some time..."
         GS_UPLOAD_LOCATION="gs://artifacts.opnfv.org/$PROJECT/review/$GERRIT_CHANGE_NUMBER"
         ;;
