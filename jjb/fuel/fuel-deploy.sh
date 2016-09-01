@@ -121,7 +121,7 @@ export FUEL_MASTER_IP=10.20.0.2
 export TACKER_SCRIPT_URL="https://git.opnfv.org/cgit/fuel/plain/prototypes/sfc_tacker/poc.tacker-up.sh?h=${GIT_BRANCH#*/}"
 export CONTROLLER_NODE_IP=$(sshpass -pr00tme /usr/bin/ssh -o UserKnownHostsFile=/dev/null \
     -o StrictHostKeyChecking=no root@$FUEL_MASTER_IP 'fuel node list' | \
-    grep opendaylight | cut -d'|' -f5)
+    grep controller | head -1 | cut -d'|' -f5)
 
 # we can't do much if we do not have the controller IP
 if [[ ! "$CONTROLLER_NODE_IP" =~ "10.20.0" ]]; then
@@ -148,8 +148,6 @@ expect "# "
 send "/bin/mkdir -p /root/sfc-poc && cd /root/sfc-poc\r"
 expect "# "
 send "git clone https://gerrit.opnfv.org/gerrit/fuel && cd fuel\r"
-expect "# "
-send "git fetch https://gerrit.opnfv.org/gerrit/fuel refs/changes/97/10597/2 && git checkout FETCH_HEAD\r"
 expect "# "
 send "/bin/bash /root/sfc-poc/fuel/prototypes/sfc_tacker/poc.tacker-up.sh\r"
 expect "# "
