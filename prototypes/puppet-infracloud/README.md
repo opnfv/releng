@@ -11,7 +11,7 @@ Once all the hardware is provisioned, enter in controller and compute nodes and 
 
 2. Copy hiera to the right place::
 
-    cp /opt/releng/prototypes/puppet-infracloud/hiera/common.yaml /var/lib/hiera/    
+    cp /opt/releng/prototypes/puppet-infracloud/hiera/common.yaml /var/lib/hiera
 
 3. Install modules::
 
@@ -21,7 +21,7 @@ Once all the hardware is provisioned, enter in controller and compute nodes and 
 4. Apply the infracloud manifest::
 
     cd /opt/releng/prototypes/puppet-infracloud
-    puppet apply --manifests/site.pp --modulepath=/etc/puppet/modules:/opt/releng/prototypes/puppet-infracloud/modules
+    puppet apply manifests/site.pp --modulepath=/etc/puppet/modules:/opt/releng/prototypes/puppet-infracloud/modules
 
 5. Once you finish this operation on controller and compute nodes, you will have a functional OpenStack cloud.
 

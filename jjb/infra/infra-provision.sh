@@ -21,7 +21,7 @@ cp -R /opt/releng/prototypes/bifrost/* /opt/bifrost/
 
 # cleanup remnants of previous deployment
 cd /opt/bifrost
-./scripts/destroy_env.sh
+./scripts/destroy-env.sh
 
 # provision 3 VMs; jumphost, controller, and compute
 cd /opt/bifrost

@@ -24,7 +24,7 @@ Please follow that steps:
 5. Run destroy script if you need to cleanup previous environment::
 
     cd /opt/bifrost
-    ./scripts/destroy_env.sh
+    ./scripts/destroy-env.sh
 
 6. Run deployment script to spin up 3 vms with bifrost: jumphost, controller and compute::
 
