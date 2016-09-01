@@ -49,6 +49,27 @@
             installer: fuel
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *colorado
+# armband CI PODs
+        - baremetal:
+            slave-label: armband-baremetal
+            installer: fuel
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
+        - virtual:
+            slave-label: armband-virtual
+            installer: fuel
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
+        - baremetal:
+            slave-label: armband-baremetal
+            installer: fuel
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *colorado
+        - virtual:
+            slave-label: armband-virtual
+            installer: fuel
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *colorado
 # joid CI PODs
         - baremetal:
             slave-label: joid-baremetal
@@ -141,7 +162,7 @@
             installer: fuel
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *colorado
-        - arm-pod1:
+        - arm-pod2:
             slave-label: '{pod}'
             installer: fuel
             auto-trigger-name: 'daily-trigger-disabled'
@@ -171,13 +192,13 @@
         - 'daily'
 
     jobs:
-        - 'yardstick-{installer}-{pod}-{testsuite}-{stream}'
+        - 'yardstick-{slave-label}-{testsuite}-{stream}'
 
 ################################
 # job templates
 ################################
 - job-template:
-    name: 'yardstick-{installer}-{pod}-{testsuite}-{stream}'
+    name: 'yardstick-{slave-label}-{testsuite}-{stream}'
 
     disabled: false
 
