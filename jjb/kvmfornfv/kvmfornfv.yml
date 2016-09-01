@@ -28,6 +28,7 @@
         - 'kvmfornfv-verify-{phase}-{stream}'
         - 'kvmfornfv-merge-{stream}'
         - 'kvmfornfv-daily-{stream}'
+        - 'kvmfornfv-daily-{phase}-{stream}'
 #####################################
 # job templates
 #####################################
@@ -201,10 +202,69 @@
          - timed: '@midnight'
 
     builders:
-        - shell:
-            !include-raw-escape: ./kvmfornfv-build.sh
-        - shell:
-            !include-raw-escape: ./kvmfornfv-upload-artifact.sh
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'kvmfornfv-daily-build-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'kvmfornfv-daily-test-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+
+
+- job-template:
+    name: 'kvmfornfv-daily-{phase}-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 360
+            fail: true
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - '{slave-label}-defaults'
+        - 'kvmfornfv-defaults':
+            gs-pathname: '{gs-pathname}'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - '{project}-daily-{phase}-macro'
 #####################################
 # builder macros
 #####################################
@@ -222,6 +282,21 @@
             !include-raw: ./kvmfornfv-download-artifact.sh
         - shell:
             !include-raw: ./kvmfornfv-test.sh
+- builder:
+    name: 'kvmfornfv-daily-build-macro'
+    builders:
+        - shell:
+            !include-raw: ./kvmfornfv-build.sh
+        - shell:
+            !include-raw: ./kvmfornfv-upload-artifact.sh
+- builder:
+    name: 'kvmfornfv-daily-test-macro'
+    builders:
+        - shell:
+            !include-raw: ./kvmfornfv-download-artifact.sh
+        - shell:
+            !include-raw: ./kvmfornfv-test.sh
+
 #####################################
 # parameter macros
 #####################################
