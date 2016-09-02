@@ -60,7 +60,7 @@ if [ -d "$dir_result" ]; then
                 cd $dir_result
                 files=($(find . -name \* -print|sed 's/^\.//'|sed '/^\s*$/d'))
                 for f in ${files[@]}; do
-                    echo "http://artifacts.opnfv.org/"$project_artifact"/"$f
+                    echo "http://artifacts.opnfv.org/"$project_artifact$f
                 done
             fi
         fi
