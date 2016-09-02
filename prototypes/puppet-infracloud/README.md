@@ -39,14 +39,23 @@ In jumphost, follow that steps:
 
     cp /opt/releng/prototypes/puppet-infracloud/creds/clouds.yaml /root/.config/openstack/
 
-4. Install openstack-client:
+4. Install python-dev package as the installation of python-openstackclient depends on it
+
+    apt-get install -y python-dev
+
+5. Install openstack-client. Please ensure that you do install 3.2.0.
 
     pip install python-openstackclient
 
-5. Export the desired cloud::
+6. Update /etc/hosts and add controller00.
+
+    192.168.122.3 controller00
+    192.168.122.3 controller00.opnfvlocal controller00
+
+7. Export the desired cloud::
 
     export OS_CLOUD=opnfv
 
-6. Start using it::
+8. Start using it::
 
-    openstack server list
+    openstack service list
