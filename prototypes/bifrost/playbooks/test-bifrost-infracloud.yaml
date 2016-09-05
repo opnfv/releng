@@ -41,8 +41,21 @@
     # NOTE(TheJulia): While the next step creates a ramdisk, some elements
     # do not support ramdisk-image-create as they invoke steps to cleanup
     # the ramdisk which causes ramdisk-image-create to believe it failed.
-    - { role: bifrost-create-dib-image, dib_imagename: "{{ http_boot_folder }}/ipa", build_ramdisk: false, dib_os_element: "{{ ipa_dib_os_element|default('debian') }}", dib_os_release: "jessie", dib_elements: "ironic-agent {{ ipa_extra_dib_elements | default('') }}", when: create_ipa_image | bool == true }
-    - { role: bifrost-create-dib-image, dib_imagetype: "qcow2", dib_imagename: "{{deploy_image}}", dib_os_element: "ubuntu-minimal", dib_os_release: "trusty", dib_elements: "vm serial-console simple-init devuser infra-cloud-bridge puppet growroot {{ extra_dib_elements|default('') }}", dib_packages: "openssh-server,vlan,vim,less,bridge-utils,language-pack-en,iputils-ping,rsyslog,curl", when: create_image_via_dib | bool == true and transform_boot_image | bool == false }
+    - role: bifrost-create-dib-image
+      dib_imagename: "{{ http_boot_folder }}/ipa"
+      build_ramdisk: false
+      dib_os_element: "{{ ipa_dib_os_element|default('debian') }}"
+      dib_os_release: "jessie"
+      dib_elements: "ironic-agent {{ ipa_extra_dib_elements | default('') }}"
+      when: create_ipa_image | bool == true }
+    - role: bifrost-create-dib-image
+      dib_imagetype: "qcow2"
+      dib_imagename: "{{deploy_image}}"
+      dib_os_element: lookup('env', 'DIB_OS_ELEMENT')
+      dib_os_release: lookup('env', 'DIB_OS_RELEASE')
+      dib_elements: "vm serial-console simple-init devuser infra-cloud-bridge puppet growroot {{ extra_dib_elements|default('') }}"
+      dib_packages: lookup('env', 'DIB_OS_PACKAGES')
+      when: create_image_via_dib | bool == true and transform_boot_image | bool == false }
   environment:
     http_proxy: "{{ lookup('env','http_proxy') }}"
     https_proxy: "{{ lookup('env','https_proxy') }}"
