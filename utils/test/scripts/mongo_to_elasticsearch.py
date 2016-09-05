@@ -1,13 +1,16 @@
 #! /usr/bin/env python
-import logging
-import argparse
-import shared_utils
+import datetime
 import json
-import urlparse
-import uuid
+import logging
 import os
 import subprocess
-import datetime
+import traceback
+import urlparse
+import uuid
+
+import argparse
+
+import shared_utils
 
 logger = logging.getLogger('mongo_to_elasticsearch')
 logger.setLevel(logging.DEBUG)
@@ -370,18 +373,21 @@ def modify_mongo_entry(testcase):
         project = testcase['project_name']
         case_name = testcase['case_name']
         logger.info("Processing mongo test case '{}'".format(case_name))
-        if project == 'functest':
-            if case_name == 'rally_sanity':
-                return modify_functest_rally(testcase)
-            elif case_name.lower() == 'odl':
-                return modify_functest_odl(testcase)
-            elif case_name.lower() == 'onos':
-                return modify_functest_onos(testcase)
-            elif case_name.lower() == 'vims':
-                return modify_functest_vims(testcase)
-            elif case_name == 'tempest_smoke_serial':
-                return modify_functest_tempest(testcase)
-        return modify_default_entry(testcase)
+        try:
+            if project == 'functest':
+                if case_name == 'rally_sanity':
+                    return modify_functest_rally(testcase)
+                elif case_name.lower() == 'odl':
+                    return modify_functest_odl(testcase)
+                elif case_name.lower() == 'onos':
+                    return modify_functest_onos(testcase)
+                elif case_name.lower() == 'vims':
+                    return modify_functest_vims(testcase)
+                elif case_name == 'tempest_smoke_serial':
+                    return modify_functest_tempest(testcase)
+            return modify_default_entry(testcase)
+        except Exception:
+            logger.error("Fail in modify testcase[%s]\nerror message: %s" % (testcase, traceback.format_exc()))
     else:
         return False
 
