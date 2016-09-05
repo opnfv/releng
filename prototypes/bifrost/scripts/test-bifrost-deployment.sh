@@ -57,6 +57,13 @@ export ELEMENTS_PATH=/usr/share/diskimage-builder/elements:/opt/puppet-infraclou
 export DIB_DEV_USER_PWDLESS_SUDO=yes
 export DIB_DEV_USER_PASSWORD=devuser
 
+# settings for distro: trusty/ubuntu-minimal, 7/centos-minimal
+export DIB_OS_RELEASE=${DIB_OS_RELEASE:-trusty}
+export DIB_OS_ELEMENT=${DIB_OS_ELEMENT:-ubuntu-minimal}
+
+# for centos 7: "openssh-server,vim,less,bridge-utils,iputils,rsyslog,curl"
+export DIB_OS_PACKAGES=${DIB_OS_PACKAGES:-"openssh-server,vlan,vim,less,bridge-utils,language-pack-en,iputils-ping,rsyslog,curl"}
+
 # Source Ansible
 # NOTE(TheJulia): Ansible stable-1.9 source method tosses an error deep
 # under the hood which -x will detect, so for this step, we need to suspend
