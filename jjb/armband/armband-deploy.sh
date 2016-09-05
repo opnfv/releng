@@ -52,7 +52,7 @@ if [[ $LAB_CONFIG_URL =~ ^(git|ssh):// ]]; then
     LAB_CONFIG_URL=file://${WORKSPACE}/lab-config
 
     # Source local_env if present, which contains POD-specific config
-    local_env="$LAB_CONFIG_URL/labs/$LAB_NAME/$POD_NAME/fuel/config/local_env"
+    local_env="${WORKSPACE}/lab-config/labs/$LAB_NAME/$POD_NAME/fuel/config/local_env"
     if [ -e $local_env ]; then
         echo "-- Sourcing local environment file"
         source $local_env
