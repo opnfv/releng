@@ -110,7 +110,12 @@ echo "Tag version to be build and pushed: $DOCKER_TAG"
 # Start the build
 echo "Building docker image: $DOCKER_REPO_NAME:$DOCKER_BRANCH_TAG"
 
-docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_BRANCH_TAG --build-arg BRANCH=$branch .
+if [[ $DOCKER_REPO_NAME == *"functest"* ]]; then
+    docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_BRANCH_TAG --build-arg BRANCH=$branch .
+else
+    docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_BRANCH_TAG .
+fi
+
 echo "Creating tag '$DOCKER_TAG'..."
 docker tag -f $DOCKER_REPO_NAME:$DOCKER_BRANCH_TAG $DOCKER_REPO_NAME:$DOCKER_TAG
 
