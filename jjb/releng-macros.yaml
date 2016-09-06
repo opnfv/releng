@@ -209,12 +209,10 @@
             mv docs_output "$local_path"
             gsutil -m cp -r "$local_path" "gs://$gs_base"
 
-            if gsutil ls "gs://$gs_path" | grep -e 'html$' > /dev/null 2>&1 ; then
-                gsutil -m setmeta \
-                    -h "Content-Type:text/html" \
-                    -h "Cache-Control:private, max-age=0, no-transform" \
-                    "gs://$gs_path"/**.html
-            fi
+            gsutil -m setmeta \
+                -h "Content-Type:text/html" \
+                -h "Cache-Control:private, max-age=0, no-transform" \
+                "gs://$gs_path"/**.html > /dev/null 2>&1
 
             echo "Document link(s):" >> gerrit_comment.txt
             find "$local_path" | grep -e 'index.html$' -e 'pdf$' | \
@@ -245,12 +243,10 @@
             mv docs_output "$local_path"
             gsutil -m cp -r "$local_path" "gs://$GS_URL"
 
-            if gsutil ls "gs://$gs_path" | grep -e 'html$' > /dev/null 2>&1 ; then
-                gsutil -m setmeta \
-                    -h "Content-Type:text/html" \
-                    -h "Cache-Control:private, max-age=0, no-transform" \
-                    "gs://$gs_path"/**.html
-            fi
+            gsutil -m setmeta \
+                -h "Content-Type:text/html" \
+                -h "Cache-Control:private, max-age=0, no-transform" \
+                "gs://$gs_path"/**.html > /dev/null 2>&1
 
             echo "Document link(s):" >> gerrit_comment.txt
             find "$local_path" | grep -e 'index.html$' -e 'pdf$' | \
