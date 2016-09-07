@@ -1,431 +1,32 @@
 #! /usr/bin/env python
-import logging
-import argparse
-import shared_utils
 import json
+import logging
 import urlparse
+
+import argparse
+import yaml
+
+import shared_utils
 
 logger = logging.getLogger('create_kibana_dashboards')
 logger.setLevel(logging.DEBUG)
-file_handler = logging.FileHandler('/var/log/{}.log'.format('create_kibana_dashboards'))
+file_handler = logging.FileHandler('./{}.log'.format('create_kibana_dashboards'))
 file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
 logger.addHandler(file_handler)
 
 _installers = {'fuel', 'apex', 'compass', 'joid'}
 
-# see class VisualizationState for details on format
-_testcases = [
-    ('functest', 'tempest_smoke_serial',
-     [
-         {
-             "metrics": [
-                 {
-                     "type": "avg",
-                     "params": {
-                         "field": "details.duration"
-                     }
-                 }
-             ],
-             "type": "line",
-             "metadata": {
-                 "label": "tempest_smoke_serial duration",
-                 "test_family": "VIM"
-             }
-         },
-
-         {
-             "metrics": [
-                 {
-                     "type": "sum",
-                     "params": {
-                         "field": "details.tests"
-                     }
-                 },
-                 {
-                     "type": "sum",
-                     "params": {
-                         "field": "details.failures"
-                     }
-                 }
-             ],
-             "type": "histogram",
-             "metadata": {
-                 "label": "tempest_smoke_serial nr of tests/failures",
-                 "test_family": "VIM"
-             }
-         },
-
-         {
-             "metrics": [
-                 {
-                     "type": "avg",
-                     "params": {
-                         "field": "details.success_percentage"
-                     }
-                 }
-             ],
-             "type": "line",
-             "metadata": {
-                 "label": "tempest_smoke_serial success percentage",
-                 "test_family": "VIM"
-             }
-         }
-     ]
-     ),
-
-    ('functest', 'rally_sanity',
-     [
-         {
-             "metrics": [
-                 {
-                     "type": "avg",
-                     "params": {
-                         "field": "details.duration"
-                     }
-                 }
-             ],
-             "type": "line",
-             "metadata": {
-                 "label": "rally_sanity duration",
-                 "test_family": "VIM"
-             }
-         },
-
-         {
-             "metrics": [
-                 {
-                     "type": "avg",
-                     "params": {
-                         "field": "details.tests"
-                     }
-                 }
-             ],
-             "type": "histogram",
-             "metadata": {
-                 "label": "rally_sanity nr of tests",
-                 "test_family": "VIM"
-             }
-         },
-
-         {
-             "metrics": [
-                 {
-                     "type": "avg",
-                     "params": {
-                         "field": "details.success_percentage"
-                     }
-                 }
-             ],
-             "type": "line",
-             "metadata": {
-                 "label": "rally_sanity success percentage",
-                 "test_family": "VIM"
-             }
-         }
-     ]
-     ),
-
-    ('functest', 'vping_ssh',
-     [
-         {
-             "metrics": [
-                 {
-                     "type": "avg",
-                     "params": {
-                         "field": "details.duration"
-                     }
-                 }
-             ],
-             "type": "line",
-             "metadata": {
-                 "label": "vPing duration",
-                 "test_family": "VIM"
-             }
-         }
-     ]
-     ),
-
-    ('functest', 'vping_userdata',
-     [
-         {
-             "metrics": [
-                 {
-                     "type": "avg",
-                     "params": {
-                         "field": "details.duration"
-                     }
-                 }
-             ],
-             "type": "line",
-             "metadata": {
-                 "label": "vPing_userdata duration",
-                 "test_family": "VIM"
-             }
-         }
-     ]
-     ),
-
-    ('functest', 'odl',
-     [
-         {
-             "metrics": [
-                 {
-                     "type": "sum",
-                     "params": {
-                         "field": "details.tests"
-                     }
-                 },
-                 {
-                     "type": "sum",
-                     "params": {
-                         "field": "details.failures"
-                     }
-                 }
-             ],
-             "type": "histogram",
-             "metadata": {
-                 "label": "ODL nr of tests/failures",
-                 "test_family": "Controller"
-             }
-         },
-
-         {
-             "metrics": [
-                 {
-                     "type": "avg",
-                     "params": {
-                         "field": "details.success_percentage"
-                     }
-                 }
-             ],
-             "type": "line",
-             "metadata": {
-                 "label": "ODL success percentage",
-                 "test_family": "Controller"
-             }
-         }
-     ]
-     ),
-
-    ('functest', 'onos',
-     [
-         {
-             "metrics": [
-                 {
-                     "type": "avg",
-                     "params": {
-                         "field": "details.FUNCvirNet.duration"
-                     }
-                 }
-             ],
-             "type": "line",
-             "metadata": {
-                 "label": "ONOS FUNCvirNet duration",
-                 "test_family": "Controller"
-             }
-         },
-
-         {
-             "metrics": [
-                 {
-                     "type": "sum",
-                     "params": {
-                         "field": "details.FUNCvirNet.tests"
-                     }
-                 },
-                 {
-                     "type": "sum",
-                     "params": {
-                         "field": "details.FUNCvirNet.failures"
-                     }
-                 }
-             ],
-             "type": "histogram",
-             "metadata": {
-                 "label": "ONOS FUNCvirNet nr of tests/failures",
-                 "test_family": "Controller"
-             }
-         },
-
-         {
-             "metrics": [
-                 {
-                     "type": "avg",
-                     "params": {
-                         "field": "details.FUNCvirNetL3.duration"
-                     }
-                 }
-             ],
-             "type": "line",
-             "metadata": {
-                 "label": "ONOS FUNCvirNetL3 duration",
-                 "test_family": "Controller"
-             }
-         },
-
-         {
-             "metrics": [
-                 {
-                     "type": "sum",
-                     "params": {
-                         "field": "details.FUNCvirNetL3.tests"
-                     }
-                 },
-                 {
-                     "type": "sum",
-                     "params": {
-                         "field": "details.FUNCvirNetL3.failures"
-                     }
-                 }
-             ],
-             "type": "histogram",
-             "metadata": {
-                 "label": "ONOS FUNCvirNetL3 nr of tests/failures",
-                 "test_family": "Controller"
-             }
-         }
-     ]
-     ),
-
-    ('functest', 'vims',
-     [
-         {
-             "metrics": [
-                 {
-                     "type": "sum",
-                     "params": {
-                         "field": "details.sig_test.tests"
-                     }
-                 },
-                 {
-                     "type": "sum",
-                     "params": {
-                         "field": "details.sig_test.failures"
-                     }
-                 },
-                 {
-                     "type": "sum",
-                     "params": {
-                         "field": "details.sig_test.passed"
-                     }
-                 },
-                 {
-                     "type": "sum",
-                     "params": {
-                         "field": "details.sig_test.skipped"
-                     }
-                 }
-             ],
-             "type": "histogram",
-             "metadata": {
-                 "label": "vIMS nr of tests/failures/passed/skipped",
-                 "test_family": "Features"
-             }
-         },
-
-         {
-             "metrics": [
-                 {
-                     "type": "avg",
-                     "params": {
-                         "field": "details.vIMS.duration"
-                     }
-                 },
-                 {
-                     "type": "avg",
-                     "params": {
-                         "field": "details.orchestrator.duration"
-                     }
-                 },
-                 {
-                     "type": "avg",
-                     "params": {
-                         "field": "details.sig_test.duration"
-                     }
-                 }
-             ],
-             "type": "histogram",
-             "metadata": {
-                 "label": "vIMS/ochestrator/test duration",
-                 "test_family": "Features"
-             }
-         }
-     ]
-     ),
-
-    ('promise', 'promise',
-     [
-         {
-             "metrics": [
-                 {
-                     "type": "avg",
-                     "params": {
-                         "field": "details.duration"
-                     }
-                 }
-             ],
-             "type": "line",
-             "metadata": {
-                 "label": "promise duration",
-                 "test_family": "Features"
-             }
-         },
-
-         {
-             "metrics": [
-                 {
-                     "type": "sum",
-                     "params": {
-                         "field": "details.tests"
-                     }
-                 },
-                 {
-                     "type": "sum",
-                     "params": {
-                         "field": "details.failures"
-                     }
-                 }
-             ],
-             "type": "histogram",
-             "metadata": {
-                 "label": "promise nr of tests/failures",
-                 "test_family": "Features"
-             }
-         }
-     ]
-     ),
-
-    ('doctor', 'doctor-notification',
-     [
-         {
-             "metrics": [
-                 {
-                     "type": "avg",
-                     "params": {
-                         "field": "details.duration"
-                     }
-                 }
-             ],
-             "type": "line",
-             "metadata": {
-                 "label": "doctor-notification duration",
-                 "test_family": "Features"
-             }
-         }
-     ]
-     )
-]
-
 
 class KibanaDashboard(dict):
-    def __init__(self, project_name, case_name, installer, pod, scenarios, visualization_detail):
+    def __init__(self, project_name, case_name, family, installer, pod, scenarios, visualization):
         super(KibanaDashboard, self).__init__()
         self.project_name = project_name
         self.case_name = case_name
+        self.family = family
         self.installer = installer
         self.pod = pod
         self.scenarios = scenarios
-        self.visualization_detail = visualization_detail
+        self.visualization = visualization
         self._visualization_title = None
         self._kibana_visualizations = []
         self._kibana_dashboard = None
@@ -439,7 +40,7 @@ class KibanaDashboard(dict):
                                                                    self.installer,
                                                                    self.pod,
                                                                    scenario,
-                                                                   self.visualization_detail))
+                                                                   self.visualization))
 
         self._visualization_title = self._kibana_visualizations[0].vis_state_title
 
@@ -512,7 +113,15 @@ class KibanaDashboard(dict):
             },
                 separators=(',', ':'))
         }
-        self['metadata'] = self.visualization_detail['metadata']
+
+        label = self.case_name
+        if 'label' in self.visualization:
+            label += " %s" % self.visualization.get('label')
+        label += " %s" % self.visualization.get('name')
+        self['metadata'] = {
+            "label": label,
+            "test_family": self.family
+        }
 
     def _publish(self):
         url = urlparse.urljoin(base_elastic_url, '/.kibana/dashboard/{}'.format(self.id))
@@ -546,58 +155,21 @@ class KibanaSearchSourceJSON(dict):
 
 
 class VisualizationState(dict):
-    def __init__(self, input_dict):
-        """
-        dict structure:
-            {
-            "metrics":
-                [
-                    {
-                        "type": type,           # default sum
-                        "params": {
-                            "field": field      # mandatory, no default
-                    },
-                    {metric2}
-                ],
-            "segments":
-                [
-                    {
-                        "type": type,           # default date_histogram
-                        "params": {
-                            "field": field      # default start_date
-                    },
-                    {segment2}
-                ],
-            "type": type,                       # default area
-            "mode": mode,                       # default grouped for type 'histogram', stacked for other types
-            "metadata": {
-                    "label": "tempest_smoke_serial duration",# mandatory, no default
-                    "test_family": "VIM"        # mandatory, no default
-                }
-            }
-
-        default modes:
-            type histogram: grouped
-            type area: stacked
-
-        :param input_dict:
-        :return:
-        """
+    def __init__(self, visualization):
         super(VisualizationState, self).__init__()
-        metrics = input_dict['metrics']
-        segments = [] if 'segments' not in input_dict else input_dict['segments']
+        name = visualization.get('name')
+        fields = visualization.get('fields')
 
-        graph_type = 'area' if 'type' not in input_dict else input_dict['type']
-        self['type'] = graph_type
-
-        if 'mode' not in input_dict:
-            if graph_type == 'histogram':
-                mode = 'grouped'
-            else:
-                # default
-                mode = 'stacked'
+        if name == 'tests_failures':
+            mode = 'grouped'
+            metric_type = 'sum'
+            self['type'] = 'histogram'
         else:
-            mode = input_dict['mode']
+            # duration or success_percentage
+            mode = 'stacked'
+            metric_type = 'avg'
+            self['type'] = 'line'
+
         self['params'] = {
             "shareYAxis": True,
             "addTooltip": True,
@@ -616,35 +188,18 @@ class VisualizationState(dict):
         self['aggs'] = []
 
         i = 1
-        for metric in metrics:
+        for field in fields:
             self['aggs'].append({
                 "id": str(i),
-                "type": 'sum' if 'type' not in metric else metric['type'],
+                "type": metric_type,
                 "schema": "metric",
                 "params": {
-                    "field": metric['params']['field']
+                    "field": field.get('field')
                 }
             })
             i += 1
 
-        if len(segments) > 0:
-            for segment in segments:
-                self['aggs'].append({
-                    "id": str(i),
-                    "type": 'date_histogram' if 'type' not in segment else segment['type'],
-                    "schema": "metric",
-                    "params": {
-                        "field": "start_date" if ('params' not in segment or 'field' not in segment['params'])
-                        else segment['params']['field'],
-                        "interval": "auto",
-                        "customInterval": "2h",
-                        "min_doc_count": 1,
-                        "extended_bounds": {}
-                    }
-                })
-                i += 1
-        else:
-            self['aggs'].append({
+        self['aggs'].append({
                 "id": str(i),
                 "type": 'date_histogram',
                 "schema": "segment",
@@ -663,7 +218,7 @@ class VisualizationState(dict):
 
 
 class KibanaVisualization(dict):
-    def __init__(self, project_name, case_name, installer, pod, scenario, detail):
+    def __init__(self, project_name, case_name, installer, pod, scenario, visualization):
         """
         We need two things
         1. filter created from
@@ -679,7 +234,7 @@ class KibanaVisualization(dict):
         :return:
         """
         super(KibanaVisualization, self).__init__()
-        vis_state = VisualizationState(detail)
+        vis_state = VisualizationState(visualization)
         self.vis_state_title = vis_state['title']
         self['title'] = '{} {} {} {} {} {}'.format(project_name,
                                                    case_name,
@@ -752,13 +307,25 @@ def construct_dashboards():
     :return: list of KibanaDashboards
     """
     kibana_dashboards = []
-    for project_name, case_name, visualization_details in _testcases:
-        for installer in _installers:
-            pods_and_scenarios = _get_pods_and_scenarios(project_name, case_name, installer)
-            for visualization_detail in visualization_details:
-                for pod, scenarios in pods_and_scenarios.iteritems():
-                    kibana_dashboards.append(KibanaDashboard(project_name, case_name, installer, pod, scenarios,
-                                                             visualization_detail))
+    with open('./testcases.yaml') as f:
+        testcases_yaml = yaml.safe_load(f)
+
+    for project, case_dicts in testcases_yaml.items():
+        for case in case_dicts:
+            case_name = case.get('name')
+            visualizations = case.get('visualizations')
+            family = case.get('test_family')
+            for installer in _installers:
+                pods_and_scenarios = _get_pods_and_scenarios(project, case_name, installer)
+                for visualization in visualizations:
+                    for pod, scenarios in pods_and_scenarios.iteritems():
+                        kibana_dashboards.append(KibanaDashboard(project,
+                                                                 case_name,
+                                                                 family,
+                                                                 installer,
+                                                                 pod,
+                                                                 scenarios,
+                                                                 visualization))
     return kibana_dashboards
 
 
@@ -821,4 +388,3 @@ if __name__ == '__main__':
 
     if generate_inputs:
         generate_js_inputs(input_file_path, kibana_url, dashboards)
-
