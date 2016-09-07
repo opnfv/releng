@@ -35,6 +35,7 @@ esac
     echo "OPNFV_ARTIFACT_URL=$GS_UPLOAD_LOCATION"
     echo "OPNFV_BUILD_URL=$BUILD_URL"
 ) > $WORKSPACE/opnfv.properties
+source $WORKSPACE/opnfv.properties
 
 # upload artifacts
 gsutil cp -r $WORKSPACE/build_output/* $GS_UPLOAD_LOCATION > $WORKSPACE/gsutil.log 2>&1
@@ -48,8 +49,8 @@ if [[ "$JOB_TYPE" == "daily" ]]; then
     gsutil cp $WORKSPACE/opnfv.properties $GS_URL/latest.properties > $WORKSPACE/gsutil.log 2>&1
     gsutil -m setmeta -r \
         -h "Cache-Control:private, max-age=0, no-transform" \
-        $GS_UPLOAD_LOCATION/opnfv-${OPNFV_ARTIFACT_VERSION}.properties \
-        $GS_URL/latest.properties > /dev/null 2>&1
+        $GS_UPLOAD_LOCATION/opnfv.properties \
+        gs://$GS_URL/latest.properties > /dev/null 2>&1
 fi
 
 gsutil ls $GS_UPLOAD_LOCATION > /dev/null 2>&1
