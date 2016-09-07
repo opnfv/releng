@@ -11,7 +11,7 @@
 # ****************************************************
 installers = ["apex", "compass", "fuel", "joid"]
 
-versions = ["master"]
+versions = ["master", "stable/colorado"]
 
 # get data in the past 7 days
 PERIOD = 7
