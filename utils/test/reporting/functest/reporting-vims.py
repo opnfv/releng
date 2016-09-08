@@ -39,7 +39,7 @@ for version in conf.versions:
     for installer in installers:
         logger.info("Search vIMS results for installer: %s, version: %s"
                     % (installer, version))
-        request = Request(conf.URL_BASE + '?case=vims&installer=' +
+        request = Request("http://" + conf.URL_BASE + '?case=vims&installer=' +
                           installer + '&version=' + version)
 
         try:
@@ -102,7 +102,7 @@ for version in conf.versions:
                 logger.debug("----------------------------------------")
 
         templateLoader = jinja2.FileSystemLoader(conf.REPORTING_PATH)
-        templateEnv = jinja2.Environment(loader=templateLoader)
+        templateEnv = jinja2.Environment(loader=templateLoader, autoescape=True)
 
         TEMPLATE_FILE = "/template/index-vims-tmpl.html"
         template = templateEnv.get_template(TEMPLATE_FILE)
