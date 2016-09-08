@@ -1,0 +1,167 @@
+- project:
+    name: 'daisy4nfv-verify-jobs'
+
+    project: 'daisy4nfv'
+
+    installer: 'daisy4nfv'
+#####################################
+# branch definitions
+#####################################
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+        - colorado:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
+            disabled: false
+#####################################
+# patch verification phases
+#####################################
+    phase:
+        - 'basic':
+            slave-label: 'opnfv-build'
+        - 'build':
+            slave-label: 'opnfv-build-ubuntu'
+        - 'deploy-virtual':
+            slave-label: 'opnfv-build'
+        - 'smoke-test':
+            slave-label: 'opnfv-build'
+#####################################
+# jobs
+#####################################
+    jobs:
+        - 'daisy4nfv-verify-{stream}'
+        - 'daisy4nfv-verify-{phase}-{stream}'
+#####################################
+# job templates
+#####################################
+- job-template:
+    name: 'daisy4nfv-verify-{stream}'
+   
+    project-type: multijob
+
+    disabled: false
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 4
+            option: 'project'
+
+    wrappers:
+        - timeout:
+            timeout: 1
+            fail: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - 'opnfv-build-defaults'
+
+    builders:
+        - multijob:
+            name: basic
+            condition: SUCCESSFUL
+            projects:
+                - name: 'daisy4nfv-verify-basic-{stream}'
+                  current-parameters: false
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'daisy4nfv-verify-build-{stream}'
+                  current-parameters: false
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: deploy-virtual
+            condition: SUCCESSFUL
+            projects:
+                - name: 'daisy4nfv-verify-deploy-virtual-{stream}'
+                  current-parameters: false
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: smoke-test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'daisy4nfv-verify-smoke-test-{stream}'
+                  current-parameters: false
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+
+- job-template:
+    name: 'daisy4nfv-verify-{phase}-{stream}'
+    
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 6
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: false
+            blocking-jobs:
+                - 'daisy4nfv-verify-deploy-.*'
+                - 'daisy4nfv-verify-test-.*'
+            block-level: 'NODE'
+
+    wrappers:
+        - timeout:
+            timeout: 1
+            fail: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{slave-label}-defaults'
+
+    builders:
+        - '{project}-verify-{phase}-macro'
+#####################################
+# builder macros
+#####################################
+- builder:
+    name: 'daisy4nfv-verify-basic-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "To be done!"
+
+- builder:
+    name: 'daisy4nfv-verify-build-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "To be done!"
+
+- builder:
+    name: 'daisy4nfv-verify-deploy-virtual-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "To be done!"
+
+- builder:
+    name: 'daisy4nfv-verify-smoke-test-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "To be done!"
