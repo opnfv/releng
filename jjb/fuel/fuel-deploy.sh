@@ -143,14 +143,17 @@ expect {
 expect "# "
 send "/usr/bin/ssh -l root $::env(CONTROLLER_NODE_IP)\r"
 expect "# "
+send "PS1=\"tacker_poc> \"\r"
+expect -re {tacker_poc> $}
 send "sudo apt-get install -y git\r"
-expect "# "
+expect -re {tacker_poc> $}
+sleep 10
 send "/bin/mkdir -p /root/sfc-poc && cd /root/sfc-poc\r"
-expect "# "
+expect -re {tacker_poc> $}
 send "git clone https://gerrit.opnfv.org/gerrit/fuel && cd fuel\r"
-expect "# "
+expect -re {tacker_poc> $}
 send "/bin/bash /root/sfc-poc/fuel/prototypes/sfc_tacker/poc.tacker-up.sh\r"
-expect "# "
+expect -re {tacker_poc> $}
 send "exit\r"
 expect "Connection to $::env(CONTROLLER_NODE_IP) closed. "
 send "exit\r"
