@@ -55,7 +55,7 @@ else
       # source the file so we get OPNFV vars
       source opnfv.properties
       RPM_INSTALL_PATH=$(echo $OPNFV_RPM_URL | sed 's/'"$(basename $OPNFV_RPM_URL)"'//')
-      RPM_LIST=$RPM_INSTALL_PATH/$(basename $OPNFV_RPM_URL)
+      RPM_LIST=${RPM_INSTALL_PATH}$(basename $OPNFV_RPM_URL)
     fi
 fi
 
