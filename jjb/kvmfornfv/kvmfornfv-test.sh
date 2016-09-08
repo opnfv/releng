@@ -20,6 +20,10 @@ case "$JOB_TYPE" in
         cd $WORKSPACE
         ./ci/test_kvmfornfv.sh $JOB_TYPE
         ;;
+    merge)
+        echo "Test is not activated for $JOB_TYPE jobs"
+        exit 0
+        ;;
     *)
         echo "Test is not enabled for $JOB_TYPE jobs"
         exit 1
