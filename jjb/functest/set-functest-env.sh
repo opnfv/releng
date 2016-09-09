@@ -59,7 +59,9 @@ test -f ${HOME}/opnfv/functest/custom/params_${DOCKER_TAG} && custom_params=$(ca
 echo "Functest: Pulling image opnfv/functest:${DOCKER_TAG}"
 docker pull opnfv/functest:$DOCKER_TAG >/dev/null
 
-cmd="sudo docker run --privileged=true -id ${envs} ${labconfig} ${sshkey} ${res_volume} ${custom_params} ${stackrc} opnfv/functest:${DOCKER_TAG} /bin/bash"
+cmd="sudo docker run --privileged=true -id ${envs} ${labconfig} ${sshkey} \
+     ${res_volume} ${custom_params} ${stackrc} ${TESTCASE_OPTIONS} \
+     opnfv/functest:${DOCKER_TAG} /bin/bash"
 echo "Functest: Running docker run command: ${cmd}"
 ${cmd} >${redirect}
 sleep 5

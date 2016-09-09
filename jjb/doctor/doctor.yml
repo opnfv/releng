@@ -3,18 +3,29 @@
 
     project: '{name}'
 
-    jobs:
-        - 'doctor-verify-{stream}'
-
     stream:
         - master:
             branch: '{stream}'
             gs-pathname: ''
+            docker_tag: 'master'
             disabled: false
         - colorado:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
+            docker_tag: 'stable'
             disabled: false
+
+    installer:
+        - apex:
+            slave-label: 'ool-virtual1'
+
+    inspector:
+        - sample
+        - congress
+
+    jobs:
+        - 'doctor-verify-{stream}'
+        - 'doctor-verify-{installer}-{inspector}-{stream}'
 
 - job-template:
     name: 'doctor-verify-{stream}'
@@ -58,3 +69,68 @@
 
     builders:
         - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+
+- job-template:
+    name: 'doctor-verify-{installer}-{inspector}-{stream}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - string:
+            name: INSPECTOR_TYPE
+            default: '{inspector}'
+            description: 'Doctor inspector type to be used'
+        - string:
+            name: INSTALLER_TYPE
+            default: apex
+            description: 'OPNFV Installer type'
+        - string:
+            name: OS_CREDS
+            default: /home/jenkins/openstack.creds
+            description: 'OpenStack credentials'
+        - '{installer}-defaults'
+        - '{slave-label}-defaults'
+        - 'functest-suite-parameter'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-odl_l2-nofeature-ha'
+        - string:
+            name: DOCKER_TAG
+            default: '{docker_tag}'
+            description: 'Tag to pull docker image'
+        - functest-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'tests/**'
+
+    builders:
+        - 'functest-suite-builder':
+            TESTCASE_OPTIONS: '-e INSPECTOR_TYPE=$INSPECTOR_TYPE -v $WORKSPACE:$HOME/opnfv/repos/doctor'
