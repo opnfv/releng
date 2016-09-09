@@ -14,9 +14,6 @@
 # a new method format_<Test_case>_for_dashboard(results)
 # v0.1: basic example with methods for odl, Tempest, Rally and vPing
 #
-import re
-import datetime
-
 
 def get_promise_cases():
     """
@@ -36,8 +33,8 @@ def format_promise_for_dashboard(case, results):
         # note we add _case because testcase and project had the same name
         # TODO refactoring...looks fine at the beginning wit only 1 project
         # not very ugly now and clearly not optimized...
-        cmd = "format_" + case + "_case_for_dashboard(results)"
-        res = eval(cmd)
+        cmd = "format_" + case + "_case_for_dashboard"
+        res = globals()[cmd](results)
     else:
         res = []
         print "Test cases not declared"

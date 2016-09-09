@@ -7,7 +7,7 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 import argparse
-
+import ast
 from pymongo import MongoClient
 
 from changes_in_mongodb import collections_old2New, fields_old2New, docs_old2New
@@ -54,11 +54,15 @@ def change_docs(a_dict):
 
 
 def eval_db(method, *args, **kwargs):
-    return eval('db.%s(*args, **kwargs)' % method)
+    print method
+    return db.__getattribute__(method)(*args, **kwargs)
 
 
 def eval_collection(collection, method, *args, **kwargs):
-    return eval('db.%s.%s(*args, **kwargs)' % (collection, method))
+    collection_obj = db.getCollection(collection)
+    return collection_obj.__getattribute__(method)(*args, **kwargs)
+
+    # return eval('db.%s.%s'%(collection, method))(*args, **kwargs)
 
 
 def collection_update(a_dict, operator):
@@ -75,9 +79,9 @@ def update(args):
     client = MongoClient(args.url)
     global db
     db = client[args.db]
-    assert_collections(docs_old2New)
-    assert_collections(fields_old2New)
-    assert_collections(collections_old2New)
+    # assert_collections(docs_old2New)
+    # assert_collections(fields_old2New)
+    # assert_collections(collections_old2New)
     change_docs(docs_old2New)
     rename_fields(fields_old2New)
     rename_collections(collections_old2New)

@@ -305,7 +305,7 @@ class TestResultGet(TestResultBase):
 
     def _set_query(self, *args):
         def get_value(arg):
-            return eval('self.' + arg) \
+            return self.__getattribute__(arg) \
                 if arg != 'trust_indicator' else self.trust_indicator.current
         uri = ''
         for arg in args:

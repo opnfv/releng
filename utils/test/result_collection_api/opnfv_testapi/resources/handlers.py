@@ -23,8 +23,8 @@
 import json
 from datetime import datetime
 
-from tornado.web import RequestHandler, asynchronous, HTTPError
 from tornado import gen
+from tornado.web import RequestHandler, asynchronous, HTTPError
 
 from models import CreateResponse
 from opnfv_testapi.common.constants import DEFAULT_REPRESENTATION, \
@@ -217,7 +217,9 @@ class GenericApiHandler(RequestHandler):
         return equal, query
 
     def _eval_db(self, table, method, *args, **kwargs):
-        return eval('self.db.%s.%s(*args, **kwargs)' % (table, method))
+        print vars(self.db)
+        table_obj = vars(self.db)[table]
+        return table_obj.__getattribute__(method)(*args, **kwargs)
 
     def _eval_db_find_one(self, query, table=None):
         if table is None:
