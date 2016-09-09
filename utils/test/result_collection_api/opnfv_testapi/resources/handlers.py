@@ -23,8 +23,8 @@
 import json
 from datetime import datetime
 
-from tornado.web import RequestHandler, asynchronous, HTTPError
 from tornado import gen
+from tornado.web import RequestHandler, asynchronous, HTTPError
 
 from models import CreateResponse
 from opnfv_testapi.common.constants import DEFAULT_REPRESENTATION, \

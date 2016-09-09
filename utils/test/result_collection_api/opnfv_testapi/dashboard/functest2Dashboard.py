@@ -34,8 +34,8 @@ def format_functest_for_dashboard(case, results):
     then build the call to the specific method
     """
     if check_functest_case_exist(case):
-        cmd = "format_" + case + "_for_dashboard(results)"
-        res = eval(cmd)
+        cmd = "format_" + case + "_for_dashboard"
+        res = globals()[cmd](results)
     else:
         res = []
         print "Test cases not declared"
