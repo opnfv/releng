@@ -36,8 +36,8 @@ def format_doctor_for_dashboard(case, results):
         # note we add _case because testcase and project had the same name
         # TODO refactoring...looks fine at the beginning wit only 1 project
         # not very ugly now and clearly not optimized...
-        cmd = "format_" + case.replace('-','_') + "_case_for_dashboard(results)"
-        res = eval(cmd)
+        cmd = "format_" + case.replace('-','_') + "_case_for_dashboard"
+        res = res = globals()[cmd](results)
     else:
         res = []
     return res
