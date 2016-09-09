@@ -13,6 +13,7 @@
 # It may be used for all the test case of the Doctor project
 # a new method format_<Test_case>_for_dashboard(results)
 #
+import ast
 import re
 import datetime
 
@@ -37,7 +38,7 @@ def format_doctor_for_dashboard(case, results):
         # TODO refactoring...looks fine at the beginning wit only 1 project
         # not very ugly now and clearly not optimized...
         cmd = "format_" + case.replace('-','_') + "_case_for_dashboard(results)"
-        res = eval(cmd)
+        res = ast.literal_eval(cmd)
     else:
         res = []
     return res

@@ -20,6 +20,7 @@
 # feng.xiaowei@zte.com.cn remove DashboardHandler            5-30-2016
 ##############################################################################
 
+import ast
 import json
 from datetime import datetime
 
@@ -217,7 +218,8 @@ class GenericApiHandler(RequestHandler):
         return equal, query
 
     def _eval_db(self, table, method, *args, **kwargs):
-        return eval('self.db.%s.%s(*args, **kwargs)' % (table, method))
+        return ast.literal_eval('self.db.%s.%s(*args, **kwargs)' %
+                                (table, method))
 
     def _eval_db_find_one(self, query, table=None):
         if table is None:
