@@ -17,6 +17,7 @@
 import os
 import requests
 import json
+import ast
 
 
 def get_bottlenecks_cases():
@@ -49,7 +50,7 @@ def format_bottlenecks_for_dashboard(case, results):
     """
     if check_bottlenecks_case_exist(case):
         cmd = "format_" + case + "_for_dashboard(results)"
-        res = eval(cmd)
+        res = ast.literal_eval(cmd)
     else:
         res = []
         print "Test cases not declared"

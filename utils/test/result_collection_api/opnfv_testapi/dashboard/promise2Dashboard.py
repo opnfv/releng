@@ -14,6 +14,7 @@
 # a new method format_<Test_case>_for_dashboard(results)
 # v0.1: basic example with methods for odl, Tempest, Rally and vPing
 #
+import ast
 import re
 import datetime
 
@@ -37,7 +38,7 @@ def format_promise_for_dashboard(case, results):
         # TODO refactoring...looks fine at the beginning wit only 1 project
         # not very ugly now and clearly not optimized...
         cmd = "format_" + case + "_case_for_dashboard(results)"
-        res = eval(cmd)
+        res = ast.literal_eval(cmd)
     else:
         res = []
         print "Test cases not declared"

@@ -14,6 +14,7 @@
 # a new method format_<Test_case>_for_dashboard(results)
 # v0.1: basic example with methods for odl, Tempest, Rally and vPing
 #
+import ast
 import datetime
 import re
 
@@ -35,7 +36,7 @@ def format_functest_for_dashboard(case, results):
     """
     if check_functest_case_exist(case):
         cmd = "format_" + case + "_for_dashboard(results)"
-        res = eval(cmd)
+        res = ast.literal_eval(cmd)
     else:
         res = []
         print "Test cases not declared"

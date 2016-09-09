@@ -6,6 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+import ast
 import copy
 import unittest
 from datetime import datetime, timedelta
@@ -305,7 +306,7 @@ class TestResultGet(TestResultBase):
 
     def _set_query(self, *args):
         def get_value(arg):
-            return eval('self.' + arg) \
+            return ast.literal_eval('self.' + arg) \
                 if arg != 'trust_indicator' else self.trust_indicator.current
         uri = ''
         for arg in args:

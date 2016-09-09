@@ -6,6 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+import ast
 import unittest
 
 from tornado import gen
@@ -115,7 +116,7 @@ class MyTest(AsyncHTTPTestCase):
             self.assertEqual(name_error, error)
 
     def _eval_pods_db(self, method, *args, **kwargs):
-        return eval('self.db.pods.%s(*args, **kwargs)' % method)
+        return ast.literal_eval('self.db.pods.%s(*args, **kwargs)' % method)
 
 
 if __name__ == '__main__':

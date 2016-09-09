@@ -6,10 +6,12 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+import ast
 import unittest
 
-from test_result import TestResultBase
 from opnfv_testapi.common.constants import HTTP_NOT_FOUND, HTTP_OK
+
+from test_result import TestResultBase
 
 
 class TestDashboardBase(TestResultBase):
@@ -63,7 +65,7 @@ class TestDashboardQuery(TestDashboardBase):
             if k == 'self' or k == 'uri':
                 continue
             if v is None:
-                v = eval('self.' + k)
+                v = ast.literal_eval('self.' + k)
             if v != 'missing':
                 uri += '{}={}&'.format(k, v)
         uri += 'pod={}&'.format(self.pod)

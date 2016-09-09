@@ -17,6 +17,7 @@
 import os
 import re
 import sys
+import ast
 from functest2Dashboard import format_functest_for_dashboard, \
     check_functest_case_exist
 from yardstick2Dashboard import format_yardstick_for_dashboard, \
@@ -48,7 +49,7 @@ def check_dashboard_ready_project(test_project):
 
 def check_dashboard_ready_case(project, case):
     cmd = "check_" + project + "_case_exist(case)"
-    return eval(cmd)
+    return ast.literal_eval(cmd)
 
 
 def get_dashboard_projects():
@@ -74,5 +75,5 @@ def get_dashboard_result(project, case, results=None):
     # results: array of raw results pre-filterded
     # according to the parameters of the request
     cmd = "format_" + project + "_for_dashboard(case,results)"
-    res = eval(cmd)
+    res = ast.literal_eval(cmd)
     return res
