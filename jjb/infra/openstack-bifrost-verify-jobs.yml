@@ -1,0 +1,116 @@
+- project:
+    name: 'openstack-bifrost-verify'
+
+    project: 'releng'
+#--------------------------------
+# branches
+#--------------------------------
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+#--------------------------------
+# distros
+# jobs for centos7 and suse can be created once the support is there
+#--------------------------------
+    distro:
+        - 'trusty':
+            slave-label: infra-virtual-trusty
+            disabled: false
+        - 'centos7':
+            slave-label: infra-virtual-trusty
+            disabled: true
+        - 'suse':
+            slave-label: infra-virtual-trusty
+            disabled: true
+#--------------------------------
+# jobs
+#--------------------------------
+    jobs:
+        - 'openstack-bifrost-verify-{distro}-{stream}'
+#--------------------------------
+# job templates
+#--------------------------------
+- job-template:
+    name: 'openstack-bifrost-verify-{distro}-{stream}'
+
+    concurrent: false
+
+    disabled: '{obj:disabled}'
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'infra-os-.*?-daily-.*'
+            block-level: 'NODE'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - string:
+            name: DISTRO
+            default: '{distro}'
+        - string:
+            name: CLEAN_DIB_IMAGES
+            default: 'true'
+        - '{slave-label}-defaults'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    triggers:
+        - gerrit:
+            server-name: 'review.openstack.org'
+            silent-start: true
+            skip-vote:
+                successful: true
+                failed: true
+                unstable: true
+                notbuilt: true
+            escape-quotes: true
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+            projects:
+              - project-compare-type: 'PLAIN'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/master'
+                  - compare-type: ANT
+                    pattern: 'build/**'
+                  - compare-type: ANT
+                    pattern: 'deploy/**'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'doc/**'
+                  - compare-type: ANT
+                    pattern: 'releasenotes/**'
+            readable-message: true
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - 'openstack-bifrost-verify-builder'
+
+    publishers:
+        - email:
+            recipients: fatih.degirmenci@ericsson.com yroblamo@redhat.com mchandras@suse.de jack.morgan@intel.com zhang.jun3g@zte.com.cn
+#####################################
+# builder macros
+#####################################
+- builder:
+    name: 'openstack-bifrost-verify-builder'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            sudo $WORKSPACE/jjb/infra/openstack-bifrost-verify.sh
