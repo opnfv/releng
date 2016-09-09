@@ -14,7 +14,6 @@
 #
 # v0.1: basic example
 #
-import os
 import re
 import sys
 from functest2Dashboard import format_functest_for_dashboard, \
@@ -47,8 +46,8 @@ def check_dashboard_ready_project(test_project):
 
 
 def check_dashboard_ready_case(project, case):
-    cmd = "check_" + project + "_case_exist(case)"
-    return eval(cmd)
+    cmd = "check_" + project + "_case_exist"
+    return globals()[cmd](case)
 
 
 def get_dashboard_projects():
@@ -73,6 +72,5 @@ def get_dashboard_result(project, case, results=None):
     # project: project name
     # results: array of raw results pre-filterded
     # according to the parameters of the request
-    cmd = "format_" + project + "_for_dashboard(case,results)"
-    res = eval(cmd)
-    return res
+    cmd = "format_" + project + "_for_dashboard"
+    return globals()[cmd](case, results)

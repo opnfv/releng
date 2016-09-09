@@ -7,7 +7,6 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 import argparse
-
 from pymongo import MongoClient
 
 from changes_in_mongodb import collections_old2New, fields_old2New, docs_old2New
@@ -75,9 +74,9 @@ def update(args):
     client = MongoClient(args.url)
     global db
     db = client[args.db]
-    assert_collections(docs_old2New)
-    assert_collections(fields_old2New)
-    assert_collections(collections_old2New)
+    # assert_collections(docs_old2New)
+    # assert_collections(fields_old2New)
+    # assert_collections(collections_old2New)
     change_docs(docs_old2New)
     rename_fields(fields_old2New)
     rename_collections(collections_old2New)

@@ -115,7 +115,8 @@ class MyTest(AsyncHTTPTestCase):
             self.assertEqual(name_error, error)
 
     def _eval_pods_db(self, method, *args, **kwargs):
-        return eval('self.db.pods.%s(*args, **kwargs)' % method)
+        table_obj = vars(self.db)['pods']
+        return table_obj.__getattribute__(method)(*args, **kwargs)
 
 
 if __name__ == '__main__':

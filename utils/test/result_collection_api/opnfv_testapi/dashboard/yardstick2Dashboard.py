@@ -16,7 +16,6 @@
 #       Fio, Lmbench, Perf, Cyclictest.
 #
 
-
 def get_yardstick_cases():
     """
     get the list of the supported test cases
@@ -33,8 +32,8 @@ def format_yardstick_for_dashboard(case, results):
     then build the call to the specific method
     """
     if check_yardstick_case_exist(case):
-        cmd = "format_" + case + "_for_dashboard(results)"
-        res = eval(cmd)
+        cmd = "format_" + case + "_for_dashboard"
+        res = globals()[cmd](results)
     else:
         res = []
         print "Test cases not declared"
