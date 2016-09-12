@@ -1,18 +1,14 @@
 #! /usr/bin/env python
 import json
-import logging
 import urlparse
 
 import argparse
 import yaml
 
+import logger_utils
 import shared_utils
 
-logger = logging.getLogger('create_kibana_dashboards')
-logger.setLevel(logging.DEBUG)
-file_handler = logging.FileHandler('./{}.log'.format('create_kibana_dashboards'))
-file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
-logger.addHandler(file_handler)
+logger = logger_utils.KibanaDashboardLogger('elastic2kibana').get
 
 _installers = {'fuel', 'apex', 'compass', 'joid'}
 
