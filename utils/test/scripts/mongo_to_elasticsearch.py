@@ -10,266 +10,15 @@ import uuid
 
 import argparse
 
+import conf_utils
 import shared_utils
+import mongo2elastic_format
 
 logger = logging.getLogger('mongo_to_elasticsearch')
 logger.setLevel(logging.DEBUG)
 file_handler = logging.FileHandler('/var/log/{}.log'.format('mongo_to_elasticsearch'))
 file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
 logger.addHandler(file_handler)
-
-
-def _get_dicts_from_list(testcase, dict_list, keys):
-    dicts = []
-    for dictionary in dict_list:
-        # iterate over dictionaries in input list
-        if not isinstance(dictionary, dict):
-            logger.info("Skipping non-dict details testcase '{}'".format(testcase))
-            continue
-        if keys == set(dictionary.keys()):
-            # check the dictionary structure
-            dicts.append(dictionary)
-    return dicts
-
-
-def _get_results_from_list_of_dicts(list_of_dict_statuses, dict_indexes, expected_results=None):
-    test_results = {}
-    for test_status in list_of_dict_statuses:
-        status = test_status
-        for index in dict_indexes:
-            status = status[index]
-        if status in test_results:
-            test_results[status] += 1
-        else:
-            test_results[status] = 1
-
-    if expected_results is not None:
-        for expected_result in expected_results:
-            if expected_result not in test_results:
-                test_results[expected_result] = 0
-
-    return test_results
-
-
-def _convert_value(value):
-    return value if value != '' else 0
-
-
-def _convert_duration(duration):
-    if (isinstance(duration, str) or isinstance(duration, unicode)) and ':' in duration:
-        hours, minutes, seconds = duration.split(":")
-        hours = _convert_value(hours)
-        minutes = _convert_value(minutes)
-        seconds = _convert_value(seconds)
-        int_duration = 3600 * int(hours) + 60 * int(minutes) + float(seconds)
-    else:
-        int_duration = duration
-    return int_duration
-
-
-def modify_functest_tempest(testcase):
-    if modify_default_entry(testcase):
-        testcase_details = testcase['details']
-        testcase_tests = float(testcase_details['tests'])
-        testcase_failures = float(testcase_details['failures'])
-        if testcase_tests != 0:
-            testcase_details['success_percentage'] = 100 * (testcase_tests - testcase_failures) / testcase_tests
-        else:
-            testcase_details['success_percentage'] = 0
-        return True
-    else:
-        return False
-
-
-def modify_functest_vims(testcase):
-    """
-    Structure:
-        details.sig_test.result.[{result}]
-        details.sig_test.duration
-        details.vIMS.duration
-        details.orchestrator.duration
-
-    Find data for these fields
-        -> details.sig_test.duration
-        -> details.sig_test.tests
-        -> details.sig_test.failures
-        -> details.sig_test.passed
-        -> details.sig_test.skipped
-        -> details.vIMS.duration
-        -> details.orchestrator.duration
-    """
-    testcase_details = testcase['details']
-    sig_test_results = _get_dicts_from_list(testcase, testcase_details['sig_test']['result'],
-                                            {'duration', 'result', 'name', 'error'})
-    if len(sig_test_results) < 1:
-        logger.info("No 'result' from 'sig_test' found in vIMS details, skipping")
-        return False
-    else:
-        test_results = _get_results_from_list_of_dicts(sig_test_results, ('result',), ('Passed', 'Skipped', 'Failed'))
-        passed = test_results['Passed']
-        skipped = test_results['Skipped']
-        failures = test_results['Failed']
-        all_tests = passed + skipped + failures
-        testcase['details'] = {
-            'sig_test': {
-                'duration': testcase_details['sig_test']['duration'],
-                'tests': all_tests,
-                'failures': failures,
-                'passed': passed,
-                'skipped': skipped
-            },
-            'vIMS': {
-                'duration': testcase_details['vIMS']['duration']
-            },
-            'orchestrator': {
-                'duration': testcase_details['orchestrator']['duration']
-            }
-        }
-        return True
-
-
-def modify_functest_onos(testcase):
-    """
-    Structure:
-        details.FUNCvirNet.duration
-        details.FUNCvirNet.status.[{Case result}]
-        details.FUNCvirNetL3.duration
-        details.FUNCvirNetL3.status.[{Case result}]
-
-    Find data for these fields
-        -> details.FUNCvirNet.duration
-        -> details.FUNCvirNet.tests
-        -> details.FUNCvirNet.failures
-        -> details.FUNCvirNetL3.duration
-        -> details.FUNCvirNetL3.tests
-        -> details.FUNCvirNetL3.failures
-    """
-    testcase_details = testcase['details']
-
-    if 'FUNCvirNet' not in testcase_details:
-        return modify_default_entry(testcase)
-
-    funcvirnet_details = testcase_details['FUNCvirNet']['status']
-    funcvirnet_statuses = _get_dicts_from_list(testcase, funcvirnet_details, {'Case result', 'Case name:'})
-
-    funcvirnetl3_details = testcase_details['FUNCvirNetL3']['status']
-    funcvirnetl3_statuses = _get_dicts_from_list(testcase, funcvirnetl3_details, {'Case result', 'Case name:'})
-
-    if len(funcvirnet_statuses) < 0:
-        logger.info("No results found in 'FUNCvirNet' part of ONOS results")
-        return False
-    elif len(funcvirnetl3_statuses) < 0:
-        logger.info("No results found in 'FUNCvirNetL3' part of ONOS results")
-        return False
-    else:
-        funcvirnet_results = _get_results_from_list_of_dicts(funcvirnet_statuses,
-                                                             ('Case result',), ('PASS', 'FAIL'))
-        funcvirnetl3_results = _get_results_from_list_of_dicts(funcvirnetl3_statuses,
-                                                               ('Case result',), ('PASS', 'FAIL'))
-
-        funcvirnet_passed = funcvirnet_results['PASS']
-        funcvirnet_failed = funcvirnet_results['FAIL']
-        funcvirnet_all = funcvirnet_passed + funcvirnet_failed
-
-        funcvirnetl3_passed = funcvirnetl3_results['PASS']
-        funcvirnetl3_failed = funcvirnetl3_results['FAIL']
-        funcvirnetl3_all = funcvirnetl3_passed + funcvirnetl3_failed
-
-        testcase_details['FUNCvirNet'] = {
-            'duration': _convert_duration(testcase_details['FUNCvirNet']['duration']),
-            'tests': funcvirnet_all,
-            'failures': funcvirnet_failed
-        }
-
-        testcase_details['FUNCvirNetL3'] = {
-            'duration': _convert_duration(testcase_details['FUNCvirNetL3']['duration']),
-            'tests': funcvirnetl3_all,
-            'failures': funcvirnetl3_failed
-        }
-
-        return True
-
-
-def modify_functest_rally(testcase):
-    """
-    Structure:
-        details.[{summary.duration}]
-        details.[{summary.nb success}]
-        details.[{summary.nb tests}]
-
-    Find data for these fields
-        -> details.duration
-        -> details.tests
-        -> details.success_percentage
-    """
-    summaries = _get_dicts_from_list(testcase, testcase['details'], {'summary'})
-
-    if len(summaries) != 1:
-        logger.info("Found zero or more than one 'summaries' in Rally details, skipping")
-        return False
-    else:
-        summary = summaries[0]['summary']
-        testcase['details'] = {
-            'duration': summary['duration'],
-            'tests': summary['nb tests'],
-            'success_percentage': summary['nb success']
-        }
-        return True
-
-
-def modify_functest_odl(testcase):
-    """
-    Structure:
-        details.details.[{test_status.@status}]
-
-    Find data for these fields
-        -> details.tests
-        -> details.failures
-        -> details.success_percentage?
-    """
-    test_statuses = _get_dicts_from_list(testcase, testcase['details']['details'],
-                                         {'test_status', 'test_doc', 'test_name'})
-    if len(test_statuses) < 1:
-        logger.info("No 'test_status' found in ODL details, skipping")
-        return False
-    else:
-        test_results = _get_results_from_list_of_dicts(test_statuses, ('test_status', '@status'), ('PASS', 'FAIL'))
-
-        passed_tests = test_results['PASS']
-        failed_tests = test_results['FAIL']
-        all_tests = passed_tests + failed_tests
-
-        testcase['details'] = {
-            'tests': all_tests,
-            'failures': failed_tests,
-            'success_percentage': 100 * passed_tests / float(all_tests)
-        }
-        logger.debug("Modified odl testcase: '{}'".format(json.dumps(testcase, indent=2)))
-        return True
-
-
-def modify_default_entry(testcase):
-    """
-    Look for these and leave any of those:
-        details.duration
-        details.tests
-        details.failures
-
-    If none are present, then return False
-    """
-    found = False
-    testcase_details = testcase['details']
-    fields = ['duration', 'tests', 'failures']
-    if isinstance(testcase_details, dict):
-        for key, value in testcase_details.items():
-            if key in fields:
-                found = True
-                if key == 'duration':
-                    testcase_details[key] = _convert_duration(value)
-            else:
-                del testcase_details[key]
-
-    return found
 
 
 def _fix_date(date_string):
@@ -372,22 +121,13 @@ def modify_mongo_entry(testcase):
     if verify_mongo_entry(testcase):
         project = testcase['project_name']
         case_name = testcase['case_name']
-        logger.info("Processing mongo test case '{}'".format(case_name))
-        try:
-            if project == 'functest':
-                if case_name == 'rally_sanity':
-                    return modify_functest_rally(testcase)
-                elif case_name.lower() == 'odl':
-                    return modify_functest_odl(testcase)
-                elif case_name.lower() == 'onos':
-                    return modify_functest_onos(testcase)
-                elif case_name.lower() == 'vims':
-                    return modify_functest_vims(testcase)
-                elif case_name == 'tempest_smoke_serial':
-                    return modify_functest_tempest(testcase)
-            return modify_default_entry(testcase)
-        except Exception:
-            logger.error("Fail in modify testcase[%s]\nerror message: %s" % (testcase, traceback.format_exc()))
+        fmt = conf_utils.get_format(project, case_name)
+        if fmt:
+            try:
+                logger.info("Processing %s/%s using format %s" % (project, case_name, fmt))
+                return vars(mongo2elastic_format)[fmt](testcase)
+            except Exception:
+                logger.error("Fail in modify testcase[%s]\nerror message: %s" % (testcase, traceback.format_exc()))
     else:
         return False
 
@@ -395,8 +135,10 @@ def modify_mongo_entry(testcase):
 def publish_mongo_data(output_destination):
     tmp_filename = 'mongo-{}.log'.format(uuid.uuid4())
     try:
-        subprocess.check_call(['mongoexport', '--db', 'test_results_collection', '-c', 'results', '--out',
-                               tmp_filename])
+        subprocess.check_call(['mongoexport',
+                               '--db', 'test_results_collection',
+                               '-c', 'results',
+                               '--out', tmp_filename])
         with open(tmp_filename) as fobj:
             for mongo_json_line in fobj:
                 test_result = json.loads(mongo_json_line)
