@@ -4,8 +4,8 @@ import logging
 import urlparse
 
 import argparse
-import yaml
 
+import conf_utils
 import shared_utils
 
 logger = logging.getLogger('create_kibana_dashboards')
@@ -307,10 +307,7 @@ def construct_dashboards():
     :return: list of KibanaDashboards
     """
     kibana_dashboards = []
-    with open('./testcases.yaml') as f:
-        testcases_yaml = yaml.safe_load(f)
-
-    for project, case_dicts in testcases_yaml.items():
+    for project, case_dicts in conf_utils.testcases_yaml.items():
         for case in case_dicts:
             case_name = case.get('name')
             visualizations = case.get('visualizations')

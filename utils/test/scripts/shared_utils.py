@@ -1,5 +1,7 @@
-import urllib3
 import json
+
+import urllib3
+
 http = urllib3.PoolManager()
 
 
@@ -36,4 +38,3 @@ def get_elastic_data(elastic_url, creds, body, field='_source'):
     for hit in elastic_json['hits']['hits']:
         elastic_data.append(hit[field])
     return elastic_data
-
