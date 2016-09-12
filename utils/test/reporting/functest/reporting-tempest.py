@@ -28,7 +28,7 @@ logger.info("success rate > %s " % criteria_success_rate)
 for version in conf.versions:
     for installer in conf.installers:
         # we consider the Tempest results of the last PERIOD days
-        url = conf.URL_BASE + "?case=tempest_smoke_serial"
+        url = 'http://' + conf.URL_BASE + "?case=tempest_smoke_serial"
         request = Request(url + '&period=' + str(PERIOD) +
                           '&installer=' + installer +
                           '&version=' + version)
@@ -116,7 +116,7 @@ for version in conf.versions:
                     logger.error("Error field not present (Brahamputra runs?)")
 
         templateLoader = jinja2.FileSystemLoader(conf.REPORTING_PATH)
-        templateEnv = jinja2.Environment(loader=templateLoader)
+        templateEnv = jinja2.Environment(loader=templateLoader, autoescape=True)
 
         TEMPLATE_FILE = "/template/index-tempest-tmpl.html"
         template = templateEnv.get_template(TEMPLATE_FILE)

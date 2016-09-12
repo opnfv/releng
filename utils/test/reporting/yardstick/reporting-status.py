@@ -59,7 +59,7 @@ for version in conf.versions:
             logger.info("--------------------------")
 
         templateLoader = jinja2.FileSystemLoader(conf.REPORTING_PATH)
-        templateEnv = jinja2.Environment(loader=templateLoader)
+        templateEnv = jinja2.Environment(loader=templateLoader, autoescape=True)
 
         TEMPLATE_FILE = "/template/index-status-tmpl.html"
         template = templateEnv.get_template(TEMPLATE_FILE)

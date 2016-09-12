@@ -37,7 +37,7 @@ def getApiResults(case, installer, scenario, version):
     # urllib2.install_opener(opener)
     # url = "http://127.0.0.1:8000/results?case=" + case + \
     #       "&period=30&installer=" + installer
-    url = (conf.URL_BASE + "?case=" + case +
+    url = ("http://" + conf.URL_BASE + "?case=" + case +
            "&period=" + str(conf.PERIOD) + "&installer=" + installer +
            "&scenario=" + scenario + "&version=" + version +
            "&last=" + str(conf.NB_TESTS))
@@ -56,7 +56,7 @@ def getApiResults(case, installer, scenario, version):
 def getScenarios(case, installer, version):
 
     case = case.getName()
-    url = (conf.URL_BASE + "?case=" + case +
+    url = ("http://" + conf.URL_BASE + "?case=" + case +
            "&period=" + str(conf.PERIOD) + "&installer=" + installer +
            "&version=" + version)
     request = Request(url)
