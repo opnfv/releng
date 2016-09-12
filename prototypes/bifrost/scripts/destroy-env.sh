@@ -27,6 +27,8 @@ echo "removing logs"
 rm -rf /var/log/libvirt/baremetal_logs/*.log
 
 # clean up dib images only if requested explicitly
+CLEAN_DIB_IMAGES=${CLEAN_DIB_IMAGES:-false}
+
 if [ $CLEAN_DIB_IMAGES = "true" ]; then
     rm -rf /httpboot/*
     rm -rf /tftpboot/*
