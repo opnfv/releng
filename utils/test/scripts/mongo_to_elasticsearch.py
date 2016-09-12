@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 import datetime
 import json
-import logging
 import os
 import subprocess
 import traceback
@@ -11,14 +10,11 @@ import uuid
 import argparse
 
 import conf_utils
-import shared_utils
+import logger_utils
 import mongo2elastic_format
+import shared_utils
 
-logger = logging.getLogger('mongo_to_elasticsearch')
-logger.setLevel(logging.DEBUG)
-file_handler = logging.FileHandler('/var/log/{}.log'.format('mongo_to_elasticsearch'))
-file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
-logger.addHandler(file_handler)
+logger = logger_utils.KibanaDashboardLogger('mongo2elastic').get
 
 
 def _fix_date(date_string):
