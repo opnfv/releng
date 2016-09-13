@@ -25,16 +25,36 @@ def _get_nr_of_hits(elastic_json):
     return elastic_json['hits']['total']
 
 
-def get_elastic_data(elastic_url, creds, body, field='_source'):
+def get_elastic_docs(elastic_url, creds, days):
+    if days == 0:
+        body = '''{
+            "query": {
+                "match_all": {}
+            }
+        }'''
+    elif days > 0:
+        body = '''{{
+            "query" : {{
+                "range" : {{
+                    "start_date" : {{
+                        "gte" : "now-{}d"
+                    }}
+                }}
+            }}
+        }}'''.format(days)
+    else:
+        raise Exception('Update days must be non-negative')
+
     # 1. get the number of results
     headers = urllib3.make_headers(basic_auth=creds)
     elastic_json = json.loads(http.request('GET', elastic_url + '/_search?size=0', headers=headers, body=body).data)
+    print elastic_json
     nr_of_hits = _get_nr_of_hits(elastic_json)
 
     # 2. get all results
     elastic_json = json.loads(http.request('GET', elastic_url + '/_search?size={}'.format(nr_of_hits), headers=headers, body=body).data)
 
-    elastic_data = []
+    elastic_docs = []
     for hit in elastic_json['hits']['hits']:
-        elastic_data.append(hit[field])
-    return elastic_data
+        elastic_docs.append(hit['_source'])
+    return elastic_docs
