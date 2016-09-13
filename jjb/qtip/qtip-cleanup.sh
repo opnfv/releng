@@ -6,15 +6,10 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-echo "Cleaning up QTIP  docker containers/images..."
-
 # Remove previous running containers if exist
 if [[ ! -z $(docker ps -a | grep opnfv/qtip) ]]; then
     echo "Removing existing opnfv/qtip containers..."
-    running_containers=$(docker ps | grep opnfv/qtip | awk '{print $1}')
-    docker stop ${running_containers}
-    all_containers=$(docker ps -a | grep opnfv/qtip | awk '{print $1}')
-    docker rm ${all_containers}
+    docker ps -a | grep opnfv/qtip | awk '{print $1}' | xargs docker rm -f >"/dev/null"
 fi
 
 # Remove existing images if exist
@@ -27,4 +22,3 @@ if [[ ! -z $(docker images | grep opnfv/qtip) ]]; then
         docker rmi opnfv/qtip:$tag
     done
 fi
-
