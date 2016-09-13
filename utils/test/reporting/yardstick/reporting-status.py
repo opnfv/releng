@@ -32,6 +32,12 @@ for version in conf.versions:
     for installer in conf.installers:
         # get scenarios results data
         scenario_results = utils.getScenarioStatus(installer, version)
+        if 'colorado' == version:
+            stable_result = utils.getScenarioStatus(installer, 'stable/colorado')
+            for k,v in stable_result.items():
+                if not scenario_results.has_key(k):
+                    scenario_results[k] = []
+                scenario_results[k] += stable_result[k]
         scenario_result_criteria = {}
 
         # From each scenarios get results list
@@ -44,10 +50,10 @@ for version in conf.versions:
             scenario_score = 0
 
             for v in s_result:
-                if v['details'] == 'SUCCESS':
+                if v['criteria'] == 'SUCCESS':
                     scenario_score += 1
 
-            if scenario_score == scenario_criteria:
+            if scenario_score == scenario_criteria and scenario_criteria == 4:
                 s_status = 'OK'
                 logger.info(">>>>> scenario OK, save the information")
             else:
