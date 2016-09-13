@@ -34,7 +34,7 @@ tempest = tc.TestCase("tempest_smoke_serial", "functest", -1)
 cf = conf.TEST_CONF
 response = requests.get(cf)
 
-functest_yaml_config = yaml.load(response.text)
+functest_yaml_config = yaml.safe_load(response.text)
 
 logger.info("*******************************************")
 logger.info("*   Generating reporting scenario status  *")

@@ -157,7 +157,7 @@ def read_yaml_file(yamlFile):
     """
     # TODO: add check if vnic templates specified in file exist on UCS
     with open(yamlFile, 'r') as stream:
-        return yaml.load(stream)
+        return yaml.safe_load(stream)
 
 
 def set_network(handle=None, yamlFile=None):
