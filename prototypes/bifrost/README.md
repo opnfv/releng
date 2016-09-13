@@ -7,26 +7,26 @@ Please follow that steps:
 
 1. Clone bifrost::
 
-    git clone https://git.openstack.org/openstack/bifrost /opt/bifrost
+    sudo git clone https://git.openstack.org/openstack/bifrost /opt/bifrost
 
 2. Clone releng::
 
-    git clone https://gerrit.opnfv.org/gerrit/releng /opt/releng
+    sudo git clone https://gerrit.opnfv.org/gerrit/releng /opt/releng
 
 3. Clone infracloud::
 
-    git clone https://git.openstack.org/openstack-infra/puppet-infracloud /opt/puppet-infracloud
+    sudo git clone https://git.openstack.org/openstack-infra/puppet-infracloud /opt/puppet-infracloud
 
 4. Combine releng scripts and playbooks with bifrost::
 
-    cp -R /opt/releng/prototypes/bifrost/* /opt/bifrost/
+    sudo cp -R /opt/releng/prototypes/bifrost/* /opt/bifrost/
 
 5. If you are on a RHEL/CentOS box, ensure that selinux is disabled
 
 6. Run destroy script if you need to cleanup previous environment::
 
     cd /opt/bifrost
-    ./scripts/destroy-env.sh
+    sudo ./scripts/destroy-env.sh
 
 7. Run deployment script to spin up 3 vms with bifrost: jumphost, controller and compute::
 
