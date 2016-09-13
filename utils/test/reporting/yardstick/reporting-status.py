@@ -38,6 +38,8 @@ for version in conf.versions:
                 if not scenario_results.has_key(k):
                     scenario_results[k] = []
                 scenario_results[k] += stable_result[k]
+        for k,v in scenario_results.items():
+            scenario_results[k] = v[0:conf.LASTEST_TESTS]
         scenario_result_criteria = {}
 
         # From each scenarios get results list
