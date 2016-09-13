@@ -7,6 +7,13 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+
+# We need to execute everything as root
+if [[ $(whoami) != "root" ]]; then
+    echo "Error: This script must be run as root!"
+    exit 1
+fi
+
 virsh destroy jumphost.opnfvlocal || true
 virsh destroy controller00.opnfvlocal || true
 virsh destroy compute00.opnfvlocal || true
@@ -22,7 +29,7 @@ mysql -u root ironic --execute "delete from node_tags;"
 mysql -u root ironic --execute "delete from nodes;"
 mysql -u root ironic --execute "delete from conductors;"
 echo "removing leases"
-> /var/lib/dnsmasq/dnsmasq.leases
+[[ -e /var/lib/dnsmasq/dnsmasq.leases ]] && > /var/lib/dnsmasq/dnsmasq.leases
 echo "removing logs"
 rm -rf /var/log/libvirt/baremetal_logs/*.log
 
