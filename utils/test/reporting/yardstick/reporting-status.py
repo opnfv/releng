@@ -44,10 +44,10 @@ for version in conf.versions:
             scenario_score = 0
 
             for v in s_result:
-                if v['details'] == 'SUCCESS':
+                if v['criteria'] == 'SUCCESS':
                     scenario_score += 1
 
-            if scenario_score == scenario_criteria:
+            if scenario_score == scenario_criteria and scenario_criteria == 4:
                 s_status = 'OK'
                 logger.info(">>>>> scenario OK, save the information")
             else:
