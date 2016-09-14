@@ -175,6 +175,7 @@ for version in conf.versions:
                 scenario_criteria = conf.MAX_SCENARIO_CRITERIA
 
             s_score = str(scenario_score) + "/" + str(scenario_criteria)
+            s_score_percent = scenario_score / scenario_criteria * 100
             s_status = "KO"
             if scenario_score < scenario_criteria:
                 logger.info(">>>> scenario not OK, score = %s/%s" %
@@ -191,11 +192,13 @@ for version in conf.versions:
                             ";" + installer + ";" + s + "\n")
                     f.write(info)
 
-            scenario_result_criteria[s] = sr.ScenarioResult(s_status, s_score)
+            scenario_result_criteria[s] = sr.ScenarioResult(s_status, s_score,
+                                                            s_score_percent)
             logger.info("--------------------------")
 
         templateLoader = jinja2.FileSystemLoader(conf.REPORTING_PATH)
-        templateEnv = jinja2.Environment(loader=templateLoader, autoescape=True)
+        templateEnv = jinja2.Environment(
+            loader=templateLoader, autoescape=True)
 
         TEMPLATE_FILE = "/template/index-status-tmpl.html"
         template = templateEnv.get_template(TEMPLATE_FILE)

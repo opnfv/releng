@@ -9,12 +9,17 @@
 
 
 class ScenarioResult(object):
-    def __init__(self, status, score=0):
+
+    def __init__(self, status, score=0, score_percent=0):
         self.status = status
         self.score = score
+        self.score_percent = score_percent
 
     def getStatus(self):
         return self.status
 
     def getScore(self):
         return self.score
+
+    def getScorePercent(self):
+        return self.score_percent
