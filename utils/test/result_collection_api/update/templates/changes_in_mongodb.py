@@ -45,6 +45,7 @@ docs_old2New = {
     #     ({'case_name': 'ovno'}, {'case_name': 'ocl'})
     # ]
     'results': [
-        ({'trust_indicator': 0}, {'trust_indicator': {'current': 0, 'histories': []}})
+        ({'trust_indicator': 0},
+         {'trust_indicator': {'current': 0, 'histories': []}})
     ]
 }

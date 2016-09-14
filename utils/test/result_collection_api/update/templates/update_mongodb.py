@@ -10,7 +10,8 @@ import argparse
 
 from pymongo import MongoClient
 
-from changes_in_mongodb import collections_old2New, fields_old2New, docs_old2New
+from changes_in_mongodb import collections_old2New, \
+    fields_old2New, docs_old2New
 from utils import main, parse_mongodb_url
 
 parser = argparse.ArgumentParser(description='Update MongoDBs')
@@ -54,11 +55,13 @@ def change_docs(a_dict):
 
 
 def eval_db(method, *args, **kwargs):
-    return eval('db.%s(*args, **kwargs)' % method)
+    exec_db = db.__getattribute__(method)
+    return exec_db(*args, **kwargs)
 
 
 def eval_collection(collection, method, *args, **kwargs):
-    return eval('db.%s.%s(*args, **kwargs)' % (collection, method))
+    exec_collection = db.__getattr__(collection)
+    return exec_collection.__getattribute__(method)(*args, **kwargs)
 
 
 def collection_update(a_dict, operator):

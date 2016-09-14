@@ -181,6 +181,10 @@ class MemDb(object):
                 self._check_keys(doc.get(key))
 
 
+def __getattr__(name):
+    return globals()[name]
+
+
 pods = MemDb()
 projects = MemDb()
 testcases = MemDb()
