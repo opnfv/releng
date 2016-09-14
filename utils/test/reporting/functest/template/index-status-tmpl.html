@@ -48,11 +48,33 @@
                         {% for scenario,iteration in scenario_stats.iteritems() -%}
                             <tr class="tr-ok">
                                 <td>{{scenario}}</td>
-                                <td>{%if scenario_results[scenario].getStatus() is sameas "OK" -%}
-									<img src="../../img/icon-ok.png"> 
-									{%- else -%}
-									<img src="../../img/icon-nok.png">
-									{%- endif %}</td>
+                                <td>{%if scenario_results[scenario].getScorePercent() < 8.3 -%}
+                                        <img src="../../img/gauge_0.png">
+                                    {%elif scenario_results[scenario].getScorePercent() < 16.7 -%}
+                                        <img src="../../img/gauge_8.3.png">
+                                    {%elif scenario_results[scenario].getScorePercent() < 25 -%}
+                                        <img src="../../img/gauge_16.7.png">
+                                    {%elif scenario_results[scenario].getScorePercent() < 33.3 -%}
+                                        <img src="../../img/gauge_25.png">
+                                    {%elif scenario_results[scenario].getScorePercent() < 41.7 -%}
+                                        <img src="../../img/gauge_33.3.png">
+                                    {%elif scenario_results[scenario].getScorePercent() < 50 -%}
+                                        <img src="../../img/gauge_41.7.png">
+                                    {%elif scenario_results[scenario].getScorePercent() < 58.3 -%}
+                                        <img src="../../img/gauge_50.png">
+                                    {%elif scenario_results[scenario].getScorePercent() < 66.7 -%}
+                                        <img src="../../img/gauge_58.3.png">
+                                    {%elif scenario_results[scenario].getScorePercent() < 75 -%}
+                                        <img src="../../img/gauge_66.7.png">
+                                    {%elif scenario_results[scenario].getScorePercent() < 83.3 -%}
+                                        <img src="../../img/gauge_75.png">
+                                    {%elif scenario_results[scenario].getScorePercent() < 91.7 -%}
+                                        <img src="../../img/gauge_83.3.png">
+                                    {%elif scenario_results[scenario].getScorePercent() < 100 -%}
+                                        <img src="../../img/gauge_91.7.png">
+                                    {%- else -%}
+                                        <img src="../../img/gauge_100.png">
+                                {%- endif %}</td>
                                 <td>{{scenario_results[scenario].getScore()}}</td>
                                 <td>{{iteration}}</td>
                             </tr>
@@ -78,14 +100,14 @@
                             {% if test.getCriteria() > -1 -%}
                             {{test.getDisplayName() }}
                             {%- endif %}
-							{% if test.getTier() > 3 -%}
+                            {% if test.getTier() > 3 -%}
                             *
                             {%- endif %}
-                             </th>                           
+                             </th>
                             {%- endfor %}
                         </tr>
                         <tr class="tr-weather-weather">
-                            {% for test in items[scenario] -%}                          
+                            {% for test in items[scenario] -%}
                             {% if test.getCriteria() > 2 -%}
                                 <td><img src="../../img/weather-clear.png"></td>
                             {%- elif test.getCriteria() > 1 -%}
