@@ -13,7 +13,7 @@ logger.addHandler(file_handler)
 
 
 def delete_all(url, es_creds):
-    ids = shared_utils.get_elastic_data(url, es_creds, body=None, field='_id')
+    ids = shared_utils.get_elastic_docs(url, es_creds, body=None, field='_id')
     for id in ids:
         del_url = '/'.join([url, id])
         shared_utils.delete_request(del_url, es_creds)

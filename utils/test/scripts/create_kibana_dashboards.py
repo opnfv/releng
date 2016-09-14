@@ -273,7 +273,7 @@ def _get_pods_and_scenarios(project_name, case_name, installer):
         }
     })
 
-    elastic_data = shared_utils.get_elastic_data(urlparse.urljoin(base_elastic_url, '/test_results/mongo2elastic'),
+    elastic_data = shared_utils.get_elastic_docs(urlparse.urljoin(base_elastic_url, '/test_results/mongo2elastic'),
                                                  es_creds, query_json)
 
     pods_and_scenarios = {}
