@@ -24,7 +24,7 @@ case "$DISTRO" in
 esac
 
 # remove previously cloned repos
-/bin/rm -rf /opt/bifrost /opt/puppet-infracloud /opt/releng
+/bin/rm -rf /opt/bifrost /opt/puppet-infracloud /opt/stack /opt/releng
 
 # clone upstream bifrost repo and checkout the patch to verify
 git clone https://git.openstack.org/openstack/bifrost /opt/bifrost
