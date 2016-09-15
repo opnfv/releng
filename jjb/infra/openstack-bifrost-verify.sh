@@ -11,6 +11,16 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+trap fix_ownership EXIT
+
+function fix_ownership() {
+    if [ -z "${JOB_URL+x}" ]; then
+        echo "Not running as part of Jenkins. Handle the logs manually."
+    else
+        chown -R jenkins:jenkins $WORKSPACE
+    fi
+}
+
 # check distro to see if we support it
 # we will have centos and suse supported in future
 case "$DISTRO" in
