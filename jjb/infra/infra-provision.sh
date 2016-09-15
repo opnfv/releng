@@ -27,6 +27,12 @@ cd /opt/bifrost
 cd /opt/bifrost
 ./scripts/test-bifrost-deployment.sh
 
+if [ -z "${JOB_URL+x}" ]; then
+    echo "Not running as part of Jenkins. Handle the logs manually."
+else
+    sudo chown -R jenkins:jenkins $WORKSPACE
+fi
+
 # list the provisioned VMs
 cd /opt/bifrost
 source env-vars
