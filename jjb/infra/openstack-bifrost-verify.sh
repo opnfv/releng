@@ -55,9 +55,6 @@ cd /opt/bifrost
 cd /opt/bifrost
 ./scripts/test-bifrost-deployment.sh
 
-# fix the ownerships so stuff works even with successful runs
-fix_ownership
-
 # list the provisioned VMs
 cd /opt/bifrost
 source env-vars
