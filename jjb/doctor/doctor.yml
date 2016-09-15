@@ -92,7 +92,9 @@
             description: 'OpenStack credentials'
         - '{installer}-defaults'
         - '{slave-label}-defaults'
-        - 'functest-suite-parameter'
+        - 'functest-suite-parameter':
+            FUNCTEST_SUITE_NAME: '{project}'
+            TESTCASE_OPTIONS: '-e INSPECTOR_TYPE={inspector} -v $WORKSPACE:$HOME/opnfv/repos/{project}'
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-odl_l2-nofeature-ha'
@@ -137,5 +139,4 @@
                 notbuilt: true
 
     builders:
-        - 'functest-suite-builder':
-            TESTCASE_OPTIONS: '-e INSPECTOR_TYPE=$INSPECTOR_TYPE -v $WORKSPACE:$HOME/opnfv/repos/doctor'
+        - 'functest-suite-builder'
