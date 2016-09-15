@@ -31,7 +31,7 @@ Please follow that steps:
 7. Run deployment script to spin up 3 vms with bifrost: jumphost, controller and compute::
 
     cd /opt/bifrost
-    ./scripts/test-bifrost-deployment.sh
+    sudo ./scripts/test-bifrost-deployment.sh
 
 It is likely that the script will show some errors due to timeout. Please ignore the errors, and wait until the vms are completely bootstrapped. To verify it you can check with ironic::
 
