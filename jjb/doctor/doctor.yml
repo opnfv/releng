@@ -83,27 +83,9 @@
             default: '{inspector}'
             description: 'Doctor inspector type to be used'
         - string:
-            name: INSTALLER_TYPE
-            default: apex
-            description: 'OPNFV Installer type'
-        - string:
             name: OS_CREDS
             default: /home/jenkins/openstack.creds
             description: 'OpenStack credentials'
-        - '{installer}-defaults'
-        - '{slave-label}-defaults'
-        - 'functest-suite-parameter':
-            FUNCTEST_SUITE_NAME: '{project}'
-            TESTCASE_OPTIONS: '-e INSPECTOR_TYPE={inspector} -v $WORKSPACE:$HOME/opnfv/repos/{project}'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'os-odl_l2-nofeature-ha'
-        - string:
-            name: DOCKER_TAG
-            default: '{docker_tag}'
-            description: 'Tag to pull docker image'
-        - functest-parameter:
-            gs-pathname: '{gs-pathname}'
 
     scm:
         - gerrit-trigger-scm:
@@ -139,4 +121,11 @@
                 notbuilt: true
 
     builders:
-        - 'functest-suite-builder'
+        - trigger-builds:
+          - project: 'functest-{installer}-virtual-suite-{stream}'
+            current-parameters: true
+            predefined-parameters: |
+              FUNCTEST_SUITE_NAME=doctor
+              TESTCASE_OPTIONS='-e INSPECTOR_TYPE=$INSPECTOR_TYPE -v $WORKSPACE:$HOME/opnfv/repos/doctor'
+            block: true
+            same-node: true
