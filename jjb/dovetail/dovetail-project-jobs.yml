@@ -1,0 +1,98 @@
+###################################################
+# Non-ci jobs for Dovetail project
+# They will only be enabled on request by projects!
+###################################################
+- project:
+    name: dovetail-project-jobs
+
+    project: 'dovetail'
+
+    jobs:
+        - 'dovetail-verify-{stream}'
+        - 'dovetail-merge-{stream}'
+
+    stream:
+        - master:
+            branch: '{stream}'
+            disabled: false
+
+################################
+# job templates
+################################
+
+- job-template:
+    name: 'dovetail-verify-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+    builders:
+         - shell: |
+             echo "dovetail: verify job"
+         #unittest will be added future
+
+- job-template:
+    name: 'dovetail-merge-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/{branch}'
+
+    builders:
+         - shell: |
+             echo "dovetail: merge"
+         #unittest will be added future
