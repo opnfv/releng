@@ -80,20 +80,20 @@
             installer: compass
             <<: *danube
 # apex CI PODs
-        - apex-verify-master:
-            slave-label: '{pod}'
+        - virtual:
+            slave-label: apex-virtual-master
             installer: apex
             <<: *master
-        - apex-daily-master:
-            slave-label: '{pod}'
+        - baremetal:
+            slave-label: apex-baremetal-master
             installer: apex
             <<: *master
-        - apex-verify-danube:
-            slave-label: '{pod}'
+        - virtual:
+            slave-label: apex-virtual-danube
             installer: apex
             <<: *danube
-        - apex-daily-danube:
-            slave-label: '{pod}'
+        - baremetal:
+            slave-label: apex-baremetal-danube
             installer: apex
             <<: *danube
 # armband CI PODs
