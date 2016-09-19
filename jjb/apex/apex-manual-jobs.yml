@@ -1,0 +1,151 @@
+- project:
+    name: 'apex-manual-jobs'
+    project: 'apex'
+    jobs:
+        - 'apex-runner-{platform}-{scenario}-{stream}'
+        - 'apex-runner-cperf-{stream}'
+
+    stream:
+        - master:
+            branch: 'master'
+            gs-pathname: ''
+            slave: 'lf-pod1'
+            disabled: false
+        - colorado:
+            branch: 'stable/colorado'
+            gs-pathname: '/colorado'
+            slave: 'lf-pod1'
+            disabled: false
+
+    scenario:
+         - 'os-nosdn-nofeature-noha'
+         - 'os-nosdn-nofeature-ha'
+         - 'os-nosdn-nofeature-ha-ipv6'
+         - 'os-nosdn-ovs-noha'
+         - 'os-nosdn-fdio-noha'
+         - 'os-odl_l2-nofeature-ha'
+         - 'os-odl_l2-bgpvpn-ha'
+         - 'os-odl_l2-fdio-noha'
+         - 'os-odl_l2-sfc-noha'
+         - 'os-odl_l3-nofeature-ha'
+         - 'os-onos-nofeature-ha'
+         - 'os-onos-sfc-ha'
+         - 'os-ocl-nofeature-ha'
+
+    platform:
+         - 'baremetal'
+         - 'virtual'
+
+- job-template:
+    name: 'apex-runner-{platform}-{scenario}-{stream}'
+
+    # runner jobs for deploying manually
+
+    node: '{slave}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'apex-daily.*'
+                - 'apex-verify.*'
+
+    builders:
+        - trigger-builds:
+          - project: 'apex-deploy-{platform}-{scenario}-{stream}'
+            predefined-parameters:
+              OPNFV_CLEAN=yes
+            git-revision: false
+            block: true
+        - trigger-builds:
+          - project: 'yardstick-apex-{slave}-daily-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO={scenario}
+            block: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'functest-apex-{slave}-daily-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO={scenario}
+            block: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+
+- job-template:
+    name: 'apex-runner-cperf-{stream}'
+
+    # runner cperf job
+
+    node: 'intel-pod2'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    properties:
+        - build-blocker:
+            use-build-blocker: false
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-deploy.*'
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - trigger-builds:
+          - project: 'apex-deploy-baremetal-os-odl_l2-nofeature-ha-{stream}'
+            predefined-parameters:
+              OPNFV_CLEAN=yes
+            git-revision: false
+            block: true
+            same-node: true
+        - trigger-builds:
+          - project: 'cperf-apex-intel-pod2-daily-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl_l2-nofeature-ha
+            block: true
+            same-node: true
+
