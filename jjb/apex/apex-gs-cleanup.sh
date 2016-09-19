@@ -17,3 +17,4 @@ for i in $(gsutil ls gs://$GS_URL/*201?*); do
       gsutil rm $i
     fi
 done
+
