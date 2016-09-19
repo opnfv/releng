@@ -71,9 +71,7 @@
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
     builders:
-         - shell: |
-             echo "bottlenecks: verify job"
-         #TO DO: this should be changed when the unittest ready
+        - bottlenecks-unit-tests
 
 - job-template:
     name: 'bottlenecks-merge-{stream}'
@@ -107,8 +105,7 @@
                       branch-pattern: '**/{branch}'
 
     builders:
-         - shell: |
-             echo "bottlenecks: merge"
+        - bottlenecks-unit-tests
 
 - job-template:
     name: 'bottlenecks-{suite}-upload-artifacts-{stream}'
@@ -195,3 +192,26 @@
             echo "Bottlenecks: cleanup cache used for storage downloaded packages"
 
             /bin/rm -rf $CACHE_DIR
+
+- builder:
+    name: bottlenecks-unit-tests
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+
+            echo "Running unit tests..."
+            cd $WORKSPACE
+            virtualenv $WORKSPACE/bottlenecks_venv
+            source $WORKSPACE/bottlenecks_venv/bin/activate
+
+            # install python packages
+            easy_install -U setuptools
+            easy_install -U pip
+            pip install -r requirements.txt
+
+            # unit tests
+            ./tests.sh
+
+            deactivate
