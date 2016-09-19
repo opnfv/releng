@@ -20,10 +20,6 @@
             slave-label: 'ool-virtual1'
             pod: 'ool-virtual1'
 
-    inspector:
-        - sample
-        - congress
-
     jobs:
         - 'doctor-verify-{stream}'
         - 'doctor-verify-{installer}-{inspector}-{stream}'
@@ -72,7 +68,7 @@
         - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
 
 - job-template:
-    name: 'doctor-verify-{installer}-{inspector}-{stream}'
+    name: 'doctor-verify-{installer}-{stream}'
 
     node: '{slave-label}'
 
@@ -81,10 +77,6 @@
             project: '{project}'
         - gerrit-parameter:
             branch: '{branch}'
-        - string:
-            name: INSPECTOR_TYPE
-            default: '{inspector}'
-            description: 'Doctor inspector type to be used'
         - string:
             name: OS_CREDS
             default: /home/jenkins/openstack.creds
@@ -129,7 +121,18 @@
           - project: 'functest-{installer}-{pod}-suite-{stream}'
             current-parameters: true
             predefined-parameters: |
+              CI_DEBUG=true
               FUNCTEST_SUITE_NAME=doctor
-              TESTCASE_OPTIONS=-e INSPECTOR_TYPE=$INSPECTOR_TYPE -v $WORKSPACE:$HOME/opnfv/repos/doctor
+              DEPLOY_SCENARIO=os-nosdn-nofeature-ha
+              TESTCASE_OPTIONS=-e INSPECTOR_TYPE=sample -v $WORKSPACE:$HOME/opnfv/repos/doctor
+            block: true
+            same-node: true
+          - project: 'functest-{installer}-{pod}-suite-{stream}'
+            current-parameters: true
+            predefined-parameters: |
+              CI_DEBUG=true
+              FUNCTEST_SUITE_NAME=doctor
+              DEPLOY_SCENARIO=os-nosdn-nofeature-ha
+              TESTCASE_OPTIONS=-e INSPECTOR_TYPE=congress -v $WORKSPACE:$HOME/opnfv/repos/doctor
             block: true
             same-node: true
