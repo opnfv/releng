@@ -9,6 +9,7 @@
     project:
         - 'bottlenecks'
         - 'cperf'
+        - 'dovetail'
         - 'functest'
         - 'storperf'
         - 'qtip'
@@ -16,6 +17,9 @@
     jobs:
         - '{project}-docker-build-push-{stream}'
         - 'yardstick-docker-build-push-{stream}'
+        #dovetail not sync with release, an independent job
+        #only master by now, will adjust accordingly in future
+        - 'dovetail-docker-build-push-master'
 
     stream:
         - master:
@@ -91,6 +95,49 @@
         - string:
             name: DOCKER_REPO_NAME
             default: "opnfv/yardstick"
+            description: "Dockerhub repo to be pushed to."
+        - string:
+            name: UPDATE_LATEST_STABLE
+            default: "false"
+            description: "This will update the latest_stable image only."
+        - string:
+            name: STABLE_TAG
+            description: "If above option is true, this is the tag to be pulled."
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - shell:
+            !include-raw-escape: ./opnfv-docker.sh
+
+    triggers:
+        - pollscm:
+            cron: "*/30 * * * *"
+
+- job-template:
+    name: 'dovetail-docker-build-push-master'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: 'dovetail'
+        - 'opnfv-build-ubuntu-defaults'
+        - string:
+            name: PUSH_IMAGE
+            default: "true"
+            description: "To enable/disable pushing the image to Dockerhub."
+        - string:
+            name: BASE_VERSION
+            default: "1.0"
+            description: "Base version to be used."
+        - string:
+            name: DOCKER_REPO_NAME
+            default: "opnfv/dovetail"
             description: "Dockerhub repo to be pushed to."
         - string:
             name: UPDATE_LATEST_STABLE
