@@ -10,7 +10,7 @@ echo
 [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
 # set OPNFV_ARTIFACT_VERSION
 if echo $BUILD_TAG | grep "apex-verify" 1> /dev/null; then
-  export OPNFV_ARTIFACT_VERSION=dev${BUILD_NUMBER}
+  export OPNFV_ARTIFACT_VERSION="dev${GERRIT_CHANGE_NUMBER}${GERRIT_PATCHSET_NUMBER}"
   export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY"
 elif echo $BUILD_TAG | grep "csit" 1> /dev/null; then
   export OPNFV_ARTIFACT_VERSION=csit${BUILD_NUMBER}
