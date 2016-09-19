@@ -62,7 +62,14 @@ def format_rally(testcase):
         -> details.tests
         -> details.success_percentage
     """
-    summary = testcase['details']['summary']
+    details = testcase['details']
+    summary = None
+    for item in details:
+        if 'summary' in item:
+            summary = item['summary']
+
+    if not summary:
+        return False
 
     testcase['details'] = {
         'duration': summary['duration'],
