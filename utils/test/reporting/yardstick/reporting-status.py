@@ -26,6 +26,7 @@ logger.info("*   Data retention = %s days              *" % conf.PERIOD)
 logger.info("*                                         *")
 logger.info("*******************************************")
 
+    
 # For all the versions
 for version in conf.versions:
     # For all the installers
@@ -38,8 +39,6 @@ for version in conf.versions:
                 if not scenario_results.has_key(k):
                     scenario_results[k] = []
                 scenario_results[k] += stable_result[k]
-        for k,v in scenario_results.items():
-            scenario_results[k] = v[0:conf.LASTEST_TESTS]
         scenario_result_criteria = {}
 
         # From each scenarios get results list
@@ -47,23 +46,26 @@ for version in conf.versions:
             logger.info("---------------------------------")
             logger.info("installer %s, version %s, scenario %s:" % (installer, version, s))
 
-            s_status = 'KO'
-            scenario_criteria = len(s_result)
-            scenario_score = 0
-
+            ten_criteria = len(s_result)
+            ten_score = 0
             for v in s_result:
-                if v['criteria'] == 'SUCCESS':
-                    scenario_score += 1
+                ten_score += v
 
-            if scenario_score == scenario_criteria and scenario_criteria == 4:
-                s_status = 'OK'
+            four_result = s_result[:4]
+            four_criteria = len(four_result)
+            four_score = 0
+            for v in four_result:
+                four_score += v
+
+            s_status = str(utils.get_status(four_result, s_result))
+            s_four_score = str(four_score) + '/' + str(four_criteria)
+            s_ten_score = str(ten_score) + '/' + str(ten_criteria)
+            scenario_result_criteria[s] = sr.ScenarioResult(s_status, s_four_score, s_ten_score)
+
+            if '100' == s_status:
                 logger.info(">>>>> scenario OK, save the information")
             else:
-                logger.info(">>>> scenario not OK, score = %s/%s" % (scenario_score, scenario_criteria))
-
-            s_score = str(scenario_score) + '/' + str(scenario_criteria)
-            scenario_result_criteria[s] = sr.ScenarioResult(s_status, s_score)
-
+                logger.info(">>>> scenario not OK, last 4 iterations = %s, last ten days = %s" % (s_four_score, s_ten_score))
             logger.info("--------------------------")
 
         templateLoader = jinja2.FileSystemLoader(conf.REPORTING_PATH)
