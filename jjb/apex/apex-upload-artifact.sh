@@ -18,35 +18,37 @@ source $WORKSPACE/opnfv.properties
 
 BUILD_DIRECTORY=${WORKSPACE}/.build
 
-# clone releng repository
-echo "Cloning releng repository..."
-[ -d releng ] && rm -rf releng
-git clone https://gerrit.opnfv.org/gerrit/releng $WORKSPACE/releng/ &> /dev/null
-#this is where we import the siging key
-if [ -f $WORKSPACE/releng/utils/gpg_import_key.sh ]; then
-  source $WORKSPACE/releng/utils/gpg_import_key.sh
-fi
+importkey () {
+  # clone releng repository
+  echo "Cloning releng repository..."
+  [ -d releng ] && rm -rf releng
+  git clone https://gerrit.opnfv.org/gerrit/releng $WORKSPACE/releng/ &> /dev/null
+  #this is where we import the siging key
+  if [ -f $WORKSPACE/releng/utils/gpg_import_key.sh ]; then
+    source $WORKSPACE/releng/utils/gpg_import_key.sh
+  fi
+}
 
 signrpm () {
-for artifact in $RPM_LIST $SRPM_LIST; do
-  echo "Signing artifact: ${artifact}"
-  gpg2 -vvv --batch --yes --no-tty \
-    --default-key opnfv-helpdesk@rt.linuxfoundation.org \
-    --passphrase besteffort \
-    --detach-sig $artifact
-    gsutil cp "$artifact".sig gs://$GS_URL/$(basename "$artifact".sig)
-    echo "Upload complete for ${artifact} signature"
-done
+  for artifact in $RPM_LIST $SRPM_LIST; do
+    echo "Signing artifact: ${artifact}"
+    gpg2 -vvv --batch --yes --no-tty \
+      --default-key opnfv-helpdesk@rt.linuxfoundation.org \
+      --passphrase besteffort \
+      --detach-sig $artifact
+      gsutil cp "$artifact".sig gs://$GS_URL/$(basename "$artifact".sig)
+      echo "Upload complete for ${artifact} signature"
+  done
 }
 
 signiso () {
-time gpg2 -vvv --batch --yes --no-tty \
-  --default-key opnfv-helpdesk@rt.linuxfoundation.org  \
-  --passphrase besteffort \
-  --detach-sig $BUILD_DIRECTORY/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso
+  gpg2 -vvv --batch --yes --no-tty \
+    --default-key opnfv-helpdesk@rt.linuxfoundation.org  \
+    --passphrase besteffort \
+    --detach-sig $BUILD_DIRECTORY/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso
 
-gsutil cp $BUILD_DIRECTORY/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso.sig gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso.sig 
-echo "ISO signature Upload Complete!"
+  gsutil cp $BUILD_DIRECTORY/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso.sig gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso.sig
+  echo "ISO signature Upload Complete!"
 }
 
 uploadiso () {
@@ -62,6 +64,13 @@ uploadrpm () {
   done
   gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log
   gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/latest.properties > gsutil.latest.log
+
+  # Make the property files viewable on the artifact site
+  gsutil -m setmeta \
+    -h "Content-Type:text/html" \
+    -h "Cache-Control:private, max-age=0, no-transform" \
+    gs://$GS_URL/latest.properties \
+    gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > /dev/null 2>&1
 }
 
 uploadsnap () {
@@ -75,6 +84,20 @@ uploadsnap () {
   echo "Upload complete for Snapshot"
 }
 
+uploadimages () {
+  # Uploads dev tarball
+  export OPNFV_ARTIFACT_VERSION="dev${GERRIT_CHANGE_NUMBER}${GERRIT_PATCHSET_NUMBER}"
+  echo "Uploading development build tarball"
+  pushd $BUILD_DIRECTORY > /dev/null
+  tar czf apex-${OPNFV_ARTIFACT_VERSION}.tar.gz *.qcow2
+  gsutil cp apex-${OPNFV_ARTIFACT_VERSION}.tar.gz gs://$GS_URL/apex-${OPNFV_ARTIFACT_VERSION}.tar.gz > gsutil.latest.log
+  popd > /dev/null
+}
+
+# Always import the signing key, if it's available the artifacts will be
+# signed before being uploaded
+importkey
+
 if gpg2 --list-keys | grep "opnfv-helpdesk@rt.linuxfoundation.org"; then
   echo "Signing Key avaliable"
   SIGN_ARTIFACT="true"
@@ -83,28 +106,38 @@ fi
 if [ "$ARTIFACT_TYPE" == 'snapshot' ]; then
   uploadsnap
 elif [ "$ARTIFACT_TYPE" == 'iso' ]; then
+  if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
+    echo "Skipping artifact upload for ${ARTIFACT_TYPE} due to dev build"
+    exit 0
+  fi
   if [[ -n "$SIGN_ARTIFACT" && "$SIGN_ARTIFACT" == "true" ]]; then
     signiso
   fi
   uploadiso
 elif [ "$ARTIFACT_TYPE" == 'rpm' ]; then
-  RPM_INSTALL_PATH=$BUILD_DIRECTORY/noarch
-  RPM_LIST=$RPM_INSTALL_PATH/$(basename $OPNFV_RPM_URL)
-  VERSION_EXTENSION=$(echo $(basename $OPNFV_RPM_URL) | sed 's/opnfv-apex-//')
-  for pkg in common undercloud; do # removed onos for danube
-    RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
-  done
-  SRPM_INSTALL_PATH=$BUILD_DIRECTORY
-  SRPM_LIST=$SRPM_INSTALL_PATH/$(basename $OPNFV_SRPM_URL)
-  VERSION_EXTENSION=$(echo $(basename $OPNFV_SRPM_URL) | sed 's/opnfv-apex-//')
-  for pkg in common undercloud; do # removed onos for danube
-    SRPM_LIST+=" ${SRPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
-  done
+  if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
+    echo "dev build detected, will upload image tarball"
+    ARTIFACT_TYPE=tarball
+    uploadimages
+  else
+    RPM_INSTALL_PATH=$BUILD_DIRECTORY/noarch
+    RPM_LIST=$RPM_INSTALL_PATH/$(basename $OPNFV_RPM_URL)
+    VERSION_EXTENSION=$(echo $(basename $OPNFV_RPM_URL) | sed 's/opnfv-apex-//')
+    for pkg in common undercloud; do # removed onos for danube
+      RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
+    done
+    SRPM_INSTALL_PATH=$BUILD_DIRECTORY
+    SRPM_LIST=$SRPM_INSTALL_PATH/$(basename $OPNFV_SRPM_URL)
+    VERSION_EXTENSION=$(echo $(basename $OPNFV_SRPM_URL) | sed 's/opnfv-apex-//')
+    for pkg in common undercloud; do # removed onos for danube
+      SRPM_LIST+=" ${SRPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
+    done
 
-  if [[ -n "$SIGN_ARTIFACT" && "$SIGN_ARTIFACT" == "true" ]]; then
-    signrpm
+    if [[ -n "$SIGN_ARTIFACT" && "$SIGN_ARTIFACT" == "true" ]]; then
+      signrpm
+    fi
+    uploadrpm
   fi
-  uploadrpm
 else
   echo "ERROR: Unknown artifact type ${ARTIFACT_TYPE} to upload...exiting"
   exit 1
@@ -115,3 +148,4 @@ echo "--------------------------------------------------------"
 echo "Done!"
 if [ "$ARTIFACT_TYPE" == 'iso' ]; then echo "ISO Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"; fi
 if [ "$ARTIFACT_TYPE" == 'rpm' ]; then echo "RPM Artifact is available as http://$GS_URL/$(basename $OPNFV_RPM_URL)"; fi
+if [ "$ARTIFACT_TYPE" == 'tarball' ]; then echo "Dev tarball Artifact is available as http://$GS_URL/apex-${OPNFV_ARTIFACT_VERSION}.tar.gz)"; fi

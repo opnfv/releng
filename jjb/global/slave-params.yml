@@ -4,11 +4,11 @@
 # use of the new labels are in place
 #####################################################
 - parameter:
-    name: 'apex-daily-master-defaults'
+    name: 'apex-baremetal-master-defaults'
     parameters:
         - label:
             name: SLAVE_LABEL
-            default: 'apex-daily-master'
+            default: 'apex-baremetal-master'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -25,11 +25,11 @@
             default-slaves:
                 - lf-pod1
 - parameter:
-    name: 'apex-daily-danube-defaults'
+    name: 'apex-baremetal-danube-defaults'
     parameters:
         - label:
             name: SLAVE_LABEL
-            default: 'apex-daily-danube'
+            default: 'apex-baremetal-danube'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -46,11 +46,11 @@
             default-slaves:
                 - lf-pod1
 - parameter:
-    name: 'apex-verify-master-defaults'
+    name: 'apex-virtual-master-defaults'
     parameters:
         - label:
             name: SLAVE_LABEL
-            default: 'apex-verify-master'
+            default: 'apex-virtual-master'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -63,19 +63,18 @@
             name: SLAVE_NAME
             description: 'Slave name on Jenkins'
             allowed-slaves:
-                - intel-virtual3
-                - intel-virtual4
-                - intel-virtual5
+                - lf-virtual2
+                - lf-virtual3
             default-slaves:
-                - intel-virtual3
-                - intel-virtual4
-                - intel-virtual5
+                - lf-virtual2
+                - lf-virtual3
+
 - parameter:
-    name: 'apex-verify-danube-defaults'
+    name: 'apex-virtual-danube-defaults'
     parameters:
         - label:
             name: SLAVE_LABEL
-            default: 'apex-verify-danube'
+            default: 'apex-virtual-danube'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -88,13 +87,9 @@
             name: SLAVE_NAME
             description: 'Slave name on Jenkins'
             allowed-slaves:
-                - intel-virtual3
-                - intel-virtual4
-                - intel-virtual5
+                - lf-pod3
             default-slaves:
-                - intel-virtual3
-                - intel-virtual4
-                - intel-virtual5
+                - lf-pod3
 - parameter:
     name: 'lf-pod1-defaults'
     parameters:
@@ -105,6 +100,24 @@
                 - lf-pod1
             default-slaves:
                 - lf-pod1
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+        - string:
+            name: SSH_KEY
+            default: /root/.ssh/id_rsa
+            description: 'SSH key to use for Apex'
+- parameter:
+    name: 'lf-pod3-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - lf-pod3
+            default-slaves:
+                - lf-pod3
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
