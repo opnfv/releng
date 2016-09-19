@@ -35,11 +35,13 @@ function docker_version() {
     fi
     tag_json=$(curl $url_tag 2>/dev/null | python -mjson.tool | grep ${BASE_VERSION} | head -1)
     #e.g. tag_json= "name": "brahmaputra.0.2",
+    #for dovetail, not sync with release, tag_json= "name": "1.0"
     if [ "${tag_json}" == "" ]; then
         echo ${BASE_VERSION}.0
     else
         tag=$(echo $tag_json | awk '{print $2}' | sed 's/\,//' | sed 's/\"//g')
         #e.g.: tag=brahmaputra.0.2
+        #for dovetail, not sync with release, e.g.: tag=1.0
         tag_current_version=$(echo $tag | sed 's/.*\.//')
         tag_new_version=$(($tag_current_version+1))
         #e.g.: tag=brahmaputra.0.3
