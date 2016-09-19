@@ -3,6 +3,20 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# Configure list of source and binary RPMs to upload
+RPM_INSTALL_PATH=$BUILD_DIRECTORY/noarch
+RPM_LIST=$RPM_INSTALL_PATH/$(basename $OPNFV_RPM_URL)
+VERSION_EXTENSION=$(echo $(basename $OPNFV_RPM_URL) | sed 's/opnfv-apex-//')
+for pkg in common undercloud onos; do
+    RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
+done
+SRPM_INSTALL_PATH=$BUILD_DIRECTORY
+SRPM_LIST=$SRPM_INSTALL_PATH/$(basename $OPNFV_SRPM_URL)
+VERSION_EXTENSION=$(echo $(basename $OPNFV_SRPM_URL) | sed 's/opnfv-apex-//')
+for pkg in common undercloud onos; do
+    SRPM_LIST+=" ${SRPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
+done
+
 # log info to console
 echo "Uploading the Apex artifact. This could take some time..."
 echo "--------------------------------------------------------"
@@ -13,14 +27,16 @@ source $WORKSPACE/opnfv.properties
 
 BUILD_DIRECTORY=${WORKSPACE}/.build
 
+importkey () {
 # clone releng repository
 echo "Cloning releng repository..."
 [ -d releng ] && rm -rf releng
 git clone https://gerrit.opnfv.org/gerrit/releng $WORKSPACE/releng/ &> /dev/null
 #this is where we import the siging key
-if [ -f $WORKSPACE/releng/utils/gpg_import_key.sh ]; then 
+if [ -f $WORKSPACE/releng/utils/gpg_import_key.sh ]; then
   source $WORKSPACE/releng/utils/gpg_import_key.sh
 fi
+}
 
 signrpm () {
 for artifact in $RPM_LIST $SRPM_LIST; do
@@ -35,12 +51,12 @@ done
 }
 
 signiso () {
-time gpg2 -vvv --batch --yes --no-tty \
+gpg2 -vvv --batch --yes --no-tty \
   --default-key opnfv-helpdesk@rt.linuxfoundation.org  \
   --passphrase besteffort \
   --detach-sig $BUILD_DIRECTORY/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso
 
-gsutil cp $BUILD_DIRECTORY/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso.sig gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso.sig 
+gsutil cp $BUILD_DIRECTORY/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso.sig gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso.sig
 echo "ISO signature Upload Complete!"
 }
 
@@ -71,7 +87,18 @@ for artifact in $RPM_LIST $SRPM_LIST; do
 done
 gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log
 gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/latest.properties > gsutil.latest.log
+
+# Make the property files viewable on the artifact site
+gsutil -m setmeta \
+    -h "Content-Type:text/html" \
+    -h "Cache-Control:private, max-age=0, no-transform" \
+    gs://$GS_URL/latest.properties \
+    gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > /dev/null 2>&1
 }
+
+# Always import the signing key, if it's available the artifacts will be
+# signed before being uploaded
+importkey
 
 if gpg2 --list-keys | grep "opnfv-helpdesk@rt.linuxfoundation.org"; then
   echo "Signing Key avaliable"
