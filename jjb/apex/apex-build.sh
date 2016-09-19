@@ -9,10 +9,10 @@ echo
 # create the cache directory if it doesn't exist
 [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
 # set OPNFV_ARTIFACT_VERSION
-if echo $BUILD_TAG | grep "apex-verify" 1> /dev/null; then
+if [[ "$JOB_NAME" =~ "verify" ]]; then
   export OPNFV_ARTIFACT_VERSION=dev${BUILD_NUMBER}
   export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY"
-elif [ "$ARTIFACT_VERSION" == "daily" ]; then
+elif [[ "$JOB_NAME" =~ "daily" ]]; then
   export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d")
   export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY --iso"
 else
@@ -36,7 +36,7 @@ echo "Cache Directory Contents:"
 echo "-------------------------"
 ls -al $CACHE_DIRECTORY
 
-if ! echo $BUILD_TAG | grep "apex-verify" 1> /dev/null; then
+if [[ "$JOB_NAME" =~ "(daily|build)" ]]; then
   echo "Writing opnfv.properties file"
   # save information regarding artifact into file
   (
