@@ -1,11 +1,11 @@
 - project:
-    name: apex
+    name: 'apex-verify-jobs'
+    project: 'apex'
     jobs:
         - 'apex-verify-{stream}'
         - 'apex-verify-unit-tests-{stream}'
         - 'apex-runner-{platform}-{scenario}-{stream}'
         - 'apex-runner-cperf-{stream}'
-        - 'apex-build-{stream}'
         - 'apex-deploy-virtual-{scenario}-{stream}'
         - 'apex-deploy-baremetal-{scenario}-{stream}'
         - 'apex-daily-{stream}'
@@ -16,39 +16,17 @@
         - master:
             branch: 'master'
             gs-pathname: ''
-            block-stream: 'colorado'
             slave: 'lf-pod1'
             verify-slave: 'apex-verify-master'
             daily-slave: 'apex-daily-master'
+            disabled: false
         - colorado:
             branch: 'stable/colorado'
             gs-pathname: '/colorado'
-            block-stream: 'master'
             slave: 'lf-pod1'
             verify-slave: 'apex-verify-colorado'
             daily-slave: 'apex-daily-colorado'
             disabled: false
-
-    stream1:
-        - master:
-            branch: 'master'
-            gs-pathname: ''
-            block-stream: 'colorado'
-            slave: 'lf-pod1'
-            verify-slave: 'apex-verify-master'
-            daily-slave: 'apex-daily-master'
-
-    stream2:
-        - colorado:
-            branch: 'stable/colorado'
-            gs-pathname: '/colorado'
-            block-stream: 'master'
-            slave: 'lf-pod1'
-            verify-slave: 'apex-verify-colorado'
-            daily-slave: 'apex-daily-colorado'
-            disabled: false
-
-    project: 'apex'
 
     scenario:
          - 'os-nosdn-nofeature-noha'
@@ -76,6 +54,8 @@
     node: '{verify-slave}'
 
     concurrent: true
+
+    disabled: '{obj:disabled}'
 
     parameters:
         - apex-parameter:
@@ -123,7 +103,8 @@
             option: 'project'
 
     builders:
-        - 'apex-unit-test'
+        - shell:
+            !include-raw-escape: ./apex-unit-test.sh
 
 # Verify
 - job-template:
@@ -195,8 +176,10 @@
             option: 'project'
 
     builders:
-        - 'apex-unit-test'
-        - 'apex-build'
+        - shell:
+            !include-raw-escape: ./apex-unit-test.sh
+        - shell:
+            !include-raw-escape: ./apex-build.sh
         - trigger-builds:
           - project: 'apex-deploy-virtual-os-nosdn-nofeature-ha-{stream}'
             predefined-parameters: |
@@ -227,7 +210,8 @@
               FUNCTEST_SUITE_NAME=healthcheck
             block: true
             same-node: true
-        - 'apex-workspace-cleanup'
+        - shell:
+            !include-raw-escape: ./apex-workspace-cleanup.sh
 
 - job-template:
     name: 'apex-runner-{platform}-{scenario}-{stream}'
@@ -236,7 +220,7 @@
 
     node: '{slave}'
 
-    disabled: false
+    disabled: '{obj:disabled}'
 
     parameters:
         - apex-parameter:
@@ -296,7 +280,7 @@
 
     node: 'intel-pod2'
 
-    disabled: false
+    disabled: '{obj:disabled}'
 
     parameters:
         - apex-parameter:
@@ -343,61 +327,6 @@
             same-node: true
 
 - job-template:
-    name: 'apex-build-{stream}'
-
-    # Job template for builds
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-    node: '{daily-slave}'
-
-    disabled: false
-
-    concurrent: true
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - apex-parameter:
-            gs-pathname: '{gs-pathname}'
-        - gerrit-parameter:
-            branch: '{branch}'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Used for overriding the GIT URL coming from parameters macro."
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    properties:
-        - build-blocker:
-            use-build-blocker: true
-            block-level: 'NODE'
-            blocking-jobs:
-                - 'apex-deploy.*'
-        - throttle:
-            max-per-node: 1
-            max-total: 10
-            option: 'project'
-
-    builders:
-        - 'apex-build'
-        - trigger-builds:
-          - project: 'apex-deploy-virtual-os-nosdn-nofeature-noha-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}/build
-              OPNFV_CLEAN=yes
-            git-revision: false
-            same-node: true
-            block: true
-        - 'apex-upload-artifact'
-
-- job-template:
     name: 'apex-deploy-virtual-{scenario}-{stream}'
 
     # Job template for virtual deployment
@@ -409,7 +338,7 @@
 
     concurrent: true
 
-    disabled: false
+    disabled: '{obj:disabled}'
 
     scm:
         - git-scm:
@@ -443,8 +372,10 @@
             option: 'project'
 
     builders:
-        - 'apex-deploy'
-        - 'apex-workspace-cleanup'
+        - shell:
+            !include-raw-escape: ./apex-deploy.sh
+        - shell:
+            !include-raw-escape: ./apex-workspace-cleanup.sh
 
 - job-template:
     name: 'apex-deploy-baremetal-{scenario}-{stream}'
@@ -456,7 +387,7 @@
     #     branch:    branch (eg. stable)
     node: '{slave}'
 
-    disabled: false
+    disabled: '{obj:disabled}'
 
     scm:
         - git-scm:
@@ -485,8 +416,10 @@
 
 
     builders:
-        - 'apex-deploy'
-        - 'apex-workspace-cleanup'
+        - shell:
+            !include-raw-escape: ./apex-deploy.sh
+        - shell:
+            !include-raw-escape: ./apex-workspace-cleanup.sh
 
 # Daily
 - job-template:
@@ -499,7 +432,7 @@
     #     branch:    branch (eg. stable)
     node: '{daily-slave}'
 
-    disabled: false
+    disabled: '{obj:disabled}'
 
     scm:
         - git-scm:
@@ -844,30 +777,6 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
 
-- job-template:
-    name: 'apex-gs-clean-{stream}'
-
-    # Job template for clean
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    node: '{slave}'
-
-    disabled: false
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - apex-parameter:
-            gs-pathname: '{gs-pathname}'
-
-    builders:
-        - 'apex-gs-clean'
-
-    triggers:
-        - 'apex-gs-clean-{stream}'
-
-
 ########################
 # parameter macros
 ########################
@@ -903,46 +812,6 @@
             default: artifacts.opnfv.org/$PROJECT{gs-pathname}
             description: "URL to Google Storage."
 
-########################
-# builder macros
-########################
-- builder:
-    name: 'apex-unit-test'
-    builders:
-        - shell:
-            !include-raw: ./apex-unit-test.sh
-
-- builder:
-    name: 'apex-build'
-    builders:
-        - shell:
-            !include-raw: ./apex-build.sh
-
-- builder:
-    name: 'apex-workspace-cleanup'
-    builders:
-        - shell:
-            !include-raw: ./apex-workspace-cleanup.sh
-
-- builder:
-    name: 'apex-upload-artifact'
-    builders:
-        - shell:
-            !include-raw: ./apex-upload-artifact.sh
-
-- builder:
-    name: 'apex-gs-cleanup'
-    builders:
-        - shell:
-            !include-raw: ./apex-gs-cleanup.sh
-
-- builder:
-    name: 'apex-deploy'
-    builders:
-        - shell:
-            !include-raw: ./apex-deploy.sh
-
-
 #######################
 # trigger macros
 ########################
@@ -954,7 +823,3 @@
     name: 'apex-colorado'
     triggers:
         - timed: '0 3 * * *'
-- trigger:
-    name: 'apex-gs-clean-{stream}'
-    triggers:
-        - timed: '0 2 * * *'

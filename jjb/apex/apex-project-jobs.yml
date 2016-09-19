@@ -1,0 +1,76 @@
+- project:
+    name: 'apex'
+    project: 'apex'
+
+    jobs:
+        - 'apex-build-{stream}'
+
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            block-stream: 'colorado'
+            disabled: false
+        - colorado:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
+            block-stream: 'master'
+            disabled: false
+
+- job-template:
+    name: 'apex-build-{stream}'
+
+    # Job template for builds
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: 'apex-daily-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-deploy.*'
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - shell:
+            !include-raw-escape: ./apex-build.sh
+        - trigger-builds:
+          - project: 'apex-deploy-virtual-os-nosdn-nofeature-noha-{stream}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-build-{stream}/build
+              OPNFV_CLEAN=yes
+            git-revision: false
+            same-node: true
+            block: true
+        - shell:
+            !include-raw-escape: ./apex-upload-artifact.sh
+
