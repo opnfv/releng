@@ -71,6 +71,8 @@ if [[ "$DOCKER_REPO_NAME" == "opnfv/bottlenecks" ]]; then
     cd $WORKSPACE/ci/docker
 elif [[ "$DOCKER_REPO_NAME" == "opnfv/cperf" ]]; then
     cd $WORKSPACE/docker
+elif [[ "$DOCKER_REPO_NAME" == "opnfv/dovetail" ]]; then
+    cd $WORKSPACE/docker
 elif [[ "$DOCKER_REPO_NAME" == "opnfv/functest" ]]; then
     cd $WORKSPACE/docker
 elif [[ "$DOCKER_REPO_NAME" == "opnfv/qtip" ]]; then
