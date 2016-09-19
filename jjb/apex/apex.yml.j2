@@ -1,0 +1,861 @@
+- project:
+    name: 'apex'
+    project: 'apex'
+    build-slave: 'apex-build'
+    jobs:
+        - 'apex-verify-{stream}'
+        - 'apex-verify-gate-{stream}'
+        - 'apex-verify-unit-tests-{stream}'
+        - 'apex-runner-cperf-{stream}'
+        - 'apex-build-{stream}'
+        - 'apex-deploy-{platform}-{stream}'
+        - 'apex-daily-{stream}'
+        - 'apex-csit-promote-daily-{stream}'
+        - 'apex-fdio-promote-daily-{stream}'
+        - 'apex-verify-iso-{stream}'
+
+    # stream:    branch with - in place of / (eg. stable-arno)
+    # branch:    branch (eg. stable/arno)
+    stream:
+        - master:
+            branch: 'master'
+            gs-pathname: ''
+            build-slave: 'apex-build-master'
+            virtual-slave: 'apex-virtual-master'
+            baremetal-slave: 'apex-baremetal-master'
+            verify-scenario: 'os-odl-nofeature-ha'
+
+        - danube:
+            branch: 'stable/danube'
+            gs-pathname: '/danube'
+            build-slave: 'apex-build-danube'
+            virtual-slave: 'apex-virtual-danube'
+            baremetal-slave: 'apex-baremetal-danube'
+            verify-scenario: 'os-odl_l3-nofeature-ha'
+            disabled: false
+
+    platform:
+         - 'baremetal'
+         - 'virtual'
+
+# Unit Test
+- job-template:
+    name: 'apex-verify-unit-tests-{stream}'
+
+    node: '{build-slave}'
+
+    concurrent: true
+
+    parameters:
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'true'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'apex'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'tests/**'
+    properties:
+        - logrotate-default
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - shell:
+            !include-raw-escape: ./apex-unit-test.sh
+
+# Verify
+- job-template:
+    name: 'apex-verify-{stream}'
+
+    node: '{virtual-slave}'
+
+    concurrent: true
+
+    project-type: 'multijob'
+
+    parameters:
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}/dev'
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - string:
+            name: ARTIFACT_VERSION
+            default: dev
+            description: "Used for overriding the ARTIFACT_VERSION"
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'true'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'apex'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'ci/**'
+                  - compare-type: ANT
+                    pattern: 'build/**'
+                  - compare-type: ANT
+                    pattern: 'lib/**'
+                  - compare-type: ANT
+                    pattern: 'config/**'
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-daily.*'
+                - 'apex-deploy.*'
+                - 'apex-runner.*'
+                - 'apex-verify.*'
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: basic
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-verify-unit-tests-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: true
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-build-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: true
+        - multijob:
+            name: deploy-virtual
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-deploy-virtual-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-verify-{stream}
+                    DEPLOY_SCENARIO={verify-scenario}
+                    OPNFV_CLEAN=yes
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: functest-virtual
+            condition: SUCCESSFUL
+            projects:
+              - name: 'apex-verify-smoke-test-{stream}'
+                current-parameters: false
+                predefined-parameters: |
+                  DEPLOY_SCENARIO={verify-scenario}
+                  FUNCTEST_SUITE_NAME=healthcheck
+                  GERRIT_BRANCH=$GERRIT_BRANCH
+                  GERRIT_REFSPEC=$GERRIT_REFSPEC
+                  GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                node-parameters: false
+                kill-phase-on: FAILURE
+                abort-all-job: true
+                git-revision: false
+
+# Verify Scenario Gate
+- job-template:
+    name: 'apex-verify-gate-{stream}'
+
+    node: '{virtual-slave}'
+
+    concurrent: true
+
+    project-type: 'multijob'
+
+    parameters:
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}/dev'
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - comment-added-contains-event:
+                    comment-contains-value: '^Patch Set [0-9]+: Code-Review\+2.*start-gate-scenario:.*'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'apex'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'ci/**'
+                  - compare-type: ANT
+                    pattern: 'build/**'
+                  - compare-type: ANT
+                    pattern: 'lib/**'
+                  - compare-type: ANT
+                    pattern: 'config/**'
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-daily.*'
+                - 'apex-deploy.*'
+                - 'apex-build.*'
+                - 'apex-runner.*'
+                - 'apex-verify.*'
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - multijob:
+            name: deploy-virtual
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-deploy-virtual-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-verify-{stream}
+                    DEPLOY_SCENARIO=gate
+                    OPNFV_CLEAN=yes
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: functest-virtual
+            condition: SUCCESSFUL
+            projects:
+              - name: 'apex-verify-smoke-test-{stream}'
+                current-parameters: false
+                predefined-parameters: |
+                  DEPLOY_SCENARIO={verify-scenario}
+                  FUNCTEST_SUITE_NAME=healthcheck
+                  GERRIT_BRANCH=$GERRIT_BRANCH
+                  GERRIT_REFSPEC=$GERRIT_REFSPEC
+                  GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                node-parameters: false
+                kill-phase-on: FAILURE
+                abort-all-job: true
+                git-revision: false
+
+- job-template:
+    name: 'apex-runner-cperf-{stream}'
+
+    # runner cperf job
+
+    node: 'intel-pod2'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+
+    scm:
+        - git-scm
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: false
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-deploy.*'
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - trigger-builds:
+          - project: 'apex-deploy-baremetal-{stream}'
+            predefined-parameters:
+              OPNFV_CLEAN=yes
+              DEPLOY_SCENARIO={verify-scenario}
+            git-revision: false
+            block: true
+            same-node: true
+        - trigger-builds:
+          - project: 'cperf-apex-intel-pod2-daily-master'
+            predefined-parameters:
+              DEPLOY_SCENARIO={verify-scenario}
+            block: true
+            same-node: true
+
+# Build phase
+- job-template:
+    name: 'apex-build-{stream}'
+
+    # Job template for builds
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: '{build-slave}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    parameters:
+        - '{project}-defaults'
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - git-scm
+
+    properties:
+        - logrotate-default
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - 'apex-build'
+        - inject:
+           properties-content: ARTIFACT_TYPE=rpm
+        - 'apex-upload-artifact'
+
+# ISO verify job
+- job-template:
+    name: 'apex-verify-iso-{stream}'
+
+    # Job template for builds
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: '{virtual-slave}'
+
+    disabled: false
+
+    concurrent: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+
+    scm:
+        - git-scm
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-deploy.*'
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - 'apex-iso-verify'
+        - inject:
+           properties-content: ARTIFACT_TYPE=iso
+        - 'apex-upload-artifact'
+
+- job-template:
+    name: 'apex-deploy-{platform}-{stream}'
+
+    # Job template for virtual deployment
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: 'apex-{platform}-{stream}'
+
+    concurrent: true
+
+    disabled: '{obj:disabled}'
+
+    scm:
+        - git-scm
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: '{scenario}'
+            description: "Scenario to deploy with."
+        - string:
+            name: OPNFV_CLEAN
+            default: 'no'
+            description: "Use yes in lower case to invoke clean. Indicates if the deploy environment should be cleaned before deployment"
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-deploy.*'
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - 'apex-download-artifact'
+        - 'apex-deploy'
+        - 'apex-workspace-cleanup'
+
+{% for stream in scenarios %}
+# {{ stream }} Daily
+- job-template:
+    name: 'apex-daily-{{ stream }}'
+
+    # Job template for daily build
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    project-type: 'multijob'
+
+    disabled: '{obj:disabled}'
+
+    scm:
+        - git-scm
+
+    parameters:
+        - '{project}-defaults'
+        - '{project}-daily-master-defaults'
+        - project-parameter:
+            project: '{project}'
+            branch: '{{ branch[stream] }}'
+        - apex-parameter:
+            gs-pathname: '{{ gspathname[stream] }}'
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-verify.*'
+                - 'apex-deploy.*'
+                - 'apex-runner.*'
+                - 'apex-.*-promote.*'
+
+    triggers:
+        - 'apex-{{ stream }}'
+
+    builders:
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-build-{{ stream }}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: true
+        - multijob:
+            name: 'Verify and upload ISO'
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-verify-iso-{{ stream }}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-build-master/.build
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: true
+        {% for scenario in scenarios[stream] %}
+        - multijob:
+            name: {{scenario}} Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-{{ stream }}'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO={{scenario}}
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: {{scenario}} Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-{{ stream }}-daily-{{ stream }}'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO={{scenario}}
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: {{scenario}} Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-{{ stream }}-daily-{{ stream }}'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO={{scenario}}
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        {% endfor %}
+{% endfor %}
+# CSIT promote
+- job-template:
+    name: 'apex-csit-promote-daily-{stream}'
+
+    # Job template for promoting CSIT Snapshots
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: '{virtual-slave}'
+
+    disabled: false
+
+    scm:
+        - git-scm
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-verify.*'
+                - 'apex-deploy.*'
+                - 'apex-build.*'
+                - 'apex-runner.*'
+                - 'apex-daily.*'
+
+    triggers:
+        - timed: '0 12 * * 0'
+
+    builders:
+        - 'apex-build'
+        - trigger-builds:
+          - project: 'apex-deploy-virtual-os-odl_l3-csit-noha-{stream}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-csit-promote-daily-{stream}
+              OPNFV_CLEAN=yes
+            git-revision: false
+            block: true
+            same-node: true
+        - trigger-builds:
+          - project: 'functest-apex-{virtual-slave}-suite-{stream}'
+            predefined-parameters: |
+              DEPLOY_SCENARIO=os-odl_l3-nofeature-noha
+              FUNCTEST_SUITE_NAME=tempest_smoke_serial
+            block: true
+            same-node: true
+        - shell:
+            !include-raw-escape: ./apex-snapshot-create.sh
+        - inject:
+           properties-content: ARTIFACT_TYPE=snapshot
+        - 'apex-upload-artifact'
+
+# FDIO promote
+- job-template:
+    name: 'apex-fdio-promote-daily-{stream}'
+
+    # Job template for promoting CSIT Snapshots
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: '{virtual-slave}'
+
+    disabled: false
+
+    scm:
+        - git-scm
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-verify.*'
+                - 'apex-deploy.*'
+                - 'apex-build.*'
+                - 'apex-runner.*'
+                - 'apex-daily.*'
+
+    builders:
+        - 'apex-build'
+        - trigger-builds:
+          - project: 'apex-deploy-virtual-os-odl_l2-fdio-noha-{stream}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-fdio-promote-daily-{stream}
+              OPNFV_CLEAN=yes
+            git-revision: false
+            block: true
+            same-node: true
+        - shell:
+            !include-raw-escape: ./apex-snapshot-create.sh
+        - inject:
+           properties-content: ARTIFACT_TYPE=snapshot
+        - 'apex-upload-artifact'
+
+- job-template:
+    name: 'apex-gs-clean-{stream}'
+
+    # Job template for clean
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    node: '{slave}'
+
+    disabled: false
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    builders:
+        - 'apex-gs-clean'
+
+    triggers:
+        - 'apex-gs-clean-{stream}'
+
+########################
+# parameter macros
+########################
+- parameter:
+    name: apex-parameter
+    parameters:
+        - string:
+            name: ARTIFACT_NAME
+            default: 'latest'
+            description: "RPM Artifact name that will be appended to GS_URL to deploy a specific artifact"
+        - string:
+            name: ARTIFACT_VERSION
+            default: 'daily'
+            description: "Artifact version type"
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/.build
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache{gs-pathname}
+            description: "Directory where the cache to be used during the build is located."
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+        - string:
+            name: GS_PATHNAME
+            default: '{gs-pathname}'
+            description: "Version directory where opnfv artifacts are stored in gs repository"
+        - string:
+            name: GS_URL
+            default: $GS_BASE{gs-pathname}
+            description: "URL to Google Storage."
+
+########################
+# builder macros
+########################
+- builder:
+    name: 'apex-unit-test'
+    builders:
+        - shell:
+            !include-raw: ./apex-unit-test.sh
+
+- builder:
+    name: 'apex-build'
+    builders:
+        - shell:
+            !include-raw: ./apex-build.sh
+
+- builder:
+    name: 'apex-workspace-cleanup'
+    builders:
+        - shell:
+            !include-raw: ./apex-workspace-cleanup.sh
+
+- builder:
+    name: 'apex-iso-verify'
+    builders:
+        - shell:
+            !include-raw: ./apex-iso-verify.sh
+
+
+- builder:
+    name: 'apex-upload-artifact'
+    builders:
+        - shell:
+            !include-raw: ./apex-upload-artifact.sh
+
+- builder:
+    name: 'apex-download-artifact'
+    builders:
+        - shell:
+            !include-raw: ./apex-download-artifact.sh
+
+- builder:
+    name: 'apex-gs-cleanup'
+    builders:
+        - shell:
+            !include-raw: ./apex-gs-cleanup.sh
+
+- builder:
+    name: 'apex-deploy'
+    builders:
+        - shell:
+            !include-raw: ./apex-deploy.sh
+
+#######################
+# trigger macros
+########################
+- trigger:
+    name: 'apex-master'
+    triggers:
+        - timed: '0 3 1 1 7'
+- trigger:
+    name: 'apex-danube'
+    triggers:
+        - timed: '0 12 * * *'
+- trigger:
+    name: 'apex-gs-clean-{stream}'
+    triggers:
+        - timed: '0 2 * * *'
