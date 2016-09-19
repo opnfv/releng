@@ -511,10 +511,10 @@
         - 'apex-deploy'
         - 'apex-workspace-cleanup'
 
-
-# danube Baremetal Deploy and Test
+{% for stream in scenarios %}
+# {{ stream }} Baremetal Deploy and Test
 - job-template:
-    name: 'apex-deploy-test-baremetal-danube'
+    name: 'apex-deploy-test-baremetal-{{ stream }}'
 
     # Job template for daily build
     #
@@ -530,12 +530,12 @@
 
     parameters:
         - '{project}-defaults'
-        - '{project}-baremetal-danube-defaults'
+        - '{project}-baremetal-{{ stream }}-defaults'
         - project-parameter:
             project: '{project}'
-            branch: 'stable/danube'
+            branch: '{{ branch[stream] }}'
         - apex-parameter:
-            gs-pathname: '/danube'
+            gs-pathname: '{{ gspathname[stream] }}'
         - string:
             name: DEPLOY_SCENARIO
             default: '{verify-scenario}'
@@ -555,7 +555,7 @@
             name: 'Baremetal Deploy'
             condition: ALWAYS
             projects:
-                - name: 'apex-deploy-baremetal-danube'
+                - name: 'apex-deploy-baremetal-{{ stream }}'
                   node-parameters: false
                   current-parameters: true
                   predefined-parameters: |
@@ -567,7 +567,7 @@
             name: Functest
             condition: ALWAYS
             projects:
-                - name: 'functest-apex-baremetal-daily-danube'
+                - name: 'functest-apex-baremetal-daily-{{ stream }}'
                   node-parameters: true
                   current-parameters: false
                   predefined-parameters:
@@ -579,7 +579,7 @@
             name: Yardstick
             condition: ALWAYS
             projects:
-                - name: 'yardstick-apex-baremetal-daily-danube'
+                - name: 'yardstick-apex-baremetal-daily-{{ stream }}'
                   node-parameters: true
                   current-parameters: false
                   predefined-parameters:
@@ -588,9 +588,9 @@
                   abort-all-job: false
                   git-revision: false
 
-# danube Daily
+# {{ stream }} Daily
 - job-template:
-    name: 'apex-daily-danube'
+    name: 'apex-daily-{{ stream }}'
 
     # Job template for daily build
     #
@@ -606,12 +606,12 @@
 
     parameters:
         - '{project}-defaults'
-        - '{project}-baremetal-danube-defaults'
+        - '{project}-baremetal-{{ stream }}-defaults'
         - project-parameter:
             project: '{project}'
-            branch: 'stable/danube'
+            branch: '{{ branch[stream] }}'
         - apex-parameter:
-            gs-pathname: '/danube'
+            gs-pathname: '{{ gspathname[stream] }}'
 
     properties:
         - logrotate-default
@@ -625,14 +625,14 @@
                 - 'apex-.*-promote.*'
 
     triggers:
-        - 'apex-danube'
+        - 'apex-{{ stream }}'
 
     builders:
         - multijob:
             name: build
             condition: SUCCESSFUL
             projects:
-                - name: 'apex-build-danube'
+                - name: 'apex-build-{{ stream }}'
                   current-parameters: false
                   predefined-parameters: |
                     GERRIT_BRANCH=$GERRIT_BRANCH
@@ -647,10 +647,10 @@
             name: 'Verify and upload ISO'
             condition: SUCCESSFUL
             projects:
-                - name: 'apex-verify-iso-danube'
+                - name: 'apex-verify-iso-{{ stream }}'
                   current-parameters: false
                   predefined-parameters: |
-                    BUILD_DIRECTORY=apex-build-danube/.build
+                    BUILD_DIRECTORY=apex-build-{{ stream }}/.build
                     GERRIT_BRANCH=$GERRIT_BRANCH
                     GERRIT_REFSPEC=$GERRIT_REFSPEC
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
@@ -663,461 +663,18 @@
             name: Baremetal Deploy and Test Phase
             condition: SUCCESSFUL
             projects:
-
-                - name: 'apex-deploy-test-baremetal-danube'
+{% for scenario in scenarios[stream] %}
+                - name: 'apex-deploy-test-baremetal-{{ stream }}'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                    DEPLOY_SCENARIO={{scenario}}
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha-ipv6
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-ovs-noha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-ovs-ha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-fdio-noha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-fdio-ha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-kvm-ha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-kvm-noha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l2-fdio-noha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l2-fdio-ha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l2-netvirt_gbp_fdio-noha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l2-sfc-noha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-nofeature-noha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-ovs-noha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-ovs-ha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl-bgpvpn-ha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl-gluon-noha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-fdio-noha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-fdio-ha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-fdio_dvr-noha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-fdio_dvr-ha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-csit-noha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-onos-nofeature-ha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-ovn-nofeature-noha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-
-# master Baremetal Deploy and Test
-- job-template:
-    name: 'apex-deploy-test-baremetal-master'
-
-    # Job template for daily build
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-    project-type: 'multijob'
-
-    disabled: '{obj:disabled}'
-
-    scm:
-        - git-scm
-
-    parameters:
-        - '{project}-defaults'
-        - '{project}-baremetal-master-defaults'
-        - project-parameter:
-            project: '{project}'
-            branch: 'master'
-        - apex-parameter:
-            gs-pathname: ''
-        - string:
-            name: DEPLOY_SCENARIO
-            default: '{verify-scenario}'
-            description: "Scenario to deploy with."
-    properties:
-        - logrotate-default
-        - build-blocker:
-            use-build-blocker: true
-            block-level: 'NODE'
-            blocking-jobs:
-                - 'apex-verify.*'
-                - 'apex-deploy.*'
-                - 'apex-runner.*'
-                - 'apex-.*-promote.*'
-    builders:
-        - multijob:
-            name: 'Baremetal Deploy'
-            condition: ALWAYS
-            projects:
-                - name: 'apex-deploy-baremetal-master'
-                  node-parameters: false
-                  current-parameters: true
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-                  git-revision: false
-        - multijob:
-            name: Functest
-            condition: ALWAYS
-            projects:
-                - name: 'functest-apex-baremetal-daily-master'
-                  node-parameters: true
-                  current-parameters: false
-                  predefined-parameters:
-                    DEPLOY_SCENARIO={DEPLOY_SCENARIO}
-                  kill-phase-on: NEVER
-                  abort-all-job: false
-                  git-revision: false
-        - multijob:
-            name: Yardstick
-            condition: ALWAYS
-            projects:
-                - name: 'yardstick-apex-baremetal-daily-master'
-                  node-parameters: true
-                  current-parameters: false
-                  predefined-parameters:
-                    DEPLOY_SCENARIO={DEPLOY_SCENARIO}
-                  kill-phase-on: NEVER
-                  abort-all-job: false
-                  git-revision: false
-
-# master Daily
-- job-template:
-    name: 'apex-daily-master'
-
-    # Job template for daily build
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-    project-type: 'multijob'
-
-    disabled: '{obj:disabled}'
-
-    scm:
-        - git-scm
-
-    parameters:
-        - '{project}-defaults'
-        - '{project}-baremetal-master-defaults'
-        - project-parameter:
-            project: '{project}'
-            branch: 'master'
-        - apex-parameter:
-            gs-pathname: ''
-
-    properties:
-        - logrotate-default
-        - build-blocker:
-            use-build-blocker: true
-            block-level: 'NODE'
-            blocking-jobs:
-                - 'apex-verify.*'
-                - 'apex-deploy.*'
-                - 'apex-runner.*'
-                - 'apex-.*-promote.*'
-
-    triggers:
-        - 'apex-master'
-
-    builders:
-        - multijob:
-            name: build
-            condition: SUCCESSFUL
-            projects:
-                - name: 'apex-build-master'
-                  current-parameters: false
-                  predefined-parameters: |
-                    GERRIT_BRANCH=$GERRIT_BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-                  git-revision: true
-        - multijob:
-            name: 'Verify and upload ISO'
-            condition: SUCCESSFUL
-            projects:
-                - name: 'apex-verify-iso-master'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BUILD_DIRECTORY=apex-build-master/.build
-                    GERRIT_BRANCH=$GERRIT_BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-                  git-revision: true
-        - multijob:
-            name: Baremetal Deploy and Test Phase
-            condition: SUCCESSFUL
-            projects:
-
-                - name: 'apex-deploy-test-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl-nofeature-ha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-deploy-test-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl-nofeature-noha
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-
+{% endfor %}
+{% endfor %}
 # CSIT promote
 - job-template:
     name: 'apex-csit-promote-daily-{stream}'
