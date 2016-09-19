@@ -40,21 +40,19 @@
             <div class="panel-heading"><h4><b>List of last scenarios ({{version}}) run over the last {{period}} days </b></h4></div>
                 <table class="table">
                     <tr>
-                        <th width="60%">Scenario</th>
+                        <th width="40%">Scenario</th>
                         <th width="20%">Status</th>
-                        <th width="20%">Score</th>
+                        <th width="20%">Last 4 Iterations</th>
+                        <th width="20%">Last 10 Days</th>
                     </tr>
                         {% for scenario,result in scenario_results.iteritems() -%}
                             <tr class="tr-ok">
                                 <td>{{scenario}}</td>
                                 <td>
-                                    {%if scenario_results[scenario].getStatus() is sameas "OK" -%}
-                                    <img src="../../img/icon-ok.png">
-                                    {%- else -%}
-                                    <img src="../../img/icon-nok.png">
-                                    {%- endif %}
+                                    <img src="../../img/gauge_{{ scenario_results[scenario].getStatus() }}.png">
                                 </td>
-                                <td>{{scenario_results[scenario].getScore()}}</td>
+                                <td>{{scenario_results[scenario].getFourDaysScore()}}</td>
+                                <td>{{scenario_results[scenario].getTenDaysScore()}}</td>
                             </tr>
                         {%- endfor %}
                 </table>

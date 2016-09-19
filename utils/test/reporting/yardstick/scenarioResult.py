@@ -9,12 +9,16 @@
 
 
 class ScenarioResult(object):
-    def __init__(self, status, score=0):
+    def __init__(self, status, four_days_score='', ten_days_score=''):
         self.status = status
-        self.score = score
+        self.four_days_score = four_days_score
+        self.ten_days_score = ten_days_score
 
     def getStatus(self):
         return self.status
 
-    def getScore(self):
-        return self.score
+    def getTenDaysScore(self):
+        return self.ten_days_score
+
+    def getFourDaysScore(self):
+        return self.four_days_score

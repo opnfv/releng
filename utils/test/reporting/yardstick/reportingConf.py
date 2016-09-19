@@ -13,8 +13,8 @@ installers = ["apex", "compass", "fuel", "joid"]
 
 versions = ["master", "colorado"]
 
-# get data in the past 7 days
-PERIOD = 7
+# get data in the past 10 days
+PERIOD = 10
 
 # get the lastest 4 test results to determinate the success criteria
 LASTEST_TESTS = 4
