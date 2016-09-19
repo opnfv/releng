@@ -1,14 +1,14 @@
 - project:
-    name: apex
+    name: 'apex'
+    project: 'apex'
+    build-slave: 'apex-build'
     jobs:
         - 'apex-verify-{stream}'
         - 'apex-verify-gate-{stream}'
         - 'apex-verify-unit-tests-{stream}'
-        - 'apex-runner-{platform}-{scenario}-{stream}'
         - 'apex-runner-cperf-{stream}'
         - 'apex-build-{stream}'
-        - 'apex-deploy-virtual-{scenario}-{stream}'
-        - 'apex-deploy-baremetal-{scenario}-{stream}'
+        - 'apex-deploy-{platform}-{stream}'
         - 'apex-daily-{stream}'
         - 'apex-csit-promote-daily-{stream}'
         - 'apex-fdio-promote-daily-{stream}'
@@ -20,46 +20,19 @@
         - master:
             branch: 'master'
             gs-pathname: ''
-            slave: 'lf-pod1'
-            verify-slave: 'apex-verify-master'
-            daily-slave: 'apex-daily-master'
+            build-slave: 'apex-build-master'
+            virtual-slave: 'apex-virtual-master'
+            baremetal-slave: 'apex-baremetal-master'
+            verify-scenario: 'os-odl-nofeature-ha'
+
         - danube:
             branch: 'stable/danube'
             gs-pathname: '/danube'
-            slave: 'lf-pod1'
-            verify-slave: 'apex-verify-danube'
-            daily-slave: 'apex-daily-danube'
-
-    project: 'apex'
-
-    scenario:
-         - 'os-nosdn-nofeature-noha'
-         - 'os-nosdn-nofeature-ha'
-         - 'os-nosdn-nofeature-ha-ipv6'
-         - 'os-nosdn-ovs-noha'
-         - 'os-nosdn-ovs-ha'
-         - 'os-nosdn-fdio-noha'
-         - 'os-nosdn-fdio-ha'
-         - 'os-nosdn-kvm-ha'
-         - 'os-nosdn-kvm-noha'
-         - 'os-odl_l2-fdio-noha'
-         - 'os-odl_l2-fdio-ha'
-         - 'os-odl_l2-netvirt_gbp_fdio-noha'
-         - 'os-odl_l2-sfc-noha'
-         - 'os-odl_l3-nofeature-noha'
-         - 'os-odl_l3-nofeature-ha'
-         - 'os-odl_l3-ovs-noha'
-         - 'os-odl_l3-ovs-ha'
-         - 'os-odl-bgpvpn-ha'
-         - 'os-odl-gluon-noha'
-         - 'os-odl_l3-fdio-noha'
-         - 'os-odl_l3-fdio-ha'
-         - 'os-odl_l3-fdio_dvr-noha'
-         - 'os-odl_l3-fdio_dvr-ha'
-         - 'os-odl_l3-csit-noha'
-         - 'os-onos-nofeature-ha'
-         - 'os-ovn-nofeature-noha'
-         - 'gate'
+            build-slave: 'apex-build-danube'
+            virtual-slave: 'apex-virtual-danube'
+            baremetal-slave: 'apex-baremetal-danube'
+            verify-scenario: 'os-odl_l3-nofeature-ha'
+            disabled: false
 
     platform:
          - 'baremetal'
@@ -69,7 +42,7 @@
 - job-template:
     name: 'apex-verify-unit-tests-{stream}'
 
-    node: '{verify-slave}'
+    node: '{build-slave}'
 
     concurrent: true
 
@@ -79,10 +52,6 @@
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Used for overriding the GIT URL coming from parameters macro."
 
     scm:
         - git-scm-gerrit
@@ -117,27 +86,29 @@
             option: 'project'
 
     builders:
-        - 'apex-unit-test'
+        - shell:
+            !include-raw-escape: ./apex-unit-test.sh
 
 # Verify
 - job-template:
     name: 'apex-verify-{stream}'
 
-    node: '{verify-slave}'
+    node: '{virtual-slave}'
 
     concurrent: true
 
+    project-type: 'multijob'
+
     parameters:
         - apex-parameter:
-            gs-pathname: '{gs-pathname}'
+            gs-pathname: '{gs-pathname}/dev'
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
         - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Used for overriding the GIT URL coming from parameters macro."
-
+            name: ARTIFACT_VERSION
+            default: dev
+            description: "Used for overriding the ARTIFACT_VERSION"
     scm:
         - git-scm-gerrit
 
@@ -178,7 +149,6 @@
             blocking-jobs:
                 - 'apex-daily.*'
                 - 'apex-deploy.*'
-                - 'apex-build.*'
                 - 'apex-runner.*'
                 - 'apex-verify.*'
         - throttle:
@@ -187,36 +157,87 @@
             option: 'project'
 
     builders:
-        - 'apex-unit-test'
-        - 'apex-build'
-        - trigger-builds:
-          - project: 'apex-deploy-virtual-os-odl_l3-nofeature-ha-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-verify-{stream}
-              OPNFV_CLEAN=yes
-            git-revision: false
-            block: true
-            same-node: true
-        - trigger-builds:
-          - project: 'functest-apex-{verify-slave}-suite-{stream}'
-            predefined-parameters: |
-              DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
-              FUNCTEST_SUITE_NAME=healthcheck
-            block: true
-            same-node: true
-        - 'apex-workspace-cleanup'
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: basic
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-verify-unit-tests-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: true
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-build-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: true
+        - multijob:
+            name: deploy-virtual
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-deploy-virtual-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-verify-{stream}
+                    DEPLOY_SCENARIO={verify-scenario}
+                    OPNFV_CLEAN=yes
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: functest-virtual
+            condition: SUCCESSFUL
+            projects:
+              - name: 'apex-verify-smoke-test-{stream}'
+                current-parameters: false
+                predefined-parameters: |
+                  DEPLOY_SCENARIO={verify-scenario}
+                  FUNCTEST_SUITE_NAME=healthcheck
+                  GERRIT_BRANCH=$GERRIT_BRANCH
+                  GERRIT_REFSPEC=$GERRIT_REFSPEC
+                  GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                node-parameters: false
+                kill-phase-on: FAILURE
+                abort-all-job: true
+                git-revision: false
 
 # Verify Scenario Gate
 - job-template:
     name: 'apex-verify-gate-{stream}'
 
-    node: '{verify-slave}'
+    node: '{virtual-slave}'
 
     concurrent: true
 
+    project-type: 'multijob'
+
     parameters:
         - apex-parameter:
-            gs-pathname: '{gs-pathname}'
+            gs-pathname: '{gs-pathname}/dev'
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
@@ -267,82 +288,41 @@
             option: 'project'
 
     builders:
-        - 'apex-build'
-        - trigger-builds:
-          - project: 'apex-deploy-virtual-gate-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-verify-gate-{stream}
-              OPNFV_CLEAN=yes
-            current-parameters: true
-            git-revision: false
-            block: true
-            same-node: true
-        - trigger-builds:
-          - project: 'functest-apex-{verify-slave}-suite-{stream}'
-            predefined-parameters: |
-              DEPLOY_SCENARIO=os-nosdn-nofeature-ha
-              FUNCTEST_SUITE_NAME=healthcheck
-            block: true
-            same-node: true
-        - 'apex-workspace-cleanup'
-
-- job-template:
-    name: 'apex-runner-{platform}-{scenario}-{stream}'
-
-    # runner jobs for deploying manually
-
-    node: '{slave}'
-
-    disabled: false
-
-    parameters:
-        - apex-parameter:
-            gs-pathname: '{gs-pathname}'
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Used for overriding the GIT URL coming from parameters macro."
-
-    scm:
-        - git-scm
-
-    properties:
-        - logrotate-default
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'apex-daily.*'
-                - 'apex-verify.*'
-                - 'apex-.*-promote.*'
-
-    builders:
-        - trigger-builds:
-          - project: 'apex-deploy-{platform}-{scenario}-{stream}'
-            predefined-parameters:
-              OPNFV_CLEAN=yes
-            git-revision: false
-            block: true
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO={scenario}
-            block: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'functest-apex-{slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO={scenario}
-            block: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
+        - multijob:
+            name: deploy-virtual
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-deploy-virtual-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-verify-{stream}
+                    DEPLOY_SCENARIO=gate
+                    OPNFV_CLEAN=yes
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: functest-virtual
+            condition: SUCCESSFUL
+            projects:
+              - name: 'apex-verify-smoke-test-{stream}'
+                current-parameters: false
+                predefined-parameters: |
+                  DEPLOY_SCENARIO={verify-scenario}
+                  FUNCTEST_SUITE_NAME=healthcheck
+                  GERRIT_BRANCH=$GERRIT_BRANCH
+                  GERRIT_REFSPEC=$GERRIT_REFSPEC
+                  GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                node-parameters: false
+                kill-phase-on: FAILURE
+                abort-all-job: true
+                git-revision: false
 
 - job-template:
     name: 'apex-runner-cperf-{stream}'
@@ -351,7 +331,7 @@
 
     node: 'intel-pod2'
 
-    disabled: false
+    disabled: '{obj:disabled}'
 
     parameters:
         - apex-parameter:
@@ -381,19 +361,21 @@
 
     builders:
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l3-nofeature-noha-{stream}'
+          - project: 'apex-deploy-baremetal-{stream}'
             predefined-parameters:
               OPNFV_CLEAN=yes
+              DEPLOY_SCENARIO={verify-scenario}
             git-revision: false
             block: true
             same-node: true
         - trigger-builds:
           - project: 'cperf-apex-intel-pod2-daily-master'
             predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l3-nofeature-noha
+              DEPLOY_SCENARIO={verify-scenario}
             block: true
             same-node: true
 
+# Build phase
 - job-template:
     name: 'apex-build-{stream}'
 
@@ -402,33 +384,25 @@
     # Required Variables:
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
-    node: '{daily-slave}'
+    node: '{build-slave}'
 
-    disabled: false
+    disabled: '{obj:disabled}'
 
     concurrent: true
 
     parameters:
+        - '{project}-defaults'
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
         - apex-parameter:
             gs-pathname: '{gs-pathname}'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Used for overriding the GIT URL coming from parameters macro."
 
     scm:
         - git-scm
 
     properties:
         - logrotate-default
-        - build-blocker:
-            use-build-blocker: true
-            block-level: 'NODE'
-            blocking-jobs:
-                - 'apex-deploy.*'
         - throttle:
             max-per-node: 1
             max-total: 10
@@ -436,26 +410,8 @@
 
     builders:
         - 'apex-build'
-        - trigger-builds:
-          - project: 'apex-deploy-virtual-os-nosdn-nofeature-noha-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}/.build
-              OPNFV_CLEAN=yes
-            git-revision: false
-            same-node: true
-            block: true
         - inject:
            properties-content: ARTIFACT_TYPE=rpm
-        - 'apex-upload-artifact'
-        - trigger-builds:
-          - project: 'apex-verify-iso-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}/.build
-            git-revision: false
-            block: true
-            same-node: true
-        - inject:
-           properties-content: ARTIFACT_TYPE=iso
         - 'apex-upload-artifact'
 
 # ISO verify job
@@ -467,7 +423,7 @@
     # Required Variables:
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
-    node: '{daily-slave}'
+    node: '{virtual-slave}'
 
     disabled: false
 
@@ -501,20 +457,23 @@
 
     builders:
         - 'apex-iso-verify'
+        - inject:
+           properties-content: ARTIFACT_TYPE=iso
+        - 'apex-upload-artifact'
 
 - job-template:
-    name: 'apex-deploy-virtual-{scenario}-{stream}'
+    name: 'apex-deploy-{platform}-{stream}'
 
     # Job template for virtual deployment
     #
     # Required Variables:
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
-    node: '{slave}'
+    node: 'apex-{platform}-{stream}'
 
     concurrent: true
 
-    disabled: false
+    disabled: '{obj:disabled}'
 
     scm:
         - git-scm
@@ -527,7 +486,7 @@
             gs-pathname: '{gs-pathname}'
         - string:
             name: DEPLOY_SCENARIO
-            default: '{scenario}'
+            default: '{verify-scenario}'
             description: "Scenario to deploy with."
         - string:
             name: OPNFV_CLEAN
@@ -547,72 +506,35 @@
             option: 'project'
 
     builders:
+        - 'apex-download-artifact'
         - 'apex-deploy'
         - 'apex-workspace-cleanup'
 
+
+# danube Daily
 - job-template:
-    name: 'apex-deploy-baremetal-{scenario}-{stream}'
-
-    # Job template for baremetal deployment
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-    node: '{slave}'
-
-    disabled: false
-
-    scm:
-        - git-scm
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - apex-parameter:
-            gs-pathname: '{gs-pathname}'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: '{scenario}'
-            description: "Scenario to deploy with."
-
-    properties:
-        - logrotate-default
-        - build-blocker:
-            use-build-blocker: true
-            block-level: 'NODE'
-            blocking-jobs:
-                - 'apex-verify.*'
-                - 'apex-deploy.*'
-                - 'apex-build.*'
-
-
-    builders:
-        - 'apex-deploy'
-        - 'apex-workspace-cleanup'
-
-# Daily
-- job-template:
-    name: 'apex-daily-{stream}'
+    name: 'apex-daily-danube'
 
     # Job template for daily build
     #
     # Required Variables:
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
-    node: '{daily-slave}'
+    project-type: 'multijob'
 
-    disabled: false
+    disabled: '{obj:disabled}'
 
     scm:
         - git-scm
 
     parameters:
+        - '{project}-defaults'
+        - '{project}-daily-master-defaults'
         - project-parameter:
             project: '{project}'
-            branch: '{branch}'
+            branch: 'stable/danube'
         - apex-parameter:
-            gs-pathname: '{gs-pathname}'
+            gs-pathname: '/danube'
 
     properties:
         - logrotate-default
@@ -622,397 +544,1288 @@
             blocking-jobs:
                 - 'apex-verify.*'
                 - 'apex-deploy.*'
-                - 'apex-build.*'
                 - 'apex-runner.*'
                 - 'apex-.*-promote.*'
 
     triggers:
-        - 'apex-{stream}'
+        - 'apex-danube'
 
     builders:
-        - trigger-builds:
-          - project: 'apex-build-{stream}'
-            git-revision: true
-            current-parameters: true
-            same-node: true
-            block: true
-        - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-nosdn-nofeature-ha-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}/.build
-              OPNFV_CLEAN=yes
-            git-revision: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-            block: true
-        - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-nosdn-nofeature-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-nosdn-nofeature-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        # 1.dovetail only master by now, not sync with A/B/C branches
-        # 2.here the stream means the SUT stream, dovetail stream is defined in its own job
-        # 3.only debug testsuite here(includes basic testcase,
-        #   i.e. one tempest smoke ipv6, two vping from functest)
-        # 4.not used for release criteria or compliance,
-        #   only to debug the dovetail tool bugs with apex
-        #- trigger-builds:
-        #    - project: 'dovetail-apex-{slave}-proposed_tests-{stream}'
-        #      current-parameters: false
-        #      predefined-parameters:
-        #        DEPLOY_SCENARIO=os-nosdn-nofeature-ha
-        #      block: true
-        #      same-node: true
-        #      block-thresholds:
-        #        build-step-failure-threshold: 'never'
-        #        failure-threshold: 'never'
-        #        unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l3-nofeature-ha-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}/.build
-              OPNFV_CLEAN=yes
-            git-revision: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-            block: true
-        - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl-bgpvpn-ha-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}/.build
-              OPNFV_CLEAN=yes
-            git-revision: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-            block: true
-        - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl-bgpvpn-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl-bgpvpn-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl-gluon-noha-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}/.build
-              OPNFV_CLEAN=yes
-            git-revision: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-            block: true
-        - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl-gluon-noha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl-gluon-noha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l2-fdio-noha-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}/.build
-              OPNFV_CLEAN=yes
-            git-revision: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-            block: true
-        - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l2-fdio-noha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l2-fdio-noha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l2-fdio-ha-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}/.build
-              OPNFV_CLEAN=yes
-            git-revision: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-            block: true
-        - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l2-fdio-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l2-fdio-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-nosdn-kvm-ha-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}/.build
-              OPNFV_CLEAN=yes
-            git-revision: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-            block: true
-        - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-nosdn-kvm-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-nosdn-kvm-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l3-fdio-ha-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}/.build
-              OPNFV_CLEAN=yes
-            git-revision: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-            block: true
-        - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l3-fdio-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l3-fdio-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-nosdn-fdio-ha-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}/.build
-              OPNFV_CLEAN=yes
-            git-revision: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-            block: true
-        - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-nosdn-fdio-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-nosdn-fdio-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-nosdn-ovs-ha-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}/.build
-              OPNFV_CLEAN=yes
-            git-revision: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-            block: true
-        - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-nosdn-ovs-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-nosdn-ovs-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l3-ovs-ha-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}/.build
-              OPNFV_CLEAN=yes
-            git-revision: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-            block: true
-        - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l3-ovs-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l3-ovs-ha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-ovn-nofeature-noha-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}/.build
-              OPNFV_CLEAN=yes
-            git-revision: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-            block: true
-        - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-ovn-nofeature-noha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-          - project: 'yardstick-apex-{slave}-daily-{stream}'
-            predefined-parameters:
-              DEPLOY_SCENARIO=os-ovn-nofeature-noha
-            block: true
-            same-node: true
-            block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-build-danube'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: true
+        - multijob:
+            name: 'Verify and upload ISO'
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-verify-iso-danube'
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-build-master/.build
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: true
+
+        - multijob:
+            name: os-nosdn-nofeature-noha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-nofeature-noha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-nofeature-noha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-nosdn-nofeature-ha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-nofeature-ha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-nofeature-ha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-nosdn-nofeature-ha-ipv6 Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha-ipv6
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-nofeature-ha-ipv6 Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha-ipv6
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-nofeature-ha-ipv6 Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha-ipv6
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-nosdn-ovs-noha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-nosdn-ovs-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-ovs-noha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-ovs-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-ovs-noha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-ovs-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-nosdn-ovs-ha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-nosdn-ovs-ha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-ovs-ha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-ovs-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-ovs-ha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-ovs-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-nosdn-fdio-noha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-nosdn-fdio-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-fdio-noha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-fdio-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-fdio-noha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-fdio-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-nosdn-fdio-ha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-nosdn-fdio-ha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-fdio-ha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-fdio-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-fdio-ha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-fdio-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-nosdn-kvm-ha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-nosdn-kvm-ha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-kvm-ha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-kvm-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-kvm-ha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-kvm-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-nosdn-kvm-noha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-nosdn-kvm-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-kvm-noha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-kvm-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-kvm-noha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-kvm-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl_l2-fdio-noha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl_l2-fdio-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl_l2-fdio-noha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l2-fdio-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl_l2-fdio-noha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l2-fdio-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl_l2-fdio-ha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl_l2-fdio-ha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl_l2-fdio-ha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l2-fdio-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl_l2-fdio-ha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l2-fdio-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl_l2-netvirt_gbp_fdio-noha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl_l2-netvirt_gbp_fdio-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl_l2-netvirt_gbp_fdio-noha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l2-netvirt_gbp_fdio-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl_l2-netvirt_gbp_fdio-noha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l2-netvirt_gbp_fdio-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl_l2-sfc-noha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl_l2-sfc-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl_l2-sfc-noha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l2-sfc-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl_l2-sfc-noha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l2-sfc-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl_l3-nofeature-noha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl_l3-nofeature-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-nofeature-noha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-nofeature-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-nofeature-noha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-nofeature-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl_l3-nofeature-ha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-nofeature-ha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-nofeature-ha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl_l3-ovs-noha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl_l3-ovs-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-ovs-noha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-ovs-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-ovs-noha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-ovs-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl_l3-ovs-ha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl_l3-ovs-ha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-ovs-ha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-ovs-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-ovs-ha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-ovs-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl-bgpvpn-ha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl-bgpvpn-ha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl-bgpvpn-ha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl-bgpvpn-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl-bgpvpn-ha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl-bgpvpn-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl-gluon-noha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl-gluon-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl-gluon-noha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl-gluon-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl-gluon-noha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl-gluon-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl_l3-fdio-noha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl_l3-fdio-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-fdio-noha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-fdio-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-fdio-noha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-fdio-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl_l3-fdio-ha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl_l3-fdio-ha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-fdio-ha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-fdio-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-fdio-ha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-fdio-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl_l3-fdio_dvr-noha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl_l3-fdio_dvr-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-fdio_dvr-noha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-fdio_dvr-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-fdio_dvr-noha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-fdio_dvr-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl_l3-fdio_dvr-ha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl_l3-fdio_dvr-ha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-fdio_dvr-ha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-fdio_dvr-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-fdio_dvr-ha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-fdio_dvr-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl_l3-csit-noha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl_l3-csit-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-csit-noha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-csit-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl_l3-csit-noha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl_l3-csit-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-onos-nofeature-ha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-onos-nofeature-ha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-onos-nofeature-ha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-onos-nofeature-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-onos-nofeature-ha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-onos-nofeature-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-ovn-nofeature-noha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-ovn-nofeature-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-ovn-nofeature-noha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-ovn-nofeature-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-ovn-nofeature-noha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-danube-daily-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-ovn-nofeature-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+
+# master Daily
+- job-template:
+    name: 'apex-daily-master'
+
+    # Job template for daily build
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    project-type: 'multijob'
+
+    disabled: '{obj:disabled}'
+
+    scm:
+        - git-scm
+
+    parameters:
+        - '{project}-defaults'
+        - '{project}-daily-master-defaults'
+        - project-parameter:
+            project: '{project}'
+            branch: 'master'
+        - apex-parameter:
+            gs-pathname: ''
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-verify.*'
+                - 'apex-deploy.*'
+                - 'apex-runner.*'
+                - 'apex-.*-promote.*'
+
+    triggers:
+        - 'apex-master'
+
+    builders:
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-build-master'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: true
+        - multijob:
+            name: 'Verify and upload ISO'
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-verify-iso-master'
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-build-master/.build
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: true
+
+        - multijob:
+            name: os-nosdn-nofeature-noha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-nofeature-noha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-master-daily-master'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-nofeature-noha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-master-daily-master'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-nosdn-nofeature-ha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-nofeature-ha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-master-daily-master'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-nosdn-nofeature-ha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-master-daily-master'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl-nofeature-ha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl-nofeature-ha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl-nofeature-ha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-master-daily-master'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl-nofeature-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl-nofeature-ha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-master-daily-master'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl-nofeature-ha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+        - multijob:
+            name: os-odl-nofeature-noha Baremetal Deploy
+            condition: ALWAYS
+            projects:
+                - name: 'apex-deploy-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=apex-daily-{stream}/.build
+                    DEPLOY_SCENARIO=os-odl-nofeature-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: os-odl-nofeature-noha Functest
+            condition: ALWAYS
+            projects:
+                - name: 'functest-apex-apex-baremetal-master-daily-master'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl-nofeature-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: os-odl-nofeature-noha Yardstick
+            condition: ALWAYS
+            projects:
+                - name: 'yardstick-apex-apex-baremetal-master-daily-master'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=os-odl-nofeature-noha
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
 
 # CSIT promote
 - job-template:
@@ -1023,7 +1836,7 @@
     # Required Variables:
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
-    node: '{daily-slave}'
+    node: '{virtual-slave}'
 
     disabled: false
 
@@ -1062,7 +1875,7 @@
             block: true
             same-node: true
         - trigger-builds:
-          - project: 'functest-apex-{daily-slave}-suite-{stream}'
+          - project: 'functest-apex-{virtual-slave}-suite-{stream}'
             predefined-parameters: |
               DEPLOY_SCENARIO=os-odl_l3-nofeature-noha
               FUNCTEST_SUITE_NAME=tempest_smoke_serial
@@ -1083,7 +1896,7 @@
     # Required Variables:
     #     stream:    branch with - in place of / (eg. stable)
     #     branch:    branch (eg. stable)
-    node: '{daily-slave}'
+    node: '{virtual-slave}'
 
     disabled: false
 
@@ -1148,7 +1961,6 @@
     triggers:
         - 'apex-gs-clean-{stream}'
 
-
 ########################
 # parameter macros
 ########################
@@ -1165,7 +1977,7 @@
             description: "Artifact version type"
         - string:
             name: BUILD_DIRECTORY
-            default: $WORKSPACE/build
+            default: $WORKSPACE/.build
             description: "Directory where the build artifact will be located upon the completion of the build."
         - string:
             name: CACHE_DIRECTORY
@@ -1181,7 +1993,7 @@
             description: "Version directory where opnfv artifacts are stored in gs repository"
         - string:
             name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+            default: $GS_BASE{gs-pathname}
             description: "URL to Google Storage."
 
 ########################
@@ -1219,6 +2031,12 @@
             !include-raw: ./apex-upload-artifact.sh
 
 - builder:
+    name: 'apex-download-artifact'
+    builders:
+        - shell:
+            !include-raw: ./apex-download-artifact.sh
+
+- builder:
     name: 'apex-gs-cleanup'
     builders:
         - shell:
@@ -1229,7 +2047,6 @@
     builders:
         - shell:
             !include-raw: ./apex-deploy.sh
-
 
 #######################
 # trigger macros
