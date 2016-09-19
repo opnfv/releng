@@ -245,39 +245,6 @@
             default: 'daily'
             description: "Daily suite name to run"
 - parameter:
-    name: functest-weekly-parameter
-    parameters:
-        - string:
-            name: FUNCTEST_SUITE_NAME
-            default: 'weekly'
-            description: "Weekly suite name to run"
-- parameter:
-    name: functest-suite-parameter
-    parameters:
-        - choice:
-            name: FUNCTEST_SUITE_NAME
-            choices:
-                - 'healthcheck'
-                - 'vping_userdata'
-                - 'vping_ssh'
-                - 'tempest_smoke_serial'
-                - 'rally_sanity'
-                - 'odl'
-                - 'onos'
-                - 'promise'
-                - 'doctor'
-                - 'bgpvpn'
-                - 'security_scan'
-                - 'tempest_full_parallel'
-                - 'rally_full'
-                - 'vims'
-                - 'multisite'
-                - 'parser'
-        - string:
-            name: TESTCASE_OPTIONS
-            default: ''
-            description: 'Addtional parameters specific to test case(s)'
-- parameter:
     name: functest-parameter
     parameters:
         - string:
@@ -317,38 +284,10 @@
         - 'functest-exit'
 
 - builder:
-    name: functest-weekly-builder
-    builders:
-        - 'functest-cleanup'
-        - 'set-functest-env'
-        - 'functest-weekly'
-        - 'functest-store-results'
-        - 'functest-exit'
-
-- builder:
-    name: functest-suite-builder
-    builders:
-        - 'functest-cleanup'
-        - 'set-functest-env'
-        - 'functest-suite'
-
-- builder:
     name: functest-daily
     builders:
         - shell:
             !include-raw: ./functest-loop.sh
-
-- builder:
-    name: functest-weekly
-    builders:
-        - shell:
-            !include-raw: ./functest-loop.sh
-
-- builder:
-    name: functest-suite
-    builders:
-        - shell:
-            !include-raw: ./functest-suite.sh
 
 - builder:
     name: set-functest-env
