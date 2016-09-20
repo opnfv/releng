@@ -16,6 +16,7 @@ import yaml
 import reportingUtils as utils
 import reportingConf as conf
 import scenarioResult as sr
+from scenarios import config as cf
 
 # Logger
 logger = utils.getLogger("Yardstick-Status")
@@ -40,6 +41,10 @@ for version in conf.versions:
                     scenario_results[k] = []
                 scenario_results[k] += stable_result[k]
         scenario_result_criteria = {}
+
+        for s in scenario_results.keys():
+            if cf.has_key(installer) and cf[installer].has_key(s):
+                scenario_results.pop(s)
 
         # From each scenarios get results list
         for s, s_result in scenario_results.items():
