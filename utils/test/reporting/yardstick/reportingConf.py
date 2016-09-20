@@ -22,6 +22,7 @@ LASTEST_TESTS = 4
 REPORTING_PATH = "."
 
 URL_BASE = 'http://testresults.opnfv.org/test/api/v1/results'
+TEST_CONF = "https://git.opnfv.org/cgit/yardstick/plain/tests/ci/report_config.yaml"
 
 # LOG_LEVEL = "ERROR"
 LOG_LEVEL = "INFO"
