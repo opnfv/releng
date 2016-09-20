@@ -8,6 +8,8 @@
 ##############################################################################
 node 'controller00.opnfvlocal' {
   $group = 'infracloud'
+  include ::sudoers
+
   class { 'opnfv::server':
     iptables_public_tcp_ports => [80,5000,5671,8774,9292,9696,35357], # logs,keystone,rabbit,nova,glance,neutron,keystone
     sysadmins                 => hiera('sysadmins', []),
@@ -43,6 +45,8 @@ node 'controller00.opnfvlocal' {
 
 node 'compute00.opnfvlocal' {
   $group = 'infracloud'
+  include ::sudoers
+
   class { 'opnfv::server':
     sysadmins                 => hiera('sysadmins', []),
     enable_unbound            => false,

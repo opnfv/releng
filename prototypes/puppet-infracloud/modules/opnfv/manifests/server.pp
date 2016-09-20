@@ -19,7 +19,6 @@ class opnfv::server (
   # Classes for all hosts
 
   include snmpd
-  include sudoers
 
   class { 'iptables':
     public_tcp_ports => $iptables_public_tcp_ports,
