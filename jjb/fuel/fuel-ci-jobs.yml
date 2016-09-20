@@ -214,6 +214,10 @@
             default: 'os-odl_l2-nofeature-ha'
         - fuel-ci-parameter:
             gs-pathname: '{gs-pathname}'
+        - string:
+            name: DEPLOY_TIMEOUT
+            default: '150'
+            description: 'Deployment timeout in minutes'
 
     scm:
         - git-scm:
@@ -224,9 +228,6 @@
     wrappers:
         - build-name:
             name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
-        - timeout:
-            timeout: 150
-            abort: true
 
     builders:
         - description-setter:
