@@ -1,9 +1,10 @@
 #! /usr/bin/env python
 import logging
-import argparse
-import shared_utils
-import json
 import urlparse
+
+import argparse
+
+import shared_utils
 
 logger = logging.getLogger('clear_kibana')
 logger.setLevel(logging.DEBUG)
