@@ -71,7 +71,8 @@
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
     builders:
-        - bottlenecks-unit-tests
+        - bottlenecks-hello
+        #- bottlenecks-unit-tests
 
 - job-template:
     name: 'bottlenecks-merge-{stream}'
@@ -105,7 +106,8 @@
                       branch-pattern: '**/{branch}'
 
     builders:
-        - bottlenecks-unit-tests
+        - bottlenecks-hello
+        #- bottlenecks-unit-tests
 
 - job-template:
     name: 'bottlenecks-{suite}-upload-artifacts-{stream}'
@@ -215,3 +217,12 @@
             /bin/bash $WORKSPACE/tests.sh
 
             deactivate
+
+- builder:
+    name: bottlenecks-hello
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+
+            echo "hello"
