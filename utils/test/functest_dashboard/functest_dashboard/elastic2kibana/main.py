@@ -4,10 +4,10 @@ import urlparse
 
 import argparse
 
-import logger_utils
-import shared_utils
-import testcases_parser
-from config import APIConfig
+from common import elastic_access
+from common import logger_utils
+from conf import testcases_parser
+from conf.config import APIConfig
 
 logger = logger_utils.KibanaDashboardLogger('elastic2kibana').get
 
@@ -18,6 +18,11 @@ parser.add_argument("-c", "--config-file",
 
 args = parser.parse_args()
 CONF = APIConfig().parse(args.config_file)
+base_elastic_url = CONF.elastic_url
+generate_inputs = CONF.is_js
+input_file_path = CONF.js_path
+kibana_url = CONF.kibana_url
+es_creds = CONF.elastic_creds
 
 _installers = {'fuel', 'apex', 'compass', 'joid'}
 
@@ -53,7 +58,7 @@ class KibanaDashboard(dict):
         for visualization in self._kibana_visualizations:
             url = urlparse.urljoin(base_elastic_url, '/.kibana/visualization/{}'.format(visualization.id))
             logger.debug("publishing visualization '{}'".format(url))
-            shared_utils.publish_json(visualization, es_creds, url)
+            elastic_access.publish_json(visualization, es_creds, url)
 
     def _construct_panels(self):
         size_x = 6
@@ -131,7 +136,7 @@ class KibanaDashboard(dict):
     def _publish(self):
         url = urlparse.urljoin(base_elastic_url, '/.kibana/dashboard/{}'.format(self.id))
         logger.debug("publishing dashboard '{}'".format(url))
-        shared_utils.publish_json(self, es_creds, url)
+        elastic_access.publish_json(self, es_creds, url)
 
     def publish(self):
         self._publish_visualizations()
@@ -282,8 +287,8 @@ def _get_pods_and_scenarios(project_name, case_name, installer):
         }
     })
 
-    elastic_data = shared_utils.get_elastic_docs(urlparse.urljoin(base_elastic_url, '/test_results/mongo2elastic'),
-                                                 es_creds, query_json)
+    elastic_data = elastic_access.get_elastic_docs(urlparse.urljoin(base_elastic_url, '/test_results/mongo2elastic'),
+                                                   es_creds, query_json)
 
     pods_and_scenarios = {}
 
@@ -359,13 +364,7 @@ def generate_js_inputs(js_file_path, kibana_url, dashboards):
         js_file_fdesc.write(str(js_dict).replace("u'", "'"))
 
 
-if __name__ == '__main__':
-    base_elastic_url = CONF.elastic_url
-    generate_inputs = CONF.is_js
-    input_file_path = CONF.js_path
-    kibana_url = CONF.kibana_url
-    es_creds = CONF.elastic_creds
-
+def main():
     dashboards = construct_dashboards()
 
     for kibana_dashboard in dashboards:

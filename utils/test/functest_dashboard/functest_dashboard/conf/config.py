@@ -22,7 +22,7 @@ class APIConfig:
     """
 
     def __init__(self):
-        self._default_config_location = "./config.ini"
+        self._default_config_location = "../etc/config.ini"
         self.elastic_url = 'http://localhost:9200'
         self.elastic_creds = None
         self.destination = 'elasticsearch'
@@ -69,7 +69,7 @@ class APIConfig:
         obj.elastic_creds = obj._get_str_parameter("elastic", "creds")
         obj.destination = obj._get_str_parameter("output", "destination")
         obj.kibana_url = obj._get_str_parameter("kibana", "url")
-        obj.is_js = obj._get_bool_parameter("kibana", "js")
+        obj.is_js = obj._get_bool_parameter("kibana", "is_js")
         obj.js_path = obj._get_str_parameter("kibana", "js_path")
 
         return obj

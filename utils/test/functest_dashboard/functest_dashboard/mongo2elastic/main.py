@@ -10,11 +10,11 @@ import uuid
 
 import argparse
 
-import logger_utils
-import mongo2elastic_format
-import shared_utils
-import testcases_parser
-from config import APIConfig
+import format
+from common import elastic_access
+from common import logger_utils
+from conf import testcases_parser
+from conf.config import APIConfig
 
 logger = logger_utils.KibanaDashboardLogger('mongo2elastic').get
 
@@ -50,7 +50,7 @@ class DocumentPublisher:
     def format(self):
         try:
             if self._verify_document() and self.fmt:
-                self.is_formatted = vars(mongo2elastic_format)[self.fmt](self.doc)
+                self.is_formatted = vars(format)[self.fmt](self.doc)
             else:
                 self.is_formatted = False
         except Exception:
@@ -65,7 +65,7 @@ class DocumentPublisher:
             self._publish()
 
     def _publish(self):
-        status, data = shared_utils.publish_json(self.doc, self.creds, self.to)
+        status, data = elastic_access.publish_json(self.doc, self.creds, self.to)
         if status > 300:
             logger.error('Publish record[{}] failed, due to [{}]'
                          .format(self.doc, json.loads(data)['error']['reason']))
@@ -201,7 +201,7 @@ class DocumentsPublisher:
             exit(-1)
 
     def get_existed_docs(self):
-        self.existed_docs = shared_utils.get_elastic_docs_by_days(self.elastic_url, self.creds, self.days)
+        self.existed_docs = elastic_access.get_elastic_docs_by_days(self.elastic_url, self.creds, self.days)
         return self
 
     def publish(self):
@@ -242,7 +242,3 @@ def main():
                                base_elastic_url,
                                es_creds,
                                to).export().get_existed_docs().publish()
-
-
-if __name__ == '__main__':
-    main()
