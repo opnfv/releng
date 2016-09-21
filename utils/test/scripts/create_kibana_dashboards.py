@@ -4,11 +4,20 @@ import urlparse
 
 import argparse
 
-import conf_utils
 import logger_utils
 import shared_utils
+import testcases_parser
+from config import APIConfig
 
 logger = logger_utils.KibanaDashboardLogger('elastic2kibana').get
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-c", "--config-file",
+                    dest='config_file',
+                    help="Config file location")
+
+args = parser.parse_args()
+CONF = APIConfig().parse(args.config_file)
 
 _installers = {'fuel', 'apex', 'compass', 'joid'}
 
@@ -303,7 +312,7 @@ def construct_dashboards():
     :return: list of KibanaDashboards
     """
     kibana_dashboards = []
-    for project, case_dicts in conf_utils.testcases_yaml.items():
+    for project, case_dicts in testcases_parser.testcases_yaml.items():
         for case in case_dicts:
             case_name = case.get('name')
             visualizations = case.get('visualizations')
@@ -351,28 +360,11 @@ def generate_js_inputs(js_file_path, kibana_url, dashboards):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Create Kibana dashboards from data in elasticsearch')
-    parser.add_argument('-e', '--elasticsearch-url', default='http://localhost:9200',
-                        help='the url of elasticsearch, defaults to http://localhost:9200')
-
-    parser.add_argument('-js', '--generate_js_inputs', action='store_true',
-                        help='Use this argument to generate javascript inputs for kibana landing page')
-
-    parser.add_argument('--js_path', default='/usr/share/nginx/html/kibana_dashboards/conf.js',
-                        help='Path of javascript file with inputs for kibana landing page')
-
-    parser.add_argument('-k', '--kibana_url', default='https://testresults.opnfv.org/kibana/app/kibana',
-                        help='The url of kibana for javascript inputs')
-
-    parser.add_argument('-u', '--elasticsearch-username', default=None,
-                        help='The username with password for elasticsearch in format username:password')
-
-    args = parser.parse_args()
-    base_elastic_url = args.elasticsearch_url
-    generate_inputs = args.generate_js_inputs
-    input_file_path = args.js_path
-    kibana_url = args.kibana_url
-    es_creds = args.elasticsearch_username
+    base_elastic_url = CONF.elastic_url
+    generate_inputs = CONF.is_js
+    input_file_path = CONF.js_path
+    kibana_url = CONF.kibana_url
+    es_creds = CONF.elastic_creds
 
     dashboards = construct_dashboards()
 

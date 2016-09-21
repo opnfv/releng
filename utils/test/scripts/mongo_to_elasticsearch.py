@@ -10,31 +10,29 @@ import uuid
 
 import argparse
 
-import conf_utils
 import logger_utils
 import mongo2elastic_format
 import shared_utils
+import testcases_parser
+from config import APIConfig
 
 logger = logger_utils.KibanaDashboardLogger('mongo2elastic').get
 
-parser = argparse.ArgumentParser(description='Modify and filter mongo json data for elasticsearch')
-parser.add_argument('-od', '--output-destination',
-                    default='elasticsearch',
-                    choices=('elasticsearch', 'stdout'),
-                    help='defaults to elasticsearch')
-
-parser.add_argument('-ml', '--merge-latest', default=0, type=int, metavar='N',
+parser = argparse.ArgumentParser()
+parser.add_argument("-c", "--config-file",
+                    dest='config_file',
+                    help="Config file location")
+parser.add_argument('-ld', '--latest-days',
+                    default=0,
+                    type=int,
+                    metavar='N',
                     help='get entries old at most N days from mongodb and'
                          ' parse those that are not already in elasticsearch.'
                          ' If not present, will get everything from mongodb, which is the default')
 
-parser.add_argument('-e', '--elasticsearch-url', default='http://localhost:9200',
-                    help='the url of elasticsearch, defaults to http://localhost:9200')
-
-parser.add_argument('-u', '--elasticsearch-username', default=None,
-                    help='The username with password for elasticsearch in format username:password')
-
 args = parser.parse_args()
+CONF = APIConfig().parse(args.config_file)
+
 
 tmp_docs_file = './mongo-{}.json'.format(uuid.uuid4())
 
@@ -177,8 +175,8 @@ class DocumentsPublisher:
         self.existed_docs = []
 
     def export(self):
-        if days > 0:
-            past_time = datetime.datetime.today() - datetime.timedelta(days=days)
+        if self.days > 0:
+            past_time = datetime.datetime.today() - datetime.timedelta(days=self.days)
             query = '''{{
                           "project_name": "{}",
                           "case_name": "{}",
@@ -203,7 +201,7 @@ class DocumentsPublisher:
             exit(-1)
 
     def get_existed_docs(self):
-        self.existed_docs = shared_utils.get_elastic_docs_by_days(self.elastic_url, self.creds, days)
+        self.existed_docs = shared_utils.get_elastic_docs_by_days(self.elastic_url, self.creds, self.days)
         return self
 
     def publish(self):
@@ -224,19 +222,19 @@ class DocumentsPublisher:
             os.remove(tmp_docs_file)
 
 
-if __name__ == '__main__':
-    base_elastic_url = urlparse.urljoin(args.elasticsearch_url, '/test_results/mongo2elastic')
-    to = args.output_destination
-    days = args.merge_latest
-    es_creds = args.elasticsearch_username
+def main():
+    base_elastic_url = urlparse.urljoin(CONF.elastic_url, '/test_results/mongo2elastic')
+    to = CONF.destination
+    days = args.latest_days
+    es_creds = CONF.elastic_creds
 
     if to == 'elasticsearch':
         to = base_elastic_url
 
-    for project, case_dicts in conf_utils.testcases_yaml.items():
+    for project, case_dicts in testcases_parser.testcases_yaml.items():
         for case_dict in case_dicts:
             case = case_dict.get('name')
-            fmt = conf_utils.compose_format(case_dict.get('format'))
+            fmt = testcases_parser.compose_format(case_dict.get('format'))
             DocumentsPublisher(project,
                                case,
                                fmt,
@@ -244,3 +242,7 @@ if __name__ == '__main__':
                                base_elastic_url,
                                es_creds,
                                to).export().get_existed_docs().publish()
+
+
+if __name__ == '__main__':
+    main()
