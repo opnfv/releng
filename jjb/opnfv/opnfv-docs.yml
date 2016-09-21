@@ -14,11 +14,13 @@
     stream:
         - master:
             branch: '{stream}'
+            release-track: ''
             gs-pathname: ''
             disabled: false
         - colorado:
             branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
+            release-track: '2.0'
+            gs-pathname: '/{stream}/{release-track}'
             disabled: false
 
 ########################
@@ -82,7 +84,7 @@
         - string:
             name: GS_URL
             default: '$GS_BASE{gs-pathname}'
-            description: "Directory where the build artifact will be located upon the completion     of the build."
+            description: "Directory where the build artifact will be located upon the completion of the build."
 
     scm:
         - gerrit-trigger-scm:
