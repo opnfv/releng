@@ -49,14 +49,6 @@
             choosing-strategy: '{choosing-strategy}'
             timeout: 15
 
-- wrapper:
-    name: build-timeout
-    wrappers:
-        - timeout:
-            type: absolute
-            timeout: 360
-            fail: true
-
 - trigger:
     name: 'daily-trigger-disabled'
     triggers:
@@ -66,11 +58,6 @@
     name: 'weekly-trigger-disabled'
     triggers:
         - timed: ''
-
-- trigger:
-    name: 'brahmaputra-trigger-daily-enabled'
-    triggers:
-        - timed: '0 2 * * *'
 
 - trigger:
     name: gerrit-trigger-patch-submitted
@@ -116,58 +103,6 @@
             allow-empty: true
             fingerprint: true
             latest-only: true
-
-- publisher:
-    name: email-notification
-    publishers:
-        - email-ext:
-            recipients: 'jenkins@lists.opnfv.org'
-            reply-to:
-            content-type: default
-            subject: '{email-prefix} $PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!'
-            body: |
-                $PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
-
-                Check console output at $BUILD_URL to view the results.
-            unstable: true
-            fixed: true
-            send-to:
-                - developers
-                - recipients
-
-- publisher:
-        name: jacoco-report
-        publishers:
-            - jacoco:
-                exec-pattern: "**/**.exec"
-                class-pattern: "**/classes"
-                source-pattern: "**/src/main/java"
-                exclusion-pattern: "**/gen/**,**/generated-sources/**,**/yang-gen**"
-                status-update: true
-                targets:
-                  - branch:
-                      healthy: 10
-                      unhealthy: 20
-                  - method:
-                      healthy: 50
-                      unhealthy: 40
-
-
-- builder:
-    name: test-macro
-    builders:
-        - shell: 'echo testing macro "test-macro"'
-
-- builder:
-    name: wipe-org-opendaylight-repo
-    builders:
-        - shell: 'if [ -d /tmp/r/org/opendaylight ]; then rm -rf /tmp/r/org/opendaylight; fi'
-
-- builder:
-    name: jacoco-nojava-workaround
-    builders:
-        - shell: 'mkdir -p $WORKSPACE/target/classes'
-
 
 # New Releng macros
 
