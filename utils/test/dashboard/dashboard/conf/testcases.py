@@ -1,7 +1,7 @@
 import yaml
 
 
-with open('./testcases.yaml') as f:
+with open('./functest/testcases.yaml') as f:
     testcases_yaml = yaml.safe_load(f)
 f.close()
 

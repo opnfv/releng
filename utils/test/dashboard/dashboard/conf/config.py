@@ -22,7 +22,7 @@ class APIConfig:
     """
 
     def __init__(self):
-        self._default_config_location = "./config.ini"
+        self._default_config_location = "../etc/config.ini"
         self.elastic_url = 'http://localhost:9200'
         self.elastic_creds = None
         self.destination = 'elasticsearch'
