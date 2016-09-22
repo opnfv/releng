@@ -57,9 +57,9 @@ class Logger(object):
         return self.logger
 
 
-class KibanaDashboardLogger(Logger):
+class DashboardLogger(Logger):
     file_path = '/var/log/kibana_dashboard'
 
     def __init__(self, logger_name):
-        super(KibanaDashboardLogger, self).__init__(logger_name)
+        super(DashboardLogger, self).__init__(logger_name)
 

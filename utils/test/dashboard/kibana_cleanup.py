@@ -4,7 +4,7 @@ import urlparse
 
 import argparse
 
-import shared_utils
+from dashboard.common import elastic_access
 
 logger = logging.getLogger('clear_kibana')
 logger.setLevel(logging.DEBUG)
@@ -14,10 +14,10 @@ logger.addHandler(file_handler)
 
 
 def delete_all(url, es_creds):
-    ids = shared_utils.get_elastic_docs(url, es_creds, body=None, field='_id')
+    ids = elastic_access.get_elastic_docs(url, es_creds, body=None, field='_id')
     for id in ids:
         del_url = '/'.join([url, id])
-        shared_utils.delete_request(del_url, es_creds)
+        elastic_access.delete_request(del_url, es_creds)
 
 
 if __name__ == '__main__':

@@ -10,13 +10,12 @@ import uuid
 
 import argparse
 
-import logger_utils
-import mongo2elastic_format
-import shared_utils
-import testcases_parser
-from config import APIConfig
+from common import logger_utils, elastic_access
+from conf import testcases
+from conf.config import APIConfig
+from mongo2elastic import format
 
-logger = logger_utils.KibanaDashboardLogger('mongo2elastic').get
+logger = logger_utils.DashboardLogger('mongo2elastic').get
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config-file",
@@ -50,7 +49,7 @@ class DocumentPublisher:
     def format(self):
         try:
             if self._verify_document() and self.fmt:
-                self.is_formatted = vars(mongo2elastic_format)[self.fmt](self.doc)
+                self.is_formatted = vars(format)[self.fmt](self.doc)
             else:
                 self.is_formatted = False
         except Exception:
@@ -65,7 +64,7 @@ class DocumentPublisher:
             self._publish()
 
     def _publish(self):
-        status, data = shared_utils.publish_json(self.doc, self.creds, self.to)
+        status, data = elastic_access.publish_json(self.doc, self.creds, self.to)
         if status > 300:
             logger.error('Publish record[{}] failed, due to [{}]'
                          .format(self.doc, json.loads(data)['error']['reason']))
@@ -201,7 +200,7 @@ class DocumentsPublisher:
             exit(-1)
 
     def get_existed_docs(self):
-        self.existed_docs = shared_utils.get_elastic_docs_by_days(self.elastic_url, self.creds, self.days)
+        self.existed_docs = elastic_access.get_elastic_docs_by_days(self.elastic_url, self.creds, self.days)
         return self
 
     def publish(self):
@@ -231,10 +230,10 @@ def main():
     if to == 'elasticsearch':
         to = base_elastic_url
 
-    for project, case_dicts in testcases_parser.testcases_yaml.items():
+    for project, case_dicts in testcases.testcases_yaml.items():
         for case_dict in case_dicts:
             case = case_dict.get('name')
-            fmt = testcases_parser.compose_format(case_dict.get('format'))
+            fmt = testcases.compose_format(case_dict.get('format'))
             DocumentsPublisher(project,
                                case,
                                fmt,
@@ -242,7 +241,3 @@ def main():
                                base_elastic_url,
                                es_creds,
                                to).export().get_existed_docs().publish()
-
-
-if __name__ == '__main__':
-    main()
