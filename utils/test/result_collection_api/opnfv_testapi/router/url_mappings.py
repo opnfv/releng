@@ -14,8 +14,6 @@ from opnfv_testapi.resources.project_handlers import ProjectCLHandler, \
     ProjectGURHandler
 from opnfv_testapi.resources.result_handlers import ResultsCLHandler, \
     ResultsGURHandler
-from opnfv_testapi.resources.dashboard_handlers import DashboardHandler, \
-    DashboardProjectsHandler
 
 
 mappings = [
@@ -47,12 +45,4 @@ mappings = [
     # (project, case, and pod)
     (r"/api/v1/results", ResultsCLHandler),
     (r"/api/v1/results/([^/]+)", ResultsGURHandler),
-
-    # Method to manage Dashboard ready results
-    # GET /dashboard?project=functest&case=vPing&pod=opnfv-jump2
-    #  => get results in dasboard ready format
-    # get /dashboard
-    #  => get the list of project with dashboard ready results
-    (r"/dashboard/v1/results", DashboardHandler),
-    (r"/dashboard/v1/projects", DashboardProjectsHandler),
 ]
