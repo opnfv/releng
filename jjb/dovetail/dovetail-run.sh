@@ -33,7 +33,8 @@ if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FOR
 fi
 
 opts="--privileged=true --rm"
-envs="-v /var/run/docker.sock:/var/run/docker.sock"
+envs="-e CI_DEBUG=${CI_DEBUG} \
+      -v /var/run/docker.sock:/var/run/docker.sock"
 
 # Pull the image with correct tag
 echo "Dovetail: Pulling image opnfv/dovetail:${DOCKER_TAG}"
