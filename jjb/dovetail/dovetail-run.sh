@@ -34,7 +34,8 @@ fi
 
 opts="--privileged=true --rm"
 envs="-e CI_DEBUG=${CI_DEBUG} \
-      -v /var/run/docker.sock:/var/run/docker.sock"
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v /home/opnfv/dovetail/results:/home/opnfv/dovetail/results"
 
 # Pull the image with correct tag
 echo "Dovetail: Pulling image opnfv/dovetail:${DOCKER_TAG}"
