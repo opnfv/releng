@@ -139,7 +139,7 @@ def getResult(testCase, installer, scenario, version):
         # print "Nb test OK (last 10 days):"+ str(nbTestOk)
         # check that we have at least 4 runs
         if len(scenario_results) < 1:
-            # No results available	
+            # No results available
             test_result_indicator = -1
         elif nbTestOk < 1:
             test_result_indicator = 0
@@ -158,3 +158,21 @@ def getResult(testCase, installer, scenario, version):
             else:
                 test_result_indicator = 2
     return test_result_indicator
+
+
+def getJenkinsUrl(build_tag):
+    # e.g. jenkins-functest-apex-apex-daily-colorado-daily-colorado-246
+    # id = 246
+    # note it is linked to jenkins format
+    # if this format changes...function to be adapted....
+    url_base = "https://build.opnfv.org/ci/view/functest/job/"
+    jenkins_url = ""
+    try:
+        build_id = [int(s) for s in build_tag.split("-") if s.isdigit()]
+        jenkins_path = filter(lambda c: not c.isdigit(), build_tag)
+        url_id = jenkins_path[8:-1] + "/" + str(build_id[0])
+        jenkins_url = url_base + url_id + "/console"
+    except:
+        print 'Impossible to get jenkins url:'
+
+    return jenkins_url

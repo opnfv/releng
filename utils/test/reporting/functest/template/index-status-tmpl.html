@@ -18,7 +18,7 @@
     <body>
     <div class="container">
       <div class="masthead">
-        <h3 class="text-muted">Functest status page ({{version}})</h3>
+        <h3 class="text-muted">Functest status page ({{version}}, {{date}})</h3>
         <nav>
           <ul class="nav nav-justified">
             <li class="active"><a href="http://testresults.opnfv.org/reporting/index.html">Home</a></li>
@@ -47,7 +47,7 @@
                     </tr>
                         {% for scenario,iteration in scenario_stats.iteritems() -%}
                             <tr class="tr-ok">
-                                <td>{{scenario}}</td>
+                                <td><a href={{scenario_results[scenario].getUrlLastRun()}}>{{scenario}}</a></td>
                                 <td>{%if scenario_results[scenario].getScorePercent() < 8.3 -%}
                                         <img src="../../img/gauge_0.png">
                                     {%elif scenario_results[scenario].getScorePercent() < 16.7 -%}

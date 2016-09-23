@@ -24,6 +24,7 @@ logger = utils.getLogger("Status")
 # Initialization
 testValid = []
 otherTestCases = []
+reportingDate = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
 # init just tempest to get the list of scenarios
 # as all the scenarios run Tempest
@@ -82,18 +83,26 @@ for version in conf.versions:
 
         # For all the scenarios get results
         for s, s_result in scenario_results.items():
+            logger.info("---------------------------------")
+            logger.info("installer %s, version %s, scenario %s:" %
+                        (installer, version, s))
+            logger.debug("Scenario results: %s" % s_result)
+
             # Green or Red light for a given scenario
             nb_test_runnable_for_this_scenario = 0
             scenario_score = 0
-
+            # url of the last jenkins log corresponding to a given
+            # scenario
+            s_url = ""
+            if len(s_result) > 0:
+                build_tag = s_result[len(s_result)-1]['build_tag']
+                logger.debug("Build tag: %s" % build_tag)
+                s_url = s_url = utils.getJenkinsUrl(build_tag)
+                logger.info("last jenkins url: %s" % s_url)
             testCases2BeDisplayed = []
             # Check if test case is runnable / installer, scenario
             # for the test case used for Scenario validation
             try:
-                logger.info("---------------------------------")
-                logger.info("installer %s, version %s, scenario %s:" %
-                            (installer, version, s))
-
                 # 1) Manage the test cases for the scenario validation
                 # concretely Tiers 0-3
                 for test_case in testValid:
@@ -185,7 +194,8 @@ for version in conf.versions:
             else:
                 logger.info(">>>>> scenario OK, save the information")
                 s_status = "OK"
-                path_validation_file = (conf.REPORTING_PATH + "/release/" + version +
+                path_validation_file = (conf.REPORTING_PATH +
+                                        "/release/" + version +
                                         "/validated_scenario_history.txt")
                 with open(path_validation_file, "a") as f:
                     time_format = "%Y-%m-%d %H:%M"
@@ -193,8 +203,20 @@ for version in conf.versions:
                             ";" + installer + ";" + s + "\n")
                     f.write(info)
 
-            scenario_result_criteria[s] = sr.ScenarioResult(s_status, s_score,
-                                                            s_score_percent)
+            # Save daily results in a file
+            path_validation_file = (conf.REPORTING_PATH +
+                                    "/release/" + version +
+                                    "/scenario_history.txt")
+            with open(path_validation_file, "a") as f:
+                info = (reportingDate + "," + s + "," + installer +
+                        "," + s_score + "," +
+                        str(round(s_score_percent)) + "\n")
+                f.write(info)
+
+            scenario_result_criteria[s] = sr.ScenarioResult(s_status,
+                                                            s_score,
+                                                            s_score_percent,
+                                                            s_url)
             logger.info("--------------------------")
 
         templateLoader = jinja2.FileSystemLoader(conf.REPORTING_PATH)
@@ -209,7 +231,8 @@ for version in conf.versions:
                                      items=items,
                                      installer=installer,
                                      period=conf.PERIOD,
-                                     version=version)
+                                     version=version,
+                                     date=reportingDate)
 
         with open(conf.REPORTING_PATH + "/release/" + version +
                   "/index-status-" + installer + ".html", "wb") as fh:
