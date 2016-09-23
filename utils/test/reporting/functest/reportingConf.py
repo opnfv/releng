@@ -12,10 +12,10 @@
 installers = ["apex", "compass", "fuel", "joid"]
 # list of test cases declared in testcases.yaml but that must not be
 # taken into account for the scoring
-blacklist = ["ovno", "security_scan", 'odl-sfc']
+blacklist = ["ovno", "security_scan"]
 # versions = ["brahmaputra", "master"]
 versions = ["master", "colorado"]
-PERIOD = 50
+PERIOD = 10
 MAX_SCENARIO_CRITERIA = 50
 # get the last 5 test results to determinate the success criteria
 NB_TESTS = 5
