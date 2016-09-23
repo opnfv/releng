@@ -1,0 +1,171 @@
+###################################
+# job configuration for dovetail
+###################################
+- project:
+    name: dovetail
+
+    project: '{name}'
+
+#---------------------------------------
+# BRANCH ANCHORS
+#---------------------------------------
+# 1)the stream/branch here represents the SUT(System Under Test) stream/branch
+# 2)docker-tag is the docker tag of dovetail(only master by now, then all latest used)
+#   the dovetail stream is one-to-one mapping with dovetail docker-tag
+#   the dovetail is not sync with A/B/C release
+#
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+        docker-tag: 'latest'
+    colorado: &colorado
+        stream: colorado
+        branch: 'stable/{stream}'
+        gs-pathname: '{stream}'
+        docker-tag: 'latest'
+
+#-----------------------------------
+# POD, PLATFORM, AND BRANCH MAPPING
+#-----------------------------------
+#            CI PODs
+# This section should only contain the SUTs
+# that have been switched using labels for slaves
+#------------------------------------------------
+# the pods, SUTs listed here are just examples to
+# let the dovetail tool run, there can be more ways beside CI to
+# run the dovetail tool.
+# pods, SUTs will be added/adjusted when needed
+    pod:
+# fuel CI PODs
+        - baremetal:
+            slave-label: fuel-baremetal
+            SUT: fuel
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
+        - virtual:
+            slave-label: fuel-virtual
+            SUT: fuel
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
+        - baremetal:
+            slave-label: fuel-baremetal
+            SUT: fuel
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *colorado
+        - virtual:
+            slave-label: fuel-virtual
+            SUT: fuel
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *colorado
+#compass CI PODs
+        - baremetal:
+            slave-label: compass-baremetal
+            SUT: compass
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
+        - virtual:
+            slave-label: compass-virtual
+            SUT: compass
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
+        - baremetal:
+            slave-label: compass-baremetal
+            SUT: compass
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *colorado
+        - virtual:
+            slave-label: compass-virtual
+            SUT: compass
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *colorado
+#--------------------------------
+#        None-CI PODs
+#--------------------------------
+        - huawei-pod5:
+            slave-label: '{pod}'
+            SUT: compass
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
+#--------------------------------
+    testsuite:
+        - 'basic'
+
+    jobs:
+        - 'dovetail-{SUT}-{pod}-{testsuite}-{stream}'
+
+################################
+# job templates
+################################
+- job-template:
+    name: 'dovetail-{SUT}-{pod}-{testsuite}-{stream}'
+
+    disabled: false
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-per-node: 1
+            option: 'project'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+        - timeout:
+            timeout: 180
+            abort: true
+
+    triggers:
+        - '{auto-trigger-name}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - '{SUT}-defaults'
+        - '{slave-label}-defaults'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-nofeature-ha'
+        - string:
+            name: DOCKER_TAG
+            default: '{docker-tag}'
+            description: 'Tag to pull docker image'
+        - string:
+            name: CI_DEBUG
+            default: 'false'
+            description: "Show debug output information"
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
+        - 'dovetail-cleanup'
+        - 'dovetail-{testsuite}'
+
+########################
+# builder macros
+########################
+- builder:
+    name: dovetail-basic
+    builders:
+        - shell:
+            !include-raw: ./dovetail-run.sh
+
+- builder:
+    name: dovetail-fetch-os-creds
+    builders:
+        - shell:
+            !include-raw: ../../utils/fetch_os_creds.sh
+
+- builder:
+    name: dovetail-cleanup
+    builders:
+        - shell:
+            !include-raw: ./dovetail-cleanup.sh
