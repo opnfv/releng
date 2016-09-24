@@ -1,0 +1,158 @@
+- project:
+    name: 'openstack-bifrost-verify'
+#--------------------------------
+# branches
+#--------------------------------
+    stream:
+        - master:
+            branch: '{stream}'
+#--------------------------------
+# projects
+#--------------------------------
+    project:
+        - 'openstack':
+            project-repo: 'https://git.openstack.org/openstack/bifrost'
+            clone-location: '/opt/bifrost'
+        - 'opnfv':
+            project-repo: 'https://gerrit.opnfv.org/gerrit/releng'
+            clone-location: '/opt/releng'
+#--------------------------------
+# distros
+#--------------------------------
+    distro:
+        - 'trusty':
+            disabled: false
+        - 'centos7':
+            disabled: false
+        - 'suse':
+            disabled: true
+#--------------------------------
+# type
+#--------------------------------
+    type:
+        - virtual
+#--------------------------------
+# jobs
+#--------------------------------
+    jobs:
+        - '{project}-bifrost-verify-{distro}-{type}-{stream}'
+#--------------------------------
+# job templates
+#--------------------------------
+- job-template:
+    name: '{project}-bifrost-verify-{distro}-{type}-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - '.*-bifrost-verify.*-{type}'
+            block-level: 'NODE'
+
+    parameters:
+        - string:
+            name: PROJECT
+            default: '{project}'
+        - string:
+            name: PROJECT_REPO
+            default: '{project-repo}'
+        - string:
+            name: CLONE_LOCATION
+            default: '{clone-location}'
+        - string:
+            name: DISTRO
+            default: '{distro}'
+        - string:
+            name: CLEAN_DIB_IMAGES
+            default: 'true'
+        - label:
+            name: SLAVE_LABEL
+            default: 'infra-{type}-{distro}'
+
+    scm:
+        - git:
+            url: '$PROJECT_REPO'
+            refspec: '$GERRIT_REFSPEC'
+            branches:
+                - 'origin/$GERRIT_BRANCH'
+            skip-tag: true
+            choosing-strategy: 'gerrit'
+            timeout: 10
+            wipe-workspace: true
+
+    triggers:
+        - '{project}-gerrit-trigger':
+            branch: '{branch}'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - shell:
+            !include-raw-escape: ./bifrost-verify.sh
+
+    publishers:
+        - email:
+            recipients: fatih.degirmenci@ericsson.com yroblamo@redhat.com mchandras@suse.de jack.morgan@intel.com zhang.jun3g@zte.com.cn
+#--------------------------------
+# trigger macros
+#--------------------------------
+- trigger:
+    name: 'openstack-gerrit-trigger'
+    triggers:
+        - gerrit:
+            server-name: 'review.openstack.org'
+            silent-start: true
+            skip-vote:
+                successful: true
+                failed: true
+                unstable: true
+                notbuilt: true
+            escape-quotes: true
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+            projects:
+              - project-compare-type: 'PLAIN'
+                project-pattern: 'openstack/bifrost'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'doc/**'
+                  - compare-type: ANT
+                    pattern: 'releasenotes/**'
+            readable-message: true
+- trigger:
+    name: 'opnfv-gerrit-trigger'
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'releng'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'prototypes/bifrost/**'
+            readable-message: true

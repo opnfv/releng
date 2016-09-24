@@ -37,8 +37,9 @@ rm -rf /var/log/libvirt/baremetal_logs/*.log
 CLEAN_DIB_IMAGES=${CLEAN_DIB_IMAGES:-false}
 
 if [ $CLEAN_DIB_IMAGES = "true" ]; then
-    rm -rf /httpboot
-    rm -rf /tftpboot
+    rm -rf /httpboot /tftpboot
+    mkdir /httpboot /tftpboot
+    chmod -R 755 /httpboot /tftpboot
 fi
 
 # remove VM disk images
