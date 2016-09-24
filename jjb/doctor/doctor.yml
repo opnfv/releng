@@ -136,8 +136,19 @@
               TESTCASE_OPTIONS=-e INSPECTOR_TYPE=congress -v $WORKSPACE:$HOME/opnfv/repos/doctor
             block: true
             same-node: true
+
+    publishers:
+        - postbuildscript:
+            builders:
+                - functest-suite-log-print:
+                    suite: '{project}'
+                    stream: '{stream}'
+
+- builder:
+    name: functest-suite-log-print
+    builders:
         - shell: |
-            logfile=$HOME/opnfv/functest/results/{stream}/doctor.log
+            logfile=$HOME/opnfv/functest/results/{stream}/{suite}.log
             echo
             echo "[$logfile]"
             echo
