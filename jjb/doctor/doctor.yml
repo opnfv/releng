@@ -136,9 +136,17 @@
               TESTCASE_OPTIONS=-e INSPECTOR_TYPE=congress -v $WORKSPACE:$HOME/opnfv/repos/doctor
             block: true
             same-node: true
+
+    publishers:
+        - postbuildscript:
+            builders:
+                - functest-copy-suite-log:
+                    suite: '{project}'
+        - archive:
+            artifacts: '{project}.log'
+
+- builder:
+    name: functest-copy-suite-log
+    builders:
         - shell: |
-            logfile=$HOME/opnfv/functest/results/{stream}/doctor.log
-            echo
-            echo "[$logfile]"
-            echo
-            [ -e $logfile ] && cat $logfile
+            cp $HOME/opnfv/functest/results/${{GIT_BRANCH##*/}}/{suite}.log $WORKSPACE/
