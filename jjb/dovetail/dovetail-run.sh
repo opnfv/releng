@@ -42,7 +42,11 @@ echo "Dovetail: Pulling image opnfv/dovetail:${DOCKER_TAG}"
 docker pull opnfv/dovetail:$DOCKER_TAG >$redirect
 
 # Run docker
+echo "Dovetail: docker running..."
 sudo docker run ${opts} ${envs} ${labconfig} ${sshkey} opnfv/dovetail:${DOCKER_TAG} \
 "/home/opnfv/dovetail/scripts/run.py"
+
+echo "Dovetail: store results..."
+sudo cp -r /home/opnfv/dovetail/results ./
 
 echo "Dovetail: done!"
