@@ -3,6 +3,7 @@ import json
 import urlparse
 
 import argparse
+from jinja2 import PackageLoader, Environment
 
 from common import logger_utils, elastic_access
 from conf import testcases
@@ -51,12 +52,13 @@ class KibanaDashboard(dict):
                                                                    scenario,
                                                                    self.visualization))
 
-        self._visualization_title = self._kibana_visualizations[0].vis_state_title
+        self._visualization_title = self._kibana_visualizations[0].vis_title
 
     def _publish_visualizations(self):
         for visualization in self._kibana_visualizations:
             url = urlparse.urljoin(base_elastic_url, '/.kibana/visualization/{}'.format(visualization.id))
             logger.debug("publishing visualization '{}'".format(url))
+            # logger.error("_publish_visualization: %s" % visualization)
             elastic_access.publish_json(visualization, es_creds, url)
 
     def _construct_panels(self):
@@ -135,6 +137,8 @@ class KibanaDashboard(dict):
     def _publish(self):
         url = urlparse.urljoin(base_elastic_url, '/.kibana/dashboard/{}'.format(self.id))
         logger.debug("publishing dashboard '{}'".format(url))
+        logger.error("_publish: %s" % self)
+
         elastic_access.publish_json(self, es_creds, url)
 
     def publish(self):
@@ -163,67 +167,31 @@ class KibanaSearchSourceJSON(dict):
             self["filter"].append({"match": {"pod_name": {"query": pod, "type": "phrase"}}})
 
 
-class VisualizationState(dict):
+class VisualizationBuilder(object):
     def __init__(self, visualization):
-        super(VisualizationState, self).__init__()
-        name = visualization.get('name')
-        fields = visualization.get('fields')
+        super(VisualizationBuilder, self).__init__()
+        self.visualization = visualization
 
-        if name == 'tests_failures':
-            mode = 'grouped'
-            metric_type = 'sum'
-            self['type'] = 'histogram'
-        else:
-            # duration or success_percentage
-            mode = 'stacked'
-            metric_type = 'avg'
-            self['type'] = 'line'
+    def build(self):
+        name = self.visualization.get('name')
+        fields = self.visualization.get('fields')
 
-        self['params'] = {
-            "shareYAxis": True,
-            "addTooltip": True,
-            "addLegend": True,
-            "smoothLines": False,
-            "scale": "linear",
-            "interpolate": "linear",
-            "mode": mode,
-            "times": [],
-            "addTimeMarker": False,
-            "defaultYExtents": False,
-            "setYExtents": False,
-            "yAxis": {}
-        }
-
-        self['aggs'] = []
-
-        i = 1
+        aggs = []
+        index = 1
         for field in fields:
-            self['aggs'].append({
-                "id": str(i),
-                "type": metric_type,
-                "schema": "metric",
-                "params": {
-                    "field": field.get('field')
-                }
+            aggs.append({
+                "id": index,
+                "field": field.get("field")
             })
-            i += 1
+            index += 1
 
-        self['aggs'].append({
-                "id": str(i),
-                "type": 'date_histogram',
-                "schema": "segment",
-                "params": {
-                    "field": "start_date",
-                    "interval": "auto",
-                    "customInterval": "2h",
-                    "min_doc_count": 1,
-                    "extended_bounds": {}
-                }
-            })
+        env = Environment(loader=PackageLoader('elastic2kibana', 'templates'))
+        env.filters['jsonify'] = json.dumps
+        template = env.get_template('{}.json'.format(name))
+        vis_str = template.render(aggs=aggs)
+        vis_json = json.loads(vis_str)
+        return vis_json
 
-        self['listeners'] = {}
-        self['title'] = ' '.join(['{} {}'.format(x['type'], x['params']['field']) for x in self['aggs']
-                                  if x['schema'] == 'metric'])
 
 
 class KibanaVisualization(dict):
@@ -243,24 +211,24 @@ class KibanaVisualization(dict):
         :return:
         """
         super(KibanaVisualization, self).__init__()
-        vis_state = VisualizationState(visualization)
-        self.vis_state_title = vis_state['title']
+        vis = VisualizationBuilder(visualization).build()
+        self.vis_title = vis['title']
         self['title'] = '{} {} {} {} {} {}'.format(project_name,
                                                    case_name,
-                                                   self.vis_state_title,
+                                                   self.vis_title,
                                                    installer,
                                                    pod,
                                                    scenario)
         self.id = self['title'].replace(' ', '-').replace('/', '-')
-        self['visState'] = json.dumps(vis_state, separators=(',', ':'))
+        self['visState'] = json.dumps(vis, separators=(',', ':'))
         self['uiStateJSON'] = "{}"
-        self['description'] = "Kibana visualization for project_name '{}', case_name '{}', data '{}', installer '{}'," \
+        self['description'] = "Kibana visualization for project_name '{}', case_name '{}', metric '{}', installer '{}'," \
                               " pod '{}' and scenario '{}'".format(project_name,
-                                                                  case_name,
-                                                                  self.vis_state_title,
-                                                                  installer,
-                                                                  pod,
-                                                                  scenario)
+                                                                   case_name,
+                                                                   self.vis_title,
+                                                                   installer,
+                                                                   pod,
+                                                                   scenario)
         self['scenario'] = 1
         self['kibanaSavedObjectMeta'] = {"searchSourceJSON": json.dumps(KibanaSearchSourceJSON(project_name,
                                                                                                case_name,
