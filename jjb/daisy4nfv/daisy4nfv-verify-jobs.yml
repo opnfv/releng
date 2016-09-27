@@ -1,0 +1,228 @@
+- project:
+    name: 'daisy4nfv-verify-jobs'
+
+    project: 'daisy4nfv'
+
+    installer: 'daisy4nfv'
+#####################################
+# branch definitions
+#####################################
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+#####################################
+# patch verification phases
+#####################################
+    phase:
+        - 'basic':
+            slave-label: 'opnfv-build'
+        - 'build':
+            slave-label: 'opnfv-build-ubuntu'
+        - 'deploy-virtual':
+            slave-label: 'opnfv-build'
+        - 'smoke-test':
+            slave-label: 'opnfv-build'
+#####################################
+# jobs
+#####################################
+    jobs:
+        - 'daisy4nfv-verify-{stream}'
+        - 'daisy4nfv-verify-{phase}-{stream}'
+#####################################
+# job templates
+#####################################
+- job-template:
+    name: 'daisy4nfv-verify-{stream}'
+
+    project-type: multijob
+
+    disabled: false
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 4
+            option: 'project'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 360
+            fail: true
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**|.gitignore'
+            readable-message: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-defaults'
+        - 'daisy4nfv-verify-defaults':
+            gs-pathname: '{gs-pathname}'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: basic
+            condition: SUCCESSFUL
+            projects:
+                - name: 'daisy4nfv-verify-basic-{stream}'
+                  current-parameters: false
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'daisy4nfv-verify-build-{stream}'
+                  current-parameters: false
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: deploy-virtual
+            condition: SUCCESSFUL
+            projects:
+                - name: 'daisy4nfv-verify-deploy-virtual-{stream}'
+                  current-parameters: false
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: smoke-test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'daisy4nfv-verify-smoke-test-{stream}'
+                  current-parameters: false
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+
+- job-template:
+    name: 'daisy4nfv-verify-{phase}-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 6
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'daisy4nfv-verify-deploy-.*'
+                - 'daisy4nfv-verify-test-.*'
+            block-level: 'NODE'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 360
+            fail: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - '{slave-label}-defaults'
+        - 'daisy4nfv-verify-defaults':
+            gs-pathname: '{gs-pathname}'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - '{project}-verify-{phase}-macro'
+#####################################
+# builder macros
+#####################################
+- builder:
+    name: 'daisy4nfv-verify-basic-macro'
+    builders:
+        - shell:
+            !include-raw: ./daisy4nfv-basic.sh
+
+- builder:
+    name: 'daisy4nfv-verify-build-macro'
+    builders:
+        - shell:
+            !include-raw: ./daisy4nfv-build.sh
+
+- builder:
+    name: 'daisy4nfv-verify-deploy-virtual-macro'
+    builders:
+        - shell:
+            !include-raw: ./daisy4nfv-virtual-deploy.sh
+
+- builder:
+    name: 'daisy4nfv-verify-smoke-test-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Not activated!"
+#####################################
+# parameter macros
+#####################################
+- parameter:
+    name: 'daisy4nfv-verify-defaults'
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache/$INSTALLER_TYPE
+            description: "Directory where the cache to be used during the build is located."
+        - string:
+            name: GS_URL
+            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+            description: "URL to Google Storage."
