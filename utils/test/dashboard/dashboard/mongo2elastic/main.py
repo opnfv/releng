@@ -200,7 +200,36 @@ class DocumentsPublisher:
             exit(-1)
 
     def get_existed_docs(self):
-        self.existed_docs = elastic_access.get_elastic_docs_by_days(self.elastic_url, self.creds, self.days)
+        if self.days == 0:
+            body = '''{{
+                        "query": {{
+                            "bool": {{
+                                "must": [
+                                    {{ "match": {{ "project_name": "{}" }} }},
+                                    {{ "match": {{ "case_name": "{}" }} }}
+                                ]
+                            }}
+                        }}
+                    }}'''.format(self.project, self.case)
+        elif self.days > 0:
+            body = '''{{
+                       "query": {{
+                           "bool": {{
+                               "must": [
+                                   {{ "match": {{ "project_name": "{}" }} }},
+                                   {{ "match": {{ "case_name": "{}" }} }}
+                               ],
+                               "filter": {{
+                                   "range": {{
+                                       "start_date": {{ "gte": "now-{}d" }}
+                                   }}
+                               }}
+                           }}
+                       }}
+                   }}'''.format(self.project, self.case, self.days)
+        else:
+            raise Exception('Update days must be non-negative')
+        self.existed_docs = elastic_access.get_elastic_docs(self.elastic_url, self.creds, body)
         return self
 
     def publish(self):
