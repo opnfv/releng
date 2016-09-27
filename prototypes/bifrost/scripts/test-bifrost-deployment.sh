@@ -18,6 +18,7 @@ ENABLE_VENV="false"
 USE_DHCP="false"
 USE_VENV="false"
 BUILD_IMAGE=true
+PROVISION_WAIT_TIMEOUT=${PROVISION_WAIT_TIMEOUT:-2400}
 
 # Set defaults for ansible command-line options to drive the different
 # tests.
@@ -114,7 +115,8 @@ ${ANSIBLE} -vvvv \
     -e download_ipa=${DOWNLOAD_IPA} \
     -e create_ipa_image=${CREATE_IPA_IMAGE} \
     -e write_interfaces_file=${WRITE_INTERFACES_FILE} \
-    -e ipv4_gateway=192.168.122.1
+    -e ipv4_gateway=192.168.122.1 \
+    -e wait_timeout=${PROVISION_WAIT_TIMEOUT}
 EXITCODE=$?
 
 if [ $EXITCODE != 0 ]; then
