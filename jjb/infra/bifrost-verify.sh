@@ -17,43 +17,38 @@ function fix_ownership() {
     if [ -z "${JOB_URL+x}" ]; then
         echo "Not running as part of Jenkins. Handle the logs manually."
     else
-        chown -R jenkins:jenkins $WORKSPACE
+        sudo chown -R jenkins:jenkins $WORKSPACE
     fi
 }
 
 # check distro to see if we support it
-# we will have centos and suse supported in future
-case "$DISTRO" in
-    trusty)
-        #start the test
-        echo "Starting provisioning of 3 VMs"
-        ;;
-    *)
-        echo "Distro $DISTRO is not supported!"
-        exit 1
-esac
+if [[ ! "$DISTRO" =~ (trusty|centos7|suse) ]]; then
+    echo "Distro $DISTRO is not supported!"
+    exit 1
+fi
 
 # remove previously cloned repos
-/bin/rm -rf /opt/bifrost /opt/puppet-infracloud /opt/stack /opt/releng
+sudo /bin/rm -rf /opt/bifrost /opt/puppet-infracloud /opt/stack /opt/releng
 
-# clone upstream bifrost repo and checkout the patch to verify
-git clone https://git.openstack.org/openstack/bifrost /opt/bifrost
-cd /opt/bifrost
-git fetch https://git.openstack.org/openstack/bifrost $GERRIT_REFSPEC && git checkout FETCH_HEAD
+# clone all the repos first and checkout the patch afterwards
+sudo git clone https://git.openstack.org/openstack/bifrost /opt/bifrost
+sudo git clone https://git.openstack.org/openstack-infra/puppet-infracloud /opt/puppet-infracloud
+sudo git clone https://gerrit.opnfv.org/gerrit/releng /opt/releng
 
-# clone puppet-infracloud
-git clone https://git.openstack.org/openstack-infra/puppet-infracloud /opt/puppet-infracloud
+# checkout the patch
+cd $CLONE_LOCATION
+sudo git fetch $PROJECT_REPO $GERRIT_REFSPEC && sudo git checkout FETCH_HEAD
 
 # combine opnfv and upstream scripts/playbooks
-cp -R $WORKSPACE/prototypes/bifrost/* /opt/bifrost/
+sudo /bin/cp -rf /opt/releng/prototypes/bifrost/* /opt/bifrost/
 
 # cleanup remnants of previous deployment
 cd /opt/bifrost
-./scripts/destroy-env.sh
+sudo -E ./scripts/destroy-env.sh
 
 # provision 3 VMs; jumphost, controller, and compute
 cd /opt/bifrost
-./scripts/test-bifrost-deployment.sh
+sudo -E ./scripts/test-bifrost-deployment.sh
 
 # list the provisioned VMs
 cd /opt/bifrost
