@@ -64,7 +64,7 @@ class DocumentPublisher:
             self._publish()
 
     def _publish(self):
-        status, data = elastic_access.publish_json(self.doc, self.creds, self.to)
+        status, data = elastic_access.publish_docs(self.doc, self.creds, self.to)
         if status > 300:
             logger.error('Publish record[{}] failed, due to [{}]'
                          .format(self.doc, json.loads(data)['error']['reason']))
