@@ -5,7 +5,8 @@ import urlparse
 import argparse
 from jinja2 import PackageLoader, Environment
 
-from common import logger_utils, elastic_access
+from common import elastic_access
+from common import logger_utils
 from conf import testcases
 from conf.config import APIConfig
 
@@ -59,7 +60,7 @@ class KibanaDashboard(dict):
             url = urlparse.urljoin(base_elastic_url, '/.kibana/visualization/{}'.format(visualization.id))
             logger.debug("publishing visualization '{}'".format(url))
             # logger.error("_publish_visualization: %s" % visualization)
-            elastic_access.publish_json(visualization, es_creds, url)
+            elastic_access.publish_docs(visualization, es_creds, url)
 
     def _construct_panels(self):
         size_x = 6
@@ -137,7 +138,7 @@ class KibanaDashboard(dict):
     def _publish(self):
         url = urlparse.urljoin(base_elastic_url, '/.kibana/dashboard/{}'.format(self.id))
         logger.debug("publishing dashboard '{}'".format(url))
-        elastic_access.publish_json(self, es_creds, url)
+        elastic_access.publish_docs(self, es_creds, url)
 
     def publish(self):
         self._publish_visualizations()
@@ -251,7 +252,7 @@ def _get_pods_and_scenarios(project_name, case_name, installer):
         }
     })
 
-    elastic_data = elastic_access.get_elastic_docs(urlparse.urljoin(base_elastic_url, '/test_results/mongo2elastic'),
+    elastic_data = elastic_access.get_docs(urlparse.urljoin(base_elastic_url, '/test_results/mongo2elastic'),
                                                    es_creds, query_json)
 
     pods_and_scenarios = {}

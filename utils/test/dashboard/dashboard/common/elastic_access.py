@@ -5,41 +5,49 @@ import urllib3
 http = urllib3.PoolManager()
 
 
-def delete_request(url, creds, body=None):
+def _request(method, url, creds=None, body=None):
     headers = urllib3.make_headers(basic_auth=creds)
-    http.request('DELETE', url, headers=headers, body=body)
+    return http.request(method, url, headers=headers, body=body)
 
 
-def publish_json(json_ojb, creds, to):
-    json_dump = json.dumps(json_ojb)
+def _post(url, creds=None, body=None):
+    return _request('POST', url, creds=creds, body=body)
+
+
+def _get(url, creds=None, body=None):
+    return json.loads(_request('GET', url, creds=creds, body=body).data)
+
+
+def delete_docs(url, creds=None, body=None):
+    return _request('DELETE', url, creds=creds, body=body)
+
+
+def publish_docs(docs, creds, to):
+    json_docs = json.dumps(docs)
     if to == 'stdout':
-        print json_dump
+        print json_docs
         return 200, None
     else:
-        headers = urllib3.make_headers(basic_auth=creds)
-        result = http.request('POST', to, headers=headers, body=json_dump)
+        result = _post(to, creds=creds, body=json_docs)
         return result.status, result.data
 
 
-def _get_nr_of_hits(elastic_json):
-    return elastic_json['hits']['total']
+def _get_docs_nr(url, creds=None, body=None):
+    res_data = _get('{}/_search?size=0'.format(url), creds=creds, body=body)
+    print type(res_data), res_data
+    return res_data['hits']['total']
 
 
-def get_elastic_docs(elastic_url, creds, body=None, field = '_source'):
+def get_docs(url, creds=None, body=None, field='_source'):
 
-    # 1. get the number of results
-    headers = urllib3.make_headers(basic_auth=creds)
-    elastic_json = json.loads(http.request('GET', elastic_url + '/_search?size=0', headers=headers, body=body).data)
-    print elastic_json
-    nr_of_hits = _get_nr_of_hits(elastic_json)
+    docs_nr = _get_docs_nr(url, creds=creds, body=body)
+    res_data = _get('{}/_search?size={}'.format(url, docs_nr),
+                    creds=creds, body=body)
 
-    # 2. get all results
-    elastic_json = json.loads(http.request('GET', elastic_url + '/_search?size={}'.format(nr_of_hits), headers=headers, body=body).data)
-
-    elastic_docs = []
-    for hit in elastic_json['hits']['hits']:
-        elastic_docs.append(hit[field])
-    return elastic_docs
+    docs = []
+    for hit in res_data['hits']['hits']:
+        docs.append(hit[field])
+    return docs
 
 
 def get_elastic_docs_by_days(elastic_url, creds, days):
@@ -61,4 +69,4 @@ def get_elastic_docs_by_days(elastic_url, creds, days):
         }}'''.format(days)
     else:
         raise Exception('Update days must be non-negative')
-    return get_elastic_docs(elastic_url, creds, body)
+    return get_docs(elastic_url, creds, body)
