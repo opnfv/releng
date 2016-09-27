@@ -14,10 +14,10 @@ logger.addHandler(file_handler)
 
 
 def delete_all(url, es_creds):
-    ids = elastic_access.get_elastic_docs(url, es_creds, body=None, field='_id')
+    ids = elastic_access.get_docs(url, es_creds, body=None, field='_id')
     for id in ids:
         del_url = '/'.join([url, id])
-        elastic_access.delete_request(del_url, es_creds)
+        elastic_access.delete_docs(del_url, es_creds)
 
 
 if __name__ == '__main__':
