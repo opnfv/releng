@@ -40,25 +40,3 @@ def get_elastic_docs(elastic_url, creds, body=None, field = '_source'):
     for hit in elastic_json['hits']['hits']:
         elastic_docs.append(hit[field])
     return elastic_docs
-
-
-def get_elastic_docs_by_days(elastic_url, creds, days):
-    if days == 0:
-        body = '''{
-            "query": {
-                "match_all": {}
-            }
-        }'''
-    elif days > 0:
-        body = '''{{
-            "query" : {{
-                "range" : {{
-                    "start_date" : {{
-                        "gte" : "now-{}d"
-                    }}
-                }}
-            }}
-        }}'''.format(days)
-    else:
-        raise Exception('Update days must be non-negative')
-    return get_elastic_docs(elastic_url, creds, body)
