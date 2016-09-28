@@ -22,14 +22,9 @@ def delete_docs(url, creds=None, body=None):
     return _request('DELETE', url, creds=creds, body=body)
 
 
-def publish_docs(docs, creds, to):
-    json_docs = json.dumps(docs)
-    if to == 'stdout':
-        print json_docs
-        return 200, None
-    else:
-        result = _post(to, creds=creds, body=json_docs)
-        return result.status, result.data
+def publish_docs(url, creds=None, body=None):
+    result = _post(url, creds=creds, body=(json.dumps(body)))
+    return result.status, result.data
 
 
 def _get_docs_nr(url, creds=None, body=None):

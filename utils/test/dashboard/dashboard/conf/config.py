@@ -25,7 +25,6 @@ class APIConfig:
         self._default_config_location = "../etc/config.ini"
         self.elastic_url = 'http://localhost:9200'
         self.elastic_creds = None
-        self.destination = 'elasticsearch'
         self.kibana_url = None
         self.is_js = True
         self.js_path = None
@@ -67,7 +66,6 @@ class APIConfig:
         # Linking attributes to keys from file with their sections
         obj.elastic_url = obj._get_str_parameter("elastic", "url")
         obj.elastic_creds = obj._get_str_parameter("elastic", "creds")
-        obj.destination = obj._get_str_parameter("output", "destination")
         obj.kibana_url = obj._get_str_parameter("kibana", "url")
         obj.is_js = obj._get_bool_parameter("kibana", "js")
         obj.js_path = obj._get_str_parameter("kibana", "js_path")
@@ -77,12 +75,10 @@ class APIConfig:
     def __str__(self):
         return "elastic_url = %s \n" \
                "elastic_creds = %s \n" \
-               "destination = %s \n" \
                "kibana_url = %s \n" \
                "is_js = %s \n" \
                "js_path = %s \n" % (self.elastic_url,
-                                        self.elastic_creds,
-                                        self.destination,
-                                        self.kibana_url,
-                                        self.is_js,
-                                        self.js_path)
+                                    self.elastic_creds,
+                                    self.kibana_url,
+                                    self.is_js,
+                                    self.js_path)
