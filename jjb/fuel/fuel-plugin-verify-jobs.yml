@@ -1,0 +1,217 @@
+- project:
+    name: 'fuel-plugin-verify-jobs'
+
+    project: 'fuel-plugin'
+
+    installer: 'fuel'
+#####################################
+# branch definitions
+#####################################
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+#####################################
+# patch verification phases
+#####################################
+    phase:
+        - 'plugin-build':
+            slave-label: 'opnfv-build-ubuntu'
+        - 'plugin-test':
+            slave-label: 'opnfv-build-ubuntu'
+#####################################
+# jobs
+#####################################
+    jobs:
+        - 'fuel-verify-plugin-{stream}'
+        - 'fuel-verify-{phase}-{stream}'
+#####################################
+# job templates
+#####################################
+- job-template:
+    name: 'fuel-verify-plugin-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 4
+            option: 'project'
+
+    # the url to plugin repo can essentially become a variable if
+    # the plugin name is injected to env by gerrit plugin
+    scm:
+        - git:
+            url: 'https://git.openstack.org/openstack/fuel-plugin-bgpvpn'
+            refspec: '$GERRIT_REFSPEC'
+            branches:
+                - 'origin/$GERRIT_BRANCH'
+            skip-tag: true
+            choosing-strategy: 'gerrit'
+            timeout: 10
+            wipe-workspace: true
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 360
+            fail: true
+
+    triggers:
+        - gerrit:
+            server-name: 'review.openstack.org'
+            silent-start: false
+            skip-vote:
+                successful: true
+                failed: true
+                unstable: true
+                notbuilt: true
+            escape-quotes: true
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+            projects:
+              - project-compare-type: 'PLAIN'
+                project-pattern: 'openstack/fuel-plugin-bgpvpn'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'README.md|.gitignore|.gitreview'
+            readable-message: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-defaults'
+        - 'fuel-verify-defaults':
+            gs-pathname: '{gs-pathname}'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: plugin-build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'fuel-verify-plugin-build-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: plugin-test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'fuel-verify-plugin-test-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+
+- job-template:
+    name: 'fuel-verify-{phase}-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 6
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'fuel-verify-plugin-test-.*'
+            block-level: 'NODE'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 360
+            fail: true
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - '{slave-label}-defaults'
+        - '{installer}-defaults'
+        - 'fuel-verify-defaults':
+            gs-pathname: '{gs-pathname}'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - 'fuel-verify-{phase}-macro'
+#####################################
+# builder macros
+#####################################
+- builder:
+    name: 'fuel-verify-plugin-build-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Not activated!"
+
+- builder:
+    name: 'fuel-verify-plugin-test-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Not activated!"
+#####################################
+# parameter macros
+#####################################
+- parameter:
+    name: 'fuel-verify-defaults'
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache/$INSTALLER_TYPE
+            description: "Directory where the cache to be used during the build is located."
+        - string:
+            name: GS_URL
+            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+            description: "URL to Google Storage."
