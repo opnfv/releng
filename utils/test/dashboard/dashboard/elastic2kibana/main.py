@@ -60,7 +60,7 @@ class KibanaDashboard(dict):
             url = urlparse.urljoin(base_elastic_url, '/.kibana/visualization/{}'.format(visualization.id))
             logger.debug("publishing visualization '{}'".format(url))
             # logger.error("_publish_visualization: %s" % visualization)
-            elastic_access.publish_docs(visualization, es_creds, url)
+            elastic_access.publish_docs(url, es_creds, visualization)
 
     def _construct_panels(self):
         size_x = 6
@@ -138,7 +138,7 @@ class KibanaDashboard(dict):
     def _publish(self):
         url = urlparse.urljoin(base_elastic_url, '/.kibana/dashboard/{}'.format(self.id))
         logger.debug("publishing dashboard '{}'".format(url))
-        elastic_access.publish_docs(self, es_creds, url)
+        elastic_access.publish_docs(url, es_creds, self)
 
     def publish(self):
         self._publish_visualizations()
@@ -189,7 +189,6 @@ class VisualizationBuilder(object):
         template = env.get_template('{}.json'.format(name))
         vis = template.render(aggs=aggs)
         return json.loads(vis)
-
 
 
 class KibanaVisualization(dict):

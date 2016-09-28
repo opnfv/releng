@@ -38,12 +38,12 @@ tmp_docs_file = './mongo-{}.json'.format(uuid.uuid4())
 
 class DocumentPublisher:
 
-    def __init__(self, doc, fmt, exist_docs, creds, to):
+    def __init__(self, doc, fmt, exist_docs, creds, elastic_url):
         self.doc = doc
         self.fmt = fmt
         self.creds = creds
         self.exist_docs = exist_docs
-        self.to = to
+        self.elastic_url = elastic_url
         self.is_formatted = True
 
     def format(self):
@@ -64,7 +64,7 @@ class DocumentPublisher:
             self._publish()
 
     def _publish(self):
-        status, data = elastic_access.publish_docs(self.doc, self.creds, self.to)
+        status, data = elastic_access.publish_docs(self.elastic_url, self.creds, self.doc)
         if status > 300:
             logger.error('Publish record[{}] failed, due to [{}]'
                          .format(self.doc, json.loads(data)['error']['reason']))
@@ -163,14 +163,13 @@ class DocumentPublisher:
 
 class DocumentsPublisher:
 
-    def __init__(self, project, case, fmt, days, elastic_url, creds, to):
+    def __init__(self, project, case, fmt, days, elastic_url, creds):
         self.project = project
         self.case = case
         self.fmt = fmt
         self.days = days
         self.elastic_url = elastic_url
         self.creds = creds
-        self.to = to
         self.existed_docs = []
 
     def export(self):
@@ -240,7 +239,7 @@ class DocumentsPublisher:
                                       self.fmt,
                                       self.existed_docs,
                                       self.creds,
-                                      self.to).format().publish()
+                                      self.elastic_url).format().publish()
         finally:
             fdocs.close()
             self._remove()
@@ -252,12 +251,8 @@ class DocumentsPublisher:
 
 def main():
     base_elastic_url = urlparse.urljoin(CONF.elastic_url, '/test_results/mongo2elastic')
-    to = CONF.destination
     days = args.latest_days
     es_creds = CONF.elastic_creds
-
-    if to == 'elasticsearch':
-        to = base_elastic_url
 
     for project, case_dicts in testcases.testcases_yaml.items():
         for case_dict in case_dicts:
@@ -268,5 +263,4 @@ def main():
                                fmt,
                                days,
                                base_elastic_url,
-                               es_creds,
-                               to).export().get_existed_docs().publish()
+                               es_creds).export().get_existed_docs().publish()
