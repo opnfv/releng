@@ -152,11 +152,18 @@
                 - 'fuel-verify-plugin-test-.*'
             block-level: 'NODE'
 
+    # the url to plugin repo can essentially become a variable if
+    # the plugin name is injected to env by gerrit plugin
     scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
+        - git:
+            url: 'https://git.openstack.org/openstack/fuel-plugin-bgpvpn'
             refspec: '$GERRIT_REFSPEC'
+            branches:
+                - 'origin/$GERRIT_BRANCH'
+            skip-tag: true
             choosing-strategy: 'gerrit'
+            timeout: 10
+            wipe-workspace: true
 
     wrappers:
         - ssh-agent-credentials:
