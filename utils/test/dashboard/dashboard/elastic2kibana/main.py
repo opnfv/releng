@@ -27,6 +27,9 @@ es_creds = CONF.elastic_creds
 
 _installers = {'fuel', 'apex', 'compass', 'joid'}
 
+env = Environment(loader=PackageLoader('elastic2kibana', 'templates'))
+env.filters['jsonify'] = json.dumps
+
 
 class KibanaDashboard(dict):
     def __init__(self, project_name, case_name, family, installer, pod, scenarios, visualization):
@@ -46,14 +49,14 @@ class KibanaDashboard(dict):
 
     def _create_visualizations(self):
         for scenario in self.scenarios:
-            self._kibana_visualizations.append(KibanaVisualization(self.project_name,
-                                                                   self.case_name,
-                                                                   self.installer,
-                                                                   self.pod,
-                                                                   scenario,
-                                                                   self.visualization))
+            self._kibana_visualizations.append(Visualization(self.project_name,
+                                                             self.case_name,
+                                                             self.installer,
+                                                             self.pod,
+                                                             scenario,
+                                                             self.visualization))
 
-        self._visualization_title = self._kibana_visualizations[0].vis_title
+        self._visualization_title = self._kibana_visualizations[0].vis_state_title
 
     def _publish_visualizations(self):
         for visualization in self._kibana_visualizations:
@@ -145,30 +148,9 @@ class KibanaDashboard(dict):
         self._publish()
 
 
-class KibanaSearchSourceJSON(dict):
-    """
-    "filter": [
-                    {"match": {"installer": {"query": installer, "type": "phrase"}}},
-                    {"match": {"project_name": {"query": project_name, "type": "phrase"}}},
-                    {"match": {"case_name": {"query": case_name, "type": "phrase"}}}
-                ]
-    """
-
-    def __init__(self, project_name, case_name, installer, pod, scenario):
-        super(KibanaSearchSourceJSON, self).__init__()
-        self["filter"] = [
-            {"match": {"project_name": {"query": project_name, "type": "phrase"}}},
-            {"match": {"case_name": {"query": case_name, "type": "phrase"}}},
-            {"match": {"installer": {"query": installer, "type": "phrase"}}},
-            {"match": {"scenario": {"query": scenario, "type": "phrase"}}}
-        ]
-        if pod != 'all':
-            self["filter"].append({"match": {"pod_name": {"query": pod, "type": "phrase"}}})
-
-
-class VisualizationBuilder(object):
+class VisStateBuilder(object):
     def __init__(self, visualization):
-        super(VisualizationBuilder, self).__init__()
+        super(VisStateBuilder, self).__init__()
         self.visualization = visualization
 
     def build(self):
@@ -184,14 +166,12 @@ class VisualizationBuilder(object):
             })
             index += 1
 
-        env = Environment(loader=PackageLoader('elastic2kibana', 'templates'))
-        env.filters['jsonify'] = json.dumps
         template = env.get_template('{}.json'.format(name))
         vis = template.render(aggs=aggs)
         return json.loads(vis)
 
 
-class KibanaVisualization(dict):
+class Visualization(object):
     def __init__(self, project_name, case_name, installer, pod, scenario, visualization):
         """
         We need two things
@@ -207,32 +187,35 @@ class KibanaVisualization(dict):
 
         :return:
         """
-        super(KibanaVisualization, self).__init__()
-        vis = VisualizationBuilder(visualization).build()
-        self.vis_title = vis['title']
-        self['title'] = '{} {} {} {} {} {}'.format(project_name,
-                                                   case_name,
-                                                   self.vis_title,
-                                                   installer,
-                                                   pod,
-                                                   scenario)
-        self.id = self['title'].replace(' ', '-').replace('/', '-')
-        self['visState'] = json.dumps(vis, separators=(',', ':'))
-        self['uiStateJSON'] = "{}"
-        self['description'] = "Kibana visualization for project_name '{}', case_name '{}', metric '{}', installer '{}'," \
-                              " pod '{}' and scenario '{}'".format(project_name,
-                                                                   case_name,
-                                                                   self.vis_title,
-                                                                   installer,
-                                                                   pod,
-                                                                   scenario)
-        self['scenario'] = 1
-        self['kibanaSavedObjectMeta'] = {"searchSourceJSON": json.dumps(KibanaSearchSourceJSON(project_name,
-                                                                                               case_name,
-                                                                                               installer,
-                                                                                               pod,
-                                                                                               scenario),
-                                                                        separators=(',', ':'))}
+        super(Visualization, self).__init__()
+        visState = VisStateBuilder(visualization).build()
+        self.vis_state_title = visState['title']
+
+        vis = {
+            "visState": json.dumps(visState),
+            "filters": {
+                "project_name": project_name,
+                "case_name": case_name,
+                "installer": installer,
+                "metric": self.vis_state_title,
+                "pod_name": pod,
+                "scenario": scenario
+            }
+        }
+
+        template = env.get_template('visualization.json')
+
+        self.visualization = json.loads(template.render(vis=vis))
+        self._dumps(['visState', 'description', 'uiStateJSON'])
+        self._dumps_2deeps('kibanaSavedObjectMeta', 'searchSourceJSON')
+        self.id = self.visualization['title'].replace(' ', '-').replace('/', '-')
+
+    def _dumps(self, items):
+        for key in items:
+            self.visualization[key] = json.dumps(self.visualization[key])
+
+    def _dumps_2deeps(self, key1, key2):
+        self.visualization[key1][key2] = json.dumps(self.visualization[key1][key2])
 
 
 def _get_pods_and_scenarios(project_name, case_name, installer):
