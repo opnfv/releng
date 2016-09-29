@@ -17,12 +17,14 @@
     master: &master
         stream: master
         branch: '{stream}'
+        dovetail-branch: '{stream}'
         gs-pathname: ''
         docker-tag: 'latest'
     colorado: &colorado
         stream: colorado
         branch: 'stable/{stream}'
-        gs-pathname: '{stream}'
+        dovetail-branch: master
+        gs-pathname: '/{stream}'
         docker-tag: 'latest'
 
 #-----------------------------------
@@ -131,7 +133,7 @@
         - string:
             name: DOCKER_TAG
             default: '{docker-tag}'
-            description: 'Tag to pull docker image'
+            description: 'Tag to pull dovetail docker image'
         - string:
             name: CI_DEBUG
             default: 'true'
@@ -141,7 +143,7 @@
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
-            branch: '{branch}'
+            branch: '{dovetail-branch}'
 
     builders:
         - description-setter:
