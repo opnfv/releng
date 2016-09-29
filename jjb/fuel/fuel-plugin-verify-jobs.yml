@@ -48,7 +48,7 @@
     # the plugin name is injected to env by gerrit plugin
     scm:
         - git:
-            url: 'https://git.openstack.org/openstack/fuel-plugin-bgpvpn'
+            url: 'https://git.openstack.org/$GERRIT_PROJECT'
             refspec: '$GERRIT_REFSPEC'
             branches:
                 - 'origin/$GERRIT_BRANCH'
@@ -93,6 +93,14 @@
                 forbidden-file-paths:
                   - compare-type: ANT
                     pattern: 'README.md|.gitignore|.gitreview'
+              - project-compare-type: 'PLAIN'
+                project-pattern: 'openstack/fuel-plugin-onos'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'README.md|.gitignore|.gitreview'
             readable-message: true
 
     parameters:
@@ -114,6 +122,7 @@
                 - name: 'fuel-verify-plugin-build-{stream}'
                   current-parameters: false
                   predefined-parameters: |
+                    GERRIT_PROJECT=$GERRIT_PROJECT
                     GERRIT_BRANCH=$GERRIT_BRANCH
                     GERRIT_REFSPEC=$GERRIT_REFSPEC
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
@@ -128,6 +137,7 @@
                 - name: 'fuel-verify-plugin-test-{stream}'
                   current-parameters: false
                   predefined-parameters: |
+                    GERRIT_PROJECT=$GERRIT_PROJECT
                     GERRIT_BRANCH=$GERRIT_BRANCH
                     GERRIT_REFSPEC=$GERRIT_REFSPEC
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
@@ -158,7 +168,7 @@
     # the plugin name is injected to env by gerrit plugin
     scm:
         - git:
-            url: 'https://git.openstack.org/openstack/fuel-plugin-bgpvpn'
+            url: 'https://git.openstack.org/$GERRIT_PROJECT'
             refspec: '$GERRIT_REFSPEC'
             branches:
                 - 'origin/$GERRIT_BRANCH'
