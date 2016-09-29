@@ -3,17 +3,65 @@
     <meta charset="utf-8">
     <!-- Bootstrap core CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
-    <link href="default.css" rel="stylesheet">
+    <link href="../../../css/default.css" rel="stylesheet">
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-    <script type="text/javascript">
-    $(document).ready(function (){
-        $(".btn-more").click(function() {
-            $(this).hide();
-            $(this).parent().find(".panel-default").show();
+    <script type="text/javascript" src="http://d3js.org/d3.v2.min.js"></script>
+    <script type="text/javascript" src="../../../js/gauge.js"></script>
+    <script type="text/javascript" src="../../../js/trend.js"></script>
+    <script>
+    function onDocumentReady() {
+    	// Gauge management
+        {% for scenario in scenario_stats.iteritems() -%}
+    	    var gaugeScenario{{loop.index}} = gauge('#gaugeScenario{{loop.index}}');
+        {%- endfor %}
+    	
+    	// assign success rate to the gauge
+    	function updateReadings() {
+    	    {% for scenario,iteration in scenario_stats.iteritems() -%}
+    	     	gaugeScenario{{loop.index}}.update({{scenario_results[scenario].getScorePercent()}});
+    	     {%- endfor %}
+    	}
+    	updateReadings();										
+        }
+        
+        // trend line management
+        d3.csv("./scenario_history.txt", function(data) {
+       // ***************************************
+       // Create the trend line
+      {% for scenario,iteration in scenario_stats.iteritems() -%}
+       // for scenario {{scenario}} 
+       // Filter results
+        var trend{{loop.index}} = data.filter(function(row) { 
+    	     return row["scenario"]=="{{scenario}}" && row["installer"]=="{{installer}}";
+    	})
+       // Parse the date 
+        trend{{loop.index}}.forEach(function(d) {
+    	    d.date = parseDate(d.date);
+    	    d.score = +d.score
         });
-    })
-    </script>
+        // Draw the trend line
+        var mytrend = trend("#trend_svg{{loop.index}}",trend{{loop.index}})
+        // ****************************************
+        {%- endfor %}
+    });	    
+    if ( !window.isLoaded ) {
+        window.addEventListener("load", function() {
+    			onDocumentReady();
+        }, false);
+    } else {
+    	onDocumentReady();
+    }
+</script>
+<script type="text/javascript">
+$(document).ready(function (){
+    $(".btn-more").click(function() {
+    	$(this).hide();
+    	$(this).parent().find(".panel-default").show();
+    });
+})
+</script>
+    
   </head>
     <body>
     <div class="container">
@@ -40,41 +88,17 @@
             <div class="panel-heading"><h4><b>List of last scenarios ({{version}}) run over the last {{period}} days </b></h4></div>
                 <table class="table">
                     <tr>
-                        <th width="60%">Scenario</th>
+                        <th width="40%">Scenario</th>
                         <th width="20%">Status</th>
+                        <th width="20%">Trend</th>
                         <th width="10%">Score</th>
                         <th width="10%">Iteration</th>
                     </tr>
                         {% for scenario,iteration in scenario_stats.iteritems() -%}
                             <tr class="tr-ok">
                                 <td><a href={{scenario_results[scenario].getUrlLastRun()}}>{{scenario}}</a></td>
-                                <td>{%if scenario_results[scenario].getScorePercent() < 8.3 -%}
-                                        <img src="../../img/gauge_0.png">
-                                    {%elif scenario_results[scenario].getScorePercent() < 16.7 -%}
-                                        <img src="../../img/gauge_8.3.png">
-                                    {%elif scenario_results[scenario].getScorePercent() < 25 -%}
-                                        <img src="../../img/gauge_16.7.png">
-                                    {%elif scenario_results[scenario].getScorePercent() < 33.3 -%}
-                                        <img src="../../img/gauge_25.png">
-                                    {%elif scenario_results[scenario].getScorePercent() < 41.7 -%}
-                                        <img src="../../img/gauge_33.3.png">
-                                    {%elif scenario_results[scenario].getScorePercent() < 50 -%}
-                                        <img src="../../img/gauge_41.7.png">
-                                    {%elif scenario_results[scenario].getScorePercent() < 58.3 -%}
-                                        <img src="../../img/gauge_50.png">
-                                    {%elif scenario_results[scenario].getScorePercent() < 66.7 -%}
-                                        <img src="../../img/gauge_58.3.png">
-                                    {%elif scenario_results[scenario].getScorePercent() < 75 -%}
-                                        <img src="../../img/gauge_66.7.png">
-                                    {%elif scenario_results[scenario].getScorePercent() < 83.3 -%}
-                                        <img src="../../img/gauge_75.png">
-                                    {%elif scenario_results[scenario].getScorePercent() < 91.7 -%}
-                                        <img src="../../img/gauge_83.3.png">
-                                    {%elif scenario_results[scenario].getScorePercent() < 100 -%}
-                                        <img src="../../img/gauge_91.7.png">
-                                    {%- else -%}
-                                        <img src="../../img/gauge_100.png">
-                                {%- endif %}</td>
+                                <td><div id="gaugeScenario{{loop.index}}"></div></td>
+                                <td><div id="trend_svg{{loop.index}}"></div></td>
                                 <td>{{scenario_results[scenario].getScore()}}</td>
                                 <td>{{iteration}}</td>
                             </tr>

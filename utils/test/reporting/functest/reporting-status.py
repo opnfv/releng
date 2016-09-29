@@ -184,8 +184,13 @@ for version in conf.versions:
                 scenario_criteria = conf.MAX_SCENARIO_CRITERIA
 
             s_score = str(scenario_score) + "/" + str(scenario_criteria)
-            s_score_percent = float(
+            s_score_percent = 0.0
+            try:
+                s_score_percent = float(
                 scenario_score) / float(scenario_criteria) * 100
+            except:
+                logger.error("cannot calculate the score percent")
+
             s_status = "KO"
             if scenario_score < scenario_criteria:
                 logger.info(">>>> scenario not OK, score = %s/%s" %
