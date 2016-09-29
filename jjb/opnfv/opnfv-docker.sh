@@ -59,7 +59,7 @@ if [[ "$UPDATE_LATEST_STABLE" == "true" ]]; then
         echo "ERROR: The image $DOCKER_REPO_NAME with tag $STABLE_TAG does not exist."
         exit 1
     fi
-    docker tag -f $DOCKER_REPO_NAME:$STABLE_TAG $DOCKER_REPO_NAME:latest_stable
+    docker tag $DOCKER_REPO_NAME:$STABLE_TAG $DOCKER_REPO_NAME:latest_stable
     echo "Pushing $DOCKER_REPO_NAME:latest_stable ..."
     docker push $DOCKER_REPO_NAME:latest_stable
     exit 0
@@ -119,7 +119,7 @@ else
 fi
 
 echo "Creating tag '$DOCKER_TAG'..."
-docker tag -f $DOCKER_REPO_NAME:$DOCKER_BRANCH_TAG $DOCKER_REPO_NAME:$DOCKER_TAG
+docker tag $DOCKER_REPO_NAME:$DOCKER_BRANCH_TAG $DOCKER_REPO_NAME:$DOCKER_TAG
 
 # list the images
 echo "Available images are:"
