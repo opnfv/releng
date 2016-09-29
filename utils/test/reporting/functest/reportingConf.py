@@ -13,7 +13,6 @@ installers = ["apex", "compass", "fuel", "joid"]
 # list of test cases declared in testcases.yaml but that must not be
 # taken into account for the scoring
 blacklist = ["ovno", "security_scan"]
-# versions = ["brahmaputra", "master"]
 versions = ["master", "colorado"]
 PERIOD = 10
 MAX_SCENARIO_CRITERIA = 50
