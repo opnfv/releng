@@ -31,9 +31,18 @@ env = Environment(loader=PackageLoader('elastic2kibana', 'templates'))
 env.filters['jsonify'] = json.dumps
 
 
-class KibanaDashboard(dict):
+def dumps(self, items):
+    for key in items:
+        self.visualization[key] = json.dumps(self.visualization[key])
+
+
+def dumps_2depth(self, key1, key2):
+    self.visualization[key1][key2] = json.dumps(self.visualization[key1][key2])
+
+
+class Dashboard(dict):
     def __init__(self, project_name, case_name, family, installer, pod, scenarios, visualization):
-        super(KibanaDashboard, self).__init__()
+        super(Dashboard, self).__init__()
         self.project_name = project_name
         self.case_name = case_name
         self.family = family
@@ -65,83 +74,30 @@ class KibanaDashboard(dict):
             # logger.error("_publish_visualization: %s" % visualization)
             elastic_access.publish_docs(url, es_creds, visualization)
 
-    def _construct_panels(self):
-        size_x = 6
-        size_y = 3
-        max_columns = 7
-        column = 1
-        row = 1
-        panel_index = 1
-        panels_json = []
-        for visualization in self._kibana_visualizations:
-            panels_json.append({
-                "id": visualization.id,
-                "type": 'visualization',
-                "panelIndex": panel_index,
-                "size_x": size_x,
-                "size_y": size_y,
-                "col": column,
-                "row": row
-            })
-            panel_index += 1
-            column += size_x
-            if column > max_columns:
-                column = 1
-                row += size_y
-        return json.dumps(panels_json, separators=(',', ':'))
-
     def _create(self):
-        self['title'] = '{} {} {} {} {}'.format(self.project_name,
-                                                self.case_name,
-                                                self.installer,
-                                                self._visualization_title,
-                                                self.pod)
-        self.id = self['title'].replace(' ', '-').replace('/', '-')
-
-        self['hits'] = 0
-        self['description'] = "Kibana dashboard for project_name '{}', case_name '{}', installer '{}', data '{}' and" \
-                              " pod '{}'".format(self.project_name,
-                                                 self.case_name,
-                                                 self.installer,
-                                                 self._visualization_title,
-                                                 self.pod)
-        self['panelsJSON'] = self._construct_panels()
-        self['optionsJSON'] = json.dumps({
-            "darkTheme": False
-        },
-            separators=(',', ':'))
-        self['uiStateJSON'] = "{}"
-        self['scenario'] = 1
-        self['timeRestore'] = False
-        self['kibanaSavedObjectMeta'] = {
-            'searchSourceJSON': json.dumps({
-                "filter": [
-                    {
-                        "query": {
-                            "query_string": {
-                                "query": "*",
-                                "analyze_wildcard": True
-                            }
-                        }
-                    }
-                ]
+        db = {
+            "query": {
+                "project_name": self.project_name,
+                "case_name": self.case_name,
+                "installer": self.installer,
+                "metric": self._visualization_title,
+                "pod": self.pod
             },
-                separators=(',', ':'))
+            "test_family": self.family,
+            "ids": [visualization.id for visualization in self._kibana_visualizations]
         }
+        template = env.get_template('dashboard.json')
+        self.dashboard = json.loads(template.render(db=db))
+        dumps(self.dashboard, ['description', 'uiStateJSON', 'panelsJSON','optionsJSON'])
+        dumps_2depth(self.dashboard, 'kibanaSavedObjectMeta', 'searchSourceJSON')
+        self.id = self.dashboard['title'].replace(' ', '-').replace('/', '-')
 
-        label = self.case_name
-        if 'label' in self.visualization:
-            label += " %s" % self.visualization.get('label')
-        label += " %s" % self.visualization.get('name')
-        self['metadata'] = {
-            "label": label,
-            "test_family": self.family
-        }
 
     def _publish(self):
         url = urlparse.urljoin(base_elastic_url, '/.kibana/dashboard/{}'.format(self.id))
         logger.debug("publishing dashboard '{}'".format(url))
-        elastic_access.publish_docs(url, es_creds, self)
+        #logger.error("dashboard: %s" % json.dumps(self.dashboard))
+        elastic_access.publish_docs(url, es_creds, self.dashboard)
 
     def publish(self):
         self._publish_visualizations()
@@ -206,16 +162,9 @@ class Visualization(object):
         template = env.get_template('visualization.json')
 
         self.visualization = json.loads(template.render(vis=vis))
-        self._dumps(['visState', 'description', 'uiStateJSON'])
-        self._dumps_2deeps('kibanaSavedObjectMeta', 'searchSourceJSON')
+        dumps(self.visualization, ['visState', 'description', 'uiStateJSON'])
+        dumps_2depth(self.visualization, 'kibanaSavedObjectMeta', 'searchSourceJSON')
         self.id = self.visualization['title'].replace(' ', '-').replace('/', '-')
-
-    def _dumps(self, items):
-        for key in items:
-            self.visualization[key] = json.dumps(self.visualization[key])
-
-    def _dumps_2deeps(self, key1, key2):
-        self.visualization[key1][key2] = json.dumps(self.visualization[key1][key2])
 
 
 def _get_pods_and_scenarios(project_name, case_name, installer):
@@ -235,7 +184,8 @@ def _get_pods_and_scenarios(project_name, case_name, installer):
     })
 
     elastic_data = elastic_access.get_docs(urlparse.urljoin(base_elastic_url, '/test_results/mongo2elastic'),
-                                                   es_creds, query_json)
+                                           es_creds,
+                                           query_json)
 
     pods_and_scenarios = {}
 
@@ -273,20 +223,20 @@ def construct_dashboards():
                 pods_and_scenarios = _get_pods_and_scenarios(project, case_name, installer)
                 for visualization in visualizations:
                     for pod, scenarios in pods_and_scenarios.iteritems():
-                        kibana_dashboards.append(KibanaDashboard(project,
-                                                                 case_name,
-                                                                 family,
-                                                                 installer,
-                                                                 pod,
-                                                                 scenarios,
-                                                                 visualization))
+                        kibana_dashboards.append(Dashboard(project,
+                                                           case_name,
+                                                           family,
+                                                           installer,
+                                                           pod,
+                                                           scenarios,
+                                                           visualization))
     return kibana_dashboards
 
 
 def generate_js_inputs(js_file_path, kibana_url, dashboards):
     js_dict = {}
     for dashboard in dashboards:
-        dashboard_meta = dashboard['metadata']
+        dashboard_meta = dashboard.dashboard['metadata']
         test_family = dashboard_meta['test_family']
         test_label = dashboard_meta['label']
 
