@@ -48,5 +48,8 @@ sudo docker run ${opts} ${envs} ${labconfig} ${sshkey} opnfv/dovetail:${DOCKER_T
 
 echo "Dovetail: store results..."
 sudo cp -r /home/opnfv/dovetail/results ./
+#To make sure the file owner is jenkins, for the copied results files in the above line
+#if not, there will be error when next time to wipe workspace
+sudo chown -R jenkins:jenkins ${WORKSPACE}/results
 
 echo "Dovetail: done!"
