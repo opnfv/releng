@@ -151,6 +151,7 @@ fi
 usage() {
     cat << EOF
 
+**this file must be copied to the jenkins home directory to work**
 jenkins-jnlp-connect.sh configures monit to keep slave connection up
 Checks for new versions of slave.jar
 run as root to create pid directory and create monit config.
