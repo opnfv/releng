@@ -18,6 +18,7 @@ function fix_ownership() {
         echo "Not running as part of Jenkins. Handle the logs manually."
     else
         sudo chown -R jenkins:jenkins $WORKSPACE
+        sudo chown -R jenkins:jenkins ${HOME}/.cache
     fi
 }
 
@@ -29,6 +30,9 @@ fi
 
 # remove previously cloned repos
 sudo /bin/rm -rf /opt/bifrost /opt/puppet-infracloud /opt/stack /opt/releng
+
+# Fix up permissions
+fix_ownership
 
 # clone all the repos first and checkout the patch afterwards
 sudo git clone https://git.openstack.org/openstack/bifrost /opt/bifrost
