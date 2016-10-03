@@ -2,12 +2,13 @@
     name: 'releng-sandbox-jobs'
     jobs:
         - 'releng-deploy-sandbox'
-        - 'releng-clear-jenkins-jobs'
 
     project: 'releng'
+    node: 'releng-sandbox'
 
 - job-template:
     name: 'releng-deploy-sandbox'
+    node: '{node}'
 
     parameters:
         - project-parameter:
@@ -30,6 +31,13 @@
                 - draft-published-event
                 - comment-added-contains-event:
                     comment-contains-value: 'redeploy'
+            custom-url: '$BUILD_URL deploying to $JENKINS_URL'
+            silent-start: true
+            skip-vote:
+                successful: true
+                failed: true
+                unstable: true
+                notbuilt: true
             projects:
               - project-compare-type: 'ANT'
                 project-pattern: 'releng'
@@ -39,39 +47,16 @@
                 file-paths:
                     - compare-type: ANT
                       pattern: jjb-sandbox/**
-                    - compare-type: ANT
-                      pattern: utils/**
+
+    wrappers: ''
 
     builders:
         - shell:
             !include-raw-escape: verify-sandbox-jobs.sh
         - shell: |
-            #! /bin/bash
-            jenkins-jobs update -r jjb-sandbox
+            #!/bin/bash
+            jenkins-jobs update --delete-old -r jjb/releng-defaults.yaml:jjb/releng-macros.yaml:jjb/opnfv/installer-params.yml:jjb/opnfv/slave-params.yml:jjb-sandbox
 
     publishers:
         - archive-artifacts:
             artifacts: 'job_output/*'
-
-- job-template:
-    name: 'releng-clear-jenkins-jobs'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: 'master'
-
-    scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
-
-    triggers:
-        - timed: '@weekly'
-
-    builders:
-        - shell: |
-            #! /bin/bash
-            jenkins-jobs delete -r -p jjb-sandbox -x jjb-sandbox/releng
