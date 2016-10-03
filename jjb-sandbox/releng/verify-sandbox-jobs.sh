@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 # SPDX-license-identifier: Apache-2.0
 ##############################################################################
 # Copyright (c) 2016 Linux Foundation and others.
