@@ -42,16 +42,18 @@
                     - compare-type: ANT
                       pattern: utils/**
 
+    wrappers: ''
+
     builders:
         - shell:
             !include-raw-escape: verify-sandbox-jobs.sh
         - shell: |
             #! /bin/bash
-            jenkins-jobs update -r jjb-sandbox
+            jenkins-jobs update -r jjb/releng-defaults.yaml:jjb/releng-macros.yaml:jjb/opnfv/installer-params.yml:jjb/opnfv/slave-params.yml:jjb-sandbox
 
     publishers:
         - archive-artifacts:
-            artifacts: 'job_output/*'
+            artifacts: 'job_output'
 
 - job-template:
     name: 'releng-clear-jenkins-jobs'
@@ -67,6 +69,8 @@
             credentials-id: '{ssh-credentials}'
             refspec: ''
             choosing-strategy: 'default'
+
+    wrappers: ''
 
     triggers:
         - timed: '@weekly'
