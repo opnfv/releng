@@ -73,7 +73,7 @@ node 'jumphost.opnfvlocal' {
   }
 }
 
-node 'baremetal.opnfvlocal' {
+node 'baremetal.opnfvlocal', 'lfpod5-jumpserver' {
   class { '::opnfv::server':
     iptables_public_udp_ports => [67, 69],
     sysadmins                 => hiera('sysadmins', []),
