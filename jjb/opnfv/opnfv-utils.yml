@@ -1,0 +1,38 @@
+- project:
+
+    name: opnfv-utils
+
+    jobs:
+        - 'prune-docker-images'
+########################
+# job templates
+########################
+- job-template:
+    name: 'prune-docker-images'
+
+    disabled: false
+
+    concurrent: true
+
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: Slaves to prune docker images
+            default-slaves:
+                - arm-build1
+                - arm-build2
+                - ericsson-build4
+                - ericsson-build5
+                - lf-build2
+            allowed-multiselect: true
+            ignore-offline-nodes: true
+
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            (docker ps -q; docker ps -aq) | sort | uniq -u | xargs --no-run-if-empty docker rm
+            docker images -f dangling=true -q | xargs --no-run-if-empty docker rmi
+
+    triggers:
+        - timed: '@midnight'
