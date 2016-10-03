@@ -91,6 +91,7 @@ node 'baremetal.opnfvlocal', 'lfpod5-jumpserver' {
     vlan                      => hiera('infracloud_vlan'),
     gateway_ip                => hiera('infracloud_gateway_ip'),
     default_network_interface => hiera('default_network_interface'),
+    dhcp_static_mask          => hiera('dhcp_static_mask'),
     dhcp_pool_start           => hiera('dhcp_pool_start'),
     dhcp_pool_end             => hiera('dhcp_pool_end'),
     network_interface         => hiera('network_interface'),
