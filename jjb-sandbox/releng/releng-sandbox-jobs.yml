@@ -5,9 +5,11 @@
         - 'releng-clear-jenkins-jobs'
 
     project: 'releng'
+    node: 'releng-sandbox'
 
 - job-template:
     name: 'releng-deploy-sandbox'
+    node: '{node}'
 
     parameters:
         - project-parameter:
@@ -42,19 +44,22 @@
                     - compare-type: ANT
                       pattern: utils/**
 
+    wrappers: ''
+
     builders:
         - shell:
             !include-raw-escape: verify-sandbox-jobs.sh
         - shell: |
-            #! /bin/bash
-            jenkins-jobs update -r jjb-sandbox
+            #!/bin/bash
+            jenkins-jobs update -r jjb/releng-defaults.yaml:jjb/releng-macros.yaml:jjb/opnfv/installer-params.yml:jjb/opnfv/slave-params.yml:jjb-sandbox
 
     publishers:
         - archive-artifacts:
-            artifacts: 'job_output/*'
+            artifacts: 'job_output'
 
 - job-template:
     name: 'releng-clear-jenkins-jobs'
+    node: '{node}'
 
     parameters:
         - project-parameter:
@@ -68,10 +73,12 @@
             refspec: ''
             choosing-strategy: 'default'
 
+    wrappers: ''
+
     triggers:
         - timed: '@weekly'
 
     builders:
         - shell: |
-            #! /bin/bash
+            #!/bin/bash
             jenkins-jobs delete -r -p jjb-sandbox -x jjb-sandbox/releng
