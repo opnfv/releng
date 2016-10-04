@@ -34,11 +34,9 @@ node 'controller00.opnfvlocal' {
     ssl_cert_file_contents           => hiera('ssl_cert_file_contents'),
     br_name                          => hiera('bridge_name'),
     controller_public_address        => $::fqdn,
-    neutron_subnet_cidr              => '192.168.122.0/24',
-    neutron_subnet_gateway           => '192.168.122.1',
-    neutron_subnet_allocation_pools  => [
-                                          'start=192.168.122.50,end=192.168.122.254',
-                                        ],
+    neutron_subnet_cidr              => hiera('neutron_subnet_cidr'),
+    neutron_subnet_gateway           => hiera('neutron_subnet_gateway'),
+    neutron_subnet_allocation_pools  => hiera('neutron_subnet_allocation_pools'),
     opnfv_password                   => hiera('opnfv_password'),
   }
 }
@@ -61,7 +59,7 @@ node 'compute00.opnfvlocal' {
     ssl_key_file_contents            => hiera('ssl_key_file_contents'),
     br_name                          => hiera('bridge_name'),
     controller_public_address        => 'controller00.opnfvlocal',
-    virt_type                        => 'qemu',
+    virt_type                        => hiera('virt_type'),
   }
 }
 
