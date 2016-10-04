@@ -67,22 +67,9 @@ fi
 
 
 # cd to directory where Dockerfile is located
-if [[ "$DOCKER_REPO_NAME" == "opnfv/bottlenecks" ]]; then
-    cd $WORKSPACE/ci/docker
-elif [[ "$DOCKER_REPO_NAME" == "opnfv/cperf" ]]; then
-    cd $WORKSPACE/docker
-elif [[ "$DOCKER_REPO_NAME" == "opnfv/dovetail" ]]; then
-    cd $WORKSPACE/docker
-elif [[ "$DOCKER_REPO_NAME" == "opnfv/functest" ]]; then
-    cd $WORKSPACE/docker
-elif [[ "$DOCKER_REPO_NAME" == "opnfv/qtip" ]]; then
-    cd $WORKSPACE/docker
-elif [[ "$DOCKER_REPO_NAME" == "opnfv/storperf" ]]; then
-    cd $WORKSPACE/docker
-elif [[ "$DOCKER_REPO_NAME" == "opnfv/yardstick" ]]; then
-    cd $WORKSPACE/tests/ci/docker/yardstick-ci
-else
-    echo "ERROR: DOCKER_REPO_NAME parameter not valid: $DOCKER_REPO_NAME"
+cd $WORKSPACE/docker
+if [ ! -f ./Dockerfile ]; then
+    echo "ERROR: Dockerfile not found."
     exit 1
 fi
 
