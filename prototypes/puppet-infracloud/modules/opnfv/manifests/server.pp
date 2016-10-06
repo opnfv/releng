@@ -216,6 +216,14 @@ class opnfv::server (
     require  => Class['pip'],
   }
 
+  # manage root ssh
+  if ! defined(File['/root/.ssh']) {
+    file { '/root/.ssh':
+      ensure => directory,
+      mode   => '0700',
+    }
+  }
+
   # add hosts entries
   create_resources('host', hiera_hash('hosts'))
 }
