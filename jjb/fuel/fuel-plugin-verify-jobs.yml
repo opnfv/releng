@@ -9,7 +9,8 @@
 #####################################
     stream:
         - master:
-            branch: '{stream}'
+            upstream-branch: '{stream}'
+            opnfv-branch: 'experimental'
             gs-pathname: ''
             disabled: false
 #####################################
@@ -43,6 +44,20 @@
             enabled: true
             max-total: 4
             option: 'project'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{upstream-branch}'
+            description: 'OpenStack branch to use'
+        - string:
+            name: OPNFV_BRANCH
+            default: '{opnfv-branch}'
+            description: 'OPNFV branch to use'
+        - 'opnfv-build-defaults'
+        - 'fuel-verify-plugin-defaults':
+            gs-pathname: '{gs-pathname}'
 
     scm:
         - git:
@@ -87,7 +102,7 @@
                 project-pattern: 'openstack/fuel-plugin-bgpvpn'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
+                    branch-pattern: '**/{upstream-branch}'
                 forbidden-file-paths:
                   - compare-type: ANT
                     pattern: 'README.md|.gitignore|.gitreview'
@@ -95,20 +110,11 @@
                 project-pattern: 'openstack/fuel-plugin-onos'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
+                    branch-pattern: '**/{upstream-branch}'
                 forbidden-file-paths:
                   - compare-type: ANT
                     pattern: 'README.md|.gitignore|.gitreview'
             readable-message: true
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: '{branch}'
-        - 'opnfv-build-defaults'
-        - 'fuel-verify-plugin-defaults':
-            gs-pathname: '{gs-pathname}'
 
     builders:
         - description-setter:
@@ -162,6 +168,21 @@
                 - 'fuel-verify-plugin-test-.*'
             block-level: 'NODE'
 
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{upstream-branch}'
+            description: 'OpenStack branch to use'
+        - string:
+            name: OPNFV_BRANCH
+            default: '{opnfv-branch}'
+            description: 'OPNFV branch to use'
+        - '{slave-label}-defaults'
+        - '{installer}-defaults'
+        - 'fuel-verify-plugin-defaults':
+            gs-pathname: '{gs-pathname}'
+
     scm:
         - git:
             url: 'https://git.openstack.org/$GERRIT_PROJECT'
@@ -180,15 +201,6 @@
         - timeout:
             timeout: 360
             fail: true
-    parameters:
-        - project-parameter:
-            project: '{project}'
-        - gerrit-parameter:
-            branch: '{branch}'
-        - '{slave-label}-defaults'
-        - '{installer}-defaults'
-        - 'fuel-verify-plugin-defaults':
-            gs-pathname: '{gs-pathname}'
 
     builders:
         - description-setter:
@@ -200,18 +212,14 @@
 - builder:
     name: 'fuel-verify-plugin-build-macro'
     builders:
-        - shell: |
-            #!/bin/bash
-
-            echo "Not activated!"
+        - shell:
+            !include-raw: ./fuel-plugin-build.sh
 
 - builder:
     name: 'fuel-verify-plugin-test-macro'
     builders:
-        - shell: |
-            #!/bin/bash
-
-            echo "Not activated!"
+        - shell:
+            !include-raw: ./fuel-plugin-test.sh
 #####################################
 # parameter macros
 #####################################
