@@ -250,9 +250,9 @@ class DocumentsPublisher:
 
 
 def main():
-    base_elastic_url = urlparse.urljoin(CONF.elastic_url, '/test_results/mongo2elastic')
+    base_elastic_url = urlparse.urljoin(CONF.es_url, '/test_results/mongo2elastic')
     days = args.latest_days
-    es_creds = CONF.elastic_creds
+    es_creds = CONF.es_creds
 
     for project, case_dicts in testcases.testcases_yaml.items():
         for case_dict in case_dicts:

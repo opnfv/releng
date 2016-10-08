@@ -1,4 +1,5 @@
 import json
+import urlparse
 
 import urllib3
 
@@ -43,3 +44,8 @@ def get_docs(url, creds=None, body=None, field='_source'):
     for hit in res_data['hits']['hits']:
         docs.append(hit[field])
     return docs
+
+
+def publish_kibana(url, creds, type, id, body):
+    url = urlparse.urljoin(url, '/.kibana/{}/{}'.format(type, id))
+    publish_docs(url, creds, body)
