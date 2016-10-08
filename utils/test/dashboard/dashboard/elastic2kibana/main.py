@@ -31,87 +31,60 @@ env = Environment(loader=PackageLoader('elastic2kibana', 'templates'))
 env.filters['jsonify'] = json.dumps
 
 
-def dumps(self, items):
+def dumps(a_dict, items):
     for key in items:
-        self.visualization[key] = json.dumps(self.visualization[key])
+        a_dict[key] = json.dumps(a_dict[key])
 
 
-def dumps_2depth(self, key1, key2):
-    self.visualization[key1][key2] = json.dumps(self.visualization[key1][key2])
+def dumps_2depth(a_dict, key1, key2):
+    a_dict[key1][key2] = json.dumps(a_dict[key1][key2])
 
 
-class Dashboard(dict):
-    def __init__(self, project_name, case_name, family, installer, pod, scenarios, visualization):
-        super(Dashboard, self).__init__()
-        self.project_name = project_name
-        self.case_name = case_name
-        self.family = family
+class DashboardAssembler(object):
+    def __init__(self, project, case, family, installer, pod, visualizations):
+        super(DashboardAssembler, self).__init__()
+        self.project = project
+        self.case = case
+        self.test_family = family
         self.installer = installer
         self.pod = pod
-        self.scenarios = scenarios
-        self.visualization = visualization
-        self._visualization_title = None
-        self._kibana_visualizations = []
-        self._kibana_dashboard = None
-        self._create_visualizations()
-        self._create()
+        self.visualizations = visualizations
+        self._assemble()
 
-    def _create_visualizations(self):
-        for scenario in self.scenarios:
-            self._kibana_visualizations.append(Visualization(self.project_name,
-                                                             self.case_name,
-                                                             self.installer,
-                                                             self.pod,
-                                                             scenario,
-                                                             self.visualization))
-
-        self._visualization_title = self._kibana_visualizations[0].vis_state_title
-
-    def _publish_visualizations(self):
-        for visualization in self._kibana_visualizations:
-            url = urlparse.urljoin(base_elastic_url, '/.kibana/visualization/{}'.format(visualization.id))
-            logger.debug("publishing visualization '{}'".format(url))
-            # logger.error("_publish_visualization: %s" % visualization)
-            elastic_access.publish_docs(url, es_creds, visualization)
-
-    def _create(self):
+    def _assemble(self):
         db = {
             "query": {
-                "project_name": self.project_name,
-                "case_name": self.case_name,
+                "project_name": self.project,
+                "case_name": self.case,
                 "installer": self.installer,
-                "metric": self._visualization_title,
+                "metric": self.visualizations[0].vis_state_title,
                 "pod": self.pod
             },
-            "test_family": self.family,
-            "ids": [visualization.id for visualization in self._kibana_visualizations]
+            "test_family": self.test_family,
+            "ids": [visualization.id for visualization in self.visualizations]
         }
         template = env.get_template('dashboard.json')
         self.dashboard = json.loads(template.render(db=db))
         dumps(self.dashboard, ['description', 'uiStateJSON', 'panelsJSON','optionsJSON'])
         dumps_2depth(self.dashboard, 'kibanaSavedObjectMeta', 'searchSourceJSON')
         self.id = self.dashboard['title'].replace(' ', '-').replace('/', '-')
+        return self
 
-
-    def _publish(self):
+    def publish(self):
         url = urlparse.urljoin(base_elastic_url, '/.kibana/dashboard/{}'.format(self.id))
         logger.debug("publishing dashboard '{}'".format(url))
         #logger.error("dashboard: %s" % json.dumps(self.dashboard))
         elastic_access.publish_docs(url, es_creds, self.dashboard)
 
-    def publish(self):
-        self._publish_visualizations()
-        self._publish()
-
 
 class VisStateBuilder(object):
-    def __init__(self, visualization):
+    def __init__(self, vis_p):
         super(VisStateBuilder, self).__init__()
-        self.visualization = visualization
+        self.vis_p = vis_p
 
     def build(self):
-        name = self.visualization.get('name')
-        fields = self.visualization.get('fields')
+        name = self.vis_p.get('name')
+        fields = self.vis_p.get('fields')
 
         aggs = []
         index = 1
@@ -127,24 +100,10 @@ class VisStateBuilder(object):
         return json.loads(vis)
 
 
-class Visualization(object):
-    def __init__(self, project_name, case_name, installer, pod, scenario, visualization):
-        """
-        We need two things
-        1. filter created from
-            project_name
-            case_name
-            installer
-            pod
-            scenario
-        2. visualization state
-            field for y axis (metric) with type (avg, sum, etc.)
-            field for x axis (segment) with type (date_histogram)
-
-        :return:
-        """
-        super(Visualization, self).__init__()
-        visState = VisStateBuilder(visualization).build()
+class VisualizationAssembler(object):
+    def __init__(self, project_name, case_name, installer, pod, scenario, vis_p):
+        super(VisualizationAssembler, self).__init__()
+        visState = VisStateBuilder(vis_p).build()
         self.vis_state_title = visState['title']
 
         vis = {
@@ -165,6 +124,29 @@ class Visualization(object):
         dumps(self.visualization, ['visState', 'description', 'uiStateJSON'])
         dumps_2depth(self.visualization, 'kibanaSavedObjectMeta', 'searchSourceJSON')
         self.id = self.visualization['title'].replace(' ', '-').replace('/', '-')
+
+    def publish(self):
+        url = urlparse.urljoin(base_elastic_url, '/.kibana/visualization/{}'.format(self.id))
+        logger.debug("publishing visualization '{}'".format(url))
+        # logger.error("_publish_visualization: %s" % visualization)
+        elastic_access.publish_docs(url, es_creds, self.visualization)
+
+
+class VisualizationsAssembler(object):
+    def __init__(self, project, case, installer, pod, scenarios, vis_p):
+        super(VisualizationsAssembler, self).__init__()
+        self.visAssemblers = []
+        for scenario in scenarios:
+            self.visAssemblers.append(VisualizationAssembler(project,
+                                                             case,
+                                                             installer,
+                                                             pod,
+                                                             scenario,
+                                                             vis_p))
+
+    def publish(self):
+        for visAssembler in self.visAssemblers:
+            visAssembler.publish()
 
 
 def _get_pods_and_scenarios(project_name, case_name, installer):
@@ -213,24 +195,32 @@ def construct_dashboards():
 
     :return: list of KibanaDashboards
     """
-    kibana_dashboards = []
+    dashboards = []
     for project, case_dicts in testcases.testcases_yaml.items():
         for case in case_dicts:
             case_name = case.get('name')
-            visualizations = case.get('visualizations')
+            vis_ps = case.get('visualizations')
             family = case.get('test_family')
             for installer in _installers:
                 pods_and_scenarios = _get_pods_and_scenarios(project, case_name, installer)
-                for visualization in visualizations:
+                for vis_p in vis_ps:
                     for pod, scenarios in pods_and_scenarios.iteritems():
-                        kibana_dashboards.append(Dashboard(project,
-                                                           case_name,
-                                                           family,
-                                                           installer,
-                                                           pod,
-                                                           scenarios,
-                                                           visualization))
-    return kibana_dashboards
+                        visAssember = VisualizationsAssembler(project,
+                                                              case_name,
+                                                              installer,
+                                                              pod,
+                                                              scenarios,
+                                                              vis_p)
+                        dashboardAssembler = DashboardAssembler(project,
+                                                                case_name,
+                                                                family,
+                                                                installer,
+                                                                pod,
+                                                                visAssember.visAssemblers)
+                        visAssember.publish()
+                        dashboardAssembler.publish()
+                        dashboards.append(dashboardAssembler)
+    return dashboards
 
 
 def generate_js_inputs(js_file_path, kibana_url, dashboards):
@@ -263,9 +253,6 @@ def generate_js_inputs(js_file_path, kibana_url, dashboards):
 
 def main():
     dashboards = construct_dashboards()
-
-    for kibana_dashboard in dashboards:
-        kibana_dashboard.publish()
 
     if generate_inputs:
         generate_js_inputs(input_file_path, kibana_url, dashboards)
