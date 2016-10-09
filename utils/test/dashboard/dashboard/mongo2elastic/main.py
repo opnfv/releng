@@ -36,7 +36,68 @@ CONF = APIConfig().parse(args.config_file)
 tmp_docs_file = './mongo-{}.json'.format(uuid.uuid4())
 
 
-class DocumentPublisher:
+class DocumentVerification(object):
+    def __init__(self, doc):
+        super(DocumentVerification, self).__init__()
+        self.doc = doc
+        self.doc_id = doc['_id'] if '_id' in doc else None
+        self.skip = False
+
+    def mandatory_fields_exist(self):
+        mandatory_fields = ['installer',
+                            'pod_name',
+                            'version',
+                            'case_name',
+                            'project_name',
+                            'details',
+                            'start_date',
+                            'scenario']
+        for key, value in self.doc.items():
+            if key in mandatory_fields:
+                if value is None:
+                    logger.info("Skip testcase '%s' because field '%s' missing" %
+                                (self.doc_id, key))
+                    self.skip = True
+                else:
+                    mandatory_fields.remove(key)
+            else:
+                del self.doc[key]
+
+        if len(mandatory_fields) > 0:
+            logger.info("Skip testcase '%s' because field(s) '%s' missing" %
+                        (self.doc_id, mandatory_fields))
+            self.skip = True
+
+        return self
+
+    def modify_start_date(self):
+        field = 'start_date'
+        if field in self.doc:
+            self.doc[field] = self._fix_date(self.doc[field])
+
+        return self
+
+    def modify_scenario(self):
+        scenario = 'scenario'
+        version = 'version'
+
+        if (scenario not in self.doc) or \
+                (scenario in self.doc and self.doc[scenario] is None):
+            self.doc[scenario] = self.doc[version]
+
+        return self
+
+    def is_skip(self):
+        return self.skip
+
+    def _fix_date(self, date_string):
+        if isinstance(date_string, dict):
+            return date_string['$date']
+        else:
+            return date_string[:-3].replace(' ', 'T') + 'Z'
+
+
+class DocumentPublisher(object):
 
     def __init__(self, doc, fmt, exist_docs, creds, elastic_url):
         self.doc = doc
@@ -76,92 +137,14 @@ class DocumentPublisher:
             return date_string[:-3].replace(' ', 'T') + 'Z'
 
     def _verify_document(self):
-        """
-        Mandatory fields:
-            installer
-            pod_name
-            version
-            case_name
-            date
-            project
-            details
-
-            these fields must be present and must NOT be None
-
-        Optional fields:
-            description
-
-            these fields will be preserved if the are NOT None
-        """
-        mandatory_fields = ['installer',
-                            'pod_name',
-                            'version',
-                            'case_name',
-                            'project_name',
-                            'details']
-        mandatory_fields_to_modify = {'start_date': self._fix_date}
-        fields_to_swap_or_add = {'scenario': 'version'}
-        if '_id' in self.doc:
-            mongo_id = self.doc['_id']
-        else:
-            mongo_id = None
-        optional_fields = ['description']
-        for key, value in self.doc.items():
-            if key in mandatory_fields:
-                if value is None:
-                    # empty mandatory field, invalid input
-                    logger.info("Skipping testcase with mongo _id '{}' because the testcase was missing value"
-                                " for mandatory field '{}'".format(mongo_id, key))
-                    return False
-                else:
-                    mandatory_fields.remove(key)
-            elif key in mandatory_fields_to_modify:
-                if value is None:
-                    # empty mandatory field, invalid input
-                    logger.info("Skipping testcase with mongo _id '{}' because the testcase was missing value"
-                                " for mandatory field '{}'".format(mongo_id, key))
-                    return False
-                else:
-                    self.doc[key] = mandatory_fields_to_modify[key](value)
-                    del mandatory_fields_to_modify[key]
-            elif key in fields_to_swap_or_add:
-                if value is None:
-                    swapped_key = fields_to_swap_or_add[key]
-                    swapped_value = self.doc[swapped_key]
-                    logger.info("Swapping field '{}' with value None for '{}' with value '{}'.".format(key, swapped_key,
-                                                                                                       swapped_value))
-                    self.doc[key] = swapped_value
-                    del fields_to_swap_or_add[key]
-                else:
-                    del fields_to_swap_or_add[key]
-            elif key in optional_fields:
-                if value is None:
-                    # empty optional field, remove
-                    del self.doc[key]
-                optional_fields.remove(key)
-            else:
-                # unknown field
-                del self.doc[key]
-
-        if len(mandatory_fields) > 0:
-            # some mandatory fields are missing
-            logger.info("Skipping testcase with mongo _id '{}' because the testcase was missing"
-                        " mandatory field(s) '{}'".format(mongo_id, mandatory_fields))
-            return False
-        elif len(mandatory_fields_to_modify) > 0:
-            # some mandatory fields are missing
-            logger.info("Skipping testcase with mongo _id '{}' because the testcase was missing"
-                        " mandatory field(s) '{}'".format(mongo_id, mandatory_fields_to_modify.keys()))
-            return False
-        else:
-            if len(fields_to_swap_or_add) > 0:
-                for key, swap_key in fields_to_swap_or_add.iteritems():
-                    self.doc[key] = self.doc[swap_key]
-
-            return True
+        return not (DocumentVerification(self.doc)
+                    .modify_start_date()
+                    .modify_scenario()
+                    .mandatory_fields_exist()
+                    .is_skip())
 
 
-class DocumentsPublisher:
+class DocumentsPublisher(object):
 
     def __init__(self, project, case, fmt, days, elastic_url, creds):
         self.project = project
@@ -232,6 +215,7 @@ class DocumentsPublisher:
         return self
 
     def publish(self):
+        fdocs = None
         try:
             with open(tmp_docs_file) as fdocs:
                 for doc_line in fdocs:
@@ -241,7 +225,8 @@ class DocumentsPublisher:
                                       self.creds,
                                       self.elastic_url).format().publish()
         finally:
-            fdocs.close()
+            if fdocs:
+                fdocs.close()
             self._remove()
 
     def _remove(self):
