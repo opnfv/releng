@@ -159,6 +159,19 @@
                 build-step-failure-threshold: 'never'
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
+        #dovetail only master by now, not sync with A/B/C branches
+        #here the stream means the SUT stream, dovetail stream is defined in its own job
+        - trigger-builds:
+            - project: 'dovetail-compass-{pod}-basic-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              block: true
+              same-node: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
 
 - job-template:
     name: 'compass-deploy-{pod}-daily-{stream}'
