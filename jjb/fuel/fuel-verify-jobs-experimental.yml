@@ -1,0 +1,264 @@
+- project:
+    # TODO: rename the project name
+    # TODO: get rid of appended -exp from the remainder of the file
+    name: 'fuel-verify-jobs-experimental'
+
+    project: 'fuel'
+
+    installer: 'fuel'
+#------------------------------------
+# branch definitions
+#------------------------------------
+    # TODO: enable master once things settle
+    stream-exp:
+        - experimental:
+            branch: 'stable/{stream-exp}'
+            gs-pathname: '/{stream-exp}'
+            disabled: false
+#------------------------------------
+# patch verification phases
+#------------------------------------
+    phase:
+        - 'basic':
+            # this phase does basic commit message check, unit test and so on
+            slave-label: 'opnfv-build'
+        - 'build':
+            # this phase builds artifacts if valid for given installer
+            slave-label: 'opnfv-build-ubuntu'
+        - 'deploy-virtual':
+            # this phase does virtual deployment using the artifacts produced in previous phase
+            slave-label: 'fuel-virtual'
+        - 'smoke-test':
+            # this phase runs functest smoke test
+            slave-label: 'fuel-virtual'
+#------------------------------------
+# jobs
+#------------------------------------
+    jobs:
+        - 'fuel-verify-{stream-exp}'
+        - 'fuel-verify-{phase}-{stream-exp}'
+#------------------------------------
+# job templates
+#------------------------------------
+- job-template:
+    name: 'fuel-verify-{stream-exp}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    # TODO: this is valid for experimental only
+    #       enable concurrency for master once things settle
+    concurrent: false
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 4
+            option: 'project'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 360
+            fail: true
+
+    triggers:
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'ci/**'
+                  - compare-type: ANT
+                    pattern: 'build/**'
+                  - compare-type: ANT
+                    pattern: 'deploy/**'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**'
+            readable-message: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-defaults'
+        - 'fuel-verify-defaults-exp':
+            gs-pathname: '{gs-pathname}'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: basic
+            condition: SUCCESSFUL
+            projects:
+                - name: 'fuel-verify-basic-{stream-exp}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'fuel-verify-build-{stream-exp}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: deploy-virtual
+            condition: SUCCESSFUL
+            projects:
+                - name: 'fuel-verify-deploy-virtual-{stream-exp}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: smoke-test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'fuel-verify-smoke-test-{stream-exp}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+
+- job-template:
+    name: 'fuel-verify-{phase}-{stream-exp}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 6
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'fuel-verify-deploy-.*'
+                - 'fuel-verify-test-.*'
+            block-level: 'NODE'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 360
+            fail: true
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - '{slave-label}-defaults'
+        - '{installer}-defaults'
+        - 'fuel-verify-defaults-exp':
+            gs-pathname: '{gs-pathname}'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - '{project}-verify-{phase}-macro-exp'
+#------------------------------------
+# builder macros
+#------------------------------------
+- builder:
+    name: 'fuel-verify-basic-macro-exp'
+    builders:
+        - shell:
+            !include-raw: ./fuel-basic-exp.sh
+
+- builder:
+    name: 'fuel-verify-build-macro-exp'
+    builders:
+        - shell:
+            !include-raw: ./fuel-build-exp.sh
+        - shell:
+            !include-raw: ./fuel-workspace-cleanup.sh
+
+- builder:
+    name: 'fuel-verify-deploy-virtual-macro-exp'
+    builders:
+        - shell:
+            !include-raw: ./fuel-deploy-exp.sh
+
+- builder:
+    name: 'fuel-verify-smoke-test-macro-exp'
+    builders:
+        - shell:
+            !include-raw: ./fuel-smoke-test-exp.sh
+#------------------------------------
+# parameter macros
+#------------------------------------
+- parameter:
+    name: 'fuel-verify-defaults-exp'
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache/$INSTALLER_TYPE
+            description: "Directory where the cache to be used during the build is located."
+        - string:
+            name: GS_URL
+            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+            description: "URL to Google Storage."
