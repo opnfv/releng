@@ -23,8 +23,8 @@ class APIConfig:
 
     def __init__(self):
         self._default_config_location = "../etc/config.ini"
-        self.elastic_url = 'http://localhost:9200'
-        self.elastic_creds = None
+        self.es_url = 'http://localhost:9200'
+        self.es_creds = None
         self.kibana_url = None
         self.is_js = True
         self.js_path = None
@@ -64,8 +64,8 @@ class APIConfig:
             raise ParseError("%s not found" % config_location)
 
         # Linking attributes to keys from file with their sections
-        obj.elastic_url = obj._get_str_parameter("elastic", "url")
-        obj.elastic_creds = obj._get_str_parameter("elastic", "creds")
+        obj.es_url = obj._get_str_parameter("elastic", "url")
+        obj.es_creds = obj._get_str_parameter("elastic", "creds")
         obj.kibana_url = obj._get_str_parameter("kibana", "url")
         obj.is_js = obj._get_bool_parameter("kibana", "js")
         obj.js_path = obj._get_str_parameter("kibana", "js_path")
@@ -77,8 +77,8 @@ class APIConfig:
                "elastic_creds = %s \n" \
                "kibana_url = %s \n" \
                "is_js = %s \n" \
-               "js_path = %s \n" % (self.elastic_url,
-                                    self.elastic_creds,
+               "js_path = %s \n" % (self.es_url,
+                                    self.es_creds,
                                     self.kibana_url,
                                     self.is_js,
                                     self.js_path)
