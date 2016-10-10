@@ -11,7 +11,7 @@ class DashboardAssembler(object):
                  family,
                  installer,
                  pod,
-                 visAssemblers,
+                 visualizations,
                  es_url,
                  es_creds):
         super(DashboardAssembler, self).__init__()
@@ -20,7 +20,7 @@ class DashboardAssembler(object):
         self.test_family = family
         self.installer = installer
         self.pod = pod
-        self.visAssemblers = visAssemblers
+        self.visualizations = visualizations
         self.es_url = es_url
         self.es_creds = es_creds
         self._assemble()
@@ -32,11 +32,11 @@ class DashboardAssembler(object):
                 "project_name": self.project,
                 "case_name": self.case,
                 "installer": self.installer,
-                "metric": self.visAssemblers[0].vis_state_title,
+                "metric": self.visualizations[0].vis_state_title,
                 "pod": self.pod
             },
             "test_family": self.test_family,
-            "ids": [visualization.id for visualization in self.visAssemblers]
+            "ids": [visualization.id for visualization in self.visualizations]
         }
         template = utility.env.get_template('dashboard.json')
         self.dashboard = json.loads(template.render(db=db))
