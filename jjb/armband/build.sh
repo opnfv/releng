@@ -12,6 +12,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+export TERM="vt220"
+
 echo "Host info: $(hostname) $(hostname -I)"
 
 cd $WORKSPACE
