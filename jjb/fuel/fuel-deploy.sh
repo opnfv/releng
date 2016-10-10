@@ -10,6 +10,8 @@
 set -o nounset
 set -o pipefail
 
+export TERM="vt220"
+
 # source the file so we get OPNFV vars
 source latest.properties
 

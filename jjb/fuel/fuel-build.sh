@@ -11,6 +11,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+export TERM="vt220"
+
 cd $WORKSPACE
 
 # remove the expired items from cache
