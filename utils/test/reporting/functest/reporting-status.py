@@ -8,6 +8,7 @@
 #
 import datetime
 import jinja2
+import pdfkit
 import requests
 import sys
 import time
@@ -186,8 +187,7 @@ for version in conf.versions:
             s_score = str(scenario_score) + "/" + str(scenario_criteria)
             s_score_percent = 0.0
             try:
-                s_score_percent = float(
-                scenario_score) / float(scenario_criteria) * 100
+                s_score_percent = float(scenario_score) / float(scenario_criteria) * 100
             except:
                 logger.error("cannot calculate the score percent")
 
@@ -200,7 +200,7 @@ for version in conf.versions:
                 logger.info(">>>>> scenario OK, save the information")
                 s_status = "OK"
                 path_validation_file = (conf.REPORTING_PATH +
-                                        "/release/" + version +
+                                        "/functest/release/" + version +
                                         "/validated_scenario_history.txt")
                 with open(path_validation_file, "a") as f:
                     time_format = "%Y-%m-%d %H:%M"
@@ -210,7 +210,7 @@ for version in conf.versions:
 
             # Save daily results in a file
             path_validation_file = (conf.REPORTING_PATH +
-                                    "/release/" + version +
+                                    "/functest/release/" + version +
                                     "/scenario_history.txt")
             with open(path_validation_file, "a") as f:
                 info = (reportingDate + "," + s + "," + installer +
@@ -228,7 +228,7 @@ for version in conf.versions:
         templateEnv = jinja2.Environment(
             loader=templateLoader, autoescape=True)
 
-        TEMPLATE_FILE = "/template/index-status-tmpl.html"
+        TEMPLATE_FILE = "/functest/template/index-status-tmpl.html"
         template = templateEnv.get_template(TEMPLATE_FILE)
 
         outputText = template.render(scenario_stats=scenario_stats,
@@ -239,6 +239,34 @@ for version in conf.versions:
                                      version=version,
                                      date=reportingDate)
 
-        with open(conf.REPORTING_PATH + "/release/" + version +
-                  "/index-status-" + installer + ".html", "wb") as fh:
-            fh.write(outputText)
+    with open(conf.REPORTING_PATH + "/functest/release/" + version +
+              "/index-status-" + installer + ".html", "wb") as fh:
+        fh.write(outputText)
+
+    # Generate outputs for export
+    # pdf
+    try:
+        pdf_path = ("http://testresults.opnfv.org/reporting/" +
+                    "functest/release/" + version +
+                    "/index-status-" + installer + ".html")
+        pdf_doc_name = (conf.REPORTING_PATH +
+                        "/functest/release/" + version +
+                        "/status-" + installer + ".pdf")
+        pdfkit.from_url(pdf_path, pdf_doc_name)
+    except IOError:
+        logger.info("pdf generated anyway...")
+    except:
+        logger.error("impossible to generate PDF")
+    # csv
+    # generate sub files based on scenario_history.txt
+    scenario_installer_file_name = (conf.REPORTING_PATH +
+                                    "/functest/release/" + version +
+                                    "/scenario_history_" +
+                                    installer + ".txt")
+    scenario_installer_file = open(scenario_installer_file_name, "w")
+ 
+    with open(path_validation_file, "r") as f:
+        for line in f:
+            if installer in line:
+                scenario_installer_file.write(line)
+    scenario_installer_file.close
