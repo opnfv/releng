@@ -91,10 +91,16 @@ class DocumentVerification(object):
         return self.skip
 
     def _fix_date(self, date_string):
+        if date_string == 'None':
+            return None
         if isinstance(date_string, dict):
             return date_string['$date']
-        else:
-            return date_string[:-3].replace(' ', 'T') + 'Z'
+        if 'T' not in date_string:
+            date_string = date_string[:-3].replace(' ', 'T')
+        if not date_string.endswith('Z'):
+            date_string += 'Z'
+
+        return date_string
 
 
 class DocumentPublisher(object):
