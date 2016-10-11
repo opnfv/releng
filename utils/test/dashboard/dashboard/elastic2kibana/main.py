@@ -64,13 +64,12 @@ class KibanaConstructor(object):
                                                visualizations,
                                                CONF.es_url,
                                                CONF.es_creds)
-                if CONF.is_js:
-                    self._set_js_dict(case,
-                                      pod,
-                                      installer,
-                                      family,
-                                      vis_p.get('name'),
-                                      dashboard.id)
+                self._set_js_dict(case,
+                                  pod,
+                                  installer,
+                                  family,
+                                  vis_p.get('name'),
+                                  dashboard.id)
 
     @staticmethod
     def _construct_visualizations(project,
@@ -112,10 +111,9 @@ class KibanaConstructor(object):
         js_installer[pod] = CONF.kibana_url + '#/dashboard/' + id
 
     def config_js(self):
-        if CONF.is_js:
-            with open(CONF.js_path, 'w+') as conf_js_fdesc:
-                conf_js_fdesc.write('var kibana_dashboard_links = ')
-                conf_js_fdesc.write(str(self.js_dict).replace("u'", "'"))
+        with open(CONF.js_path, 'w+') as conf_js_fdesc:
+            conf_js_fdesc.write('var kibana_dashboard_links = ')
+            conf_js_fdesc.write(str(self.js_dict).replace("u'", "'"))
 
     def _get_pods_and_scenarios(self, project, case, installer):
         query = json.JSONEncoder().encode({
