@@ -82,26 +82,3 @@ class VisualizationAssembler(object):
                                       'visualization',
                                       self.id,
                                       self.visualization)
-
-
-class VisualizationsAssembler(object):
-    def __init__(self,
-                 project,
-                 case,
-                 installer,
-                 pod,
-                 scenarios,
-                 vis_p,
-                 es_url,
-                 es_creds):
-        super(VisualizationsAssembler, self).__init__()
-        self.visAssemblers = []
-        for scenario in scenarios:
-            self.visAssemblers.append(VisualizationAssembler(project,
-                                                             case,
-                                                             installer,
-                                                             pod,
-                                                             scenario,
-                                                             vis_p,
-                                                             es_url,
-                                                             es_creds))

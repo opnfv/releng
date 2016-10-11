@@ -62,4 +62,3 @@ class DashboardLogger(Logger):
 
     def __init__(self, logger_name):
         super(DashboardLogger, self).__init__(logger_name)
-
