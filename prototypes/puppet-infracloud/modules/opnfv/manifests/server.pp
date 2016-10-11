@@ -224,6 +224,19 @@ class opnfv::server (
     }
   }
 
+  # ensure that we have non-pass sudo, and
+  # not require tty
+  file_line { 'sudo_rule_no_pw':
+    path => '/etc/sudoers',
+    line => '%wheel	ALL=(ALL)	NOPASSWD: ALL',
+  }
+
+  file_line { 'sudo_rule_notty':
+    path   => '/etc/sudoders',
+    line   => 'Defaults requiretty',
+    ensure => absent,
+  }
+
   # add hosts entries
   create_resources('host', hiera_hash('hosts'))
 }
