@@ -132,7 +132,7 @@ class KibanaConstructor(object):
         })
 
         elastic_data = elastic_access.get_docs(
-            urlparse.urljoin(CONF.es_url, '/test_results/mongo2elastic'),
+            urlparse.urljoin(CONF.es_url, '/testapi/results'),
             CONF.es_creds,
             query)
 
