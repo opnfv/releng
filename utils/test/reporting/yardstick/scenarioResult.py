@@ -9,10 +9,12 @@
 
 
 class ScenarioResult(object):
-    def __init__(self, status, four_days_score='', ten_days_score=''):
+    def __init__(self, status, four_days_score='', ten_days_score='',
+                 score_percent=0.0):
         self.status = status
         self.four_days_score = four_days_score
         self.ten_days_score = ten_days_score
+        self.score_percent = score_percent
 
     def getStatus(self):
         return self.status
@@ -22,3 +24,6 @@ class ScenarioResult(object):
 
     def getFourDaysScore(self):
         return self.four_days_score
+
+    def getScorePercent(self):
+        return self.score_percent
