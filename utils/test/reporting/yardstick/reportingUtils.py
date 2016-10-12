@@ -32,7 +32,7 @@ def getLogger(module):
 def getScenarioStatus(installer, version):
     url = (conf.URL_BASE + "?case=" + "scenario_status" +
            "&installer=" + installer +
-           "&version=" + version +"&period=" + str(conf.PERIOD))
+           "&version=" + version + "&period=" + str(conf.PERIOD))
     request = Request(url)
 
     try:
@@ -53,7 +53,7 @@ def getScenarioStatus(installer, version):
                     scenario_results[r['scenario']] = []
                 scenario_results[r['scenario']].append(r)
 
-        for k,v in scenario_results.items():
+        for k, v in scenario_results.items():
             # scenario_results[k] = v[:conf.LASTEST_TESTS]
             s_list = []
             for element in v:
@@ -66,20 +66,25 @@ def getScenarioStatus(installer, version):
     # return scenario_results
     return result_dict
 
+
 def subfind(given_list, pattern_list):
+
     for i in range(len(given_list)):
-        if given_list[i] == pattern_list[0] and given_list[i:i + conf.LASTEST_TESTS] == pattern_list:
+        if given_list[i] == pattern_list[0] and \
+                given_list[i:i + conf.LASTEST_TESTS] == pattern_list:
             return True
     return False
 
-def get_percent(status):
-    
+
+def _get_percent(status):
+
     if status * 100 % 6:
         return round(float(status) * 100 / 6, 1)
     else:
         return status * 100 / 6
 
-def get_status(four_list, ten_list):
+
+def get_percent(four_list, ten_list):
     four_score = 0
     ten_score = 0
 
@@ -97,13 +102,13 @@ def get_status(four_list, ten_list):
     else:
         status = four_score + 1
 
-    return get_percent(status)
+    return _get_percent(status)
 
 
 def _test():
     status = getScenarioStatus("compass", "master")
     print "status:++++++++++++++++++++++++"
-    print json.dumps(status,indent=4)
+    print json.dumps(status, indent=4)
 
 
 if __name__ == '__main__':    # pragma: no cover
