@@ -4,6 +4,13 @@
 #multi-platforms are supported.
 
 set -e
+
+CI_DEBUG=true
+INSTALLER_TYPE='apex'
+DOCKER_TAG=latest
+DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+DEPLOY_TYPE=virt
+
 [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 
 # labconfig is used only for joid
@@ -34,6 +41,10 @@ fi
 
 opts="--privileged=true --rm"
 envs="-e CI_DEBUG=${CI_DEBUG} \
+      -e INSTALLER_TYPE=${INSTALLER_TYPE} \
+      -e INSTALLER_IP=${INSTALLER_IP} \
+      -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
+      -e DEPLOY_TYPE=${DEPLOY_TYPE} \
       -v /var/run/docker.sock:/var/run/docker.sock \
       -v /home/opnfv/dovetail/results:/home/opnfv/dovetail/results"
 
