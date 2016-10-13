@@ -25,7 +25,7 @@ How to install
 
 From within your environment, just run:
 
-    python setup.py install
+    ./install.sh
 
 How to run
 ^^^^^^^^^^
