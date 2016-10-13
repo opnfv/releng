@@ -13,7 +13,7 @@ SWAGGER_API_DOCS = 'swagger-api-docs'
 SWAGGER_API_LIST = 'swagger-api-list'
 SWAGGER_API_SPEC = 'swagger-api-spec'
 STATIC_PATH = os.path.join(os.path.dirname(os.path.normpath(__file__)),
-                           'static')
+                           '3rd/static')
 
 default_settings = {
     'base_url': '',
