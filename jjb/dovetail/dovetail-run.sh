@@ -34,6 +34,10 @@ fi
 
 opts="--privileged=true --rm"
 envs="-e CI_DEBUG=${CI_DEBUG} \
+      -e INSTALLER_TYPE=${INSTALLER_TYPE} \
+      -e INSTALLER_IP=${INSTALLER_IP} \
+      -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
+      -e DEPLOY_TYPE=${DEPLOY_TYPE} \
       -v /var/run/docker.sock:/var/run/docker.sock \
       -v /home/opnfv/dovetail/results:/home/opnfv/dovetail/results"
 
