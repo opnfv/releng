@@ -241,7 +241,7 @@ class DocumentsPublisher(object):
 
 
 def main():
-    base_elastic_url = urlparse.urljoin(CONF.es_url, '/test_results/mongo2elastic')
+    base_elastic_url = urlparse.urljoin(CONF.es_url, '/testapi/results')
     days = args.latest_days
     es_creds = CONF.es_creds
 
