@@ -96,5 +96,6 @@ node 'baremetal.opnfvlocal', 'lfpod5-jumpserver' {
     ipv4_nameserver           => hiera('ipv4_nameserver'),
     ipv4_subnet_mask          => hiera('ipv4_subnet_mask'),
     bridge_name               => hiera('bridge_name'),
+    dib_dev_user_password     => hiera('dib_dev_user_password'),
   }
 }
