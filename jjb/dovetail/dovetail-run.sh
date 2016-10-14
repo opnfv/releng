@@ -48,7 +48,7 @@ docker pull opnfv/dovetail:$DOCKER_TAG >$redirect
 # Run docker
 echo "Dovetail: docker running..."
 sudo docker run ${opts} ${envs} ${labconfig} ${sshkey} opnfv/dovetail:${DOCKER_TAG} \
-"/home/opnfv/dovetail/scripts/run.py"
+"/home/opnfv/dovetail/dovetail/run.py"
 
 echo "Dovetail: store results..."
 sudo cp -r /home/opnfv/dovetail/results ./
