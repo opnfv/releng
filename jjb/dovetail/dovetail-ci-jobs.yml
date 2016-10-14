@@ -81,6 +81,27 @@
             SUT: compass
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *colorado
+#apex CI PODs
+        - apex-verify-master:
+            slave-label: '{pod}'
+            SUT: apex
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
+        - apex-daily-master:
+            slave-label: '{pod}'
+            SUT: apex
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
+        - apex-verify-colorado:
+            slave-label: '{pod}'
+            SUT: apex
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *colorado
+        - apex-daily-colorado:
+            slave-label: '{pod}'
+            SUT: apex
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *colorado
 #--------------------------------
 #        None-CI PODs
 #--------------------------------
