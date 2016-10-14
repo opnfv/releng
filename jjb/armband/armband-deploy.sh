@@ -49,7 +49,7 @@ mkdir -p $TMPDIR
 
 cd $WORKSPACE
 if [[ $LAB_CONFIG_URL =~ ^(git|ssh):// ]]; then
-    echo "cloning $LAB_CONFIG_URL"
+    echo "Cloning securedlab repo ${GIT_BRANCH##origin/}"
     git clone --quiet --branch ${GIT_BRANCH##origin/} $LAB_CONFIG_URL lab-config
     LAB_CONFIG_URL=file://${WORKSPACE}/lab-config
 
