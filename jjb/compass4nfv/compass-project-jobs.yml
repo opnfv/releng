@@ -16,19 +16,28 @@
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
 
+    distro:
+        - 'trusty':
+            disabled: false
+            os-version: 'trusty'
+            openstack-os-version: ''
+        - 'centos7':
+            disabled: false
+            os-version: 'centos7'
+            openstack-os-version: ''
 
     jobs:
-        - 'compass-verify-{stream}'
+        - 'compass-verify-{distro}-{stream}'
         - 'compass-build-iso-{stream}'
         - 'compass-build-ppa-{stream}'
-        - 'compass-verify-deploy-{stream}'
+        - 'compass-verify-deploy-{distro}-{stream}'
 
 
 ########################
 # job templates
 ########################
 - job-template:
-    name: 'compass-verify-{stream}'
+    name: 'compass-verify-{distro}-{stream}'
 
     disabled: false
 
@@ -92,8 +101,11 @@
 
     builders:
         - trigger-builds:
-            - project: 'compass-verify-deploy-{stream}'
+            - project: 'compass-verify-deploy-{distro}-{stream}'
               current-parameters: true
+              predefined-parameters: |
+                COMPASS_OS_VERSION={os-version}
+                COMPASS_OS_VERSION_OPTION={openstack-os-version}
               same-node: true
               block: true
         - trigger-builds:
@@ -109,7 +121,7 @@
                 unstable-threshold: 'FAILURE'
 
 - job-template:
-    name: 'compass-verify-deploy-{stream}'
+    name: 'compass-verify-deploy-{distro}-{stream}'
 
     concurrent: true
 
