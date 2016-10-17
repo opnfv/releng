@@ -4,10 +4,10 @@ import urlparse
 
 import argparse
 
-from common import elastic_access
-from common import logger_utils
-from conf import config
-from conf import testcases
+from dashboard.common import elastic_access
+from dashboard.common import logger_utils
+from dashboard.conf import config
+from dashboard.conf import testcases
 from dashboard_assembler import DashboardAssembler
 from visualization_assembler import VisualizationAssembler
 
@@ -64,12 +64,13 @@ class KibanaConstructor(object):
                                                visualizations,
                                                CONF.es_url,
                                                CONF.es_creds)
-                self._set_js_dict(case,
-                                  pod,
-                                  installer,
-                                  family,
-                                  vis_p.get('name'),
-                                  dashboard.id)
+                if CONF.is_js:
+                    self._set_js_dict(case,
+                                      pod,
+                                      installer,
+                                      family,
+                                      vis_p.get('name'),
+                                      dashboard.id)
 
     @staticmethod
     def _construct_visualizations(project,
@@ -111,9 +112,10 @@ class KibanaConstructor(object):
         js_installer[pod] = CONF.kibana_url + '#/dashboard/' + id
 
     def config_js(self):
-        with open(CONF.js_path, 'w+') as conf_js_fdesc:
-            conf_js_fdesc.write('var kibana_dashboard_links = ')
-            conf_js_fdesc.write(str(self.js_dict).replace("u'", "'"))
+        if CONF.is_js:
+            with open(CONF.js_path, 'w+') as conf_js_fdesc:
+                conf_js_fdesc.write('var kibana_dashboard_links = ')
+                conf_js_fdesc.write(str(self.js_dict).replace("u'", "'"))
 
     def _get_pods_and_scenarios(self, project, case, installer):
         query = json.JSONEncoder().encode({
