@@ -4,10 +4,10 @@ import urlparse
 
 import argparse
 
-from common import elastic_access
-from common import logger_utils
-from conf import config
-from conf import testcases
+from dashboard.common import elastic_access
+from dashboard.common import logger_utils
+from dashboard.conf import config
+from dashboard.conf import testcases
 from dashboard_assembler import DashboardAssembler
 from visualization_assembler import VisualizationAssembler
 

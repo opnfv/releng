@@ -1,7 +1,7 @@
 import yaml
 
 
-with open('/etc/functest_dashboard/testcases.yaml') as f:
+with open('/etc/dashboard/testcases.yaml') as f:
     testcases_yaml = yaml.safe_load(f)
 f.close()
 
