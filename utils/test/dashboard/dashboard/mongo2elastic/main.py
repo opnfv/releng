@@ -10,10 +10,11 @@ import uuid
 
 import argparse
 
-from common import logger_utils, elastic_access
-from conf import testcases
-from conf.config import APIConfig
-from mongo2elastic import format
+from dashboard.common import elastic_access
+from dashboard.common import logger_utils
+from dashboard.conf import testcases
+from dashboard.conf.config import APIConfig
+from dashboard.mongo2elastic import format
 
 logger = logger_utils.DashboardLogger('mongo2elastic').get
 

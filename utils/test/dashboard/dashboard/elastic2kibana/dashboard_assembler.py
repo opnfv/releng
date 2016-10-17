@@ -1,7 +1,7 @@
 import json
 
 import utility
-from common import elastic_access
+from dashboard.common import elastic_access
 
 
 class DashboardAssembler(object):

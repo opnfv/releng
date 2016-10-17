@@ -22,7 +22,7 @@ class APIConfig:
     """
 
     def __init__(self):
-        self._default_config_location = "../etc/config.ini"
+        self._default_config_location = "/etc/dashboard/config.ini"
         self.es_url = 'http://localhost:9200'
         self.es_creds = None
         self.kibana_url = None
