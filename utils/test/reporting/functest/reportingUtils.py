@@ -176,3 +176,11 @@ def getJenkinsUrl(build_tag):
         print 'Impossible to get jenkins url:'
 
     return jenkins_url
+
+def getScenarioPercent(scenario_score,scenario_criteria):
+    score = 0.0
+    try:
+        score = float(scenario_score) / float(scenario_criteria) * 100
+    except:
+        print 'Impossible to calculate the percentage score'
+    return score
