@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 import json
-import urlparse
 
 import argparse
 
@@ -131,10 +130,9 @@ class KibanaConstructor(object):
             }
         })
 
-        elastic_data = elastic_access.get_docs(
-            urlparse.urljoin(CONF.es_url, '/testapi/results'),
-            CONF.es_creds,
-            query)
+        elastic_data = elastic_access.get_docs(CONF.index_url,
+                                               CONF.es_creds,
+                                               query)
 
         pods_and_scenarios = {}
 
