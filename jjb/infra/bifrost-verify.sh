@@ -31,6 +31,9 @@ fi
 # remove previously cloned repos
 sudo /bin/rm -rf /opt/bifrost /opt/puppet-infracloud /opt/stack /opt/releng
 
+# remove httpboot and tftpboot directories
+sudo /bin/rm -rf /httpboot /tftpboot
+
 # Fix up permissions
 fix_ownership
 
