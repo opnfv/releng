@@ -5,7 +5,6 @@ import json
 import os
 import subprocess
 import traceback
-import urlparse
 import uuid
 
 import argparse
@@ -188,7 +187,7 @@ class DocumentsPublisher(object):
             self._remove()
             exit(-1)
 
-    def get_existed_docs(self):
+    def get_exists(self):
         if self.days == 0:
             body = '''{{
                         "query": {{
@@ -242,10 +241,6 @@ class DocumentsPublisher(object):
 
 
 def main():
-    base_elastic_url = urlparse.urljoin(CONF.es_url, '/testapi/results')
-    days = args.latest_days
-    es_creds = CONF.es_creds
-
     for project, case_dicts in testcases.testcases_yaml.items():
         for case_dict in case_dicts:
             case = case_dict.get('name')
@@ -253,6 +248,6 @@ def main():
             DocumentsPublisher(project,
                                case,
                                fmt,
-                               days,
-                               base_elastic_url,
-                               es_creds).export().get_existed_docs().publish()
+                               args.latest_days,
+                               CONF.index_url,
+                               CONF.es_creds).export().get_exists().publish()
