@@ -94,6 +94,24 @@
                 branches:
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
+            skip-vote:
+                successful: true
+                failed: true
+                unstable: true
+                notbuilt: true
+            # Force Jenkins always vote the values it should already have voted
+            # during the prior verify phase
+            override-votes: true
+            gerrit-build-started-verified-value: 1
+            gerrit-build-successful-verified-value: 1
+            gerrit-build-failed-verified-value: 1
+            gerrit-build-unstable-verified-value: 1
+            gerrit-build-notbuilt-verified-value: 1
+            gerrit-build-started-codereview-value: 0
+            gerrit-build-successful-codereview-value: 0
+            gerrit-build-failed-codereview-value: 0
+            gerrit-build-unstable-codereview-value: 0
+            gerrit-build-notbuilt-codereview-value: 0
 
 - publisher:
     name: archive-artifacts
