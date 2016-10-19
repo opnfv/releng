@@ -82,6 +82,10 @@ for version in conf.versions:
         items = {}
         scenario_result_criteria = {}
 
+        scenario_file_name = (conf.REPORTING_PATH +
+                              "/functest/release/" + version +
+                              "/scenario_history.txt")
+
         # For all the scenarios get results
         for s, s_result in scenario_results.items():
             logger.info("---------------------------------")
@@ -185,11 +189,8 @@ for version in conf.versions:
                 scenario_criteria = conf.MAX_SCENARIO_CRITERIA
 
             s_score = str(scenario_score) + "/" + str(scenario_criteria)
-            s_score_percent = 0.0
-            try:
-                s_score_percent = float(scenario_score) / float(scenario_criteria) * 100
-            except:
-                logger.error("cannot calculate the score percent")
+            s_score_percent = utils.getScenarioPercent(scenario_score,
+                                                       scenario_criteria)
 
             s_status = "KO"
             if scenario_score < scenario_criteria:
@@ -209,10 +210,7 @@ for version in conf.versions:
                     f.write(info)
 
             # Save daily results in a file
-            path_validation_file = (conf.REPORTING_PATH +
-                                    "/functest/release/" + version +
-                                    "/scenario_history.txt")
-            with open(path_validation_file, "a") as f:
+            with open(scenario_file_name, "a") as f:
                 info = (reportingDate + "," + s + "," + installer +
                         "," + s_score + "," +
                         str(round(s_score_percent)) + "\n")
@@ -239,34 +237,39 @@ for version in conf.versions:
                                      version=version,
                                      date=reportingDate)
 
-    with open(conf.REPORTING_PATH + "/functest/release/" + version +
-              "/index-status-" + installer + ".html", "wb") as fh:
-        fh.write(outputText)
+        # csv
+        # generate sub files based on scenario_history.txt
+        scenario_installer_file_name = (conf.REPORTING_PATH +
+                                        "/functest/release/" + version +
+                                        "/scenario_history_" + installer +
+                                        ".txt")
+        scenario_installer_file = open(scenario_installer_file_name, "a")
+        logger.info("Generate CSV...")
+        with open(scenario_file_name, "r") as f:
+            for line in f:
+                if installer in line:
+                    logger.debug("Add new line... %s" % line)
+                    scenario_installer_file.write(line)
+        scenario_installer_file.close
 
-    # Generate outputs for export
-    # pdf
-    try:
-        pdf_path = ("http://testresults.opnfv.org/reporting/" +
-                    "functest/release/" + version +
-                    "/index-status-" + installer + ".html")
-        pdf_doc_name = (conf.REPORTING_PATH +
-                        "/functest/release/" + version +
-                        "/status-" + installer + ".pdf")
-        pdfkit.from_url(pdf_path, pdf_doc_name)
-    except IOError:
-        logger.info("pdf generated anyway...")
-    except:
-        logger.error("impossible to generate PDF")
-    # csv
-    # generate sub files based on scenario_history.txt
-    scenario_installer_file_name = (conf.REPORTING_PATH +
-                                    "/functest/release/" + version +
-                                    "/scenario_history_" +
-                                    installer + ".txt")
-    scenario_installer_file = open(scenario_installer_file_name, "w")
- 
-    with open(path_validation_file, "r") as f:
-        for line in f:
-            if installer in line:
-                scenario_installer_file.write(line)
-    scenario_installer_file.close
+        with open(conf.REPORTING_PATH + "/functest/release/" + version +
+                  "/index-status-" + installer + ".html", "wb") as fh:
+            fh.write(outputText)
+        logger.info("CSV generated...")
+
+        # Generate outputs for export
+        # pdf
+        logger.info("Generate PDF...")
+        try:
+            pdf_path = ("http://testresults.opnfv.org/reporting/" +
+                        "functest/release/" + version +
+                        "/index-status-" + installer + ".html")
+            pdf_doc_name = (conf.REPORTING_PATH +
+                            "/functest/release/" + version +
+                            "/status-" + installer + ".pdf")
+            pdfkit.from_url(pdf_path, pdf_doc_name)
+            logger.info("PDF generated...")
+        except IOError:
+            logger.info("pdf generated anyway...")
+        except:
+            logger.error("impossible to generate PDF")
