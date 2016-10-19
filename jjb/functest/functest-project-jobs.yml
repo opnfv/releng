@@ -61,5 +61,33 @@
                     pattern: 'docs/**|.gitignore'
 
     builders:
+        - functest-unit-tests-and-docs-build
+
+    publishers:
+        - junit:
+            results: nosetests.xml
+        - cobertura:
+            report-file: "coverage.xml"
+            only-stable: "true"
+            health-auto-update: "true"
+            stability-auto-update: "true"
+            zoom-coverage-chart: "true"
+            targets:
+                - files:
+                    healthy: 10
+                    unhealthy: 20
+                    failing: 30
+                - method:
+                    healthy: 50
+                    unhealthy: 40
+                    failing: 30
+
+################################
+# job builders
+################################
+
+- builder:
+    name: functest-unit-tests-and-docs-build
+    builders:
         - shell: |
-            echo "Nothing to verify!"
+            $WORKSPACE/run_unit_tests.sh
