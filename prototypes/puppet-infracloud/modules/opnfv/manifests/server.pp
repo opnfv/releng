@@ -239,5 +239,13 @@ class opnfv::server (
     multiple => true,
   }
 
+  # disable selinux in case of RHEL
+  if ($::osfamily == 'RedHat') {
+    class { 'selinux':
+      mode => 'disabled',
+    }
+  }
+
+  # update hosts
   create_resources('host', hiera_hash('hosts'))
 }
