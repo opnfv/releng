@@ -46,6 +46,13 @@ sudo git fetch $PROJECT_REPO $GERRIT_REFSPEC && sudo git checkout FETCH_HEAD
 # combine opnfv and upstream scripts/playbooks
 sudo /bin/cp -rf /opt/releng/prototypes/bifrost/* /opt/bifrost/
 
+# place bridge creation file on the right path
+mkdir -p /opt/puppet-infracloud/files/elements/infra-cloud-bridge/static/opt
+cp /opt/puppet-infracloud/templates/bifrost/create_bridge.py.erb /opt/puppet-infracloud/files/elements/infra-cloud-bridge/static/opt/create_bridge.py
+
+# replace bridge name
+sed -i .bak s/<%= @bridge_name -%>/br_opnfv/g /opt/puppet-infracloud/files/elements/infra-cloud-bridge/static/opt/create_bridge.py
+
 # cleanup remnants of previous deployment
 cd /opt/bifrost
 sudo -E ./scripts/destroy-env.sh
