@@ -21,14 +21,17 @@ Please follow that steps:
 
     sudo cp -R /opt/releng/prototypes/bifrost/* /opt/bifrost/
 
-5. If you are on a RHEL/CentOS box, ensure that selinux is disabled
+5. Copy /opt/puppet-infracloud/templates/bifrost/create_bridge.py.erb to /opt/puppet-infracloud/files/elements/infra-cloud-bridge/static/opt/create_bridge.py,
+   and replace tag <%= @bridge_name -%> with br_opnfv
 
-6. Run destroy script if you need to cleanup previous environment::
+6. If you are on a RHEL/CentOS box, ensure that selinux is disabled
+
+7. Run destroy script if you need to cleanup previous environment::
 
     cd /opt/bifrost
     sudo ./scripts/destroy-env.sh
 
-7. Run deployment script to spin up 3 vms with bifrost: jumphost, controller and compute::
+8. Run deployment script to spin up 3 vms with bifrost: jumphost, controller and compute::
 
     cd /opt/bifrost
     sudo ./scripts/test-bifrost-deployment.sh
@@ -41,10 +44,10 @@ It is likely that the script will show some errors due to timeout. Please ignore
 
 And wait until all the vms are in **active** Provisioning State.
 
-8. Check the IPs assigned to each of the VMS. You can check it by looking at inventory:
+9. Check the IPs assigned to each of the VMS. You can check it by looking at inventory:
 
     cat /tmp/baremetal.csv
 
-9. You can enter into the vms with devuser login/pass:
+10. You can enter into the vms with devuser login/pass:
 
     ssh devuser@192.168.122.2
