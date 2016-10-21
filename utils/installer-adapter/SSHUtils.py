@@ -9,122 +9,111 @@
 
 
 import paramiko
-from scp import SCPClient
-import time
 import RelengLogger as rl
+import os
+
+logger = rl.Logger('SSHUtils').getLogger()
 
 
-class SSH_Connection:
-
-    def __init__(self,
-                 host,
-                 user,
-                 password,
-                 use_system_keys=True,
-                 private_key=None,
-                 use_proxy=False,
-                 proxy_host=None,
-                 proxy_user=None,
-                 proxy_password=None,
-                 timeout=10):
-        self.host = host
-        self.user = user
-        self.password = password
-        self.use_system_keys = use_system_keys
-        self.private_key = private_key
-        self.use_proxy = use_proxy
-        self.proxy_host = proxy_host
-        self.proxy_user = proxy_user
-        self.proxy_password = proxy_password
-        self.timeout = timeout
-        paramiko.util.log_to_file("paramiko.log")
-        self.logger = rl.Logger("SSHUtils").getLogger()
-
-    def connect(self):
-        client = paramiko.SSHClient()
-        if self.use_system_keys:
-            client.load_system_host_keys()
-        elif self.private_key:
-            client.load_host_keys(self.private_key)
+def get_ssh_client(hostname, username, password=None, jumphost=None):
+    client = None
+    try:
+        if jumphost is None:
+            client = paramiko.SSHClient()
         else:
-            client.load_host_keys('/dev/null')
+            client = JumpHostHopClient()
+            client.configure_jump_host(jumphost['ip'],
+                                       jumphost['username'],
+                                       jumphost['password'])
+
+        if client is None:
+            raise Exception('Could not connect to client')
 
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(hostname,
+                       username=username,
+                       password=password)
+        return client
+    except Exception, e:
+        logger.error(e)
+        return None
 
-        t = self.timeout
-        proxy = None
-        if self.use_proxy:
-            proxy_command = 'ssh -o UserKnownHostsFile=/dev/null '
-            '-o StrictHostKeyChecking=no %s@%s -W %s:%s' % (self.proxy_user,
-                                                            self.proxy_host,
-                                                            self.host, 22)
-            proxy = paramiko.ProxyCommand(proxy_command)
-            self.logger.debug("Proxy command: %s" % proxy_command)
-        while t > 0:
-            try:
-                self.logger.debug(
-                    "Trying to stablish ssh connection to %s..." % self.host)
-                client.connect(self.host,
-                               username=self.user,
-                               password=self.password,
-                               look_for_keys=True,
-                               sock=proxy,
-                               pkey=self.private_key,
-                               timeout=self.timeout)
-                self.logger.debug("Successfully connected to %s!" % self.host)
-                return client
-            except:
-                time.sleep(1)
-                t -= 1
 
-        if t == 0:
-            return None
+def get_file(ssh_conn, src, dest):
+    try:
+        sftp = ssh_conn.open_sftp()
+        sftp.get(src, dest)
+        return True
+    except Exception, e:
+        logger.error("Error [get_file(ssh_conn, '%s', '%s']: %s" %
+                     (src, dest, e))
+        return None
 
-    def scp_put(self, local_path, remote_path):
-        client = self.connect()
-        if client:
-            scp = SCPClient(client.get_transport())
-            try:
-                scp.put(local_path, remote_path)
-                client.close()
-                return 0
-            except Exception, e:
-                self.logger.error(e)
-                client.close()
-                return 1
-        else:
-            self.logger.error("Cannot stablish ssh connection.")
 
-    def scp_get(self, local_path, remote_path):
-        client = self.connect()
-        if client:
-            scp = SCPClient(client.get_transport())
-            try:
-                scp.get(remote_path, local_path)
-                client.close()
-                return 0
-            except Exception, e:
-                self.logger.error(e)
-                client.close()
-                return 1
-        else:
-            self.logger.error("Cannot stablish ssh connection.")
-            return 1
+def put_file(ssh_conn, src, dest):
+    try:
+        sftp = ssh_conn.open_sftp()
+        sftp.put(src, dest)
+        return True
+    except Exception, e:
+        logger.error("Error [put_file(ssh_conn, '%s', '%s']: %s" %
+                     (src, dest, e))
+        return None
 
-    def run_remote_cmd(self, command):
-        client = self.connect()
-        if client:
-            try:
-                stdin, stdout, stderr = client.exec_command(command)
-                out = ''
-                for line in stdout.readlines():
-                    out += line
-                err = stderr.readlines()
-                client.close()
-                return out, err
-            except:
-                client.close()
-                return 1
-        else:
-            self.logger.error("Cannot stablish ssh connection.")
-            return 1
+
+class JumpHostHopClient(paramiko.SSHClient):
+    '''
+    Connect to a remote server using a jumphost hop
+    '''
+    def __init__(self, *args, **kwargs):
+        self.logger = rl.Logger("JumpHostHopClient").getLogger()
+        self.jumphost_ssh = None
+        self.jumphost_transport = None
+        self.jumphost_channel = None
+        self.jumphost_ip = None
+        self.jumphost_ssh_key = None
+        self.local_ssh_key = os.path.join(os.getcwd(), 'id_rsa')
+        super(JumpHostHopClient, self).__init__(*args, **kwargs)
+
+    def configure_jump_host(self, jh_ip, jh_user, jh_pass,
+                            jh_ssh_key='/root/.ssh/id_rsa'):
+        self.jumphost_ip = jh_ip
+        self.jumphost_ssh_key = jh_ssh_key
+        self.jumphost_ssh = paramiko.SSHClient()
+        self.jumphost_ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.jumphost_ssh.connect(jh_ip,
+                                  username=jh_user,
+                                  password=jh_pass)
+        self.jumphost_transport = self.jumphost_ssh.get_transport()
+
+    def connect(self, hostname, port=22, username='root', password=None,
+                pkey=None, key_filename=None, timeout=None, allow_agent=True,
+                look_for_keys=True, compress=False, sock=None, gss_auth=False,
+                gss_kex=False, gss_deleg_creds=True, gss_host=None,
+                banner_timeout=None):
+        try:
+            if self.jumphost_ssh is None:
+                raise Exception('You must configure the jump '
+                                'host before calling connect')
+
+            get_file_res = get_file(self.jumphost_ssh,
+                                    self.jumphost_ssh_key,
+                                    self.local_ssh_key)
+            if get_file_res is None:
+                raise Exception('Could\'t fetch SSH key from Fuel master')
+            jumphost_key = (paramiko.RSAKey
+                            .from_private_key_file(self.local_ssh_key))
+
+            self.jumphost_channel = self.jumphost_transport.open_channel(
+                "direct-tcpip",
+                (hostname, 22),
+                (self.jumphost_ip, 22))
+
+            self.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            super(JumpHostHopClient, self).connect(hostname,
+                                                   username=username,
+                                                   pkey=jumphost_key,
+                                                   sock=self.jumphost_channel)
+            os.remove(self.local_ssh_key)
+        except Exception, e:
+            self.logger.error(e)
