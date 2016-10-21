@@ -7,8 +7,7 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-
-from SSHUtils import SSH_Connection
+import SSHUtils as ssh_utils
 import RelengLogger as rl
 
 
@@ -16,25 +15,30 @@ class FuelAdapter:
 
     def __init__(self, installer_ip, user="root", password="r00tme"):
         self.installer_ip = installer_ip
-        self.user = user
-        self.password = password
-        self.connection = SSH_Connection(
-            installer_ip, self.user, self.password, use_system_keys=False)
+        self.installer_user = user
+        self.installer_password = password
+        self.installer_connection = ssh_utils.get_ssh_client(
+            installer_ip,
+            self.installer_user,
+            password=self.installer_password)
         self.logger = rl.Logger("Handler").getLogger()
 
-    def runcmd_fuel_nodes(self):
-        output, error = self.connection.run_remote_cmd('fuel nodes')
+    def runcmd_fuel_installer(self, cmd):
+        _, stdout, stderr = (self
+                             .installer_connection
+                             .exec_command(cmd))
+        error = stderr.readlines()
         if len(error) > 0:
-            self.logger.error("error %s" % error)
+            self.logger.error("error %s" % ''.join(error))
             return error
+        output = ''.join(stderr.readlines())
         return output
 
+    def runcmd_fuel_nodes(self):
+        return self.runcmd_fuel_installer('fuel nodes')
+
     def runcmd_fuel_env(self):
-        output, error = self.connection.run_remote_cmd('fuel env')
-        if len(error) > 0:
-            self.logger.error("error %s" % error)
-            return error
-        return output
+        return self.runcmd_fuel_installer('fuel env')
 
     def get_clusters(self):
         environments = []
@@ -183,8 +187,11 @@ class FuelAdapter:
     def get_file_from_installer(self, remote_path, local_path, options=None):
         self.logger.debug("Fetching %s from %s" %
                           (remote_path, self.installer_ip))
-        if self.connection.scp_get(local_path, remote_path) != 0:
-            self.logger.error("SCP failed to retrieve the file.")
+        get_file_result = ssh_utils.get_file(self.installer_connection,
+                                             remote_path,
+                                             local_path)
+        if get_file_result is None:
+            self.logger.error("SFTP failed to retrieve the file.")
             return 1
         self.logger.info("%s successfully copied from Fuel to %s" %
                          (remote_path, local_path))
@@ -193,6 +200,7 @@ class FuelAdapter:
                                  remote_path,
                                  local_path,
                                  ip=None,
+                                 user='root',
                                  options=None):
         if ip is None:
             controllers = self.get_controller_ips(options=options)
@@ -204,16 +212,24 @@ class FuelAdapter:
         else:
             target_ip = ip
 
-        fuel_dir = '/root/scp/'
-        cmd = 'mkdir -p %s;rsync -Rav %s:%s %s' % (
-            fuel_dir, target_ip, remote_path, fuel_dir)
-        self.logger.info("Copying %s from %s to Fuel..." %
-                         (remote_path, target_ip))
-        output, error = self.connection.run_remote_cmd(cmd)
-        self.logger.debug("Copying files from Fuel to %s..." % local_path)
-        self.get_file_from_installer(
-            fuel_dir + remote_path, local_path, options)
-        cmd = 'rm -r %s' % fuel_dir
-        output, error = self.connection.run_remote_cmd(cmd)
+        installer_jumphost = {
+            'ip': self.installer_ip,
+            'username': self.installer_user,
+            'password': self.installer_password
+        }
+        controller_conn = ssh_utils.get_ssh_client(
+            target_ip,
+            user,
+            jumphost=installer_jumphost)
+
+        self.logger.debug("Fetching %s from %s" %
+                          (remote_path, target_ip))
+
+        get_file_result = ssh_utils.get_file(controller_conn,
+                                             remote_path,
+                                             local_path)
+        if get_file_result is None:
+            self.logger.error("SFTP failed to retrieve the file.")
+            return 1
         self.logger.info("%s successfully copied from %s to %s" %
                          (remote_path, target_ip, local_path))
