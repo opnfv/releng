@@ -8,9 +8,6 @@
 ##############################################################################
 
 
-from SSHUtils import SSH_Connection
-
-
 class CompassAdapter:
 
     def __init__(self, installer_ip):

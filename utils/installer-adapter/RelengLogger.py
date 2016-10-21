@@ -22,7 +22,6 @@
 #  logger.debug("message to be shown with - DEBUG -")
 
 import logging
-import os
 
 
 class Logger:
