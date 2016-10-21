@@ -14,10 +14,12 @@
             branch: '{stream}'
             gs-pathname: ''
             disabled: false
+            slave-label: 'opnfv-build-ubuntu'
         - colorado:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
             disabled: false
+            slave-label: 'intel-pod3'
 
 - job-template:
 
@@ -72,7 +74,7 @@
             project: '{project}'
         - gerrit-parameter:
             branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+        - '{slave-label}-defaults'
 
     scm:
         - gerrit-trigger-scm:
@@ -134,7 +136,7 @@
             project: '{project}'
         - gerrit-parameter:
             branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+        - '{slave-label}-defaults'
 
     scm:
         - gerrit-trigger-scm:
