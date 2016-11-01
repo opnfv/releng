@@ -58,7 +58,7 @@ export ELEMENTS_PATH=/usr/share/diskimage-builder/elements:/opt/puppet-infraclou
 export DIB_DEV_USER_PWDLESS_SUDO=yes
 export DIB_DEV_USER_PASSWORD=devuser
 
-# settings for distro: trusty/ubuntu-minimal, 7/centos-minimal
+# settings for distro: trusty/ubuntu-minimal, 7/centos7
 export DIB_OS_RELEASE=${DIB_OS_RELEASE:-trusty}
 export DIB_OS_ELEMENT=${DIB_OS_ELEMENT:-ubuntu-minimal}
 
