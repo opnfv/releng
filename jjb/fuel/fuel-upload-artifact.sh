@@ -108,13 +108,11 @@ echo
 
 nfsstore
 
-if [[ ! "$JOB_NAME" =~ merge ]]; then
+if [[ "$JOB_NAME" =~ build ]]; then
     importkey
     signiso
     uploadiso
-fi
-
-if [[ ! "$JOB_NAME" =~ verify ]]; then
+elif [[ "$JOB_NAME" =~ merge ]]; then
     uploadiso
 fi
 
