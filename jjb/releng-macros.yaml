@@ -172,7 +172,7 @@
             echo
 
             echo "gs_path="$GS_URL/docs""
-            echo "local_path="upload/docs""
+            echo "local_path="upload/docs/*""
 
             gs_path="$GS_URL/docs"
             local_path="upload/docs"
@@ -181,8 +181,8 @@
             mv docs_output "$local_path"
             ls "$local_path"
 
-            echo "gsutil -m cp -r "$local_path" "gs://$gs_path""
-            gsutil -m cp -r "$local_path" "gs://$gs_path"
+            echo "gsutil -m cp -r "$local_path"/* "gs://$gs_path""
+            gsutil -m cp -r "$local_path"/* "gs://$gs_path"
 
             gsutil -m setmeta \
                 -h "Content-Type:text/html" \
