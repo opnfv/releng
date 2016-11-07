@@ -171,11 +171,17 @@
             echo "########################"
             echo
 
+            echo "gs_path="$GS_URL/docs""
+            echo "local_path="upload/docs""
+
             gs_path="$GS_URL/docs"
             local_path="upload/docs"
 
             mkdir -p upload
             mv docs_output "$local_path"
+            ls "$local_path"
+
+            echo "gsutil -m cp -r "$local_path" "gs://$gs_path""
             gsutil -m cp -r "$local_path" "gs://$gs_path"
 
             gsutil -m setmeta \
