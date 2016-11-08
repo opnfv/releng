@@ -26,6 +26,7 @@ On the same bifrost VM, follow these steps:
 
  1. Source bifrost env vars: source /opt/stack/bifrost/env-vars
  2. Export baremetal servers inventory:  export BIFROST_INVENTORY-SOURCE=/opt/stack/baremetal.json 
+ 3. Change active directory: cd /opt/stack/bifrost/playbooks
  3. Enroll the servers: ansible-playbook -vvv -i inventory/bifrost_inventory.py enroll-dynamic.yaml -e @/etc/bifrost/bifrost_global_vars
  4. Deploy the servers:  ansible-playbook -vvv -i inventory/bifrost_inventory.py deploy-dynamic.yaml -e @/etc/bifrost/bifrost_global_vars
  5. Wait until they are on **active** state, check it with: ironic node-list
