@@ -10,13 +10,13 @@ node 'controller00.opnfvlocal' {
   $group = 'infracloud'
   include ::sudoers
 
-  class { 'opnfv::server':
+  class { '::opnfv::server':
     iptables_public_tcp_ports => [80,5000,5671,8774,9292,9696,35357], # logs,keystone,rabbit,nova,glance,neutron,keystone
     sysadmins                 => hiera('sysadmins', []),
     enable_unbound            => false,
     purge_apt_sources         => false,
   }
-  class { 'opnfv::controller':
+  class { '::opnfv::controller':
     keystone_rabbit_password         => hiera('keystone_rabbit_password'),
     neutron_rabbit_password          => hiera('neutron_rabbit_password'),
     nova_rabbit_password             => hiera('nova_rabbit_password'),
@@ -38,6 +38,7 @@ node 'controller00.opnfvlocal' {
     neutron_subnet_gateway           => hiera('neutron_subnet_gateway'),
     neutron_subnet_allocation_pools  => hiera('neutron_subnet_allocation_pools'),
     opnfv_password                   => hiera('opnfv_password'),
+    require                          => Class['::opnfv::server'],
   }
 }
 
@@ -45,13 +46,13 @@ node 'compute00.opnfvlocal' {
   $group = 'infracloud'
   include ::sudoers
 
-  class { 'opnfv::server':
+  class { '::opnfv::server':
     sysadmins                 => hiera('sysadmins', []),
     enable_unbound            => false,
     purge_apt_sources         => false,
   }
 
-  class { 'opnfv::compute':
+  class { '::opnfv::compute':
     nova_rabbit_password             => hiera('nova_rabbit_password'),
     neutron_rabbit_password          => hiera('neutron_rabbit_password'),
     neutron_admin_password           => hiera('neutron_admin_password'),
@@ -60,11 +61,12 @@ node 'compute00.opnfvlocal' {
     br_name                          => hiera('bridge_name'),
     controller_public_address        => 'controller00.opnfvlocal',
     virt_type                        => hiera('virt_type'),
+    require                          => Class['::opnfv::server'],
   }
 }
 
 node 'jumphost.opnfvlocal' {
-  class { 'opnfv::server':
+  class { '::opnfv::server':
     sysadmins                 => hiera('sysadmins', []),
     enable_unbound            => false,
     purge_apt_sources         => false,
@@ -97,5 +99,6 @@ node 'baremetal.opnfvlocal', 'lfpod5-jumpserver' {
     ipv4_subnet_mask          => hiera('ipv4_subnet_mask'),
     bridge_name               => hiera('bridge_name'),
     dib_dev_user_password     => hiera('dib_dev_user_password'),
+    require                   => Class['::opnfv::server'],
   }
 }
