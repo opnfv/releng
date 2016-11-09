@@ -4,6 +4,7 @@
 ##########################################################
 #The latest build packages are stored in build_output
 
+test_name=$1
 ls -al $WORKSPACE/build_output
 
 if [[ "$JOB_NAME" =~ (verify|merge|daily|weekly) ]]; then
@@ -18,7 +19,7 @@ case "$JOB_TYPE" in
     verify|daily)
         #start the test
         cd $WORKSPACE
-        ./ci/test_kvmfornfv.sh $JOB_TYPE
+        ./ci/test_kvmfornfv.sh $JOB_TYPE $test_name
         ;;
     *)
         echo "Test is not enabled for $JOB_TYPE jobs"
