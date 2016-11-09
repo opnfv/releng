@@ -1,14 +1,14 @@
 - project:
-    name: builder-jobs
+    name: releng-builder-jobs
     jobs:
-        - 'builder-verify-jjb'
-        - 'builder-merge'
-        - 'artifacts-api'
+        - 'releng-verify-jjb'
+        - 'releng-merge-jjb'
+        - 'releng-generate-artifacts-api'
 
     project: 'releng'
 
 - job-template:
-    name: builder-verify-jjb
+    name: releng-verify-jjb
 
     parameters:
         - project-parameter:
@@ -57,7 +57,7 @@
             artifacts: 'job_output/*'
 
 - job-template:
-    name: 'builder-merge'
+    name: 'releng-merge-jjb'
 
     # builder-merge job to run JJB update
     #
@@ -101,7 +101,7 @@
                 jenkins-jobs update -r --delete-old jjb/
 
 - job-template:
-    name: 'artifacts-api'
+    name: 'releng-generate-artifacts-api'
 
     # Generate and upload the JSON file to used for artifacts site
 
