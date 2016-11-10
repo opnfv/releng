@@ -18,7 +18,7 @@ case "$JOB_TYPE" in
     verify|daily)
         #start the test
         cd $WORKSPACE
-        ./ci/test_kvmfornfv.sh $JOB_TYPE
+        ./ci/test_kvmfornfv.sh $JOB_TYPE $TEST_NAME
         ;;
     *)
         echo "Test is not enabled for $JOB_TYPE jobs"
