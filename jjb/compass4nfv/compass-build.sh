@@ -24,7 +24,7 @@ then
 fi
 
 cd $WORKSPACE/
-./build/build.sh  --iso-dir $BUILD_DIRECTORY/ --iso-name compass.iso -c $CACHE_DIRECTORY
+./build.sh  --iso-dir $BUILD_DIRECTORY/ --iso-name compass.iso -c $CACHE_DIRECTORY
 
 # list the build artifacts
 ls -al $BUILD_DIRECTORY
