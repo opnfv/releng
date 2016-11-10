@@ -83,7 +83,7 @@ fi
 if [[ ${branch} == *"brahmaputra"* ]]; then
     cmd="${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
 else
-    cmd="python ${FUNCTEST_REPO_DIR}/ci/prepare_env.py start"
+    cmd="python ${FUNCTEST_REPO_DIR}/functest/ci/prepare_env.py start"
 fi
 echo "Executing command inside the docker: ${cmd}"
 docker exec ${container_id} ${cmd}

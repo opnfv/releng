@@ -6,7 +6,7 @@ branch=${GIT_BRANCH##*/}
 if [[ ${branch} == *"brahmaputra"* ]]; then
     cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh -s ${flags}"
 else
-    cmd="python ${FUNCTEST_REPO_DIR}/ci/run_tests.py -t all ${flags}"
+    cmd="python ${FUNCTEST_REPO_DIR}/functest/ci/run_tests.py -t all ${flags}"
 fi
 container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
 docker exec $container_id $cmd
