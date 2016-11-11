@@ -5,6 +5,8 @@ branch=${GIT_BRANCH##*/}
 [[ "$PUSH_RESULTS_TO_DB" == "true" ]] && flags+="-r"
 if [[ ${branch} == *"brahmaputra"* ]]; then
     cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh -s ${flags}"
+elif [[ ${branch} == *"colorado"* ]]; then
+    cmd="python ${FUNCTEST_REPO_DIR}/ci/run_tests.py -t all ${flags}"
 else
     cmd="python ${FUNCTEST_REPO_DIR}/functest/ci/run_tests.py -t all ${flags}"
 fi

@@ -82,6 +82,8 @@ if [ $(docker ps | grep "opnfv/functest:${DOCKER_TAG}" | wc -l) == 0 ]; then
 fi
 if [[ ${branch} == *"brahmaputra"* ]]; then
     cmd="${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
+elif [[ ${branch} == *"colorado"* ]]; then
+    cmd="python ${FUNCTEST_REPO_DIR}/ci/prepare_env.py start"
 else
     cmd="python ${FUNCTEST_REPO_DIR}/functest/ci/prepare_env.py start"
 fi
