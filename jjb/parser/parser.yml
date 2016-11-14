@@ -61,6 +61,7 @@
                     pattern: 'docs/**|.gitignore'
 
     builders:
+        # Python 2.7
         - shell: |
             #!/bin/bash
             set -o errexit
@@ -73,3 +74,19 @@
             cd $WORKSPACE/tosca2heat/tosca-parser && tox
             echo "Running tox on tosca2heat/heat-translator ..."
             cd $WORKSPACE/tosca2heat/heat-translator && tox
+        # Python 3.4
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+            set -o xtrace
+            export PATH=$PATH:/usr/local/bin/
+
+            virtualenv -p python3.4 $WORKSPACE/parser_py34
+            source $WORKSPACE/parser_py34/bin/activate
+
+            # ut and pep8 check parser/tosca2heat
+            echo "Running tox on tosca2heat/tosca-parser ..."
+            cd $WORKSPACE/tosca2heat/tosca-parser && tox -e py34
+            echo "Running tox on tosca2heat/heat-translator ..."
+            cd $WORKSPACE/tosca2heat/heat-translator && tox -e py34
