@@ -24,10 +24,10 @@ else
 fi
 
 # check if we got the file
-[[ -f latest.properties ]] || exit 1
+[[ -f $WORKSPACE/latest.properties ]] || exit 1
 
 # source the file so we get artifact metadata
-source latest.properties
+source $WORKSPACE/latest.properties
 
 # echo the info about artifact that is used during the deployment
 OPNFV_ARTIFACT=${OPNFV_ARTIFACT_URL/*\/}
