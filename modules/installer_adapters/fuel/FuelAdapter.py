@@ -9,7 +9,7 @@
 ##############################################################################
 
 import SSHUtils as ssh_utils
-import RelengLogger as rl
+import opnfv.modules.utils.OPNFVLogger as logger
 
 
 class FuelAdapter:
@@ -22,7 +22,7 @@ class FuelAdapter:
             installer_ip,
             self.installer_user,
             password=self.installer_password)
-        self.logger = rl.Logger("Handler").getLogger()
+        self.logger = logger.Logger("FuelHandler").getLogger()
 
     def runcmd_fuel_installer(self, cmd):
         _, stdout, stderr = (self
