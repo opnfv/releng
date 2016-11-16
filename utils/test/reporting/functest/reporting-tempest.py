@@ -1,18 +1,22 @@
 from urllib2 import Request, urlopen, URLError
 import json
 import jinja2
-import reportingConf as conf
-import reportingUtils as utils
+import os
 
-installers = conf.installers
+# manage conf
+import utils.reporting_utils as rp_utils
+
+installers = rp_utils.get_config('general.installers')
 items = ["tests", "Success rate", "duration"]
 
-PERIOD = conf.PERIOD
+CURRENT_DIR = os.getcwd()
+
+PERIOD = rp_utils.get_config('general.period')
 criteria_nb_test = 165
 criteria_duration = 1800
 criteria_success_rate = 90
 
-logger = utils.getLogger("Tempest")
+logger = rp_utils.getLogger("Tempest")
 logger.info("************************************************")
 logger.info("*   Generating reporting Tempest_smoke_serial  *")
 logger.info("*   Data retention = %s days                   *" % PERIOD)
@@ -25,10 +29,11 @@ logger.info("test duration < %s s " % criteria_duration)
 logger.info("success rate > %s " % criteria_success_rate)
 
 # For all the versions
-for version in conf.versions:
-    for installer in conf.installers:
+for version in rp_utils.get_config('general.versions'):
+    for installer in installers:
         # we consider the Tempest results of the last PERIOD days
-        url = 'http://' + conf.URL_BASE + "?case=tempest_smoke_serial"
+        url = ("http://" + rp_utils.get_config('testapi.url') +
+               "?case=tempest_smoke_serial")
         request = Request(url + '&period=' + str(PERIOD) +
                           '&installer=' + installer +
                           '&version=' + version)
@@ -68,8 +73,9 @@ for version in conf.versions:
                 nb_tests_run = result['details']['tests']
                 nb_tests_failed = result['details']['failures']
                 if nb_tests_run != 0:
-                    success_rate = 100*(int(nb_tests_run) -
-                                        int(nb_tests_failed)) / int(nb_tests_run)
+                    success_rate = 100*((int(nb_tests_run) -
+                                        int(nb_tests_failed)) /
+                                        int(nb_tests_run))
                 else:
                     success_rate = 0
 
@@ -115,17 +121,18 @@ for version in conf.versions:
                 except:
                     logger.error("Error field not present (Brahamputra runs?)")
 
-        templateLoader = jinja2.FileSystemLoader(conf.REPORTING_PATH)
-        templateEnv = jinja2.Environment(loader=templateLoader, autoescape=True)
+        templateLoader = jinja2.FileSystemLoader(".")
+        templateEnv = jinja2.Environment(loader=templateLoader,
+                                         autoescape=True)
 
-        TEMPLATE_FILE = "/template/index-tempest-tmpl.html"
+        TEMPLATE_FILE = "./functest/template/index-tempest-tmpl.html"
         template = templateEnv.get_template(TEMPLATE_FILE)
 
         outputText = template.render(scenario_results=scenario_results,
                                      items=items,
                                      installer=installer)
 
-        with open(conf.REPORTING_PATH + "/release/" + version +
-                  "/index-tempest-" + installer + ".html", "wb") as fh:
+        with open("./display/" + version +
+                  "/functest/tempest-" + installer + ".html", "wb") as fh:
             fh.write(outputText)
 logger.info("Tempest automatic reporting succesfully generated.")
