@@ -1,10 +1,11 @@
 from urllib2 import Request, urlopen, URLError
 import json
 import jinja2
-import reportingConf as conf
-import reportingUtils as utils
 
-logger = utils.getLogger("vIMS")
+# manage conf
+import utils.reporting_utils as rp_utils
+
+logger = rp_utils.getLogger("vIMS")
 
 
 def sig_test_format(sig_test):
@@ -24,22 +25,26 @@ def sig_test_format(sig_test):
     total_sig_test_result['skipped'] = nbSkipped
     return total_sig_test_result
 
+period = rp_utils.get_config('general.period')
+versions = rp_utils.get_config('general.versions')
+url_base = rp_utils.get_config('testapi.url')
+
 logger.info("****************************************")
 logger.info("*   Generating reporting vIMS          *")
-logger.info("*   Data retention = %s days           *" % conf.PERIOD)
+logger.info("*   Data retention = %s days           *" % period)
 logger.info("*                                      *")
 logger.info("****************************************")
 
-installers = conf.installers
+installers = rp_utils.get_config('general.installers')
 step_order = ["initialisation", "orchestrator", "vIMS", "sig_test"]
 logger.info("Start processing....")
 
 # For all the versions
-for version in conf.versions:
+for version in versions:
     for installer in installers:
         logger.info("Search vIMS results for installer: %s, version: %s"
                     % (installer, version))
-        request = Request("http://" + conf.URL_BASE + '?case=vims&installer=' +
+        request = Request("http://" + url_base + '?case=vims&installer=' +
                           installer + '&version=' + version)
 
         try:
@@ -81,7 +86,8 @@ for version in conf.versions:
                     if int(m) != 0:
                         m_display += str(int(m)) + "m "
 
-                    step_result['duration_display'] = m_display + str(int(s)) + "s"
+                    step_result['duration_display'] = (m_display +
+                                                       str(int(s)) + "s")
 
                 result['pr_step_ok'] = 0
                 if nb_step != 0:
@@ -89,8 +95,9 @@ for version in conf.versions:
                 try:
                     logger.debug("Scenario %s, Installer %s"
                                  % (s_result[1]['scenario'], installer))
+                    res = result['details']['orchestrator']['duration']
                     logger.debug("Orchestrator deployment: %s s"
-                                 % result['details']['orchestrator']['duration'])
+                                 % res)
                     logger.debug("vIMS deployment: %s s"
                                  % result['details']['vIMS']['duration'])
                     logger.debug("Signaling testing: %s s"
@@ -101,18 +108,18 @@ for version in conf.versions:
                     logger.error("Data badly formatted")
                 logger.debug("----------------------------------------")
 
-        templateLoader = jinja2.FileSystemLoader(conf.REPORTING_PATH)
-        templateEnv = jinja2.Environment(loader=templateLoader, autoescape=True)
+        templateLoader = jinja2.FileSystemLoader(".")
+        templateEnv = jinja2.Environment(loader=templateLoader,
+                                         autoescape=True)
 
-        TEMPLATE_FILE = "/template/index-vims-tmpl.html"
+        TEMPLATE_FILE = "./functest/template/index-vims-tmpl.html"
         template = templateEnv.get_template(TEMPLATE_FILE)
 
         outputText = template.render(scenario_results=scenario_results,
                                      step_order=step_order,
                                      installer=installer)
 
-        with open(conf.REPORTING_PATH +
-                  "/release/" + version + "/index-vims-" +
+        with open("./display/" + version + "/functest/vims-" +
                   installer + ".html", "wb") as fh:
             fh.write(outputText)
 
