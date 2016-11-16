@@ -10,10 +10,10 @@
 
 
 import paramiko
-import RelengLogger as rl
+import opnfv.modules.utils.OPNFVLogger as OPNFVLogger
 import os
 
-logger = rl.Logger('SSHUtils').getLogger()
+logger = OPNFVLogger.Logger('SSHUtils').getLogger()
 
 
 def get_ssh_client(hostname, username, password=None, jumphost=None):
@@ -66,6 +66,7 @@ class JumpHostHopClient(paramiko.SSHClient):
     '''
     Connect to a remote server using a jumphost hop
     '''
+
     def __init__(self, *args, **kwargs):
         self.logger = rl.Logger("JumpHostHopClient").getLogger()
         self.jumphost_ssh = None
