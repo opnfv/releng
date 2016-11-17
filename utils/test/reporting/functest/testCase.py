@@ -131,7 +131,7 @@ class TestCase(object):
                              'security_scan': 'security',
                              'multisite': 'multisite',
                              'domino': 'domino-multinode',
-                             'odl-sfc': 'odl-sfc',
+                             'odl-sfc': 'functest-odl-sfc',
                              'onos_sfc': 'onos_sfc',
                              'parser': 'parser-basics'
                              }
