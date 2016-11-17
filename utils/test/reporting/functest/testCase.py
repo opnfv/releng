@@ -40,7 +40,7 @@ class TestCase(object):
                                'domino': 'domino',
                                'odl-sfc': 'SFC',
                                'onos_sfc': 'SFC',
-                               'parser':'parser'
+                               'parser': 'parser'
                                }
         try:
             self.displayName = display_name_matrix[self.name]
@@ -131,9 +131,9 @@ class TestCase(object):
                              'security_scan': 'security',
                              'multisite': 'multisite',
                              'domino': 'domino-multinode',
-                             'odl-sfc': 'odl-sfc',
+                             'odl-sfc': 'functest-odl-sfc',
                              'onos_sfc': 'onos_sfc',
-                             'parser':'parser-basics'
+                             'parser': 'parser-basics'
                              }
         try:
             return test_match_matrix[self.name]
