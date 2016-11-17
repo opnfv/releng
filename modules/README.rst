@@ -4,8 +4,7 @@ project in OPNFV. This tools must be python based and shall be imported
 as follows:
 
   from opnfv.utils import SSHUtils
-  from opnfv.utils import RelengLogger
-  ...
+  from opnfv.utils import OPNFVLogger
 
 For further information about how to use this modules directory, contact:
   fatih.degirmenci@ericsson.com
