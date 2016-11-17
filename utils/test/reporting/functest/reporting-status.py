@@ -8,19 +8,20 @@
 #
 import datetime
 import jinja2
-import pdfkit
+import os
 import requests
 import sys
 import time
 import yaml
 
-import reportingUtils as utils
-import reportingConf as conf
 import testCase as tc
 import scenarioResult as sr
 
+# manage conf
+import utils.reporting_utils as rp_utils
+
 # Logger
-logger = utils.getLogger("Status")
+logger = rp_utils.getLogger("Functest-Status")
 
 # Initialization
 testValid = []
@@ -33,14 +34,21 @@ tempest = tc.TestCase("tempest_smoke_serial", "functest", -1)
 
 # Retrieve the Functest configuration to detect which tests are relevant
 # according to the installer, scenario
-cf = conf.TEST_CONF
+cf = rp_utils.get_config('functest.test_conf')
+period = rp_utils.get_config('general.period')
+versions = rp_utils.get_config('general.versions')
+installers = rp_utils.get_config('general.installers')
+blacklist = rp_utils.get_config('functest.blacklist')
+log_level = rp_utils.get_config('general.log.log_level')
 response = requests.get(cf)
 
 functest_yaml_config = yaml.safe_load(response.text)
 
 logger.info("*******************************************")
+logger.info("*                                         *")
 logger.info("*   Generating reporting scenario status  *")
-logger.info("*   Data retention = %s days              *" % conf.PERIOD)
+logger.info("*   Data retention: %s days               *" % period)
+logger.info("*   Log level: %s                       *" % log_level)
 logger.info("*                                         *")
 logger.info("*******************************************")
 
@@ -55,36 +63,41 @@ config_tiers = functest_yaml_config.get("tiers")
 for tier in config_tiers:
     if tier['order'] > 0 and tier['order'] < 3:
         for case in tier['testcases']:
-            if case['name'] not in conf.blacklist:
+            if case['name'] not in blacklist:
                 testValid.append(tc.TestCase(case['name'],
                                              "functest",
                                              case['dependencies']))
     elif tier['order'] == 3:
         for case in tier['testcases']:
-            if case['name'] not in conf.blacklist:
+            if case['name'] not in blacklist:
                 testValid.append(tc.TestCase(case['name'],
                                              case['name'],
                                              case['dependencies']))
     elif tier['order'] > 3:
         for case in tier['testcases']:
-            if case['name'] not in conf.blacklist:
+            if case['name'] not in blacklist:
                 otherTestCases.append(tc.TestCase(case['name'],
                                                   "functest",
                                                   case['dependencies']))
 
+logger.debug("Functest reporting start")
 # For all the versions
-for version in conf.versions:
+for version in versions:
     # For all the installers
-    for installer in conf.installers:
+    for installer in installers:
         # get scenarios
-        scenario_results = utils.getScenarios(tempest, installer, version)
-        scenario_stats = utils.getScenarioStats(scenario_results)
+        scenario_results = rp_utils.getScenarios(tempest, installer, version)
+        scenario_stats = rp_utils.getScenarioStats(scenario_results)
         items = {}
         scenario_result_criteria = {}
 
-        scenario_file_name = (conf.REPORTING_PATH +
-                              "/functest/release/" + version +
-                              "/scenario_history.txt")
+        scenario_file_name = ("./display/" + version +
+                              "/functest/scenario_history.txt")
+        # initiate scenario file if it does not exist
+        if not os.path.isfile(scenario_file_name):
+            with open(scenario_file_name, "a") as my_file:
+                logger.debug("Create scenario file: %s" % scenario_file_name)
+                my_file.write("date,scenario,installer,detail,score\n")
 
         # For all the scenarios get results
         for s, s_result in scenario_results.items():
@@ -102,7 +115,7 @@ for version in conf.versions:
             if len(s_result) > 0:
                 build_tag = s_result[len(s_result)-1]['build_tag']
                 logger.debug("Build tag: %s" % build_tag)
-                s_url = s_url = utils.getJenkinsUrl(build_tag)
+                s_url = s_url = rp_utils.getJenkinsUrl(build_tag)
                 logger.info("last jenkins url: %s" % s_url)
             testCases2BeDisplayed = []
             # Check if test case is runnable / installer, scenario
@@ -126,7 +139,8 @@ for version in conf.versions:
                         nb_test_runnable_for_this_scenario += 1
                         logger.info(" Searching results for case %s " %
                                     (displayName))
-                        result = utils.getResult(dbName, installer, s, version)
+                        result = rp_utils.getResult(dbName, installer,
+                                                    s, version)
                         # if no result set the value to 0
                         if result < 0:
                             result = 0
@@ -158,7 +172,8 @@ for version in conf.versions:
                         project = test_case.getProject()
                         logger.info(" Searching results for case %s " %
                                     (displayName))
-                        result = utils.getResult(dbName, installer, s, version)
+                        result = rp_utils.getResult(dbName, installer,
+                                                    s, version)
                         # at least 1 result for the test
                         if result > -1:
                             test_case.setCriteria(result)
@@ -186,11 +201,11 @@ for version in conf.versions:
             scenario_criteria = nb_test_runnable_for_this_scenario * 3
             # if 0 runnable tests set criteria at a high value
             if scenario_criteria < 1:
-                scenario_criteria = conf.MAX_SCENARIO_CRITERIA
+                scenario_criteria = 50  # conf.MAX_SCENARIO_CRITERIA
 
             s_score = str(scenario_score) + "/" + str(scenario_criteria)
-            s_score_percent = utils.getScenarioPercent(scenario_score,
-                                                       scenario_criteria)
+            s_score_percent = rp_utils.getScenarioPercent(scenario_score,
+                                                          scenario_criteria)
 
             s_status = "KO"
             if scenario_score < scenario_criteria:
@@ -200,9 +215,9 @@ for version in conf.versions:
             else:
                 logger.info(">>>>> scenario OK, save the information")
                 s_status = "OK"
-                path_validation_file = (conf.REPORTING_PATH +
-                                        "/functest/release/" + version +
-                                        "/validated_scenario_history.txt")
+                path_validation_file = ("./display/" + version +
+                                        "/functest/" +
+                                        "validated_scenario_history.txt")
                 with open(path_validation_file, "a") as f:
                     time_format = "%Y-%m-%d %H:%M"
                     info = (datetime.datetime.now().strftime(time_format) +
@@ -222,54 +237,37 @@ for version in conf.versions:
                                                             s_url)
             logger.info("--------------------------")
 
-        templateLoader = jinja2.FileSystemLoader(conf.REPORTING_PATH)
+        templateLoader = jinja2.FileSystemLoader(".")
         templateEnv = jinja2.Environment(
             loader=templateLoader, autoescape=True)
 
-        TEMPLATE_FILE = "/functest/template/index-status-tmpl.html"
+        TEMPLATE_FILE = "./functest/template/index-status-tmpl.html"
         template = templateEnv.get_template(TEMPLATE_FILE)
 
         outputText = template.render(scenario_stats=scenario_stats,
                                      scenario_results=scenario_result_criteria,
                                      items=items,
                                      installer=installer,
-                                     period=conf.PERIOD,
+                                     period=period,
                                      version=version,
                                      date=reportingDate)
 
-        # csv
-        # generate sub files based on scenario_history.txt
-        scenario_installer_file_name = (conf.REPORTING_PATH +
-                                        "/functest/release/" + version +
-                                        "/scenario_history_" + installer +
-                                        ".txt")
-        scenario_installer_file = open(scenario_installer_file_name, "a")
-        logger.info("Generate CSV...")
-        with open(scenario_file_name, "r") as f:
-            for line in f:
-                if installer in line:
-                    logger.debug("Add new line... %s" % line)
-                    scenario_installer_file.write(line)
-        scenario_installer_file.close
-
-        with open(conf.REPORTING_PATH + "/functest/release/" + version +
-                  "/index-status-" + installer + ".html", "wb") as fh:
+        with open("./display/" + version +
+                  "/functest/status-" + installer + ".html", "wb") as fh:
             fh.write(outputText)
-        logger.info("CSV generated...")
+
+        logger.info("Manage export CSV & PDF")
+        rp_utils.export_csv(scenario_file_name, installer, version)
+        logger.error("CSV generated...")
 
         # Generate outputs for export
         # pdf
-        logger.info("Generate PDF...")
-        try:
-            pdf_path = ("http://testresults.opnfv.org/reporting/" +
-                        "functest/release/" + version +
-                        "/index-status-" + installer + ".html")
-            pdf_doc_name = (conf.REPORTING_PATH +
-                            "/functest/release/" + version +
-                            "/status-" + installer + ".pdf")
-            pdfkit.from_url(pdf_path, pdf_doc_name)
-            logger.info("PDF generated...")
-        except IOError:
-            logger.info("pdf generated anyway...")
-        except:
-            logger.error("impossible to generate PDF")
+        # TODO Change once web site updated...use the current one
+        # to test pdf production
+        url_pdf = rp_utils.get_config('general.url')
+        pdf_path = ("./display/" + version +
+                    "/functest/status-" + installer + ".html")
+        pdf_doc_name = ("./display/" + version +
+                        "/functest/status-" + installer + ".pdf")
+        rp_utils.export_pdf(pdf_path, pdf_doc_name)
+        logger.info("PDF generated...")
