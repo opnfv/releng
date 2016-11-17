@@ -112,8 +112,6 @@
                   node-parameters: false
                   kill-phase-on: FAILURE
                   abort-all-job: true
-
-
 - job-template:
     name: 'kvmfornfv-verify-{phase}-{stream}'
 
@@ -271,7 +269,7 @@
             name: build
             condition: SUCCESSFUL
             projects:
-                - name: 'kvmfornfv-Packet_Forwarding-daily-build-{stream}'
+                - name: 'kvmfornfv-Packet_Forwarding-daily-test-{stream}'
                   current-parameters: false
                   node-parameters: false
                   git-revision: true
@@ -316,21 +314,21 @@
 # parameter macros
 ########################
 - parameter:
-    name: 'kvmfornfv-Idle_Idle-daily-parameter'
+    name: 'kvmfornfv-Idle_Idle-daily-test-{stream}'
     parameters:
         - string:
             name: TEST_NAME
             default: 'idle_idle'
             description: "Daily job to run cyclictest without applying any stress"
 - parameter:
-    name: 'kvmfornfv-Stress_Idle-daily-parameter'
+    name: 'kvmfornfv-Stress_Idle-daily-test-{stream}'
     parameters:
         - string:
             name: TEST_NAME
             default: 'stress_idle'
             description: "Daily job to run cyclictest with stress applied"
 - parameter:
-    name: 'kvmfornfv-Packet_Forwarding-daily-parameter'
+    name: 'kvmfornfv-Packet_Forwarding-daily-test-{stream}'
     parameters:
         - string:
             name: TEST_NAME
