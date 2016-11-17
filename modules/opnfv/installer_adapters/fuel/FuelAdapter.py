@@ -8,8 +8,8 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-import opnfv.modules.utils.SSHUtils as ssh_utils
-import opnfv.modules.utils.OPNFVLogger as logger
+import opnfv.utils.SSHUtils as ssh_utils
+import opnfv.utils.OPNFVLogger as logger
 
 
 class FuelAdapter:
