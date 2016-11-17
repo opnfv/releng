@@ -31,11 +31,17 @@
         - 'Packet_Forwarding':
             trigger_time: '@midnight+6hours'
 #####################################
+## patch verification phases
+######################################
+    testtype:
+        - 'cyclictest':
+        - 'packetforward':
+#####################################
 # patch verification phases
 #####################################
     jobs:
-        - 'kvmfornfv-verify-{stream}'
-        - 'kvmfornfv-verify-{phase}-{stream}'
+        - 'kvmfornfv-{testtype}-verify-{stream}'
+        - 'kvmfornfv-{testtype}-verify-{phase}-{stream}'
         - 'kvmfornfv-merge-{stream}'
         - 'kvmfornfv-{testname}-daily-{stream}'
         - 'kvmfornfv-{testname}-daily-{phase}-{stream}'
@@ -43,7 +49,7 @@
 # job templates
 #####################################
 - job-template:
-    name: 'kvmfornfv-verify-{stream}'
+    name: 'kvmfornfv-{testtype}-verify-{stream}'
 
     project-type: multijob
 
@@ -90,7 +96,34 @@
             name: build
             condition: SUCCESSFUL
             projects:
-                - name: 'kvmfornfv-verify-build-{stream}'
+                - name: 'kvmfornfv-cyclictest-verify-build-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'kvmfornfv-packetforward-verify-build-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+
+        - multijob:
+            name: test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'kvmfornfv-cyclictest-verify-test-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     GERRIT_BRANCH=$GERRIT_BRANCH
@@ -103,7 +136,7 @@
             name: test
             condition: SUCCESSFUL
             projects:
-                - name: 'kvmfornfv-verify-test-{stream}'
+                - name: 'kvmfornfv-packetforward-verify-test-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     GERRIT_BRANCH=$GERRIT_BRANCH
@@ -115,7 +148,7 @@
 
 
 - job-template:
-    name: 'kvmfornfv-verify-{phase}-{stream}'
+    name: 'kvmfornfv-{testtype}-verify-{phase}-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -146,7 +179,7 @@
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
-        - '{project}-verify-{phase}-macro'
+        - '{project}-{testtype}-verify-{phase}-macro'
 
 - job-template:
     name: 'kvmfornfv-merge-{stream}'
@@ -316,6 +349,20 @@
 # parameter macros
 ########################
 - parameter:
+    name: 'kvmfornfv-cyclictest-verify-parameter'
+    parameters:
+        - string:
+            name: TEST_TYPE
+            default: 'cyclictest'
+            description: "Verify job to execute cyclictest testcase"
+- parameter:
+    name: 'kvmfornfv-packetforward-verify-parameter'
+    parameters:
+        - string:
+            name: TEST_TYPE
+            default: 'packet_forward'
+            description: "Verify job to execute cyclictest testcase"
+- parameter:
     name: 'kvmfornfv-Idle_Idle-daily-parameter'
     parameters:
         - string:
@@ -340,14 +387,28 @@
 # builder macros
 #####################################
 - builder:
-    name: 'kvmfornfv-verify-build-macro'
+    name: 'kvmfornfv-cyclictest-verify-build-macro'
     builders:
         - shell:
             !include-raw: ./kvmfornfv-build.sh
         - shell:
             !include-raw: ./kvmfornfv-upload-artifact.sh
 - builder:
-    name: 'kvmfornfv-verify-test-macro'
+    name: 'kvmfornfv-cyclictest-verify-test-macro'
+    builders:
+        - shell:
+            !include-raw: ./kvmfornfv-download-artifact.sh
+        - shell:
+            !include-raw: ./kvmfornfv-test.sh
+- builder:
+    name: 'kvmfornfv-packetforward-verify-build-macro'
+    builders:
+        - shell:
+            !include-raw: ./kvmfornfv-build.sh
+        - shell:
+            !include-raw: ./kvmfornfv-upload-artifact.sh
+- builder:
+    name: 'kvmfornfv-packetforward-verify-test-macro'
     builders:
         - shell:
             !include-raw: ./kvmfornfv-download-artifact.sh

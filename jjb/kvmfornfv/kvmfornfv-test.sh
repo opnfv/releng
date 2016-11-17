@@ -15,7 +15,12 @@ fi
 
 # do stuff differently based on the job type
 case "$JOB_TYPE" in
-    verify|daily)
+    verify)
+        #start the test
+        cd $WORKSPACE
+        ./ci/test_kvmfornfv.sh $JOB_TYPE $TEST_TYPE
+        ;;
+    daily)
         #start the test
         cd $WORKSPACE
         ./ci/test_kvmfornfv.sh $JOB_TYPE $TEST_NAME
