@@ -21,9 +21,9 @@ class InstallerHandler:
 
     def __init__(self,
                  installer,
-                 installer_ip,
                  installer_user,
-                 installer_pwd=None):
+                 installer_pwd=None,
+                 installer_ip=None):
         self.installer = installer.lower()
         self.installer_ip = installer_ip
         self.installer_user = installer_user
@@ -34,7 +34,7 @@ class InstallerHandler:
                                                 self.installer_user,
                                                 self.installer_pwd)
         elif self.installer == INSTALLERS[1]:
-            self.InstallerAdapter = ApexAdapter(self.installer_ip)
+            self.InstallerAdapter = ApexAdapter(self.installer_user)
         elif self.installer == INSTALLERS[2]:
             self.InstallerAdapter = CompassAdapter(self.installer_ip)
         elif self.installer == INSTALLERS[3]:
