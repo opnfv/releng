@@ -13,6 +13,8 @@ else
     exit 1
 fi
 
+echo $TEST_NAME
+
 # do stuff differently based on the job type
 case "$JOB_TYPE" in
     verify|daily)

@@ -34,8 +34,8 @@
 # patch verification phases
 #####################################
     jobs:
-        - 'kvmfornfv-verify-{stream}'
-        - 'kvmfornfv-verify-{phase}-{stream}'
+        - 'kvmfornfv-{testname}-verify-{stream}'
+        - 'kvmfornfv-{testname}-verify-{phase}-{stream}'
         - 'kvmfornfv-merge-{stream}'
         - 'kvmfornfv-{testname}-daily-{stream}'
         - 'kvmfornfv-{testname}-daily-{phase}-{stream}'
@@ -43,7 +43,7 @@
 # job templates
 #####################################
 - job-template:
-    name: 'kvmfornfv-verify-{stream}'
+    name: 'kvmfornfv-{testname}-verify-{stream}'
 
     project-type: multijob
 
@@ -90,7 +90,7 @@
             name: build
             condition: SUCCESSFUL
             projects:
-                - name: 'kvmfornfv-verify-build-{stream}'
+                - name: 'kvmfornfv-Idle_Idle-verify-build-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     GERRIT_BRANCH=$GERRIT_BRANCH
@@ -103,7 +103,33 @@
             name: test
             condition: SUCCESSFUL
             projects:
-                - name: 'kvmfornfv-verify-test-{stream}'
+                - name: 'kvmfornfv-Idle_Idle-verify-test-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'kvmfornfv-Stress_Idle-verify-build-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'kvmfornfv-Stress_Idle-verify-test-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     GERRIT_BRANCH=$GERRIT_BRANCH
@@ -113,9 +139,35 @@
                   kill-phase-on: FAILURE
                   abort-all-job: true
 
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'kvmfornfv-Packet_Forwarding-verify-build-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'kvmfornfv-Packet_Forwarding-verify-test-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
 
 - job-template:
-    name: 'kvmfornfv-verify-{phase}-{stream}'
+    name: 'kvmfornfv-{testname}-verify-{phase}-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -146,7 +198,7 @@
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
-        - '{project}-verify-{phase}-macro'
+        - '{project}-{testname}-verify-{phase}-macro'
 
 - job-template:
     name: 'kvmfornfv-merge-{stream}'
@@ -316,21 +368,42 @@
 # parameter macros
 ########################
 - parameter:
-    name: 'kvmfornfv-Idle_Idle-daily-parameter'
+    name: 'kvmfornfv-Idle_Idle-verify-test-{stream}'
+    parameters:
+        - string:
+            name: TEST_NAME
+            default: 'idle_idle'
+            description: "Verify job to run cyclictest without applying any stress"
+- parameter:
+    name: 'kvmfornfv-Stress_Idle-verify-test-{stream}'
+    parameters:
+        - string:
+            name: TEST_NAME
+            default: 'stress_idle'
+            description: "Verify job to run cyclictest without applying any stress"
+- parameter:
+    name: 'kvmfornfv-Packet_Forwarding-verify-test-{stream}'
+    parameters:
+        - string:
+            name: TEST_NAME
+            default: 'packet_forward'
+            description: "Verify job to execute cyclictest testcase"
+- parameter:
+    name: 'kvmfornfv-Idle_Idle-daily-test-{stream}'
     parameters:
         - string:
             name: TEST_NAME
             default: 'idle_idle'
             description: "Daily job to run cyclictest without applying any stress"
 - parameter:
-    name: 'kvmfornfv-Stress_Idle-daily-parameter'
+    name: 'kvmfornfv-Stress_Idle-daily-test-{stream}'
     parameters:
         - string:
             name: TEST_NAME
             default: 'stress_idle'
             description: "Daily job to run cyclictest with stress applied"
 - parameter:
-    name: 'kvmfornfv-Packet_Forwarding-daily-parameter'
+    name: 'kvmfornfv-Packet_Forwarding-daily-test-{stream}'
     parameters:
         - string:
             name: TEST_NAME
@@ -340,14 +413,42 @@
 # builder macros
 #####################################
 - builder:
-    name: 'kvmfornfv-verify-build-macro'
+    name: 'kvmfornfv-Idle_Idle-verify-build-macro'
     builders:
         - shell:
             !include-raw: ./kvmfornfv-build.sh
         - shell:
             !include-raw: ./kvmfornfv-upload-artifact.sh
 - builder:
-    name: 'kvmfornfv-verify-test-macro'
+    name: 'kvmfornfv-Idle_Idle-verify-test-macro'
+    builders:
+        - shell:
+            !include-raw: ./kvmfornfv-download-artifact.sh
+        - shell:
+            !include-raw: ./kvmfornfv-test.sh
+- builder:
+    name: 'kvmfornfv-Stress_Idle-verify-build-macro'
+    builders:
+        - shell:
+            !include-raw: ./kvmfornfv-build.sh
+        - shell:
+            !include-raw: ./kvmfornfv-upload-artifact.sh
+- builder:
+    name: 'kvmfornfv-Stress_Idle-verify-test-macro'
+    builders:
+        - shell:
+            !include-raw: ./kvmfornfv-download-artifact.sh
+        - shell:
+            !include-raw: ./kvmfornfv-test.sh
+- builder:
+    name: 'kvmfornfv-Packet_Forwarding-verify-build-macro'
+    builders:
+        - shell:
+            !include-raw: ./kvmfornfv-build.sh
+        - shell:
+            !include-raw: ./kvmfornfv-upload-artifact.sh
+- builder:
+    name: 'kvmfornfv-Packet_Forwarding-verify-test-macro'
     builders:
         - shell:
             !include-raw: ./kvmfornfv-download-artifact.sh
