@@ -1,12 +1,12 @@
 # This is an example of usage of this Tool
 # Author: Jose Lausuch (jose.lausuch@ericsson.com)
 
-from InstallerHandler import InstallerHandler
+import opnfv.installer_adapters.InstallerHandler as ins_handler
 
-fuel_handler = InstallerHandler(installer='fuel',
-                                installer_ip='10.20.0.2',
-                                installer_user='root',
-                                installer_pwd='r00tme')
+fuel_handler = ins_handler.InstallerHandler(installer='fuel',
+                                            installer_ip='10.20.0.2',
+                                            installer_user='root',
+                                            installer_pwd='r00tme')
 print("Nodes in cluster 1:\n%s\n" %
       fuel_handler.get_nodes(options={'cluster': '1'}))
 print("Nodes in cluster 2:\n%s\n" %

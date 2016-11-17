@@ -7,10 +7,10 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-from FuelAdapter import FuelAdapter
-from ApexAdapter import ApexAdapter
-from CompassAdapter import CompassAdapter
-from JoidAdapter import JoidAdapter
+from opnfv.installer_adapters.fuel.FuelAdapter import FuelAdapter
+from opnfv.installer_adapters.apex.ApexAdapter import ApexAdapter
+from opnfv.installer_adapters.compass.CompassAdapter import CompassAdapter
+from opnfv.installer_adapters.joid.JoidAdapter import JoidAdapter
 
 
 INSTALLERS = ["fuel", "apex", "compass", "joid"]
