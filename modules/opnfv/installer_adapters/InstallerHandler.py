@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2015 Ericsson AB and others.
+# Copyright (c) 2017 Ericsson AB and others.
 # Author: Jose Lausuch (jose.lausuch@ericsson.com)
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Apache License, Version 2.0
@@ -34,7 +34,8 @@ class InstallerHandler:
                                                 self.installer_user,
                                                 self.installer_pwd)
         elif self.installer == INSTALLERS[1]:
-            self.InstallerAdapter = ApexAdapter(self.installer_ip)
+            self.InstallerAdapter = ApexAdapter(self.installer_ip,
+                                                self.installer_user)
         elif self.installer == INSTALLERS[2]:
             self.InstallerAdapter = CompassAdapter(self.installer_ip)
         elif self.installer == INSTALLERS[3]:
