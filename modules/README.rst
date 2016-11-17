@@ -5,6 +5,8 @@ as follows:
 
   from opnfv.utils import SSHUtils
   from opnfv.utils import OPNFVLogger
+  from opnfv.utils import OPNFVException
+  from opnfv.utils import constants
 
 For further information about how to use this modules directory, contact:
   fatih.degirmenci@ericsson.com

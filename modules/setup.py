@@ -17,5 +17,9 @@ setup(
     package_data={
     },
     url="https://www.opnfv.org",
-    install_requires=["paramiko>=2.0.1"]
+    install_requires=["paramiko>=2.0.1",
+                      "mock==1.3.0",
+                      "nose==1.3.7",
+                      "coverage==4.1",
+                      "requests==2.9.1"]
 )
