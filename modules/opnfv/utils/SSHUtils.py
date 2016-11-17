@@ -10,7 +10,7 @@
 
 
 import paramiko
-import opnfv.modules.utils.OPNFVLogger as OPNFVLogger
+import opnfv.utils.OPNFVLogger as OPNFVLogger
 import os
 
 logger = OPNFVLogger.Logger('SSHUtils').getLogger()
