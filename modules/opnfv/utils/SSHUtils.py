@@ -16,7 +16,11 @@ import os
 logger = OPNFVLogger.Logger('SSHUtils').getLogger()
 
 
-def get_ssh_client(hostname, username, password=None, proxy=None):
+def get_ssh_client(hostname,
+                   username,
+                   password=None,
+                   proxy=None,
+                   pkey_file=None):
     client = None
     try:
         if proxy is None:
@@ -26,14 +30,21 @@ def get_ssh_client(hostname, username, password=None, proxy=None):
             client.configure_jump_host(proxy['ip'],
                                        proxy['username'],
                                        proxy['password'])
-
         if client is None:
             raise Exception('Could not connect to client')
 
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(hostname,
-                       username=username,
-                       password=password)
+        if pkey_file is not None:
+            key = paramiko.RSAKey.from_private_key_file(pkey_file)
+            client.load_system_host_keys()
+            client.connect(hostname,
+                           username=username,
+                           pkey=key)
+        else:
+            client.connect(hostname,
+                           username=username,
+                           password=password)
+
         return client
     except Exception, e:
         logger.error(e)
@@ -66,6 +77,7 @@ class ProxyHopClient(paramiko.SSHClient):
     '''
     Connect to a remote server using a proxy hop
     '''
+
     def __init__(self, *args, **kwargs):
         self.logger = OPNFVLogger.Logger("ProxyHopClient").getLogger()
         self.proxy_ssh = None
