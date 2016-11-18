@@ -24,17 +24,20 @@
             disabled: false
             dib-os-release: 'trusty'
             dib-os-element: 'ubuntu-minimal'
-            dib-os-packages: 'openssh-server,vlan,vim,less,bridge-utils,language-pack-en,iputils-ping,rsyslog,curl'
+            dib-os-packages: 'vlan,vim,less,bridge-utils,language-pack-en,iputils-ping,rsyslog,curl'
+            extra-dib-elements: 'openssh-server'
         - 'centos7':
             disabled: false
             dib-os-release: '7'
             dib-os-element: 'centos7'
-            dib-os-packages: 'openssh-server,vim,less,bridge-utils,iputils,rsyslog,curl'
+            dib-os-packages: 'vim,less,bridge-utils,iputils,rsyslog,curl'
+            extra-dib-elements: 'openssh-server'
         - 'suse':
             disabled: true
             dib-os-release: 'suse'
             dib-os-element: 'suse'
             dib-os-packages: ''
+            extra-dib-elements: 'openssh-server'
 #--------------------------------
 # type
 #--------------------------------
@@ -81,6 +84,9 @@
         - string:
             name: DIB_OS_ELEMENT
             default: '{dib-os-element}'
+        - string:
+            name: EXTRA_DIB_ELEMENTS
+            default: '{extra-dib-elements}'
         - string:
             name: DIB_OS_PACKAGES
             default: '{dib-os-packages}'

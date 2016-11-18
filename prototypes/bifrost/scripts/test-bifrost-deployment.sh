@@ -65,6 +65,9 @@ export DIB_OS_ELEMENT=${DIB_OS_ELEMENT:-ubuntu-minimal}
 # for centos 7: "openssh-server,vim,less,bridge-utils,iputils,rsyslog,curl"
 export DIB_OS_PACKAGES=${DIB_OS_PACKAGES:-"openssh-server,vlan,vim,less,bridge-utils,language-pack-en,iputils-ping,rsyslog,curl"}
 
+# Additional dib elements
+export EXTRA_DIB_ELEMENTS=${EXTRA_DIB_ELEMENTS:-}
+
 # Source Ansible
 # NOTE(TheJulia): Ansible stable-1.9 source method tosses an error deep
 # under the hood which -x will detect, so for this step, we need to suspend
