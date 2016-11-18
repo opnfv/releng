@@ -10,7 +10,7 @@
 
 
 import paramiko
-import opnfv.modules.utils.OPNFVLogger as OPNFVLogger
+import opnfv.utils.OPNFVLogger as OPNFVLogger
 import os
 
 logger = OPNFVLogger.Logger('SSHUtils').getLogger()
@@ -68,7 +68,7 @@ class JumpHostHopClient(paramiko.SSHClient):
     '''
 
     def __init__(self, *args, **kwargs):
-        self.logger = rl.Logger("JumpHostHopClient").getLogger()
+        self.logger = OPNFVLogger.Logger("JumpHostHopClient").getLogger()
         self.jumphost_ssh = None
         self.jumphost_transport = None
         self.jumphost_channel = None
