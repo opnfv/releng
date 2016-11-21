@@ -22,10 +22,12 @@
             disabled: false
             os-version: 'trusty'
             openstack-os-version: ''
+            openstack-version: ''
         - 'centos7':
             disabled: false
             os-version: 'centos7'
             openstack-os-version: ''
+            openstack-version: ''
 #####################################
 # patch verification phases
 #####################################
@@ -138,6 +140,7 @@
                   predefined-parameters: |
                     COMPASS_OS_VERSION={os-version}
                     COMPASS_OS_VERSION_OPTION={openstack-os-version}
+                    OPENSTACK_VERSION_OPTION={openstack-version}
                   node-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
@@ -244,6 +247,7 @@
             choices:
                 - 'newton'
                 - 'mitaka'
+                - 'newton'
                 - 'liberty'
         - choice:
             name: COMPASS_OS_VERSION
