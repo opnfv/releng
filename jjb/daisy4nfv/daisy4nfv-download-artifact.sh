@@ -11,25 +11,30 @@
 set -o errexit
 set -o pipefail
 
+# use proxy url to replace the nomral URL, for googleusercontent.com will be blocked randomly
+[[ "$NODE_NAME" =~ (zte) ]] && GS_URL=$GS_BASE_PROXY
+
 if [[ "$JOB_NAME" =~ "merge" ]]; then
     echo "Downloading http://$GS_URL/opnfv-gerrit-$GERRIT_CHANGE_NUMBER.properties"
     # get the properties file for the Daisy4nfv BIN built for a merged change
-    curl -s -o $WORKSPACE/latest.properties http://$GS_URL/opnfv-gerrit-$GERRIT_CHANGE_NUMBER.properties
+    curl -L -s -o $WORKSPACE/latest.properties http://$GS_URL/opnfv-gerrit-$GERRIT_CHANGE_NUMBER.properties
 else
     # get the latest.properties file in order to get info regarding latest artifact
     echo "Downloading http://$GS_URL/latest.properties"
-    curl -s -o $WORKSPACE/latest.properties http://$GS_URL/latest.properties
+    curl -L -s -o $WORKSPACE/latest.properties http://$GS_URL/latest.properties
 fi
 
 # check if we got the file
-[[ -f latest.properties ]] || exit 1
+[[ -f $WORKSPACE/latest.properties ]] || exit 1
 
 # source the file so we get artifact metadata
-source latest.properties
+source $WORKSPACE/latest.properties
 
 # echo the info about artifact that is used during the deployment
 OPNFV_ARTIFACT=${OPNFV_ARTIFACT_URL/*\/}
 echo "Using $OPNFV_ARTIFACT for deployment"
+
+[[ "$NODE_NAME" =~ (zte) ]] && OPNFV_ARTIFACT_URL=${GS_BASE_PROXY%%/*}/$OPNFV_ARTIFACT_URL
 
 # log info to console
 echo "Downloading the $INSTALLER_TYPE artifact using URL http://$OPNFV_ARTIFACT_URL"
