@@ -48,35 +48,43 @@
         - 'os-nosdn-nofeature-ha':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
-            openstack-os-version: ''
+            openstack-os-version: 'xenial'
+            openstack-version: 'newton'
         - 'os-odl_l2-nofeature-ha':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
             openstack-os-version: ''
+            openstack-version: ''
         - 'os-odl_l3-nofeature-ha':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
             openstack-os-version: ''
+            openstack-version: ''
         - 'os-onos-nofeature-ha':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
             openstack-os-version: ''
+            openstack-version: ''
         - 'os-ocl-nofeature-ha':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
             openstack-os-version: ''
+            openstack-version: ''
         - 'os-onos-sfc-ha':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
             openstack-os-version: ''
+            openstack-version: ''
         - 'os-odl_l2-moon-ha':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
             openstack-os-version: 'xenial'
+            openstack-version: 'mitaka'
         - 'os-nosdn-kvm-ha':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
             openstack-os-version: ''
+            openstack-version: ''
 
     jobs:
         - 'compass-{scenario}-{pod}-daily-{stream}'
@@ -132,6 +140,7 @@
                 DEPLOY_SCENARIO={scenario}
                 COMPASS_OS_VERSION={os-version}
                 COMPASS_OS_VERSION_OPTION={openstack-os-version}
+                OPENSTACK_VERSION_OPTION={openstack-version}
               same-node: true
               block: true
         - trigger-builds:
@@ -249,6 +258,7 @@
             choices:
                 - 'newton'
                 - 'mitaka'
+                - 'newton'
                 - 'liberty'
         - choice:
             name: COMPASS_OS_VERSION_OPTION
