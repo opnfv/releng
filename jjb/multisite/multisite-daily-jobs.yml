@@ -1,0 +1,203 @@
+- project:
+    name: kingbird
+
+    project: 'multisite'
+
+    jobs:
+        - 'multisite-kingbird-virtual-daily-{stream}'
+        - 'multisite-{phase}-{stream}'
+
+    phase:
+        - 'fuel-deploy-regionone-virtual'
+        - 'fuel-deploy-regiontwo-virtual'
+        - 'register-endpoints'
+        - 'update-auth'
+        - 'kingbird-deploy-virtual'
+        - 'kingbird-functest'
+
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+            timed: '#@midnight'
+
+- job-template:
+    name: 'multisite-kingbird-virtual-daily-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - string:
+            name: KINGBIRD_LOG_FILE
+            default: $WORKSPACE/kingbird.log
+        - 'multisite-virtual-defaults'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-multisite-noha'
+
+    triggers:
+         - timed: '{timed}'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: fuel-deploy-virtual
+            condition: SUCCESSFUL
+            projects:
+                - name: 'multisite-fuel-deploy-regionone-virtual-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    FUEL_VERSION=latest
+                    DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                    OS_REGION=RegionOne
+                    REGIONONE_IP=10.2.117.79
+                    REGIONTWO_IP=10.2.117.181
+                  node-parameters: false
+                  node-label: intel-virtual2
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                - name: 'multisite-fuel-deploy-regiontwo-virtual-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    FUEL_VERSION=latest
+                    DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                    OS_REGION=RegionTwo
+                    REGIONONE_IP=10.2.117.79
+                    REGIONTWO_IP=10.2.117.181
+                  node-parameters: false
+                  node-label: intel-virtual6
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: centralize-keystone
+            condition: SUCCESSFUL
+            projects:
+                - name: 'multisite-register-endpoints-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    OS_REGION=RegionOne
+                    REGIONONE_IP=10.2.117.79
+                    REGIONTWO_IP=10.2.117.181
+                  node-parameters: false
+                  node-label: intel-virtual2
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                - name: 'multisite-update-auth-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    OS_REGION=RegionTwo
+                    REGIONONE_IP=10.2.117.79
+                    REGIONTWO_IP=10.2.117.181
+                  node-parameters: false
+                  node-label: intel-virtual6
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: kingbird-deploy-virtual
+            condition: SUCCESSFUL
+            projects:
+                - name: 'multisite-kingbird-deploy-virtual-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    OS_REGION=RegionOne
+                    REGIONONE_IP=10.2.117.79
+                    REGIONTWO_IP=10.2.117.181
+                  node-parameters: false
+                  node-label: intel-virtual2
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: kingbird-functest
+            condition: SUCCESSFUL
+            projects:
+                - name: 'multisite-kingbird-functest-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    OS_REGION=RegionOne
+                    REGIONONE_IP=10.2.117.79
+                    REGIONTWO_IP=10.2.117.181
+                  node-parameters: false
+                  node-label: intel-virtual2
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+
+- job-template:
+    name: 'multisite-{phase}-{stream}'
+
+    concurrent: false
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 2
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'multisite-{phase}-.*'
+            block-level: 'NODE'
+
+    builders:
+        - 'multisite-{phase}-builder'
+########################
+# builder macros
+########################
+- builder:
+    name: 'multisite-fuel-deploy-regionone-virtual-builder'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "This is where we deploy fuel, extract passwords and save into file"
+- builder:
+    name: 'multisite-fuel-deploy-regiontwo-virtual-builder'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "This is where we deploy fuel, extract publicUrl, privateUrl, and adminUrl and save into file"
+- builder:
+    name: 'multisite-register-endpoints-builder'
+    builders:
+        - copyartifact:
+            project: 'multisite-fuel-deploy-regiontwo-virtual-{stream}'
+            which-build: multijob-build
+            filter: "RegionTwo-Endpoints.txt"
+        - shell: |
+            #!/bin/bash
+
+            echo "This is where we register RegionTwo in RegionOne keystone"
+- builder:
+    name: 'multisite-update-auth-builder'
+    builders:
+        - copyartifact:
+            project: 'multisite-fuel-deploy-regionone-virtual-{stream}'
+            which-build: multijob-build
+            filter: "RegionOne-Passwords.txt"
+        - shell: |
+            #!/bin/bash
+
+            echo "This is where we read passwords from RegionOne-passwords.txt and replace passwords in RegionTwo"
+- builder:
+    name: 'multisite-kingbird-deploy-virtual-builder'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "This is where we install kingbird"
+- builder:
+    name: 'multisite-kingbird-functest-builder'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "This is where we run kingbird-functest"
