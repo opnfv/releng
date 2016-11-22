@@ -6,31 +6,44 @@
 
     name: opnfv-docker
 
+    master: &master
+        stream: master
+        branch: '{stream}'
+        disabled: false
+    colorado: &colorado
+        stream: colorado
+        branch: 'stable/{stream}'
+        disabled: false
+
     project:
-        - 'bottlenecks'
-        - 'cperf'
-        - 'functest'
-        - 'storperf'
-        - 'qtip'
+        # projects with jobs for master
+        - 'bottlenecks':
+            <<: *master
+        - 'cperf':
+            <<: *master
+        - 'dovetail':
+            <<: *master
+        - 'functest':
+            <<: *master
+        - 'qtip':
+            <<: *master
+        - 'storperf':
+            <<: *master
+        - 'yardstick':
+            <<: *master
+        # projects with jobs for stable
+        - 'bottlenecks':
+            <<: *colorado
+        - 'functest':
+            <<: *colorado
+        - 'storperf':
+            <<: *colorado
+        - 'yardstick':
+            <<: *colorado
 
     jobs:
         - '{project}-docker-build-push-{stream}'
-        - 'yardstick-docker-build-push-{stream}'
-        #dovetail not sync with release, an independent job
-        #only master by now, will adjust accordingly in future
-        - 'dovetail-docker-build-push-{dovetailstream}'
 
-    stream:
-        - master:
-            branch: '{stream}'
-            disabled: false
-        - colorado:
-            branch: 'stable/{stream}'
-            disabled: false
-    dovetailstream:
-        - master:
-            branch: '{dovetailstream}'
-            disabled: false
 
 ########################
 # job templates
@@ -49,20 +62,9 @@
             default: "true"
             description: "To enable/disable pushing the image to Dockerhub."
         - string:
-            name: BASE_VERSION
-            default: "colorado.0"
-            description: "Base version to be used."
-        - string:
             name: DOCKER_REPO_NAME
             default: "opnfv/{project}"
             description: "Dockerhub repo to be pushed to."
-        - string:
-            name: UPDATE_LATEST_STABLE
-            default: "false"
-            description: "This will update the latest_stable image only."
-        - string:
-            name: STABLE_TAG
-            description: "If above option is true, this is the tag to be pulled."
 
     scm:
         - git-scm:
@@ -78,92 +80,3 @@
         - pollscm:
             cron: "*/30 * * * *"
 
-- job-template:
-    name: 'yardstick-docker-build-push-{stream}'
-
-    disabled: '{obj:disabled}'
-
-    parameters:
-        - project-parameter:
-            project: 'yardstick'
-        - 'opnfv-build-ubuntu-defaults'
-        - string:
-            name: PUSH_IMAGE
-            default: "true"
-            description: "To enable/disable pushing the image to Dockerhub."
-        - string:
-            name: BASE_VERSION
-            default: "colorado.0"
-            description: "Base version to be used."
-        - string:
-            name: DOCKER_REPO_NAME
-            default: "opnfv/yardstick"
-            description: "Dockerhub repo to be pushed to."
-        - string:
-            name: UPDATE_LATEST_STABLE
-            default: "false"
-            description: "This will update the latest_stable image only."
-        - string:
-            name: STABLE_TAG
-            description: "If above option is true, this is the tag to be pulled."
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    builders:
-        - shell:
-            !include-raw-escape: ./opnfv-docker.sh
-
-    triggers:
-        - pollscm:
-            cron: "*/30 * * * *"
-
-- job-template:
-    name: 'dovetail-docker-build-push-{dovetailstream}'
-
-    disabled: '{obj:disabled}'
-
-    parameters:
-        - project-parameter:
-            project: 'dovetail'
-        - 'opnfv-build-ubuntu-defaults'
-        - string:
-            name: PUSH_IMAGE
-            default: "true"
-            description: "To enable/disable pushing the image to Dockerhub."
-        #BASE_VERSION parameter is used for version control
-        #by now, only master branch is used, this parameter takes no effect
-        #once branch control settled, should be adjusted togather with
-        #opnfv-docker.sh and caculate_version.sh
-        - string:
-            name: BASE_VERSION
-            default: "1.0"
-            description: "Base version to be used."
-        - string:
-            name: DOCKER_REPO_NAME
-            default: "opnfv/dovetail"
-            description: "Dockerhub repo to be pushed to."
-        - string:
-            name: UPDATE_LATEST_STABLE
-            default: "false"
-            description: "This will update the latest_stable image only."
-        - string:
-            name: STABLE_TAG
-            description: "If above option is true, this is the tag to be pulled."
-
-    scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
-
-    builders:
-        - shell:
-            !include-raw-escape: ./opnfv-docker.sh
-
-    triggers:
-        - pollscm:
-            cron: "*/30 * * * *"
