@@ -29,10 +29,15 @@ cd $WORKSPACE
 
 export OS_VERSION=${COMPASS_OS_VERSION}
 export OPENSTACK_VERSION=${COMPASS_OPENSTACK_VERSION}
-if [[ "${COMPASS_OS_VERSION_OPTION}" = "xenial" ]] && [[ "${OPENSTACK_VERSION}" = "mitaka" || "${OPENSTACK_VERSION}" = "newton" ]]; then
+if [[ "${COMPASS_OS_VERSION_OPTION}" = "xenial" ]] && [[ "${OPENSTACK_VERSION}" = "mitaka" ]]; then
     export OPENSTACK_VERSION=${OPENSTACK_VERSION}_${COMPASS_OS_VERSION_OPTION}
     export OS_VERSION=${COMPASS_OS_VERSION_OPTION}
 fi
+if [[ "${OPENSTACK_VERSION}" = "newton" ]]; then
+    export OS_VERSION="xenial"
+    export OPENSTACK_VERSION=${OPENSTACK_VERSION}_${OS_VERSION}
+fi
+
 
 if [[ "${DEPLOY_SCENARIO}" =~ "-ocl" ]]; then
     export NETWORK_CONF_FILE=network_ocl.yml
