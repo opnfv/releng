@@ -220,13 +220,13 @@
             git-revision: false
             block: true
             same-node: true
-#        - trigger-builds:
-#          - project: 'functest-apex-{verify-slave}-suite-{stream}'
-#            predefined-parameters: |
-#              DEPLOY_SCENARIO=os-odl_l2-nofeature-ha
-#              FUNCTEST_SUITE_NAME=healthcheck
-#            block: true
-#            same-node: true
+        - trigger-builds:
+          - project: 'functest-apex-{verify-slave}-suite-{stream}'
+            predefined-parameters: |
+              DEPLOY_SCENARIO=os-odl_l2-nofeature-ha
+              FUNCTEST_SUITE_NAME=healthcheck
+            block: true
+            same-node: true
         - 'apex-workspace-cleanup'
 
 - job-template:
@@ -949,11 +949,16 @@
 - trigger:
     name: 'apex-master'
     triggers:
-        - timed: '0 0 20 8 *'
+        - timed: '0 3 * * 0'
+        - timed: '0 3 * * 4'
 - trigger:
     name: 'apex-colorado'
     triggers:
-        - timed: '0 3 * * *'
+        - timed: '0 3 * * 1'
+        - timed: '0 3 * * 2'
+        - timed: '0 3 * * 3'
+        - timed: '0 3 * * 5'
+        - timed: '0 3 * * 6'
 - trigger:
     name: 'apex-gs-clean-{stream}'
     triggers:
