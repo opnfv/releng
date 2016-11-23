@@ -59,7 +59,7 @@ echo "--------------------------------------------------------"
 echo
 
 # download the file
-curl -s -o $WORKSPACE/opnfv.iso http://$OPNFV_ARTIFACT_URL > gsutil.iso.log 2>&1
+curl -L -s -o $WORKSPACE/opnfv.iso http://$OPNFV_ARTIFACT_URL > gsutil.iso.log 2>&1
 
 # list the file
 ls -al $WORKSPACE/opnfv.iso
