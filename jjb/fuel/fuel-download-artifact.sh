@@ -11,7 +11,7 @@ set -o errexit
 set -o pipefail
 
 # use proxy url to replace the nomral URL, for googleusercontent.com will be blocked randomly
-[[ "$NODE_NAME" =~ (zte) ]] && GS_URL=$GS_BASE_PROXY
+[[ "$NODE_NAME" =~ (zte) ]] && GS_URL=${GS_BASE_PROXY%%/*}/$GS_URL
 
 if [[ "$JOB_NAME" =~ "merge" ]]; then
     echo "Downloading http://$GS_URL/opnfv-gerrit-$GERRIT_CHANGE_NUMBER.properties"
