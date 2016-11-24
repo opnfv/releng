@@ -30,8 +30,6 @@ EOF
 }
 
 main () {
-    dir=$(cd $(dirname $0); pwd)
-
     #tests
     if [[ -z $jenkinsuser || -z $jenkinshome ]]; then
         echo "jenkinsuser or home not defined, please edit this file to define it"
@@ -100,7 +98,7 @@ main () {
         echo "Writing the following as monit config:"
         cat << EOF | tee $monitconfdir/jenkins
 check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
-start program = "/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $dir; export started_monit=true; $0 $@' with timeout 60 seconds"
+start program = "/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $jenkinshome; export started_monit=true; $0 $@' with timeout 60 seconds"
 stop program = "/bin/bash -c '/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)'"
 EOF
     }
@@ -109,7 +107,7 @@ EOF
         #test for diff
         if [[ "$(diff $monitconfdir/jenkins <(echo "\
 check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
-start program = \"/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $dir; export started_monit=true; $0 $@' with timeout 60 seconds\"
+start program = \"/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $jenkinshome; export started_monit=true; $0 $@' with timeout 60 seconds\"
 stop program = \"/bin/bash -c '/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)'\"\
 ") )" ]]; then
             echo "Updating monit config..."
