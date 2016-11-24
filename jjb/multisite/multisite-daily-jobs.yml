@@ -134,20 +134,15 @@
 
     concurrent: false
 
-    properties:
-        - throttle:
-            enabled: true
-            max-total: 2
-            max-per-node: 1
-            option: 'project'
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'multisite-{phase}-.*'
-            block-level: 'NODE'
-
     builders:
-        - 'multisite-{phase}-builder'
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - 'multisite-{phase}-builder':
+            stream: '{stream}'
+
+    publishers:
+        - 'multisite-{phase}-publisher'
+
 ########################
 # builder macros
 ########################
@@ -201,3 +196,46 @@
             #!/bin/bash
 
             echo "This is where we run kingbird-functest"
+########################
+# publisher macros
+########################
+- publisher:
+    name: 'multisite-fuel-deploy-regionone-virtual-publisher'
+    publishers:
+        - archive:
+            artifacts: 'RegionOne-Passwords.txt'
+            allow-empty: false
+            only-if-success: true
+            fingerprint: true
+- publisher:
+    name: 'multisite-fuel-deploy-regiontwo-virtual-publisher'
+    publishers:
+        - archive:
+            artifacts: 'RegionTwo-Endpoints.txt'
+            allow-empty: false
+            only-if-success: true
+            fingerprint: true
+- publisher:
+    name: 'multisite-register-endpoints-publisher'
+    publishers:
+        - archive:
+            artifacts: 'dummy.txt'
+            allow-empty: true
+- publisher:
+    name: 'multisite-update-auth-publisher'
+    publishers:
+        - archive:
+            artifacts: 'dummy.txt'
+            allow-empty: true
+- publisher:
+    name: 'multisite-kingbird-deploy-virtual-publisher'
+    publishers:
+        - archive:
+            artifacts: 'dummy.txt'
+            allow-empty: true
+- publisher:
+    name: 'multisite-kingbird-functest-publisher'
+    publishers:
+        - archive:
+            artifacts: 'dummy.txt'
+            allow-empty: true
