@@ -30,6 +30,11 @@ EOF
 }
 
 main () {
+    filtered_args="$*"
+    # Drop -t from the command line arguments
+    filtered_args=$(echo $filtered_args | sed "s/\(^\|[[:space:]]\+\)-t\([[:space:]]\+\|$\)/\1\2/")
+    set -- "${filtered_args}"
+
     #tests
     if [[ -z $jenkinsuser || -z $jenkinshome ]]; then
         echo "jenkinsuser or home not defined, please edit this file to define it"
