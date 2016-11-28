@@ -55,25 +55,25 @@ logger.info("*******************************************")
 # Retrieve test cases of Tier 1 (smoke)
 config_tiers = functest_yaml_config.get("tiers")
 
-# we consider Tier 1 (smoke),2 (sdn suites) and 3 (features)
+# we consider Tier 1 (smoke),2 (features)
 # to validate scenarios
 # Tier > 4 are not used to validate scenarios but we display the results anyway
 # tricky thing for the API as some tests are Functest tests
 # other tests are declared directly in the feature projects
 for tier in config_tiers:
-    if tier['order'] > 0 and tier['order'] < 3:
+    if tier['order'] > 0 and tier['order'] < 2:
         for case in tier['testcases']:
             if case['name'] not in blacklist:
                 testValid.append(tc.TestCase(case['name'],
                                              "functest",
                                              case['dependencies']))
-    elif tier['order'] == 3:
+    elif tier['order'] == 2:
         for case in tier['testcases']:
             if case['name'] not in blacklist:
                 testValid.append(tc.TestCase(case['name'],
                                              case['name'],
                                              case['dependencies']))
-    elif tier['order'] > 3:
+    elif tier['order'] > 2:
         for case in tier['testcases']:
             if case['name'] not in blacklist:
                 otherTestCases.append(tc.TestCase(case['name'],
