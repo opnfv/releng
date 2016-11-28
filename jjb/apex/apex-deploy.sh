@@ -176,6 +176,8 @@ else
   # settings for bare metal deployment
   if [ "$IPV6_FLAG" == "True" ]; then
     NETWORK_FILE="/root/network/network_settings_v6.yaml"
+  elif [[ "$JOB_NAME" == *master* ]]; then
+    NETWORK_FILE="/root/network/network_settings-master.yaml"
   else
     NETWORK_FILE="/root/network/network_settings.yaml"
   fi
