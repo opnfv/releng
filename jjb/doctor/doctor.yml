@@ -20,9 +20,13 @@
             slave-label: 'ool-virtual1'
             pod: 'ool-virtual1'
 
+    inspector:
+        - 'sample'
+        - 'congress'
+
     jobs:
         - 'doctor-verify-{stream}'
-        - 'doctor-verify-{installer}-{stream}'
+        - 'doctor-verify-{installer}-{inspector}-{stream}'
 
 - job-template:
     name: 'doctor-verify-{stream}'
@@ -68,7 +72,7 @@
         - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
 
 - job-template:
-    name: 'doctor-verify-{installer}-{stream}'
+    name: 'doctor-verify-{installer}-{inspector}-{stream}'
 
     node: '{slave-label}'
 
@@ -81,7 +85,21 @@
             name: OS_CREDS
             default: /home/jenkins/openstack.creds
             description: 'OpenStack credentials'
+        - '{installer}-defaults'
         - '{slave-label}-defaults'
+        - functest-suite-parameter:
+            FUNCTEST_SUITE_NAME: 'doctor'
+            TESTCASE_OPTIONS: '-e INSPECTOR_TYPE={inspector} -v $WORKSPACE:$HOME/opnfv/repos/doctor'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-nofeature-ha'
+        - string:
+            name: DOCKER_TAG
+            default: '{docker-tag}'
+            description: 'Tag to pull docker image'
+        - functest-parameter:
+            gs-pathname: '{gs-pathname}'
+            CI_DEBUG: 'true'
 
     scm:
         - gerrit-trigger-scm:
@@ -117,25 +135,9 @@
                 notbuilt: true
 
     builders:
-        - trigger-builds:
-          - project: 'functest-{installer}-{pod}-suite-{stream}'
-            current-parameters: true
-            predefined-parameters: |
-              CI_DEBUG=true
-              FUNCTEST_SUITE_NAME=doctor
-              DEPLOY_SCENARIO=os-nosdn-nofeature-ha
-              TESTCASE_OPTIONS=-e INSPECTOR_TYPE=sample -v $WORKSPACE:$HOME/opnfv/repos/doctor
-            block: true
-            same-node: true
-          - project: 'functest-{installer}-{pod}-suite-{stream}'
-            current-parameters: true
-            predefined-parameters: |
-              CI_DEBUG=true
-              FUNCTEST_SUITE_NAME=doctor
-              DEPLOY_SCENARIO=os-nosdn-nofeature-ha
-              TESTCASE_OPTIONS=-e INSPECTOR_TYPE=congress -v $WORKSPACE:$HOME/opnfv/repos/doctor
-            block: true
-            same-node: true
+        - description-setter:
+            description: "POD: $NODE_NAME"
+        - 'functest-suite-builder'
 
     publishers:
         - postbuildscript:
