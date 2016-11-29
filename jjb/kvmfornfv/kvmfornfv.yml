@@ -24,12 +24,8 @@
 # patch verification phases
 #####################################
     testname:
-        - 'Idle_Idle':
-            trigger_time: '@midnight'
-        - 'Stress_Idle':
-            trigger_time: '@midnight+3hours'
-        - 'Packet_Forwarding':
-            trigger_time: '@midnight+6hours'
+        - 'cyclictest'
+        - 'packet_forward'
 #####################################
 # patch verification phases
 #####################################
@@ -37,7 +33,7 @@
         - 'kvmfornfv-verify-{stream}'
         - 'kvmfornfv-verify-{phase}-{stream}'
         - 'kvmfornfv-merge-{stream}'
-        - 'kvmfornfv-{testname}-daily-{stream}'
+        - 'kvmfornfv-daily-{stream}'
         - 'kvmfornfv-{testname}-daily-{phase}-{stream}'
 #####################################
 # job templates
@@ -184,7 +180,7 @@
             !include-raw: ./kvmfornfv-build.sh
 
 - job-template:
-    name: 'kvmfornfv-{testname}-daily-{stream}'
+    name: 'kvmfornfv-daily-{stream}'
 
     project-type: multijob
 
@@ -208,7 +204,7 @@
             choosing-strategy: 'default'
 
     triggers:
-        - timed: '{trigger_time}'
+        - timed: '@midnight'
 
     builders:
         - description-setter:
@@ -217,7 +213,7 @@
             name: build
             condition: SUCCESSFUL
             projects:
-                - name: 'kvmfornfv-Idle_Idle-daily-build-{stream}'
+                - name: 'kvmfornfv-{testname}-daily-build-{stream}'
                   current-parameters: false
                   node-parameters: false
                   git-revision: true
@@ -227,55 +223,12 @@
             name: build
             condition: SUCCESSFUL
             projects:
-                - name: 'kvmfornfv-Stress_Idle-daily-build-{stream}'
+                - name: 'kvmfornfv-{testname}-daily-test-{stream}'
                   current-parameters: false
                   node-parameters: false
                   git-revision: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
-        - multijob:
-            name: build
-            condition: SUCCESSFUL
-            projects:
-                - name: 'kvmfornfv-Packet_Forwarding-daily-build-{stream}'
-                  current-parameters: false
-                  node-parameters: false
-                  git-revision: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-
-        - multijob:
-            name: build
-            condition: SUCCESSFUL
-            projects:
-                - name: 'kvmfornfv-Idle_Idle-daily-test-{stream}'
-                  current-parameters: false
-                  node-parameters: false
-                  git-revision: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-
-        - multijob:
-            name: test
-            condition: SUCCESSFUL
-            projects:
-                - name: 'kvmfornfv-Stress_Idle-daily-test-{stream}'
-                  current-parameters: false
-                  node-parameters: false
-                  git-revision: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: build
-            condition: SUCCESSFUL
-            projects:
-                - name: 'kvmfornfv-Packet_Forwarding-daily-test-{stream}'
-                  current-parameters: false
-                  node-parameters: false
-                  git-revision: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-
 
 - job-template:
     name: 'kvmfornfv-{testname}-daily-{phase}-{stream}'
@@ -305,35 +258,15 @@
         - '{slave-label}-defaults'
         - 'kvmfornfv-defaults':
             gs-pathname: '{gs-pathname}'
+        - string:
+            name: TEST_NAME
+            default: '{testname}'
+            description: "Daily job to execute kvmfornfv '{testname}' testcase."
 
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
         - '{project}-{testname}-daily-{phase}-macro'
-########################
-# parameter macros
-########################
-- parameter:
-    name: 'kvmfornfv-Idle_Idle-daily-test-{stream}'
-    parameters:
-        - string:
-            name: TEST_NAME
-            default: 'idle_idle'
-            description: "Daily job to run cyclictest without applying any stress"
-- parameter:
-    name: 'kvmfornfv-Stress_Idle-daily-test-{stream}'
-    parameters:
-        - string:
-            name: TEST_NAME
-            default: 'stress_idle'
-            description: "Daily job to run cyclictest with stress applied"
-- parameter:
-    name: 'kvmfornfv-Packet_Forwarding-daily-test-{stream}'
-    parameters:
-        - string:
-            name: TEST_NAME
-            default: 'packet_forward'
-            description: "Daily job to run packet forwarding test cases"
 #####################################
 # builder macros
 #####################################
@@ -352,42 +285,14 @@
         - shell:
             !include-raw: ./kvmfornfv-test.sh
 - builder:
-    name: 'kvmfornfv-Idle_Idle-daily-build-macro'
+    name: 'kvmfornfv-{testname}-daily-build-macro'
     builders:
         - shell:
             !include-raw: ./kvmfornfv-build.sh
         - shell:
             !include-raw: ./kvmfornfv-upload-artifact.sh
 - builder:
-    name: 'kvmfornfv-Stress_Idle-daily-build-macro'
-    builders:
-        - shell:
-            !include-raw: ./kvmfornfv-build.sh
-        - shell:
-            !include-raw: ./kvmfornfv-upload-artifact.sh
-- builder:
-    name: 'kvmfornfv-Packet_Forwarding-daily-build-macro'
-    builders:
-        - shell:
-            !include-raw: ./kvmfornfv-build.sh
-        - shell:
-            !include-raw: ./kvmfornfv-upload-artifact.sh
-- builder:
-    name: 'kvmfornfv-Idle_Idle-daily-test-macro'
-    builders:
-        - shell:
-            !include-raw: ./kvmfornfv-download-artifact.sh
-        - shell:
-            !include-raw: ./kvmfornfv-test.sh
-- builder:
-    name: 'kvmfornfv-Stress_Idle-daily-test-macro'
-    builders:
-        - shell:
-            !include-raw: ./kvmfornfv-download-artifact.sh
-        - shell:
-            !include-raw: ./kvmfornfv-test.sh
-- builder:
-    name: 'kvmfornfv-Packet_Forwarding-daily-test-macro'
+    name: 'kvmfornfv-{testname}-daily-test-macro'
     builders:
         - shell:
             !include-raw: ./kvmfornfv-download-artifact.sh
