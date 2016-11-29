@@ -164,7 +164,8 @@ usage: $0 [OPTIONS]
  -t  test the connection string by connecting without monit
  -f  test firewall
 
-Example: $0 -j /home/jenkins/ -u jenkins -n lab1 -s 727fdefoofoofoofoofoofoofof800
+Example: $0 -j /home/jenkins -u jenkins -n lab1 -s 727fdefoofoofoofoofoofoofof800
+note: a trailing slash on -j /home/jenkins will break the script
 EOF
 
     exit 1
