@@ -17,6 +17,9 @@ function fix_ownership() {
     if [ -z "${JOB_URL+x}" ]; then
         echo "Not running as part of Jenkins. Handle the logs manually."
     else
+        # Make sure cache exists
+        [[ ! -d ${HOME}/.cache ]] && mkdir ${HOME}/.cache
+
         sudo chown -R jenkins:jenkins $WORKSPACE
         sudo chown -R jenkins:jenkins ${HOME}/.cache
     fi
