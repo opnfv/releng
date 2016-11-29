@@ -30,8 +30,6 @@ EOF
 }
 
 main () {
-    dir=$(cd $(dirname $0); pwd)
-
     #tests
     if [[ -z $jenkinsuser || -z $jenkinshome ]]; then
         echo "jenkinsuser or home not defined, please edit this file to define it"
@@ -60,17 +58,6 @@ main () {
       fi
     fi
 
-
-    if [ -d /etc/monit/conf.d ]; then
-        monitconfdir="/etc/monit/conf.d/"
-    elif [ -d /etc/monit.d ]; then
-        monitconfdir="/etc/monit.d"
-    else
-        echo "Could not determine the location of the monit configuration file."
-        echo "Make sure monit is installed."
-        exit 1
-    fi
-
     #make pid dir
     pidfile="/var/run/$jenkinsuser/jenkins_jnlp_pid"
     if ! [ -d /var/run/$jenkinsuser/ ]; then
@@ -94,29 +81,39 @@ main () {
                 exit 1
             fi
         fi
-    fi
 
-    makemonit () {
-        echo "Writing the following as monit config:"
+        if [ -d /etc/monit/conf.d ]; then
+            monitconfdir="/etc/monit/conf.d/"
+        elif [ -d /etc/monit.d ]; then
+            monitconfdir="/etc/monit.d"
+        else
+            echo "Could not determine the location of the monit configuration file."
+            echo "Make sure monit is installed."
+            exit 1
+        fi
+
+        makemonit () {
+            echo "Writing the following as monit config:"
         cat << EOF | tee $monitconfdir/jenkins
 check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
-start program = "/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $dir; export started_monit=true; $0 $@' with timeout 60 seconds"
+start program = "/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $jenkinshome; export started_monit=true; $0 $@' with timeout 60 seconds"
 stop program = "/bin/bash -c '/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)'"
 EOF
-    }
+        }
 
-    if [[ -f $monitconfdir/jenkins ]]; then
-        #test for diff
-        if [[ "$(diff $monitconfdir/jenkins <(echo "\
+        if [[ -f $monitconfdir/jenkins ]]; then
+            #test for diff
+            if [[ "$(diff $monitconfdir/jenkins <(echo "\
 check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
-start program = \"/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $dir; export started_monit=true; $0 $@' with timeout 60 seconds\"
+start program = \"/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $jenkinshome; export started_monit=true; $0 $@' with timeout 60 seconds\"
 stop program = \"/bin/bash -c '/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)'\"\
 ") )" ]]; then
-            echo "Updating monit config..."
+                echo "Updating monit config..."
+                makemonit $@
+            fi
+        else
             makemonit $@
         fi
-    else
-        makemonit $@
     fi
 
 if [[ $started_monit == "true" ]]; then
