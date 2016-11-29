@@ -53,7 +53,8 @@
       dib_imagename: "{{deploy_image}}"
       dib_os_element: "{{ lookup('env','DIB_OS_ELEMENT') }}"
       dib_os_release: "{{ lookup('env', 'DIB_OS_RELEASE') }}"
-      dib_elements: "vm serial-console simple-init devuser infra-cloud-bridge puppet growroot {{ extra_dib_elements|default('') }}"
+      extra_dib_elements: "{{ lookup('env', 'EXTRA_DIB_ELEMENTS') | default('') }}"
+      dib_elements: "vm serial-console simple-init devuser infra-cloud-bridge puppet growroot {{ extra_dib_elements }}"
       dib_packages: "{{ lookup('env', 'DIB_OS_PACKAGES') }}"
       when: create_image_via_dib | bool == true and transform_boot_image | bool == false
   environment:
