@@ -33,11 +33,15 @@
             dib-os-packages: 'vim,less,bridge-utils,iputils,rsyslog,curl'
             extra-dib-elements: 'openssh-server'
         - 'suse':
-            disabled: true
-            dib-os-release: 'suse'
-            dib-os-element: 'suse'
-            dib-os-packages: ''
+            disabled: false
+            dib-os-release: '42.2'
+            dib-os-element: 'opensuse-minimal'
+            # python-xml is needed until https://review.openstack.org/#/c/400150/ is merged
+            dib-os-packages: 'vim,less,bridge-utils,iputils,rsyslog,curl,python-xml'
             extra-dib-elements: 'openssh-server'
+            vm-disk: '30'
+            vm-memory: '4096'
+            vm-cpu: '2'
 #--------------------------------
 # type
 #--------------------------------
@@ -48,6 +52,16 @@
 #--------------------------------
     jobs:
         - '{project}-bifrost-verify-{distro}-{type}-{stream}'
+
+#--------------------------------
+# VM defaults
+#--------------------------------
+- defaults:
+    name: vm_defaults
+    vm-disk: '100'
+    vm-memory: '8192'
+    vm-cpu: '4'
+
 #--------------------------------
 # job templates
 #--------------------------------
@@ -55,6 +69,8 @@
     name: '{project}-bifrost-verify-{distro}-{type}-{stream}'
 
     disabled: '{obj:disabled}'
+
+    defaults: vm_defaults
 
     concurrent: false
 
@@ -90,6 +106,15 @@
         - string:
             name: DIB_OS_PACKAGES
             default: '{dib-os-packages}'
+        - string:
+            name: VM_DISK
+            default: '{vm-disk}'
+        - string:
+            name: VM_MEMORY
+            default: '{vm-memory}'
+        - string:
+            name: VM_CPU
+            default: '{vm-cpu}'
         - string:
             name: CLEAN_DIB_IMAGES
             default: 'true'
