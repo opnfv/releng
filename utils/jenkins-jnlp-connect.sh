@@ -116,33 +116,33 @@ stop program = \"/bin/bash -c '/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenki
         fi
     fi
 
-if [[ $started_monit == "true" ]]; then
-    wget --timestamping https://build.opnfv.org/ci/jnlpJars/slave.jar && true
-    chown $jenkinsuser:$jenkinsuser slave.jar
+    if [[ $started_monit == "true" ]]; then
+        wget --timestamping https://build.opnfv.org/ci/jnlpJars/slave.jar && true
+        chown $jenkinsuser:$jenkinsuser slave.jar
 
-    if [[ -f /var/run/$jenkinsuser/jenkins_jnlp_pid ]]; then
-        echo "pid file found"
-        if ! kill -0 "$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)"; then
-            echo "no java process running cleaning up pid file"
-            rm -f /var/run/$jenkinsuser/jenkins_jnlp_pid;
-        else
-            echo "java connection process found and running already running quitting."
-            exit 1
+        if [[ -f /var/run/$jenkinsuser/jenkins_jnlp_pid ]]; then
+            echo "pid file found"
+            if ! kill -0 "$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)"; then
+                echo "no java process running cleaning up pid file"
+                rm -f /var/run/$jenkinsuser/jenkins_jnlp_pid;
+            else
+                echo "java connection process found and running already running quitting."
+                exit 1
+            fi
         fi
-    fi
 
-    if [[ $run_in_foreground == true ]]; then
-        $connectionstring
+        if [[ $run_in_foreground == true ]]; then
+            $connectionstring
+        else
+            exec $connectionstring &
+            echo $! > /var/run/$jenkinsuser/jenkins_jnlp_pid
+        fi
     else
-        exec $connectionstring &
-        echo $! > /var/run/$jenkinsuser/jenkins_jnlp_pid
+        echo "you are ready to start monit"
+        echo "eg: service monit start"
+        echo "example debug mode if you are having problems:  /usr/bin/monit -Ivv -c /etc/monit.conf "
+        exit 0
     fi
-else
-    echo "you are ready to start monit"
-    echo "eg: service monit start"
-    echo "example debug mode if you are having problems:  /usr/bin/monit -Ivv -c /etc/monit.conf "
-    exit 0
-fi
 }
 
 usage() {
