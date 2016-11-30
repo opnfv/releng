@@ -18,7 +18,7 @@ ENABLE_VENV="false"
 USE_DHCP="false"
 USE_VENV="false"
 BUILD_IMAGE=true
-PROVISION_WAIT_TIMEOUT=${PROVISION_WAIT_TIMEOUT:-2400}
+PROVISION_WAIT_TIMEOUT=${PROVISION_WAIT_TIMEOUT:-3600}
 
 # Set defaults for ansible command-line options to drive the different
 # tests.
