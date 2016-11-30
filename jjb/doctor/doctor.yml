@@ -140,15 +140,5 @@
         - 'functest-suite-builder'
 
     publishers:
-        - postbuildscript:
-            builders:
-                - functest-copy-suite-log:
-                    suite: '{project}'
         - archive:
-            artifacts: '{project}.log'
-
-- builder:
-    name: functest-copy-suite-log
-    builders:
-        - shell: |
-            cp $HOME/opnfv/functest/results/${{GIT_BRANCH##*/}}/{suite}.log $WORKSPACE/
+            artifacts: 'opnfv/functest/results/{stream}/{project}.log'
