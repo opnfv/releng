@@ -71,10 +71,23 @@ ISO_FILE=$WORKSPACE/opnfv.iso
 # log file name
 FUEL_LOG_FILENAME="${JOB_NAME}_${BUILD_NUMBER}.log.tar.gz"
 
+# Deploy Cache (to enable just create the deploy-cache subdir)
+# NOTE: Only available when ISO files are cached using ISOSTORE mechanism
+DEPLOY_CACHE=${ISOSTORE:-/iso_mount/opnfv_ci}/${GIT_BRANCH##*/}/deploy-cache
+if [[ -d "${DEPLOY_CACHE}" ]]; then
+    echo "Deploy cache dir present."
+    echo "--------------------------------------------------------"
+    echo "Fuel@OPNFV deploy cache: ${DEPLOY_CACHE}"
+    DEPLOY_CACHE="-C ${DEPLOY_CACHE}"
+else
+    DEPLOY_CACHE=""
+fi
+
 # construct the command
 DEPLOY_COMMAND="$WORKSPACE/ci/deploy.sh -b ${LAB_CONFIG_URL} \
     -l $LAB_NAME -p $POD_NAME -s $DEPLOY_SCENARIO -i file://${ISO_FILE} \
-    -H -B ${DEFAULT_BRIDGE:-pxebr} -S $TMPDIR -L $WORKSPACE/$FUEL_LOG_FILENAME"
+    -H -B ${DEFAULT_BRIDGE:-pxebr} -S $TMPDIR -L $WORKSPACE/$FUEL_LOG_FILENAME \
+    ${DEPLOY_CACHE}"
 
 # log info to console
 echo "Deployment parameters"
