@@ -87,19 +87,39 @@
             description: 'OpenStack credentials'
         - '{installer}-defaults'
         - '{slave-label}-defaults'
-        - functest-suite-parameter:
-            FUNCTEST_SUITE_NAME: 'doctor'
-            TESTCASE_OPTIONS: '-e INSPECTOR_TYPE={inspector} -v $WORKSPACE:$HOME/opnfv/repos/doctor'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'os-nosdn-nofeature-ha'
+        # functest
         - string:
             name: DOCKER_TAG
             default: '{docker-tag}'
             description: 'Tag to pull docker image'
-        - functest-parameter:
-            gs-pathname: '{gs-pathname}'
-            CI_DEBUG: 'true'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-nofeature-ha'
+        # functest-suite-parameter
+        - string:
+            name: FUNCTEST_SUITE_NAME
+            default: '{project}'
+        - string:
+            name: TESTCASE_OPTIONS
+            default: '-e INSPECTOR_TYPE={inspector} -v $WORKSPACE:$HOME/opnfv/repos/doctor'
+            description: 'Addtional parameters specific to test case(s)'
+        # functest-parameter
+        - string:
+            name: GS_PATHNAME
+            default: '{gs-pathname}'
+            description: "Version directory where the opnfv documents will be stored in gs repository"
+        - string:
+            name: FUNCTEST_REPO_DIR
+            default: "/home/opnfv/repos/functest"
+            description: "Directory where the Functest repository is cloned"
+        - string:
+            name: PUSH_RESULTS_TO_DB
+            default: "true"
+            description: "Push the results of all the tests to the resultDB"
+        - string:
+            name: CI_DEBUG
+            default: 'true'
+            description: "Show debug output information"
 
     scm:
         - gerrit-trigger-scm:
@@ -135,20 +155,8 @@
                 notbuilt: true
 
     builders:
-        - description-setter:
-            description: "POD: $NODE_NAME"
         - 'functest-suite-builder'
 
     publishers:
-        - postbuildscript:
-            builders:
-                - functest-copy-suite-log:
-                    suite: '{project}'
         - archive:
-            artifacts: '{project}.log'
-
-- builder:
-    name: functest-copy-suite-log
-    builders:
-        - shell: |
-            cp $HOME/opnfv/functest/results/${{GIT_BRANCH##*/}}/{suite}.log $WORKSPACE/
+            artifacts: '$HOME/opnfv/functest/results/{stream}/{project}.log'
