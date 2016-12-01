@@ -66,7 +66,13 @@ echo "Current branch: $branch"
 if [[ "$branch" == "master" ]]; then
     DOCKER_TAG="latest"
 else
-    DOCKER_TAG="stable"
+    if [[ "$RELEASE_TAG" != "" ]]; then
+        release=$(echo $branch|sed 's/.*\///')
+        DOCKER_TAG=${release}.${RELEASE_VERSION}
+        # e.g. colorado.1.0, colorado.2.0, colorado.3.0
+    else:
+        DOCKER_TAG="stable"
+    fi
 fi
 
 # Start the build
