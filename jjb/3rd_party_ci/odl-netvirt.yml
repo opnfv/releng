@@ -1,0 +1,186 @@
+- project:
+    name: 'odl-netvirt'
+
+    project: 'netvirt'
+
+    installer: 'apex'
+#####################################
+# branch definitions
+#####################################
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+#####################################
+# patch verification phases
+#####################################
+    phase:
+        - 'download-netvirt-artifact'
+        - 'install-netvirt'
+        - 'functest'
+        - 'postprocess'
+#####################################
+# jobs
+#####################################
+    jobs:
+        - 'odl-netvirt-verify-virtual-{stream}'
+        - 'odl-netvirt-verify-virtual-{phase}-{stream}'
+#####################################
+# job templates
+#####################################
+- job-template:
+    name: 'odl-netvirt-verify-virtual-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 4
+            option: 'project'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'odl-netvirt-virtual-defaults'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: download-netvirt-artifact
+            condition: SUCCESSFUL
+            projects:
+                - name: 'odl-netvirt-verify-virtual-download-artifact-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: install-netvirt
+            condition: SUCCESSFUL
+            projects:
+                - name: 'odl-netvirt-verify-virtual-install-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: deploy-virtual
+            condition: SUCCESSFUL
+            projects:
+                - name: 'odl-netvirt-verify-virtual-functest-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: postprocess
+            condition: SUCCESSFUL
+            projects:
+                - name: 'odl-netvirt-verify-virtual-postprocess-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+
+- job-template:
+    name: 'odl-netvirt-verify-virtual-{phase}-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 4
+            option: 'project'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 360
+            fail: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'odl-netvirt-virtual-defaults'
+        - '{installer}-defaults'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - '{project}-verify-{phase}-builder'
+#####################################
+# builder macros
+#####################################
+- builder:
+    name: 'netvirt-verify-download-netvirt-artifact-builder'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Not activated!"
+
+- builder:
+    name: 'netvirt-verify-install-netvirt-builder'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Not activated!"
+
+- builder:
+    name: 'netvirt-verify-functest-builder'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Not activated!"
+
+- builder:
+    name: 'netvirt-verify-postprocess-builder'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Not activated!"
