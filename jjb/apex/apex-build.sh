@@ -6,6 +6,22 @@ set -o pipefail
 echo "Starting the build of Apex using OpenStack Master packages. This will take some time..."
 echo "---------------------------------------------------------------------------------------"
 echo
+echo "Checking for Squid Proxy"
+if ! systemctl status squid; then
+    if ! systemctl start squid; then
+        echo "Squid Not Running, Cannot continue"
+        exit 1
+    fi
+fi
+
+# export http_proxy so that we cache somethings
+declare -A node_ips
+node_ips=(["intel-virtual-3"]=10.2.117.111
+          ["intel-virtual-4"]=10.2.117.117
+          ["intel-virtual-5"]=10.2.117.119
+          ["lf-pod1"]=172.30.9.66)
+http_proxy=http://$node_ips[$NODE_NAME]:3128/
+
 # create the cache directory if it doesn't exist
 [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
 # set OPNFV_ARTIFACT_VERSION
