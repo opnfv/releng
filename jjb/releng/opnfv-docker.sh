@@ -66,7 +66,11 @@ echo "Current branch: $branch"
 if [[ "$branch" == "master" ]]; then
     DOCKER_TAG="latest"
 else
-    DOCKER_TAG="stable"
+    if [[ "$RELEASE_TAG" != "" ]]; then
+        DOCKER_TAG=$RELEASE_TAG
+    else:
+        DOCKER_TAG="stable"
+    fi
 fi
 
 # Start the build
