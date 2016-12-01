@@ -85,9 +85,11 @@
             name: OS_CREDS
             default: /home/jenkins/openstack.creds
             description: 'OpenStack credentials'
-        - '{installer}-defaults'
         - '{slave-label}-defaults'
-        # functest
+        - string:
+            name: INSTALLER_TYPE
+            default: '{installer}'
+            description: 'Installer used for deploying OPNFV on this POD'
         - string:
             name: DOCKER_TAG
             default: '{docker-tag}'
@@ -95,13 +97,14 @@
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-nosdn-nofeature-ha'
+            description: 'Scenario to deploy and test'
         # functest-suite-parameter
         - string:
             name: FUNCTEST_SUITE_NAME
             default: '{project}'
         - string:
             name: TESTCASE_OPTIONS
-            default: '-e INSPECTOR_TYPE={inspector} -v $WORKSPACE:$HOME/opnfv/repos/doctor'
+            default: '-e INSPECTOR_TYPE={inspector} -v $WORKSPACE:/home/opnfv/repos/doctor'
             description: 'Addtional parameters specific to test case(s)'
         # functest-parameter
         - string:
@@ -158,5 +161,18 @@
         - 'functest-suite-builder'
 
     publishers:
+        - postbuildscript:
+            builders:
+                - functest-copy-suite-log:
+                    suite: '{project}'
+                    stream: '{stream}'
+            script-only-if-succeeded: False
+            script-only-if-failed: False
         - archive:
-            artifacts: '$HOME/opnfv/functest/results/{stream}/{project}.log'
+            artifacts: '*.log'
+
+- builder:
+    name: functest-copy-suite-log
+    builders:
+        - shell: |
+            cp $HOME/opnfv/functest/results/{stream}/{suite}.log $WORKSPACE/
