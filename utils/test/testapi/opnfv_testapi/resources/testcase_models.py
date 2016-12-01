@@ -41,7 +41,8 @@ class TestcaseUpdateRequest(object):
 
 @swagger.model()
 class Testcase(object):
-    def __init__(self):
+    def __init__(self, _id=None, name=None, project_name=None,
+                 description=None, url=None, creation_date=None):
         self._id = None
         self.name = None
         self.project_name = None
