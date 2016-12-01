@@ -161,18 +161,5 @@
         - 'functest-suite-builder'
 
     publishers:
-        - postbuildscript:
-            builders:
-                - functest-copy-suite-log:
-                    suite: '{project}'
-                    stream: '{stream}'
-            script-only-if-succeeded: False
-            script-only-if-failed: False
         - archive:
-            artifacts: '*.log'
-
-- builder:
-    name: functest-copy-suite-log
-    builders:
-        - shell: |
-            cp $HOME/opnfv/functest/results/{stream}/{suite}.log $WORKSPACE/
+            artifacts: '/home/opnfv/functest/results/{stream}/{project}.log'
