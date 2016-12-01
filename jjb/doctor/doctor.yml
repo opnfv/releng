@@ -159,7 +159,9 @@
 
     builders:
         - 'functest-suite-builder'
+        - shell: |
+            cp $HOME/opnfv/functest/results/{stream}/{project}.log $WORKSPACE/tests/
 
     publishers:
         - archive:
-            artifacts: '/home/opnfv/functest/results/{stream}/{project}.log'
+            artifacts: 'tests/*.log'
