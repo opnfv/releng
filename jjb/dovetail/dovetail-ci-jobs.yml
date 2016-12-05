@@ -112,7 +112,9 @@
             <<: *master
 #--------------------------------
     testsuite:
-        - 'basic'
+        - 'debug'
+        - 'proposed_tests'
+        - 'compliace_set'
 
     jobs:
         - 'dovetail-{SUT}-{pod}-{testsuite}-{stream}'
@@ -159,6 +161,10 @@
             name: CI_DEBUG
             default: 'true'
             description: "Show debug output information"
+        - string:
+            name: TESTSUITE
+            default: '{testsuite}'
+            description: "dovetail testsuite to run"
 
     scm:
         - git-scm:
@@ -170,7 +176,7 @@
         - description-setter:
             description: "POD: $NODE_NAME"
         - 'dovetail-cleanup'
-        - 'dovetail-{testsuite}'
+        - 'dovetail-run'
 
     publishers:
         - archive:
@@ -182,10 +188,11 @@
 # builder macros
 ########################
 - builder:
-    name: dovetail-basic
+    name: dovetail-run
     builders:
         - shell:
             !include-raw: ./dovetail-run.sh
+
 
 - builder:
     name: dovetail-fetch-os-creds
