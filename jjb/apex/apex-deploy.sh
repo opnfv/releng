@@ -172,6 +172,9 @@ if [[ "$JOB_NAME" == *virtual* ]]; then
     NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings.yaml"
   fi
   DEPLOY_CMD="${DEPLOY_CMD} -v"
+  if [[ "$JOB_NAME" == *csit* ]]; then
+    DEPLOY_CMD="${DEPLOY_CMD} -e csit-environment.yaml --virtual-computes 2"
+  fi
 else
   # settings for bare metal deployment
   if [ "$IPV6_FLAG" == "True" ]; then
