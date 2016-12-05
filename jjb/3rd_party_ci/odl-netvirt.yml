@@ -17,8 +17,6 @@
 #####################################
     phase:
         - 'create-apex-vms':
-            slave-label: 'ericsson-virtual5'
-        - 'install-netvirt':
             slave-label: 'odl-netvirt-virtual'
         - 'functest':
             slave-label: 'odl-netvirt-virtual'
@@ -63,10 +61,10 @@
         - gerrit:
             server-name: 'git.opendaylight.org'
             trigger-on:
-                - comment-added-contains-event:
-                    comment-contains-value: 'https://jenkins.opendaylight.org/releng/job/netvirt-patch-test-current-carbon/.*?/ : SUCCESS'
-                - comment-added-contains-event:
-                    comment-contains-value: 'https://jenkins.opendaylight.org/releng/job/netvirt-patch-test-current-carbon/.*?/ : UNSTABLE'
+ #               - comment-added-contains-event:
+ #                   comment-contains-value: 'https://jenkins.opendaylight.org/releng/job/netvirt-patch-test-current-carbon/.*?/ : SUCCESS'
+ #               - comment-added-contains-event:
+ #                   comment-contains-value: 'https://jenkins.opendaylight.org/releng/job/netvirt-patch-test-current-carbon/.*?/ : UNSTABLE'
                 - comment-added-contains-event:
                     comment-contains-value: 'opnfv-test'
             projects:
@@ -99,23 +97,6 @@
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
-            name: install-netvirt
-            condition: SUCCESSFUL
-            projects:
-                - name: 'odl-netvirt-verify-virtual-install-netvirt-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    GERRIT_BRANCH=$GERRIT_BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_ID=$GERRIT_CHANGE_ID
-                    GERRIT_PATCHSET_NUMBER=$GERRIT_PATCHSET_NUMBER
-                    GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION
-                    NETVIRT_ARTIFACT=$NETVIRT_ARTIFACT
-                  node-parameters: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
             name: functest
             condition: SUCCESSFUL
             projects:
@@ -123,7 +104,7 @@
                   predefined-parameters: |
                     FUNCTEST_SUITE_NAME=vping_userdata,bgpvpn
                     RC_FILE_PATH=/home/jenkins/cloner-info/overcloudrc
-                    DEPLOY_SCENARIO=os-odl_l2-bgpvpn-noha
+                    DEPLOY_SCENARIO=os-odl_l3-csit-noha
                   node-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: false
@@ -161,7 +142,7 @@
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - 'odl-netvirt-verify-virtual-install-.*'
+                - 'odl-netvirt-verify-virtual-create-apex-vms-.*'
                 - 'odl-netvirt-verify-virtual-functest-.*'
                 - 'odl-netvirt-verify-virtual-postprocess-.*'
             block-level: 'NODE'
@@ -191,14 +172,9 @@
     name: 'netvirt-verify-create-apex-vms-builder'
     builders:
         - shell:
-            !include-raw: ./create-apex-vms.sh
-- builder:
-    name: 'netvirt-verify-install-netvirt-builder'
-    builders:
-        - shell:
             !include-raw: ./download-netvirt-artifact.sh
         - shell:
-            !include-raw: ./install-netvirt.sh
+            !include-raw: ../apex/apex-snapshot-deploy.sh
 - builder:
     name: 'netvirt-verify-functest-builder'
     builders:
