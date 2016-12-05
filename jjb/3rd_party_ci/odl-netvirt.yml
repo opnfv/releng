@@ -17,11 +17,11 @@
 #####################################
     phase:
         - 'create-apex-vms':
-            slave-label: 'ericsson-virtual5'
+            slave-label: 'odl-netvirt-virtual-intel'
         - 'install-netvirt':
-            slave-label: 'odl-netvirt-virtual'
+            slave-label: 'odl-netvirt-virtual-intel'
         - 'postprocess':
-            slave-label: 'odl-netvirt-virtual'
+            slave-label: 'odl-netvirt-virtual-intel'
 #####################################
 # jobs
 #####################################
@@ -62,10 +62,10 @@
         - gerrit:
             server-name: 'git.opendaylight.org'
             trigger-on:
-                - comment-added-contains-event:
-                    comment-contains-value: 'https://jenkins.opendaylight.org/releng/job/netvirt-patch-test-current-carbon/.*?/ : SUCCESS'
-                - comment-added-contains-event:
-                    comment-contains-value: 'https://jenkins.opendaylight.org/releng/job/netvirt-patch-test-current-carbon/.*?/ : UNSTABLE'
+ #               - comment-added-contains-event:
+ #                   comment-contains-value: 'https://jenkins.opendaylight.org/releng/job/netvirt-patch-test-current-carbon/.*?/ : SUCCESS'
+ #               - comment-added-contains-event:
+ #                   comment-contains-value: 'https://jenkins.opendaylight.org/releng/job/netvirt-patch-test-current-carbon/.*?/ : UNSTABLE'
                 - comment-added-contains-event:
                     comment-contains-value: 'opnfv-test'
             projects:
@@ -118,10 +118,10 @@
             name: functest
             condition: SUCCESSFUL
             projects:
-                - name: 'functest-netvirt-virtual-daily-{stream}'
+                - name: 'functest-netvirt-virtual-suite-{stream}'
                   predefined-parameters: |
-                    RC_FILE_PATH=/home/jenkins/cloner-info/overcloudrc
-                    DEPLOY_SCENARIO=os-odl_l2-bgpvpn-noha
+                    DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
+                    FUNCTEST_SUITE_NAME=healthcheck
                   node-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: false
@@ -141,7 +141,7 @@
                     NETVIRT_ARTIFACT=$NETVIRT_ARTIFACT
                   node-parameters: true
                   kill-phase-on: FAILURE
-                  abort-all-job: true
+                  abort-all-job: false
 
 - job-template:
     name: 'odl-netvirt-verify-virtual-{phase}-{stream}'
@@ -160,8 +160,9 @@
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - 'odl-netvirt-verify-virtual-install-.*'
-                - 'functest-netvirt-virtual-daily-.*'
+                - 'odl-netvirt-verify-virtual-create-apex-vms-.*'
+                - 'odl-netvirt-verify-virtual-install-netvirt-.*'
+                - 'functest-netvirt-virtual-suite-.*'
                 - 'odl-netvirt-verify-virtual-postprocess-.*'
             block-level: 'NODE'
 
@@ -190,7 +191,7 @@
     name: 'netvirt-verify-create-apex-vms-builder'
     builders:
         - shell:
-            !include-raw: ./create-apex-vms.sh
+            !include-raw: ../apex/apex-snapshot-deploy.sh
 - builder:
     name: 'netvirt-verify-install-netvirt-builder'
     builders:
