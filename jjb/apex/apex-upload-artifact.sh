@@ -73,7 +73,17 @@ gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION
 gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/latest.properties > gsutil.latest.log
 }
 
-if gpg2 --list-keys | grep "opnfv-helpdesk@rt.linuxfoundation.org"; then
+uploadsnap () {
+  # Uploads snapshot artifact and updated properties file
+  echo "Uploading snapshot artifacts"
+  gsutil cp $WORKSPACE/apex-csit-snap-`date +%Y-%m-%d`.tar.gz gs://$GS_URL/ > gsutil.iso.log
+  gsutil cp $WORKSPACE/snapshot.properties gs://$GS_URL/snapshot.properties > gsutil.latest.log
+  echo "Upload complete for Snapshot"
+}
+
+if grep csit $WORKSPACE; then
+  uploadsnap
+elif gpg2 --list-keys | grep "opnfv-helpdesk@rt.linuxfoundation.org"; then
   echo "Signing Key avaliable"
   signiso
   uploadiso
