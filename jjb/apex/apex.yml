@@ -847,6 +847,71 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
 
+# CSIT promote
+- job-template:
+    name: 'apex-csit-promote-{stream}'
+
+    # Job template for promoting CSIT Snapshots
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: '{verify-slave}'
+
+    disabled: false
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-verify.*'
+                - 'apex-deploy.*'
+                - 'apex-build.*'
+                - 'apex-runner.*'
+
+    triggers:
+        - timed: '0 3 * * 0'
+
+    builders:
+        - trigger-builds:
+          - project: 'apex-build-{stream}'
+            git-revision: true
+            current-parameters: true
+            same-node: true
+            block: true
+        - trigger-builds:
+          - project: 'apex-deploy-virtual-os-odl_l3-nofeature-noha-{stream}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-build-{stream}/build
+              OPNFV_CLEAN=yes
+            git-revision: false
+            block: true
+            same-node: true
+        - trigger-builds:
+          - project: 'functest-apex-{verify-slave}-suite-{stream}'
+            predefined-parameters: |
+              DEPLOY_SCENARIO=os-nosdn-nofeature-ha
+              FUNCTEST_SUITE_NAME=smoke
+            block: true
+            same-node: true
+        - shell:
+            !include-raw-escape: ./apex-snapshot-create.sh
+        - shell:
+            !include-raw-escape: ./apex-upload-artifact.sh
+
 - job-template:
     name: 'apex-gs-clean-{stream}'
 
