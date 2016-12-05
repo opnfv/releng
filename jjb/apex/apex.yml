@@ -62,6 +62,7 @@
          - 'os-odl_l2-fdio-ha'
          - 'os-odl_l2-sfc-noha'
          - 'os-odl_l3-nofeature-ha'
+         - 'os-odl_l3-csit-noha'
          - 'os-onos-nofeature-ha'
          - 'os-onos-sfc-ha'
          - 'os-ocl-nofeature-ha'
@@ -846,6 +847,141 @@
                 build-step-failure-threshold: 'never'
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
+
+# CSIT promote
+- job-template:
+    name: 'apex-csit-promote-daily-{stream}'
+
+    # Job template for promoting CSIT Snapshots
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: '{daily-slave}'
+
+    disabled: false
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-verify.*'
+                - 'apex-deploy.*'
+                - 'apex-build.*'
+                - 'apex-runner.*'
+
+    triggers:
+        - timed: '0 12 * * 0'
+
+    builders:
+        - trigger-builds:
+          - project: 'apex-build-{stream}'
+            git-revision: true
+            current-parameters: true
+            same-node: true
+            block: true
+        - trigger-builds:
+          - project: 'apex-deploy-virtual-os-odl_l3-csit-noha-{stream}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-build-{stream}/build
+              OPNFV_CLEAN=yes
+            git-revision: false
+            block: true
+            same-node: true
+        - trigger-builds:
+          - project: 'functest-apex-{verify-slave}-suite-{stream}'
+            predefined-parameters: |
+              DEPLOY_SCENARIO=os-nosdn-nofeature-ha
+              FUNCTEST_SUITE_NAME=smoke
+            block: true
+            same-node: true
+        - shell:
+            !include-raw-escape: ./apex-snapshot-create.sh
+        - shell:
+            !include-raw-escape: ./apex-deploy-artifact.sh
+
+# Verify
+- job-template:
+    name: 'apex-verify-odl-netvirt-{odl-stream}'
+
+    node: '{verify-slave}'
+
+    concurrent: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - string:
+            name: NETVIRT_ARTIFACT
+            default: $WORKSPACE/distribution-karaf.tar.gz"
+
+    scm:
+        - git:
+            url: 'https://git.opendaylight.org/gerrit/p/$PROJECT.git'
+            refspec: '$GERRIT_REFSPEC'
+            branches:
+                - 'origin/$GERRIT_BRANCH'
+            skip-tag: true
+            choosing-strategy: 'gerrit'
+            timeout: 10
+            wipe-workspace: true
+
+    triggers:
+        - gerrit:
+            server-name: 'git.opendaylight.org'
+            trigger-on:
+                - comment-added-contains-event:
+                    comment-contains-value: '.*check opnfv experimental.*'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+            readable-message: true
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-daily.*'
+                - 'apex-deploy.*'
+                - 'apex-build.*'
+                - 'apex-runner.*'
+                - 'apex-verify.*'
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - shell:
+            !include-raw: ../3rd_party_ci/download-netvirt-artifact.sh
+        - shell:
+            !include-raw-escape: ./apex-snapshot-deploy.sh
+        - trigger-builds:
+          - project: 'functest-apex-{verify-slave}-suite-{stream}'
+            predefined-parameters: |
+              DEPLOY_SCENARIO=os-odl_l3-csit-noha
+              FUNCTEST_SUITE_NAME=healthcheck
+            block: true
+            same-node: true
 
 - job-template:
     name: 'apex-gs-clean-{stream}'
