@@ -47,8 +47,8 @@ docker pull opnfv/dovetail:$DOCKER_TAG >$redirect
 
 # Run docker
 echo "Dovetail: docker running..."
-sudo docker run ${opts} ${envs} ${labconfig} ${sshkey} opnfv/dovetail:${DOCKER_TAG} \
-"/home/opnfv/dovetail/dovetail/run.py"
+cmds = "${DOVETAIL_REPO_DIR}/dovetail/run.py --testsuite $TESTSUITE"
+sudo docker run ${opts} ${envs} ${labconfig} ${sshkey} opnfv/dovetail:${DOCKER_TAG} ${cmds}
 
 echo "Dovetail: store results..."
 sudo cp -r /home/opnfv/dovetail/results ./
