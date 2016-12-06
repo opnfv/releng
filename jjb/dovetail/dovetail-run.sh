@@ -47,11 +47,11 @@ docker pull opnfv/dovetail:$DOCKER_TAG >$redirect
 
 # Run docker
 echo "Dovetail: docker running..."
-cmds = "${DOVETAIL_REPO_DIR}/dovetail/run.py --testsuite $TESTSUITE"
-sudo docker run ${opts} ${envs} ${labconfig} ${sshkey} opnfv/dovetail:${DOCKER_TAG} ${cmds}
+sudo docker run ${opts} ${envs} ${labconfig} ${sshkey} opnfv/dovetail:${DOCKER_TAG} \
+"${DOVETAIL_REPO_DIR}/dovetail/run.py --testsuite ${TESTSUITE}"
 
 echo "Dovetail: store results..."
-sudo cp -r /home/opnfv/dovetail/results ./
+sudo cp -r ${DOVETAIL_REPO_DIR}/results ./
 #To make sure the file owner is jenkins, for the copied results files in the above line
 #if not, there will be error when next time to wipe workspace
 sudo chown -R jenkins:jenkins ${WORKSPACE}/results
