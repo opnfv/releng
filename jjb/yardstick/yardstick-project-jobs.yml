@@ -118,16 +118,18 @@
 
             echo "Running unit tests..."
             cd $WORKSPACE
-            virtualenv $WORKSPACE/yardstick_venv
-            source $WORKSPACE/yardstick_venv/bin/activate
+            for python_interp in python2 python3 ; do
+              virtualenv -p "${python_interp}" "${WORKSPACE}"/yardstick_venv
+              source "${WORKSPACE}"/yardstick_venv/bin/activate
 
-            # install python packages
-            easy_install -U setuptools
-            easy_install -U pip
-            pip install -r requirements.txt || pip install -r tests/ci/requirements.txt
-            pip install -e .
+              # install python packages
+              easy_install -U setuptools
+              easy_install -U pip
+              pip install -r requirements.txt
+              pip install -e .
 
-            # unit tests
-            ./run_tests.sh
+              # unit tests
+              ./run_tests.sh
 
-            deactivate
+              deactivate
+            done
