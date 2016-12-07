@@ -1,22 +1,20 @@
 - project:
-    name: qtip
+    name: qtip-project-jobs
 
-    project: '{name}'
+    project: 'qtip'
 
     jobs:
         - 'qtip-verify-{stream}'
 
-# only master branch is enabled at the moment to keep no of jobs sane
     stream:
         - master:
             branch: '{stream}'
             gs-pathname: ''
             disabled: false
-        - colorado:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
-            disabled: false
 
+################################
+## job templates
+#################################
 - job-template:
     name: 'qtip-verify-{stream}'
 
@@ -58,6 +56,14 @@
                   - compare-type: ANT
                     pattern: 'docs/**|.gitignore'
 
+    builders:
+        - qtip-unit-tests-and-docs-build
+
+################################
+## job builders
+#################################
+- builder:
+    name: qtip-unit-tests-and-docs-build
     builders:
         - shell: |
             #!/bin/bash

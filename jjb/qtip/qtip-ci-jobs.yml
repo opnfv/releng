@@ -2,7 +2,7 @@
 # job configuration for qtip
 ####################################
 - project:
-    name: qtip-ci-jobs
+    name: qtip
 
     project: 'qtip'
 
@@ -20,22 +20,6 @@
 #        master
 #--------------------------------
     pod:
-        - dell-pod1:
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - orange-pod2:
-            installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - juniper-pod1:
-            installer: joid
-            <<: *master
-            auto-trigger-name: 'daily-trigger-disabled'
-        - zte-pod1:
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
         - zte-pod2:
             installer: fuel
             auto-trigger-name: 'qtip-daily-zte-pod2-trigger'
@@ -80,6 +64,8 @@
         - '{auto-trigger-name}'
 
     builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
         - 'qtip-cleanup'
         - 'qtip-daily-ci'
 
@@ -105,22 +91,6 @@
 #################
 #trigger macros
 #################
-
-#- trigger:
-#    name: 'qtip-daily-dell-pod1-trigger'
-#    triggers:
-#        - timed: '0 3 * * *'
-
-#- trigger:
-#    name: 'qtip-daily-juniper-pod1-trigger'
-#    triggers:
-#        - timed : '0 0 * * *'
-
-#- trigger:
-#   name: 'qtip-dailty-orange-pod2-trigger'
-#   triggers:
-#       - timed : ' 0 0 * * *'
-
 - trigger:
     name: 'qtip-daily-zte-pod2-trigger'
     triggers:
