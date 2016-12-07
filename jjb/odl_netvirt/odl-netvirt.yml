@@ -176,18 +176,18 @@
     name: 'netvirt-verify-install-builder'
     builders:
         - shell:
-            !include-raw: ./download-netvirt-artifact.sh
+            !include-raw: ./odl-pipeline.sh download-artifact
         - shell:
-            !include-raw: ./install-netvirt.sh
+            !include-raw: ./odl-pipeline.sh install-artifact
 
 - builder:
     name: 'netvirt-verify-functest-builder'
     builders:
         - shell:
-            !include-raw: ./functest-netvirt.sh
+            !include-raw: ./odl-pipeline.sh run-functest
 
 - builder:
     name: 'netvirt-verify-postprocess-builder'
     builders:
         - shell:
-            !include-raw: ./postprocess-netvirt.sh
+            !include-raw: ./odl-pipeline.sh postprocess

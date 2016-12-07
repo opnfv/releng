@@ -34,6 +34,9 @@ elif [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     labconfig="-v $LAB_CONFIG/admin-openrc:/home/opnfv/functest/conf/openstack.creds"
     # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
     # replace the default one by the customized one provided by jenkins config
+elif [[  ${INSTALLER_TYPE} == 'odl-pipeline' ]]; then
+    labconfig="-v $OPENSTACK_CREDS:/home/opnfv/functest/conf/openstack.creds"
+    sshkey="-v $SSH_KEYS:/root/.ssh/id_rsa"
 fi
 
 # Set iptables rule to allow forwarding return traffic for container
