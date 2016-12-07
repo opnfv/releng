@@ -29,19 +29,9 @@ cd $WORKSPACE
 
 export OS_VERSION=${COMPASS_OS_VERSION}
 export OPENSTACK_VERSION=${COMPASS_OPENSTACK_VERSION}
-if [[ "${COMPASS_OS_VERSION_OPTION}" = "xenial" ]] && [[ "${OPENSTACK_VERSION}" = "mitaka" ]]; then
-    export OPENSTACK_VERSION=${OPENSTACK_VERSION}_${COMPASS_OS_VERSION_OPTION}
-    export OS_VERSION=${COMPASS_OS_VERSION_OPTION}
-fi
-if [[ "${OPENSTACK_VERSION}" = "newton" ]]; then
-    export OS_VERSION="xenial"
-    export OPENSTACK_VERSION=${OPENSTACK_VERSION}_${OS_VERSION}
-fi
-
 
 if [[ "${DEPLOY_SCENARIO}" =~ "-ocl" ]]; then
     export NETWORK_CONF_FILE=network_ocl.yml
-    export OPENSTACK_VERSION=liberty
 elif [[ "${DEPLOY_SCENARIO}" =~ "-onos" ]]; then
     export NETWORK_CONF_FILE=network_onos.yml
 else
@@ -57,7 +47,11 @@ else
     export DHA_CONF=$CONFDIR/hardware_environment/$NODE_NAME/${DEPLOY_SCENARIO}.yml
 fi
 
-./deploy.sh --dha ${DHA_CONF} --network ${NETWORK_CONF}
+export DHA=${DHA_CONF}
+export NETWORK=${NETWORK_CONF}
+
+./ci/deploy_ci.sh
+
 if [ $? -ne 0 ]; then
     echo "depolyment failed!"
     deploy_ret=1
