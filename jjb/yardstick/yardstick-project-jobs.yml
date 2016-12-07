@@ -112,16 +112,4 @@
 
             echo "Running unit tests..."
             cd $WORKSPACE
-            virtualenv $WORKSPACE/yardstick_venv
-            source $WORKSPACE/yardstick_venv/bin/activate
-
-            # install python packages
-            easy_install -U setuptools
-            easy_install -U pip
-            pip install -r requirements.txt || pip install -r tests/ci/requirements.txt
-            pip install -e .
-
-            # unit tests
-            ./run_tests.sh
-
-            deactivate
+            tox
