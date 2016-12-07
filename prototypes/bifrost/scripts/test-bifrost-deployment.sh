@@ -62,11 +62,11 @@ export DIB_DEV_USER_PASSWORD=devuser
 export DIB_OS_RELEASE=${DIB_OS_RELEASE:-trusty}
 export DIB_OS_ELEMENT=${DIB_OS_ELEMENT:-ubuntu-minimal}
 
-# for centos 7: "openssh-server,vim,less,bridge-utils,iputils,rsyslog,curl"
-export DIB_OS_PACKAGES=${DIB_OS_PACKAGES:-"openssh-server,vlan,vim,less,bridge-utils,language-pack-en,iputils-ping,rsyslog,curl"}
+# for centos 7: "vim,less,bridge-utils,iputils,rsyslog,curl"
+export DIB_OS_PACKAGES=${DIB_OS_PACKAGES:-"vlan,vim,less,bridge-utils,language-pack-en,iputils-ping,rsyslog,curl"}
 
 # Additional dib elements
-export EXTRA_DIB_ELEMENTS=${EXTRA_DIB_ELEMENTS:-}
+export EXTRA_DIB_ELEMENTS=${EXTRA_DIB_ELEMENTS:-"openssh-server"}
 
 # Source Ansible
 # NOTE(TheJulia): Ansible stable-1.9 source method tosses an error deep
