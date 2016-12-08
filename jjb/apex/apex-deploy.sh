@@ -72,7 +72,7 @@ if [[ "$BUILD_DIRECTORY" == *verify* ]]; then
     DEPLOY_SETTINGS_DIR="${WORKSPACE}/config/deploy"
     NETWORK_SETTINGS_DIR="${WORKSPACE}/config/network"
     DEPLOY_CMD="$(pwd)/deploy.sh"
-    RESOURCES="${WORKSPACE}/build/images/"
+    RESOURCES="${WORKSPACE}/.build/"
     CONFIG="${WORKSPACE}/build"
     LIB="${WORKSPACE}/lib"
     # Make sure python34 deps are installed
