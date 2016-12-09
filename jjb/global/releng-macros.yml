@@ -355,3 +355,50 @@
     name: check-bash-syntax
     builders:
         - shell: "find . -name '*.sh' | xargs bash -n"
+
+- builder:
+    name: lint-yaml-code
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+            set -o xtrace
+            export PATH=$PATH:/usr/local/bin/
+
+            virtualenv -p python2.7 $WORKSPACE/releng_yamllint
+            source $WORKSPACE/releng_yamllint/bin/activate
+
+            # install yamllint packages
+            pip install "yamllint==1.6.0"
+
+            # generate and upload lint log
+            echo "Running yaml code on $PROJECT ..."
+
+            # Get number of yaml violations. If none, this will be an
+            # empty string: ""
+            FLAKE_COUNT="$(find . \
+                -path './releng_yamllint' -prune -o \
+                -path './.tox' -prune -o \
+                -type f -name "*.yml" -print | \
+                xargs yamllint 2>&1)"
+
+            # Ensure we start with a clean environment
+            rm -f lint.log
+
+            if [ ! -z $FLAKE_COUNT ]; then
+              echo "YamlLint Violations: $FLAKE_COUNT" > lint.log
+              find . \
+                  -path './releng_yamllint' -prune -o \
+                  -path './.tox' -prune -o \
+                  -type f -name "*.yml" -print | \
+                  xargs yamllint >> violation.log
+              SHOWN=$(wc -l violation.log | cut -d' ' -f1)
+              echo -e "First $SHOWN shown\n---" >> lint.log
+              cat violation.log >> lint.log
+              sed -r -i '4,$s/^/ /g' lint.log
+              rm violation.log
+            fi
+
+            deactivate
+
