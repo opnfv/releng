@@ -355,3 +355,41 @@
     name: check-bash-syntax
     builders:
         - shell: "find . -name '*.sh' | xargs bash -n"
+
+- builder:
+    name: lint-yaml-code
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+            set -o xtrace
+            export PATH=$PATH:/usr/local/bin/
+
+            # generate and upload lint log
+            echo "Running yaml code on $PROJECT ..."
+
+            # Ensure we start with a clean environment
+            rm -f yaml-violation.log lint.log
+
+            # Get number of yaml violations. If none, this will be an
+            # empty string: ""
+            find . \
+                -path './releng_yamllint' -prune -o \
+                -path './.tox' -prune -o \
+                -type f -name "*.yml" -print \
+                -o -name "*.yaml" -print | \
+                xargs yamllint > yaml-violation.log || true
+
+
+            if [ ! -s "violation.log" ]; then
+              echo "YamlLint Violations, No Errs or Warnings" > lint.log
+            else
+              SHOWN=$(cat yaml-violation.log| grep -v "^$" |wc -l)
+              echo -e "First $SHOWN shown\n---" > lint.log
+              cat yaml-violation.log >> lint.log
+              sed -r -i '4,$s/^/ /g' lint.log
+            fi
+
+            deactivate
+
