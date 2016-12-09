@@ -50,7 +50,7 @@ fi
 export DHA=${DHA_CONF}
 export NETWORK=${NETWORK_CONF}
 
-./ci/deploy_ci.sh
+source ./ci/deploy_ci.sh
 
 if [ $? -ne 0 ]; then
     echo "depolyment failed!"
