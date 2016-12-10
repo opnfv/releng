@@ -5,15 +5,12 @@
 
     jobs:
         - 'netready-verify-{stream}'
+        - 'netready-build-gluon-packages-daily-{stream}'
 
     stream:
         - master:
             branch: '{stream}'
             gs-pathname: ''
-            disabled: false
-        - colorado:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
             disabled: false
 
 - job-template:
@@ -58,3 +55,61 @@
     builders:
         - shell: |
             echo "Nothing to verify!"
+
+
+
+- job-template:
+    name: 'netready-build-gluon-packages-daily-{stream}'
+
+    disabled: false
+
+    concurrent: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - 'netready-gluon-build'
+
+    triggers:
+        - timed: '@midnight'
+
+
+########################
+# builder macros
+########################
+
+- builder:
+    name: 'netready-gluon-build'
+    builders:
+        - shell:
+            !include-raw: ./netready-gluon-build.sh
+        - shell:
+            !include-raw: ./netready-upload-gluon-packages.sh
+
+
+########################
+# parameter macros
+########################
+
+- parameter:
+    name: netready-parameter
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: GS_URL
+            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+            description: "URL to Google Storage."
