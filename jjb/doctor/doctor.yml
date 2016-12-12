@@ -34,17 +34,15 @@
     disabled: '{obj:disabled}'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
+        #- project-parameter:
+        - 'project-parameter'
+            #project: '{project}'
         - gerrit-parameter:
             branch: '{branch}'
         - 'opnfv-build-ubuntu-defaults'
 
     scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: '$GERRIT_REFSPEC'
-            choosing-strategy: 'gerrit'
+        - 'git-scm-gerrit'
 
     triggers:
         - gerrit:
@@ -130,10 +128,7 @@
             description: "Show debug output information"
 
     scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: '$GERRIT_REFSPEC'
-            choosing-strategy: 'gerrit'
+        - git-scm-gerrit
 
     triggers:
         - gerrit:
