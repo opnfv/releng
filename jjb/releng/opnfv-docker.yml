@@ -10,10 +10,12 @@
         stream: master
         branch: '{stream}'
         disabled: false
+        monitor: unmonitor          # monitor dedicated file or path
     colorado: &colorado
         stream: colorado
         branch: 'stable/{stream}'
         disabled: false
+        monitor: unmonitor
 
     project:
         # projects with jobs for master
@@ -31,6 +33,9 @@
             <<: *master
         - 'yardstick':
             <<: *master
+        - 'daisy':
+            <<: *master
+            monitor: monitor
         # projects with jobs for stable
         - 'bottlenecks':
             <<: *colorado
@@ -42,18 +47,18 @@
             <<: *colorado
 
     jobs:
-        - '{project}-docker-build-push-{stream}'
+        - '{project}-docker-build-push-{monitor}-{stream}'
 
 
 ########################
 # job templates
 ########################
 - job-template:
-    name: '{project}-docker-build-push-{stream}'
+    name: '{project}-docker-build-push-unmonitor-{stream}'
 
     disabled: '{obj:disabled}'
 
-    parameters:
+    parameters: &parameters
         - project-parameter:
             project: '{project}'
         - 'opnfv-build-ubuntu-defaults'
@@ -70,17 +75,41 @@
             default: ""
             description: "Release version, e.g. 1.0, 2.0, 3.0"
 
-    scm:
+    scm: &scm
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
             branch: '{branch}'
 
-    builders:
+    builders: &builders
         - shell:
             !include-raw-escape: ./opnfv-docker.sh
 
     triggers:
         - pollscm:
             cron: "*/30 * * * *"
+
+- job-template:
+    name: '{project}-docker-build-push-monitor-{stream}'
+    disabled: '{obj:disabled}'
+    parameters: *parameters
+    scm: *scm
+    builders: *builders
+
+    # trigger only matching the file name
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'docker/**'
 
