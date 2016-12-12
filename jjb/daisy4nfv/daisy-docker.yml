@@ -1,0 +1,66 @@
+##############################################
+# job configuration for docker build and push
+##############################################
+
+- project:
+    name: daisy-docker
+
+    master: &master
+        stream: master
+        branch: '{stream}'
+        disabled: false
+
+    project:
+        # projects with jobs for master
+        - 'daisy':
+            <<: *master
+
+    jobs:
+        - '{project}-docker-build-{stream}'
+
+
+########################
+# job templates
+########################
+- job-template:
+    name: '{project}-docker-build-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - 'opnfv-build-centos-defaults'
+        - string:
+            name: PUSH_IMAGE
+            default: "true"
+            description: "To enable/disable pushing the image to Dockerhub."
+        - string:
+            name: DOCKER_REPO_NAME
+            default: "opnfv/{project}-build"
+            description: "Dockerhub repo to be pushed to."
+        - string:
+            name: RELEASE_VERSION
+            default: ""
+            description: "Release version, e.g. 1.0, 2.0, 3.0"
+
+    scm:
+        - git-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            branch: '{branch}'
+
+    builders:
+        - shell:
+            !include-raw-escape: ./daisy-docker.sh
+
+    triggers:
+        - monitor-folders:
+            path: 'docker'
+            includes:
+                - 'Dockerfile'
+            check-modification-date: false
+            check-content: false
+            check-fewer: false
+            cron: 'H/30 * * * *'
+
