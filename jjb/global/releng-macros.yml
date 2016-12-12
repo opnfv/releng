@@ -23,31 +23,35 @@
             name: GERRIT_BRANCH
             default: '{branch}'
             description: "JJB configured GERRIT_BRANCH parameter"
+        - string:
+            name: SSH_CREDENTIAL_ID
+            default: '{ssh-credentials}'
+            description: "SSH Credential ID for git access"
+
+- scm:
+    name: git-scm-common
+    scm:
+        - git:
+            credentials-id: *ssh-credentials
+            url: '$GIT_BASE'
+            branches:
+                - 'origin/$GERRIT_BRANCH'
+            choosing-strategy: '{choosing-strategy}'
+            timeout: 15
 
 - scm:
     name: git-scm
     scm:
-        - git:
-            credentials-id: '{credentials-id}'
-            url: '$GIT_BASE'
-            refspec: ''
-            branches:
-                - 'origin/{branch}'
-            skip-tag: true
-            wipe-workspace: true
+        - gerrit-trigger-scm:
+            choosing-strategy: 'default'
+            #<<: *ssh-credentials
 
 - scm:
-    name: gerrit-trigger-scm
+    name: git-scm-gerrit
     scm:
-        - git:
-            credentials-id: '{credentials-id}'
-            url: '$GIT_BASE'
-            refspec: '{refspec}'
-            branches:
-                - 'origin/$GERRIT_BRANCH'
-            skip-tag: true
-            choosing-strategy: '{choosing-strategy}'
-            timeout: 15
+        - gerrit-trigger-scm:
+            choosing-strategy: 'gerrit'
+            #<<: *ssh-credentials
 
 - trigger:
     name: 'daily-trigger-disabled'
