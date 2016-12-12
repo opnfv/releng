@@ -55,15 +55,19 @@
         - 'odl-netvirt-virtual-defaults'
 
     scm:
-        - git:
-            url: 'https://git.opendaylight.org/gerrit/p/$PROJECT.git'
+        #- git:
+        #    url: 'https://git.opendaylight.org/gerrit/p/$PROJECT.git'
+        #    refspec: '$GERRIT_REFSPEC'
+        #    branches:
+        #        - 'origin/$GERRIT_BRANCH'
+        #    skip-tag: true
+        #    choosing-strategy: 'gerrit'
+        #    timeout: 10
+        #    wipe-workspace: true
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
             refspec: '$GERRIT_REFSPEC'
-            branches:
-                - 'origin/$GERRIT_BRANCH'
-            skip-tag: true
             choosing-strategy: 'gerrit'
-            timeout: 10
-            wipe-workspace: true
 
     triggers:
         - gerrit:
@@ -84,6 +88,9 @@
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
+        - shell: |
+            #!/bin/bash
+            ls -al $WORKSPACE
         - multijob:
             name: install
             condition: SUCCESSFUL
