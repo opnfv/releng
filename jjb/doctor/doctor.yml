@@ -166,7 +166,12 @@
     builders:
         - 'functest-suite-builder'
         - shell: |
-            cp $HOME/opnfv/functest/results/{stream}/{project}.log $WORKSPACE/tests/
+            functest_log="$HOME/opnfv/functest/results/{stream}/{project}.log"
+            to_be_archived="$WORKSPACE/tests/functest-{project}.log"
+            cp $functest_log $to_be_archived
+            # NOTE: checking the test result, as the previous job could return
+            #       0 regardless the result of doctor test scenario.
+            grep -e ' OK$' $functest_log || exit 1
 
     publishers:
         - archive:
