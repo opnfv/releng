@@ -82,11 +82,8 @@
             default: ""
             description: "Release version, e.g. 1.0, 2.0, 3.0"
 
-    scm: &scm
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
+    scm:
+        - git-scm
 
     builders: &builders
         - shell:
@@ -100,7 +97,8 @@
     name: '{project}-docker-build-push-monitor-{stream}'
     disabled: '{obj:disabled}'
     parameters: *parameters
-    scm: *scm
+    scm:
+        - git-scm
     builders: *builders
 
     # trigger only matching the file name
