@@ -117,15 +117,10 @@
     concurrent: true
 
     scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: '$GERRIT_REFSPEC'
-            choosing-strategy: 'gerrit'
+        - git-scm-gerrit
 
     wrappers:
-        - ssh-agent-credentials:
-            users:
-                - '{ssh-credentials}'
+        - ssh-agent-wrapper
         - timeout:
             timeout: 360
             fail: true
@@ -158,10 +153,7 @@
             gs-pathname: '{gs-pathname}'
 
     scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
+        - git-scm
 
     triggers:
         - gerrit:
@@ -200,10 +192,7 @@
             gs-pathname: '{gs-pathname}'
 
     scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
+        - git-scm
 
     triggers:
         - timed: '@midnight'
@@ -240,15 +229,10 @@
     concurrent: false
 
     scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
+        - git-scm
 
     wrappers:
-        - ssh-agent-credentials:
-            users:
-                - '{ssh-credentials}'
+        - ssh-agent-wrapper
         - timeout:
             timeout: 360
             fail: true
