@@ -45,6 +45,18 @@
         - '{project}-docker-build-push-{stream}'
 
 
+- project:
+
+    name: opnfv-monitor-docker        # projects which only monitor dedicated file or path
+
+    project:
+        # projects with jobs for master
+        - 'daisy':
+            <<: *master
+
+    jobs:
+        - '{project}-docker-build-push-monitor-{stream}'
+
 ########################
 # job templates
 ########################
@@ -53,7 +65,7 @@
 
     disabled: '{obj:disabled}'
 
-    parameters:
+    parameters: &parameters
         - project-parameter:
             project: '{project}'
         - 'opnfv-build-ubuntu-defaults'
@@ -70,17 +82,41 @@
             default: ""
             description: "Release version, e.g. 1.0, 2.0, 3.0"
 
-    scm:
+    scm: &scm
         - git-scm:
             credentials-id: '{ssh-credentials}'
             refspec: ''
             branch: '{branch}'
 
-    builders:
+    builders: &builders
         - shell:
             !include-raw-escape: ./opnfv-docker.sh
 
     triggers:
         - pollscm:
             cron: "*/30 * * * *"
+
+- job-template:
+    name: '{project}-docker-build-push-monitor-{stream}'
+    disabled: '{obj:disabled}'
+    parameters: *parameters
+    scm: *scm
+    builders: *builders
+
+    # trigger only matching the file name
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'docker/**'
 
