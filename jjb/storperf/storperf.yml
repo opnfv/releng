@@ -36,10 +36,7 @@
             description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
 
     scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: '$GERRIT_REFSPEC'
-            choosing-strategy: 'gerrit'
+        - gerrit-trigger-scm-verify
 
     triggers:
         - gerrit:
@@ -100,10 +97,7 @@
             description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
 
     scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
+        - gerrit-trigger-scm-merge
 
     triggers:
         - gerrit:
@@ -159,10 +153,7 @@
             project: '{project}'
 
     scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
+        - git-scm
 
     triggers:
         - timed: 'H H * * *'

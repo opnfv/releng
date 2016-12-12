@@ -47,10 +47,7 @@
         - 'opnfv-build-ubuntu-defaults'
 
     scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: '$GERRIT_REFSPEC'
-            choosing-strategy: 'gerrit'
+        - gerrit-trigger-scm-verify
 
     triggers:
         - gerrit:
@@ -88,10 +85,7 @@
         - 'opnfv-build-ubuntu-defaults'
 
     scm:
-        - gerrit-trigger-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            choosing-strategy: 'default'
+        - gerrit-trigger-scm-merge
 
     triggers:
         - gerrit:
@@ -134,10 +128,7 @@
             gs-packagepath: '{gs-packagepath}'
 
     scm:
-        - git-scm:
-            credentials-id: '{ssh-credentials}'
-            refspec: ''
-            branch: '{branch}'
+        - git-scm
 
     builders:
         - 'bottlenecks-builder-upload-artifact'

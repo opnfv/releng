@@ -28,11 +28,11 @@
     name: git-scm
     scm:
         - git:
-            credentials-id: '{credentials-id}'
+            credentials-id: '{ssh-credentials}'
             url: '$GIT_BASE'
             refspec: ''
             branches:
-                - 'origin/{branch}'
+                - 'origin/$GERRIT_BRANCH'
             skip-tag: true
             wipe-workspace: true
 
@@ -40,14 +40,26 @@
     name: gerrit-trigger-scm
     scm:
         - git:
-            credentials-id: '{credentials-id}'
+            credentials-id: '{ssh-credentials}'
             url: '$GIT_BASE'
-            refspec: '{refspec}'
+            refspec: ''
             branches:
                 - 'origin/$GERRIT_BRANCH'
             skip-tag: true
             choosing-strategy: '{choosing-strategy}'
             timeout: 15
+
+- scm:
+    name: gerrit-trigger-scm-verify
+    scm:
+        - gerrit-trigger-scm:
+            choosing-strategy: 'gerrit'
+
+- scm:
+    name: gerrit-trigger-scm-merge
+    scm:
+        - gerrit-trigger-scm:
+            choosing-strategy: 'default'
 
 - trigger:
     name: 'daily-trigger-disabled'
