@@ -11,6 +11,8 @@ echo
 # source the opnfv.properties to get ARTIFACT_VERSION
 source $WORKSPACE/opnfv.properties
 
+BUILD_DIRECTORY=${WORKSPACE}/.build
+
 # clone releng repository
 echo "Cloning releng repository..."
 [ -d releng ] && rm -rf releng
