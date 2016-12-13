@@ -44,7 +44,10 @@ if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
     fi
 fi
 
-
+if [[  ${INSTALLER_TYPE} == 'odl-pipeline' ]]; then
+  labconfig="-v $OPENSTACK_CREDS:/home/opnfv/functest/conf/openstack.creds"
+  sshkey="-v $SSH_KEYS:/root/.ssh/id_rsa"
+fi
 
 # Set iptables rule to allow forwarding return traffic for container
 if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FORWARD | awk 'NR==3' | grep RETURN 2> ${redirect}; then
