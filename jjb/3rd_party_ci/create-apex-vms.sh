@@ -2,7 +2,7 @@
 set -e
 
 # wipe the WORKSPACE
-/bin/rm -rf $WORKSPACE
+/bin/rm -rf $WORKSPACE/*
 
 # clone opnfv sdnvpn repo
 git clone https://gerrit.opnfv.org/gerrit/p/sdnvpn.git $WORKSPACE/sdnvpn

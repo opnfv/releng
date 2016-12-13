@@ -2,7 +2,7 @@
 set -e
 
 # wipe the WORKSPACE
-/bin/rm -rf $WORKSPACE
+/bin/rm -rf $WORKSPACE/*
 
 echo "Attempting to fetch the artifact location from ODL Jenkins"
 CHANGE_DETAILS_URL="https://git.opendaylight.org/gerrit/changes/netvirt~master~$GERRIT_CHANGE_ID/detail"
