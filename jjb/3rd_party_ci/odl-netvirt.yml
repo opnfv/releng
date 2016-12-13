@@ -119,9 +119,10 @@
             name: functest
             condition: SUCCESSFUL
             projects:
-                - name: 'odl-netvirt-verify-virtual-functest-{stream}'
-                  current-parameters: false
+                - name: 'functest-netvirt-virtual-suite-{stream}'
                   predefined-parameters: |
+                    FUNCTEST_SUITE_NAME=vping_userdata,bgpvpn
+                    RC_FILE_PATH=/home/jenkins/cloner-info/overcloudrc
                     GERRIT_BRANCH=$GERRIT_BRANCH
                     GERRIT_REFSPEC=$GERRIT_REFSPEC
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
@@ -131,10 +132,10 @@
                     NETVIRT_ARTIFACT=$NETVIRT_ARTIFACT
                   node-parameters: true
                   kill-phase-on: FAILURE
-                  abort-all-job: true
+                  abort-all-job: false
         - multijob:
             name: postprocess
-            condition: SUCCESSFUL
+            condition: ALWAYS
             projects:
                 - name: 'odl-netvirt-verify-virtual-postprocess-{stream}'
                   current-parameters: false
