@@ -8,7 +8,7 @@ if [[ ${branch} == *"brahmaputra"* ]]; then
 elif [[ ${branch} == *"colorado"* ]]; then
     cmd="python ${FUNCTEST_REPO_DIR}/ci/run_tests.py -t $FUNCTEST_SUITE_NAME"
 else
-    cmd="python ${FUNCTEST_REPO_DIR}/functest/ci/run_tests.py -t $FUNCTEST_SUITE_NAME"
+    cmd="functest env prepare && functest testcase run $FUNCTEST_SUITE_NAME"
 fi
 container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
 docker exec $container_id $cmd
