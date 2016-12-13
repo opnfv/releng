@@ -1,0 +1,104 @@
+########################
+# Job configuration for opnfv-lint
+########################
+- project:
+
+    name: security-scan
+
+    project: securityscanning
+
+    jobs:
+        - 'opnfv-security-scan-verify-{stream}'
+
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+
+########################
+# job templates
+########################
+- job-template:
+    name: 'opnfv-security-scan-verify-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: $GERRIT_PROJECT
+        - gerrit-parameter:
+            branch: '{branch}'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'REG_EXP'
+                project-pattern: 'functest'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: '**/*.py'
+
+    builders:
+        - security-scan-python-code
+        - report-security-scan-result-to-gerrit
+########################
+# builder macros
+########################
+- builder:
+    name: security-scan-python-code
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+            set -o xtrace
+            export PATH=$PATH:/usr/local/bin/
+
+            # this is where the security/license scan script will be executed
+            echo "Hello World!"
+- builder:
+    name: report-security-scan-result-to-gerrit
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+            set -o xtrace
+            export PATH=$PATH:/usr/local/bin/
+
+            # If no violations were found, no lint log will exist.
+            if [[ -e securityscan.log ]] ; then
+                echo -e "\nposting security scan report to gerrit...\n"
+
+                cat securityscan.log
+                echo
+
+                ssh -p 29418 gerrit.opnfv.org \
+                    "gerrit review -p $GERRIT_PROJECT \
+                     -m \"$(cat securityscan.log)\" \
+                     $GERRIT_PATCHSET_REVISION \
+                     --notify NONE"
+
+                exit 1
+            fi
