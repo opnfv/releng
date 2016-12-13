@@ -1,8 +1,8 @@
 #!/bin/bash
-
+set -e
 # clone opnfv sdnvpn repo
-git clone https://gerrit.opnfv.org/gerrit/p/sdnvpn.git
-cd sdnvpn
-ls -al
-
-# here is where the script(s) to bring up apex vms should be executed
+git clone https://gerrit.opnfv.org/gerrit/p/sdnvpn.git $WORKSPACE/sdnvpn
+. $WORKSPACE/sdnvpn/odl-pipeline/odl-pipeline-common.sh
+pushd $LIB
+./test_environment.sh --env-number $APEX_ENV_NUMBER --cloner-info $CLONER_INFO --snapshot-disks $SNAPSHOT_DISKS --vjump-hosts $VIRTUAL_JUMPHOSTS
+popd
