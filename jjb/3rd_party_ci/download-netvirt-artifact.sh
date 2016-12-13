@@ -7,7 +7,13 @@ ODL_JOB_URL=$(curl -s $CHANGE_DETAILS_URL | grep netvirt-patch-test-current-carb
     sed 's/\\n//g' | awk '{print $6}')
 NETVIRT_ARTIFACT_URL="${ODL_JOB_URL}org.opendaylight.integration\$distribution-karaf/artifact/org.opendaylight.integration/distribution-karaf/0.6.0-SNAPSHOT/distribution-karaf-0.6.0-SNAPSHOT.tar.gz"
 echo -e "URL to artifact is\n\t$NETVIRT_ARTIFACT_URL"
+
 echo "Downloading the artifact. This could take time..."
-curl -s -o $NETVIRT_ARTIFACT $NETVIRT_ARTIFACT_URL
+wget -q -O $NETVIRT_ARTIFACT $NETVIRT_ARTIFACT_URL
+if [[ $? -ne 0 ]]; then
+    echo "The artifact does not exist! Probably removed due to ODL Jenkins artifact retention policy."
+    echo "Rerun netvirt-patch-test-current-carbon to get artifact rebuilt."
+    exit 1
+fi
 echo "Download complete"
 ls -al $NETVIRT_ARTIFACT
