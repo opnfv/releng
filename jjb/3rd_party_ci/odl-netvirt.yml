@@ -19,11 +19,11 @@
         - 'create-apex-vms':
             slave-label: 'ericsson-virtual5'
         - 'install-netvirt':
-            slave-label: 'ericsson-virtual6'
+            slave-label: 'odl-netvirt-virtual'
         - 'functest':
-            slave-label: 'ericsson-virtual6'
+            slave-label: 'odl-netvirt-virtual'
         - 'postprocess':
-            slave-label: 'ericsson-virtual6'
+            slave-label: 'odl-netvirt-virtual'
 #####################################
 # jobs
 #####################################
@@ -57,7 +57,7 @@
         - string:
             name: NETVIRT_ARTIFACT
             default: $WORKSPACE/distribution-karaf.tar.gz
-        - 'ericsson-virtual6-defaults'
+        - 'odl-netvirt-virtual-defaults'
 
     triggers:
         - gerrit:
@@ -119,22 +119,16 @@
             name: functest
             condition: SUCCESSFUL
             projects:
-                - name: 'odl-netvirt-verify-virtual-functest-{stream}'
-                  current-parameters: false
+                - name: 'functest-netvirt-virtual-suite-{stream}'
                   predefined-parameters: |
-                    GERRIT_BRANCH=$GERRIT_BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_ID=$GERRIT_CHANGE_ID
-                    GERRIT_PATCHSET_NUMBER=$GERRIT_PATCHSET_NUMBER
-                    GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION
-                    NETVIRT_ARTIFACT=$NETVIRT_ARTIFACT
+                    FUNCTEST_SUITE_NAME=vping_userdata,bgpvpn
+                    RC_FILE_PATH=/home/jenkins/cloner-info/overcloudrc
                   node-parameters: true
                   kill-phase-on: FAILURE
-                  abort-all-job: true
+                  abort-all-job: false
         - multijob:
             name: postprocess
-            condition: SUCCESSFUL
+            condition: ALWAYS
             projects:
                 - name: 'odl-netvirt-verify-virtual-postprocess-{stream}'
                   current-parameters: false
