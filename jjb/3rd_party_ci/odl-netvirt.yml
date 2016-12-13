@@ -16,9 +16,14 @@
 # patch verification phases
 #####################################
     phase:
-        - 'install'
-        - 'functest'
-        - 'postprocess'
+        - 'create-apex-vms':
+            slave-label: 'ericsson-virtual5'
+        - 'install-netvirt':
+            slave-label: 'ericsson-virtual6'
+        - 'functest':
+            slave-label: 'ericsson-virtual6'
+        - 'postprocess':
+            slave-label: 'ericsson-virtual6'
 #####################################
 # jobs
 #####################################
@@ -52,18 +57,9 @@
         - string:
             name: NETVIRT_ARTIFACT
             default: $WORKSPACE/distribution-karaf.tar.gz"
-        - 'odl-netvirt-virtual-defaults'
+        - 'ericsson-virtual6-defaults'
 
     scm:
-        #- git:
-        #    url: 'https://git.opendaylight.org/gerrit/p/$PROJECT.git'
-        #    refspec: '$GERRIT_REFSPEC'
-        #    branches:
-        #        - 'origin/$GERRIT_BRANCH'
-        #    skip-tag: true
-        #    choosing-strategy: 'gerrit'
-        #    timeout: 10
-        #    wipe-workspace: true
         - gerrit-trigger-scm:
             credentials-id: '{ssh-credentials}'
             refspec: '$GERRIT_REFSPEC'
@@ -77,6 +73,8 @@
                     comment-contains-value: 'https://jenkins.opendaylight.org/releng/job/netvirt-patch-test-current-carbon/.*?/ : SUCCESS'
                 - comment-added-contains-event:
                     comment-contains-value: 'https://jenkins.opendaylight.org/releng/job/netvirt-patch-test-current-carbon/.*?/ : UNSTABLE'
+                - comment-added-contains-event:
+                    comment-contains-value: 'opnfv-test'
             projects:
               - project-compare-type: 'ANT'
                 project-pattern: '{project}'
@@ -88,14 +86,28 @@
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
-        - shell: |
-            #!/bin/bash
-            ls -al $WORKSPACE
         - multijob:
-            name: install
+            name: create-apex-vms
             condition: SUCCESSFUL
             projects:
-                - name: 'odl-netvirt-verify-virtual-install-{stream}'
+                - name: 'odl-netvirt-verify-virtual-create-apex-vms-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_ID=$GERRIT_CHANGE_ID
+                    GERRIT_PATCHSET_NUMBER=$GERRIT_PATCHSET_NUMBER
+                    GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION
+                    NETVIRT_ARTIFACT=$NETVIRT_ARTIFACT
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: install-netvirt
+            condition: SUCCESSFUL
+            projects:
+                - name: 'odl-netvirt-verify-virtual-install-netvirt-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     GERRIT_BRANCH=$GERRIT_BRANCH
@@ -183,7 +195,7 @@
             project: '{project}'
         - gerrit-parameter:
             branch: '{branch}'
-        - 'odl-netvirt-virtual-defaults'
+        - '{slave-label}-defaults'
         - '{installer}-defaults'
 
     builders:
@@ -194,19 +206,22 @@
 # builder macros
 #####################################
 - builder:
-    name: 'netvirt-verify-install-builder'
+    name: 'netvirt-verify-create-apex-vms-builder'
+    builders:
+        - shell:
+            !include-raw: ./create-apex-vms.sh
+- builder:
+    name: 'netvirt-verify-install-netvirt-builder'
     builders:
         - shell:
             !include-raw: ./download-netvirt-artifact.sh
         - shell:
             !include-raw: ./install-netvirt.sh
-
 - builder:
     name: 'netvirt-verify-functest-builder'
     builders:
         - shell:
             !include-raw: ./functest-netvirt.sh
-
 - builder:
     name: 'netvirt-verify-postprocess-builder'
     builders:
