@@ -213,7 +213,7 @@ class FuelAdapter:
         else:
             target_ip = ip
 
-        installer_jumphost = {
+        installer_proxy = {
             'ip': self.installer_ip,
             'username': self.installer_user,
             'password': self.installer_password
@@ -221,7 +221,7 @@ class FuelAdapter:
         controller_conn = ssh_utils.get_ssh_client(
             target_ip,
             user,
-            jumphost=installer_jumphost)
+            proxy=installer_proxy)
 
         self.logger.debug("Fetching %s from %s" %
                           (remote_path, target_ip))
