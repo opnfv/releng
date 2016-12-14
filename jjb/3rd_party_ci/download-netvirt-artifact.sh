@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+if [ -z ${WORKSPACE} ]; then
+  echo "WORKSPACE is unset. Please do so."
+  exit 1
+fi
 # wipe the WORKSPACE
 /bin/rm -rf $WORKSPACE/*
 
