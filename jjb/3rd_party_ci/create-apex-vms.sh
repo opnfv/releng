@@ -2,6 +2,7 @@
 set -e
 
 # wipe the WORKSPACE
+WORKSPACE=${WORKSPACE:-$PWD}
 /bin/rm -rf $WORKSPACE/*
 
 # clone opnfv sdnvpn repo

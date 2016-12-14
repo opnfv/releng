@@ -2,6 +2,7 @@
 set -e
 
 # wipe the WORKSPACE
+WORKSPACE=${WORKSPACE:-$PWD}
 /bin/rm -rf $WORKSPACE/*
 
 echo "Attempting to fetch the artifact location from ODL Jenkins"
