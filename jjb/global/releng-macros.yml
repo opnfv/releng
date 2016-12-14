@@ -1,4 +1,15 @@
-# OLD Releng macros
+# Releng macros
+#
+# NOTE: make sure macros are listed in execution ordered.
+#
+# 1. parameters/properties
+# 2. scm
+# 3. triggers
+# 4. wrappers
+# 5. prebuilders (maven only, configured like Builders)
+# 6. builders (maven, freestyle, matrix, etc..)
+# 7. postbuilders (maven only, configured like Builders)
+# 8. publishers/reporters/notifications
 
 - parameter:
     name: project-parameter
@@ -28,13 +39,6 @@
             default: 'd42411ac011ad6f3dd2e1fa34eaa5d87f910eb2e'
             description: "SSH Credential ID for git access"
 
-- wrapper:
-    name: ssh-agent-wrapper
-    wrappers:
-        - ssh-agent-credentials:
-            users:
-                - '$SSH_CREDENTIAL_ID'
-
 - scm:
     name: git-scm
     scm:
@@ -57,11 +61,7 @@
     triggers:
         - timed: ''
 
-- trigger:
-    name: 'weekly-trigger-disabled'
-    triggers:
-        - timed: ''
-
+# NOTE: unused macro, but we may use this for some jobs.
 - trigger:
     name: gerrit-trigger-patch-submitted
     triggers:
@@ -82,6 +82,7 @@
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
 
+# NOTE: unused macro, but we may use this for some jobs.
 - trigger:
     name: gerrit-trigger-patch-merged
     triggers:
@@ -98,16 +99,12 @@
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
 
-- publisher:
-    name: archive-artifacts
-    publishers:
-        - archive:
-            artifacts: '{artifacts}'
-            allow-empty: true
-            fingerprint: true
-            latest-only: true
-
-# New Releng macros
+- wrapper:
+    name: ssh-agent-wrapper
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '$SSH_CREDENTIAL_ID'
 
 - builder:
     name: build-html-and-pdf-docs-output
@@ -358,3 +355,12 @@
     name: check-bash-syntax
     builders:
         - shell: "find . -name '*.sh' | xargs bash -n"
+
+- publisher:
+    name: archive-artifacts
+    publishers:
+        - archive:
+            artifacts: '{artifacts}'
+            allow-empty: true
+            fingerprint: true
+            latest-only: true
