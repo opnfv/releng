@@ -1,0 +1,165 @@
+###################################################
+# All the jobs except verify have been removed!
+# They will only be enabled on request by projects!
+###################################################
+- project:
+    name: barometer
+
+    project: '{name}'
+
+    jobs:
+        - 'barometer-verify-{stream}'
+        - 'barometer-merge-{stream}'
+        - 'barometer-daily-{stream}'
+
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+        - colorado:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
+            disabled: false
+
+- job-template:
+    name: 'barometer-verify-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**|.gitignore'
+
+    builders:
+        - shell: |
+            pwd
+            cd src
+            make clobber
+            make
+
+- job-template:
+    name: 'barometer-merge-{stream}'
+
+    project-type: freestyle
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 3
+            max-per-node: 2
+            option: 'project'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/{branch}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**'
+
+    builders:
+        - shell: |
+            pwd
+            cd src
+            ./install_build_deps.sh
+            sudo make clobber
+            sudo make
+
+- job-template:
+    name: 'barometer-daily-{stream}'
+
+    project-type: freestyle
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 3
+            max-per-node: 2
+            option: 'project'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: ''
+            choosing-strategy: 'default'
+
+    triggers:
+         - timed: '@midnight'
+
+    builders:
+        - shell: |
+            pwd
+            cd src
+            ./install_build_deps.sh
+            sudo make clobber
+            sudo make
