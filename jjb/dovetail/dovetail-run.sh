@@ -66,7 +66,7 @@ if [ $(docker ps | grep "opnfv/dovetail:${DOCKER_TAG}" | wc -l) == 0 ]; then
     exit 1
 fi
 
-exec_cmd="python ${DOVETAIL_REPO_DIR}/dovetail/run.py --testsuite ${TESTSUITE}"
+exec_cmd="python ${DOVETAIL_REPO_DIR}/dovetail/run.py --testsuite ${TESTSUITE} -d true"
 echo "Container exec command: ${exec_cmd}"
 docker exec ${container_id} ${exec_cmd}
 
