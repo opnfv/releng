@@ -1,0 +1,57 @@
+- project:
+    name: testapi-automate
+
+    project: 'releng'
+
+    stream:
+        - master:
+            branch: '{stream}'
+
+    jobs:
+        - 'testapi-automate-{stream}'
+
+- job-template:
+    name: 'testapi-automate-{stream}'
+
+    parameters:
+        - string:
+            name: FUNCTEST_REPO_DIR
+            default: "/home/opnfv/repos/functest"
+            description: "Directory where the Functest repository is cloned"
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: 'ANT'
+                    pattern: 'utils/**'
+
+    builders:
+        - testapi-doc-build
+
+################################
+# job builders
+################################
+
+- builder:
+    name: testapi-doc-build
+    builders:
+        - shell: |
+            bash ../utils/test/testapi/htmlize/start-server.sh
+            python ../utils/test/testapi/htmlize/htmlize.py -o ${FUNCTEST_REPO_DIR}/docs/internship/testapi_evolution/
