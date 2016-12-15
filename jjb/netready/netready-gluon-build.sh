@@ -7,9 +7,7 @@ echo "Building Gluon packages."
 echo "------------------------"
 echo
 
-if [ "$ARTIFACT_VERSION" == "daily" ]; then
-   export OPNFV_ARTIFACT_VERSION=$(echo $(date -u +"%Y%m%d"))
-fi
+OPNFV_ARTIFACT_VERSION=$(echo $(date -u +"%Y%m%d"))
 
 # build all packages
 cd $WORKSPACE/ci
@@ -34,7 +32,7 @@ echo "Writing opnfv.properties file"
   echo "OPNFV_ARTIFACT_VERSION=$OPNFV_ARTIFACT_VERSION"
   echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
   echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
-  echo "OPNFV_ARTIFACT_URL=$GS_URL/$ARTIFACT_NAME"
+  echo "OPNFV_ARTIFACT_URL=$GS_BASE/$ARTIFACT_NAME"
   echo "OPNFV_ARTIFACT_SHA512SUM=$(sha512sum $ARTIFACT_PATH | cut -d' ' -f1)"
   echo "OPNFV_BUILD_URL=$BUILD_URL"
   echo "ARTIFACT_LIST=$ARTIFACT_PATH"
