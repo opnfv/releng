@@ -7,9 +7,7 @@ echo "Building Gluon packages."
 echo "------------------------"
 echo
 
-if [ "$ARTIFACT_VERSION" == "daily" ]; then
-   export OPNFV_ARTIFACT_VERSION=$(echo $(date -u +"%Y%m%d"))
-fi
+OPNFV_ARTIFACT_VERSION=$(echo $(date -u +"%Y%m%d"))
 
 # build all packages
 cd $WORKSPACE/ci
