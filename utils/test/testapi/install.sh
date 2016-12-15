@@ -10,9 +10,17 @@ usage:
 where:
     -h|--help         show this help text"
 
-if [[ $(whoami) != "root" ]]; then
-    echo "Error: This script must be run as root!"
-    exit 1
+# Ref :-  https://openstack.nimeyo.com/87286/openstack-packaging-all-definition-data-files-config-setup
+
+if [ -z "$VIRTUAL_ENV" ];
+then
+    if [[ $(whoami) != "root" ]];
+    then
+        echo "Error: This script must be run as root!"
+        exit 1
+    fi
+else
+    sed -i -e 's#/etc/opnfv_testapi =#etc/opnfv_testapi =#g' setup.cfg
 fi
 
 cp -fr 3rd_party/static opnfv_testapi/tornado_swagger
