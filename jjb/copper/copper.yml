@@ -63,4 +63,10 @@
 
     builders:
         - shell: |
-            echo "Nothing to verify!"
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            cd $WORKSPACE/ci
+            bash ./run_shellcheck.sh
