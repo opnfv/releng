@@ -1,0 +1,152 @@
+- project:
+    name: 'opera-daily-jobs'
+
+    project: 'opera'
+
+#####################################
+# branch definitions
+#####################################
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+
+#####################################
+# patch verification phases
+#####################################
+    phase:
+        - 'basic'
+        - 'deploy'
+
+#####################################
+# jobs
+#####################################
+    jobs:
+        - 'opera-daily-{stream}'
+        - 'opera-daily-{phase}-{stream}'
+#####################################
+# job templates
+#####################################
+- job-template:
+    name: 'opera-daily-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1 
+            max-per-node: 1
+            option: 'project'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 120
+            fail: true
+
+    triggers:
+         - timed: '@midnight'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'huawei-pod7-defaults'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: basic
+            condition: SUCCESSFUL
+            projects:
+                - name: 'opera-daily-basic-macro'
+                  current-parameters: true
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: deploy
+            condition: SUCCESSFUL
+            projects:
+                - name: 'opera-daily-deploy-{stream}'
+                  current-parameters: true
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+#        - multijob:
+#            name: functest
+#            condition: SUCCESSFUL
+#            projects:
+#                - name: 'functest-compass-baremetal-suite-{stream}'
+#                  current-parameters: true
+#                  predefined-parameters:
+#                    FUNCTEST_SUITE_NAME=opera
+#                  node-parameters: true
+#                  kill-phase-on: NEVER
+#                  abort-all-job: true
+
+- job-template:
+    name: 'opera-daily-{phase}-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-per-node: 1
+            option: 'project'
+
+    scm:
+        - gerrit-trigger-scm:
+            credentials-id: '{ssh-credentials}'
+            refspec: '$GERRIT_REFSPEC'
+            choosing-strategy: 'gerrit'
+
+    wrappers:
+        - ssh-agent-credentials:
+            users:
+                - '{ssh-credentials}'
+        - timeout:
+            timeout: 120
+            fail: true
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - '{project}-daily-{phase}-macro'
+
+#####################################
+# builder macros
+#####################################
+- builder:
+    name: 'opera-daily-basic-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Hello world!"
+
+- builder:
+    name: 'opera-daily-deploy-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "Hello world!"
+
