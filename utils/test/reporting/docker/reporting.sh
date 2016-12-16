@@ -1,5 +1,4 @@
 #!/bin/bash
-cd ..
 
 export PYTHONPATH="${PYTHONPATH}:."
 export CONFIG_REPORTING_YAML=./reporting.yaml
@@ -58,8 +57,8 @@ else
     reporting_type="status"
   fi
   echo "********************************"
-  echo " $project/$reporting_type reporting " 
+  echo " $project/$reporting_type reporting "
   echo "********************************"
   python ./$project/reporting-$reporting_type.py
 fi
-
+mv display /usr/share/nginx/html
