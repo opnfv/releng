@@ -1,5 +1,4 @@
 #!/bin/bash
-cd ..
 
 export PYTHONPATH="${PYTHONPATH}:."
 export CONFIG_REPORTING_YAML=./reporting.yaml
@@ -34,7 +33,7 @@ cp -Rf js display
 
 if [ -z "$1" ]; then
   echo "********************************"
-  echo " Functest reporting " 
+  echo " Functest reporting "
   echo "********************************"
   echo "reporting vIMS..."
   python ./functest/reporting-vims.py
@@ -58,8 +57,8 @@ else
     reporting_type="status"
   fi
   echo "********************************"
-  echo " $project/$reporting_type reporting " 
+  echo " $project/$reporting_type reporting "
   echo "********************************"
   python ./$project/reporting-$reporting_type.py
 fi
-
+mv display /usr/share/nginx/html
