@@ -53,15 +53,16 @@ for version in versions:
         # From each scenarios get results list
         for s, s_result in scenario_results.items():
             logger.info("---------------------------------")
-            logger.info("installer %s, version %s, " +
-                        "scenario %s:" % (installer, version, s))
+            logger.info("installer %s, version %s, scenario %s", installer,
+                        version, s)
 
             ten_criteria = len(s_result)
             ten_score = 0
             for v in s_result:
                 ten_score += v
 
-            LASTEST_TESTS = rp_utils.get_config('general.nb_iteration_tests_success_criteria')
+            LASTEST_TESTS = rp_utils.get_config(
+                'general.nb_iteration_tests_success_criteria')
             four_result = s_result[:LASTEST_TESTS]
             four_criteria = len(four_result)
             four_score = 0

@@ -1,5 +1,4 @@
 #!/bin/bash
-cd ..
 
 export PYTHONPATH="${PYTHONPATH}:."
 export CONFIG_REPORTING_YAML=./reporting.yaml
@@ -20,7 +19,7 @@ do
 done
 
 # copy images, js, css, 3rd_party
-cp -Rf 3rd_party display  
+cp -Rf 3rd_party display
 cp -Rf css display
 cp -Rf html/* display
 cp -Rf img display
@@ -34,7 +33,7 @@ cp -Rf js display
 
 if [ -z "$1" ]; then
   echo "********************************"
-  echo " Functest reporting " 
+  echo " Functest reporting "
   echo "********************************"
   echo "reporting vIMS..."
   python ./functest/reporting-vims.py
@@ -49,7 +48,7 @@ if [ -z "$1" ]; then
   echo "Functest reporting status...OK"
 
   echo "********************************"
-  echo " Yardstick reporting " 
+  echo " Yardstick reporting "
   echo "********************************"
   python ./yardstick/reporting-status.py
   echo "Yardstick reporting status...OK"
@@ -58,8 +57,8 @@ else
     reporting_type="status"
   fi
   echo "********************************"
-  echo " $project/$reporting_type reporting " 
+  echo " $project/$reporting_type reporting "
   echo "********************************"
   python ./$project/reporting-$reporting_type.py
 fi
-
+mv display /usr/share/nginx/html

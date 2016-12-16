@@ -29,15 +29,15 @@ ENV CONFIG_REPORTING_YAML /home/opnfv/utils/test/reporting/reporting.yaml
 # Packaged dependencies
 RUN apt-get update && apt-get install -y \
 ssh \
+python-pip \
 git-core \
 wkhtmltopdf \
 --no-install-recommends
 
 RUN pip install --upgrade pip
 
-RUN pip install -r ${working_dir}/docker/requirements.txt
 RUN git clone --depth 1 https://gerrit.opnfv.org/gerrit/releng /home/opnfv
+RUN pip install -r ${working_dir}/docker/requirements.pip
 
 WORKDIR ${working_dir}
-CMD ["bash", "./docker/reporting.sh"]
-CMD ["bash", "mv display /usr/share/nginx/html"]
+RUN docker/reporting.sh
