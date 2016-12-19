@@ -1,0 +1,108 @@
+############################################
+# dovetail upload artifacts job
+############################################
+- project:
+    name: dovetail-artifacts-upload
+
+    project: 'dovetail'
+
+    jobs:
+        - 'dovetail-{image}-artifacts-upload-{stream}'
+
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+
+    image:
+        - 'dovetail'
+        - 'functest'
+        - 'yardstick'
+
+#############################################
+# job template
+#############################################
+
+- job-template:
+    name: 'dovetail-{image}-artifacts-upload-{stream}'
+
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+            option: 'project'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+        - bottlenecks-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - git-scm
+
+    builders:
+        - 'dovetail-artifacts-upload'
+        - 'dovetail-workspace-cleanup'
+
+####################
+# parameter macros
+####################
+- parameter:
+    name: dovetail-parameter
+    parameters:
+        - string:
+            name: CACHE_DIR
+            default: $WORKSPACE/cache{gs-packagepath}
+            description: "the cache to store packages downloaded"
+        - string:
+            name: STORE_URL
+            default: gs://artifacts.opnfv.org/dovetail{gs-packagepath}
+            description: "LF artifacts url for storage of dovetail packages"
+        - string:
+            name: DOCKER_REPO_NAME
+            default: opnfv/{image}
+            description: "docker repo name"
+        - string:
+            name: DOCKER_TAG
+            default: latest
+            description: "docker image tag of which will be uploaded to artifacts"
+        - string:
+            name: STORE_FILE_NAME
+            default: {image}_image.docker
+            description: "stored file name"
+
+####################################
+#builders for dovetail project
+####################################
+- builder:
+    name: dovetail-artifacts-upload
+    builders:
+        - shell:
+            !include-raw: ./dovetail-artifacts-upload.sh
+
+- builder:
+    name: dovetail-workspace-cleanup
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+
+            echo "Dovetail: cleanup cache used for storage downloaded packages"
+
+            /bin/rm -rf $CACHE_DIR
+
+            if [[ -n "$(docker images|grep $DOCKER_REPO_NAME|grep $DOCKER_TAG)" ]]; then
+                echo "Removing docker image ${DOCKER_REPO_NAME}:${DOCKER_TAG}..."
+                docker rmi -f ${DOCKER_REPO_NAME}:${DOCKER_TAG}
+            fi
