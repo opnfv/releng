@@ -201,20 +201,38 @@
         - description-setter:
             description: "Built on $NODE_NAME"
         - multijob:
-            name: build
+            name: cyclictest-build
             condition: SUCCESSFUL
             projects:
-                - name: 'kvmfornfv-{testname}-daily-build-{stream}'
+                - name: 'kvmfornfv-cyclictest-daily-build-{stream}'
+                  current-parameters: false
+                  node-parameters: false
+                  git-revision: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+            name: cyclictest-test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'kvmfornfv-cyclictest-daily-test-{stream}'
                   current-parameters: false
                   node-parameters: false
                   git-revision: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
-            name: build
+            name: packetforward-build
             condition: SUCCESSFUL
             projects:
-                - name: 'kvmfornfv-{testname}-daily-test-{stream}'
+                - name: 'kvmfornfv-packet_forward-daily-build-{stream}'
+                  current-parameters: false
+                  node-parameters: false
+                  git-revision: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+            name: packetforward-test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'kvmfornfv-packet_forward-daily-test-{stream}'
                   current-parameters: false
                   node-parameters: false
                   git-revision: true
