@@ -34,20 +34,24 @@
 - scm:
     name: git-scm
     scm:
-        - git: &git-scm-defaults
-            credentials-id: '$SSH_CREDENTIAL_ID'
+        - git:
+            credentials-id: 'd42411ac011ad6f3dd2e1fa34eaa5d87f910eb2e'
             url: '$GIT_BASE'
             branches:
-                - 'origin/$GERRIT_BRANCH'
+                - 'origin/{branch}'
             timeout: 15
 
 - scm:
     name: git-scm-gerrit
     scm:
         - git:
+            credentials-id: 'd42411ac011ad6f3dd2e1fa34eaa5d87f910eb2e'
+            url: '$GIT_BASE'
+            branches:
+                - 'origin/$GERRIT_BRANCH'
+            timeout: 15
             choosing-strategy: 'gerrit'
             refspec: '$GERRIT_REFSPEC'
-            <<: *git-scm-defaults
 
 - trigger:
     name: 'daily-trigger-disabled'
