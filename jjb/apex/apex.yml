@@ -9,6 +9,9 @@
         - 'apex-deploy-virtual-{scenario}-{stream}'
         - 'apex-deploy-baremetal-{scenario}-{stream}'
         - 'apex-daily-{stream}'
+        - 'apex-daily-colorado'
+        - 'apex-build-colorado'
+        - 'apex-deploy-baremetal-os-odl_l2-fdio-ha-colorado'
 
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
@@ -592,14 +595,6 @@
 
     builders:
         - 'apex-build'
-        - trigger-builds:
-          - project: 'apex-deploy-virtual-os-nosdn-nofeature-noha-colorado'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-colorado/.build
-              OPNFV_CLEAN=yes
-            git-revision: false
-            same-node: true
-            block: true
         - 'apex-upload-artifact'
 
 
@@ -665,7 +660,7 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: '{branch}'
+            branch: 'colorado'
         - apex-parameter:
             gs-pathname: '{gs-pathname}'
 
