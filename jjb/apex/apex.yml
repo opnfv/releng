@@ -548,6 +548,168 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
 
+
+# Colorado Build
+- job-template:
+    name: 'apex-build-colorado'
+
+    # Job template for builds
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: 'apex-daily-colorado'
+
+    disabled: false
+
+    concurrent: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - gerrit-parameter:
+            branch: 'colorado'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+
+    scm:
+        - git-scm
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-deploy.*'
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - 'apex-build'
+        - trigger-builds:
+          - project: 'apex-deploy-virtual-os-nosdn-nofeature-noha-colorado'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-build-colorado/.build
+              OPNFV_CLEAN=yes
+            git-revision: false
+            same-node: true
+            block: true
+        - 'apex-upload-artifact'
+
+
+# Colorado FDIO Deploy
+- job-template:
+    name: 'apex-deploy-baremetal-os-odl_l2-fdio-ha-colorado'
+
+    # Job template for baremetal deployment
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: 'lf-pod1'
+
+    disabled: false
+
+    scm:
+        - git-scm
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: 'colorado'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-odl_l2-fdio-ha'
+            description: "Scenario to deploy with."
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-verify.*'
+                - 'apex-deploy.*'
+                - 'apex-build.*'
+
+
+    builders:
+        - 'apex-deploy'
+        - 'apex-workspace-cleanup'
+
+# Colorado FDIO Daily
+- job-template:
+    name: 'apex-daily-colorado'
+
+    # Job template for daily build
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: 'apex-daily-colorado'
+
+    disabled: false
+
+    scm:
+        - git-scm
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-verify.*'
+                - 'apex-deploy.*'
+                - 'apex-build.*'
+                - 'apex-runner.*'
+
+    triggers:
+        - 'apex-colorado'
+
+    builders:
+        - trigger-builds:
+          - project: 'apex-build-colorado'
+            git-revision: true
+            current-parameters: true
+            same-node: true
+            block: true
+        - trigger-builds:
+          - project: 'apex-deploy-baremetal-os-odl_l2-fdio-ha-colorado'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-build-colorado/.build
+              OPNFV_CLEAN=yes
+            git-revision: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+            block: true
+        - trigger-builds:
+          - project: 'functest-apex-apex-daily-colorado-daily-colorado'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl_l2-fdio-ha
+            block: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+
 - job-template:
     name: 'apex-gs-clean-{stream}'
 
@@ -654,6 +816,10 @@
     name: 'apex-master'
     triggers:
         - timed: '0 3 * * *'
+- trigger:
+    name: 'apex-colorado'
+    triggers:
+        - timed: '0 12 * * *'
 - trigger:
     name: 'apex-gs-clean-{stream}'
     triggers:
