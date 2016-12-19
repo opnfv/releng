@@ -10,7 +10,7 @@ if [[ ! -z $(docker ps -a | grep opnfv/functest) ]]; then
 fi
 
 # Remove existing images if exist
-if [[ $CLEAN_DOCKER_IMAGES ]] && [[ ! -z $(docker images | grep opnfv/functest) ]]; then
+if [[ $CLEAN_DOCKER_IMAGES == true ]] && [[ ! -z $(docker images | grep opnfv/functest) ]]; then
     echo "Docker images to remove:"
     docker images | head -1 && docker images | grep opnfv/functest >${redirect}
     image_tags=($(docker images | grep opnfv/functest | awk '{print $2}'))
