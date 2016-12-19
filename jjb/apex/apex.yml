@@ -9,6 +9,9 @@
         - 'apex-deploy-virtual-{scenario}-{stream}'
         - 'apex-deploy-baremetal-{scenario}-{stream}'
         - 'apex-daily-{stream}'
+        - 'apex-daily-colorado'
+        - 'apex-build-colorado'
+        - 'apex-deploy-baremetal-os-odl_l2-fdio-ha-colorado'
 
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
@@ -568,9 +571,9 @@
         - project-parameter:
             project: '{project}'
         - apex-parameter:
-            gs-pathname: '{gs-pathname}'
+            gs-pathname: '/colorado'
         - gerrit-parameter:
-            branch: 'colorado'
+            branch: 'stable/colorado'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -592,14 +595,6 @@
 
     builders:
         - 'apex-build'
-        - trigger-builds:
-          - project: 'apex-deploy-virtual-os-nosdn-nofeature-noha-colorado'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-colorado/.build
-              OPNFV_CLEAN=yes
-            git-revision: false
-            same-node: true
-            block: true
         - 'apex-upload-artifact'
 
 
@@ -623,9 +618,9 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: 'colorado'
+            branch: 'stable/colorado'
         - apex-parameter:
-            gs-pathname: '{gs-pathname}'
+            gs-pathname: '/colorado'
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-odl_l2-fdio-ha'
@@ -665,9 +660,9 @@
         - project-parameter:
             project: '{project}'
         - gerrit-parameter:
-            branch: '{branch}'
+            branch: 'stable/colorado'
         - apex-parameter:
-            gs-pathname: '{gs-pathname}'
+            gs-pathname: '/colorado'
 
     properties:
         - build-blocker:
