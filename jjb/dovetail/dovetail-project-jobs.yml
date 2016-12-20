@@ -93,6 +93,16 @@
 #builders for dovetail project
 ###############################
 - builder:
+    name: dovetail-hello-world
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+
+            echo "hello world"
+
+            
+- builder:
     name: dovetail-unit-tests
     builders:
         - shell: |
@@ -105,13 +115,6 @@
             virtualenv $WORKSPACE/dovetail_venv
             source $WORKSPACE/dovetail_venv/bin/activate
 
-            #packages installation
-            easy_install -U setuptools
-            easy_install -U pip
-            pip install -r unittests/requirements.txt
-            pip install -e .
-
-            #unit tests
-            /bin/bash $WORKSPACE/unittests/unittest.sh
+            tox
 
             deactivate
