@@ -8,7 +8,7 @@
     project: anteaterfw
 
     jobs:
-        - 'opnfv-security-scan-verify-{stream}'
+        - 'opnfv-security-audit-verify-{stream}'
 
     stream:
         - master:
@@ -20,7 +20,7 @@
 # job templates
 ########################
 - job-template:
-    name: 'opnfv-security-scan-verify-{stream}'
+    name: 'opnfv-security-audit-verify-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -62,13 +62,13 @@
             notbuilt: true
 
     builders:
-        - security-scan-python-code
-        - report-security-scan-result-to-gerrit
+        - security-audit-python-code
+        - report-security-audit-result-to-gerrit
 ########################
 # builder macros
 ########################
 - builder:
-    name: security-scan-python-code
+    name: security-audit-python-code
     builders:
         - shell: |
             #!/bin/bash
@@ -77,10 +77,10 @@
             set -o xtrace
             export PATH=$PATH:/usr/local/bin/
 
-            # this is where the security/license scan script will be executed
+            # this is where the security/license audit script will be executed
             echo "Hello World!"
 - builder:
-    name: report-security-scan-result-to-gerrit
+    name: report-security-audit-result-to-gerrit
     builders:
         - shell: |
             #!/bin/bash
@@ -90,15 +90,15 @@
             export PATH=$PATH:/usr/local/bin/
 
             # If no violations were found, no lint log will exist.
-            if [[ -e securityscan.log ]] ; then
-                echo -e "\nposting security scan report to gerrit...\n"
+            if [[ -e securityaudit.log ]] ; then
+                echo -e "\nposting security audit report to gerrit...\n"
 
-                cat securityscan.log
+                cat securityaudit.log
                 echo
 
                 ssh -p 29418 gerrit.opnfv.org \
                     "gerrit review -p $GERRIT_PROJECT \
-                     -m \"$(cat securityscan.log)\" \
+                     -m \"$(cat securityaudit.log)\" \
                      $GERRIT_PATCHSET_REVISION \
                      --notify NONE"
 
