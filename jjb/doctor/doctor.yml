@@ -27,6 +27,7 @@
     jobs:
         - 'doctor-verify-{stream}'
         - 'doctor-verify-{installer}-{inspector}-{stream}'
+        - 'doctor-profiling-{stream}'
 
 - job-template:
     name: 'doctor-verify-{stream}'
@@ -170,3 +171,60 @@
     publishers:
         - archive:
             artifacts: 'tests/*.log'
+
+- job-template:
+    name: 'doctor-profiling-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - 'doctor-default'
+        - string:
+            name: PROFILER
+            default: poc
+            description: "Profiler to be used"
+
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - 'doctor-experimental'
+
+#####################################
+# parameter macros
+#####################################
+# TODO(yujunz) replace common parameter in doctor-verify-{stream} with macro
+- parameter:
+    name: 'doctor-default'
+    parameters:
+    - project-parameter:
+        project: '{project}'
+    - gerrit-parameter:
+        branch: '{branch}'
+    - 'opnfv-build-ubuntu-defaults'
+
+#####################################
+# trigger macros
+#####################################
+- trigger:
+    name: 'doctor-experimental'
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - comment-added-contains-event:
+                    comment-contains-value: 'check experimental'
+            projects:
+                - project-compare-type: 'ANT'
+                  project-pattern: '{project}'
+                  branches:
+                      - branch-compare-type: 'ANT'
+                        branch-pattern: '**/{branch}'
+                  file-paths:
+                      - compare-type: 'ANT'
+                        pattern: 'tests/**'
+            skip-vote:
+                successful: true
+                failed: true
+                unstable: true
+                notbuilt: true
