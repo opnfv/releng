@@ -25,8 +25,51 @@
         - 'congress'
 
     jobs:
+        - 'doctor-profiling-{stream}'
         - 'doctor-verify-{stream}'
         - 'doctor-verify-{installer}-{inspector}-{stream}'
+
+- job-template:
+    name: 'doctor-profiling-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'tests/**'
+
+    builders:
+        - shell: "[ -e tests/run.sh ] && bash -e DOCTOR_PROFILER_ENABLED=yes -n ./tests/run.sh"
+
 
 - job-template:
     name: 'doctor-verify-{stream}'
