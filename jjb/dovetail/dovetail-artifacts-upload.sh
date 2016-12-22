@@ -17,6 +17,17 @@ cd ${CACHE_DIR}
 sudo docker pull ${DOCKER_REPO_NAME}:${DOCKER_TAG}
 sudo docker save -o ${STORE_FILE_NAME} ${DOCKER_REPO_NAME}:${DOCKER_TAG}
 
+OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
+GS_UPLOAD_LOCATION="gs://$GS_URL/$OPNFV_ARTIFACT_VERSION"
+(
+    echo "OPNFV_ARTIFACT_VERSION=$OPNFV_ARTIFACT_VERSION"
+    echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
+    echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
+    echo "OPNFV_ARTIFACT_URL=$GS_UPLOAD_LOCATION"
+    echo "OPNFV_BUILD_URL=$BUILD_URL"
+) > $WORKSPACE/opnfv.properties
+source $WORKSPACE/opnfv.properties
+
 importkey () {
 # clone releng repository
 echo "Cloning releng repository..."
@@ -45,7 +56,18 @@ echo
 
 cd $WORKSPACE
 # upload artifact and additional files to google storage
-gsutil cp ${CACHE_DIR}/${STORE_FILE_NAME} ${STORE_URL}/${STORE_FILE_NAME}
+gsutil cp ${CACHE_DIR}/${STORE_FILE_NAME} \
+${STORE_URL}/${STORE_FILE_NAME} > gsutil.file.log 2>&1
+gsutil cp $WORKSPACE/opnfv.properties \
+${STORE_URL}/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
+gsutil cp $WORKSPACE/opnfv.properties \
+    ${STORE_URL}/latest.properties > gsutil.latest.log 2>&1
+
+gsutil -m setmeta \
+    -h "Content-Type:text/html" \
+    -h "Cache-Control:private, max-age=0, no-transform" \
+    ${STORE_URL}/latest.properties \
+    ${STORE_URL}/opnfv-$OPNFV_ARTIFACT_VERSION.properties > /dev/null 2>&1
 
 gsutil -m setmeta \
     -h "Cache-Control:private, max-age=0, no-transform" \
