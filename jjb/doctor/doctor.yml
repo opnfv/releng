@@ -24,9 +24,14 @@
         - 'sample'
         - 'congress'
 
+    profiler:
+        - 'none'
+        - 'sample'
+
     jobs:
         - 'doctor-verify-{stream}'
-        - 'doctor-verify-{installer}-{inspector}-{stream}'
+        - 'doctor-verify-{installer}-{inspector}-{profiler}-{stream}'
+
 
 - job-template:
     name: 'doctor-verify-{stream}'
@@ -70,7 +75,7 @@
         - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
 
 - job-template:
-    name: 'doctor-verify-{installer}-{inspector}-{stream}'
+    name: 'doctor-verify-{installer}-{inspector}-{profiler}-{stream}'
 
     node: '{slave-label}'
 
@@ -125,6 +130,10 @@
             name: CI_DEBUG
             default: 'true'
             description: "Show debug output information"
+        - string:
+            name: PROFILER
+            default: '{profiler}'
+            description: "Performance profiler to be used"
 
     scm:
         - git-scm-gerrit
