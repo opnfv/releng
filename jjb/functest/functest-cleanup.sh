@@ -5,7 +5,7 @@
 echo "Cleaning up docker containers/images..."
 FUNCTEST_IMAGE=opnfv/functest
 # Remove containers along with image opnfv/functest:<none>
-dangling_images=($(docker images -f "dangling=true" | grep $FUNCTEST_IMAGE | awk '{print $1}'))
+dangling_images=($(docker images -f "dangling=true" | grep $FUNCTEST_IMAGE | awk '{print $3}'))
 if [[ -n ${dangling_images} ]]; then
     echo "  Removing $FUNCTEST_IMAGE:<none> images and their containers..."
     for image_id in "${dangling_images[@]}"; do
