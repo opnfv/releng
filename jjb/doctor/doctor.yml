@@ -24,9 +24,14 @@
         - 'sample'
         - 'congress'
 
+    task:
+        - 'verify'
+        - 'profiling'
+
     jobs:
         - 'doctor-verify-{stream}'
-        - 'doctor-verify-{installer}-{inspector}-{stream}'
+        - 'doctor-{task}-{installer}-{inspector}-{stream}'
+
 
 - job-template:
     name: 'doctor-verify-{stream}'
@@ -70,7 +75,7 @@
         - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
 
 - job-template:
-    name: 'doctor-verify-{installer}-{inspector}-{stream}'
+    name: 'doctor-{task}-{installer}-{inspector}-{stream}'
 
     node: '{slave-label}'
 
@@ -125,6 +130,10 @@
             name: CI_DEBUG
             default: 'true'
             description: "Show debug output information"
+        - string:
+            name: TASK
+            default: '{task}'
+            description: "Task to be executed, verify or profiling"
 
     scm:
         - git-scm-gerrit
