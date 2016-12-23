@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5ac10518_fcbf87fa",
+        "filename": "jjb/releng/testapi-automate.yml",
+        "patchSetId": 15
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1451
+      },
+      "writtenOn": "2016-12-23T00:06:13Z",
+      "side": 1,
+      "message": "This looks like you need the releng and functest repos available for the job. You can do this by referencing a second repo under the \u0027scm\u0027 section.\n\nhttp://docs.openstack.org/infra/jenkins-job-builder/scm.html#scm.git\n\n scm:\n   - git:\n       url: https://gerrit.opnfv.org/gerrit/functest\n       branches:\n         - origin/{stream}\n       timeout: 15\n       basedir: functest\n\nWith the exception of caching, nothing should be placed outside of $WORKSPACE on CI servers.",
+      "range": {
+        "startLine": 16,
+        "startChar": 4,
+        "endLine": 20,
+        "endChar": 76
+      },
+      "revId": "ccd604d1e3e2e47c8030e2b8efb2f718bb18ffb4",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_dc4bab29",
+        "filename": "utils/test/testapi/htmlize/prepare.sh",
+        "patchSetId": 15
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1451
+      },
+      "writtenOn": "2016-12-23T00:06:13Z",
+      "side": 1,
+      "message": "This will fail as jenkins does not have permissions to install system-wide python packages. You should look into using a virtualenv, or ensuring \u0027requests\u0027 is installed systemwide on any server this will be running on.",
+      "range": {
+        "startLine": 8,
+        "startChar": 0,
+        "endLine": 9,
+        "endChar": 20
+      },
+      "revId": "ccd604d1e3e2e47c8030e2b8efb2f718bb18ffb4",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_5c381ba0",
+        "filename": "utils/test/testapi/htmlize/prepare.sh",
+        "patchSetId": 15
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1451
+      },
+      "writtenOn": "2016-12-23T00:06:13Z",
+      "side": 1,
+      "message": "If the jar is not found it will be made apparent from the wget failure.",
+      "range": {
+        "startLine": 17,
+        "startChar": 4,
+        "endLine": 17,
+        "endChar": 68
+      },
+      "revId": "ccd604d1e3e2e47c8030e2b8efb2f718bb18ffb4",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_1c429310",
+        "filename": "utils/test/testapi/htmlize/prepare.sh",
+        "patchSetId": 15
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1451
+      },
+      "writtenOn": "2016-12-23T00:06:13Z",
+      "side": 1,
+      "message": "This will place the cwd at \"$WORKSPACE/../\" where a \u0027requirements.txt\u0027 doesn\u0027t exists.\n\nIf you follow my suggestion of using another \u0027scm\u0027 property, you can change this to \"cd $WORKSPACE/functest\", though if you want to run this locally you may want to make the directory a parameter.",
+      "range": {
+        "startLine": 26,
+        "startChar": 0,
+        "endLine": 26,
+        "endChar": 6
+      },
+      "revId": "ccd604d1e3e2e47c8030e2b8efb2f718bb18ffb4",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_7c3b979c",
+        "filename": "utils/test/testapi/htmlize/prepare.sh",
+        "patchSetId": 15
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1451
+      },
+      "writtenOn": "2016-12-23T00:06:13Z",
+      "side": 1,
+      "message": "CI should not be starting/running/managing services.\n\nIf this needs to be running while another script the PID should be recorded and the process killed once it\u0027s done serving.",
+      "range": {
+        "startLine": 29,
+        "startChar": 0,
+        "endLine": 29,
+        "endChar": 15
+      },
+      "revId": "ccd604d1e3e2e47c8030e2b8efb2f718bb18ffb4",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
