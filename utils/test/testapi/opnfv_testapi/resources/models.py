@@ -24,7 +24,6 @@ class ModelBase(object):
     def _format(self, excludes):
         new_obj = copy.deepcopy(self)
         dicts = new_obj.__dict__
-        print self, self.__class__
         for k in dicts.keys():
             if k in excludes:
                 del dicts[k]
@@ -32,9 +31,9 @@ class ModelBase(object):
                 if hasattr(dicts[k], 'format'):
                     dicts[k] = dicts[k].format()
                 elif isinstance(dicts[k], list):
-                    hs = []
-                    for h in dicts[k]:
-                        hs.append(h.format())
+                    hs = list()
+                    [hs.append(h.format() if hasattr(h, 'format') else str(h))
+                     for h in dicts[k]]
                     dicts[k] = hs
                 elif not isinstance(dicts[k], (str, int, float, dict)):
                     dicts[k] = str(dicts[k])
