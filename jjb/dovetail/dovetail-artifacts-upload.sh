@@ -18,7 +18,7 @@ sudo docker pull ${DOCKER_REPO_NAME}:${DOCKER_TAG}
 sudo docker save -o ${STORE_FILE_NAME} ${DOCKER_REPO_NAME}:${DOCKER_TAG}
 
 OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
-GS_UPLOAD_LOCATION="gs://$GS_URL/$OPNFV_ARTIFACT_VERSION"
+GS_UPLOAD_LOCATION="${STORE_URL}/${OPNFV_ARTIFACT_VERSION}"
 (
     echo "OPNFV_ARTIFACT_VERSION=$OPNFV_ARTIFACT_VERSION"
     echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
@@ -57,7 +57,7 @@ echo
 cd $WORKSPACE
 # upload artifact and additional files to google storage
 gsutil cp ${CACHE_DIR}/${STORE_FILE_NAME} \
-${STORE_URL}/${STORE_FILE_NAME} > gsutil.file.log 2>&1
+${STORE_URL}/${STORE_FILE_NAME} > gsutil.dockerfile.log 2>&1
 gsutil cp $WORKSPACE/opnfv.properties \
 ${STORE_URL}/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
 gsutil cp $WORKSPACE/opnfv.properties \
