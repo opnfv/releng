@@ -25,12 +25,14 @@ class Details(object):
         self.timestart = timestart
         self.duration = duration
         self.status = status
+        self.items = [{'item1': 1}, {'item2': 2}]
 
     def format(self):
         return {
             "timestart": self.timestart,
             "duration": self.duration,
-            "status": self.status
+            "status": self.status,
+            'items': [{'item1': 1}, {'item2': 2}]
         }
 
     @staticmethod
@@ -43,6 +45,7 @@ class Details(object):
         t.timestart = a_dict.get('timestart')
         t.duration = a_dict.get('duration')
         t.status = a_dict.get('status')
+        t.items = a_dict.get('items')
         return t
 
 
@@ -104,6 +107,7 @@ class TestResultBase(TestBase):
         self.assertEqual(details_res.duration, details_req.duration)
         self.assertEqual(details_res.timestart, details_req.timestart)
         self.assertEqual(details_res.status, details_req.status)
+        self.assertEqual(details_res.items, details_req.items)
         self.assertEqual(result.build_tag, req.build_tag)
         self.assertEqual(result.scenario, req.scenario)
         self.assertEqual(result.criteria, req.criteria)
