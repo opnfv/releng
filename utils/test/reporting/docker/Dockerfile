@@ -32,6 +32,9 @@ ssh \
 python-pip \
 git-core \
 wkhtmltopdf \
+nodejs \
+npm \
+supervisor \
 --no-install-recommends
 
 RUN pip install --upgrade pip
@@ -41,3 +44,7 @@ RUN pip install -r ${working_dir}/docker/requirements.pip
 
 WORKDIR ${working_dir}
 RUN docker/reporting.sh
+
+expose 8000
+
+CMD ["/usr/bin/supervisord"]
