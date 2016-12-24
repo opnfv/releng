@@ -61,4 +61,20 @@ else
   echo "********************************"
   python ./$project/reporting-$reporting_type.py
 fi
-mv display /usr/share/nginx/html
+cp -r display /usr/share/nginx/html
+
+
+# nginx config
+cp /home/opnfv/utils/test/reporting/docker/nginx.conf /etc/nginx/conf.d/
+echo "daemon off;" >> /etc/nginx/nginx.conf
+
+# supervisor config
+cp /home/opnfv/utils/test/reporting/docker/supervisor.conf /etc/supervisor/conf.d/
+
+# build pages
+cd pages
+ln -s /usr/bin/nodejs /usr/bin/node
+npm install
+npm install -g grunt bower
+bower install --allow-root
+grunt build
