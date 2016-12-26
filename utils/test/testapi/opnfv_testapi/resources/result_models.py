@@ -112,7 +112,7 @@ class TestResult(models.ModelBase):
 @swagger.model()
 class TestResults(models.ModelBase):
     """
-        @property rgit esults:
+        @property results:
         @ptype results: C{list} of L{TestResult}
     """
     def __init__(self):
