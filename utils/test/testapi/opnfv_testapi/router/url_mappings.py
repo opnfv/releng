@@ -14,7 +14,8 @@ from opnfv_testapi.resources.project_handlers import ProjectCLHandler, \
     ProjectGURHandler
 from opnfv_testapi.resources.result_handlers import ResultsCLHandler, \
     ResultsGURHandler
-
+from opnfv_testapi.resources.scenario_handlers import ScenariosCLHandler
+from opnfv_testapi.resources.scenario_handlers import ScenarioGURHandler
 
 mappings = [
     # GET /versions => GET API version
@@ -45,4 +46,8 @@ mappings = [
     # (project, case, and pod)
     (r"/api/v1/results", ResultsCLHandler),
     (r"/api/v1/results/([^/]+)", ResultsGURHandler),
+
+    # scenarios
+    (r"/api/v1/scenarios", ScenariosCLHandler),
+    (r"/api/v1/scenarios/([^/]+)", ScenarioGURHandler),
 ]
