@@ -13,3 +13,8 @@ if [ $proc_number -gt 0 ]; then
     echo "Kill opnfv-testapi server $procs"
     ps -ef | grep opnfv-testapi | grep -v grep | awk '{print $2}' | xargs kill -kill &>/dev/null
 fi
+
+
+echo "deactive venv"
+
+deactivate
