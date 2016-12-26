@@ -43,6 +43,7 @@ class GenericApiHandler(RequestHandler):
         self.db_pods = 'pods'
         self.db_testcases = 'testcases'
         self.db_results = 'results'
+        self.db_scenarios = 'scenarios'
 
     def prepare(self):
         if self.request.method != "GET" and self.request.method != "DELETE":
