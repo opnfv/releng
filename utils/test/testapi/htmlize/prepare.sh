@@ -27,4 +27,5 @@ pip install -r requirements.txt
 ./install.sh
 opnfv-testapi -c ../../../testapi_venv/etc/opnfv_testapi/config.ini &
 
-deactivate
+
+echo "deactive venv later"
