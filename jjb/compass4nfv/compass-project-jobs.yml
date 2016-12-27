@@ -12,9 +12,11 @@
         - master:
             branch: '{stream}'
             gs-pathname: ''
-        - colorado:
+            disabled: false
+        - danube:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
+            disabled: true
 
     jobs:
         - 'compass-build-iso-{stream}'
@@ -25,6 +27,8 @@
 ########################
 - job-template:
     name: 'compass-build-iso-{stream}'
+
+    disabled: '{obj:disabled}'
 
     concurrent: true
 
@@ -64,6 +68,8 @@
     name: 'compass-build-ppa-{stream}'
 
     description: "build ppa(using docker) in huawei lab"
+
+    disabled: '{obj:disabled}'
 
     node: huawei-build
 
