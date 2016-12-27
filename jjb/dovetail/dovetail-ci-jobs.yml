@@ -20,8 +20,8 @@
         dovetail-branch: '{stream}'
         gs-pathname: ''
         docker-tag: 'latest'
-    colorado: &colorado
-        stream: colorado
+    danube: &danube
+        stream: danube
         branch: 'stable/{stream}'
         dovetail-branch: master
         gs-pathname: '/{stream}'
@@ -54,12 +54,12 @@
             slave-label: fuel-baremetal
             SUT: fuel
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *colorado
+            <<: *danube
         - virtual:
             slave-label: fuel-virtual
             SUT: fuel
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *colorado
+            <<: *danube
 #compass CI PODs
         - baremetal:
             slave-label: compass-baremetal
@@ -75,12 +75,12 @@
             slave-label: compass-baremetal
             SUT: compass
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *colorado
+            <<: *danube
         - virtual:
             slave-label: compass-virtual
             SUT: compass
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *colorado
+            <<: *danube
 #apex CI PODs
         - apex-verify-master:
             slave-label: '{pod}'
@@ -92,16 +92,16 @@
             SUT: apex
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *master
-        - apex-verify-colorado:
+        - apex-verify-danube:
             slave-label: '{pod}'
             SUT: apex
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *colorado
-        - apex-daily-colorado:
+            <<: *danube
+        - apex-daily-danube:
             slave-label: '{pod}'
             SUT: apex
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *colorado
+            <<: *danube
 #armband CI PODs
         - armband-baremetal:
             slave-label: armband-baremetal
@@ -117,12 +117,12 @@
             slave-label: armband-baremetal
             SUT: fuel
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *colorado
+            <<: *danube
         - armband-virtual:
             slave-label: armband-virtual
             SUT: fuel
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *colorado
+            <<: *danube
 #--------------------------------
 #        None-CI PODs
 #--------------------------------
