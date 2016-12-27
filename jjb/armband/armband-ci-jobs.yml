@@ -10,26 +10,28 @@
         stream: master
         branch: '{stream}'
         gs-pathname: ''
-    colorado: &colorado
-        stream: colorado
+        disabled: false
+    danube: &danube
+        stream: danube
         branch: 'stable/{stream}'
         gs-pathname: '/{stream}'
+        disabled: true
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
 # CI POD's
 #--------------------------------
-#        colorado
+#        danube
 #--------------------------------
     pod:
         - armband-baremetal:
             slave-label: armband-baremetal
             installer: fuel
-            <<: *colorado
+            <<: *danube
         - armband-virtual:
             slave-label: armband-virtual
             installer: fuel
-            <<: *colorado
+            <<: *danube
 #--------------------------------
 #        master
 #--------------------------------
@@ -44,16 +46,16 @@
 #--------------------------------
 # NONE-CI POD's
 #--------------------------------
-#        colorado
+#        danube
 #--------------------------------
         - arm-pod2:
             slave-label: arm-pod2
             installer: fuel
-            <<: *colorado
+            <<: *danube
         - arm-pod3:
             slave-label: arm-pod3
             installer: fuel
-            <<: *colorado
+            <<: *danube
 #--------------------------------
 #        master
 #--------------------------------
@@ -96,6 +98,8 @@
 ########################
 - job-template:
     name: '{installer}-{scenario}-{pod}-daily-{stream}'
+
+    disabled: '{obj:disabled}'
 
     concurrent: false
 
@@ -283,34 +287,34 @@
         - timed: '0 0 * * 7'
 
 #----------------------------------------------------------------------
-# Enea Armband CI Baremetal Triggers running against colorado branch
+# Enea Armband CI Baremetal Triggers running against danube branch
 #----------------------------------------------------------------------
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-armband-baremetal-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-armband-baremetal-danube-trigger'
     triggers:
         - timed: '0 8 * * 1,3,5,7'
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-armband-baremetal-colorado-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-armband-baremetal-danube-trigger'
     triggers:
         - timed: '0 16 * * 2,7'
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-armband-baremetal-colorado-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-ha-armband-baremetal-danube-trigger'
     triggers:
         - timed: '0 8 * * 2,4,6'
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-armband-baremetal-colorado-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-armband-baremetal-danube-trigger'
     triggers:
         - timed: '0 16 * * 1,4,6'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-armband-baremetal-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-noha-armband-baremetal-danube-trigger'
     triggers:
         - timed: '0 16 * * 3,5'
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-armband-baremetal-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-ha-armband-baremetal-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-armband-baremetal-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-noha-armband-baremetal-danube-trigger'
     triggers:
         - timed: ''
 #---------------------------------------------------------------
@@ -345,34 +349,34 @@
     triggers:
         - timed: '0 2 * * 7'
 #--------------------------------------------------------------------
-# Enea Armband CI Virtual Triggers running against colorado branch
+# Enea Armband CI Virtual Triggers running against danube branch
 #--------------------------------------------------------------------
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-armband-virtual-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-armband-virtual-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-armband-virtual-colorado-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-armband-virtual-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-armband-virtual-colorado-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-armband-virtual-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-armband-virtual-colorado-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-ha-armband-virtual-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-armband-virtual-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-noha-armband-virtual-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-armband-virtual-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-ha-armband-virtual-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-armband-virtual-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-noha-armband-virtual-danube-trigger'
     triggers:
         - timed: ''
 #----------------------------------------------------------
@@ -407,34 +411,34 @@
     triggers:
         - timed: ''
 #---------------------------------------------------------------
-# Enea Armband POD 2 Triggers running against colorado branch
+# Enea Armband POD 2 Triggers running against danube branch
 #---------------------------------------------------------------
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-arm-pod2-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-arm-pod2-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-arm-pod2-colorado-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-arm-pod2-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-arm-pod2-colorado-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-arm-pod2-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-arm-pod2-colorado-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-ha-arm-pod2-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-arm-pod2-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-noha-arm-pod2-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-arm-pod2-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-ha-arm-pod2-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-arm-pod2-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-noha-arm-pod2-danube-trigger'
     triggers:
         - timed: ''
 #----------------------------------------------------------
@@ -469,33 +473,33 @@
     triggers:
         - timed: ''
 #---------------------------------------------------------------
-# Enea Armband POD 3 Triggers running against colorado branch
+# Enea Armband POD 3 Triggers running against danube branch
 #---------------------------------------------------------------
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-arm-pod3-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-arm-pod3-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-arm-pod3-colorado-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-arm-pod3-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-arm-pod3-colorado-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-arm-pod3-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-arm-pod3-colorado-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-ha-arm-pod3-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-arm-pod3-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-noha-arm-pod3-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-arm-pod3-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-ha-arm-pod3-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-arm-pod3-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-noha-arm-pod3-danube-trigger'
     triggers:
         - timed: ''
