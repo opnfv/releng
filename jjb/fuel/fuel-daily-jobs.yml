@@ -15,10 +15,10 @@
         branch: '{stream}'
         disabled: false
         gs-pathname: ''
-    colorado: &colorado
-        stream: colorado
+    danube: &danube
+        stream: danube
         branch: 'stable/{stream}'
-        disabled: false
+        disabled: true
         gs-pathname: '/{stream}'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
@@ -34,10 +34,10 @@
             <<: *master
         - baremetal:
             slave-label: fuel-baremetal
-            <<: *colorado
+            <<: *danube
         - virtual:
             slave-label: fuel-virtual
-            <<: *colorado
+            <<: *danube
 #--------------------------------
 #        None-CI PODs
 #--------------------------------
@@ -52,10 +52,10 @@
             <<: *master
         - zte-pod1:
             slave-label: zte-pod1
-            <<: *colorado
+            <<: *danube
         - zte-pod3:
             slave-label: zte-pod3
-            <<: *colorado
+            <<: *danube
 #--------------------------------
 #       scenarios
 #--------------------------------
@@ -340,81 +340,81 @@
     triggers:
         - timed: ''
 #-----------------------------------------------
-# Triggers for job running on fuel-baremetal against colorado branch
+# Triggers for job running on fuel-baremetal against danube branch
 #-----------------------------------------------
 # HA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-baremetal-daily-danube-trigger'
     triggers:
         - timed: '0 20 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-baremetal-daily-danube-trigger'
     triggers:
         - timed: '0 23 * * *'
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-baremetal-daily-danube-trigger'
     triggers:
         - timed: '0 2 * * *'
 - trigger:
-    name: 'fuel-os-onos-sfc-ha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-onos-sfc-ha-baremetal-daily-danube-trigger'
     triggers:
         - timed: '0 5 * * *'
 - trigger:
-    name: 'fuel-os-onos-nofeature-ha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-onos-nofeature-ha-baremetal-daily-danube-trigger'
     triggers:
         - timed: '0 8 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-ha-baremetal-daily-danube-trigger'
     triggers:
         - timed: '0 11 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-ha-baremetal-daily-danube-trigger'
     triggers:
         - timed: '0 14 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-kvm-ha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-kvm-ha-baremetal-daily-danube-trigger'
     triggers:
         - timed: '0 17 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-baremetal-daily-danube-trigger'
     triggers:
         - timed: '0 20 * * *'
 
 # NOHA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-nofeature-noha-baremetal-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-noha-baremetal-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-odl_l3-nofeature-noha-baremetal-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-sfc-noha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-onos-sfc-noha-baremetal-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-noha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-onos-nofeature-noha-baremetal-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-noha-baremetal-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-noha-baremetal-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-noha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-kvm-noha-baremetal-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-noha-baremetal-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-ovs-noha-baremetal-daily-danube-trigger'
     triggers:
         - timed: ''
 #-----------------------------------------------
@@ -494,79 +494,79 @@
     triggers:
         - timed: '5 9 * * *'
 #-----------------------------------------------
-# Triggers for job running on fuel-virtual against colorado branch
+# Triggers for job running on fuel-virtual against danube branch
 #-----------------------------------------------
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-virtual-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-virtual-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-virtual-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-sfc-ha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-onos-sfc-ha-virtual-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-ha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-onos-nofeature-ha-virtual-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-ha-virtual-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-ha-virtual-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-ha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-kvm-ha-virtual-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-virtual-daily-danube-trigger'
     triggers:
         - timed: ''
 # NOHA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-nofeature-noha-virtual-daily-danube-trigger'
     triggers:
         - timed: '0 13 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-noha-virtual-daily-danube-trigger'
     triggers:
         - timed: '30 15 * * *'
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-odl_l3-nofeature-noha-virtual-daily-danube-trigger'
     triggers:
         - timed: '0 18 * * *'
 - trigger:
-    name: 'fuel-os-onos-sfc-noha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-onos-sfc-noha-virtual-daily-danube-trigger'
     triggers:
         - timed: '30 20 * * *'
 - trigger:
-    name: 'fuel-os-onos-nofeature-noha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-onos-nofeature-noha-virtual-daily-danube-trigger'
     triggers:
         - timed: '0 23 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-noha-virtual-daily-danube-trigger'
     triggers:
         - timed: '30 1 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-noha-virtual-daily-danube-trigger'
     triggers:
         - timed: '0 4 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-kvm-noha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-kvm-noha-virtual-daily-danube-trigger'
     triggers:
         - timed: '30 6 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-ovs-noha-virtual-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-ovs-noha-virtual-daily-danube-trigger'
     triggers:
         - timed: '0 9 * * *'
 #-----------------------------------------------
@@ -799,231 +799,231 @@
     triggers:
         - timed: ''
 #-----------------------------------------------
-# ZTE POD1 Triggers running against colorado branch
+# ZTE POD1 Triggers running against danube branch
 #-----------------------------------------------
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: '0 2 * * *'
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-sfc-ha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-onos-sfc-ha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-ha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-onos-nofeature-ha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-ha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-ha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-kvm-ha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 # NOHA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-nofeature-noha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-noha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-odl_l3-nofeature-noha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-sfc-noha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-onos-sfc-noha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-noha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-onos-nofeature-noha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-noha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-noha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-noha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-kvm-noha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-noha-zte-pod1-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-ovs-noha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 
 #-----------------------------------------------
-# ZTE POD2 Triggers running against colorado branch
+# ZTE POD2 Triggers running against danube branch
 #-----------------------------------------------
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-sfc-ha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-onos-sfc-ha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-ha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-onos-nofeature-ha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-ha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-ha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-kvm-ha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 # NOHA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-nofeature-noha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-noha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-odl_l3-nofeature-noha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-sfc-noha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-onos-sfc-noha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-noha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-onos-nofeature-noha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-noha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-noha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-noha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-kvm-noha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-noha-zte-pod2-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-ovs-noha-zte-pod2-daily-danube-trigger'
     triggers:
         - timed: ''
 #-----------------------------------------------
-# ZTE POD3 Triggers running against colorado branch
+# ZTE POD3 Triggers running against danube branch
 #-----------------------------------------------
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-sfc-ha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-onos-sfc-ha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-ha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-onos-nofeature-ha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-ha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-ha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-kvm-ha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: '0 18 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
 # NOHA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-nofeature-noha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-nofeature-noha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-odl_l3-nofeature-noha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-sfc-noha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-onos-sfc-noha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-noha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-onos-nofeature-noha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-sfc-noha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-noha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-noha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-kvm-noha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-noha-zte-pod3-daily-colorado-trigger'
+    name: 'fuel-os-nosdn-ovs-noha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: ''
