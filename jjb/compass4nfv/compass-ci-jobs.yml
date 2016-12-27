@@ -10,10 +10,12 @@
         stream: master
         branch: '{stream}'
         gs-pathname: ''
-#    colorado: &colorado
-#        stream: colorado
-#        branch: 'stable/{stream}'
-#        gs-pathname: '/{stream}'
+        disabled: false
+    danube: &danube
+        stream: danube
+        branch: 'stable/{stream}'
+        gs-pathname: '/{stream}'
+        disabled: true
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
@@ -28,14 +30,14 @@
             slave-label: compass-virtual
             os-version: 'xenial'
             <<: *master
-#        - baremetal:
-#            slave-label: compass-baremetal
-#            os-version: 'trusty'
-#            <<: *colorado
-#        - virtual:
-#            slave-label: compass-virtual
-#            os-version: 'trusty'
-#            <<: *colorado
+        - baremetal:
+            slave-label: compass-baremetal
+            os-version: 'trusty'
+            <<: *danube
+        - virtual:
+            slave-label: compass-virtual
+            os-version: 'trusty'
+            <<: *danube
 #--------------------------------
 #        master
 #--------------------------------
@@ -79,6 +81,8 @@
 ########################
 - job-template:
     name: 'compass-{scenario}-{pod}-daily-{stream}'
+
+    disabled: '{obj:disabled}'
 
     concurrent: true
 
@@ -309,35 +313,35 @@
         - timed: ''
 
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-baremetal-colorado-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-baremetal-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-baremetal-colorado-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-baremetal-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-baremetal-colorado-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-baremetal-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-baremetal-colorado-trigger'
+    name: 'compass-os-onos-nofeature-ha-baremetal-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-baremetal-colorado-trigger'
+    name: 'compass-os-ocl-nofeature-ha-baremetal-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-sfc-ha-baremetal-colorado-trigger'
+    name: 'compass-os-onos-sfc-ha-baremetal-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-odl_l2-moon-ha-baremetal-colorado-trigger'
+    name: 'compass-os-odl_l2-moon-ha-baremetal-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-nosdn-kvm-ha-baremetal-colorado-trigger'
+    name: 'compass-os-nosdn-kvm-ha-baremetal-danube-trigger'
     triggers:
         - timed: ''
 
@@ -375,34 +379,34 @@
         - timed: ''
 
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-virtual-colorado-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-virtual-danube-trigger'
     triggers:
         - timed: '0 21 * * *'
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-virtual-colorado-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-virtual-danube-trigger'
     triggers:
         - timed: '0 20 * * *'
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-virtual-colorado-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-virtual-danube-trigger'
     triggers:
         - timed: '0 19 * * *'
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-virtual-colorado-trigger'
+    name: 'compass-os-onos-nofeature-ha-virtual-danube-trigger'
     triggers:
         - timed: '0 18 * * *'
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-virtual-colorado-trigger'
+    name: 'compass-os-ocl-nofeature-ha-virtual-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-sfc-ha-virtual-colorado-trigger'
+    name: 'compass-os-onos-sfc-ha-virtual-danube-trigger'
     triggers:
         - timed: '0 15 * * *'
 - trigger:
-    name: 'compass-os-odl_l2-moon-ha-virtual-colorado-trigger'
+    name: 'compass-os-odl_l2-moon-ha-virtual-danube-trigger'
     triggers:
         - timed: '0 14 * * *'
 - trigger:
-    name: 'compass-os-nosdn-kvm-ha-virtual-colorado-trigger'
+    name: 'compass-os-nosdn-kvm-ha-virtual-danube-trigger'
     triggers:
         - timed: ''
