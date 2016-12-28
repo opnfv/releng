@@ -54,7 +54,7 @@ if [ -d "$dir_result" ]; then
         else
             gsutil ls gs://artifacts.opnfv.org/"$project"/ &>/dev/null
             if [ $? != 0 ]; then
-                echo "Not possible to push results to artifact: gsutil not installed.";
+                echo "Not possible to push results to artifact: some error happened when using gsutil";
             else
                 echo "Uploading logs to artifact $project_artifact"
                 gsutil -m cp -r "$dir_result"/* gs://artifacts.opnfv.org/"$project_artifact"/ >/dev/null 2>&1
