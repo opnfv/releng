@@ -268,6 +268,7 @@
         - 'yardstick-cleanup'
         #- 'yardstick-fetch-os-creds'
         - 'yardstick-{testsuite}'
+        - 'yardstick-store-results'
 
     publishers:
         - email:
@@ -293,6 +294,12 @@
     builders:
         - shell:
             !include-raw: ../../utils/fetch_os_creds.sh
+
+- builder:
+    name: yardstick-store-results
+    builders:
+        - shell:
+            !include-raw: ../../utils/push-test-logs.sh
 
 - builder:
     name: yardstick-cleanup
