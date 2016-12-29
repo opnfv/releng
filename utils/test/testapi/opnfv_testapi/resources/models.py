@@ -70,6 +70,7 @@ class ModelBase(object):
         return t
 
 
+@swagger.model()
 class CreateResponse(ModelBase):
     def __init__(self, href=''):
         self.href = href
