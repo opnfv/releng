@@ -144,9 +144,17 @@ elif [ "$installer_type" == "compass" ]; then
     sshpass -p root scp 2>/dev/null $ssh_options root@${installer_ip}:~/admin-openrc.sh $dest_path &> /dev/null
 
     info "This file contains the mgmt keystone API, we need the public one for our rc file"
-    public_ip=$(sshpass -p root ssh $ssh_options root@${installer_ip} \
-        "ssh ${controller_ip} 'source /opt/admin-openrc.sh; openstack endpoint show identity '" \
-        | grep publicurl | awk '{print $4}')
+    grep "OS_AUTH_URL.*v2" $dest_path > /dev/null 2>&1
+    if [ $?  -eq 0 ] ; then
+        public_ip=$(sshpass -p root ssh $ssh_options root@${installer_ip} \
+            "ssh ${controller_ip} 'source /opt/admin-openrc.sh; openstack endpoint show identity '" \
+            | grep publicurl | awk '{print $4}')
+    else
+        public_ip=$(sshpass -p root ssh $ssh_options root@${installer_ip} \
+            "ssh ${controller_ip} 'source /opt/admin-openrc.sh; \
+                 openstack endpoint list --interface public --service identity '" \
+            | grep identity | awk '{print $14}')
+    fi
     info "public_ip: $public_ip"
 
 
