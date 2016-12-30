@@ -47,7 +47,7 @@ class Credentials(object):
                                                     password)
 
     def __check_installer_name(self, installer):
-        if installer not in ("apex", "compass", "fuel", "joid"):
+        if installer not in ("apex", "compass", "daisy", "fuel", "joid"):
             return os.EX_CONFIG
         else:
             return os.EX_OK
@@ -66,6 +66,10 @@ class Credentials(object):
         pass
 
     def __fetch_creds_compass(self, target_path):
+        # TODO
+        pass
+
+    def __fetch_creds_daisy(self, target_path):
         # TODO
         pass
 
@@ -95,6 +99,8 @@ class Credentials(object):
             self.__fetch_creds_apex(target_path)
         elif self.installer == "compass":
             self.__fetch_creds_compass(target_path)
+        elif self.installer == "daisy":
+            self.__fetch_creds_daisy(target_path)
         elif self.installer == "fuel":
             self.__fetch_creds_fuel(target_path)
         elif self.installer == "joid":
