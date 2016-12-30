@@ -7,7 +7,7 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 
-INSTALLERS = ['apex', 'fuel', 'compass', 'joid']
+INSTALLERS = ['apex', 'fuel', 'compass', 'joid', "daisy"]
 VERSIONS = ['arno', 'brahmaputra', 'colorado', 'danube']
 
 EXIT_OK = 0
