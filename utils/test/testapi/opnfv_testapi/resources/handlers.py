@@ -227,7 +227,7 @@ class GenericApiHandler(RequestHandler):
 
 
 class VersionHandler(GenericApiHandler):
-    @swagger.operation(nickname='list')
+    @swagger.operation(nickname='List all versions')
     def get(self):
         """
             @description: list all supported versions
