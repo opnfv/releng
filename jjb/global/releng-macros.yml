@@ -366,6 +366,9 @@
             set -o xtrace
             export PATH=$PATH:/usr/local/bin/
 
+            # install python packages
+            pip install "yamllint==1.6.0"
+
             # generate and upload lint log
             echo "Running yaml code on $PROJECT ..."
 
@@ -375,8 +378,6 @@
             # Get number of yaml violations. If none, this will be an
             # empty string: ""
             find . \
-                -path './releng_yamllint' -prune -o \
-                -path './.tox' -prune -o \
                 -type f -name "*.yml" -print \
                 -o -name "*.yaml" -print | \
                 xargs yamllint > yaml-violation.log || true
