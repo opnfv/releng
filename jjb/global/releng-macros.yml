@@ -375,6 +375,8 @@
             # Get number of yaml violations. If none, this will be an
             # empty string: ""
             find . \
+                -path './releng_yamllint' -prune -o \
+                -path './.tox' -prune -o \
                 -type f -name "*.yml" -print \
                 -o -name "*.yaml" -print | \
                 xargs yamllint > yaml-violation.log || true
