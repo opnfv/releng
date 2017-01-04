@@ -22,7 +22,7 @@ class GenericTestcaseHandler(GenericApiHandler):
 
 
 class TestcaseCLHandler(GenericTestcaseHandler):
-    @swagger.operation(nickname="list-all")
+    @swagger.operation(nickname="List all TestCases by project_name")
     def get(self, project_name):
         """
             @description: list all testcases of a project by project_name
@@ -34,7 +34,7 @@ class TestcaseCLHandler(GenericTestcaseHandler):
         query['project_name'] = project_name
         self._list(query)
 
-    @swagger.operation(nickname="create")
+    @swagger.operation(nickname="Create a TestCase by project_name")
     def post(self, project_name):
         """
             @description: create a testcase of a project by project_name
@@ -72,7 +72,7 @@ class TestcaseCLHandler(GenericTestcaseHandler):
 
 
 class TestcaseGURHandler(GenericTestcaseHandler):
-    @swagger.operation(nickname='get-one')
+    @swagger.operation(nickname='Get a TestCase by project and case name')
     def get(self, project_name, case_name):
         """
             @description: get a single testcase
@@ -86,7 +86,7 @@ class TestcaseGURHandler(GenericTestcaseHandler):
         query["name"] = case_name
         self._get_one(query)
 
-    @swagger.operation(nickname="update")
+    @swagger.operation(nickname="Update a TestCase by project and case name")
     def put(self, project_name, case_name):
         """
             @description: update a single testcase
@@ -104,7 +104,7 @@ class TestcaseGURHandler(GenericTestcaseHandler):
         db_keys = ['name', 'project_name']
         self._update(query, db_keys)
 
-    @swagger.operation(nickname='delete')
+    @swagger.operation(nickname='Delete a TestCase by project and case name')
     def delete(self, project_name, case_name):
         """
             @description: delete a testcase by project_name and case_name
