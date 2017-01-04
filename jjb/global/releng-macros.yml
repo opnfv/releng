@@ -366,6 +366,9 @@
             set -o xtrace
             export PATH=$PATH:/usr/local/bin/
 
+            virtualenv -p python2.7 $WORKSPACE/releng_yamllint
+            source $WORKSPACE/releng_yamllint/bin/activate
+
             # install python packages
             pip install "yamllint==1.6.0"
 
@@ -378,6 +381,8 @@
             # Get number of yaml violations. If none, this will be an
             # empty string: ""
             find . \
+                -path './releng_yamllint' -prune -o \
+                -path './.tox' -prune -o \
                 -type f -name "*.yml" -print \
                 -o -name "*.yaml" -print | \
                 xargs yamllint > yaml-violation.log || true
@@ -389,3 +394,4 @@
               sed -r -i '4,$s/^/ /g' lint.log
             fi
 
+            deactivate
