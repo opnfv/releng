@@ -3,10 +3,6 @@
 
     project: 'releng'
 
-    stream:
-        - master:
-            branch: '{stream}'
-
     jobs:
         - 'testapi-automate-{stream}'
 
@@ -14,6 +10,10 @@
     name: 'testapi-automate-{stream}'
 
     parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: 'master'
         - 'opnfv-build-defaults'
 
     scm:
