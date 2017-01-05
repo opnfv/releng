@@ -1,23 +1,24 @@
 - project:
     name: testapi-automate
-
-    project: 'releng'
-
     stream:
         - master:
             branch: '{stream}'
-
+            gs-pathname: ''
     jobs:
         - 'testapi-automate-{stream}'
+    project: 'releng'  
 
 - job-template:
     name: 'testapi-automate-{stream}'
 
     parameters:
-        - 'opnfv-build-defaults'
+        - project-parameter:
+            project: 'releng'
+        - gerrit-parameter:
+            branch: 'master'
 
     scm:
-        - git-scm
+        - git-scm-gerrit
 
     triggers:
         - gerrit:
@@ -34,10 +35,10 @@
                     comment-contains-value: 'reverify'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: '{project}'
+                project-pattern: 'releng'
                 branches:
                   - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
+                    branch-pattern: '**/master'
                 file-paths:
                   - compare-type: 'ANT'
                     pattern: 'utils/**'
