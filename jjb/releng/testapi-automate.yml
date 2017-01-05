@@ -1,19 +1,21 @@
 - project:
     name: testapi-automate
-
-    project: 'releng'
-
     stream:
         - master:
             branch: '{stream}'
-
+            gs-pathname: ''
     jobs:
         - 'testapi-automate-{stream}'
+    project: 'releng'
 
 - job-template:
     name: 'testapi-automate-{stream}'
 
     parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
         - 'opnfv-build-defaults'
 
     scm:
