@@ -6,6 +6,7 @@
     stream:
         - master:
             branch: '{stream}'
+            gs-pathname: ''
 
     jobs:
         - 'testapi-automate-{stream}'
@@ -14,10 +15,14 @@
     name: 'testapi-automate-{stream}'
 
     parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: 'master'
         - 'opnfv-build-defaults'
 
     scm:
-        - git-scm
+        - git-scm-gerrit
 
     triggers:
         - gerrit:
