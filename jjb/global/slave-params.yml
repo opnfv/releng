@@ -683,15 +683,17 @@
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: 'Git URL to use on this Jenkins Slave'
 - parameter:
-    name: 'ool-virtual1-defaults'
+    name: 'ool-defaults'
     parameters:
         - node:
             name: SLAVE_NAME
             description: 'Slave name on Jenkins'
             allowed-slaves:
                 - ool-virtual1
+                - ool-virtual2
+                - ool-virtual3
             default-slaves:
-                - ool-virtual1
+                - '{default-slave}'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -700,6 +702,21 @@
             name: SSH_KEY
             default: /root/.ssh/id_rsa
             description: 'SSH key to be used'
+- parameter:
+    name: 'ool-virtual1-defaults'
+    parameters:
+        - 'ool-defaults':
+            default-slave: 'ool-virtual1'
+- parameter:
+    name: 'ool-virtual2-defaults'
+    parameters:
+        - 'ool-defaults':
+            default-slave: 'ool-virtual2'
+- parameter:
+    name: 'ool-virtual3-defaults'
+    parameters:
+        - 'ool-defaults':
+            default-slave: 'ool-virtual3'
 - parameter:
     name: 'multisite-virtual-defaults'
     parameters:
