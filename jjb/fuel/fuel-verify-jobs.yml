@@ -25,9 +25,9 @@
         - 'build':
             slave-label: 'opnfv-build-ubuntu'
         - 'deploy-virtual':
-            slave-label: 'opnfv-build-ubuntu'
+            slave-label: 'fuel-virtual'
         - 'smoke-test':
-            slave-label: 'opnfv-build-ubuntu'
+            slave-label: 'fuel-virtual'
 #####################################
 # jobs
 #####################################
@@ -51,9 +51,6 @@
             enabled: true
             max-total: 4
             option: 'project'
-
-    scm:
-        - git-scm-gerrit
 
     wrappers:
         - ssh-agent-wrapper
@@ -143,7 +140,7 @@
                     GERRIT_REFSPEC=$GERRIT_REFSPEC
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                     GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
+                  node-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
@@ -157,7 +154,7 @@
                     GERRIT_REFSPEC=$GERRIT_REFSPEC
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                     GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
+                  node-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
 
@@ -177,7 +174,7 @@
             use-build-blocker: true
             blocking-jobs:
                 - 'fuel-verify-deploy-.*'
-                - 'fuel-verify-test-.*'
+                - 'fuel-verify-smoke-.*'
             block-level: 'NODE'
 
     scm:

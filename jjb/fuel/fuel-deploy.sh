@@ -18,15 +18,24 @@ source latest.properties
 # echo the info about artifact that is used during the deployment
 echo "Using ${OPNFV_ARTIFACT_URL/*\/} for deployment"
 
-if [[ "$JOB_NAME" =~ "merge" ]]; then
-    # set simplest scenario for virtual deploys to run for merges
-    DEPLOY_SCENARIO="os-nosdn-nofeature-ha"
+if [[ "$JOB_NAME" =~ (verify|merge|daily|weekly) ]]; then
+    JOB_TYPE=${BASH_REMATCH[0]}
 else
-    # for none-merge deployments
+    echo "Unable to determine job type!"
+    exit 1
+fi
+
+if [[ "$JOB_TYPE" == "verify" ]]; then
+    # set simplest scenario for virtual deploys to run for patchset verification
+    DEPLOY_SCENARIO="os-nosdn-nofeature-noha"
+elif [[ "$JOB_TYPE" == "daily" ]]; then
     # checkout the commit that was used for building the downloaded artifact
     # to make sure the ISO and deployment mechanism uses same versions
     echo "Checking out $OPNFV_GIT_SHA1"
     git checkout $OPNFV_GIT_SHA1 --quiet
+else
+    echo "Deployments are not enabled for the job type $JOB_TYPE"
+    exit 0
 fi
 
 # set deployment parameters
