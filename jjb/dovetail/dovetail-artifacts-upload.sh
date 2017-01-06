@@ -88,6 +88,6 @@ echo "--------------------------------------------------------"
 echo
 }
 
-importkey
-sign
+#importkey
+#sign
 upload
