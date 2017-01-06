@@ -46,6 +46,9 @@ class SwaggerResourcesHandler(tornado.web.RequestHandler):
             'basePath': basePath(),
             'produces': ["application/json"],
             'description': 'Test Api Spec',
+            'info': {
+                "title":"TestAPI Swagger Specs"
+                }
             'apis': [{
                 'path': self.reverse_url(SWAGGER_API_SPEC),
                 'description': 'Test Api Spec'
