@@ -16,6 +16,10 @@
             project: '{project}'
         - gerrit-parameter:
             branch: '{branch}'
+        - string:
+            name: DOCKER_TAG
+            default: "latest"
+            description: "Tag name for testapi docker image"
         - 'opnfv-build-defaults'
 
     scm:
@@ -39,6 +43,8 @@
                     pattern: 'utils/**'
 
     builders:
+        - run-unit-tests
+        - docker-update
         - start-testapi-server
         - testapi-doc-build
         - upload-doc-artifact
@@ -49,10 +55,16 @@
 ################################
 
 - builder:
-    name: testapi-doc-build
+    name: run-unit-tests
     builders:
         - shell: |
-            python ./utils/test/testapi/htmlize/htmlize.py -o ${WORKSPACE}/
+            bash ./jjb/releng/testapi-run-tests.sh
+
+- builder:
+    name: docker-update
+    builders:
+        - shell: |
+            bash ./jjb/releng/testapi-docker-update.sh
 
 - builder:
     name: start-testapi-server
@@ -61,13 +73,19 @@
             bash ./utils/test/testapi/htmlize/prepare.sh
 
 - builder:
-    name: clean-testapi-server
+    name: testapi-doc-build
     builders:
         - shell: |
-            bash ./utils/test/testapi/htmlize/finish.sh
+            bash ./utils/test/testapi/htmlize/doc-build.sh
 
 - builder:
     name: upload-doc-artifact
     builders:
         - shell: |
             bash ./utils/test/testapi/htmlize/push-doc-artifact.sh
+
+- builder:
+    name: clean-testapi-server
+    builders:
+        - shell: |
+            bash ./utils/test/testapi/htmlize/finish.sh
