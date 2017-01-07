@@ -39,6 +39,7 @@
                     pattern: 'utils/**'
 
     builders:
+        - run-unit-tests
         - start-testapi-server
         - testapi-doc-build
         - upload-doc-artifact
@@ -49,10 +50,10 @@
 ################################
 
 - builder:
-    name: testapi-doc-build
+    name: run-unit-tests
     builders:
         - shell: |
-            python ./utils/test/testapi/htmlize/htmlize.py -o ${WORKSPACE}/
+            bash ./jjb/releng/testapi-run-tests.sh
 
 - builder:
     name: start-testapi-server
@@ -61,13 +62,19 @@
             bash ./utils/test/testapi/htmlize/prepare.sh
 
 - builder:
-    name: clean-testapi-server
+    name: testapi-doc-build
     builders:
         - shell: |
-            bash ./utils/test/testapi/htmlize/finish.sh
+            bash ./utils/test/testapi/htmlize/doc-build.sh
 
 - builder:
     name: upload-doc-artifact
     builders:
         - shell: |
             bash ./utils/test/testapi/htmlize/push-doc-artifact.sh
+
+- builder:
+    name: clean-testapi-server
+    builders:
+        - shell: |
+            bash ./utils/test/testapi/htmlize/finish.sh
