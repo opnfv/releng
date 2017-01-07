@@ -39,6 +39,7 @@
                     pattern: 'utils/**'
 
     builders:
+        - run-unit-tests
         - start-testapi-server
         - testapi-doc-build
         - upload-doc-artifact
@@ -47,6 +48,30 @@
 ################################
 # job builders
 ################################
+
+- builder:
+    name: run-unit-tests
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            
+            echo "Running unit tests..."
+            
+            # Creating virtual environment
+            virtualenv $WORKSPACE/unittest_venv
+            source $WORKSPACE/unittest_venv/bin/activate
+            
+            cd $WORKSPACE/utils/test/testapi/
+            
+            # Install requirements
+            pip install -r requirements.txt
+            pip install -r test-requirements.txt
+            
+            # Run unit tests
+            bash run_test.sh
+            
+            deactivate
 
 - builder:
     name: testapi-doc-build
