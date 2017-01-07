@@ -178,7 +178,9 @@
     disabled: '{obj:disabled}'
 
     parameters:
-        - 'doctor-default'
+        - 'doctor-defaults':
+            project: '{project}'
+            branch: '{branch}'
         - string:
             name: PROFILER
             default: poc
@@ -197,7 +199,7 @@
 #####################################
 # TODO(yujunz) replace common parameter in doctor-verify-{stream} with macro
 - parameter:
-    name: 'doctor-default'
+    name: 'doctor-defaults'
     parameters:
     - project-parameter:
         project: '{project}'
@@ -216,7 +218,7 @@
             server-name: 'gerrit.opnfv.org'
             trigger-on:
                 - comment-added-contains-event:
-                    comment-contains-value: 'check experimental'
+                    comment-contains-value: 'check-experimental'
             projects:
                 - project-compare-type: 'ANT'
                   project-pattern: '{project}'
