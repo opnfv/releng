@@ -6,7 +6,47 @@
             gs-pathname: ''
     jobs:
         - 'testapi-automate-{stream}'
+        - 'testapi-verify-{stream}'
+
     project: 'releng'
+
+- job-template:
+    name: 'testapi-verify-{stream}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+
+    scm:
+        - git-scm
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: 'ANT'
+                    pattern: 'utils/**'
+
+    builders:
+        - run-unit-tests
 
 - job-template:
     name: 'testapi-automate-{stream}'
@@ -49,10 +89,10 @@
 ################################
 
 - builder:
-    name: testapi-doc-build
+    name: run-unit-tests
     builders:
         - shell: |
-            bash ./utils/test/testapi/htmlize/doc-build.sh
+            bash ./jjb/releng/testapi-run-tests.sh
 
 - builder:
     name: start-testapi-server
@@ -61,13 +101,19 @@
             bash ./utils/test/testapi/htmlize/prepare.sh
 
 - builder:
-    name: clean-testapi-server
+    name: testapi-doc-build
     builders:
         - shell: |
-            bash ./utils/test/testapi/htmlize/finish.sh
+            bash ./utils/test/testapi/htmlize/doc-build.sh
 
 - builder:
     name: upload-doc-artifact
     builders:
         - shell: |
             bash ./utils/test/testapi/htmlize/push-doc-artifact.sh
+
+- builder:
+    name: clean-testapi-server
+    builders:
+        - shell: |
+            bash ./utils/test/testapi/htmlize/finish.sh
