@@ -6,11 +6,7 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 
 #Creating virtual environment
-virtualenv testapi_venv
 source testapi_venv/bin/activate
-
-# Install Pre-requisites
-pip install requests
 
 # Swgger Codegen Tool
 url="http://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/2.2.1/swagger-codegen-cli-2.2.1.jar"
