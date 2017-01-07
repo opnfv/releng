@@ -6,10 +6,9 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 
 #Creating virtual environment
-virtualenv testapi_venv
 source testapi_venv/bin/activate
 
-# Install Pre-requisites
+# Install Pre-requistics
 pip install requests
 
 # Swgger Codegen Tool
@@ -26,5 +25,3 @@ cd utils/test/testapi/
 pip install -r requirements.txt
 ./install.sh
 opnfv-testapi -c ../../../testapi_venv/etc/opnfv_testapi/config.ini &
-
-deactivate
