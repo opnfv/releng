@@ -1,0 +1,481 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5ac10518_8ca64352",
+        "filename": "jjb/apex/apex-build.sh",
+        "patchSetId": 17
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "I\u0027m switching to the way below to determine the job type for other installers.\n\nif [[ \"$JOB_NAME\" \u003d~ (verify|merge|daily|weekly) ]]; then\n    JOB_TYPE\u003d${BASH_REMATCH[0]}\nelse\n    echo \"Unable to determine job type!\"\n    exit 1\nfi",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 12,
+        "endChar": 36
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_ec6ee700",
+        "filename": "jjb/apex/apex-deploy.sh",
+        "patchSetId": 17
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "I think this was something I intended to point out earlier.\nPlease make sure that you use the exact same version of the apex repo which corresponds to the artifacts you are using for deployment.\n\nWhat this means is that\n- if the job is daily, you need to checkout the SHA1 of the built artifacts so the artifacts match to the version of the source the be consistent. The git repo sha1 is in artifact.properties file.\n- if the job is verify, you need to checkout that patch, not the latest from git repo. I think multijob does this automatically but please check it to make sure.",
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_4c685bf5",
+        "filename": "jjb/apex/apex-deploy.sh",
+        "patchSetId": 17
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "same here\n\nif [[ \"$JOB_NAME\" \u003d~ (verify|merge|daily|weekly) ]]; then\n    JOB_TYPE\u003d${BASH_REMATCH[0]}\nelse\n    echo \"Unable to determine job type!\"\n    exit 1\nfi",
+      "range": {
+        "startLine": 21,
+        "startChar": 0,
+        "endLine": 21,
+        "endChar": 36
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_0c7253e5",
+        "filename": "jjb/apex/apex-upload-artifact.sh",
+        "patchSetId": 17
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "For the verify jobs, how do you intend to upload and fetch the artifacts?\n\nI do this as below to make sure the artifact location can be resolved by the download script.\n- first remove gs://artifacts.opnfv.org/apex/review/$GERRIT_CHANGE_NUMBER\n- then upload artifacts including the properties file to gs://artifacts.opnfv.org/apex/review/$GERRIT_CHANGE_NUMBER\n\nthen the download job uses GERRIT_CHANGE_NUMBER to fetch the artifacts.",
+      "range": {
+        "startLine": 66,
+        "startChar": 0,
+        "endLine": 66,
+        "endChar": 148
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_2f014105",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "better to rename this to apex-verify-basic-{stream}.",
+      "range": {
+        "startLine": 46,
+        "startChar": 11,
+        "endLine": 46,
+        "endChar": 42
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_ef0a5920",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 166,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "same here, rename this to apex-verify-basic-{stream}.",
+      "range": {
+        "startLine": 166,
+        "startChar": 25,
+        "endLine": 166,
+        "endChar": 56
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_ac0d3f40",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 181,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "please rename this to apex-verify-build-{stream} so the scripts can know the job type and build, upload and download stuff accordingly.",
+      "range": {
+        "startLine": 181,
+        "startChar": 25,
+        "endLine": 181,
+        "endChar": 44
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_8c02c309",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "this is already injected into job by Jenkins so it is not needed.",
+      "range": {
+        "startLine": 184,
+        "startChar": 20,
+        "endLine": 184,
+        "endChar": 38
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_cc08cb2f",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 197,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "please rename this job to apex-verify-deploy-virtual-{stream} since they deployment jobs shouldn\u0027t differ based on the scenario. the scenario name, DEPLOY_SCENARIO\u003dos-nosdn-nofeature-ha, should be passed to the job as parameter instead.",
+      "range": {
+        "startLine": 197,
+        "startChar": 25,
+        "endLine": 197,
+        "endChar": 75
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_6c07571d",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 200,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "I don\u0027t get why this is needed? Aren\u0027t you downloading artifacts from artifact repo?",
+      "range": {
+        "startLine": 200,
+        "startChar": 20,
+        "endLine": 200,
+        "endChar": 56
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_cf367de7",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 214,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "please rename this job to apex-verify-smoke-test-{stream}. the changes to functest jobs need to be done as well which I\u0027ll make as part of fuel job updates.",
+      "range": {
+        "startLine": 214,
+        "startChar": 23,
+        "endLine": 214,
+        "endChar": 58
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_cf3d1dbd",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "should these be here? if we go to processing commit message to determine what scenario should be verified, the previous job will run that scenario.\n\nif this must be here for the timebeing than I suggest renaming the jobs as I commented earlier.",
+      "range": {
+        "startLine": 227,
+        "startChar": 0,
+        "endLine": 260,
+        "endChar": 35
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_6f4c2971",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 372,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "This is daily build job I suppose. If so, rename the job to apex-build-daily-{stream}.",
+      "range": {
+        "startLine": 372,
+        "startChar": 11,
+        "endLine": 372,
+        "endChar": 30
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_2f7621a5",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 428,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "why deployment is done here? isn\u0027t this job supposed to build artifacts and that\u0027s it?",
+      "range": {
+        "startLine": 412,
+        "startChar": 0,
+        "endLine": 428,
+        "endChar": 37
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_4f792d92",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 432,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "use common job for all the scenarios, apex-deploy-virtual-daily-{stream}, and pass the scenario name as parameter to the job.",
+      "range": {
+        "startLine": 432,
+        "startChar": 11,
+        "endLine": 432,
+        "endChar": 50
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_0f7325b2",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 484,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "same here; use common jobs for baremetal deployment, apex-deploy-baremetal-daily-{stream}.",
+      "range": {
+        "startLine": 484,
+        "startChar": 11,
+        "endLine": 484,
+        "endChar": 52
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_6f63c9dc",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 536,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "this job needs to run single scenario rather than running all the scenarios, functest, and yardstick at one go. each scenario can have their schedule adjusted separately or they can be controlled 1 upstream job which triggers and controls execution of separate scenarios.",
+      "range": {
+        "startLine": 536,
+        "startChar": 11,
+        "endLine": 536,
+        "endChar": 30
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_2f9dc1bc",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 538,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "multijob project type is not good for this job as if any phase fails, the upstream job status will be FAILURE instead of UNSTABLE.",
+      "range": {
+        "startLine": 538,
+        "startChar": 4,
+        "endLine": 538,
+        "endChar": 28
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_8f5e3511",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 585,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "why build is here? it should be independent.",
+      "range": {
+        "startLine": 570,
+        "startChar": 0,
+        "endLine": 585,
+        "endChar": 36
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_4fa04df4",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 647,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "there should be 1 scenario, 1 functest, 1 yardstick here. the deployment phase should use the common deployment job by passing the scenario name.",
+      "range": {
+        "startLine": 586,
+        "startChar": 0,
+        "endLine": 647,
+        "endChar": 37
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_0faa45d4",
+        "filename": "jjb/apex/apex.yml",
+        "patchSetId": 17
+      },
+      "lineNbr": 805,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T09:16:40Z",
+      "side": 1,
+      "message": "these can be removed as the colorado is done.",
+      "range": {
+        "startLine": 650,
+        "startChar": 0,
+        "endLine": 805,
+        "endChar": 45
+      },
+      "revId": "4d71b984f1fbe2f0f1beaae5a0dbd2e72bc09df3",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
