@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5ac10518_0f7245e5",
+        "filename": "jjb/3rd_party_ci/odl-netvirt.yml",
+        "patchSetId": 6
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T23:28:12Z",
+      "side": 1,
+      "message": "please change the slave-labels to\n\n    odl-netvirt-virtual-intel\n\nand rebase your patch so we can run this on the new slave assigned to this work.\n\nhttps://build.opnfv.org/ci/computer/intel-virtual2/\n\nalso pass me your ssh public key and I\u0027ll send you the ip and user for the slave after adding it to authorized_keys.",
+      "range": {
+        "startLine": 20,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 46
+      },
+      "revId": "ab6a5ca953469b6f5bcb62718a8be6c6a1bb083d",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_4f4fed92",
+        "filename": "jjb/3rd_party_ci/odl-netvirt.yml",
+        "patchSetId": 6
+      },
+      "lineNbr": 177,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T23:28:12Z",
+      "side": 1,
+      "message": "I don\u0027t know the details too much so this is a question rather than a comment.\n\nIs it possible to put bringing up apex vms from snapshot and installing odl netvirt into separate jobs as the 3rd party ci job is originally setup before? \n\nThe reasons why I\u0027m asking this\n- if for some reason we fail to download the snapshots or the apex deployment is not up, we can skip the rest of the jobs (insert-odl + functest + postprocessing) after apex job without voting on odl gerrit since it is not really odl what\u0027s failed.\n- having separate job and script doing apex and another ones doing odl stuff will ease future work both for maintenance purposes for 3rd party ci and for other purposes as we can hopefully reuse exact same apex job/script without impacting odl (or whatever other reason we might have).\n- one last reason could be that 2 jobs each using separate scripts to do apex vm creation and odl insertion would give more granular feedback as well for example you can get mails for apex parts but not odl parts vice versa, troubleshooting stuff without really caring the rest if you like.",
+      "range": {
+        "startLine": 172,
+        "startChar": 0,
+        "endLine": 177,
+        "endChar": 57
+      },
+      "revId": "ab6a5ca953469b6f5bcb62718a8be6c6a1bb083d",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_ef6ed900",
+        "filename": "jjb/apex/apex-snapshot-deploy.sh",
+        "patchSetId": 6
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-01-09T23:28:12Z",
+      "side": 1,
+      "message": "same comment as in the job configuration - separation of apex and odl related stuff into different scripts. is it possible?",
+      "revId": "ab6a5ca953469b6f5bcb62718a8be6c6a1bb083d",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
