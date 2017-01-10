@@ -95,19 +95,30 @@ main () {
         makemonit () {
             echo "Writing the following as monit config:"
         cat << EOF | tee $monitconfdir/jenkins
+check directory jenkins_piddir path /var/run/$jenkinsuser
+if does not exist then exec "/usr/bin/mkdir -p /var/run/$jenkinsuser"
+if failed uid $jenkinsuser then exec "/usr/bin/chown $jenkinsuser /var/run/$jenkinsuser"
+if failed gid $jenkinsuser then exec "/usr/bin/chown :$jenkinsuser /var/run/$jenkinsuser"
+
 check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
 start program = "/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $jenkinshome; export started_monit=true; $0 $@' with timeout 60 seconds"
 stop program = "/bin/bash -c '/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)'"
+depends on jenkins_piddir
 EOF
         }
 
         if [[ -f $monitconfdir/jenkins ]]; then
             #test for diff
             if [[ "$(diff $monitconfdir/jenkins <(echo "\
+check directory jenkins_piddir path /var/run/$jenkinsuser'
+if does not exist then exec '/usr/bin/mkdir -p /var/run/$jenkinsuser'
+if failed uid $jenkinsuser then exec '/usr/bin/chown $jenkinsuser /var/run/$jenkinsuser'
+if failed gid $jenkinsuser then exec '/usr/bin/chown :$jenkinsuser /var/run/$jenkinsuser'
+
 check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
 start program = \"/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $jenkinshome; export started_monit=true; $0 $@' with timeout 60 seconds\"
 stop program = \"/bin/bash -c '/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)'\"\
-") )" ]]; then
+depends on jenkins_piddir") )" ]]; then
                 echo "Updating monit config..."
                 makemonit $@
             fi
