@@ -63,7 +63,7 @@ export DIB_OS_RELEASE=${DIB_OS_RELEASE:-trusty}
 export DIB_OS_ELEMENT=${DIB_OS_ELEMENT:-ubuntu-minimal}
 
 # for centos 7: "vim,less,bridge-utils,iputils,rsyslog,curl"
-export DIB_OS_PACKAGES=${DIB_OS_PACKAGES:-"vlan,vim,less,bridge-utils,language-pack-en,iputils-ping,rsyslog,curl"}
+export DIB_OS_PACKAGES=${DIB_OS_PACKAGES:-"vlan,vim,less,bridge-utils,language-pack-en,iputils-ping,rsyslog,curl,python"}
 
 # Additional dib elements
 export EXTRA_DIB_ELEMENTS=${EXTRA_DIB_ELEMENTS:-"openssh-server"}
