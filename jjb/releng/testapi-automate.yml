@@ -4,8 +4,18 @@
         - master:
             branch: '{stream}'
             gs-pathname: ''
+
+    phase:
+        - 'docker-update':
+            slave-label: 'opnfv-build'
+        - 'docker-deploy':
+            slave-label: 'testresults'
+        - 'generate-doc':
+            slave-label: 'opnfv-build'
+
     jobs:
         - 'testapi-automate-{stream}'
+        - 'testapi-automate-{phase}-{stream}'
         - 'testapi-verify-{stream}'
 
     project: 'releng'
@@ -67,9 +77,19 @@
                     healthy: 50
                     unhealthy: 40
                     failing: 30
+        - 'email-publisher'
 
 - job-template:
     name: 'testapi-automate-{stream}'
+
+    project-type: multijob
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+            option: 'project'
 
     parameters:
         - project-parameter:
@@ -84,6 +104,12 @@
 
     scm:
         - git-scm
+
+    wrappers:
+        - ssh-agent-wrapper
+        - timeout:
+            timeout: 360
+            fail: true
 
     triggers:
         - gerrit:
@@ -103,9 +129,54 @@
                     pattern: 'utils/**'
 
     builders:
-        - docker-update
-        - testapi-doc-build
-        - upload-doc-artifact
+        - multijob:
+            name: docker-update
+            condition: SUCCESSFUL
+            projects:
+                - name: 'testapi-automate-docker-update-{stream}'
+                  current-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: docker-deploy
+            condition: SUCCESSFUL
+            projects:
+                - name: 'testapi-automate-docker-deploy-{stream}'
+                  current-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: generate-doc
+            condition: SUCCESSFUL
+            projects:
+                - name: 'testapi-automate-generate-doc-{stream}'
+                  current-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+
+    publishers:
+        - 'email-publisher'
+
+- job-template:
+    name: 'testapi-automate-{phase}-{stream}'
+
+    properties:
+        - throttle:
+            enabled: true
+            max-per-node: 1
+            option: 'project'
+
+    wrappers:
+        - ssh-agent-wrapper
+        - timeout:
+            timeout: 120
+            fail: true
+
+    scm:
+        - git-scm
+
+    builders:
+        - 'testapi-automate-{phase}-macro'
 
 ################################
 # job builders
@@ -118,10 +189,16 @@
             bash ./utils/test/testapi/run_test.sh
 
 - builder:
-    name: docker-update
+    name: testapi-docker-update-macro
     builders:
         - shell: |
             bash ./jjb/releng/testapi-docker-update.sh
+
+- builder:
+    name: testapit-generate-doc-macro
+    builders:
+        - 'testapi-doc-build'
+        - 'upload-doc-artifact'
 
 - builder:
     name: testapi-doc-build
@@ -134,3 +211,21 @@
     builders:
         - shell: |
             bash ./utils/test/testapi/htmlize/push-doc-artifact.sh
+
+- builder:
+    name: testapi-docker-deploy-macro
+    builders:
+        - shell: |
+            bash ./jjb/releng/testapi-docker-deploy.sh
+
+################################
+# job publishers
+################################
+
+- publisher:
+    name: 'email-publisher'
+    publishers:
+        - email:
+            recipients: rohitsakala@gmail.com serena.feng.711@gmail.com
+            notify-every-unstable-build: false
+            send-to-individuals: true
