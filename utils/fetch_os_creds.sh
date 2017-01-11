@@ -104,8 +104,8 @@ if [ "$installer_type" == "fuel" ]; then
     #This file contains the mgmt keystone API, we need the public one for our rc file
     admin_ip=$(cat $dest_path | grep "OS_AUTH_URL" | sed 's/^.*\=//' | sed "s/^\([\"']\)\(.*\)\1\$/\2/g" | sed s'/\/$//')
     public_ip=$(sshpass -p r00tme ssh $ssh_options root@${installer_ip} \
-        "ssh ${controller_ip} 'source openrc; openstack endpoint list --long'" \
-        | grep $admin_ip | sed 's/ /\n/g' | grep ^http | head -1) &> /dev/null
+        "ssh ${controller_ip} 'source openrc; openstack endpoint list'" \
+        | grep keystone | grep public | sed 's/ /\n/g' | grep ^http | head -1) &> /dev/null
         #| grep http | head -1 | cut -d '|' -f 4 | sed 's/v1\/.*/v1\//' | sed 's/ //g') &> /dev/null
     #NOTE: this is super ugly sed 's/v1\/.*/v1\//'OS_AUTH_URL
     # but sometimes the output of endpoint-list is like this: http://172.30.9.70:8004/v1/%(tenant_id)s
