@@ -210,6 +210,7 @@
         - description-setter:
             description: "POD: $NODE_NAME"
         - 'dovetail-cleanup'
+        - 'dovetail-prepare'
         - 'dovetail-run'
 
     publishers:
@@ -222,17 +223,16 @@
 # builder macros
 ########################
 - builder:
+    name: dovetail-prepare
+    builders:
+        - shell:
+            !include-raw: ./dovetail-prepare.sh
+
+- builder:
     name: dovetail-run
     builders:
         - shell:
             !include-raw: ./dovetail-run.sh
-
-
-- builder:
-    name: dovetail-fetch-os-creds
-    builders:
-        - shell:
-            !include-raw: ../../utils/fetch_os_creds.sh
 
 - builder:
     name: dovetail-cleanup
