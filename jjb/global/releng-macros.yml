@@ -96,6 +96,30 @@
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
 
+- trigger:
+    name: 'experimental'
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - comment-added-contains-event:
+                    comment-contains-value: 'check-experimental'
+            projects:
+                - project-compare-type: 'ANT'
+                  project-pattern: '{project}'
+                  branches:
+                      - branch-compare-type: 'ANT'
+                        branch-pattern: '**/{branch}'
+                  file-paths:
+                      - compare-type: 'ANT'
+                        pattern: 'tests/**'
+            skip-vote:
+                successful: true
+                failed: true
+                unstable: true
+                notbuilt: true
+            silent-start: true
+
 - wrapper:
     name: ssh-agent-wrapper
     wrappers:
