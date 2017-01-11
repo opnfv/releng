@@ -1,0 +1,82 @@
+---
+- hosts: all
+  remote_user: root
+  vars_files:
+    - ../var/ubuntu.yml
+  tasks:
+  - name: add public key to host
+    template: src=../template/authorized_keys.temp dest=/root/.ssh/authorized_keys
+  - name: configuration modules
+    template: src=../template/modules.template dest=/etc/modules
+    notify:
+    - restart ntp
+  handlers:
+    - name: restart ntp
+      service: name=ntp state=restarted
+
+- hosts: controller00
+  remote_user: root
+  tasks:
+  - name: conf interface
+    template: src=../template/bifrost/infra1.interface.temp dest=/etc/network/interfaces
+    notify:
+    - restart network
+  handlers:
+    - name: restart network
+      shell: "/sbin/ifconfig ens3 0 &&/sbin/ifdown -a && /sbin/ifup -a"
+
+- hosts: controller01
+  remote_user: root
+  tasks:
+  - name: conf interface
+    template: src=../template/bifrost/infra2.interface.temp dest=/etc/network/interfaces
+    notify:
+    - restart network
+  handlers:
+    - name: restart network
+      shell: "/sbin/ifconfig ens3 0 &&/sbin/ifdown -a && /sbin/ifup -a"
+
+- hosts: controller02
+  remote_user: root
+  tasks:
+  - name: conf interface
+    template: src=../template/bifrost/infra3.interface.temp dest=/etc/network/interfaces
+    notify:
+    - restart network
+  handlers:
+    - name: restart network
+      shell: "/sbin/ifconfig ens3 0 &&/sbin/ifdown -a && /sbin/ifup -a"
+
+- hosts: compute00
+  remote_user: root
+  tasks:
+  - name: conf interface
+    template: src=../template/bifrost/compute1.interface.temp dest=/etc/network/interfaces
+    notify:
+    - restart network
+  handlers:
+    - name: restart network 
+      shell: "/sbin/ifconfig ens3 0 &&/sbin/ifdown -a && /sbin/ifup -a"
+
+- hosts: compute01
+  remote_user: root
+  tasks:
+  - name: conf interface
+    template: src=../template/bifrost/compute2.interface.temp dest=/etc/network/interfaces
+    notify:
+    - restart network
+  - name: make nfs dir
+    file: "dest=/images mode=777 state=directory"
+  - name: install nfs
+    apt:
+      pkg: "nfs-kernel-server"
+      state: "present"
+  - name: conf nfs
+    template: src=../template/export.template dest=/etc/exports
+    notify:
+    - restart nfs
+  handlers:
+    - name: restart network
+      shell: "/sbin/ifconfig ens3 0 &&/sbin/ifdown -a && /sbin/ifup -a"
+    - name: restart nfs
+      service: name=nfs-kernel-server state=restarted
