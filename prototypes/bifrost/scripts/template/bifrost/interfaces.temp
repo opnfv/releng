@@ -1,0 +1,16 @@
+auto lo
+iface lo inet loopback
+
+auto virbr0.10
+iface virbr0.10 inet manual
+    vlan-raw-device virbr0
+
+auto br-mgmt
+iface br-mgmt inet static
+    bridge_stp off
+    bridge_waitport 0
+    bridge_fd 0
+    bridge_ports virbr0.10
+    address 172.29.236.100
+    netmask 255.255.252.0
+    dns-nameserver 8.8.8.8

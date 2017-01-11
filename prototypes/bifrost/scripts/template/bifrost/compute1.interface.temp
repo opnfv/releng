@@ -1,0 +1,188 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+## Source interfaces
+## Please check /etc/network/interfaces.d before changing this file
+## as interfaces may have been defined in /etc/network/interfaces.d
+## See LP: #1262951
+## This is a multi-NIC bonded configuration to implement the required bridges
+## for OpenStack-Ansible. This illustrates the configuration of the first
+## Infrastructure host and the IP addresses assigned should be adapted
+## for implementation on the other hosts.
+##
+## After implementing this configuration, the host will need to be
+## rebooted.
+#
+## Assuming that ens3/1 and eth2/3 are dual port NIC's we pair
+## ens3 with eth2 and eth1 with eth3 for increased resiliency
+## in the case of one interface card failing.
+#auto ens3
+#iface ens3 inet manual
+#    bond-master ens3
+#    bond-primary ens3
+#
+#auto ens4
+#iface ens4 inet manual
+#    bond-master ens3
+#    bond-primary eth1
+#
+#auto ens5
+#iface ens5 inet manual
+#    bond-master ens3
+#
+#auto ens6
+#iface ens6 inet manual
+#    bond-master ens3
+#
+## Create a bonded interface. Note that the "bond-slaves" is set to none. This
+## is because the bond-master has already been set in the raw interfaces for
+## the new ens3.
+#auto ens3
+#iface ens3 inet manual
+#    bond-slaves none
+#    bond-mode active-backup
+#    bond-miimon 100
+#    bond-downdelay 200
+#    bond-updelay 200
+#
+#
+## This bond will carry VLAN and VXLAN traffic to ensure isolation from
+## control plane traffic on ens3.
+#auto ens3
+#iface ens3 inet manual
+#    bond-slaves none
+#    bond-mode active-backup
+#    bond-miimon 100
+#    bond-downdelay 250
+#    bond-updelay 250
+#
+## Container/Host management VLAN interface
+#auto ens3.10
+#iface ens3.10 inet manual
+#    vlan-raw-device ens3
+#
+## OpenStack Networking VXLAN (tunnel/overlay) VLAN interface
+#auto ens3.30
+#iface ens3.30 inet manual
+#    vlan-raw-device ens3
+#
+## Storage network VLAN interface (optional)
+#auto ens3.20
+#iface ens3.20 inet manual
+#    vlan-raw-device ens3
+
+# Physical interface
+auto ens3
+iface ens3 inet manual
+
+# Container/Host management VLAN interface
+auto ens3.10
+iface ens3.10 inet manual
+    vlan-raw-device ens3
+
+# OpenStack Networking VXLAN (tunnel/overlay) VLAN interface
+auto ens3.30
+iface ens3.30 inet manual
+    vlan-raw-device ens3
+
+# Storage network VLAN interface (optional)
+auto ens3.20
+iface ens3.20 inet manual
+    vlan-raw-device ens3
+
+# Container/Host management bridge
+auto br-mgmt
+iface br-mgmt inet static
+    bridge_stp off
+    bridge_waitport 0
+    bridge_fd 0
+    bridge_ports ens3.10
+    address 172.29.236.14
+    netmask 255.255.252.0
+
+
+# OpenStack Networking VXLAN (tunnel/overlay) bridge
+#
+# Only the COMPUTE and NETWORK nodes must have an IP address
+# on this bridge. When used by infrastructure nodes, the
+# IP addresses are assigned to containers which use this
+# bridge.
+#
+#auto br-vxlan
+#iface br-vxlan inet manual
+#    bridge_stp off
+#    bridge_waitport 0
+#    bridge_fd 0
+#    bridge_ports ens3.30
+
+# compute1 VXLAN (tunnel/overlay) bridge config
+auto br-vxlan
+iface br-vxlan inet static
+    bridge_stp off
+    bridge_waitport 0
+    bridge_fd 0
+    bridge_ports ens3.30
+    address 172.29.240.14
+    netmask 255.255.252.0
+
+# OpenStack Networking VLAN bridge
+auto br-vlan
+iface br-vlan inet static
+    bridge_stp off
+    bridge_waitport 0
+    bridge_fd 0
+    bridge_ports ens3
+    address 192.168.122.5
+    netmask 255.255.255.0
+    gateway 192.168.122.1
+    offload-sg off
+    # Create veth pair, don't bomb if already exists
+    pre-up ip link add br-vlan-veth type veth peer name eth12 || true
+    # Set both ends UP
+    pre-up ip link set br-vlan-veth up
+    pre-up ip link set eth12 up
+    # Delete veth pair on DOWN
+    post-down ip link del br-vlan-veth || true
+    bridge_ports br-vlan-veth
+
+# Add an additional address to br-vlan
+iface br-vlan inet static
+    # Flat network default gateway
+    # -- This needs to exist somewhere for network reachability
+    # -- from the router namespace for floating IP paths.
+    # -- Putting this here is primarily for tempest to work.
+    address 172.29.241.1
+    netmask 255.255.252.0
+    dns-nameserver 8.8.8.8 8.8.4.4
+
+#    address 10.200.200.9
+#    netmask 255.255.255.0
+#    gateway 10.200.200.1
+#    dns-nameserver 8.8.8.8 8.8.4.4
+# Storage bridge (optional)
+#
+# Only the COMPUTE and STORAGE nodes must have an IP address
+# on this bridge. When used by infrastructure nodes, the
+# IP addresses are assigned to containers which use this
+# bridge.
+#
+#auto br-storage
+#iface br-storage inet manual
+#    bridge_stp off
+#    bridge_waitport 0
+#    bridge_fd 0
+#    bridge_ports ens3.20
+
+# compute1 Storage bridge
+auto br-storage
+iface br-storage inet static
+    bridge_stp off
+    bridge_waitport 0
+    bridge_fd 0
+    bridge_ports ens3.20
+    address 172.29.244.14
+    netmask 255.255.252.0

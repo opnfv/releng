@@ -14,12 +14,16 @@ if [[ $(whoami) != "root" ]]; then
     exit 1
 fi
 
-virsh destroy jumphost.opnfvlocal || true
 virsh destroy controller00.opnfvlocal || true
+virsh destroy controller01.opnfvlocal || true
+virsh destroy controller02.opnfvlocal || true
 virsh destroy compute00.opnfvlocal || true
-virsh undefine jumphost.opnfvlocal || true
+virsh destroy compute01.opnfvlocal || true
 virsh undefine controller00.opnfvlocal || true
+virsh undefine controller01.opnfvlocal || true
+virsh undefine controller02.opnfvlocal || true
 virsh undefine compute00.opnfvlocal || true
+virsh undefine compute01.opnfvlocal || true
 
 service ironic-conductor stop
 

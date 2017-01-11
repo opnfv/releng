@@ -50,11 +50,11 @@ sudo git fetch $PROJECT_REPO $GERRIT_REFSPEC && sudo git checkout FETCH_HEAD
 sudo /bin/cp -rf /opt/releng/prototypes/bifrost/* /opt/bifrost/
 
 # place bridge creation file on the right path
-sudo mkdir -p /opt/puppet-infracloud/files/elements/infra-cloud-bridge/static/opt
-sudo cp /opt/puppet-infracloud/templates/bifrost/create_bridge.py.erb /opt/puppet-infracloud/files/elements/infra-cloud-bridge/static/opt/create_bridge.py
+#sudo mkdir -p /opt/puppet-infracloud/files/elements/infra-cloud-bridge/static/opt
+#sudo cp /opt/puppet-infracloud/templates/bifrost/create_bridge.py.erb /opt/puppet-infracloud/files/elements/infra-cloud-bridge/static/opt/create_bridge.py
 
 # replace bridge name
-sudo sed -i s/"<%= @bridge_name -%>"/br_opnfv/g /opt/puppet-infracloud/files/elements/infra-cloud-bridge/static/opt/create_bridge.py
+#sudo sed -i s/"<%= @bridge_name -%>"/br_opnfv/g /opt/puppet-infracloud/files/elements/infra-cloud-bridge/static/opt/create_bridge.py
 
 # cleanup remnants of previous deployment
 cd /opt/bifrost
@@ -69,3 +69,7 @@ cd /opt/bifrost
 source env-vars
 ironic node-list
 virsh list
+
+#deploy OpenStack using OpenStack-Ansible
+cd /opt/bifrost/scripts
+sudo -E ./deploy.sh
