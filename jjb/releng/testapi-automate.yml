@@ -52,7 +52,18 @@
     name: testapi-doc-build
     builders:
         - shell: |
+            #!/bin/bash
+
+            # Create virtual environment
+            virtualenv $WORKSPACE/testapi_html
+            source $WORKSPACE/testapi_html/bin/activate
+
+            # Install requirements
+            pip install requests
+
             python ./utils/test/testapi/htmlize/htmlize.py -o ${WORKSPACE}/
+
+            deactivate
 
 - builder:
     name: start-testapi-server
