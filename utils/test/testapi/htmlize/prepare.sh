@@ -9,9 +9,6 @@
 virtualenv testapi_venv
 source testapi_venv/bin/activate
 
-# Install Pre-requisites
-pip install requests
-
 # Swgger Codegen Tool
 url="http://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/2.2.1/swagger-codegen-cli-2.2.1.jar"
 
@@ -26,3 +23,5 @@ cd utils/test/testapi/
 pip install -r requirements.txt
 ./install.sh
 opnfv-testapi -c ../../../testapi_venv/etc/opnfv_testapi/config.ini &
+
+deactivate
