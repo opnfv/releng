@@ -57,7 +57,7 @@ if [ -z ${container_id} ]; then
     docker ps -a
     exit 1
 fi
-echo "COntainer Start: docker start ${container_id}"
+echo "Container Start: docker start ${container_id}"
 docker start ${container_id}
 sleep 5
 docker ps >${redirect}

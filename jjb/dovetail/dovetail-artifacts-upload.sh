@@ -16,6 +16,7 @@ echo "dovetail: pull and save the images"
 cd ${CACHE_DIR}
 sudo docker pull ${DOCKER_REPO_NAME}:${DOCKER_TAG}
 sudo docker save -o ${STORE_FILE_NAME} ${DOCKER_REPO_NAME}:${DOCKER_TAG}
+sudo chmod og+rw ${STORE_FILE_NAME}
 
 OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
 GS_UPLOAD_LOCATION="${STORE_URL}/${OPNFV_ARTIFACT_VERSION}"
