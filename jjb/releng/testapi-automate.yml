@@ -38,11 +38,20 @@
                   - compare-type: 'ANT'
                     pattern: 'utils/**'
 
+    # TODO Add wrapper ssh credentials
+
     builders:
         - start-testapi-server
         - testapi-doc-build
         - upload-doc-artifact
         - clean-testapi-server
+        - docker-deploy
+
+    publishers:
+        - email:
+            recipients: rohitsakala@gmail.com serena.feng.711@gmail.com
+            notify-every-unstable-build: false
+            send-to-individuals: true
 
 ################################
 # job builders
@@ -71,3 +80,9 @@
     builders:
         - shell: |
             bash ./utils/test/testapi/htmlize/push-doc-artifact.sh
+
+- builder:
+    name: docker-deploy
+    builders:
+        - shell: |
+            bash ./jjb/releng/testapi-docker-deploy.sh
