@@ -111,11 +111,6 @@ if [ "$installer_type" == "fuel" ]; then
     # but sometimes the output of endpoint-list is like this: http://172.30.9.70:8004/v1/%(tenant_id)s
     # Fuel virtual need a fix
 
-    if [ "$DEPLOY_TYPE" == "virt" ]; then
-        echo "INFO: Changing: internalURL -> publicURL in openrc"
-        sed -i 's/internalURL/publicURL/' $dest_path
-    fi
-
 elif [ "$installer_type" == "apex" ]; then
     verify_connectivity $installer_ip
 
