@@ -26,8 +26,12 @@
 
     jobs:
         - 'doctor-verify-{stream}'
-        - 'doctor-verify-{installer}-{inspector}-{stream}'
-        - 'doctor-profiling-{stream}'
+        - 'doctor-verify-{installer}-{inspector}-{stream}':
+            profiler: 'none'
+            auto-trigger-name: 'doctor-verify'
+        - 'doctor-profiling-{installer}-{inspector}-{stream}':
+            profiler: 'poc'
+            auto-trigger-name: 'experimental'
 
 - job-template:
     name: 'doctor-verify-{stream}'
@@ -107,7 +111,7 @@
             default: '{project}'
         - string:
             name: TESTCASE_OPTIONS
-            default: '-e INSPECTOR_TYPE={inspector} -v $WORKSPACE:/home/opnfv/repos/doctor'
+            default: '-e INSPECTOR_TYPE={inspector} -e PROFILER_TYPE={profiler} -v $WORKSPACE:/home/opnfv/repos/doctor'
             description: 'Addtional parameters specific to test case(s)'
         # functest-parameter
         - string:
@@ -130,6 +134,46 @@
     scm:
         - git-scm-gerrit
 
+    triggers:
+        - '{auto-trigger-name}'
+
+    builders:
+        - 'functest-suite-builder'
+        - shell: |
+            functest_log="$HOME/opnfv/functest/results/{stream}/{project}.log"
+            to_be_archived="$WORKSPACE/tests/functest-{project}.log"
+            cp $functest_log $to_be_archived
+            # NOTE: checking the test result, as the previous job could return
+            #       0 regardless the result of doctor test scenario.
+            grep -e ' OK$' $functest_log || exit 1
+
+    publishers:
+        - archive:
+            artifacts: 'tests/*.log'
+
+- job-template:
+    name: 'doctor-profiling-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - 'doctor-defaults':
+            project: '{project}'
+            branch: '{branch}'
+
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - 'experimental':
+            project: '{project}'
+            branch: '{branch}'
+
+#####################################
+# trigger macros
+#####################################
+- trigger:
+    name: 'doctor-verify'
     triggers:
         - gerrit:
             server-name: 'gerrit.opnfv.org'
@@ -158,58 +202,6 @@
                 unstable: true
                 notbuilt: true
 
-    builders:
-        - 'functest-suite-builder'
-        - shell: |
-            functest_log="$HOME/opnfv/functest/results/{stream}/{project}.log"
-            to_be_archived="$WORKSPACE/tests/functest-{project}.log"
-            cp $functest_log $to_be_archived
-            # NOTE: checking the test result, as the previous job could return
-            #       0 regardless the result of doctor test scenario.
-            grep -e ' OK$' $functest_log || exit 1
-
-    publishers:
-        - archive:
-            artifacts: 'tests/*.log'
-
-- job-template:
-    name: 'doctor-profiling-{stream}'
-
-    disabled: '{obj:disabled}'
-
-    parameters:
-        - 'doctor-defaults':
-            project: '{project}'
-            branch: '{branch}'
-        - string:
-            name: PROFILER
-            default: poc
-            description: "Profiler to be used"
-
-    scm:
-        - git-scm-gerrit
-
-    triggers:
-        - 'experimental':
-            project: '{project}'
-            branch: '{branch}'
-
-#####################################
-# parameter macros
-#####################################
-# TODO(yujunz) replace common parameter in doctor-verify-{stream} with macro
-- parameter:
-    name: 'doctor-defaults'
-    parameters:
-    - project-parameter:
-        project: '{project}'
-    - gerrit-parameter:
-        branch: '{branch}'
-    - 'opnfv-build-ubuntu-defaults'
-
-#####################################
-# trigger macros
-#####################################
 # TODO(yujunz) move to opnfv commom
 - trigger:
     name: 'experimental'
