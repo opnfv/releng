@@ -31,16 +31,17 @@ PROVISION_WAIT_TIMEOUT=${PROVISION_WAIT_TIMEOUT:-3600}
 # placed in the configuration drive. The "build image" test does not
 # use cirros.
 
-TEST_VM_NUM_NODES=3
-export TEST_VM_NODE_NAMES="jumphost.opnfvlocal controller00.opnfvlocal compute00.opnfvlocal"
+TEST_VM_NUM_NODES=6
+export TEST_VM_NODE_NAMES="jumphost controller00 controller01 controller02 compute00 compute01"
 export VM_DOMAIN_TYPE="kvm"
-export VM_CPU=${VM_CPU:-4}
-export VM_DISK=${VM_DISK:-100}
+export VM_CPU=${VM_CPU:-8}
+export VM_DISK=${VM_DISK:-60}
 TEST_PLAYBOOK="test-bifrost-infracloud.yaml"
 USE_INSPECTOR=true
 USE_CIRROS=false
 TESTING_USER=root
-VM_MEMORY_SIZE=${VM_MEMORY_SIZE:-8192}
+# seting the memory to 16 GB to make more easily success
+VM_MEMORY_SIZE=${VM_MEMORY_SIZE:-16384}
 DOWNLOAD_IPA=true
 CREATE_IPA_IMAGE=false
 INSPECT_NODES=true
@@ -59,11 +60,11 @@ export DIB_DEV_USER_PWDLESS_SUDO=yes
 export DIB_DEV_USER_PASSWORD=devuser
 
 # settings for distro: trusty/ubuntu-minimal, 7/centos7
-export DIB_OS_RELEASE=${DIB_OS_RELEASE:-trusty}
+export DIB_OS_RELEASE=${DIB_OS_RELEASE:-xenial}
 export DIB_OS_ELEMENT=${DIB_OS_ELEMENT:-ubuntu-minimal}
 
 # for centos 7: "vim,less,bridge-utils,iputils,rsyslog,curl"
-export DIB_OS_PACKAGES=${DIB_OS_PACKAGES:-"vlan,vim,less,bridge-utils,language-pack-en,iputils-ping,rsyslog,curl"}
+export DIB_OS_PACKAGES=${DIB_OS_PACKAGES:-"vlan,vim,less,bridge-utils,sudo,language-pack-en,iputils-ping,rsyslog,curl,python,debootstrap,ifenslave,ifenslave-2.6,lsof,lvm2,ntp,ntpdate,tcpdump"}
 
 # Additional dib elements
 export EXTRA_DIB_ELEMENTS=${EXTRA_DIB_ELEMENTS:-"openssh-server"}

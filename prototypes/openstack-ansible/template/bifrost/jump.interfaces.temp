@@ -1,0 +1,22 @@
+# The primary network interface
+auto ens3
+iface ens3 inet static
+address 192.168.122.2
+netmask 255.255.255.0
+gateway 192.168.122.1
+dns-nameservers 8.8.8.8
+auto ens3
+iface ens3 inet manual
+
+auto ens3.10
+iface ens3.10 inet manual
+    vlan-raw-device ens3
+
+auto br-mgmt
+iface br-mgmt inet static
+    bridge_stp off
+    bridge_waitport 0
+    bridge_fd 0
+    bridge_ports ens3.10
+    address 172.29.236.100
+    netmask 255.255.252.0
