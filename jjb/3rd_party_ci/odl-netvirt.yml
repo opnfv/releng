@@ -119,9 +119,8 @@
             name: functest
             condition: SUCCESSFUL
             projects:
-                - name: 'functest-netvirt-virtual-suite-{stream}'
+                - name: 'functest-netvirt-virtual-daily-{stream}'
                   predefined-parameters: |
-                    FUNCTEST_SUITE_NAME=vping_userdata,bgpvpn
                     RC_FILE_PATH=/home/jenkins/cloner-info/overcloudrc
                     DEPLOY_SCENARIO=os-odl_l2-bgpvpn-noha
                   node-parameters: true
@@ -162,7 +161,7 @@
             use-build-blocker: true
             blocking-jobs:
                 - 'odl-netvirt-verify-virtual-install-.*'
-                - 'odl-netvirt-verify-virtual-functest-.*'
+                - 'functest-netvirt-virtual-daily-.*'
                 - 'odl-netvirt-verify-virtual-postprocess-.*'
             block-level: 'NODE'
 
@@ -199,11 +198,6 @@
             !include-raw: ./download-netvirt-artifact.sh
         - shell:
             !include-raw: ./install-netvirt.sh
-- builder:
-    name: 'netvirt-verify-functest-builder'
-    builders:
-        - shell:
-            !include-raw: ./functest-netvirt.sh
 - builder:
     name: 'netvirt-verify-postprocess-builder'
     builders:
