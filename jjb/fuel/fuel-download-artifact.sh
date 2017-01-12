@@ -18,20 +18,28 @@ if [[ "$JOB_NAME" =~ "merge" ]]; then
     # get the properties file for the Fuel ISO built for a merged change
     curl -L -s -o $WORKSPACE/latest.properties http://$GS_URL/opnfv-gerrit-$GERRIT_CHANGE_NUMBER.properties
 else
-    # get the latest.properties file in order to get info regarding latest artifact
-    echo "Downloading http://$GS_URL/latest.properties"
-    curl -L -s -o $WORKSPACE/latest.properties http://$GS_URL/latest.properties
+    if [[ "$ISO_URL" == "latest" ]]; then
+        # get the latest.properties file in order to get info regarding latest artifact
+        echo "Downloading http://$GS_URL/latest.properties"
+        curl -L -s -o $WORKSPACE/latest.properties http://$GS_URL/latest.properties
+    fi
 fi
 
-# check if we got the file
-[[ -f $WORKSPACE/latest.properties ]] || exit 1
+if [[ "$ISO_URL" == "latest" ]]; then
+    # check if we got the file
+    [[ -f $WORKSPACE/latest.properties ]] || exit 1
+    # source the file so we get artifact metadata
+    source $WORKSPACE/latest.properties
 
-# source the file so we get artifact metadata
-source $WORKSPACE/latest.properties
-
-# echo the info about artifact that is used during the deployment
-OPNFV_ARTIFACT=${OPNFV_ARTIFACT_URL/*\/}
-echo "Using $OPNFV_ARTIFACT for deployment"
+    # echo the info about artifact that is used during the deployment
+    OPNFV_ARTIFACT=${OPNFV_ARTIFACT_URL/*\/}
+    echo "Using $OPNFV_ARTIFACT for deployment"
+else
+    # echo the info about artifact that is used during the deployment
+    OPNFV_ARTIFACT=$ISO_URL
+    OPNFV_ARTIFACT_URL=$ISO_URL
+    echo "Using $OPNFV_ARTIFACT for deployment"
+fi
 
 # using ISOs for verify & merge jobs from local storage will be enabled later
 if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
