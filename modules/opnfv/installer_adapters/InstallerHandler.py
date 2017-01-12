@@ -11,9 +11,10 @@ from opnfv.installer_adapters.fuel.FuelAdapter import FuelAdapter
 from opnfv.installer_adapters.apex.ApexAdapter import ApexAdapter
 from opnfv.installer_adapters.compass.CompassAdapter import CompassAdapter
 from opnfv.installer_adapters.joid.JoidAdapter import JoidAdapter
+from opnfv.installer_adapters.daisy.DaisyAdapter import DaisyAdapter
 
 
-INSTALLERS = ["fuel", "apex", "compass", "joid"]
+INSTALLERS = ["fuel", "apex", "compass", "joid", "daisy"]
 
 
 class InstallerHandler:
@@ -38,6 +39,8 @@ class InstallerHandler:
             self.InstallerAdapter = CompassAdapter(self.installer_ip)
         elif self.installer == INSTALLERS[3]:
             self.InstallerAdapter = JoidAdapter(self.installer_ip)
+        elif self.installer == INSTALLERS[4]:
+            self.InstallerAdapter = DaisyAdapter(self.installer_ip)
         else:
             print("Installer %s is  not valid. "
                   "Please use one of the followings: %s"
