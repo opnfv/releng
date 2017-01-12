@@ -38,6 +38,10 @@ else
     export NETWORK_CONF_FILE=network.yml
 fi
 
+if [[ "$NODE_NAME" =~ "intel-pod8" ]]; then
+    export OS_MGMT_NIC=em4
+fi
+
 if [[ "$NODE_NAME" =~ "-virtual" ]]; then
     export NETWORK_CONF=$CONFDIR/vm_environment/$NODE_NAME/${NETWORK_CONF_FILE}
     export DHA_CONF=$CONFDIR/vm_environment/${DEPLOY_SCENARIO}.yml
