@@ -12,21 +12,31 @@ set -o pipefail
 
 export TERM="vt220"
 
-# source the file so we get OPNFV vars
-source latest.properties
+# source latest.properties if the ISO_URL is latest
+if [[ "$ISO_URL" == "latest" ]]; then
+    source latest.properties
+    # echo the info about artifact that is used during the deployment
+    echo "Using ${OPNFV_ARTIFACT_URL/*\/} for deployment"
+else
+    OPNFV_ARTIFACT_URL=$ISO_URL
+    echo "Using $ISO_URL for deployment"
+fi
 
-# echo the info about artifact that is used during the deployment
-echo "Using ${OPNFV_ARTIFACT_URL/*\/} for deployment"
 
 if [[ "$JOB_NAME" =~ "merge" ]]; then
     # set simplest scenario for virtual deploys to run for merges
     DEPLOY_SCENARIO="os-nosdn-nofeature-ha"
 else
     # for none-merge deployments
-    # checkout the commit that was used for building the downloaded artifact
+    # checkout theucommit that was used for building the downloaded artifact
     # to make sure the ISO and deployment mechanism uses same versions
-    echo "Checking out $OPNFV_GIT_SHA1"
-    git checkout $OPNFV_GIT_SHA1 --quiet
+    if [[ "$GIT_TAG" == "latest" ]]; then
+        echo "Checking out $OPNFV_GIT_SHA1"
+        git checkout $OPNFV_GIT_SHA1 --quiet
+    else
+        echo "Checking out $GIT_TAG"
+        git checkout $GIT_TAG --quiet
+    fi
 fi
 
 # set deployment parameters
@@ -56,11 +66,12 @@ chmod a+x $HOME
 chmod a+x $TMPDIR
 
 # clone the securedlab repo
+# this will cause issues as the command below will checkout stable/colorado
+# but ericsson-pod1 and ericsson-pod2 weren't there when colorado.3.0 was released
 cd $WORKSPACE
 echo "Cloning securedlab repo ${GIT_BRANCH##origin/}"
 git clone ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab --quiet \
     --branch ${GIT_BRANCH##origin/}
-
 # log file name
 FUEL_LOG_FILENAME="${JOB_NAME}_${BUILD_NUMBER}.log.tar.gz"
 
