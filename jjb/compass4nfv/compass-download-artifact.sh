@@ -19,7 +19,7 @@ curl -s -o $BUILD_DIRECTORY/latest.properties http://$GS_URL/latest.properties
 source $BUILD_DIRECTORY/latest.properties
 
 # download the file
-curl -s -o $BUILD_DIRECTORY/compass.iso http://$OPNFV_ARTIFACT_URL > gsutil.iso.log 2>&1
+curl -s -o $BUILD_DIRECTORY/compass.iso $OPNFV_ARTIFACT_URL > gsutil.iso.log 2>&1
 
 # list the file
 ls -al $BUILD_DIRECTORY/compass.iso
