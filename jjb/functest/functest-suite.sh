@@ -12,3 +12,7 @@ else
 fi
 container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
 docker exec $container_id $cmd
+
+ret_value=$?
+
+exit $ret_value
