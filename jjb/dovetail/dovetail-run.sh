@@ -66,9 +66,12 @@ if [ $(docker ps | grep "opnfv/dovetail:${DOCKER_TAG}" | wc -l) == 0 ]; then
     exit 1
 fi
 
-exec_cmd="python ${DOVETAIL_REPO_DIR}/dovetail/run.py --testsuite ${TESTSUITE} -d true"
-echo "Container exec command: ${exec_cmd}"
-docker exec ${container_id} ${exec_cmd}
+list_cmd="dovetail list ${TESTSUITE}"
+run_cmd="dovetail run --testsuite ${TESTSUITE} -d true"
+echo "Container exec command: ${list_cmd}"
+docker exec $container_id ${list_cmd}
+echo "Container exec command: ${run_cmd}"
+docker exec $container_id ${run_cmd}
 
 sudo cp -r ${DOVETAIL_REPO_DIR}/results ./
 #To make sure the file owner is jenkins, for the copied results files in the above line
