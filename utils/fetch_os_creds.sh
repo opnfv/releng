@@ -196,6 +196,13 @@ if [ ! -f $dest_path ]; then
     error "There has been an error retrieving the credentials"
 fi
 
+if [ "$public_ip" != "" ]; then
+    info "Exchanging keystone public IP in rc file to $public_ip"
+    sed -i  "/OS_AUTH_URL/c\export OS_AUTH_URL=\'$public_ip'" $dest_path
+fi
+
+
+
 echo "-------- Credentials: --------"
 cat $dest_path
 
