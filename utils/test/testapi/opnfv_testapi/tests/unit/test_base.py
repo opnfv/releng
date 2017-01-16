@@ -47,11 +47,11 @@ class TestBase(AsyncHTTPTestCase):
         return self.create_help(self.basePath, req, *args)
 
     def create_help(self, uri, req, *args):
-        if req:
-            req = req.format()
+        if req and not isinstance(req, str):
+            req = json.dumps(req.format())
         res = self.fetch(self._update_uri(uri, *args),
                          method='POST',
-                         body=json.dumps(req),
+                         body=req if req else json.dumps(None),
                          headers=self.headers)
 
         return self._get_return(res, self.create_res)
@@ -123,9 +123,17 @@ class TestBase(AsyncHTTPTestCase):
         self.assertIn(self.basePath, body.href)
 
     def assert_create_body(self, body, req=None, *args):
+        import inspect
         if not req:
             req = self.req_d
-        new_args = args + tuple([req.name])
+        resource_name = ''
+        if inspect.isclass(req):
+            resource_name = req.name
+        elif isinstance(req, dict):
+            resource_name = req['name']
+        elif isinstance(req, str):
+            resource_name = json.loads(req)['name']
+        new_args = args + tuple([resource_name])
         self.assertIn(self._get_uri(*new_args), body.href)
 
     @staticmethod
@@ -134,3 +142,4 @@ class TestBase(AsyncHTTPTestCase):
         fake_pymongo.projects.clear()
         fake_pymongo.testcases.clear()
         fake_pymongo.results.clear()
+        fake_pymongo.scenarios.clear()

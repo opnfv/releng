@@ -1,3 +1,4 @@
+from opnfv_testapi.common.constants import HTTP_FORBIDDEN
 from opnfv_testapi.resources.handlers import GenericApiHandler
 from opnfv_testapi.resources.scenario_models import Scenario
 from opnfv_testapi.tornado_swagger import swagger
@@ -29,10 +30,23 @@ class ScenariosCLHandler(GenericScenarioHandler):
         """
             @description: create a new scenario by name
             @param body: scenario to be created
-            @type body: L{string}
+            @type body: L{ScenarioCreateRequest}
+            @in body: body
             @rtype: L{CreateResponse}
+            @return 200: scenario is created.
+            @raise 403: scenario already exists
+            @raise 400:  body or name not provided
         """
-        pass
+        def query(data):
+            return {'name': data.name}
+
+        def error(data):
+            message = '{} already exists as a scenario'.format(data.name)
+            return HTTP_FORBIDDEN, message
+
+        miss_checks = ['name']
+        db_checks = [(self.table, False, query, error)]
+        self._create(miss_checks=miss_checks, db_checks=db_checks)
 
 
 class ScenarioGURHandler(GenericScenarioHandler):
