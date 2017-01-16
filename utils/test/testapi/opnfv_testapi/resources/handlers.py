@@ -52,7 +52,9 @@ class GenericApiHandler(RequestHandler):
                         DEFAULT_REPRESENTATION):
                     try:
                         self.json_args = json.loads(self.request.body)
+                        # print 'json_args: ', self.json_args
                     except (ValueError, KeyError, TypeError) as error:
+                        print 'empty Body'
                         raise HTTPError(HTTP_BAD_REQUEST,
                                         "Bad Json format [{}]".
                                         format(error))
@@ -219,6 +221,8 @@ class GenericApiHandler(RequestHandler):
 
     def _eval_db(self, table, method, *args, **kwargs):
         exec_collection = self.db.__getattr__(table)
+        print exec_collection
+        print exec_collection.__getattribute__(method)
         return exec_collection.__getattribute__(method)(*args, **kwargs)
 
     def _eval_db_find_one(self, query, table=None):
