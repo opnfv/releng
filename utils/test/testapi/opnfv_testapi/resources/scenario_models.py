@@ -61,6 +61,17 @@ class ScenarioInstaller(models.ModelBase):
 
 
 @swagger.model()
+class ScenarioCreateRequest(models.ModelBase):
+    """
+        @property installers:
+        @ptype installers: C{list} of L{ScenarioInstaller}
+    """
+    def __init__(self, name='', installers=None):
+        self.name = name
+        self.installers = installers if installers else list()
+
+
+@swagger.model()
 class Scenario(models.ModelBase):
     """
         @property installers:
@@ -69,7 +80,7 @@ class Scenario(models.ModelBase):
     def __init__(self, name='', create_date='', _id='', installers=None):
         self.name = name
         self._id = _id
-        self.create_date = create_date
+        self.creation_date = create_date
         self.installers = installers if installers else list()
 
 
