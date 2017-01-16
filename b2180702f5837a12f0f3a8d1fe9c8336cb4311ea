@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "5ac10518_eb5c84ef",
+        "filename": "jjb/3rd_party_ci/odl-netvirt.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 2697
+      },
+      "writtenOn": "2017-01-16T12:55:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5ac10518_b28595ae",
+      "revId": "b2180702f5837a12f0f3a8d1fe9c8336cb4311ea",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5ac10518_b2acb536",
         "filename": "jjb/3rd_party_ci/odl-netvirt.yml",
         "patchSetId": 1
@@ -90,6 +108,30 @@
       "side": 1,
       "message": "I don\u0027t think we want to use this scenario name or RC path.  Per scenario, there is no odl_l2 anymore due to new netvirt requiring L3.  Also, we are not really testing bgpvpn here.  I think as I posted in my other patch the name of \"os-odl_l3-csit-noha\" makes the most sense.  That way in functest they can switch on the csit feature and only run those robot tests.\n\nFor the RC path, you can reference where I am unpacking the snapshot artifacts in theo ther patch.  Long term we want to make this directory dynamic to the job number so that we can have multiple runs on the same slave in parallel.",
       "parentUuid": "5ac10518_b2acb536",
+      "range": {
+        "startLine": 122,
+        "startChar": 0,
+        "endLine": 125,
+        "endChar": 57
+      },
+      "revId": "b2180702f5837a12f0f3a8d1fe9c8336cb4311ea",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_0b60f0a3",
+        "filename": "jjb/3rd_party_ci/odl-netvirt.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 2697
+      },
+      "writtenOn": "2017-01-16T12:55:09Z",
+      "side": 1,
+      "message": "Hey I think you mixing up things here. My change is about how we run functest. We did it with suite first but then I found out that we would be the only once using it like that. So I switched it to daily.\n\nYou are free to file another commit where you change the RC file and the SCENARIO.\nFor RC: I think we need to change it as well on functest/releng then:\nhttps://github.com/opnfv/releng/blob/master/jjb/functest/set-functest-env.sh#L16L19\nAt least this lines need to know where the RC_FILE_PATH is.\n\nFor Scenario: I am as well in favor of a new scenario but at the time when I was asking around if that would be the right way to go everyone was telling me no. OPNFV want to reduce the amount of scenarios actually. I will support you of adding a new scenario but you need to convince Functest, releng community and the installer as well I think. We cannot just add one I think. But this is more politics. I am not in your way :-D. However we cannot change it until Functest and Co is not able to consume it in the right way. At the moment we do test it with bgpvpn and the tests are looking good.",
+      "parentUuid": "5ac10518_15281385",
       "range": {
         "startLine": 122,
         "startChar": 0,
@@ -148,6 +190,30 @@
       "writtenOn": "2017-01-13T15:09:28Z",
       "side": 1,
       "message": "builder and corresponding script not needed and can be removed. you can do the cleanup in this change and abandon the other as you are doing changes to the lines that are related to this part.",
+      "range": {
+        "startLine": 201,
+        "startChar": 0,
+        "endLine": 205,
+        "endChar": 47
+      },
+      "revId": "b2180702f5837a12f0f3a8d1fe9c8336cb4311ea",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac10518_cb5988ff",
+        "filename": "jjb/3rd_party_ci/odl-netvirt.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 205,
+      "author": {
+        "id": 2697
+      },
+      "writtenOn": "2017-01-16T12:55:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5ac10518_52ab111d",
       "range": {
         "startLine": 201,
         "startChar": 0,
