@@ -13,3 +13,12 @@ VERSIONS = ['arno', 'brahmaputra', 'colorado', 'danube']
 EXIT_OK = 0
 EXIT_RUN_ERROR = -1
 EXIT_PUSH_TO_TEST_DB_ERROR = -2
+
+class Constants(object):
+    INSTALLERS = ['apex', 'fuel', 'compass', 'joid', "daisy"]
+    VERSIONS = ['arno', 'brahmaputra', 'colorado', 'danube']
+
+    EX_OK = 0
+    EX_RUN_ERROR = -1
+    EX_TEST_FAIL = -2
+    EX_PUSH_RESULT_FAIL = -3
