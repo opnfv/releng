@@ -48,5 +48,5 @@ RUN git clone https://gerrit.opnfv.org/gerrit/releng /home/releng
 
 WORKDIR /home/releng/utils/test/testapi/
 RUN pip install -r requirements.txt
-RUN python setup.py install
+RUN bash install.sh
 CMD ["bash", "docker/start-server.sh"]
