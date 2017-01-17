@@ -27,7 +27,8 @@ node_list=(\
 'ericsson-virtual1' 'ericsson-virtual2'  'ericsson-virtual3' \
 'ericsson-virtual4' 'ericsson-virtual5' \
 'arm-pod1' 'arm-pod3' \
-'huawei-pod1' 'huawei-pod2' 'huawei-virtual1' 'huawei-virtual2' 'huawei-virtual3' 'huawei-virtual4')
+'huawei-pod1' 'huawei-pod2' 'huawei-pod3' 'huawei-pod4' 'huawei-pod5' \
+'huawei-virtual1' 'huawei-virtual2' 'huawei-virtual3' 'huawei-virtual4')
 
 
 if [[ ! " ${node_list[@]} " =~ " ${testbed} " ]]; then
