@@ -32,6 +32,13 @@ class ModelBase(object):
                     dicts[k] = dicts[k].format()
                 elif isinstance(dicts[k], list):
                     hs = list()
+                    # print k, dicts[k]
+                    # for h in dicts[k]:
+                    #     print type(h)
+                    #     if hasattr(h, 'format'):
+                    #         hs.append(h.format())
+                    #     else:
+                    #         hs.append(str(h))
                     [hs.append(h.format() if hasattr(h, 'format') else str(h))
                      for h in dicts[k]]
                     dicts[k] = hs

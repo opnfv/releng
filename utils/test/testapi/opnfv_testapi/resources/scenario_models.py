@@ -11,7 +11,7 @@ class ScenarioTI(models.ModelBase):
 
 @swagger.model()
 class ScenarioScore(models.ModelBase):
-    def __init__(self, date=None, score=''):
+    def __init__(self, date=None, score='0'):
         self.date = date
         self.score = score
 
@@ -27,14 +27,19 @@ class ScenarioProject(models.ModelBase):
         @ptype trust_indicators: C{list} of L{ScenarioTI}
     """
     def __init__(self,
-                 name='',
+                 project='',
                  customs=None,
                  scores=None,
                  trust_indicators=None):
-        self.name = name
+        self.project = project
         self.customs = customs
         self.scores = scores
-        self.trust_indicator = trust_indicators
+        self.trust_indicators = trust_indicators
+
+    @staticmethod
+    def attr_parser():
+        return {'scores': ScenarioScore,
+                'trust_indicators': ScenarioTI}
 
 
 @swagger.model()
@@ -43,9 +48,13 @@ class ScenarioVersion(models.ModelBase):
         @property projects:
         @ptype projects: C{list} of L{ScenarioProject}
     """
-    def __init__(self, version, projects=None):
+    def __init__(self, version=None, projects=None):
         self.version = version
         self.projects = projects
+
+    @staticmethod
+    def attr_parser():
+        return {'projects': ScenarioProject}
 
 
 @swagger.model()
@@ -54,10 +63,13 @@ class ScenarioInstaller(models.ModelBase):
         @property versions:
         @ptype versions: C{list} of L{ScenarioVersion}
     """
-    def __init__(self, installer=None, owner=None, versions=None):
+    def __init__(self, installer=None, versions=None):
         self.installer = installer
-        self.owner = owner
         self.versions = versions if versions else list()
+
+    @staticmethod
+    def attr_parser():
+        return {'versions': ScenarioVersion}
 
 
 @swagger.model()
@@ -69,6 +81,10 @@ class ScenarioCreateRequest(models.ModelBase):
     def __init__(self, name='', installers=None):
         self.name = name
         self.installers = installers if installers else list()
+
+    @staticmethod
+    def attr_parser():
+        return {'installers': ScenarioInstaller}
 
 
 @swagger.model()
@@ -82,6 +98,10 @@ class Scenario(models.ModelBase):
         self._id = _id
         self.creation_date = create_date
         self.installers = installers if installers else list()
+
+    @staticmethod
+    def attr_parser():
+        return {'installers': ScenarioInstaller}
 
 
 @swagger.model()
