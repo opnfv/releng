@@ -12,7 +12,7 @@ set -eu
 set -o pipefail
 
 BIFROST_CONSOLE_LOG="${BUILD_URL}/consoleText"
-BIFROST_GS_URL=${BIFROST_GS_STORAGE/http:/gs:}
+BIFROST_GS_URL=${BIFROST_LOG_URL/http:/gs:}
 
 echo "Uploading build logs to ${BIFROST_LOG_URL}"
 
