@@ -38,6 +38,17 @@ verify_connectivity() {
     error "Can not talk to $ip."
 }
 
+
+swap_to_public() {
+    if [ "$1" != "" ]; then
+        info "Exchanging keystone public IP in rc file to $public_ip"
+        sed -i  "/OS_AUTH_URL/c\export OS_AUTH_URL=\'$public_ip'" $dest_path
+        sed -i 's/internalURL/publicURL/g' $dest_path
+    fi
+    
+}
+
+
 : ${DEPLOY_TYPE:=''}
 
 #Get options
@@ -151,6 +162,7 @@ elif [ "$installer_type" == "compass" ]; then
             | grep identity | awk '{print $14}')
     fi
     info "public_ip: $public_ip"
+    swap_to_public $public_ip
 
 
 elif [ "$installer_type" == "joid" ]; then
