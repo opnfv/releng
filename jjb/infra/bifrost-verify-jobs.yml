@@ -120,6 +120,9 @@
         - label:
             name: SLAVE_LABEL
             default: 'infra-{type}-{distro}'
+        - string:
+            name: BIFROST_LOG_URL
+            default: 'http://artifacts.opnfv.org/cross-community-ci/openstack/bifrost/$GERRIT_NAME/$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER/$JOB_NAME'
 
     scm:
         - git:
@@ -137,10 +140,9 @@
             branch: '{branch}'
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - shell:
-            !include-raw-escape: ./bifrost-verify.sh
+        - bifrost-set-name
+        - bifrost-build
+        - bifrost-artifacts-upload
 
     publishers:
         - email:
@@ -161,7 +163,7 @@
                     exclude-no-code-change: 'false'
                 - comment-added-contains-event:
                     comment-contains-value: 'recheck'
-            custom-url: '* $JOB_NAME $BUILD_URL'
+            custom-url: '* $JOB_NAME $BIFROST_LOG_URL'
             silent-start: true
             projects:
               - project-compare-type: 'PLAIN'
@@ -190,6 +192,7 @@
                     comment-contains-value: 'recheck'
                 - comment-added-contains-event:
                     comment-contains-value: 'reverify'
+            custom-url: '* $JOB_NAME $BIFROST_LOG_URL'
             projects:
               - project-compare-type: 'ANT'
                 project-pattern: 'releng'
@@ -202,3 +205,24 @@
                   - compare-type: ANT
                     pattern: 'jjb/infra/**'
             readable-message: true
+
+#---------------------------
+# builder macros
+#---------------------------
+- builder:
+    name: bifrost-set-name
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+
+- builder:
+    name: bifrost-build
+    builders:
+        - shell:
+            !include-raw: ./bifrost-verify.sh
+
+- builder:
+    name: bifrost-artifacts-upload
+    builders:
+        - shell:
+            !include-raw: ./bifrost-upload-logs.sh
