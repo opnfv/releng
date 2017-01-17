@@ -10,10 +10,10 @@
         stream: master
         branch: '{stream}'
         disabled: false
-    colorado: &colorado
-        stream: colorado
+    danube: &danube
+        stream: danube
         branch: 'stable/{stream}'
-        disabled: false
+        disabled: true
 
     project:
         # projects with jobs for master
@@ -33,13 +33,13 @@
             <<: *master
         # projects with jobs for stable
         - 'bottlenecks':
-            <<: *colorado
+            <<: *danube
         - 'functest':
-            <<: *colorado
+            <<: *danube
         - 'storperf':
-            <<: *colorado
+            <<: *danube
         - 'yardstick':
-            <<: *colorado
+            <<: *danube
 
     jobs:
         - '{project}-docker-build-push-{stream}'
