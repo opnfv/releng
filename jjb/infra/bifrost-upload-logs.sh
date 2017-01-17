@@ -24,6 +24,6 @@ curl -L ${BIFROST_CONSOLE_LOG} | gsutil cp - ${BIFROST_GS_URL}/console.txt
 pushd ${WORKSPACE}/logs/ &> /dev/null
 for x in *.log; do
     echo "Compressing and uploading $x"
-    tar -czf - $x | gsutil cp - ${BIFROST_GS_URL}/$x.tar.gz
+    tar -czf - $x | gsutil cp - ${BIFROST_GS_URL}/$x.tar.gz 1>/dev/null
 done
-popd ${WORKSPACE}/logs &> /dev/null
+popd &> /dev/null
