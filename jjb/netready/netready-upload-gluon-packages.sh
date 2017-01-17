@@ -12,6 +12,7 @@ source $WORKSPACE/opnfv.properties
 for artifact in $ARTIFACT_LIST; do
   echo "Uploading artifact: ${artifact}"
   gsutil cp $artifact gs://$GS_URL/$(basename $artifact) > gsutil.$(basename $artifact).log
+  gsutil cp $artifact gs://$GS_URL/gluon-latest.rpm > gsutil.$(basename $artifact).log
   echo "Upload complete for ${artifact}"
 done
 
