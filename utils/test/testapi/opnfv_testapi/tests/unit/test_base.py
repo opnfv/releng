@@ -47,11 +47,11 @@ class TestBase(AsyncHTTPTestCase):
         return self.create_help(self.basePath, req, *args)
 
     def create_help(self, uri, req, *args):
-        if req and not isinstance(req, str):
-            req = json.dumps(req.format())
+        if req and not isinstance(req, str) and hasattr(req, 'format'):
+            req = req.format()
         res = self.fetch(self._update_uri(uri, *args),
                          method='POST',
-                         body=req if req else json.dumps(None),
+                         body=json.dumps(req),
                          headers=self.headers)
 
         return self._get_return(res, self.create_res)
@@ -97,7 +97,7 @@ class TestBase(AsyncHTTPTestCase):
         return uri.count('%s')
 
     def _get_query_uri(self, query):
-        return self.basePath + '?' + query
+        return self.basePath + '?' + query if query else self.basePath
 
     def _get_uri(self, *args):
         return self._update_uri(self.basePath, *args)
