@@ -11,7 +11,49 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-trap fix_ownership EXIT
+trap cleanup_and_upload EXIT
+
+function upload_logs() {
+    BIFROST_CONSOLE_LOG="${BUILD_URL}/consoleText"
+    BIFROST_GS_URL=${BIFROST_LOG_URL/http:/gs:}
+
+    echo "Uploading build logs to ${BIFROST_LOG_URL}"
+
+    echo "Uploading console output"
+    curl -s -L ${BIFROST_CONSOLE_LOG} | gsutil -q cp -Z - ${BIFROST_GS_URL}/build_log.txt
+
+    [[ ! -d ${WORKSPACE}/logs ]] && exit 0
+
+    pushd ${WORKSPACE}/logs/ &> /dev/null
+    for x in *.log; do
+        echo "Compressing and uploading $x"
+        gsutil -q cp -Z ${x} ${BIFROST_GS_URL}/${x}
+    done
+
+    echo "Generating the landing page"
+    cat > index.html <<EOF
+<html>
+<h1>Build results for <a href=https://$GERRIT_NAME/#/c/$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER>$GERRIT_NAME/$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER</a></h1>
+<h2>Job: $JOB_NAME</h2>
+<ul>
+<li><a href=${BIFROST_LOG_URL}/build_log.txt>build_log.txt</a></li>
+EOF
+
+    for x in *.log; do
+        echo "<li><a href=${BIFROST_LOG_URL}/${x}>${x}</a></li>" >> index.html
+    done
+
+    cat >> index.html << EOF
+</ul>
+</html>
+EOF
+
+    gsutil -q cp index.html ${BIFROST_GS_URL}/index.html
+
+    rm index.html
+
+    popd &> /dev/null
+}
 
 function fix_ownership() {
     if [ -z "${JOB_URL+x}" ]; then
@@ -23,6 +65,13 @@ function fix_ownership() {
         sudo chown -R jenkins:jenkins $WORKSPACE
         sudo chown -R jenkins:jenkins ${HOME}/.cache
     fi
+}
+
+function cleanup_and_upload() {
+    original_exit=$?
+    fix_ownership
+    upload_logs
+    exit $original_exit
 }
 
 # check distro to see if we support it
