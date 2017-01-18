@@ -19,7 +19,7 @@ BIFROST_COMPRESSED_LOGS=()
 echo "Uploading build logs to ${BIFROST_LOG_URL}"
 
 echo "Uploading console output"
-curl -L ${BIFROST_CONSOLE_LOG} | gsutil cp - ${BIFROST_GS_URL}/console.txt
+curl -L ${BIFROST_CONSOLE_LOG} | gsutil cp - ${BIFROST_GS_URL}/build_log.txt
 
 [[ ! -d ${WORKSPACE}/logs ]] && exit 0
 
@@ -34,10 +34,10 @@ popd &> /dev/null
 echo "Generating the landing page"
 cat > index.html << EOF
 <html>
-<h1>Build results for $GERRIT_NAME/$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER</h1>
+<h1>Build results for <a href=https://$GERRIT_NAME/#/c/$GERRIT_CHANGE_NUMBER>$GERRIT_NAME/$GERRIT_CHANGE_NUMBER</a></h1>
 <h2>Job: $JOB_NAME</h2>
 <ul>
-<li><a href=${BIFROST_LOG_URL}/console.txt>console.txt</a></li>
+<li><a href=${BIFROST_LOG_URL}/build_log.txt>build_log.txt</a></li>
 EOF
 
 for x in ${BIFROST_COMPRESSED_LOGS[@]}; do
@@ -48,3 +48,5 @@ cat >> index.html << EOF
 </ul>
 </html>
 EOF
+
+gsutil cp index.html ${BIFROST_GS_URL}/index.html
