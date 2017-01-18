@@ -13,34 +13,30 @@ set -o pipefail
 
 BIFROST_CONSOLE_LOG="${BUILD_URL}/consoleText"
 BIFROST_GS_URL=${BIFROST_LOG_URL/http:/gs:}
-BIFROST_COMPRESS_SUFFIX="tar.gz"
-BIFROST_COMPRESSED_LOGS=()
 
 echo "Uploading build logs to ${BIFROST_LOG_URL}"
 
 echo "Uploading console output"
-curl -L ${BIFROST_CONSOLE_LOG} | gsutil cp - ${BIFROST_GS_URL}/build_log.txt
+curl -s -L ${BIFROST_CONSOLE_LOG} | gsutil -q cp -Z - ${BIFROST_GS_URL}/build_log.txt
 
 [[ ! -d ${WORKSPACE}/logs ]] && exit 0
 
 pushd ${WORKSPACE}/logs/ &> /dev/null
 for x in *.log; do
     echo "Compressing and uploading $x"
-    tar -czf - $x | gsutil cp - ${BIFROST_GS_URL}/${x}.${BIFROST_COMPRESS_SUFFIX} 1>/dev/null
-    BIFROST_COMPRESSED_LOGS+=(${x}.${BIFROST_COMPRESS_SUFFIX})
+    gsutil -q cp -Z ${x} ${BIFROST_GS_URL}/${x}
 done
-popd &> /dev/null
 
 echo "Generating the landing page"
 cat > index.html << EOF
 <html>
-<h1>Build results for <a href=https://$GERRIT_NAME/#/c/$GERRIT_CHANGE_NUMBER>$GERRIT_NAME/$GERRIT_CHANGE_NUMBER</a></h1>
+<h1>Build results for <a href=https://$GERRIT_NAME/#/c/$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER>$GERRIT_NAME/$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER</a></h1>
 <h2>Job: $JOB_NAME</h2>
 <ul>
 <li><a href=${BIFROST_LOG_URL}/build_log.txt>build_log.txt</a></li>
 EOF
 
-for x in ${BIFROST_COMPRESSED_LOGS[@]}; do
+for x in *.log; do
     echo "<li><a href=${BIFROST_LOG_URL}/${x}>${x}</a></li>" >> index.html
 done
 
@@ -49,4 +45,8 @@ cat >> index.html << EOF
 </html>
 EOF
 
-gsutil cp index.html ${BIFROST_GS_URL}/index.html
+gsutil -q cp index.html ${BIFROST_GS_URL}/index.html
+
+rm index.html
+
+popd &> /dev/null
