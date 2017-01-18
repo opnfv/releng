@@ -28,7 +28,10 @@ def main(args):
     # Generating html page
     cmd = 'java -jar swagger-codegen-cli.jar generate \
         -i specs.json -l html2 -o %s' % (args.output_directory)
-    os.system(cmd)
+    if os.system(cmd) == 0:
+        exit(0)
+    else:
+        exit(1)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Create \
