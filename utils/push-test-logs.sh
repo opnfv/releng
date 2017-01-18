@@ -28,6 +28,7 @@ node_list=(\
 'ericsson-virtual4' 'ericsson-virtual5' \
 'arm-pod1' 'arm-pod3' \
 'huawei-pod1' 'huawei-pod2' 'huawei-pod3' 'huawei-pod4' 'huawei-pod5' \
+'huawei-pod6' 'huawei-pod7' \
 'huawei-virtual1' 'huawei-virtual2' 'huawei-virtual3' 'huawei-virtual4')
 
 
