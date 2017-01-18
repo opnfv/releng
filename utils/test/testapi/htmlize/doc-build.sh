@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -o errexit
+
 # Create virtual environment
 source $WORKSPACE/testapi_venv/bin/activate
 
