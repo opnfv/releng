@@ -16,6 +16,10 @@
             project: '{project}'
         - gerrit-parameter:
             branch: '{branch}'
+        - string:
+            name: DOCKER_TAG
+            default: "latest"
+            description: "Tag name for testapi docker image"
         - 'opnfv-build-defaults'
 
     scm:
@@ -39,6 +43,7 @@
                     pattern: 'utils/**'
 
     builders:
+        - docker-update
         - start-testapi-server
         - testapi-doc-build
         - upload-doc-artifact
@@ -47,6 +52,12 @@
 ################################
 # job builders
 ################################
+
+- builder:
+    name: docker-update
+    builders:
+        - shell: |
+            bash ./jjb/releng/testapi-docker-update.sh
 
 - builder:
     name: testapi-doc-build
