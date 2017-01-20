@@ -20,9 +20,9 @@ function upload_logs() {
     echo "Uploading build logs to ${BIFROST_LOG_URL}"
 
     echo "Uploading console output"
-    curl -s -L ${BIFROST_CONSOLE_LOG} > build_log.txt
-    gsutil -q cp -Z build_log.txt ${BIFROST_GS_URL}/build_log.txt
-    rm build_log.txt
+    curl -s -L ${BIFROST_CONSOLE_LOG} > ${WORKSPACE}/build_log.txt
+    gsutil -q cp -Z ${WORKSPACE}/build_log.txt ${BIFROST_GS_URL}/build_log.txt
+    rm ${WORKSPACE}/build_log.txt
 
     [[ ! -d ${WORKSPACE}/logs ]] && exit 0
 
