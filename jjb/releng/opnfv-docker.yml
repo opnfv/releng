@@ -14,32 +14,51 @@
         stream: danube
         branch: 'stable/{stream}'
         disabled: true
+    functest-receivers: &functest-receivers
+        receivers: >
+            jose.lausuch@ericsson.com morgan.richomme@orange.com
+            cedric.ollivier@orange.com feng.xiaowei@zte.com.cn
+            yaohelan@huawei.com helanyao@gmail.com
+            juha.kosonen@nokia.com
+    other-receivers: &other-receivers
+        receivers: ''
 
     project:
         # projects with jobs for master
         - 'bottlenecks':
             <<: *master
+            <<: *other-receivers
         - 'cperf':
             <<: *master
+            <<: *other-receivers
         - 'dovetail':
             <<: *master
+            <<: *other-receivers
         - 'functest':
             <<: *master
+            <<: *functest-receivers
         - 'qtip':
             <<: *master
+            <<: *other-receivers
         - 'storperf':
             <<: *master
+            <<: *other-receivers
         - 'yardstick':
             <<: *master
+            <<: *other-receivers
         # projects with jobs for stable
         - 'bottlenecks':
             <<: *danube
+            <<: *other-receivers
         - 'functest':
             <<: *danube
+            <<: *functest-receivers
         - 'storperf':
             <<: *danube
+            <<: *other-receivers
         - 'yardstick':
             <<: *danube
+            <<: *other-receivers
 
     jobs:
         - '{project}-docker-build-push-{stream}'
@@ -94,6 +113,10 @@
     triggers:
         - pollscm:
             cron: "*/30 * * * *"
+
+    publishers:
+        - email:
+            recipients: '{receivers}'
 
 - job-template:
     name: '{project}-docker-build-push-monitor-{stream}'
