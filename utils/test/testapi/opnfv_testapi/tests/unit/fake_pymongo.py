@@ -55,7 +55,8 @@ class MemCursor(object):
 
 class MemDb(object):
 
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         self.contents = []
         pass
 
@@ -109,8 +110,59 @@ class MemDb(object):
                 return True
         return False
 
-    @staticmethod
-    def _in(content, *args):
+    def _in(self, content, *args):
+        if self.name == 'scenarios':
+            return self._in_scenarios(content, *args)
+        else:
+            return self._in_others(content, *args)
+
+    def _in_scenarios_installer(self, installer, content):
+        hit = False
+        for s_installer in content['installers']:
+            if installer == s_installer['installer']:
+                hit = True
+
+        return hit
+
+    def _in_scenarios_version(self, version, content):
+        hit = False
+        for s_installer in content['installers']:
+            for s_version in s_installer['versions']:
+                if version == s_version['version']:
+                    hit = True
+        return hit
+
+    def _in_scenarios_project(self, project, content):
+        hit = False
+        for s_installer in content['installers']:
+            for s_version in s_installer['versions']:
+                for s_project in s_version['projects']:
+                    if project == s_project['project']:
+                        hit = True
+
+        return hit
+
+    def _in_scenarios(self, content, *args):
+        for arg in args:
+            for k, v in arg.iteritems():
+                if k == 'installers':
+                    for inner in v.values():
+                        for i_k, i_v in inner.iteritems():
+                            if i_k == 'installer':
+                                return self._in_scenarios_installer(i_v,
+                                                                    content)
+                            elif i_k == 'versions.version':
+                                return self._in_scenarios_version(i_v,
+                                                                  content)
+                            elif i_k == 'versions.projects.project':
+                                return self._in_scenarios_project(i_v,
+                                                                  content)
+                elif content.get(k, None) != v:
+                    return False
+
+        return True
+
+    def _in_others(self, content, *args):
         for arg in args:
             for k, v in arg.iteritems():
                 if k == 'start_date':
@@ -185,8 +237,8 @@ def __getattr__(name):
     return globals()[name]
 
 
-pods = MemDb()
-projects = MemDb()
-testcases = MemDb()
-results = MemDb()
-scenarios = MemDb()
+pods = MemDb('pods')
+projects = MemDb('projects')
+testcases = MemDb('testcases')
+results = MemDb('results')
+scenarios = MemDb('scenarios')

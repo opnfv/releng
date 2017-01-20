@@ -19,11 +19,49 @@ class ScenariosCLHandler(GenericScenarioHandler):
         """
             @description: Retrieve scenario(s).
             @notes: Retrieve scenario(s)
-            @return 200: all scenarios consist with query,
+                Available filters for this request are :
+                 - name : scenario name
+
+                GET /scenarios?name=scenario_1
+            @param name: scenario name
+            @type name: L{string}
+            @in name: query
+            @required name: False
+            @param installer: installer type
+            @type installer: L{string}
+            @in installer: query
+            @required installer: False
+            @param version: version
+            @type version: L{string}
+            @in version: query
+            @required version: False
+            @param project: project name
+            @type project: L{string}
+            @in project: query
+            @required project: False
+            @return 200: all scenarios satisfy queries,
                          empty list if no scenario is found
             @rtype: L{Scenarios}
         """
-        self._list()
+
+        def _set_query():
+            query = dict()
+            elem_query = dict()
+            for k in self.request.query_arguments.keys():
+                v = self.get_query_argument(k)
+                if k == 'installer':
+                    elem_query["installer"] = v
+                elif k == 'version':
+                    elem_query["versions.version"] = v
+                elif k == 'project':
+                    elem_query["versions.projects.project"] = v
+                else:
+                    query[k] = v
+            if elem_query:
+                query['installers'] = {'$elemMatch': elem_query}
+            return query
+
+        self._list(_set_query())
 
     @swagger.operation(nickname="Create a new scenario")
     def post(self):
@@ -58,6 +96,7 @@ class ScenarioGURHandler(GenericScenarioHandler):
             @return 200: scenario exist
             @raise 404: scenario not exist
         """
+        self._get_one({'name': name})
         pass
 
     @swagger.operation(nickname="Update the scenario by name")
@@ -65,7 +104,7 @@ class ScenarioGURHandler(GenericScenarioHandler):
         """
             @description: update a single scenario by name
             @param body: fields to be updated
-            @type body: L{string}
+            @type body: L{ScenarioCreateRequest}
             @in body: body
             @rtype: L{Scenario}
             @return 200: update success
