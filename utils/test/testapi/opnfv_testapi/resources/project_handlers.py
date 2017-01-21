@@ -22,7 +22,7 @@ class GenericProjectHandler(GenericApiHandler):
 
 
 class ProjectCLHandler(GenericProjectHandler):
-    @swagger.operation(nickname="List all Projects")
+    @swagger.operation(nickname="listAllProjects")
     def get(self):
         """
             @description: list all projects
@@ -31,7 +31,7 @@ class ProjectCLHandler(GenericProjectHandler):
         """
         self._list()
 
-    @swagger.operation(nickname="Create a Project")
+    @swagger.operation(nickname="createProject")
     def post(self):
         """
             @description: create a project
@@ -56,7 +56,7 @@ class ProjectCLHandler(GenericProjectHandler):
 
 
 class ProjectGURHandler(GenericProjectHandler):
-    @swagger.operation(nickname='Get a Project by project_name')
+    @swagger.operation(nickname='getProjectByName')
     def get(self, project_name):
         """
             @description: get a single project by project_name
@@ -66,7 +66,7 @@ class ProjectGURHandler(GenericProjectHandler):
         """
         self._get_one({'name': project_name})
 
-    @swagger.operation(nickname="Update a Project by project_name")
+    @swagger.operation(nickname="updateProjectByName")
     def put(self, project_name):
         """
             @description: update a single project by project_name
@@ -82,7 +82,7 @@ class ProjectGURHandler(GenericProjectHandler):
         db_keys = ['name']
         self._update(query, db_keys)
 
-    @swagger.operation(nickname='Delete a Project by project_name')
+    @swagger.operation(nickname='deleteProjectByName')
     def delete(self, project_name):
         """
             @description: delete a project by project_name
