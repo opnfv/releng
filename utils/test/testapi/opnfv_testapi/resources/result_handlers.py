@@ -52,7 +52,7 @@ class GenericResultHandler(GenericApiHandler):
 
 
 class ResultsCLHandler(GenericResultHandler):
-    @swagger.operation(nickname="List all Test Results")
+    @swagger.operation(nickname="queryTestResults")
     def get(self):
         """
             @description: Retrieve result(s) for a test project
@@ -127,7 +127,7 @@ class ResultsCLHandler(GenericResultHandler):
 
         self._list(self.set_query(), sort=[('start_date', -1)], last=last)
 
-    @swagger.operation(nickname="Create a Test Result")
+    @swagger.operation(nickname="createTestResult")
     def post(self):
         """
             @description: create a test result
@@ -169,7 +169,7 @@ class ResultsCLHandler(GenericResultHandler):
 
 
 class ResultsGURHandler(GenericResultHandler):
-    @swagger.operation(nickname='Get a Test Result by result_id')
+    @swagger.operation(nickname='getTestResultById')
     def get(self, result_id):
         """
             @description: get a single result by result_id
@@ -181,7 +181,7 @@ class ResultsGURHandler(GenericResultHandler):
         query["_id"] = ObjectId(result_id)
         self._get_one(query)
 
-    @swagger.operation(nickname="Update a Test Result by result_id")
+    @swagger.operation(nickname="updateTestResultById")
     def put(self, result_id):
         """
             @description: update a single result by _id
