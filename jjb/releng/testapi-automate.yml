@@ -49,6 +49,26 @@
     builders:
         - run-unit-tests
 
+    publishers:
+        - junit:
+            results: nosetests.xml
+        - cobertura:
+            report-file: "coverage.xml"
+            only-stable: "true"
+            health-auto-update: "true"
+            stability-auto-update: "true"
+            zoom-coverage-chart: "true"
+            targets:
+                - files:
+                    healthy: 10
+                    unhealthy: 20
+                    failing: 30
+                - method:
+                    healthy: 50
+                    unhealthy: 40
+                    failing: 30
+   
+
 - job-template:
     name: 'testapi-automate-{stream}'
 
@@ -98,7 +118,7 @@
     name: run-unit-tests
     builders:
         - shell: |
-            bash ./jjb/releng/testapi-run-tests.sh
+            bash ./utils/test/testapi/run_test.sh
 
 - builder:
     name: docker-update
