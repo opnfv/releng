@@ -20,7 +20,7 @@ class GenericPodHandler(GenericApiHandler):
 
 
 class PodCLHandler(GenericPodHandler):
-    @swagger.operation(nickname='List all Pods')
+    @swagger.operation(nickname='listAllPods')
     def get(self):
         """
             @description: list all pods
@@ -29,7 +29,7 @@ class PodCLHandler(GenericPodHandler):
         """
         self._list()
 
-    @swagger.operation(nickname='Create a Pod')
+    @swagger.operation(nickname='createPod')
     def post(self):
         """
             @description: create a pod
@@ -54,7 +54,7 @@ class PodCLHandler(GenericPodHandler):
 
 
 class PodGURHandler(GenericPodHandler):
-    @swagger.operation(nickname='Get a Pod by pod_name')
+    @swagger.operation(nickname='getPodByName')
     def get(self, pod_name):
         """
             @description: get a single pod by pod_name
