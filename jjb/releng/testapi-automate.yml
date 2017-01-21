@@ -85,10 +85,8 @@
 
     builders:
         - docker-update
-        - start-testapi-server
         - testapi-doc-build
         - upload-doc-artifact
-        - clean-testapi-server
 
 ################################
 # job builders
@@ -107,12 +105,6 @@
             bash ./jjb/releng/testapi-docker-update.sh
 
 - builder:
-    name: start-testapi-server
-    builders:
-        - shell: |
-            bash ./utils/test/testapi/htmlize/prepare.sh
-
-- builder:
     name: testapi-doc-build
     builders:
         - shell: |
@@ -123,9 +115,3 @@
     builders:
         - shell: |
             bash ./utils/test/testapi/htmlize/push-doc-artifact.sh
-
-- builder:
-    name: clean-testapi-server
-    builders:
-        - shell: |
-            bash ./utils/test/testapi/htmlize/finish.sh
