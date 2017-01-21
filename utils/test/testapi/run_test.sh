@@ -1,10 +1,35 @@
-#! /bin/bash
+#!/bin/bash
 
-# Before run this script, make sure that testtools and discover
-# had been installed in your env
-# or else using pip to install them as follows:
-# pip install testtools, discover
+set -o errexit
+
+# Either Workspace is set (CI)
+if [ -z $WORKSPACE ]
+then
+    WORKSPACE="."
+fi
+
+echo "Running unit tests..."
+
+# Creating virtual environment
+virtualenv $WORKSPACE/testapi_venv
+source $WORKSPACE/testapi_venv/bin/activate
+
+# Install requirements
+pip install -r $WORKSPACE/utils/test/testapi/requirements.txt
 
 find . -type f -name "*.pyc" -delete
-testrargs="discover ./opnfv_testapi/tests/unit"
-python -m testtools.run $testrargs
+
+nosetests --with-xunit \
+          --with-coverage \
+          --cover-erase \
+          --cover-tests \
+	  --cover-package=$WORKSPACE/utils/test/testapi/opnfv_testapi \
+          --cover-xml \
+          --cover-html \
+            $WORKSPACE/utils/test/testapi/opnfv_testapi/tests/
+
+exit_code=$?
+
+deactivate
+
+exit $exit_code
