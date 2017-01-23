@@ -1,0 +1,146 @@
+- project:
+    name: 'openstack-bifrost-cleanup'
+#--------------------------------
+# branches
+#--------------------------------
+    stream:
+        - master:
+            branch: '{stream}'
+
+#--------------------------------
+# projects
+#--------------------------------
+    project:
+        - 'openstack':
+            project-repo: 'https://git.openstack.org/openstack/bifrost'
+            clone-location: '/opt/bifrost'
+        - 'opnfv':
+            project-repo: 'https://gerrit.opnfv.org/gerrit/releng'
+            clone-location: '/opt/releng'
+
+#--------------------------------
+# jobs
+#--------------------------------
+    jobs:
+        - '{project}-bifrost-cleanup-{stream}'
+
+- job-template:
+    name: '{project}-bifrost-cleanup-{stream}'
+
+    concurrent: false
+
+    # Make sure no verify job is running on any of the slaves since that would
+    # produce build logs after we wipe the destination directory.
+    properties:
+        - build-blocker:
+            blocking-jobs:
+                - '{project}-bifrost-verify-*'
+
+    parameters:
+        - string:
+            name: PROJECT
+            default: '{project}'
+        - string:
+            name: BIFROST_GS_URL
+            default: 'gs://artifacts.opnfv.org/cross-community-ci/openstack/bifrost/$GERRIT_NAME/$GERRIT_CHANGE_NUMBER/'
+        - 'opnfv-build-defaults'
+
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -eu
+
+            # This should never happen... even 'recheck' uses the last jobs'
+            # gerrit information. Better exit with error so we can investigate
+            [[ ! -n $GERRIT_NAME ]] || [[ ! -n $GERRIT_CHANGE_NUMBER ]] && exit 1
+
+            echo "Removing build artifacts for $GERRIT_NAME/$GERRIT_CHANGE_NUMBER"
+
+            # No force (-f). We always verify upstream jobs so if there are no logs
+            # something else went wrong and we need to break immediately and investigate
+            gsutil rm -r $BIFROST_GS_URL
+
+    triggers:
+        - '{project}-gerrit-trigger-cleanup':
+            branch: '{branch}'
+
+    publishers:
+        - email:
+            recipients: fatih.degirmenci@ericsson.com yroblamo@redhat.com mchandras@suse.de jack.morgan@intel.com zhang.jun3g@zte.com.cn
+#--------------------------------
+# trigger macros
+#--------------------------------
+- trigger:
+    name: 'openstack-gerrit-trigger-cleanup'
+    triggers:
+        - gerrit:
+            server-name: 'review.openstack.org'
+            escape-quotes: true
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - patchset-uploaded-event: 'false'
+                # We only run this when the change is merged since
+                # we don't need the logs anymore
+                - change-merged-event: 'true'
+                - change-restored-event: 'false'
+                - draft-published-event: 'false'
+                # We need this in order to be able to trigger a cleanup
+                # from Gerrit should it be necessary
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+            # This is an OPNFV maintenance job. We don't want to provide
+            # feedback on Gerrit
+            silent: true
+            silent-start: true
+            projects:
+              - project-compare-type: 'PLAIN'
+                project-pattern: 'openstack/bifrost'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'doc/**'
+                  - compare-type: ANT
+                    pattern: 'releasenotes/**'
+            readable-message: true
+- trigger:
+    name: 'opnfv-gerrit-trigger-cleanup'
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - patchset-uploaded-event: 'false'
+                # We only run this when the change is merged since
+                # we don't need the logs anymore
+                - change-merged-event: 'true'
+                - change-restored-event: 'false'
+                - draft-published-event: 'false'
+                # We need this in order to be able to trigger a cleanup
+                # from Gerrit should it be necessary
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            # This is an OPNFV maintenance job. We don't want to provide
+            # feedback on Gerrit
+            silent: true
+            silent-start: true
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'releng'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'prototypes/bifrost/**'
+            readable-message: true
