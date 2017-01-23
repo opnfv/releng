@@ -19,8 +19,11 @@ source $WORKSPACE/testapi_venv/bin/activate
 
 # Install requirements
 pip install -r $SCRIPTDIR/requirements.txt
+pip install coverage
+pip install nose>=1.3.1
 
 find . -type f -name "*.pyc" -delete
+
 
 nosetests --with-xunit \
     --with-coverage \
