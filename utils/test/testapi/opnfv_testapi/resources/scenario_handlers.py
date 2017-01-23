@@ -14,7 +14,7 @@ class GenericScenarioHandler(GenericApiHandler):
 
 
 class ScenariosCLHandler(GenericScenarioHandler):
-    @swagger.operation(nickname="List scenarios by queries")
+    @swagger.operation(nickname="queryScenarios")
     def get(self):
         """
             @description: Retrieve scenario(s).
@@ -63,7 +63,7 @@ class ScenariosCLHandler(GenericScenarioHandler):
 
         self._list(_set_query())
 
-    @swagger.operation(nickname="Create a new scenario")
+    @swagger.operation(nickname="createScenario")
     def post(self):
         """
             @description: create a new scenario by name
@@ -88,7 +88,7 @@ class ScenariosCLHandler(GenericScenarioHandler):
 
 
 class ScenarioGURHandler(GenericScenarioHandler):
-    @swagger.operation(nickname='Get the scenario by name')
+    @swagger.operation(nickname='getScenarioByName')
     def get(self, name):
         """
             @description: get a single scenario by name
@@ -99,7 +99,7 @@ class ScenarioGURHandler(GenericScenarioHandler):
         self._get_one({'name': name})
         pass
 
-    @swagger.operation(nickname="Update the scenario by name")
+    @swagger.operation(nickname="updateScenarioByName")
     def put(self, name):
         """
             @description: update a single scenario by name
