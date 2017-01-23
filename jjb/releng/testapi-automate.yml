@@ -10,6 +10,20 @@
 
     project: 'releng'
 
+- job:
+    name: 'testapi-mongodb-backup'
+
+    slave-label: 'testresults'
+
+    scm:
+        - git-scm
+
+    triggers:
+        - timed: '@weekly'
+
+    builders:
+        - mongodb-backup
+
 - job-template:
     name: 'testapi-verify-{stream}'
 
@@ -21,7 +35,7 @@
         - 'opnfv-build-ubuntu-defaults'
 
     scm:
-        - git-scm
+        - git-scm-gerrit
 
     triggers:
         - gerrit:
@@ -112,6 +126,11 @@
 ################################
 # job builders
 ################################
+- builder:
+    name: mongodb-backup
+    builders:
+        - shell: |
+            bash ./jjb/releng/testapi-backup-mongodb.sh
 
 - builder:
     name: run-unit-tests
