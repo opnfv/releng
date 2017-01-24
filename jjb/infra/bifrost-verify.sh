@@ -24,7 +24,7 @@ function upload_logs() {
     gsutil -q cp -Z ${WORKSPACE}/build_log.txt ${BIFROST_GS_URL}/build_log.txt
     rm ${WORKSPACE}/build_log.txt
 
-    [[ ! -d ${WORKSPACE}/logs ]] && exit 0
+    [[ ! -d ${WORKSPACE}/logs ]] && return 0
 
     pushd ${WORKSPACE}/logs/ &> /dev/null
     for x in *.log; do
