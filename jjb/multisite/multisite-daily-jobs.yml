@@ -8,12 +8,18 @@
         - 'multisite-{phase}-{stream}'
 
     phase:
-        - 'fuel-deploy-regionone-virtual'
-        - 'fuel-deploy-regiontwo-virtual'
-        - 'register-endpoints'
-        - 'update-auth'
+        - 'fuel-deploy-regionone-virtual':
+            slave-label: ericsson-virtual12
+        - 'fuel-deploy-regiontwo-virtual':
+            slave-label: ericsson-virtual13
+        - 'register-endpoints':
+            slave-label: ericsson-virtual12
+        - 'update-auth':
+            slave-label: ericsson-virtual13
         - 'kingbird-deploy-virtual'
-        - 'kingbird-functest'
+            slave-label: ericsson-virtual12
+        - 'kingbird-functest':
+            slave-label: ericsson-virtual12
 
     stream:
         - master:
@@ -37,10 +43,7 @@
         - string:
             name: KINGBIRD_LOG_FILE
             default: $WORKSPACE/kingbird.log
-        - 'multisite-virtual-defaults'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'os-nosdn-multisite-noha'
+        - 'opnfv-build-defaults'
 
     triggers:
          - timed: '{timed}'
@@ -56,26 +59,26 @@
                   current-parameters: false
                   predefined-parameters: |
                     FUEL_VERSION=latest
-                    DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
                     OS_REGION=RegionOne
-                    REGIONONE_IP=10.2.117.79
-                    REGIONTWO_IP=10.2.117.181
+                    REGIONONE_IP=100.64.209.10
+                    REGIONTWO_IP=100.64.209.11
                   node-parameters: false
                   node-label-name: SLAVE_LABEL
-                  node-label: intel-virtual2
+                  node-label: ericsson-virtual12
                   kill-phase-on: FAILURE
                   abort-all-job: true
                 - name: 'multisite-fuel-deploy-regiontwo-virtual-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     FUEL_VERSION=latest
-                    DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
                     OS_REGION=RegionTwo
-                    REGIONONE_IP=10.2.117.79
-                    REGIONTWO_IP=10.2.117.181
+                    REGIONONE_IP=100.64.209.10
+                    REGIONTWO_IP=100.64.209.11
                   node-parameters: false
                   node-label-name: SLAVE_LABEL
-                  node-label: intel-virtual6
+                  node-label: ericsson-virtual13
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
@@ -86,22 +89,22 @@
                   current-parameters: false
                   predefined-parameters: |
                     OS_REGION=RegionOne
-                    REGIONONE_IP=10.2.117.79
-                    REGIONTWO_IP=10.2.117.181
+                    REGIONONE_IP=100.64.209.10
+                    REGIONTWO_IP=100.64.209.11
                   node-parameters: false
                   node-label-name: SLAVE_LABEL
-                  node-label: intel-virtual2
+                  node-label: ericsson-virtual12
                   kill-phase-on: FAILURE
                   abort-all-job: true
                 - name: 'multisite-update-auth-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     OS_REGION=RegionTwo
-                    REGIONONE_IP=10.2.117.79
-                    REGIONTWO_IP=10.2.117.181
+                    REGIONONE_IP=100.64.209.10
+                    REGIONTWO_IP=100.64.209.11
                   node-parameters: false
                   node-label-name: SLAVE_LABEL
-                  node-label: intel-virtual6
+                  node-label: ericsson-virtual13
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
@@ -112,11 +115,11 @@
                   current-parameters: false
                   predefined-parameters: |
                     OS_REGION=RegionOne
-                    REGIONONE_IP=10.2.117.79
-                    REGIONTWO_IP=10.2.117.181
+                    REGIONONE_IP=100.64.209.10
+                    REGIONTWO_IP=100.64.209.11
                   node-parameters: false
                   node-label-name: SLAVE_LABEL
-                  node-label: intel-virtual2
+                  node-label: ericsson-virtual12
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
@@ -126,12 +129,13 @@
                 - name: 'multisite-kingbird-functest-{stream}'
                   current-parameters: false
                   predefined-parameters: |
+                    DEPLOY_SCENARIO='os-nosdn-multisite-noha'
                     OS_REGION=RegionOne
-                    REGIONONE_IP=10.2.117.79
-                    REGIONTWO_IP=10.2.117.181
+                    REGIONONE_IP=100.64.209.10
+                    REGIONTWO_IP=100.64.209.11
                   node-parameters: false
                   node-label-name: SLAVE_LABEL
-                  node-label: intel-virtual2
+                  node-label: ericsson-virtual12
                   kill-phase-on: NEVER
                   abort-all-job: false
 
@@ -139,6 +143,18 @@
     name: 'multisite-{phase}-{stream}'
 
     concurrent: false
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - string:
+            name: KINGBIRD_LOG_FILE
+            default: $WORKSPACE/kingbird.log
+        - '{slave-label}-defaults'
 
     builders:
         - description-setter:
