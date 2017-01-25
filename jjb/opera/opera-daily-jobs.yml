@@ -63,7 +63,9 @@
             project: '{project}'
         - gerrit-parameter:
             branch: '{branch}'
-        - 'huawei-pod7-defaults'
+        - 'huawei-virtual7-defaults'
+        - 'compass-defaults'
+        - 'opera-compass-parameter'
 
     builders:
         - description-setter:
@@ -139,7 +141,32 @@
 - builder:
     name: 'opera-daily-deploy-macro'
     builders:
-        - shell: |
-            #!/bin/bash
-            echo "Hello world!"
+        - shell:
+            !include-raw-escape: ../compass4nfv/compass-download-artifact.sh
+        - shell:
+            !include-raw-escape: ../compass4nfv/compass-deploy.sh
 
+########################
+# parameter macros
+########################
+- parameter:
+    name: opera-compass-parameter
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: GS_URL
+            default: '$GS_BASE{gs-pathname}'
+            description: "URL to Google Storage."
+        - choice:
+            name: COMPASS_OPENSTACK_VERSION
+            choices:
+                - 'newton'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-openo-noha'
+        - string:
+            name: COMPASS_OS_VERSION
+            default: 'xenial'
