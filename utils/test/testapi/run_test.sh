@@ -5,20 +5,16 @@ set -o errexit
 # Get script directory
 SCRIPTDIR=`dirname $0`
 
-# Either Workspace is set (CI)
-if [ -z $WORKSPACE ]
-then
-    WORKSPACE="."
-fi
-
 echo "Running unit tests..."
 
 # Creating virtual environment
-virtualenv $WORKSPACE/testapi_venv
-source $WORKSPACE/testapi_venv/bin/activate
+virtualenv $SCRIPTDIR/testapi_venv
+source $SCRIPTDIR/testapi_venv/bin/activate
 
 # Install requirements
 pip install -r $SCRIPTDIR/requirements.txt
+pip install coverage
+pip install nose>=1.3.1
 
 find . -type f -name "*.pyc" -delete
 
@@ -26,7 +22,7 @@ nosetests --with-xunit \
     --with-coverage \
     --cover-erase \
     --cover-package=$SCRIPTDIR/opnfv_testapi/cmd \
-    --cover-package=$SCRIPTDIR/opnfv_testapi/commonn \
+    --cover-package=$SCRIPTDIR/opnfv_testapi/common \
     --cover-package=$SCRIPTDIR/opnfv_testapi/resources \
     --cover-package=$SCRIPTDIR/opnfv_testapi/router \
     --cover-xml \
