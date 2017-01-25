@@ -24,16 +24,17 @@ function upload_logs() {
     gsutil -q cp -Z ${WORKSPACE}/build_log.txt ${BIFROST_GS_URL}/build_log.txt
     rm ${WORKSPACE}/build_log.txt
 
-    [[ ! -d ${WORKSPACE}/logs ]] && return 0
-
-    pushd ${WORKSPACE}/logs/ &> /dev/null
-    for x in *.log; do
-        echo "Compressing and uploading $x"
-        gsutil -q cp -Z ${x} ${BIFROST_GS_URL}/${x}
-    done
+    if [[ -d ${WORKSPACE}/logs ]]; then
+        pushd ${WORKSPACE}/logs &> /dev/null
+        for x in *.log; do
+            echo "Compressing and uploading $x"
+            gsutil -q cp -Z ${x} ${BIFROST_GS_URL}/${x}
+        done
+        popd &> /dev/null
+    fi
 
     echo "Generating the landing page"
-    cat > index.html <<EOF
+    cat > ${WORKSPACE}/index.html <<EOF
 <html>
 <h1>Build results for <a href=https://$GERRIT_NAME/#/c/$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER>$GERRIT_NAME/$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER</a></h1>
 <h2>Job: $JOB_NAME</h2>
@@ -41,20 +42,22 @@ function upload_logs() {
 <li><a href=${BIFROST_LOG_URL}/build_log.txt>build_log.txt</a></li>
 EOF
 
-    for x in *.log; do
-        echo "<li><a href=${BIFROST_LOG_URL}/${x}>${x}</a></li>" >> index.html
-    done
+    if [[ -d ${WORKSPACE}/logs ]]; then
+        pushd ${WORKSPACE}/logs &> /dev/null
+        for x in *.log; do
+            echo "<li><a href=${BIFROST_LOG_URL}/${x}>${x}</a></li>" >> ${WORKSPACE}/index.html
+        done
+        popd &> /dev/null
+    fi
 
-    cat >> index.html << EOF
+    cat >> ${WORKSPACE}/index.html << EOF
 </ul>
 </html>
 EOF
 
-    gsutil -q cp index.html ${BIFROST_GS_URL}/index.html
+    gsutil -q cp ${WORKSPACE}/index.html ${BIFROST_GS_URL}/index.html
 
-    rm index.html
-
-    popd &> /dev/null
+    rm ${WORKSPACE}/index.html
 }
 
 function fix_ownership() {
