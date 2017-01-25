@@ -121,6 +121,14 @@ if [ "$installer_type" == "fuel" ]; then
     # but sometimes the output of endpoint-list is like this: http://172.30.9.70:8004/v1/%(tenant_id)s
     # Fuel virtual need a fix
 
+    #convert to v3 URL
+    auth_url=$(cat $dest_path|grep AUTH_URL)
+    if [[ -z `echo $auth_url |grep v3` ]]; then
+        auth_url=$(echo $auth_url |sed "s|'$|v3&|")
+    fi
+    sed -i '/AUTH_URL/d' $dest_path
+    echo $auth_url >> $dest_path
+
 elif [ "$installer_type" == "apex" ]; then
     verify_connectivity $installer_ip
 
