@@ -126,10 +126,11 @@
             name: kingbird-functest
             condition: SUCCESSFUL
             projects:
-                - name: 'multisite-kingbird-functest-{stream}'
+                - name: 'functest-fuel-virtual-suite-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     DEPLOY_SCENARIO='os-nosdn-multisite-noha'
+                    FUNCTEST_SUITE_NAME='multisite'
                     OS_REGION=RegionOne
                     REGIONONE_IP=100.64.209.10
                     REGIONTWO_IP=100.64.209.11
@@ -156,6 +157,9 @@
             default: $WORKSPACE/kingbird.log
         - '{slave-label}-defaults'
 
+    scm:
+        - git-scm
+
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
@@ -175,6 +179,7 @@
             #!/bin/bash
 
             echo "This is where we deploy fuel, extract passwords and save into file"
+            #$WORKSPACE/tools/keystone/fetchpass.sh
 - builder:
     name: 'multisite-fuel-deploy-regiontwo-virtual-builder'
     builders:
@@ -182,28 +187,32 @@
             #!/bin/bash
 
             echo "This is where we deploy fuel, extract publicUrl, privateUrl, and adminUrl and save into file"
+            #$WORKSPACE/tools/keystone/endpoint.sh
 - builder:
     name: 'multisite-register-endpoints-builder'
     builders:
         - copyartifact:
             project: 'multisite-fuel-deploy-regiontwo-virtual-{stream}'
             which-build: multijob-build
-            filter: "RegionTwo-Endpoints.txt"
+            filter: "endpoints.ini"
         - shell: |
             #!/bin/bash
 
-            echo "This is where we register RegionTwo in RegionOne keystone"
+            echo "This is where we register RegionTwo in RegionOne keystone using endpoints.ini"
+            #$WORKSPACE/tools/keystone/region.sh
 - builder:
     name: 'multisite-update-auth-builder'
     builders:
         - copyartifact:
             project: 'multisite-fuel-deploy-regionone-virtual-{stream}'
             which-build: multijob-build
-            filter: "RegionOne-Passwords.txt"
+            filter: "servicepass.ini"
         - shell: |
             #!/bin/bash
 
-            echo "This is where we read passwords from RegionOne-passwords.txt and replace passwords in RegionTwo"
+            echo "This is where we read passwords from servicepass.ini and replace passwords in RegionTwo"
+            #$WORKSPACE/tools/keystone/run.sh -t controller -r $WORKSPACE/tools/keystone/writepass.sh -d $WORKSPACE/servicepass.ini
+            #$WORKSPACE/tools/keystone/run.sh -t compute -r $WORKSPACE/tools/keystone/writepass.sh -d $WORKSPACE/servicepass.ini
 - builder:
     name: 'multisite-kingbird-deploy-virtual-builder'
     builders:
@@ -211,13 +220,7 @@
             #!/bin/bash
 
             echo "This is where we install kingbird"
-- builder:
-    name: 'multisite-kingbird-functest-builder'
-    builders:
-        - shell: |
-            #!/bin/bash
-
-            echo "This is where we run kingbird-functest"
+            #$WORKSPACE/tools/kingbird/deploy.sh
 ########################
 # publisher macros
 ########################
@@ -225,7 +228,7 @@
     name: 'multisite-fuel-deploy-regionone-virtual-publisher'
     publishers:
         - archive:
-            artifacts: '/root/servicepass.ini'
+            artifacts: 'servicepass.ini'
             allow-empty: false
             only-if-success: true
             fingerprint: true
@@ -233,7 +236,7 @@
     name: 'multisite-fuel-deploy-regiontwo-virtual-publisher'
     publishers:
         - archive:
-            artifacts: '/root/endpoints.ini'
+            artifacts: 'endpoints.ini'
             allow-empty: false
             only-if-success: true
             fingerprint: true
