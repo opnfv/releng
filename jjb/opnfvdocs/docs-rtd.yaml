@@ -1,0 +1,114 @@
+- project:
+    name: docs-rtd
+    jobs:
+        - 'docs-merge-rtd-{stream}'
+        - 'docs-verify-rtd-{stream}'
+
+    stream:
+        - danube:
+            branch: 'master'
+        - colorado:
+            branch: 'stable/colorado'
+
+    project: 'opnfvdocs'
+    rtdproject: 'opnfv'
+    # TODO: Archive Artifacts
+
+- job-template:
+    name: 'docs-merge-rtd-{stream}'
+
+    project-type: freestyle
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+
+    builders:
+        - shell: !include-raw: docs-post-rtd.sh
+
+    publishers:
+        - email-notification:
+            email-recipients: '{email-recipients}'
+            email-prefix: '[opnfvdocs]'
+
+- job-template:
+    name: 'docs-verify-rtd-{stream}'
+
+    project-type: freestyle
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+
+    scm:
+        - git-scm-gerrit
+        # - git-scm-with-submodules:
+        #     branch: '{branch}'
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+        - gerrit-trigger-patch-submitted:
+            server: '{server-name}'
+            project: '**'
+            branch: '{branch}'
+            files: 'docs/**/*.rst'
+
+- timed: 'H H * * *'
+
+    builders:
+        - shell: |
+            if [ "$GERRIT_PROJECT" != "opnfvdocs" ]; then
+                cd opnfvdocs/submodules/$GERRIT_PROJECT
+                git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
+            else
+                git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
+            fi
+        - shell: |
+            virtualenv $WORKSPACE/venv
+            source $WORKSPACE/venv/bin/activate
+            pip install --upgrade pip
+            pip freeze
+            pip install tox
+            tox -edocs
+
+    publishers:
+        - email-notification:
+            email-recipients: '{email-recipients}'
+            email-prefix: '[opnfvdocs]'
