@@ -61,9 +61,16 @@
 - job-template:
     name: 'dovetail-{sut}-{pod}-{testsuite}-{loop}-{stream}'
 
-    disabled: '{obj:disabled}'
+    disabled: false
 
-    concurrent: false
+    concurrent: true
+
+    properties:
+        - logrotate-default
+        - throttle:
+            enabled: true
+            max-per-node: 1
+            option: 'project'
 
     wrappers:
         - build-name:
