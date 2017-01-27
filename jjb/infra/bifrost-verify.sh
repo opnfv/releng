@@ -17,14 +17,15 @@ function upload_logs() {
     BIFROST_CONSOLE_LOG="${BUILD_URL}/consoleText"
     BIFROST_GS_URL=${BIFROST_LOG_URL/http:/gs:}
 
-    echo "Uploading build logs to ${BIFROST_LOG_URL}"
-
-    echo "Uploading console output"
-    curl -s -L ${BIFROST_CONSOLE_LOG} > ${WORKSPACE}/build_log.txt
-    gsutil -q cp -Z ${WORKSPACE}/build_log.txt ${BIFROST_GS_URL}/build_log.txt
-    rm ${WORKSPACE}/build_log.txt
+    # Make sure the old landing page is gone in case
+    # we break later on. We don't want to publish
+    # stale information.
+    # TODO: Maybe cleanup the entire $BIFROST_GS_URL directory
+    # before we upload the new data.
+    gsutil -q rm ${BIFROST_GS_URL}/index.html
 
     if [[ -d ${WORKSPACE}/logs ]]; then
+        echo "Uploading collected bifrost logs to ${BIFROST_LOG_URL}"
         pushd ${WORKSPACE}/logs &> /dev/null
         for x in *.log; do
             echo "Compressing and uploading $x"
@@ -37,7 +38,7 @@ function upload_logs() {
     cat > ${WORKSPACE}/index.html <<EOF
 <html>
 <h1>Build results for <a href=https://$GERRIT_NAME/#/c/$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER>$GERRIT_NAME/$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER</a></h1>
-<h2>Job: $JOB_NAME</h2>
+<h2>Job: <a href=${BUILD_URL}>$JOB_NAME</a></h2>
 <ul>
 <li><a href=${BIFROST_LOG_URL}/build_log.txt>build_log.txt</a></li>
 EOF
@@ -55,8 +56,15 @@ EOF
 </html>
 EOF
 
-    gsutil -q cp ${WORKSPACE}/index.html ${BIFROST_GS_URL}/index.html
+    # Finally, download and upload the entire build log so we can retain
+    # as much build information as possible
+    echo "Uploading console output"
+    curl -s -L ${BIFROST_CONSOLE_LOG} > ${WORKSPACE}/build_log.txt
+    gsutil -q cp -Z ${WORKSPACE}/build_log.txt ${BIFROST_GS_URL}/build_log.txt
+    rm ${WORKSPACE}/build_log.txt
 
+    # Upload landing page
+    gsutil -q cp ${WORKSPACE}/index.html ${BIFROST_GS_URL}/index.html
     rm ${WORKSPACE}/index.html
 }
 
