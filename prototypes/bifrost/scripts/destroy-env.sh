@@ -21,13 +21,15 @@ virsh undefine jumphost.opnfvlocal || true
 virsh undefine controller00.opnfvlocal || true
 virsh undefine compute00.opnfvlocal || true
 
-service ironic-conductor stop
+service ironic-conductor stop || true
 
 echo "removing from database"
-mysql -u root ironic --execute "truncate table ports;"
-mysql -u root ironic --execute "delete from node_tags;"
-mysql -u root ironic --execute "delete from nodes;"
-mysql -u root ironic --execute "delete from conductors;"
+if $(which mysql &> /dev/null); then
+    mysql -u root ironic --execute "truncate table ports;"
+    mysql -u root ironic --execute "delete from node_tags;"
+    mysql -u root ironic --execute "delete from nodes;"
+    mysql -u root ironic --execute "delete from conductors;"
+fi
 echo "removing leases"
 [[ -e /var/lib/misc/dnsmasq/dnsmasq.leases ]] && > /var/lib/misc/dnsmasq/dnsmasq.leases
 echo "removing logs"
@@ -48,6 +50,6 @@ rm -rf /var/lib/libvirt/images/*.qcow2
 echo "restarting services"
 service dnsmasq restart || true
 service libvirtd restart
-service ironic-api restart
-service ironic-conductor start
-service ironic-inspector restart
+service ironic-api restart || true 
+service ironic-conductor start || true
+service ironic-inspector restart || true
