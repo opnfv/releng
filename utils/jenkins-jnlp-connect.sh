@@ -92,13 +92,16 @@ main () {
             exit 1
         fi
 
+        chown=$(type -p chown)
+        mkdir=$(type -p mkdir)
+
         makemonit () {
             echo "Writing the following as monit config:"
         cat << EOF | tee $monitconfdir/jenkins
 check directory jenkins_piddir path /var/run/$jenkinsuser
-if does not exist then exec "/usr/bin/mkdir -p /var/run/$jenkinsuser"
-if failed uid $jenkinsuser then exec "/usr/bin/chown $jenkinsuser /var/run/$jenkinsuser"
-if failed gid $jenkinsuser then exec "/usr/bin/chown :$jenkinsuser /var/run/$jenkinsuser"
+if does not exist then exec "$mkdir -p /var/run/$jenkinsuser"
+if failed uid $jenkinsuser then exec "$chown $jenkinsuser /var/run/$jenkinsuser"
+if failed gid $jenkinsuser then exec "$chown :$jenkinsuser /var/run/$jenkinsuser"
 
 check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
 start program = "/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $jenkinshome; export started_monit=true; $0 $@' with timeout 60 seconds"
@@ -111,9 +114,9 @@ EOF
             #test for diff
             if [[ "$(diff $monitconfdir/jenkins <(echo "\
 check directory jenkins_piddir path /var/run/$jenkinsuser
-if does not exist then exec \"/usr/bin/mkdir -p /var/run/$jenkinsuser\"
-if failed uid $jenkinsuser then exec \"/usr/bin/chown $jenkinsuser /var/run/$jenkinsuser\"
-if failed gid $jenkinsuser then exec \"/usr/bin/chown :$jenkinsuser /var/run/$jenkinsuser\"
+if does not exist then exec \"$mkdir -p /var/run/$jenkinsuser\"
+if failed uid $jenkinsuser then exec \"$chown $jenkinsuser /var/run/$jenkinsuser\"
+if failed gid $jenkinsuser then exec \"$chown :$jenkinsuser /var/run/$jenkinsuser\"
 
 check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
 start program = \"/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $jenkinshome; export started_monit=true; $0 $@' with timeout 60 seconds\"
