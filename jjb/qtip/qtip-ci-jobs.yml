@@ -3,7 +3,6 @@
 ####################################
 - project:
     name: qtip
-
     project: 'qtip'
 
 #--------------------------------
@@ -32,10 +31,32 @@
 #--------------------------------
     jobs:
         - 'qtip-{installer}-{pod}-daily-{stream}'
+        - 'qtip-{installer}-{pod}-validate-{stream}'
 
 ################################
 # job templates
 ################################
+# TODO(yujunz) merge validate and daily
+- job-template:
+    name: 'qtip-{installer}-{pod}-validate-{stream}'
+    disabled: false
+    parameters:
+        - qtip-common-parameters:
+            project: '{project}'
+            branch: '{branch}'
+        - '{installer}-defaults'
+        - '{pod}-defaults'
+    scm:
+        - git-scm
+    triggers:
+        - gerrit-trigger-patch-merged:
+            project: '{project}'
+            branch: '{branch}'
+    builders:
+        - qtip-common-builders
+    publishers:
+        - qtip-common-publishers
+
 - job-template:
     name: 'qtip-{installer}-{pod}-daily-{stream}'
 
@@ -60,7 +81,8 @@
         - git-scm
 
     triggers:
-        - '{auto-trigger-name}'
+        - '{auto-trigger-name}':
+            name: '{name}'
 
     builders:
         - description-setter:
@@ -72,14 +94,9 @@
         - email:
             recipients: wu.zhihui1@zte.com.cn, zhang.yujunz@zte.com.cn
 
-###########################
-#biuilder macros
-###########################
-- builder:
-    name: qtip-daily-ci
-    builders:
-        - shell:
-            !include-raw: ./qtip-daily-ci.sh
+###############
+#builder macros
+###############
 
 - builder:
     name: qtip-cleanup
@@ -87,9 +104,54 @@
         - shell:
             !include-raw: ./qtip-cleanup.sh
 
+- builder:
+    name: qtip-common-builders
+    builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
+
+- builder:
+    name: qtip-daily-ci
+    builders:
+        - shell:
+            !include-raw: ./qtip-daily-ci.sh
+
+- builder:
+    name: qtip-install
+    builder:
+        - shell:
+            !include-raw: ./qtip-setup.sh
+
+#################
+#parameter macros
+#################
+
+# TODO(yujunz) refactor jjb with common parameters
+- parameter:
+    name: 'qtip-common-parameters'
+    parameters:
+        - project-parameter:
+            project: '{project}'
+        - gerrit-parameter:
+            branch: '{branch}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-nofeature-ha'
+
+#################
+#publisher macros
+#################
+
+- publisher:
+    name: 'qtip-common-publishers'
+    publishers:
+        - email:
+            recipients: wu.zhihui1@zte.com.cn, zhang.yujunz@zte.com.cn
+
 #################
 #trigger macros
 #################
+
 - trigger:
     name: 'qtip-daily-zte-pod2-trigger'
     triggers:
