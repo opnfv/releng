@@ -1,0 +1,136 @@
+#######################
+# validate after MERGE
+#######################
+- project:
+    name: qtip
+    project: qtip
+
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+        docker-tag: latest
+#--------------------------------
+# JOB VARIABLES
+#--------------------------------
+    pod:
+        - zte-pod2:
+            installer: fuel
+            <<: *master
+        - zte-pod3:
+            installer: fuel
+            <<: *master
+    task:
+        - daily:
+            auto-builder-name: qtip-validate-deploy
+            auto-trigger-name: 'qtip-daily-{pod}-trigger'
+        - validate:
+            auto-builder-name: qtip-validate-setup
+            auto-trigger-name: qtip-validate-trigger
+#--------------------------------
+# JOB LIST
+#--------------------------------
+    jobs:
+        - 'qtip-{task}-{installer}-{pod}-{stream}'
+
+################################
+# job templates
+################################
+- job-template:
+    name: 'qtip-{task}-{installer}-{pod}-{stream}'
+    disabled: false
+    parameters:
+        - qtip-common-parameters:
+            project: '{project}'
+            branch: '{branch}'
+        - '{installer}-defaults'
+        - '{pod}-defaults'
+    scm:
+        - git-scm
+    triggers:
+        - '{auto-trigger-name}'
+    builders:
+        - qtip-common-builders
+        - '{auto-builder-name}'
+    publishers:
+        - qtip-common-publishers
+
+################
+# MARCOS
+################
+
+#---------
+# builder
+#---------
+
+- builder:
+    name: qtip-common-builders
+    builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
+
+- builder:
+    name: qtip-validate-deploy
+    builders:
+        - shell:
+            !include-raw: ./helpers/validate-deploy.sh
+        - shell:
+            !include-raw: ./helpers/cleanup-deploy.sh
+
+- builder:
+    name: qtip-validate-setup
+    builder:
+        - shell:
+            !include-raw: ./helpers/validate-setup.sh
+
+#-----------
+# parameter
+#-----------
+
+- parameter:
+    name: qtip-common-parameters
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-nofeature-ha'
+        - string:
+            name: DOCKER_TAG
+            default: '{docker-tag}'
+            description: 'Tag to pull docker image'
+
+#-----------
+# publisher
+#-----------
+
+- publisher:
+    name: qtip-common-publishers
+    publishers:
+        - email:
+            recipients: wu.zhihui1@zte.com.cn, zhang.yujunz@zte.com.cn
+
+#---------
+# trigger
+#---------
+
+- trigger:
+    name: qtip-daily-zte-pod2-trigger
+    triggers:
+        - timed: '0 7 * * *'
+
+- trigger:
+    name: qtip-daily-zte-pod3-trigger
+    triggers:
+        - timed: '0 1 * * *'
+
+- trigger:
+    name: qtip-validate-trigger
+    triggers:
+        - gerrit-trigger-patch-merged:
+            project: '{project}'
+            branch: '{branch}'
