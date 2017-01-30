@@ -57,9 +57,9 @@ chmod a+x $TMPDIR
 
 # clone the securedlab repo
 cd $WORKSPACE
-echo "Cloning securedlab repo ${GIT_BRANCH##origin/}"
+echo "Cloning securedlab repo $BRANCH"
 git clone ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab --quiet \
-    --branch ${GIT_BRANCH##origin/}
+    --branch $BRANCH
 
 # log file name
 FUEL_LOG_FILENAME="${JOB_NAME}_${BUILD_NUMBER}.log.tar.gz"

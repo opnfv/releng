@@ -60,14 +60,13 @@ if [ ! -f ./Dockerfile ]; then
 fi
 
 # Get tag version
-branch="${GIT_BRANCH##origin/}"
-echo "Current branch: $branch"
+echo "Current branch: $BRANCH"
 
-if [[ "$branch" == "master" ]]; then
+if [[ "$BRANCH" == "master" ]]; then
     DOCKER_TAG="latest"
 else
     if [[ "$RELEASE_VERSION" != "" ]]; then
-        release=$(echo $branch|sed 's/.*\///')
+        release=${BRANCH##*/}
         DOCKER_TAG=${release}.${RELEASE_VERSION}
         # e.g. colorado.1.0, colorado.2.0, colorado.3.0
     else
@@ -79,7 +78,7 @@ fi
 echo "Building docker image: $DOCKER_REPO_NAME:$DOCKER_TAG"
 echo "--------------------------------------------------------"
 echo
-cmd="docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG --build-arg BRANCH=$branch ."
+cmd="docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG --build-arg BRANCH=$BRANCH ."
 
 echo ${cmd}
 ${cmd}

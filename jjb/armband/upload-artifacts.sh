@@ -28,7 +28,7 @@ if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
     # store ISO locally on NFS first
     ISOSTORE=${ISOSTORE:-/iso_mount/opnfv_ci}
     if [[ -d "$ISOSTORE" ]]; then
-        ISOSTORE=${ISOSTORE}/${GIT_BRANCH##*/}
+        ISOSTORE=${ISOSTORE}/${BRANCH##*/}
         mkdir -p $ISOSTORE
 
         # remove all but most recent 3 ISOs first to keep iso_mount clean & tidy

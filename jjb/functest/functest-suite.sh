@@ -1,11 +1,10 @@
 #!/bin/bash
 set -e
 
-branch=${GIT_BRANCH##*/}
-echo "Functest: run $FUNCTEST_SUITE_NAME on branch ${branch}"
-if [[ ${branch} == *"brahmaputra"* ]]; then
+echo "Functest: run $FUNCTEST_SUITE_NAME on branch $BRANCH"
+if [[ "$BRANCH" =~ 'brahmaputra' ]]; then
     cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test $FUNCTEST_SUITE_NAME"
-elif [[ ${branch} == *"colorado"* ]]; then
+elif [[ "$BRANCH" =~ 'colorado' ]]; then
     cmd="python ${FUNCTEST_REPO_DIR}/ci/run_tests.py -t $FUNCTEST_SUITE_NAME"
 else
     cmd="functest testcase run $FUNCTEST_SUITE_NAME"
