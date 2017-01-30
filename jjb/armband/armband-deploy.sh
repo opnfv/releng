@@ -49,8 +49,8 @@ mkdir -p $TMPDIR
 
 cd $WORKSPACE
 if [[ $LAB_CONFIG_URL =~ ^(git|ssh):// ]]; then
-    echo "Cloning securedlab repo ${GIT_BRANCH##origin/}"
-    git clone --quiet --branch ${GIT_BRANCH##origin/} $LAB_CONFIG_URL lab-config
+    echo "Cloning securedlab repo $BRANCH"
+    git clone --quiet --branch $BRANCH $LAB_CONFIG_URL lab-config
     LAB_CONFIG_URL=file://${WORKSPACE}/lab-config
 
     # Source local_env if present, which contains POD-specific config
@@ -73,7 +73,7 @@ FUEL_LOG_FILENAME="${JOB_NAME}_${BUILD_NUMBER}.log.tar.gz"
 
 # Deploy Cache (to enable just create the deploy-cache subdir)
 # NOTE: Only available when ISO files are cached using ISOSTORE mechanism
-DEPLOY_CACHE=${ISOSTORE:-/iso_mount/opnfv_ci}/${GIT_BRANCH##*/}/deploy-cache
+DEPLOY_CACHE=${ISOSTORE:-/iso_mount/opnfv_ci}/${BRANCH##*/}/deploy-cache
 if [[ -d "${DEPLOY_CACHE}" ]]; then
     echo "Deploy cache dir present."
     echo "--------------------------------------------------------"
