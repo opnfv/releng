@@ -36,7 +36,7 @@ echo "Using $OPNFV_ARTIFACT for deployment"
 # using ISOs for verify & merge jobs from local storage will be enabled later
 if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
     # check if we already have the ISO to avoid redownload
-    ISOSTORE="/iso_mount/opnfv_ci/${GIT_BRANCH##*/}"
+    ISOSTORE="/iso_mount/opnfv_ci/${BRANCH##*/}"
     if [[ -f "$ISOSTORE/$OPNFV_ARTIFACT" ]]; then
         echo "ISO exists locally. Skipping the download and using the file from ISO store"
         ln -s $ISOSTORE/$OPNFV_ARTIFACT $WORKSPACE/opnfv.iso

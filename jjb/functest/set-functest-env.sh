@@ -56,8 +56,7 @@ DEPLOY_TYPE=baremetal
 
 echo "Functest: Start Docker and prepare environment"
 
-branch=${GIT_BRANCH##*/}
-dir_result="${HOME}/opnfv/functest/results/${branch}"
+dir_result="${HOME}/opnfv/functest/results/${BRANCH##*/}"
 mkdir -p ${dir_result}
 sudo rm -rf ${dir_result}/*
 results_vol="-v ${dir_result}:/home/opnfv/functest/results"
@@ -96,9 +95,9 @@ if [ $(docker ps | grep "opnfv/functest:${DOCKER_TAG}" | wc -l) == 0 ]; then
     echo "The container opnfv/functest with ID=${container_id} has not been properly started. Exiting..."
     exit 1
 fi
-if [[ ${branch} == *"brahmaputra"* ]]; then
+if [[ "$BRANCH" =~ 'brahmaputra' ]]; then
     cmd="${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
-elif [[ ${branch} == *"colorado"* ]]; then
+elif [[ "$BRANCH" =~ 'colorado' ]]; then
     cmd="python ${FUNCTEST_REPO_DIR}/ci/prepare_env.py start"
 else
     cmd="python ${FUNCTEST_REPO_DIR}/functest/ci/prepare_env.py start"
