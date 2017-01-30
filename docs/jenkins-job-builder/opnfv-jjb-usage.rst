@@ -39,10 +39,18 @@ Job Types
 
   * Trigger: **remerge**
 
+* Experimental Job
+
+  * Trigger: **check-experimental**
+
 The verify and merge jobs are retriggerable in Gerrit by simply leaving
 a comment with one of the keywords listed above.
 This is useful in case you need to re-run one of those jobs in case
 if build issues or something changed with the environment.
+
+The experimental jobs are not triggered automatically. You need to leave
+a comment with the keyword list above to trigger it manually. It is useful
+for trying out experimental features.
 
 You can add below persons as reviewers to your patch in order to get it
 reviewed and submitted.
