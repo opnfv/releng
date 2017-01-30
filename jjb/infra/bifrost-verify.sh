@@ -22,7 +22,7 @@ function upload_logs() {
     # stale information.
     # TODO: Maybe cleanup the entire $BIFROST_GS_URL directory
     # before we upload the new data.
-    gsutil -q rm ${BIFROST_GS_URL}/index.html
+    gsutil -q rm ${BIFROST_GS_URL}/index.html || true
 
     if [[ -d ${WORKSPACE}/logs ]]; then
         echo "Uploading collected bifrost logs to ${BIFROST_LOG_URL}"
