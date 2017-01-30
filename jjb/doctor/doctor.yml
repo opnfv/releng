@@ -95,6 +95,11 @@
         - gerrit-parameter:
             branch: '{branch}'
         - string:
+            name: GIT_BRANCH
+            default: 'origin/{branch}'
+            description: "Override GIT_BRANCH parameter as we need stream name here"
+            #TODO(r-mibu): remove this work around by cleanup *_BRANCH params
+        - string:
             name: OS_CREDS
             default: /home/jenkins/openstack.creds
             description: 'OpenStack credentials'
@@ -149,7 +154,7 @@
     builders:
         - 'functest-suite-builder'
         - shell: |
-            functest_log="$HOME/opnfv/functest/results/{project}.log"
+            functest_log="$HOME/opnfv/functest/results/{stream}/{project}.log"
             to_be_archived="$WORKSPACE/tests/functest-{project}.log"
             cp $functest_log $to_be_archived
             # NOTE: checking the test result, as the previous job could return
