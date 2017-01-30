@@ -96,6 +96,7 @@
                     OS_REGION=RegionOne
                     REGIONONE_IP=100.64.209.10
                     REGIONTWO_IP=100.64.209.11
+                    FRESH_INSTALL=$FRESH_INSTALL
                   node-parameters: false
                   node-label-name: SLAVE_LABEL
                   node-label: ericsson-virtual12
@@ -107,6 +108,7 @@
                     OS_REGION=RegionTwo
                     REGIONONE_IP=100.64.209.10
                     REGIONTWO_IP=100.64.209.11
+                    FRESH_INSTALL=$FRESH_INSTALL
                   node-parameters: false
                   node-label-name: SLAVE_LABEL
                   node-label: ericsson-virtual13
@@ -122,6 +124,7 @@
                     OS_REGION=RegionOne
                     REGIONONE_IP=100.64.209.10
                     REGIONTWO_IP=100.64.209.11
+                    FRESH_INSTALL=$FRESH_INSTALL
                   node-parameters: false
                   node-label-name: SLAVE_LABEL
                   node-label: ericsson-virtual12
@@ -139,6 +142,7 @@
                     OS_REGION=RegionOne
                     REGIONONE_IP=100.64.209.10
                     REGIONTWO_IP=100.64.209.11
+                    FRESH_INSTALL=$FRESH_INSTALL
                   node-parameters: false
                   node-label-name: SLAVE_LABEL
                   node-label: ericsson-virtual12
@@ -160,7 +164,15 @@
         - string:
             name: KINGBIRD_LOG_FILE
             default: $WORKSPACE/kingbird.log
+        - gerrit-parameter:
+            branch: '{branch}'
+        - 'fuel-defaults'
         - '{slave-label}-defaults'
+        - choice:
+            name: FRESH_INSTALL
+            choices:
+                - 'true'
+                - 'false'
 
     scm:
         - git-scm
