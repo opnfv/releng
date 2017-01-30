@@ -31,14 +31,14 @@ fi
 opts="--privileged=true --rm"
 envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
     -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NETWORK=${EXTERNAL_NETWORK} \
-    -e YARDSTICK_BRANCH=${GIT_BRANCH##origin/} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO}"
+    -e YARDSTICK_BRANCH=${BRANCH} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO}"
 
 # Pull the image with correct tag
 echo "Yardstick: Pulling image opnfv/yardstick:${DOCKER_TAG}"
 docker pull opnfv/yardstick:$DOCKER_TAG >$redirect
 
 # map log directory
-branch=${GIT_BRANCH##*/}
+branch=${BRANCH##*/}
 dir_result="${HOME}/opnfv/yardstick/results/${branch}"
 mkdir -p ${dir_result}
 sudo rm -rf ${dir_result}/*

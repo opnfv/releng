@@ -23,7 +23,7 @@ nfsstore () {
 # storing ISOs for verify & merge jobs will be done once we get the disk array
 if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
     # store ISO locally on NFS first
-    ISOSTORE="/iso_mount/opnfv_ci/${GIT_BRANCH##*/}"
+    ISOSTORE="/iso_mount/opnfv_ci/${BRANCH##*/}"
     if [[ -d "$ISOSTORE" ]]; then
         # remove all but most recent 5 ISOs first to keep iso_mount clean & tidy
         cd $ISOSTORE

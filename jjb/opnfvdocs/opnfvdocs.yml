@@ -34,7 +34,6 @@
     parameters:
         - project-parameter:
             project: $GERRIT_PROJECT
-        - gerrit-parameter:
             branch: '{branch}'
         - string:
             name: GIT_CLONE_BASE
@@ -75,7 +74,6 @@
     parameters:
         - project-parameter:
             project: $GERRIT_PROJECT
-        - gerrit-parameter:
             branch: '{branch}'
         - string:
             name: GIT_CLONE_BASE
@@ -114,6 +112,7 @@
     parameters:
         - project-parameter:
             project: '{project}'
+            branch: '{branch}'
         - string:
             name: GS_URL
             default: '$GS_BASE{gs-pathname}'
@@ -122,10 +121,6 @@
             name: GIT_CLONE_BASE
             default: ssh://gerrit.opnfv.org:29418
             description: "Used for overriding the GIT URL coming from parameters macro."
-        - string:
-            name: GERRIT_BRANCH
-            default: '{branch}'
-            description: 'Specify the branch in this way in order to be able to use build-opnfv-composite-docs builder.'
 
     scm:
         - git-scm
@@ -136,4 +131,3 @@
     builders:
         - build-html-and-pdf-docs-output
 #        - upload-generated-docs-to-opnfv-artifacts
-

@@ -1,7 +1,6 @@
 #!/bin/bash
 
-branch=${GIT_BRANCH##*/}
-ret_val_file="${HOME}/opnfv/functest/results/${branch}/return_value"
+ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
 if [ ! -f ${ret_val_file} ]; then
     echo "Return value not found!"
     exit -1
