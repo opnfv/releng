@@ -196,8 +196,11 @@
             !include-raw-escape: ./fuel-deploy-for-multisite.sh
         - shell: |
             #!/bin/bash
+
             echo "This is where we deploy fuel, extract passwords and save into file"
-            $WORKSPACE/tools/keystone/run.sh -t controller -r $WORKSPACE/tools/keystone/fetchpass.sh -o servicepass.ini
+            
+            cd $WORKSPACE/tools/keystone/
+            ./run.sh -t controller -r fetchpass.sh -o servicepass.ini
 
 - builder:
     name: 'multisite-fuel-deploy-regiontwo-virtual-builder'
@@ -208,7 +211,9 @@
             #!/bin/bash
 
             echo "This is where we deploy fuel, extract publicUrl, privateUrl, and adminUrl and save into file"
-            $WORKSPACE/tools/keystone/run.sh -t controller -r $WORKSPACE/tools/keystone/endpoint.sh -o endpoints.ini
+            
+            cd $WORKSPACE/tools/keystone/
+            ./run.sh -t controller -r endpoint.sh -o endpoints.ini
 - builder:
     name: 'multisite-register-endpoints-builder'
     builders:
@@ -220,7 +225,9 @@
             #!/bin/bash
 
             echo "This is where we register RegionTwo in RegionOne keystone using endpoints.ini"
-            $WORKSPACE/tools/keystone/run.sh -t controller -r $WORKSPACE/tools/keystone/region.sh -d $WORKSPACE/endpoints.ini
+
+            cd $WORKSPACE/tools/keystone/
+            ./run.sh -t controller -r region.sh -d $WORKSPACE/endpoints.ini
 - builder:
     name: 'multisite-update-auth-builder'
     builders:
@@ -232,8 +239,10 @@
             #!/bin/bash
 
             echo "This is where we read passwords from servicepass.ini and replace passwords in RegionTwo"
-            $WORKSPACE/tools/keystone/run.sh -t controller -r $WORKSPACE/tools/keystone/writepass.sh -d $WORKSPACE/servicepass.ini
-            $WORKSPACE/tools/keystone/run.sh -t compute -r $WORKSPACE/tools/keystone/writepass.sh -d $WORKSPACE/servicepass.ini
+            
+            cd $WORKSPACE/tools/keystone/
+            ./run.sh -t controller -r writepass.sh -d $WORKSPACE/servicepass.ini
+            ./run.sh -t compute -r writepass.sh -d $WORKSPACE/servicepass.ini
 - builder:
     name: 'multisite-kingbird-deploy-virtual-builder'
     builders:
