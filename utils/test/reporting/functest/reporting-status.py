@@ -40,6 +40,9 @@ versions = rp_utils.get_config('general.versions')
 installers = rp_utils.get_config('general.installers')
 blacklist = rp_utils.get_config('functest.blacklist')
 log_level = rp_utils.get_config('general.log.log_level')
+exclude_noha = rp_utils.get_config('functest.exclude_noha')
+exclude_virtual = rp_utils.get_config('functest.exclude_virtual')
+
 response = requests.get(cf)
 
 functest_yaml_config = yaml.safe_load(response.text)
@@ -48,7 +51,10 @@ logger.info("*******************************************")
 logger.info("*                                         *")
 logger.info("*   Generating reporting scenario status  *")
 logger.info("*   Data retention: %s days               *" % period)
-logger.info("*   Log level: %s                       *" % log_level)
+logger.info("*   Log level: %s                         *" % log_level)
+logger.info("*                                         *")
+logger.info("*   Virtual PODs exluded: %s              *" % exclude_virtual)
+logger.info("*   NOHA scenarios excluded: %s           *" % exclude_noha)
 logger.info("*                                         *")
 logger.info("*******************************************")
 
@@ -90,7 +96,6 @@ for version in versions:
         scenario_stats = rp_utils.getScenarioStats(scenario_results)
         items = {}
         scenario_result_criteria = {}
-
         scenario_file_name = ("./display/" + version +
                               "/functest/scenario_history.txt")
         # initiate scenario file if it does not exist
