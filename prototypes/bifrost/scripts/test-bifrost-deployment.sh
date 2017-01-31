@@ -36,6 +36,7 @@ export TEST_VM_NODE_NAMES="jumphost.opnfvlocal controller00.opnfvlocal compute00
 export VM_DOMAIN_TYPE="kvm"
 export VM_CPU=${VM_CPU:-4}
 export VM_DISK=${VM_DISK:-100}
+export VM_DISK_CACHE=${VM_DISK_CACHE:-unsafe}
 TEST_PLAYBOOK="test-bifrost-infracloud.yaml"
 USE_INSPECTOR=true
 USE_CIRROS=false
