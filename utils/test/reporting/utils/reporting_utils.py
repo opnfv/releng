@@ -127,7 +127,15 @@ def getScenarios(case, installer, version):
             # Retrieve all the scenarios per installer
             if not r['scenario'] in scenario_results.keys():
                 scenario_results[r['scenario']] = []
-            scenario_results[r['scenario']].append(r)
+            # Do we consider results from virtual pods ...
+            # Do we consider results for non HA scenarios...
+            exclude_virtual_pod = get_config('functest.exclude_virtual')
+            exclude_noha = get_config('functest.exclude_noha')
+            if ((exclude_virtual_pod and "virtual" in r['pod_name']) or
+               (exclude_noha and "noha" in r['scenario'])):
+                    print "exclude virtual pod results..."
+            else:
+                scenario_results[r['scenario']].append(r)
 
     return scenario_results
 
@@ -254,13 +262,14 @@ def getResult(testCase, installer, scenario, version):
 def getJenkinsUrl(build_tag):
     # e.g. jenkins-functest-apex-apex-daily-colorado-daily-colorado-246
     # id = 246
+    # jenkins-functest-compass-huawei-pod5-daily-master-136
+    # id = 136
     # note it is linked to jenkins format
     # if this format changes...function to be adapted....
     url_base = get_config('functest.jenkins_url')
     try:
         build_id = [int(s) for s in build_tag.split("-") if s.isdigit()]
-        jenkins_path = filter(lambda c: not c.isdigit(), build_tag)
-        url_id = jenkins_path[8:-1] + "/" + str(build_id[0])
+        url_id = build_tag[8:-(len(build_id)+3)] + "/" + str(build_id[0])
         jenkins_url = url_base + url_id + "/console"
     except:
         print 'Impossible to get jenkins url:'
