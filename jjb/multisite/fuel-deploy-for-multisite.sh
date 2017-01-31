@@ -22,7 +22,7 @@ export TERM="vt220"
 
 # get the latest successful job console log and extract the properties filename
 FUEL_DEPLOY_BUILD_URL="https://build.opnfv.org/ci/job/fuel-deploy-virtual-daily-master/lastSuccessfulBuild/consoleText"
-FUEL_PROPERTIES_FILE=$(curl -s -L ${FUEL_DEPLOY_URL} | grep 'ISO:' | awk '{print $2}' | sed 's/iso/properties/g')
+FUEL_PROPERTIES_FILE=$(curl -s -L ${FUEL_DEPLOY_BUILD_URL} | grep 'ISO:' | awk '{print $2}' | sed 's/iso/properties/g')
 if [[ -z "FUEL_PROPERTIES_FILE" ]]; then
     echo "Unable to extract the url to Fuel ISO properties from ${FUEL_DEPLOY_URL}"
     exit 1
@@ -39,8 +39,6 @@ echo "Using ${OPNFV_ARTIFACT_URL/*\/} for deployment"
 echo "Downloading the ISO using the link http://$OPNFV_ARTIFACT_URL"
 curl -L -s -o $WORKSPACE/opnfv.iso http://$OPNFV_ARTIFACT_URL > gsutil.iso.log 2>&1
 
-echo "Checking out $OPNFV_GIT_SHA1"
-git checkout $OPNFV_GIT_SHA1 --quiet
 
 # set deployment parameters
 DEPLOY_SCENARIO="os-nosdn-nofeature-noha"
@@ -69,6 +67,13 @@ mkdir -p $TMPDIR
 chmod a+x $HOME
 chmod a+x $TMPDIR
 
+# clone fuel repo and checkout the sha1 that corresponds to the ISO
+echo "Cloning fuel repo"
+git clone https://gerrit.opnfv.org/gerrit/p/fuel.git fuel
+cd $WORKSPACE/fuel
+echo "Checking out $OPNFV_GIT_SHA1"
+git checkout $OPNFV_GIT_SHA1 --quiet
+
 # clone the securedlab repo
 cd $WORKSPACE
 echo "Cloning securedlab repo ${GIT_BRANCH##origin/}"
@@ -79,7 +84,7 @@ git clone ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab --quiet \
 FUEL_LOG_FILENAME="${JOB_NAME}_${BUILD_NUMBER}.log.tar.gz"
 
 # construct the command
-DEPLOY_COMMAND="sudo $WORKSPACE/ci/deploy.sh -b file://$WORKSPACE/securedlab \
+DEPLOY_COMMAND="sudo $WORKSPACE/fuel/ci/deploy.sh -b file://$WORKSPACE/securedlab \
     -l $LAB_NAME -p $POD_NAME -s $DEPLOY_SCENARIO -i file://$WORKSPACE/opnfv.iso \
     -H -B $BRIDGE -S $TMPDIR -L $WORKSPACE/$FUEL_LOG_FILENAME"
 
