@@ -19,7 +19,7 @@
         - 'build':
             slave-label: 'opnfv-build-ubuntu'
         - 'test':
-            slave-label: 'intel-pod1'
+            slave-label: 'intel-pod10'
 #####################################
 # patch verification phases
 #####################################
@@ -97,19 +97,19 @@
                   node-parameters: false
                   kill-phase-on: FAILURE
                   abort-all-job: true
-#        - multijob:
-#            name: test
-#            condition: SUCCESSFUL
-#            projects:
-#                - name: 'kvmfornfv-verify-test-{stream}'
-#                  current-parameters: false
-#                  predefined-parameters: |
-#                    GERRIT_BRANCH=$GERRIT_BRANCH
-#                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-#                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-#                  node-parameters: false
-#                  kill-phase-on: FAILURE
-#                  abort-all-job: true
+        - multijob:
+            name: test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'kvmfornfv-verify-test-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
 - job-template:
     name: 'kvmfornfv-verify-{phase}-{stream}'
 
@@ -195,8 +195,8 @@
     scm:
         - git-scm
 
-#    triggers:
-#        - timed: '@midnight'
+    triggers:
+        - timed: '@midnight'
 
     builders:
         - description-setter:
