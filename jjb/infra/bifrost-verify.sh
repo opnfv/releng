@@ -24,8 +24,9 @@ function upload_logs() {
     # before we upload the new data.
     gsutil -q rm ${BIFROST_GS_URL}/index.html || true
 
+    echo "Uploading collected bifrost build logs to ${BIFROST_LOG_URL}"
+
     if [[ -d ${WORKSPACE}/logs ]]; then
-        echo "Uploading collected bifrost logs to ${BIFROST_LOG_URL}"
         pushd ${WORKSPACE}/logs &> /dev/null
         for x in *.log; do
             echo "Compressing and uploading $x"
@@ -34,7 +35,7 @@ function upload_logs() {
         popd &> /dev/null
     fi
 
-    echo "Generating the landing page"
+    echo "Generating the ${BIFROST_LOG_URL}/index.html landing page"
     cat > ${WORKSPACE}/index.html <<EOF
 <html>
 <h1>Build results for <a href=https://$GERRIT_NAME/#/c/$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER>$GERRIT_NAME/$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER</a></h1>
@@ -58,7 +59,7 @@ EOF
 
     # Finally, download and upload the entire build log so we can retain
     # as much build information as possible
-    echo "Uploading console output"
+    echo "Uploading the final console output"
     curl -s -L ${BIFROST_CONSOLE_LOG} > ${WORKSPACE}/build_log.txt
     gsutil -q cp -Z ${WORKSPACE}/build_log.txt ${BIFROST_GS_URL}/build_log.txt
     rm ${WORKSPACE}/build_log.txt
