@@ -15,7 +15,7 @@ if ! rpm -q wget > /dev/null; then
   sudo yum -y install wget
 fi
 
-if [[ $BUILD_DIRECTORY == *verify* ]]; then
+if [[ "$BUILD_DIRECTORY" == *verify* || "$BUILD_DIRECTORY" == *csit* ]]; then
     # Build is from a verify, use local build artifacts (not RPMs)
     cd $WORKSPACE/../${BUILD_DIRECTORY}
     WORKSPACE=$(pwd)
@@ -64,8 +64,8 @@ if [ -z "$DEPLOY_SCENARIO" ]; then
   exit 1
 fi
 
-# use local build for verify
-if [[ "$BUILD_DIRECTORY" == *verify* ]]; then
+# use local build for verify and csit promote
+if [[ "$BUILD_DIRECTORY" == *verify* || "$BUILD_DIRECTORY" == *csit* ]]; then
     if [ ! -e "${WORKSPACE}/build/lib" ]; then
       ln -s ${WORKSPACE}/lib ${WORKSPACE}/build/lib
     fi
@@ -144,7 +144,7 @@ if [ "$OPNFV_CLEAN" == 'yes' ]; then
   else
     clean_opts=''
   fi
-  if [[ "$BUILD_DIRECTORY" == *verify* ]]; then
+  if [[ "$BUILD_DIRECTORY" == *verify* || "$BUILD_DIRECTORY" == *csit* ]]; then
     sudo CONFIG=${CONFIG} LIB=${LIB} ./clean.sh ${clean_opts}
   else
     sudo CONFIG=${CONFIG} LIB=${LIB} opnfv-clean ${clean_opts}
