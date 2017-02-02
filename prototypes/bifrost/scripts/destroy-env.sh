@@ -14,6 +14,9 @@ if [[ $(whoami) != "root" ]]; then
     exit 1
 fi
 
+# Remove old VM logs
+rm -rf /var/log/libvirt/baremetal_logs/*
+
 virsh destroy jumphost.opnfvlocal || true
 virsh destroy controller00.opnfvlocal || true
 virsh destroy compute00.opnfvlocal || true
