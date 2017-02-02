@@ -12,6 +12,9 @@ echo
 if echo $BUILD_TAG | grep "apex-verify" 1> /dev/null; then
   export OPNFV_ARTIFACT_VERSION=dev${BUILD_NUMBER}
   export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY"
+elif echo $BUILD_TAG | grep "csit" 1> /dev/null; then
+  export OPNFV_ARTIFACT_VERSION=csit${BUILD_NUMBER}
+  export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY"
 elif [ "$ARTIFACT_VERSION" == "daily" ]; then
   export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d")
   export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY --iso"
