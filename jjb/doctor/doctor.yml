@@ -22,10 +22,9 @@
         - fuel:
             slave-label: 'ool-virtual2'
             pod: 'ool-virtual2'
-        # TODO(r-mibu): enable this once joid is ready
-        #- joid:
-        #    slave-label: 'ool-virtual3'
-        #    pod: 'ool-virtual3'
+        - joid:
+            slave-label: 'ool-virtual3'
+            pod: 'ool-virtual3'
 
     inspector:
         - 'sample'
@@ -145,6 +144,8 @@
             branch: '{branch}'
 
     builders:
+        - 'log-cleaner':
+            dirs: './tests'
         - 'functest-suite-builder'
         - shell: |
             functest_log="$HOME/opnfv/functest/results/{stream}/{project}.log"
