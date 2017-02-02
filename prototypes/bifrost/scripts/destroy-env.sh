@@ -33,7 +33,7 @@ fi
 echo "removing leases"
 [[ -e /var/lib/misc/dnsmasq/dnsmasq.leases ]] && > /var/lib/misc/dnsmasq/dnsmasq.leases
 echo "removing logs"
-rm -rf /var/log/libvirt/baremetal_logs/*.log
+rm -rf /var/log/libvirt/baremetal_logs/*
 
 # clean up dib images only if requested explicitly
 CLEAN_DIB_IMAGES=${CLEAN_DIB_IMAGES:-false}
