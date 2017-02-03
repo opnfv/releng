@@ -423,6 +423,12 @@
               sed -r -i '4,$s/^/ /g' lint.log
             fi
 
+- builder:
+    name: clean-workspace-log
+    builders:
+        - shell: |
+            find $WORKSPACE -type f -print -name '*.log' | xargs rm -f
+
 - publisher:
     name: archive-artifacts
     publishers:
