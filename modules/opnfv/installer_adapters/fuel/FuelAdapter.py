@@ -8,11 +8,11 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-import opnfv.utils.SSHUtils as ssh_utils
-import opnfv.utils.OPNFVLogger as logger
+from opnfv.utils import installer_handler
+from opnfv.utils import SSHUtils as ssh_utils
 
 
-class FuelAdapter:
+class FuelAdapter(installer_handler.InstallerHandler):
 
     def __init__(self, installer_ip, user="root", password="r00tme"):
         self.installer_ip = installer_ip
@@ -22,7 +22,6 @@ class FuelAdapter:
             installer_ip,
             self.installer_user,
             password=self.installer_password)
-        self.logger = logger.Logger("FuelHandler").getLogger()
 
     def runcmd_fuel_installer(self, cmd):
         _, stdout, stderr = (self
