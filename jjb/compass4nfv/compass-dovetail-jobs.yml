@@ -1,0 +1,187 @@
+- project:
+
+    name: 'compass-dovetail-jobs'
+    installer: 'compass'
+    project: 'compass4nfv'
+#----------------------------------
+# BRANCH ANCHORS
+#----------------------------------
+    colorado: &colorado
+        stream: colorado
+        branch: 'stable/{stream}'
+        gs-pathname: '/{stream}'
+        disabled: false
+        dovetail-branch: master
+#------------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#------------------------------------
+#        CI PODs
+#------------------------------------
+    pod:
+        - baremetal:
+            slave-label: compass-baremetal
+            os-version: 'xenial'
+            <<: *colorado
+#-----------------------------------
+# scenarios
+#-----------------------------------
+    scenario:
+        - 'os-nosdn-nofeature-ha':
+            disabled: false
+            auto-trigger-name: 'weekly-trigger-disabled'
+
+    jobs:
+        - 'compass-{scenario}-{pod}-weekly-{stream}'
+        - 'compass-deploy-{pod}-weekly-{stream}'
+
+########################
+# job templates
+########################
+- job-template:
+    name: 'compass-{scenario}-{pod}-weekly-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'compass-os-.*?-{pod}-daily-.*?'
+                - 'compass-os-.*?-{pod}-weekly-.*?'
+            block-level: 'NODE'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    triggers:
+        - '{auto-trigger-name}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - compass-ci-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: '{scenario}'
+        - '{slave-label}-defaults'
+        - '{installer}-defaults'
+
+    triggers:
+        - '{auto-trigger-name}'
+
+    builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
+        - trigger-builds:
+            - project: 'compass-deploy-{pod}-weekly-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                DEPLOY_SCENARIO={scenario}
+                COMPASS_OS_VERSION={os-version}
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'dovetail-compass-{pod}-compliance_set-weekly-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              block: true
+              same-node: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+
+- job-template:
+    name: 'compass-deploy-{pod}-weekly-{stream}'
+
+    disabled: false
+
+    concurrent: true
+
+    properties:
+        - logrotate-default
+        - throttle:
+            enabled: true
+            max-total: 4
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'compass-deploy-{pod}-daily-.*?'
+                - 'compass-deploy-{pod}-weekly-.*'
+                - 'compass-verify-deploy-.*?'
+            block-level: 'NODE'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+        - timeout:
+            timeout: 120
+            abort: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - compass-ci-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - '{slave-label}-defaults'
+        - '{installer}-defaults'
+
+    scm:
+        - git-scm
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+
+    builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
+        - shell:
+            !include-raw-escape: ./compass-download-artifact.sh
+        - shell:
+            !include-raw-escape: ./compass-deploy.sh
+
+    publishers:
+        - archive:
+            artifacts: 'ansible.log'
+            allow-empty: 'true'
+            fingerprint: true
+
+########################
+# parameter macros
+########################
+- parameter:
+    name: compass-dovetail-parameter
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: GS_URL
+            default: '$GS_BASE{gs-pathname}'
+            description: "URL to Google Storage."
+        - choice:
+            name: COMPASS_OPENSTACK_VERSION
+            choices:
+                - 'newton'
+
+########################
+# trigger macros
+########################
+- trigger:
+    name: 'compass-os-nosdn-nofeature-ha-baremetal-weekly-colorado-trigger'
+    triggers:
+        - timed: ''
