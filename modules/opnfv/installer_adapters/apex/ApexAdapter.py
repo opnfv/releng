@@ -10,11 +10,11 @@
 import os
 import re
 
-import opnfv.utils.SSHUtils as ssh_utils
-import opnfv.utils.OPNFVLogger as logger
+from opnfv.utils import installer_handler
+from opnfv.utils import SSHUtils as ssh_utils
 
 
-class ApexAdapter:
+class ApexAdapter(installer_handler.InstallerHandler):
 
     def __init__(self, installer_ip, pkey_file, user="stack"):
         self.installer_ip = installer_ip
@@ -24,9 +24,8 @@ class ApexAdapter:
             self.installer_ip,
             self.installer_user,
             pkey_file=self.pkey_file)
-        self.logger = logger.Logger("ApexHandler").getLogger()
 
-    def runcmd_apex_installer(self, cmd):
+    def _runcmd_apex_installer(self, cmd):
         _, stdout, stderr = (self.installer_connection.exec_command(cmd))
         error = stderr.readlines()
         if len(error) > 0:
