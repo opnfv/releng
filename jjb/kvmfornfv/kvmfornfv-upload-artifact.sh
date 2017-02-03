@@ -11,16 +11,28 @@ fi
 
 case "$JOB_TYPE" in
     verify)
-        OPNFV_ARTIFACT_VERSION="gerrit-$GERRIT_CHANGE_NUMBER"
-        GS_UPLOAD_LOCATION="gs://artifacts.opnfv.org/$PROJECT/review/$GERRIT_CHANGE_NUMBER"
-        echo "Removing outdated artifacts produced for the previous patch for the change $GERRIT_CHANGE_NUMBER"
-        gsutil ls $GS_UPLOAD_LOCATION > /dev/null 2>&1 && gsutil rm -r $GS_UPLOAD_LOCATION
-        echo "Uploading artifacts for the change $GERRIT_CHANGE_NUMBER. This could take some time..."
+        case "$PHASE" in
+            build)
+                OPNFV_ARTIFACT_VERSION="gerrit-$GERRIT_CHANGE_NUMBER"
+                GS_UPLOAD_LOCATION="gs://artifacts.opnfv.org/$PROJECT/review/$GERRIT_CHANGE_NUMBER"
+                echo "Removing outdated artifacts produced for the previous patch for the change $GERRIT_CHANGE_NUMBER"
+                gsutil ls $GS_UPLOAD_LOCATION > /dev/null 2>&1 && gsutil rm -r $GS_UPLOAD_LOCATION
+                echo "Uploading artifacts for the change $GERRIT_CHANGE_NUMBER. This could take some time..."
+                ;;
+            test)
+                OPNFV_ARTIFACT_VERSION="gerrit-$GERRIT_CHANGE_NUMBER"
+                GS_UPLOAD_LOCATION="gs://artifacts.opnfv.org/$PROJECT/review/$GERRIT_CHANGE_NUMBER"
+                ;;
+        esac
         ;;
     daily)
         echo "Uploading daily artifacts This could take some time..."
         OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
-        GS_UPLOAD_LOCATION="gs://$GS_URL/$OPNFV_ARTIFACT_VERSION"
+        case "$PHASE" in
+            build|test)
+                GS_UPLOAD_LOCATION="gs://$GS_URL/$OPNFV_ARTIFACT_VERSION"
+                ;;
+        esac
         ;;
     *)
         echo "Artifact upload is not enabled for $JOB_TYPE jobs"
@@ -38,10 +50,26 @@ esac
 source $WORKSPACE/opnfv.properties
 
 # upload artifacts
-gsutil cp -r $WORKSPACE/build_output/* $GS_UPLOAD_LOCATION > $WORKSPACE/gsutil.log 2>&1
-gsutil -m setmeta -r \
-    -h "Cache-Control:private, max-age=0, no-transform" \
-    $GS_UPLOAD_LOCATION > /dev/null 2>&1
+if [[ "$PHASE" == "build" ]]; then
+    gsutil cp -r $WORKSPACE/build_output/* $GS_UPLOAD_LOCATION > $WORKSPACE/gsutil.log 2>&1
+    gsutil -m setmeta -r \
+        -h "Cache-Control:private, max-age=0, no-transform" \
+        $GS_UPLOAD_LOCATION > /dev/null 2>&1
+else
+    log_dir=$WORKSPACE/build_output/log
+    if [[ -d "$log_dir" ]]; then
+        #Tar and uploading the log artifacts.
+        if [[ "$JOB_TYPE" == "verify" ]]; then
+            ( cd $WORKSPACE/build_output ; tar -czvf log-$GERRIT_CHANGE_NUMBER.tar.gz log )
+        else
+            ( cd $WORKSPACE/build_output ; tar -czvf log-$OPNFV_ARTIFACT_VERSION.tar.gz log )
+        fi
+        echo "Uploading artifacts for future debugging needs...."
+        gsutil cp -r $WORKSPACE/build_output/log-*.tar.gz $GS_UPLOAD_LOCATION > $WORKSPACE/gsutil.log 2>&1
+    else
+        echo "No test logs/artifacts available for uploading"
+    fi
+fi
 
 # upload metadata file for the artifacts built by daily job
 if [[ "$JOB_TYPE" == "daily" ]]; then
