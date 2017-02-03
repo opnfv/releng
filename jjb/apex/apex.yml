@@ -560,8 +560,36 @@
                 build-step-failure-threshold: 'never'
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
-
-
+        - trigger-builds:
+          - project: 'apex-deploy-baremetal-os-odl-gluon-ha-{stream}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-build-{stream}/.build
+              OPNFV_CLEAN=yes
+            git-revision: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+            block: true
+        - trigger-builds:
+          - project: 'functest-apex-{daily-slave}-daily-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl-gluon-ha
+            block: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'yardstick-apex-{slave}-daily-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl-gluon-ha
+            block: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
 # Colorado Build
 - job-template:
     name: 'apex-build-colorado'
