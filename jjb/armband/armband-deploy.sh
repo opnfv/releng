@@ -106,7 +106,7 @@ echo "Issuing command"
 echo "$DEPLOY_COMMAND"
 echo
 
-$DEPLOY_COMMAND
+($DEPLOY_COMMAND)
 exit_code=$?
 
 echo
