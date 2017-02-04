@@ -1,0 +1,296 @@
+######################################################################
+# Copy from fuel-project-jobs
+# In the future, maybe the same build yaml can support multiple
+# installers
+# TODO:
+# Merge it with fuel-project-jobs
+######################################################################
+
+#############################
+# Job configuration for daisy
+#############################
+- project:
+    name: daisy-project-jobs
+
+    project: 'daisy'
+
+    installer: 'daisy4nfv'
+
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+
+    jobs:
+        - '{installer}-build-daily-{stream}'
+        - '{installer}-merge-build-{stream}'
+        - '{installer}-merge-deploy-virtual-{stream}'
+        - '{installer}-deploy-daily-{stream}'
+
+########################
+# job templates
+########################
+- job-template:
+    name: '{installer}-build-daily-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    properties:
+        - logrotate-default
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+            option: 'project'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - 'opnfv-build-centos-defaults'
+        - choice:
+            name: FORCE_BUILD
+            choices:
+              - 'false'
+              - 'true'
+            description: "Force build even if there is no changes in {installer} repo. Default false"
+        - {installer}-project-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - git-scm
+
+    triggers:
+        - timed: '0 H/8 * * *'
+
+    wrappers:
+        - timeout:
+            timeout: 360
+            fail: true
+
+    builders:
+        - shell:
+            !include-raw-escape: ./{installer}-basic.sh
+        - shell:
+            !include-raw-escape: ./{installer}-build.sh
+        - shell:
+            !include-raw-escape: ./{installer}-upload-artifact.sh
+        - shell:
+            !include-raw-escape: ./{installer}-workspace-cleanup.sh
+
+    publishers:
+        - '{installer}-recipients'
+
+- job-template:
+    name: '{installer}-merge-build-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - 'opnfv-build-centos-defaults'
+        - {installer}-project-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - git-scm
+
+    wrappers:
+        - ssh-agent-wrapper
+        - timeout:
+            timeout: 360
+            fail: true
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'ci/**'
+                  - compare-type: ANT
+                    pattern: 'code/**'
+                  - compare-type: ANT
+                    pattern: 'deploy/**'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**'
+                  - compare-type: ANT
+                    pattern: 'docker/**'
+
+    builders:
+        - shell:
+            !include-raw-escape: ./{installer}-basic.sh
+        - shell:
+            !include-raw-escape: ./{installer}-build.sh
+        - shell:
+            !include-raw-escape: ./{installer}-upload-artifact.sh
+        - shell:
+            !include-raw-escape: ./{installer}-workspace-cleanup.sh
+
+- job-template:
+    name: '{installer}-merge-deploy-virtual-{stream}'
+
+    disabled: true
+
+    concurrent: true
+
+    properties:
+        - logrotate-default
+        - throttle:
+            enabled: true
+            max-total: 2
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - '{installer}-os-.*?-virtual-daily-.*'
+                - '{installer}-merge-deploy-virtual-.*'
+            block-level: 'NODE'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+            installer: '{installer}'
+        - {installer}-project-parameter:
+            gs-pathname: '{gs-pathname}'
+    scm:
+        - git-scm
+
+    wrappers:
+        - ssh-agent-wrapper
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'ci/**'
+                  - compare-type: ANT
+                    pattern: 'code/**'
+                  - compare-type: ANT
+                    pattern: 'deploy/**'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**'
+            dependency-jobs: '{installer}-merge-build-{stream}'
+
+    builders:
+        - shell:
+            !include-raw-escape: ./{installer}-download-artifact.sh
+        - shell:
+            !include-raw-escape: ./{installer}-deploy.sh
+        - shell:
+            !include-raw-escape: ./{installer}-workspace-cleanup.sh
+
+    publishers:
+        - '{installer}-recipients'
+
+- job-template:
+    name: '{installer}-deploy-daily-{stream}'
+
+    concurrent: true
+
+    disabled: '{obj:disabled}'
+
+    properties:
+        - logrotate-default
+        - throttle:
+            enabled: true
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - '{installer}-os-.*?-daily-.*'
+                - '{installer}-deploy-generic-daily-.*'
+            block-level: 'NODE'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-nofeature-ha'
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - zte-pod2
+            default-slaves:
+                - zte-pod2
+        - {installer}-project-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - git-scm
+
+    triggers:
+        - timed: '0 H/8 * * *'
+
+    builders:
+        - shell:
+            !include-raw-escape: ./{installer}-download-artifact.sh
+        - shell:
+            !include-raw-escape: ./{installer}-deploy.sh
+
+    publishers:
+        - '{installer}-recipients'
+
+########################
+# parameter macros
+########################
+- publisher:
+    name: {installer}-recipients
+    publishers:
+        - email:
+            recipients: hu.zhijiang@zte.com.cn lu.yao135@zte.com.cn zhou.ya@zte.com.cn yangyang1@zte.com.cn julienjut@gmail.com
+
+- parameter:
+    name: {installer}-project-parameter
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache/$INSTALLER_TYPE
+            description: "Directory where the cache to be used during the build is located."
+        - string:
+            name: GS_URL
+            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+            description: "URL to Google Storage."
