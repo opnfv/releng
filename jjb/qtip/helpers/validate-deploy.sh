@@ -27,12 +27,7 @@ if [ $(docker ps | grep 'opnfv/qtip' | wc -l) == 0 ]; then
 else
     echo "The container ID is: ${container_id}"
     QTIP_REPO=/home/opnfv/repos/qtip
-
-    echo "Run Qtip test"
-    docker exec -t ${container_id} $QTIP_REPO/docker/run_qtip.sh
-
-    echo "Pushing available results to DB"
-    docker exec -t ${container_id} $QTIP_REPO/docker/push_db.sh
+# TODO(yujunz): execute benchmark plan for compute-qpi
 fi
 
 echo "Qtip done!"
