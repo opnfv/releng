@@ -178,6 +178,23 @@
             name: EXTERNAL_NETWORK
             default: ext-net
             description: "External network floating ips"
+- parameter:
+    name: 'daisy-baremetal-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - zte-pod2
+            default-slaves:
+                - zte-pod2
+        - label:
+            name: SLAVE_LABEL
+            default: 'daisy-baremetal'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
 #####################################################
 # Parameters for CI virtual PODs
 #####################################################
@@ -235,6 +252,24 @@
         - label:
             name: SLAVE_LABEL
             default: 'joid-virtual'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+- parameter:
+    name: 'daisy-virtual-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - zte-virtual1
+                - zte-virtual2
+            default-slaves:
+                - zte-virtual1
+        - label:
+            name: SLAVE_LABEL
+            default: 'daisy-virtual'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
