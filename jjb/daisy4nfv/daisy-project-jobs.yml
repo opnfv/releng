@@ -4,7 +4,8 @@
 # installers
 # TODO:
 # - [ ] Merge it with fuel-project-jobs
-# - [ ] Use daisy-bare for choosing baremetal deployment nodes
+# - [x] Use daisy-baremetal-defauls for choosing baremetal deployment
+# nodes; Use daisy-virtual-defaults for choosing virtual nodes
 ######################################################################
 
 #############################
@@ -97,6 +98,7 @@
             project: '{project}'
             branch: '{branch}'
         - 'opnfv-build-centos-defaults'
+        - 'daisy-defaults'
         - '{installer}-project-parameter':
             gs-pathname: '{gs-pathname}'
 
@@ -173,6 +175,8 @@
             project: '{project}'
             branch: '{branch}'
             installer: '{installer}'
+        - 'daisy-defaults'
+        - 'daisy-virtual-defaults'
         - '{installer}-project-parameter':
             gs-pathname: '{gs-pathname}'
     scm:
@@ -248,13 +252,8 @@
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-nosdn-nofeature-ha'
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - zte-pod2
-            default-slaves:
-                - zte-pod2
+        - 'daisy-defaults'
+        - 'daisy-baremetal-defaults'
         - '{installer}-project-parameter':
             gs-pathname: '{gs-pathname}'
 
