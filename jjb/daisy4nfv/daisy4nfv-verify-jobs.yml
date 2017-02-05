@@ -2,6 +2,14 @@
     name: 'daisy4nfv-verify-jobs'
 
     project: 'daisy'
+
+    installer: 'daisy'
+
+##########################################################
+# use alias to keep the jobs'name existed alread unchanged
+##########################################################
+    alias: 'daisy4nfv'
+
 #####################################
 # branch definitions
 #####################################
@@ -10,29 +18,27 @@
             branch: '{stream}'
             gs-pathname: ''
             disabled: false
+        - danube:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
+            disabled: true
 #####################################
 # patch verification phases
 #####################################
     phase:
-        - 'basic':
-            slave-label: 'opnfv-build-centos'
         - 'build':
             slave-label: 'opnfv-build-centos'
-        - 'deploy-virtual':
-            slave-label: 'opnfv-build'
-        - 'smoke-test':
-            slave-label: 'opnfv-build'
 #####################################
 # jobs
 #####################################
     jobs:
-        - 'daisy4nfv-verify-{stream}'
-        - 'daisy4nfv-verify-{phase}-{stream}'
+        - '{alias}-verify-{stream}'
+        - '{alias}-verify-{phase}-{stream}'
 #####################################
 # job templates
 #####################################
 - job-template:
-    name: 'daisy4nfv-verify-{stream}'
+    name: '{alias}-verify-{stream}'
 
     project-type: multijob
 
@@ -48,7 +54,7 @@
             option: 'project'
 
     scm:
-        - git-scm-gerrit
+        - git-scm
 
     wrappers:
         - ssh-agent-wrapper
@@ -70,74 +76,41 @@
                 - comment-added-contains-event:
                     comment-contains-value: 'reverify'
             projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**|.gitignore'
+                - project-compare-type: 'ANT'
+                  project-pattern: '{project}'
+                  branches:
+                      - branch-compare-type: 'ANT'
+                        branch-pattern: '**/{branch}'
+                  file-paths:
+                      - compare-type: ANT
+                        pattern: 'ci/**'
+                      - compare-type: ANT
+                        pattern: 'code/**'
+                      - compare-type: ANT
+                        pattern: 'deploy/**'
+                  forbidden-file-paths:
+                      - compare-type: ANT
+                        pattern: 'docs/**'
+                      - compare-type: ANT
+                        pattern: '.gitignore'
             readable-message: true
 
     parameters:
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
-        - 'opnfv-build-defaults'
-        - 'daisy4nfv-verify-defaults':
+        - 'opnfv-build-centos-defaults'
+        - '{alias}-verify-defaults':
             gs-pathname: '{gs-pathname}'
 
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
         - multijob:
-            name: basic
-            condition: SUCCESSFUL
-            projects:
-                - name: 'daisy4nfv-verify-basic-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
             name: build
             condition: SUCCESSFUL
             projects:
-                - name: 'daisy4nfv-verify-build-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: deploy-virtual
-            condition: SUCCESSFUL
-            projects:
-                - name: 'daisy4nfv-verify-deploy-virtual-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: smoke-test
-            condition: SUCCESSFUL
-            projects:
-                - name: 'daisy4nfv-verify-smoke-test-{stream}'
+                - name: '{alias}-verify-build-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     BRANCH=$BRANCH
@@ -149,7 +122,7 @@
                   abort-all-job: true
 
 - job-template:
-    name: 'daisy4nfv-verify-{phase}-{stream}'
+    name: '{alias}-verify-{phase}-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -164,12 +137,11 @@
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - 'daisy4nfv-verify-deploy-.*'
-                - 'daisy4nfv-verify-test-.*'
+                - '{alias}-verify-deploy-.*'
             block-level: 'NODE'
 
     scm:
-        - git-scm-gerrit
+        - git-scm
 
     wrappers:
         - ssh-agent-wrapper
@@ -182,41 +154,27 @@
             project: '{project}'
             branch: '{branch}'
         - '{slave-label}-defaults'
-        - 'daisy4nfv-verify-defaults':
+        - '{alias}-verify-defaults':
             gs-pathname: '{gs-pathname}'
 
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
         - '{project}-verify-{phase}-macro'
+
 #####################################
 # builder macros
 #####################################
 - builder:
-    name: 'daisy-verify-basic-macro'
-    builders:
-        - shell:
-            !include-raw: ./daisy4nfv-basic.sh
-
-- builder:
     name: 'daisy-verify-build-macro'
     builders:
         - shell:
-            !include-raw: ./daisy4nfv-build.sh
-
-- builder:
-    name: 'daisy-verify-deploy-virtual-macro'
-    builders:
+            !include-raw-escape: ./daisy4nfv-basic.sh
         - shell:
-            !include-raw: ./daisy4nfv-virtual-deploy.sh
+            !include-raw-escape: ./daisy4nfv-build.sh
+        - shell:
+            !include-raw-escape: ./daisy4nfv-workspace-cleanup.sh
 
-- builder:
-    name: 'daisy-verify-smoke-test-macro'
-    builders:
-        - shell: |
-            #!/bin/bash
-
-            echo "Not activated!"
 #####################################
 # parameter macros
 #####################################
