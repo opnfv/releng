@@ -2,6 +2,7 @@
 # Add daily jobs, for buidoing, deploying and testing
 # TODO:
 # - [ ] Add yardstick and functest for test stage
+# - [x] Use daisy-baremetal-defauls for choosing baremetal deployment
 ######################################################################
 
 #############################
@@ -28,7 +29,7 @@
         - 'build':
             slave-label: 'opnfv-build-centos'
         - 'deploy':
-            slave-label: 'opnfv-build-centos'
+            slave-label: 'daisy-baremetal'
         - 'test':
             slave-label: 'opnfv-build-centos'
     jobs:
@@ -65,6 +66,7 @@
             project: '{project}'
             branch: '{branch}'
         - 'opnfv-build-centos-defaults'
+        - 'daisy-defaults'
         - '{installer}-project-parameter':
             gs-pathname: '{gs-pathname}'
 
@@ -155,6 +157,15 @@
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
+        - 'daisy-defaults'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-nofeature-ha'
+        - 'daisy-defaults'
         - '{slave-label}-defaults'
         - '{installer}-project-parameter':
             gs-pathname: '{gs-pathname}'
