@@ -153,6 +153,7 @@
             condition: SUCCESSFUL
             projects:
                 - name: 'testapi-automate-docker-update-{stream}'
+                  current-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
@@ -160,6 +161,9 @@
             condition: SUCCESSFUL
             projects:
                 - name: 'testapi-automate-docker-deploy-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                      SLAVE_LABEL=testresults
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
@@ -167,6 +171,7 @@
             condition: SUCCESSFUL
             projects:
                 - name: 'testapi-automate-generate-doc-{stream}'
+                  current-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
 
