@@ -6,12 +6,10 @@
             gs-pathname: ''
 
     phase:
-        - 'docker-update':
-            slave-label: 'opnfv-build'
+        - 'docker-update'
         - 'docker-deploy':
             slave-label: 'testresults'
-        - 'generate-doc':
-            slave-label: 'opnfv-build'
+        - 'generate-doc'
 
     jobs:
         - 'testapi-automate-{stream}'
@@ -153,6 +151,7 @@
             condition: SUCCESSFUL
             projects:
                 - name: 'testapi-automate-docker-update-{stream}'
+                  current-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
@@ -160,6 +159,9 @@
             condition: SUCCESSFUL
             projects:
                 - name: 'testapi-automate-docker-deploy-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                      SLAVE_LABEL=testresults
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
@@ -167,6 +169,7 @@
             condition: SUCCESSFUL
             projects:
                 - name: 'testapi-automate-generate-doc-{stream}'
+                  current-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
 
