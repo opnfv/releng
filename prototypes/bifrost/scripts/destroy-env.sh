@@ -23,12 +23,9 @@ virsh undefine compute00.opnfvlocal || true
 
 service ironic-conductor stop || true
 
-echo "removing from database"
+echo "removing ironic database"
 if $(which mysql &> /dev/null); then
-    mysql -u root ironic --execute "truncate table ports;"
-    mysql -u root ironic --execute "delete from node_tags;"
-    mysql -u root ironic --execute "delete from nodes;"
-    mysql -u root ironic --execute "delete from conductors;"
+    mysql -u root ironic --execute "drop database ironic;"
 fi
 echo "removing leases"
 [[ -e /var/lib/misc/dnsmasq/dnsmasq.leases ]] && > /var/lib/misc/dnsmasq/dnsmasq.leases
