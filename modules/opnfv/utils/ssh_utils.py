@@ -9,11 +9,12 @@
 ##############################################################################
 
 
-import paramiko
-import opnfv.utils.OPNFVLogger as OPNFVLogger
 import os
+import paramiko
 
-logger = OPNFVLogger.Logger('SSHUtils').getLogger()
+from opnfv.utils import opnfv_logger as logger
+
+logger = logger.Logger("SSH utils").getLogger()
 
 
 def get_ssh_client(hostname,
@@ -79,7 +80,6 @@ class ProxyHopClient(paramiko.SSHClient):
     '''
 
     def __init__(self, *args, **kwargs):
-        self.logger = OPNFVLogger.Logger("ProxyHopClient").getLogger()
         self.proxy_ssh = None
         self.proxy_transport = None
         self.proxy_channel = None
@@ -129,4 +129,4 @@ class ProxyHopClient(paramiko.SSHClient):
                                                 sock=self.proxy_channel)
             os.remove(self.local_ssh_key)
         except Exception, e:
-            self.logger.error(e)
+            logger.error(e)
