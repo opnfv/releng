@@ -28,7 +28,7 @@
     scenario:
         - 'os-nosdn-nofeature-ha':
             disabled: false
-            auto-trigger-name: 'dovetail-weekly-trigger'
+            auto-trigger-name: 'compass-{scenario}-{pod}-weekly-{stream}-trigger'
 
     jobs:
         - 'compass-{scenario}-{pod}-weekly-{stream}'
@@ -206,4 +206,9 @@
 - trigger:
     name: 'compass-os-nosdn-nofeature-ha-baremetal-weekly-colorado-trigger'
     triggers:
-        - timed: ''
+        - timed: 'H H * * 0'
+
+- trigger:
+    name: 'dovetail-weekly-trigger'
+    triggers:
+        - timed: 'H H * * 0'
