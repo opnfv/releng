@@ -153,7 +153,6 @@
             condition: SUCCESSFUL
             projects:
                 - name: 'testapi-automate-docker-update-{stream}'
-                  current-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
@@ -161,7 +160,6 @@
             condition: SUCCESSFUL
             projects:
                 - name: 'testapi-automate-docker-deploy-{stream}'
-                  current-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
@@ -169,7 +167,6 @@
             condition: SUCCESSFUL
             projects:
                 - name: 'testapi-automate-generate-doc-{stream}'
-                  current-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
 
@@ -184,6 +181,16 @@
             enabled: true
             max-per-node: 1
             option: 'project'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - string:
+            name: DOCKER_TAG
+            default: "latest"
+            description: "Tag name for testapi docker image"
+        - '{slave-label}-defaults'
 
     wrappers:
         - ssh-agent-wrapper
