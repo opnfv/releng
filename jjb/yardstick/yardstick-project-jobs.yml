@@ -110,17 +110,4 @@
 
             echo "Running unit tests..."
             cd $WORKSPACE
-            virtualenv $WORKSPACE/yardstick_venv
-            source $WORKSPACE/yardstick_venv/bin/activate
-
-            # install python packages
-            sudo apt-get install -y build-essential python-dev python-pip python-pkg-resources
-            easy_install -U setuptools==33.1.1
-            easy_install -U pip
-            pip install -r requirements.txt || pip install -r tests/ci/requirements.txt
-            pip install -e .
-
-            # unit tests
-            ./run_tests.sh
-
-            deactivate
+            tox
