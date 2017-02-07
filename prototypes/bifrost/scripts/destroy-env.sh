@@ -47,6 +47,6 @@ rm -rf /var/lib/libvirt/images/*.qcow2
 echo "restarting services"
 service dnsmasq restart || true
 service libvirtd restart
-service ironic-api restart || true 
+service ironic-api restart || true
 service ironic-conductor start || true
 service ironic-inspector restart || true
