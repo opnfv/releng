@@ -14,12 +14,12 @@ if [[ $(whoami) != "root" ]]; then
     exit 1
 fi
 
-virsh destroy jumphost.opnfvlocal || true
-virsh destroy controller00.opnfvlocal || true
-virsh destroy compute00.opnfvlocal || true
-virsh undefine jumphost.opnfvlocal || true
-virsh undefine controller00.opnfvlocal || true
-virsh undefine compute00.opnfvlocal || true
+# Delete all VMs on the slave since proposed patchsets
+# may leave undesired VM leftovers
+for vm in $(virsh list --all --name); do
+    virsh destroy $vm || true
+    virsh undefine $vm || true
+done
 
 service ironic-conductor stop || true
 
