@@ -13,13 +13,26 @@ if [[ $(whoami) != "root" ]]; then
     echo "Error: This script must be run as root!"
     exit 1
 fi
-
+# I am afraid of these three VMs in host will have impact on verify
 virsh destroy jumphost.opnfvlocal || true
 virsh destroy controller00.opnfvlocal || true
 virsh destroy compute00.opnfvlocal || true
 virsh undefine jumphost.opnfvlocal || true
 virsh undefine controller00.opnfvlocal || true
 virsh undefine compute00.opnfvlocal || true
+
+virsh destroy jumphost || true
+virsh destroy controller00 || true
+virsh destroy controller01 || true
+virsh destroy controller02 || true
+virsh destroy compute00 || true
+virsh destroy compute01 || true
+virsh undefine jumphost || true
+virsh undefine controller00 || true
+virsh undefine controller01 || true
+virsh undefine controller02 || true
+virsh undefine compute00 || true
+virsh undefine compute01 || true
 
 service ironic-conductor stop || true
 
@@ -47,6 +60,6 @@ rm -rf /var/lib/libvirt/images/*.qcow2
 echo "restarting services"
 service dnsmasq restart || true
 service libvirtd restart
-service ironic-api restart || true 
+service ironic-api restart || true
 service ironic-conductor start || true
 service ironic-inspector restart || true
