@@ -1,0 +1,71 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# Physical interface
+auto ens3
+iface ens3 inet manual
+
+# Container/Host management VLAN interface
+auto ens3.10
+iface ens3.10 inet manual
+    vlan-raw-device ens3
+
+# OpenStack Networking VXLAN (tunnel/overlay) VLAN interface
+auto ens3.30
+iface ens3.30 inet manual
+    vlan-raw-device ens3
+
+# Storage network VLAN interface (optional)
+auto ens3.20
+iface ens3.20 inet manual
+    vlan-raw-device ens3
+
+# Container/Host management bridge
+auto br-mgmt
+iface br-mgmt inet static
+    bridge_stp off
+    bridge_waitport 0
+    bridge_fd 0
+    bridge_ports ens3.10
+    address {{host_info[inventory_hostname].MGMT_IP}}
+    netmask 255.255.252.0
+
+# OpenStack Networking VXLAN (tunnel/overlay) bridge
+#
+# Only the COMPUTE and NETWORK nodes must have an IP address
+# on this bridge. When used by infrastructure nodes, the
+# IP addresses are assigned to containers which use this
+# bridge.
+#
+auto br-vxlan
+iface br-vxlan inet manual
+    bridge_stp off
+    bridge_waitport 0
+    bridge_fd 0
+    bridge_ports ens3.30
+
+# OpenStack Networking VLAN bridge
+auto br-vlan
+iface br-vlan inet static
+    bridge_stp off
+    bridge_waitport 0
+    bridge_fd 0
+    bridge_ports ens3
+    address {{host_info[inventory_hostname].VLAN_IP}}
+    netmask 255.255.255.0
+    gateway 192.168.122.1
+    dns-nameserver 8.8.8.8 8.8.4.4
+
+# compute1 Storage bridge
+auto br-storage
+iface br-storage inet static
+    bridge_stp off
+    bridge_waitport 0
+    bridge_fd 0
+    bridge_ports ens3.20
+    address {{host_info[inventory_hostname].STORAGE_IP}}
+    netmask 255.255.252.0
