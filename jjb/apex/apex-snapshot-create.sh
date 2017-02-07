@@ -26,10 +26,10 @@ mkdir -p ${tmp_dir}
 pushd ${tmp_dir} > /dev/null
 echo "Copying overcloudrc and ssh key from Undercloud..."
 # Store overcloudrc
-UNDERCLOUD=$(sudo virsh domifaddr undercloud | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]')
-scp ${SSH_OPTIONS[@]} stack@${UNDERCLOUD}:overcloudrc ./
+UNDERCLOUD=$(sudo virsh domifaddr undercloud | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
+sudo scp ${SSH_OPTIONS[@]} stack@${UNDERCLOUD}:overcloudrc ./
 # Copy out ssh key of stack from undercloud
-scp ${SSH_OPTIONS[@]} stack@${UNDERCLOUD}:.ssh/id_rsa ./
+sudo scp ${SSH_OPTIONS[@]} stack@${UNDERCLOUD}:.ssh/id_rsa ./
 popd > /dev/null
 
 echo "Gathering introspection information"
