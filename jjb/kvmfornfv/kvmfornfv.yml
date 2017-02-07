@@ -264,6 +264,10 @@
             name: TEST_NAME
             default: '{testname}'
             description: "Daily job to execute kvmfornfv '{testname}' testcase."
+        - string:
+            name: PHASE
+            default: '{phase}'
+            description: "Execution of kvmfornfv daily '{phase}' job ."
 
     builders:
         - description-setter:
@@ -300,6 +304,8 @@
             !include-raw: ./kvmfornfv-download-artifact.sh
         - shell:
             !include-raw: ./kvmfornfv-test.sh
+        - shell:
+            !include-raw: ./kvmfornfv-upload-artifact.sh
 - builder:
     name: 'kvmfornfv-packet_forward-daily-build-macro'
     builders:
