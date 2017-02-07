@@ -1,0 +1,53 @@
+---
+- hosts: jumphost
+  remote_user: root
+  vars_files:
+    - ../var/ubuntu.yml
+  tasks:
+  - name: generate SSH keys
+    shell: ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
+    args:
+      creates: /root/.ssh/id_rsa
+  - name:  fetch public key
+    fetch: src="/root/.ssh/id_rsa.pub" dest="/"
+  - name: remove the directory
+    shell: "rm -rf {{OSA_PATH}} {{OSA_ETC_PATH}}"
+  - name: git openstack ansible
+    shell: "git clone {{OSA_URL}} {{OSA_PATH}} -b {{OSA_BRANCH}}"
+  - name: copy /opt/openstack-ansible/etc/openstack_deploy to /etc/openstack_deploy
+    shell: "/bin/cp -rf {{OSA_PATH}}/etc/openstack_deploy {{OSA_ETC_PATH}}"
+  - name: bootstrap
+    command: "/bin/bash ./scripts/bootstrap-ansible.sh"
+    args:
+      chdir: "{{OSA_PATH}}"
+  - name: generate password token
+    command: "python pw-token-gen.py --file /etc/openstack_deploy/user_secrets.yml"
+    args:
+      chdir: /opt/openstack-ansible/scripts/
+  - name: copy openstack_user_config.yml to /etc/openstack_deploy
+    copy:
+      src: ../file/openstack_user_config.yml
+      dest: "{{OSA_ETC_PATH}}/openstack_user_config.yml"
+  - name: copy cinder.yml to /etc/openstack_deploy/env.d
+    copy:
+      src: ../file/cinder.yml
+      dest: "{{OSA_ETC_PATH}}/env.d/cinder.yml"
+  - name: copy user_variables.yml to /etc/openstack_deploy/
+    copy:
+      src: ../file/user_variables.yml
+      dest: "{{OSA_ETC_PATH}}/user_variables.yml"
+  - name: configure network
+    template:
+      src: ../template/bifrost/controller.interface.j2
+      dest: /etc/network/interfaces
+    notify:
+    - restart network service
+  handlers:
+    - name: restart network service
+      shell: "/sbin/ifconfig ens3 0 &&/sbin/ifdown -a && /sbin/ifup -a"
+
+- hosts: localhost
+  remote_user: root
+  tasks:
+  - name: Generate authorized_keys
+    shell: "/bin/cat /jumphost/root/.ssh/id_rsa.pub >> ../file/authorized_keys"
