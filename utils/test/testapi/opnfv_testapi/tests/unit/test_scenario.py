@@ -1,20 +1,19 @@
+from copy import deepcopy
 import json
 import os
 
 from opnfv_testapi.common.constants import HTTP_BAD_REQUEST
 from opnfv_testapi.common.constants import HTTP_FORBIDDEN
 from opnfv_testapi.common.constants import HTTP_OK
-from opnfv_testapi.resources.scenario_models import Scenario
-from opnfv_testapi.resources.scenario_models import ScenarioCreateRequest
-from opnfv_testapi.resources.scenario_models import Scenarios
+import opnfv_testapi.resources.scenario_models as models
 from test_testcase import TestBase
 
 
 class TestScenarioBase(TestBase):
     def setUp(self):
         super(TestScenarioBase, self).setUp()
-        self.get_res = Scenario
-        self.list_res = Scenarios
+        self.get_res = models.Scenario
+        self.list_res = models.Scenarios
         self.basePath = '/api/v1/scenarios'
         self.req_d = self._load_request('scenario-c1.json')
         self.req_2 = self._load_request('scenario-c2.json')
@@ -46,6 +45,17 @@ class TestScenarioBase(TestBase):
         self.assertIsNotNone(scenario_dict['creation_date'])
         self.assertDictContainsSubset(req, scenario_dict)
 
+    @staticmethod
+    def _set_query(*args):
+        uri = ''
+        for arg in args:
+            uri += arg + '&'
+        return uri[0: -1]
+
+    def _get_and_assert(self, name, req=None):
+        code, body = self.get(name)
+        self.assert_res(code, body, req)
+
 
 class TestScenarioCreate(TestScenarioBase):
     def test_withoutBody(self):
@@ -53,13 +63,13 @@ class TestScenarioCreate(TestScenarioBase):
         self.assertEqual(code, HTTP_BAD_REQUEST)
 
     def test_emptyName(self):
-        req_empty = ScenarioCreateRequest('')
+        req_empty = models.ScenarioCreateRequest('')
         (code, body) = self.create(req_empty)
         self.assertEqual(code, HTTP_BAD_REQUEST)
         self.assertIn('name missing', body)
 
     def test_noneName(self):
-        req_none = ScenarioCreateRequest(None)
+        req_none = models.ScenarioCreateRequest(None)
         (code, body) = self.create(req_none)
         self.assertEqual(code, HTTP_BAD_REQUEST)
         self.assertIn('name missing', body)
@@ -83,8 +93,7 @@ class TestScenarioGet(TestScenarioBase):
         self.scenario_2 = self.create_return_name(self.req_2)
 
     def test_getByName(self):
-        code, body = self.get(self.scenario_1)
-        self.assert_res(code, body, req=self.req_d)
+        self._get_and_assert(self.scenario_1, self.req_d)
 
     def test_getAll(self):
         self._query_and_assert(query=None, reqs=[self.req_d, self.req_2])
@@ -113,13 +122,6 @@ class TestScenarioGet(TestScenarioBase):
 
         self._query_and_assert(query, reqs=[self.req_d])
 
-    @staticmethod
-    def _set_query(*args):
-        uri = ''
-        for arg in args:
-            uri += arg + '&'
-        return uri[0: -1]
-
     def _query_and_assert(self, query, found=True, reqs=None):
         code, body = self.query(query)
         if not found:
@@ -131,3 +133,71 @@ class TestScenarioGet(TestScenarioBase):
                 for scenario in body.scenarios:
                     if req['name'] == scenario.name:
                         self.assert_res(code, scenario, req)
+
+
+class TestScenarioUpdate(TestScenarioBase):
+    def setUp(self):
+        super(TestScenarioUpdate, self).setUp()
+        self.scenario = self.create_return_name(self.req_d)
+
+    def test_renameScenario(self):
+        new_name = 'nosdn-nofeature-noha'
+        new_scenario = deepcopy(self.req_d)
+        new_scenario['name'] = new_name
+        update_req = models.ScenarioUpdateRequest(field='name',
+                                                  op='update',
+                                                  locate={},
+                                                  term={'name': new_name})
+        self._update_and_assert(update_req, new_scenario, new_name)
+
+    def test_addInstaller(self):
+        add = models.ScenarioInstaller(installer='daisy', versions=list())
+        new_scenario = deepcopy(self.req_d)
+        new_scenario['installers'].append(add.format())
+        update_req = models.ScenarioUpdateRequest(field='installer',
+                                                  op='add',
+                                                  locate={},
+                                                  term=add)
+        self._update_and_assert(update_req, new_scenario)
+
+    def test_deleteInstaller(self):
+        new_scenario = deepcopy(self.req_d)
+        new_scenario['installers'] = filter(lambda f: f['installer'] != 'apex',
+                                            new_scenario['installers'])
+
+        update_req = models.ScenarioUpdateRequest(field='installer',
+                                                  op='delete',
+                                                  locate={'installer': 'apex'})
+        self._update_and_assert(update_req, new_scenario)
+
+    def test_addVersion(self):
+        add = models.ScenarioVersion(version='danube', projects=list())
+        new_scenario = deepcopy(self.req_d)
+        new_scenario['installers'][0]['versions'].append(add.format())
+        update_req = models.ScenarioUpdateRequest(field='version',
+                                                  op='add',
+                                                  locate={'installer': 'apex'},
+                                                  term=add)
+        self._update_and_assert(update_req, new_scenario)
+
+    def test_deleteVersion(self):
+        new_scenario = deepcopy(self.req_d)
+        new_scenario['installers'][0]['versions'] = filter(
+            lambda f: f['version'] != 'master',
+            new_scenario['installers'][0]['versions'])
+
+        update_req = models.ScenarioUpdateRequest(field='version',
+                                                  op='delete',
+                                                  locate={'installer': 'apex',
+                                                          'version': 'master'})
+        self._update_and_assert(update_req, new_scenario)
+
+    def _update_and_assert(self, update_req, new_scenario, name=None):
+        code, _ = self.update(update_req, self.scenario)
+        self.assertEqual(code, HTTP_OK)
+        self._get_and_assert(self._none_default(name, self.scenario),
+                             new_scenario)
+
+    @staticmethod
+    def _none_default(check, default):
+        return check if check else default
