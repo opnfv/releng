@@ -25,7 +25,7 @@ class ApexAdapter(manager.DeploymentHandler):
                                           installer_pwd=None,
                                           pkey_file=pkey_file)
 
-    def nodes(self):
+    def get_nodes(self):
         nodes = []
         cmd = "source /home/stack/stackrc;nova list 2>/dev/null"
         output = self.installer_node.run_cmd(cmd)
