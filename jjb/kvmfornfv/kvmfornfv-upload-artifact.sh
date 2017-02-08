@@ -21,7 +21,7 @@ case "$JOB_TYPE" in
         echo "Uploading daily artifacts This could take some time..."
         OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
         GS_UPLOAD_LOCATION="gs://$GS_URL/$OPNFV_ARTIFACT_VERSION"
-        GS_LOG_LOCATION="gs://$GS_URL/logs-$(date -u +"%Y-%m-%d")/
+        GS_LOG_LOCATION="gs://$GS_URL/logs-$(date -u +"%Y-%m-%d")"/
         ;;
     *)
         echo "Artifact upload is not enabled for $JOB_TYPE jobs"
