@@ -2,13 +2,13 @@ general:
     installers:
         - apex
         - compass
+        - daisy
         - fuel
         - joid
-        - daisy
 
     versions:
         - master
-        - colorado
+
     log:
         log_file: reporting.log
         log_level: ERROR
@@ -30,17 +30,19 @@ general:
 
 testapi:
     url: testresults.opnfv.org/test/api/v1/results
-    
+
 functest:
     blacklist:
         - ovno
         - security_scan
+        - rally_sanity
     max_scenario_criteria: 50
     test_conf: https://git.opnfv.org/cgit/functest/plain/functest/ci/testcases.yaml
     log_level: ERROR
-    jenkins_url: https://build.opnfv.org/ci/view/functest/job
-    
-    
+    jenkins_url: https://build.opnfv.org/ci/view/functest/job/
+    exclude_noha: False
+    exclude_virtual: True
+
 yardstick:
     test_conf: https://git.opnfv.org/cgit/yardstick/plain/tests/ci/report_config.yaml
     log_level: ERROR
