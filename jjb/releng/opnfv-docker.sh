@@ -11,6 +11,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+HOST_ARCH=$(uname -m)
+if ["$HOST_ARCH"="aarch64"]; then
+    DOCKER_REPO_NAME="${DOCKER_REPO_NAME}_${HOST_ARCH}"
+fi
 
 echo "Starting opnfv-docker for $DOCKER_REPO_NAME ..."
 echo "--------------------------------------------------------"
@@ -52,9 +56,13 @@ if [[ -n "$(docker images | grep $DOCKER_REPO_NAME)" ]]; then
 fi
 
 
-# cd to directory where Dockerfile is located
-cd $WORKSPACE/docker
-if [ ! -f ./Dockerfile ]; then
+# Identify which Dockerfile to use
+DOCKERFILE="docker/Dockerfile"
+if ["$HOST_ARCH"="aarch64"]; then
+    DOCKERFILE="docker/Dockerfile.${HOST_ARCH}"
+fi
+
+if [ ! -f ${DOCKERFILE} ]; then
     echo "ERROR: Dockerfile not found."
     exit 1
 fi
@@ -78,7 +86,7 @@ fi
 echo "Building docker image: $DOCKER_REPO_NAME:$DOCKER_TAG"
 echo "--------------------------------------------------------"
 echo
-cmd="docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG --build-arg BRANCH=$BRANCH ."
+cmd="docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG --build-arg BRANCH=$BRANCH -f $WORKSPACE/$DOCKERFILE"
 
 echo ${cmd}
 ${cmd}
