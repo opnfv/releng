@@ -2,6 +2,14 @@ import models
 from opnfv_testapi.tornado_swagger import swagger
 
 
+def list_default(value):
+    return value if value else list()
+
+
+def dict_default(value):
+    return value if value else dict()
+
+
 @swagger.model()
 class ScenarioTI(models.ModelBase):
     def __init__(self, date=None, status='silver'):
@@ -32,9 +40,9 @@ class ScenarioProject(models.ModelBase):
                  scores=None,
                  trust_indicators=None):
         self.project = project
-        self.customs = customs
-        self.scores = scores
-        self.trust_indicators = trust_indicators
+        self.customs = list_default(customs)
+        self.scores = list_default(scores)
+        self.trust_indicators = list_default(trust_indicators)
 
     @staticmethod
     def attr_parser():
@@ -50,7 +58,7 @@ class ScenarioVersion(models.ModelBase):
     """
     def __init__(self, version=None, projects=None):
         self.version = version
-        self.projects = projects
+        self.projects = list_default(projects)
 
     @staticmethod
     def attr_parser():
@@ -65,7 +73,7 @@ class ScenarioInstaller(models.ModelBase):
     """
     def __init__(self, installer=None, versions=None):
         self.installer = installer
-        self.versions = versions if versions else list()
+        self.versions = list_default(versions)
 
     @staticmethod
     def attr_parser():
@@ -80,11 +88,26 @@ class ScenarioCreateRequest(models.ModelBase):
     """
     def __init__(self, name='', installers=None):
         self.name = name
-        self.installers = installers if installers else list()
+        self.installers = list_default(installers)
 
     @staticmethod
     def attr_parser():
         return {'installers': ScenarioInstaller}
+
+
+@swagger.model()
+class ScenarioUpdateRequest(models.ModelBase):
+    """
+        @property field: update field
+        @property op: add/delete/update
+        @property locate: information used to locate the field
+        @property term: new value
+    """
+    def __init__(self, field=None, op=None, locate=None, term=None):
+        self.field = field
+        self.op = op
+        self.locate = dict_default(locate)
+        self.term = dict_default(term)
 
 
 @swagger.model()
@@ -97,7 +120,7 @@ class Scenario(models.ModelBase):
         self.name = name
         self._id = _id
         self.creation_date = create_date
-        self.installers = installers if installers else list()
+        self.installers = list_default(installers)
 
     @staticmethod
     def attr_parser():
