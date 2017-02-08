@@ -25,7 +25,7 @@ class ApexAdapter(manager.DeploymentHandler):
                                           installer_pwd=None,
                                           pkey_file=pkey_file)
 
-    def nodes(self):
+    def get_nodes(self):
         nodes = []
         cmd = "source /home/stack/stackrc;nova list 2>/dev/null"
         output = self.installer_node.run_cmd(cmd)
@@ -44,10 +44,10 @@ class ApexAdapter(manager.DeploymentHandler):
             if 'Daylight' in line:
                 roles += ", OpenDaylight"
             fields = line.split('|')
-            id = re.sub('[!| ]', '', fields[1])
-            name = re.sub('[!| ]', '', fields[2])
+            id = re.sub('[!| ]', '', fields[1]).encode()
+            name = re.sub('[!| ]', '', fields[2]).encode()
             status_node = re.sub('[!| ]', '', fields[3])
-            ip = re.sub('[!| ctlplane=]', '', fields[6])
+            ip = re.sub('[!| ctlplane=]', '', fields[6]).encode()
 
             if status_node == 'ACTIVE':
                 status = manager.Node.STATUS_OK
