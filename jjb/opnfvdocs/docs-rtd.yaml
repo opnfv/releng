@@ -1,0 +1,69 @@
+- project:
+    name: docs-rtd
+    jobs:
+        - 'docs-merge-rtd-{stream}'
+        - 'docs-verify-rtd-{stream}'
+
+    stream:
+        - danube:
+            branch: 'master'
+        - colorado:
+            branch: 'stable/colorado'
+
+    project: 'opnfvdocs'
+    rtdproject: 'opnfv'
+    # TODO: Archive Artifacts
+
+- job-template:
+    name: 'docs-merge-rtd-{stream}'
+
+    project-type: freestyle
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+    scm:
+        - git-scm
+
+    triggers:
+        - gerrit-trigger-change-merged
+
+    builders:
+        - shell: !include-raw: docs-post-rtd.sh
+
+- job-template:
+    name: 'docs-verify-rtd-{stream}'
+
+    project-type: freestyle
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+    scm:
+        - git-scm
+
+    triggers:
+        - gerrit-trigger-patchset-created:
+            server: 'gerrit.opnfv.org'
+            project: '**'
+            branch: '{branch}'
+            files: 'docs/**/*.rst'
+        - timed: 'H H * * *'
+
+    builders:
+        - shell: |
+            if [ "$GERRIT_PROJECT" != "opnfvdocs" ]; then
+                cd opnfvdocs/submodules/$GERRIT_PROJECT
+                git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
+            else
+                git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
+            fi
+        - shell: |
+            virtualenv $WORKSPACE/venv
+            source $WORKSPACE/venv/bin/activate
+            pip install --upgrade pip
+            pip freeze
+            pip install tox
+            tox -edocs
