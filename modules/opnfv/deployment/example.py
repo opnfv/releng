@@ -2,7 +2,7 @@
 # Author: Jose Lausuch (jose.lausuch@ericsson.com)
 
 from opnfv.deployment import factory
-
+'''
 handler = factory.Factory.get_handler('apex',
                                       '192.168.122.135',
                                       'stack',
@@ -19,3 +19,20 @@ for node in nodes:
           (node.run_cmd('hostname'), node.ip))
 
 print handler.get_deployment_info()
+
+
+from opnfv.deployment import factory
+
+'''
+handler = factory.Factory.get_handler('fuel',
+                                      '10.20.0.2',
+                                      'root',
+                                      installer_pwd='r00tme')
+nodes = handler.get_nodes()
+for node in nodes:
+    print node
+
+
+nodes = handler.get_nodes({'cluster': '4'})
+for node in nodes:
+    print node

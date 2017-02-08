@@ -40,7 +40,7 @@ class FuelAdapter(manager.DeploymentHandler):
             index_name = -1
             index_release_id = -1
 
-            for i in range(len(fields) - 1):
+            for i in range(len(fields)):
                 if "id" in fields[i]:
                     index_id = i
                 elif "status" in fields[i]:
@@ -61,7 +61,7 @@ class FuelAdapter(manager.DeploymentHandler):
 
         return environments
 
-    def nodes(self, options=None):
+    def get_nodes(self, options=None):
         nodes = []
         cmd = 'fuel node'
         output = self.installer_node.run_cmd(cmd)
@@ -101,7 +101,7 @@ class FuelAdapter(manager.DeploymentHandler):
                     index_online = i
 
             # order nodes info
-            for i in range(2, len(lines) - 1):
+            for i in range(2, len(lines)):
                 fields = lines[i].rsplit(' | ')
 
                 id = fields[index_id].strip(),
@@ -126,15 +126,11 @@ class FuelAdapter(manager.DeploymentHandler):
                     status = manager.Node.STATUS_INACTIVE
                     ssh_client = None
 
-                node = manager.Node(
-                    id, ip, name, status, roles, ssh_client, dict)
-                nodes.append(node)
-
-                # TODO: Add support for Fuel cluster selection
-                '''
-                if options and options['cluster']:
-                    if fields[index_cluster].strip() == options['cluster']:
-                '''
+                if (options and options['cluster'] and
+                        fields[index_cluster].strip() == options['cluster']):
+                    node = manager.Node(
+                        id, ip, name, status, roles, ssh_client, dict)
+                    nodes.append(node)
 
         return nodes
 

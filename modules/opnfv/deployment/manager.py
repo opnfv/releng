@@ -242,7 +242,7 @@ class DeploymentHandler(object):
             raise Exception(
                 'Cannot establish connection to the installer node!')
 
-        self.nodes = self.nodes()
+        self.nodes = self.get_nodes()
 
     @abstractmethod
     def get_openstack_version(self):
@@ -266,17 +266,11 @@ class DeploymentHandler(object):
         raise Exception(DeploymentHandler.FUNCTION_NOT_IMPLEMENTED)
 
     @abstractmethod
-    def nodes(self, options=None):
+    def get_nodes(self, options=None):
         '''
             Generates a list of all the nodes in the deployment
         '''
         raise Exception(DeploymentHandler.FUNCTION_NOT_IMPLEMENTED)
-
-    def get_nodes(self, options=None):
-        '''
-            Returns the list of Node objects
-        '''
-        return self.nodes
 
     def get_installer_node(self):
         '''
@@ -295,4 +289,4 @@ class DeploymentHandler(object):
                           pod=os.getenv('NODE_NAME', 'Unknown'),
                           openstack_version=self.get_openstack_version(),
                           sdn_controller=self.get_sdn_version(),
-                          nodes=self.nodes)
+                          nodes=self.get_nodes())
