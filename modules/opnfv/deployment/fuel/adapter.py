@@ -13,7 +13,7 @@ from opnfv.deployment import manager
 from opnfv.utils import opnfv_logger as logger
 from opnfv.utils import ssh_utils
 
-logger = logger.Logger("FuelAdapter").getLogger()
+logger = logger.Logger(__name__).getLogger()
 
 
 class FuelAdapter(manager.DeploymentHandler):
@@ -40,7 +40,7 @@ class FuelAdapter(manager.DeploymentHandler):
             index_name = -1
             index_release_id = -1
 
-            for i in range(len(fields) - 1):
+            for i in range(len(fields)):
                 if "id" in fields[i]:
                     index_id = i
                 elif "status" in fields[i]:
@@ -51,7 +51,7 @@ class FuelAdapter(manager.DeploymentHandler):
                     index_release_id = i
 
             # order env info
-            for i in range(2, len(lines) - 1):
+            for i in range(2, len(lines)):
                 fields = lines[i].rsplit(' | ')
                 dict = {"id": fields[index_id].strip(),
                         "status": fields[index_status].strip(),
@@ -61,81 +61,99 @@ class FuelAdapter(manager.DeploymentHandler):
 
         return environments
 
-    def nodes(self, options=None):
+    def get_nodes(self, options=None):
+
+        if options and options['cluster'] and len(self.nodes) > 0:
+            n = []
+            for node in self.nodes:
+                if node.info['cluster'] == options['cluster']:
+                    n.append(node)
+            return n
+
+        try:
+            # if we have retrieved previously all the nodes, don't do it again
+            # This fails the first time when the constructor calls this method
+            # therefore the try/except
+            if len(self.nodes) > 0:
+                return self.nodes
+        except:
+            pass
+
         nodes = []
         cmd = 'fuel node'
         output = self.installer_node.run_cmd(cmd)
         lines = output.rsplit('\n')
         if len(lines) < 2:
             logger.info("No nodes found in the deployment.")
-            return None
-        else:
-            # get fields indexes
-            fields = lines[0].rsplit(' | ')
+            return nodes
 
-            index_id = -1
-            index_status = -1
-            index_name = -1
-            index_cluster = -1
-            index_ip = -1
-            index_mac = -1
-            index_roles = -1
-            index_online = -1
+        # get fields indexes
+        fields = lines[0].rsplit(' | ')
 
-            for i in range(0, len(fields) - 1):
-                if "id" in fields[i]:
-                    index_id = i
-                elif "status" in fields[i]:
-                    index_status = i
-                elif "name" in fields[i]:
-                    index_name = i
-                elif "cluster" in fields[i]:
-                    index_cluster = i
-                elif "ip" in fields[i]:
-                    index_ip = i
-                elif "mac" in fields[i]:
-                    index_mac = i
-                elif "roles " in fields[i]:
-                    index_roles = i
-                elif "online" in fields[i]:
-                    index_online = i
+        index_id = -1
+        index_status = -1
+        index_name = -1
+        index_cluster = -1
+        index_ip = -1
+        index_mac = -1
+        index_roles = -1
+        index_online = -1
 
-            # order nodes info
-            for i in range(2, len(lines) - 1):
-                fields = lines[i].rsplit(' | ')
+        for i in range(len(fields)):
+            if "group_id" in fields[i]:
+                break
+            elif "id" in fields[i]:
+                index_id = i
+            elif "status" in fields[i]:
+                index_status = i
+            elif "name" in fields[i]:
+                index_name = i
+            elif "cluster" in fields[i]:
+                index_cluster = i
+            elif "ip" in fields[i]:
+                index_ip = i
+            elif "mac" in fields[i]:
+                index_mac = i
+            elif "roles " in fields[i]:
+                index_roles = i
+            elif "online" in fields[i]:
+                index_online = i
 
-                id = fields[index_id].strip(),
-                ip = fields[index_ip].strip()
-                status_node = fields[index_status].strip()
-                name = fields[index_name].strip()
-                roles = fields[index_roles].strip()
+        # order nodes info
+        for i in range(2, len(lines)):
+            fields = lines[i].rsplit(' | ')
+            id = fields[index_id].strip().encode()
+            ip = fields[index_ip].strip().encode()
+            status_node = fields[index_status].strip().encode()
+            name = fields[index_name].strip().encode()
+            roles = fields[index_roles].strip().encode()
 
-                dict = {"cluster": fields[index_cluster].strip(),
-                        "mac": fields[index_mac].strip(),
-                        "online": fields[index_online].strip()}
+            dict = {"cluster": fields[index_cluster].strip().encode(),
+                    "mac": fields[index_mac].strip().encode(),
+                    "status_node": status_node,
+                    "online": fields[index_online].strip().encode()}
 
-                if status_node == 'ready':
-                    status = manager.Node.STATUS_OK
-                    proxy = {'ip': self.installer_ip,
-                             'username': self.installer_user,
-                             'password': self.installer_pwd}
-                    ssh_client = ssh_utils.get_ssh_client(hostname=ip,
-                                                          username='root',
-                                                          proxy=proxy)
-                else:
-                    status = manager.Node.STATUS_INACTIVE
-                    ssh_client = None
+            if status_node == 'ready':
+                status = manager.Node.STATUS_OK
+                proxy = {'ip': self.installer_ip,
+                         'username': self.installer_user,
+                         'password': self.installer_pwd}
+                ssh_client = ssh_utils.get_ssh_client(hostname=ip,
+                                                      username='root',
+                                                      proxy=proxy)
+            else:
+                status = manager.Node.STATUS_INACTIVE
+                ssh_client = None
 
-                node = manager.Node(
-                    id, ip, name, status, roles, ssh_client, dict)
+            node = manager.Node(
+                id, ip, name, status, roles, ssh_client, dict)
+            if options and options['cluster']:
+                if fields[index_cluster].strip() == options['cluster']:
+                    nodes.append(node)
+            else:
                 nodes.append(node)
 
-                # TODO: Add support for Fuel cluster selection
-                '''
-                if options and options['cluster']:
-                    if fields[index_cluster].strip() == options['cluster']:
-                '''
-
+        self.get_nodes_called = True
         return nodes
 
     def get_openstack_version(self):
