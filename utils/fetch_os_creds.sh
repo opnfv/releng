@@ -144,7 +144,7 @@ elif [ "$installer_type" == "compass" ]; then
     verify_connectivity $installer_ip
     controller_ip=$(sshpass -p'root' ssh 2>/dev/null $ssh_options root@${installer_ip} \
         'mysql -ucompass -pcompass -Dcompass -e"select *  from cluster;"' \
-        | awk -F"," '{for(i=1;i<NF;i++)if($i~/\"host[1-5]\"/) {print $(i+1);break;}}'  \
+        | awk -F"," '{for(i=1;i<NF;i++)if($i~/\"127.0.0.1\"/) {print $(i+2);break;}}'  \
         | grep -oP "\d+.\d+.\d+.\d+")
 
     if [ -z $controller_ip ]; then
