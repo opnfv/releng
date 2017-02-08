@@ -15,7 +15,7 @@ else
     exit 0
 fi
 
-./ci/deploy/deploy.sh ${DHA_CONF} ${NETWORK_CONF}
+sudo ./ci/deploy/deploy.sh -d ${DHA_CONF} -n ${NETWORK_CONF} -p ${NODE_NAME:-"zte-virtual1"}
 
 if [ $? -ne 0 ]; then
     echo "depolyment failed!"
