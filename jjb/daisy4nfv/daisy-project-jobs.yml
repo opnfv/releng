@@ -1,18 +1,19 @@
+######################################################################
+# Add daily jobs, for buidoing, deploying and testing
+# TODO:
+# - [ ] Add yardstick and functest for test stage
+######################################################################
+
+#############################
+# Job configuration for daisy
+#############################
 - project:
-    name: 'daisy4nfv-merge-jobs'
+    name: daisy-project-jobs
 
     project: 'daisy'
 
     installer: 'daisy'
 
-###########################################################
-# use alias to keep the jobs'name existed already unchanged
-###########################################################
-    alias: 'daisy4nfv'
-
-#####################################
-# branch definitions
-#####################################
     stream:
         - master:
             branch: '{stream}'
@@ -22,25 +23,23 @@
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
             disabled: true
-#####################################
-# patch merge phases
-#####################################
+
     phase:
         - 'build':
             slave-label: 'opnfv-build-centos'
-        - 'deploy-virtual':
+        - 'deploy':
             slave-label: 'opnfv-build-centos'
-#####################################
-# jobs
-#####################################
+        - 'test':
+            slave-label: 'opnfv-build-centos'
     jobs:
-        - '{alias}-merge-{stream}'
-        - '{alias}-merge-{phase}-{stream}'
-#####################################
+        - '{installer}-daily-{stream}'
+        - '{installer}-{phase}-daily-{stream}'
+
+########################
 # job templates
-#####################################
+########################
 - job-template:
-    name: '{alias}-merge-{stream}'
+    name: '{installer}-daily-{stream}'
 
     project-type: multijob
 
@@ -58,46 +57,22 @@
     scm:
         - git-scm
 
-    wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 360
-            fail: true
-
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-                - project-compare-type: 'ANT'
-                  project-pattern: '{project}'
-                  branches:
-                      - branch-compare-type: 'ANT'
-                        branch-pattern: '**/{branch}'
-                  file-paths:
-                      - compare-type: ANT
-                        pattern: 'ci/**'
-                      - compare-type: ANT
-                        pattern: 'code/**'
-                      - compare-type: ANT
-                        pattern: 'deploy/**'
-                  forbidden-file-paths:
-                      - compare-type: ANT
-                        pattern: 'docs/**'
-                      - compare-type: ANT
-                        pattern: '.gitignore'
-            readable-message: true
+        - timed: '0 H/8 * * *'
 
     parameters:
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
         - 'opnfv-build-centos-defaults'
-        - '{alias}-merge-defaults':
+        - '{installer}-project-parameter':
             gs-pathname: '{gs-pathname}'
+
+    wrappers:
+        - ssh-agent-wrapper
+        - timeout:
+            timeout: 360
+            fail: true
 
     builders:
         - description-setter:
@@ -106,7 +81,7 @@
             name: build
             condition: SUCCESSFUL
             projects:
-                - name: '{alias}-merge-build-{stream}'
+                - name: '{installer}-build-daily-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     BRANCH=$BRANCH
@@ -117,10 +92,24 @@
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
-            name: deploy-virtual
+            name: deploy
             condition: SUCCESSFUL
             projects:
-                - name: '{alias}-merge-deploy-virtual-{stream}'
+                - name: '{installer}-deploy-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    BRANCH=$BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: test
+            condition: SUCCESSFUL
+            projects:
+                - name: '{installer}-test-daily-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     BRANCH=$BRANCH
@@ -131,8 +120,11 @@
                   kill-phase-on: FAILURE
                   abort-all-job: true
 
+    publishers:
+        - '{installer}-recipients'
+
 - job-template:
-    name: '{alias}-merge-{phase}-{stream}'
+    name: '{installer}-{phase}-daily-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -142,12 +134,12 @@
         - logrotate-default
         - throttle:
             enabled: true
-            max-total: 4
+            max-total: 6
             option: 'project'
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - '{alias}-merge-deploy-.*'
+                - '{installer}-.*deploy-.*'
             block-level: 'NODE'
 
     scm:
@@ -164,19 +156,19 @@
             project: '{project}'
             branch: '{branch}'
         - '{slave-label}-defaults'
-        - '{alias}-merge-defaults':
+        - '{installer}-project-parameter':
             gs-pathname: '{gs-pathname}'
 
     builders:
         - description-setter:
-            description: "Built on $NODE_NAME"
-        - '{project}-merge-{phase}-macro'
+              description: "Built on $NODE_NAME"
+        - '{installer}-{phase}-daily-macro'
 
 #####################################
 # builder macros
 #####################################
 - builder:
-    name: 'daisy-merge-build-macro'
+    name: 'daisy-build-daily-macro'
     builders:
         - shell:
             !include-raw-escape: ./daisy4nfv-basic.sh
@@ -188,20 +180,32 @@
             !include-raw-escape: ./daisy4nfv-workspace-cleanup.sh
 
 - builder:
-    name: 'daisy-merge-deploy-virtual-macro'
+    name: 'daisy-deploy-daily-macro'
     builders:
         - shell:
             !include-raw-escape: ./daisy4nfv-download-artifact.sh
         - shell:
-            !include-raw-escape: ./daisy4nfv-virtual-deploy.sh
-        - shell:
-            !include-raw-escape: ./daisy4nfv-workspace-cleanup.sh
+            !include-raw-escape: ./daisy4nfv-deploy.sh
+
+- builder:
+    name: 'daisy-test-daily-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Not activated!"
 
 #####################################
 # parameter macros
 #####################################
+- publisher:
+    name: 'daisy-recipients'
+    publishers:
+        - email:
+            recipients: hu.zhijiang@zte.com.cn lu.yao135@zte.com.cn zhou.ya@zte.com.cn yangyang1@zte.com.cn julienjut@gmail.com
+
 - parameter:
-    name: 'daisy4nfv-merge-defaults'
+    name: 'daisy-project-parameter'
     parameters:
         - string:
             name: BUILD_DIRECTORY
