@@ -72,8 +72,9 @@
     triggers:
         - timed: ''
 
+# NOTE: unused macro, but we may use this for some jobs.
 - trigger:
-    name: gerrit-trigger-patchset-created
+    name: gerrit-trigger-patch-submitted
     triggers:
         - gerrit:
             server-name: 'gerrit.opnfv.org'
@@ -87,13 +88,13 @@
                     comment-contains-value: 'recheck'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: '{project}'
+                project-pattern: '{name}'
                 branches:
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
 
 - trigger:
-    name: gerrit-trigger-change-merged
+    name: gerrit-trigger-patch-merged
     triggers:
         - gerrit:
             server-name: 'gerrit.opnfv.org'
@@ -103,7 +104,7 @@
                     comment-contains-value: 'remerge'
             projects:
               - project-compare-type: 'ANT'
-                project-pattern: '{project}'
+                project-pattern: '{name}'
                 branches:
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
