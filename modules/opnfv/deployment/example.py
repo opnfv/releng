@@ -3,6 +3,7 @@
 
 from opnfv.deployment import factory
 
+print("########## APEX ##########")
 handler = factory.Factory.get_handler('apex',
                                       '192.168.122.135',
                                       'stack',
@@ -19,3 +20,17 @@ for node in nodes:
           (node.run_cmd('hostname'), node.ip))
 
 print handler.get_deployment_info()
+
+
+print("########## FUEL ##########")
+handler = factory.Factory.get_handler('fuel',
+                                      '10.20.0.2',
+                                      'root',
+                                      installer_pwd='r00tme')
+
+print handler.get_deployment_info()
+
+print("List of nodes in cluster 4:")
+nodes = handler.get_nodes({'cluster': '4'})
+for node in nodes:
+    print node
