@@ -35,7 +35,7 @@ popd > /dev/null
 echo "Gathering introspection information"
 git clone https://gerrit.opnfv.org/gerrit/sdnvpn.git
 pushd sdnvpn/odl-pipeline/lib > /dev/null
-./tripleo_introspector.sh --out-file ${tmp_dir}/node.yaml
+sudo ./tripleo_introspector.sh --out-file ${tmp_dir}/node.yaml
 popd > /dev/null
 
 echo "Shutting down nodes"
