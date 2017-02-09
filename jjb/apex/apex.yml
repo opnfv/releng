@@ -2,6 +2,7 @@
     name: apex
     jobs:
         - 'apex-verify-{stream}'
+        - 'apex-verify-gate-{stream}'
         - 'apex-verify-unit-tests-{stream}'
         - 'apex-runner-{platform}-{scenario}-{stream}'
         - 'apex-runner-cperf-{stream}'
@@ -45,6 +46,7 @@
          - 'os-odl_l3-fdio_dvr-ha'
          - 'os-odl_l3-csit-noha'
          - 'os-onos-nofeature-ha'
+         - 'gate'
 
     platform:
          - 'baremetal'
@@ -201,6 +203,85 @@
           - project: 'functest-apex-{verify-slave}-suite-{stream}'
             predefined-parameters: |
               DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
+              FUNCTEST_SUITE_NAME=healthcheck
+            block: true
+            same-node: true
+        - 'apex-workspace-cleanup'
+
+# Verify Scenario Gate
+- job-template:
+    name: 'apex-verify-gate-{stream}'
+
+    node: '{verify-slave}'
+
+    concurrent: true
+
+    parameters:
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - comment-added-contains-event:
+                    comment-contains-value: '^Patch Set [0-9]+: Code-Review\+2.*start-gate-scenario:.*'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'apex'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'ci/**'
+                  - compare-type: ANT
+                    pattern: 'build/**'
+                  - compare-type: ANT
+                    pattern: 'lib/**'
+                  - compare-type: ANT
+                    pattern: 'config/**'
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-daily.*'
+                - 'apex-deploy.*'
+                - 'apex-build.*'
+                - 'apex-runner.*'
+                - 'apex-verify.*'
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - 'apex-build'
+        - trigger-builds:
+          - project: 'apex-deploy-virtual-gate-{stream}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-verify-gate-{stream}
+              OPNFV_CLEAN=yes
+            git-revision: false
+            block: true
+            same-node: true
+        - trigger-builds:
+          - project: 'functest-apex-{verify-slave}-suite-{stream}'
+            predefined-parameters: |
+              DEPLOY_SCENARIO=os-nosdn-nofeature-ha
               FUNCTEST_SUITE_NAME=healthcheck
             block: true
             same-node: true
