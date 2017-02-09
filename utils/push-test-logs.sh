@@ -19,9 +19,9 @@ branch=${BRANCH##*/}
 testbed=$NODE_NAME
 dir_result="${HOME}/opnfv/$project/results/${branch}"
 # src: https://wiki.opnfv.org/display/INF/Hardware+Infrastructure
-# + intel-pod3 (vsperf)
+# + intel-pod12 (vsperf)
 node_list=(\
-'lf-pod1' 'lf-pod2' 'intel-pod2' 'intel-pod3' \
+'lf-pod1' 'lf-pod2' 'intel-pod2' 'intel-pod12' \
 'intel-pod5' 'intel-pod6' 'intel-pod7' 'intel-pod8' \
 'ericsson-pod1' 'ericsson-pod2' \
 'ericsson-virtual1' 'ericsson-virtual2'  'ericsson-virtual3' \
