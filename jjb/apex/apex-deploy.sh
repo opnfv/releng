@@ -207,7 +207,7 @@ if [[ "$JOB_NAME" == *csit* ]]; then
   echo "CSIT job: setting host route for floating ip routing"
   # csit route to allow docker container to reach floating ips
   UNDERCLOUD=$(sudo virsh domifaddr undercloud | grep -Eo "[0-9\.]+{3}[0-9]+")
-  if route | grep 192.168.37.128; then
+  if sudo route | grep 192.168.37.128 > /dev/null; then
     sudo route del -net 192.168.37.128 netmask 255.255.255.128
   fi
   sudo route add -net 192.168.37.128 netmask 255.255.255.128 gw ${UNDERCLOUD}
