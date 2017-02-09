@@ -81,7 +81,7 @@ uploadsnap () {
   echo "Upload complete for Snapshot"
 }
 
-if grep csit $WORKSPACE; then
+if echo $WORKSPACE | grep csit > /dev/null; then
   uploadsnap
 elif gpg2 --list-keys | grep "opnfv-helpdesk@rt.linuxfoundation.org"; then
   echo "Signing Key avaliable"
