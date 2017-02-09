@@ -63,10 +63,11 @@ for node in $nodes; do
   fi
 done
 
+pushd ${tmp_dir} > /dev/null
 echo "Gathering virsh definitions"
 # copy qcow2s, virsh definitions
 for node in $nodes; do
-  cp -f /var/lib/libvirt/images/${node}.qcow2 ./
+  sudo cp -f /var/lib/libvirt/images/${node}.qcow2 ./
   sudo virsh dumpxml ${node} > ${node}.xml
 done
 
@@ -79,7 +80,7 @@ done
 DATE=`date +%Y-%m-%d`
 tar czf ../apex-csit-snap-${DATE}.tar.gz .
 popd > /dev/null
-rm -rf ./.tmp
+sudo rm -rf ${tmp_dir}
 echo "Snapshot saved as apex-csit-snap-${DATE}.tar.gz"
 
 # update opnfv properties file
