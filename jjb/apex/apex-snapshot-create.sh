@@ -77,6 +77,8 @@ for net in admin api external storage tenant; do
   sudo virsh net-dumpxml ${net} > ${net}.xml
 done
 
+sudo chown jenkins-ci:jenkins-ci *
+
 # tar up artifacts
 DATE=`date +%Y-%m-%d`
 tar czf ../apex-csit-snap-${DATE}.tar.gz .
