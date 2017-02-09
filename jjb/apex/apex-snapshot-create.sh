@@ -37,6 +37,7 @@ git clone https://gerrit.opnfv.org/gerrit/sdnvpn.git
 pushd sdnvpn/odl-pipeline/lib > /dev/null
 sudo ./tripleo_introspector.sh --out-file ${tmp_dir}/node.yaml
 popd > /dev/null
+sudo rm -rf sdnvpn
 
 echo "Shutting down nodes"
 # Shut down nodes
