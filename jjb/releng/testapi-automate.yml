@@ -15,7 +15,6 @@
         - 'testapi-automate-{stream}'
         - 'testapi-automate-{phase}-{stream}'
         - 'testapi-verify-{stream}'
-        - 'testapi-mongodb-backup'
 
     project: 'releng'
 
@@ -27,13 +26,13 @@
             name: SLAVE_LABEL
             default: 'testresults'
             description: 'Slave label on Jenkins'
+        - project-parameter:
+            project: 'releng'
+            branch: 'master'
         - string:
             name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            default: https://gerrit.opnfv.org/gerrit/releng
             description: 'Git URL to use on this Jenkins Slave'
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
 
     scm:
         - git-scm
