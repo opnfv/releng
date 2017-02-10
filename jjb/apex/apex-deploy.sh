@@ -62,7 +62,7 @@ fi
 if [ -z "$DEPLOY_SCENARIO" ]; then
   echo "Deploy scenario not set!"
   exit 1
-elif [ "$DEPLOY_SCENARIO" == *gate* ]; then
+elif [[ "$DEPLOY_SCENARIO" == *gate* ]]; then
   echo "Detecting Gating scenario..."
   if [ -z "$GERRIT_EVENT_COMMENT_TEXT" ]; then
     echo "ERROR: Gate job triggered without comment!"
