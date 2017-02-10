@@ -21,7 +21,7 @@ fi
 
 #TODO(trozet) remove this once odl-pipeline accepts zip files
 echo "Converting artifact zip to tar.gz"
-sudo pip3 install ruamel.zip2tar
+sudo pip install ruamel.zip2tar
 zip2tar distribution-karaf-0.6.0-SNAPSHOT.zip --gz --tar-file-name /tmp/${NETVIRT_ARTIFACT}
 
 echo "Download complete"
