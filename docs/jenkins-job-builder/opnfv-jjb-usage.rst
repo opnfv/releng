@@ -39,10 +39,23 @@ Job Types
 
   * Trigger: **remerge**
 
+* Experimental Job
+
+  * Trigger: **check-experimental**
+
 The verify and merge jobs are retriggerable in Gerrit by simply leaving
 a comment with one of the keywords listed above.
 This is useful in case you need to re-run one of those jobs in case
 if build issues or something changed with the environment.
+
+The experimental jobs are not triggered automatically. You need to leave
+a comment with the keyword list above to trigger it manually. It is useful
+for trying out experimental features.
+
+Note that, experimental jobs `skip vote`_ for verified status, which means
+it will reset the verified status to 0. If you want to keep the verified
+status, use **recheck-experimental** in commit message to trigger both
+verify and experimental jobs.
 
 You can add below persons as reviewers to your patch in order to get it
 reviewed and submitted.
@@ -67,3 +80,5 @@ in `releng-jobs.yaml`_.
 
 .. _releng-jobs.yaml:
     https://gerrit.opnfv.org/gerrit/gitweb?p=releng.git;a=blob;f=jjb/releng-jobs.yaml;
+.. _skip vote:
+    https://wiki.jenkins-ci.org/display/JENKINS/Gerrit+Trigger#GerritTrigger-SkipVote
