@@ -15,15 +15,22 @@
         - 'testapi-automate-{stream}'
         - 'testapi-automate-{phase}-{stream}'
         - 'testapi-verify-{stream}'
+        - 'testapi-mongodb-backup'
 
     project: 'releng'
 
 - job:
     name: 'testapi-mongodb-backup'
 
-    slave-label: 'testresults'
-
     parameters:
+        - label:
+            name: SLAVE_LABEL
+            default: 'testresults'
+            description: 'Slave label on Jenkins'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
@@ -31,8 +38,24 @@
     scm:
         - git-scm
 
+    #triggers:
+    #    - timed: '@weekly'
     triggers:
-        - timed: '@weekly'
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+                - project-compare-type: 'ANT'
+                  project-pattern: '{project}'
+                  branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**/{branch}'
+                  file-paths:
+                    - compare-type: 'ANT'
+                      pattern: 'utils/test/testapi/**'
 
     builders:
         - mongodb-backup
