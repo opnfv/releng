@@ -172,8 +172,7 @@ class GenericApiHandler(RequestHandler):
                                 .format(new_query, self.table))
 
         # we merge the whole document """
-        edit_request = data.format()
-        edit_request.update(self._update_requests(data))
+        edit_request = self._update_requests(data)
 
         """ Updating the DB """
         yield self._eval_db(self.table, 'update', query, edit_request,
@@ -188,7 +187,10 @@ class GenericApiHandler(RequestHandler):
                                            data.__getattribute__(k))
         if not request:
             raise HTTPError(HTTP_FORBIDDEN, "Nothing to update")
-        return request
+
+        edit_request = data.format()
+        edit_request.update(request)
+        return edit_request
 
     @staticmethod
     def _update_request(edit_request, key, new_value, old_value):

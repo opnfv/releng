@@ -1,6 +1,7 @@
 from opnfv_testapi.common.constants import HTTP_FORBIDDEN
 from opnfv_testapi.resources.handlers import GenericApiHandler
 from opnfv_testapi.resources.scenario_models import Scenario
+import opnfv_testapi.resources.scenario_models as models
 from opnfv_testapi.tornado_swagger import swagger
 
 
@@ -104,11 +105,169 @@ class ScenarioGURHandler(GenericScenarioHandler):
         """
             @description: update a single scenario by name
             @param body: fields to be updated
-            @type body: L{ScenarioCreateRequest}
+            @type body: L{ScenarioUpdateRequest}
             @in body: body
             @rtype: L{Scenario}
             @return 200: update success
             @raise 404: scenario not exist
             @raise 403: nothing to update
         """
-        pass
+        query = {'name': name}
+        db_keys = ['name']
+        self._update(query, db_keys)
+
+    def _update_query(self, keys, data):
+        query = dict()
+        equal = True
+        if self._is_rename():
+            new = self._term.get('name')
+            if data.name != new:
+                equal = False
+                query['name'] = new
+
+        return equal, query
+
+    def _update_requests(self, data):
+        updates = {
+            ('name', 'update'): self._update_requests_rename,
+            ('installer', 'add'): self._update_requests_add_installer,
+            ('installer', 'delete'): self._update_requests_delete_installer,
+            ('version', 'add'): self._update_requests_add_version,
+            ('version', 'delete'): self._update_requests_delete_version,
+            ('owner', 'update'): self._update_requests_change_owner,
+            ('project', 'add'): self._update_requests_add_project,
+            ('project', 'delete'): self._update_requests_delete_project,
+            ('customs', 'add'): self._update_requests_add_customs,
+            ('customs', 'delete'): self._update_requests_delete_customs,
+            ('score', 'add'): self._update_requests_add_score,
+            ('trust_indicator', 'add'): self._update_requests_add_ti,
+        }
+
+        updates[(self._field, self._op)](data)
+
+        return data.format()
+
+    def _iter_installers(xstep):
+        def magic(self, data):
+            [xstep(self, installer)
+             for installer in self._filter_installers(data.installers)]
+        return magic
+
+    def _iter_versions(xstep):
+        def magic(self, installer):
+            [xstep(self, version)
+             for version in (self._filter_versions(installer.versions))]
+        return magic
+
+    def _iter_projects(xstep):
+        def magic(self, version):
+            [xstep(self, project)
+             for project in (self._filter_projects(version.projects))]
+        return magic
+
+    def _update_requests_rename(self, data):
+        data.name = self._term.get('name')
+
+    def _update_requests_add_installer(self, data):
+        data.installers.append(models.ScenarioInstaller.from_dict(self._term))
+
+    def _update_requests_delete_installer(self, data):
+        data.installers = self._remove_installers(data.installers)
+
+    @_iter_installers
+    def _update_requests_add_version(self, installer):
+        installer.versions.append(models.ScenarioVersion.from_dict(self._term))
+
+    @_iter_installers
+    def _update_requests_delete_version(self, installer):
+        installer.versions = self._remove_versions(installer.versions)
+
+    @_iter_installers
+    @_iter_versions
+    def _update_requests_change_owner(self, version):
+        version.owner = self._term.get('owner')
+
+    @_iter_installers
+    @_iter_versions
+    def _update_requests_add_project(self, version):
+        version.projects.append(models.ScenarioProject.from_dict(self._term))
+
+    @_iter_installers
+    @_iter_versions
+    def _update_requests_delete_project(self, version):
+        version.projects = self._remove_projects(version.projects)
+
+    @_iter_installers
+    @_iter_versions
+    @_iter_projects
+    def _update_requests_add_customs(self, project):
+        project.customs = list(set(project.customs + self._term))
+
+    @_iter_installers
+    @_iter_versions
+    @_iter_projects
+    def _update_requests_delete_customs(self, project):
+        project.customs = filter(
+            lambda f: f not in self._term,
+            project.customs)
+
+    @_iter_installers
+    @_iter_versions
+    @_iter_projects
+    def _update_requests_add_score(self, project):
+        project.scores.append(
+            models.ScenarioScore.from_dict(self._term))
+
+    @_iter_installers
+    @_iter_versions
+    @_iter_projects
+    def _update_requests_add_ti(self, project):
+        project.trust_indicators.append(
+            models.ScenarioTI.from_dict(self._term))
+
+    def _is_rename(self):
+        return self._field == 'name' and self._op == 'update'
+
+    def _remove_installers(self, installers):
+        return self._remove('installer', installers)
+
+    def _filter_installers(self, installers):
+        return self._filter('installer', installers)
+
+    def _remove_versions(self, versions):
+        return self._remove('version', versions)
+
+    def _filter_versions(self, versions):
+        return self._filter('version', versions)
+
+    def _remove_projects(self, projects):
+        return self._remove('project', projects)
+
+    def _filter_projects(self, projects):
+        return self._filter('project', projects)
+
+    def _remove(self, field, fields):
+        return filter(
+            lambda f: getattr(f, field) != self._locate.get(field),
+            fields)
+
+    def _filter(self, field, fields):
+        return filter(
+            lambda f: getattr(f, field) == self._locate.get(field),
+            fields)
+
+    @property
+    def _field(self):
+        return self.json_args.get('field')
+
+    @property
+    def _op(self):
+        return self.json_args.get('op')
+
+    @property
+    def _locate(self):
+        return self.json_args.get('locate')
+
+    @property
+    def _term(self):
+        return self.json_args.get('term')
