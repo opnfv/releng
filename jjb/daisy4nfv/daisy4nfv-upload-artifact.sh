@@ -17,6 +17,9 @@ if [ -f $WORKSPACE/.noupload ]; then
     exit 0
 fi
 
+echo "huzhjdebug"
+cat $WORKSPACE/opnfv.properties
+
 # source the opnfv.properties to get ARTIFACT_VERSION
 source $WORKSPACE/opnfv.properties
 
