@@ -19,7 +19,7 @@ for node in nodes:
     print("Hello, I am node '%s' and my ip is %s." %
           (node.run_cmd('hostname'), node.ip))
 
-print handler.get_deployment_info()
+print(handler.get_deployment_info())
 
 
 print("########## FUEL ##########")
@@ -28,9 +28,9 @@ handler = factory.Factory.get_handler('fuel',
                                       'root',
                                       installer_pwd='r00tme')
 
-print handler.get_deployment_info()
+print(handler.get_deployment_info())
 
 print("List of nodes in cluster 4:")
 nodes = handler.get_nodes({'cluster': '4'})
 for node in nodes:
-    print node
+    print(node)
