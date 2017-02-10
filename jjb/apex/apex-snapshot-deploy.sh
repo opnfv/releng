@@ -41,23 +41,26 @@ fi
 local_snap_checksum=""
 
 # check snap cache directory exists
+# if snapshot cache exists, find the checksum
 if [ -d "$SNAP_CACHE" ]; then
-  latest_snap=$(ls -Art | grep tar.gz | tail -n 1)
+  latest_snap=$(ls ${SNAP_CACHE} | grep tar.gz | tail -n 1)
   if [ -n "$latest_snap" ]; then
-    local_snap_checksum=$(sha512sum ${latest_snap} | cut -d' ' -f1)
+    local_snap_checksum=$(sha512sum ${SNAP_CACHE}/${latest_snap} | cut -d' ' -f1)
   fi
 else
   mkdir -p ${SNAP_CACHE}
 fi
 
 # compare check sum and download latest snap if not up to date
-if [ "$local_snap_checksum" -ne "$latest_snap_checksum" ]; then
+if [ "$local_snap_checksum" != "$latest_snap_checksum" ]; then
   snap_url=$(cat opnfv.properties | grep OPNFV_SNAP_URL | awk -F "=" '{print $2}')
   if [ -z "$snap_url" ]; then
     echo "ERROR: Snap URL from snapshot.properties is null!"
     exit 1
   fi
   echo "INFO: SHA mismatch, will download latest snapshot"
+  # wipe cache
+  rm -rf ${SNAP_CACHE}/*
   wget --directory-prefix=${SNAP_CACHE}/ ${snap_url}
   snap_tar=$(basename ${snap_url})
 else
@@ -69,7 +72,7 @@ echo "INFO: Snapshot to be used is ${snap_tar}"
 # create tmp directory and unpack snap
 mkdir -p ./tmp
 pushd ./tmp > /dev/null
-tar xvf ${snap_tar}
+tar xvf ${SNAP_CACHE}/${snap_tar} -C ./
 
 # create each network
 virsh_networks=$(ls *.xml | grep -v baremetal)
@@ -86,8 +89,8 @@ for network_def in ${virsh_networks}; do
     sudo virsh net-start ${network}
   fi
   echo "Checking if OVS bridge is missing for network: ${network}"
-  if ! ovs-vsctl show | grep "br-${network}"; then
-    ovs-vsctl add-br br-${network}
+  if ! sudo ovs-vsctl show | grep "br-${network}"; then
+    sudo ovs-vsctl add-br br-${network}
     echo "OVS Bridge created: br-${network}"
     if [ "br-${network}" == 'br-admin' ]; then
       echo "Configuring IP 192.0.2.99 on br-admin"
@@ -101,7 +104,7 @@ for network_def in ${virsh_networks}; do
   fi
 done
 
-echo "Virsh networks up: $(virsh net-list)"
+echo "Virsh networks up: $(sudo virsh net-list)"
 echo "Bringing up Overcloud VMs..."
 virsh_vm_defs=$(ls baremetal*.xml)
 
@@ -134,9 +137,9 @@ netvirt_url="http://${admin_controller_ip}:8081/restconf/operational/network-top
 source overcloudrc
 counter=1
 while [ "$counter" -le 10 ]; do
-  if curl --fail ${admin_controller_ip}:80; then
+  if curl --fail --silent ${admin_controller_ip}:80 > /dev/null; then
     echo "Overcloud Horizon is up...Checking if OpenDaylight NetVirt is up..."
-    if curl --fail ${netvirt_url} > /dev/null; then
+    if curl --fail --silent -u admin:admin ${netvirt_url} > /dev/null; then
       echo "OpenDaylight is up.  Overcloud deployment complete"
       exit 0
     else
