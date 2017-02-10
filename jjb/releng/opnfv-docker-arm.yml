@@ -1,0 +1,77 @@
+##############################################
+# job configuration for docker build and push
+##############################################
+
+- project:
+
+    name: opnfv-docker-arm
+
+    master: &master
+        stream: master
+        branch: '{stream}'
+        disabled: false
+    danube: &danube
+        stream: danube
+        branch: 'stable/{stream}'
+        disabled: true
+    functest-arm-receivers: &functest-arm-receivers
+        receivers: >
+            cristina.pauna@enea.com
+            alexandru.avadanii@enea.com
+    other-receivers: &other-receivers
+        receivers: ''
+
+    project:
+        # projects with jobs for master
+        - 'functest':
+            <<: *master
+            <<: *functest-arm-receivers
+        # projects with jobs for stable
+
+    jobs:
+        - '{project}-docker-build-arm-push-{stream}'
+
+########################
+# job templates
+########################
+- job-template:
+    name: '{project}-docker-build-arm-push-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters: &parameters
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-arm-defaults'
+        - string:
+            name: PUSH_IMAGE
+            default: "true"
+            description: "To enable/disable pushing the image to Dockerhub."
+        - string:
+            name: DOCKER_REPO_NAME
+            default: "opnfv/{project}_aarch64"
+            description: "Dockerhub repo to be pushed to."
+        - string:
+            name: RELEASE_VERSION
+            default: ""
+            description: "Release version, e.g. 1.0, 2.0, 3.0"
+        - string:
+            name: DOCKERFILE
+            default: "Dockerfile.aarch64"
+            description: "Dockerfile to use for creating the image."
+
+    scm:
+        - git-scm
+
+    builders: &builders
+        - shell:
+            !include-raw-escape: ./opnfv-docker.sh
+
+    triggers:
+        - pollscm:
+            cron: "*/30 * * * *"
+
+    publishers:
+        - email:
+            recipients: '{receivers}'
