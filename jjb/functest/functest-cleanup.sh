@@ -3,8 +3,13 @@
 [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 
 echo "Cleaning up docker containers/images..."
+HOST_ARCH=$(uname -m)
 FUNCTEST_IMAGE=opnfv/functest
-# Remove containers along with image opnfv/functest:<none>
+if [ "$HOST_ARCH" = "aarch64" ]; then
+    FUNCTEST_IMAGE="${FUNCTEST_IMAGE}_${HOST_ARCH}"
+fi
+
+# Remove containers along with image opnfv/functest*:<none>
 dangling_images=($(docker images -f "dangling=true" | grep $FUNCTEST_IMAGE | awk '{print $3}'))
 if [[ -n ${dangling_images} ]]; then
     echo "  Removing $FUNCTEST_IMAGE:<none> images and their containers..."
