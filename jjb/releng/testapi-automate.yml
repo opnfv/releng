@@ -37,24 +37,8 @@
     scm:
         - git-scm
 
-    #triggers:
-    #    - timed: '@weekly'
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-                - project-compare-type: 'ANT'
-                  project-pattern: '{project}'
-                  branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/{branch}'
-                  file-paths:
-                    - compare-type: 'ANT'
-                      pattern: 'utils/test/testapi/**'
+        - timed: '@weekly'
 
     builders:
         - mongodb-backup
