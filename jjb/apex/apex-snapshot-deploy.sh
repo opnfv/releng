@@ -21,8 +21,7 @@ echo "--------------------------"
 echo
 
 echo "Cleaning server"
-git clone https://gerrit.opnfv.org/gerrit/apex.git
-pushd apex/ci > /dev/null
+pushd ci > /dev/null
 sudo CONFIG=../build/ LIB=../lib ./clean.sh
 popd > /dev/null
 

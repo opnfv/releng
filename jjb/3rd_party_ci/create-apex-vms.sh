@@ -1,12 +1,8 @@
 #!/bin/bash
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
 
-if [ -z ${WORKSPACE} ]; then
-  echo "WORKSPACE is unset. Please do so."
-  exit 1
-fi
-# wipe the WORKSPACE
-/bin/rm -rf $WORKSPACE/*
 # clone opnfv sdnvpn repo
 git clone https://gerrit.opnfv.org/gerrit/p/sdnvpn.git $WORKSPACE/sdnvpn
 

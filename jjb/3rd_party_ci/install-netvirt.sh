@@ -1,12 +1,4 @@
 #!/bin/bash
-set -e
-
-if [ -z ${WORKSPACE} ]; then
-  echo "WORKSPACE is unset. Please set."
-  exit 1
-fi
-# wipe the WORKSPACE
-/bin/rm -rf $WORKSPACE/*
 set -o errexit
 set -o nounset
 set -o pipefail

@@ -1,12 +1,7 @@
 #!/bin/bash
-set -e
-
-if [ -z ${WORKSPACE} ]; then
-  echo "WORKSPACE is unset. Please do so."
-  exit 1
-fi
-# wipe the WORKSPACE
-/bin/rm -rf $WORKSPACE/*
+set -o errexit
+set -o nounset
+set -o pipefail
 
 echo "Attempting to fetch the artifact location from ODL Jenkins"
 CHANGE_DETAILS_URL="https://git.opendaylight.org/gerrit/changes/netvirt~master~$GERRIT_CHANGE_ID/detail"
