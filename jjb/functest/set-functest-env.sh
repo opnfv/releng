@@ -70,17 +70,22 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
 
 volumes="${results_vol} ${sshkey_vol} ${stackrc_vol} ${rc_file_vol}"
 
+HOST_ARCH=$(uname -m)
+FUNCTEST_IMAGE="opnfv/functest"
+if [ "$HOST_ARCH" = "aarch64" ]; then
+    FUNCTEST_IMAGE="${FUNCTEST_IMAGE}_${HOST_ARCH}"
+fi
 
-echo "Functest: Pulling image opnfv/functest:${DOCKER_TAG}"
-docker pull opnfv/functest:$DOCKER_TAG >/dev/null
+echo "Functest: Pulling image ${FUNCTEST_IMAGE}:${DOCKER_TAG}"
+docker pull ${FUNCTEST_IMAGE}:$DOCKER_TAG >/dev/null
 
 cmd="sudo docker run --privileged=true -id ${envs} ${volumes} \
      ${custom_params} ${TESTCASE_OPTIONS} \
-     opnfv/functest:${DOCKER_TAG} /bin/bash"
+     ${FUNCTEST_IMAGE}:${DOCKER_TAG} /bin/bash"
 echo "Functest: Running docker run command: ${cmd}"
 ${cmd} >${redirect}
 sleep 5
-container_id=$(docker ps | grep "opnfv/functest:${DOCKER_TAG}" | awk '{print $1}' | head -1)
+container_id=$(docker ps | grep "${FUNCTEST_IMAGE}:${DOCKER_TAG}" | awk '{print $1}' | head -1)
 echo "Container ID=${container_id}"
 if [ -z ${container_id} ]; then
     echo "Cannot find opnfv/functest container ID ${container_id}. Please check if it is existing."
@@ -91,8 +96,8 @@ echo "Starting the container: docker start ${container_id}"
 docker start ${container_id}
 sleep 5
 docker ps >${redirect}
-if [ $(docker ps | grep "opnfv/functest:${DOCKER_TAG}" | wc -l) == 0 ]; then
-    echo "The container opnfv/functest with ID=${container_id} has not been properly started. Exiting..."
+if [ $(docker ps | grep "${FUNCTEST_IMAGE}:${DOCKER_TAG}" | wc -l) == 0 ]; then
+    echo "The container ${FUNCTEST_IMAGE} with ID=${container_id} has not been properly started. Exiting..."
     exit 1
 fi
 if [[ "$BRANCH" =~ 'brahmaputra' ]]; then
