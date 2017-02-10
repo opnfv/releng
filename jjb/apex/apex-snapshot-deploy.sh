@@ -69,10 +69,9 @@ fi
 
 echo "INFO: Snapshot to be used is ${snap_tar}"
 
-# create tmp directory and unpack snap
-mkdir -p ./tmp
-pushd ./tmp > /dev/null
-tar xvf ${SNAP_CACHE}/${snap_tar} -C ./
+# move to snap cache dir and unpack
+pushd ${SNAP_CACHE} > /dev/null
+tar xvf ${snap_tar}
 
 # create each network
 virsh_networks=$(ls *.xml | grep -v baremetal)
