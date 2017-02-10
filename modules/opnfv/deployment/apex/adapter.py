@@ -35,28 +35,34 @@ class ApexAdapter(manager.DeploymentHandler):
             return None
 
         for line in lines:
-            if 'controller' in line:
-                roles = "controller"
-            elif 'compute' in line:
-                roles = "compute"
-            else:
+            roles = []
+            if any(x in line for x in ['-----', 'Networks']):
                 continue
-            if 'Daylight' in line:
-                roles += ", OpenDaylight"
+            if 'controller' in line:
+                roles.append(manager.Role.CONTROLLER)
+            if 'compute' in line:
+                roles.append(manager.Role.COMPUTE)
+            if 'opendaylight' in line.lower():
+                roles.append(manager.Role.ODL)
+
             fields = line.split('|')
             id = re.sub('[!| ]', '', fields[1]).encode()
             name = re.sub('[!| ]', '', fields[2]).encode()
-            status_node = re.sub('[!| ]', '', fields[3]).encode()
+            status_node = re.sub('[!| ]', '', fields[3]).encode().lower()
             ip = re.sub('[!| ctlplane=]', '', fields[4]).encode()
 
-            if status_node.lower() == 'active':
-                status = manager.Node.STATUS_OK
+            ssh_client = None
+            if 'active' in status_node:
+                status = manager.NodeStatus.STATUS_OK
                 ssh_client = ssh_utils.get_ssh_client(hostname=ip,
                                                       username='heat-admin',
                                                       pkey_file=self.pkey_file)
+            elif 'error' in status_node:
+                status = manager.NodeStatus.STATUS_ERROR
+            elif 'off' in status_node:
+                status = manager.NodeStatus.STATUS_OFFLINE
             else:
-                status = manager.Node.STATUS_INACTIVE
-                ssh_client = None
+                status = manager.NodeStatus.STATUS_INACTIVE
 
             node = manager.Node(id, ip, name, status, roles, ssh_client)
             nodes.append(node)
@@ -73,8 +79,9 @@ class ApexAdapter(manager.DeploymentHandler):
                      "grep Description|sed 's/^.*\: //'")
         cmd_ver = ("sudo yum info opendaylight 2>/dev/null|"
                    "grep Version|sed 's/^.*\: //'")
+        description = None
         for node in self.nodes:
-            if 'controller' in node.get_attribute('roles'):
+            if node.is_controller():
                 description = node.run_cmd(cmd_descr)
                 version = node.run_cmd(cmd_ver)
                 break
