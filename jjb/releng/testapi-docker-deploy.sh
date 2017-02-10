@@ -4,7 +4,7 @@ function check() {
 
     # Verify hosted
     sleep 5
-    cmd=`curl -s --head  --request GET http://testresults.opnfv.org/auto/swagger/spec | grep '200 OK' > /dev/null`
+    cmd=`curl -s --head  --request GET http://testresults.opnfv.org/test/swagger/spec | grep '200 OK' > /dev/null`
     rc=$?
     echo $rc
 
@@ -63,7 +63,7 @@ else
 fi
 
 echo "Running a container with the new image"
-sudo docker run -dti -p "8711:8000" -e "mongodb_url=mongodb://172.17.0.1:27017" -e "swagger_url=http://testresults.opnfv.org/auto" opnfv/testapi:latest
+sudo docker run -dti -p "8082:8000" -e "mongodb_url=mongodb://172.17.0.1:27017" -e "swagger_url=http://testresults.opnfv.org/test" opnfv/testapi:latest
 
 if check; then
     echo "TestResults Hosted."
@@ -71,7 +71,7 @@ else
     echo "TestResults Hosting Failed"
     if [[ $(sudo docker images | grep "opnfv/testapi" | grep "old" | awk '{print $3}') ]]; then
         echo "Running old Image"
-        sudo docker run -dti -p "8711:8000" -e "mongodb_url=mongodb://172.17.0.1:27017" -e "swagger_url=http://testresults.opnfv.org/auto" opnfv/testapi:old
+        sudo docker run -dti -p "8082:8000" -e "mongodb_url=mongodb://172.17.0.1:27017" -e "swagger_url=http://testresults.opnfv.org/test" opnfv/testapi:old
         exit 1
     fi
 fi
