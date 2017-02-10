@@ -126,7 +126,15 @@ class FuelAdapter(manager.DeploymentHandler):
             ip = fields[index_ip].strip().encode()
             status_node = fields[index_status].strip().encode()
             name = fields[index_name].strip().encode()
-            roles = fields[index_roles].strip().encode()
+            roles_all = fields[index_roles].strip().encode()
+
+            roles = []
+            if 'controller' in roles_all.lower():
+                roles.append(manager.Role.CONTROLLER)
+            if 'compute' in roles_all.lower():
+                roles.append(manager.Role.COMPUTE)
+            if 'opendaylight' in roles_all.lower():
+                roles.append(manager.Role.ODL)
 
             dict = {"cluster": fields[index_cluster].strip().encode(),
                     "mac": fields[index_mac].strip().encode(),
@@ -134,7 +142,7 @@ class FuelAdapter(manager.DeploymentHandler):
                     "online": fields[index_online].strip().encode()}
 
             if status_node == 'ready':
-                status = manager.Node.STATUS_OK
+                status = manager.NodeStatus.STATUS_OK
                 proxy = {'ip': self.installer_ip,
                          'username': self.installer_user,
                          'password': self.installer_pwd}
@@ -142,7 +150,7 @@ class FuelAdapter(manager.DeploymentHandler):
                                                       username='root',
                                                       proxy=proxy)
             else:
-                status = manager.Node.STATUS_INACTIVE
+                status = manager.NodeStatus.STATUS_INACTIVE
                 ssh_client = None
 
             node = manager.Node(
@@ -160,7 +168,7 @@ class FuelAdapter(manager.DeploymentHandler):
         cmd = 'source openrc;nova-manage version 2>/dev/null'
         version = None
         for node in self.nodes:
-            if 'controller' in node.get_attribute('roles'):
+            if node.is_controller():
                 version = node.run_cmd(cmd)
                 break
         return version
@@ -169,7 +177,7 @@ class FuelAdapter(manager.DeploymentHandler):
         cmd = "apt-cache show opendaylight|grep Version|sed 's/^.*\: //'"
         version = None
         for node in self.nodes:
-            if 'controller' in node.get_attribute('roles'):
+            if node.is_controller():
                 odl_version = node.run_cmd(cmd)
                 if odl_version:
                     version = 'OpenDaylight ' + odl_version

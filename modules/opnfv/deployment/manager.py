@@ -56,7 +56,7 @@ class Deployment(object):
             version = self.deployment_info['openstack_version'].split('.')[0]
             name = os_versions[version]
             return name
-        except Exception as e:
+        except Exception:
             return 'Unknown release'
 
     def get_dict(self):
@@ -94,20 +94,29 @@ class Deployment(object):
         return s
 
 
-class Node(object):
+class Role():
+    CONTROLLER = 'controller'
+    COMPUTE = 'compute'
+    ODL = 'opendaylight'
+    ONOS = 'onos'
 
+
+class NodeStatus():
     STATUS_OK = 'active'
     STATUS_INACTIVE = 'inactive'
     STATUS_OFFLINE = 'offline'
-    STATUS_FAILED = 'failed'
+    STATUS_ERROR = 'error'
+
+
+class Node(object):
 
     def __init__(self,
                  id,
                  ip,
                  name,
                  status,
-                 roles,
-                 ssh_client,
+                 roles=[],
+                 ssh_client=None,
                  info={}):
         self.id = id
         self.ip = ip
@@ -121,7 +130,7 @@ class Node(object):
         '''
         SCP file from a node
         '''
-        if self.status is not Node.STATUS_OK:
+        if self.status is not NodeStatus.STATUS_OK:
             logger.info("The node %s is not active" % self.ip)
             return 1
         logger.info("Fetching %s from %s" % (src, self.ip))
@@ -137,7 +146,7 @@ class Node(object):
         '''
         SCP file to a node
         '''
-        if self.status is not Node.STATUS_OK:
+        if self.status is not NodeStatus.STATUS_OK:
             logger.info("The node %s is not active" % self.ip)
             return 1
         logger.info("Copying %s to %s" % (src, self.ip))
@@ -153,7 +162,7 @@ class Node(object):
         '''
         Run command remotely on a node
         '''
-        if self.status is not Node.STATUS_OK:
+        if self.status is not NodeStatus.STATUS_OK:
             logger.info("The node %s is not active" % self.ip)
             return 1
         _, stdout, stderr = (self.ssh_client.exec_command(cmd))
@@ -187,7 +196,7 @@ class Node(object):
         '''
         Returns if the node is a controller
         '''
-        if 'controller' in self.get_attribute('roles'):
+        if 'controller' in self.roles:
             return True
         return False
 
@@ -195,7 +204,7 @@ class Node(object):
         '''
         Returns if the node is a compute
         '''
-        if 'compute' in self.get_attribute('roles'):
+        if 'compute' in self.roles:
             return True
         return False
 
@@ -236,7 +245,7 @@ class DeploymentHandler(object):
             self.installer_node = Node(id='',
                                        ip=installer_ip,
                                        name=installer,
-                                       status='active',
+                                       status=NodeStatus.STATUS_OK,
                                        ssh_client=self.installer_connection,
                                        roles='installer node')
         else:
