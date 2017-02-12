@@ -1,0 +1,90 @@
+- project:
+    name: docs-rtd
+    jobs:
+        - 'docs-merge-rtd-{stream}'
+        - 'docs-verify-rtd-{stream}'
+
+    stream:
+        - danube:
+            branch: 'master'
+        - colorado:
+            branch: 'stable/colorado'
+
+    project: 'opnfvdocs'
+    rtdproject: 'opnfv'
+    # TODO: Archive Artifacts
+
+- job-template:
+    name: 'docs-merge-rtd-{stream}'
+
+    project-type: freestyle
+
+    parameters:
+        - label:
+            name: SLAVE_LABEL
+            default: 'lf-build1'
+            description: 'Slave label on Jenkins'
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/releng
+            description: 'Git URL to use on this Jenkins Slave'
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit-trigger-change-merged
+
+    builders:
+        - shell: !include-raw: docs-post-rtd.sh
+
+- job-template:
+    name: 'docs-verify-rtd-{stream}'
+
+    project-type: freestyle
+
+    parameters:
+        - label:
+            name: SLAVE_LABEL
+            default: 'lf-build1'
+            description: 'Slave label on Jenkins'
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/releng
+            description: 'Git URL to use on this Jenkins Slave'
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit-trigger-patchset-created:
+            server: 'gerrit.opnfv.org'
+            project: '**'
+            branch: '{branch}'
+            files: 'docs/**/*.rst'
+            skip-vote:
+                successful: true
+                failed: true
+                unstable: true
+                notbuilt: true
+        - timed: 'H H * * *'
+
+    builders:
+        - shell: |
+            if [ "$GERRIT_PROJECT" != "opnfvdocs" ]; then
+                cd opnfvdocs/submodules/$GERRIT_PROJECT
+                git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
+            else
+                git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
+            fi
+        - shell: |
+            virtualenv $WORKSPACE/venv
+            source $WORKSPACE/venv/bin/activate
+            pip install --upgrade pip
+            pip freeze
+            pip install tox
+            tox -edocs
