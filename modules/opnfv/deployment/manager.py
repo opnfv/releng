@@ -89,7 +89,7 @@ class Deployment(object):
             sdn_controller=self.deployment_info['sdn_controller'])
 
         for node in self.deployment_info['nodes']:
-            s += '\t\t{node_object}\n'.format(node_object=node)
+            s += '{node_object}\n'.format(node_object=node)
 
         return s
 
@@ -217,7 +217,20 @@ class Node(object):
         return self.run_cmd(cmd)
 
     def __str__(self):
-        return str(self.get_dict())
+        return '''
+            name:   {name}
+            id:     {id}
+            ip:     {ip}
+            status: {status}
+            roles:  {roles}
+            ovs:    {ovs}
+            info:   {info}'''.format(name=self.name,
+                                     id=self.id,
+                                     ip=self.ip,
+                                     status=self.status,
+                                     roles=self.roles,
+                                     ovs=self.get_ovs_info(),
+                                     info=self.info)
 
 
 class DeploymentHandler(object):
