@@ -99,6 +99,12 @@ for network_def in ${virsh_networks}; do
       echo "Configuring IP 192.168.37.1 on br-external"
       sudo ip addr add  192.168.37.1/24 dev br-external
       sudo ip link set up dev br-external
+      # Route for admin network
+      # The overcloud controller is multi-homed and will fail to respond
+      # to traffic from the functest container due to reverse-path-filtering
+      # This route allows reverse traffic, by forcing admin network destined
+      # traffic through the external network
+      sudo ip route add 192.0.2.0/25 dev br-external
     fi
   fi
 done
