@@ -15,7 +15,10 @@ if [[ -n ${dangling_images} ]]; then
     echo "  Removing $FUNCTEST_IMAGE:<none> images and their containers..."
     for image_id in "${dangling_images[@]}"; do
         echo "      Removing image_id: $image_id and its containers"
-        docker ps -a | grep $image_id | awk '{print $1}'| xargs docker rm -f >${redirect}
+        containers=$(docker ps -a | grep $image_id)
+        if [[ -n $containers ]];then
+            echo $containers | awk '{print $1}'| xargs docker rm -f >${redirect}
+        fi
         docker rmi $image_id >${redirect}
     done
 fi
