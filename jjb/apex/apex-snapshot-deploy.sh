@@ -96,8 +96,8 @@ for network_def in ${virsh_networks}; do
       sudo ip addr add  192.0.2.99/24 dev br-admin
       sudo ip link set up dev br-admin
     elif [ "br-${network}" == 'br-external' ]; then
-      echo "Configuring IP 192.168.37.99 on br-external"
-      sudo ip addr add  192.168.37.99/24 dev br-external
+      echo "Configuring IP 192.168.37.1 on br-external"
+      sudo ip addr add  192.168.37.1/24 dev br-external
       sudo ip link set up dev br-external
     fi
   fi
