@@ -14,8 +14,9 @@ if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
 fi
 
 if [[ ${RC_FILE_PATH} != '' ]] && [[ -f ${RC_FILE_PATH} ]] ; then
+    echo "Credentials file detected: ${RC_FILE_PATH}"
     # volume if credentials file path is given to Functest
-    rc_file_vol="-v $RC_FILE_PATH:/home/opnfv/functest/conf/openstack.creds"
+    rc_file_vol="-v ${RC_FILE_PATH}:/home/opnfv/functest/conf/openstack.creds"
 fi
 
 
