@@ -81,6 +81,12 @@ if [ -z "$virsh_networks" ]; then
   exit 1
 fi
 
+echo "Checking overcloudrc"
+if ! stat overcloudrc; then
+  echo "ERROR: overcloudrc does not exist in snap unpack"
+  exit 1
+fi
+
 for network_def in ${virsh_networks}; do
   sudo virsh net-create ${network_def}
   network=$(echo ${network_def} | awk -F '.' '{print $1}')
@@ -99,12 +105,16 @@ for network_def in ${virsh_networks}; do
       echo "Configuring IP 192.168.37.1 on br-external"
       sudo ip addr add  192.168.37.1/24 dev br-external
       sudo ip link set up dev br-external
-      # Route for admin network
+      # Routes for admin network
       # The overcloud controller is multi-homed and will fail to respond
       # to traffic from the functest container due to reverse-path-filtering
       # This route allows reverse traffic, by forcing admin network destined
-      # traffic through the external network
-      sudo ip route add 192.0.2.0/25 dev br-external
+      # traffic through the external network for controller IPs only.
+      # Compute nodes have no ip on external interfaces.
+      controller_ips=$(cat overcloudrc | grep -Eo "192.0.2.[0-9]+")
+      for ip in $controller_ips; do
+        sudo ip route add ${ip}/32 dev br-external
+      done
     fi
   fi
 done
@@ -126,17 +136,11 @@ for node_def in ${virsh_vm_defs}; do
   echo "Node: ${node} started"
 done
 
-echo "Checking overcloudrc"
-if ! stat overcloudrc; then
-  echo "ERROR: overcloudrc does not exist in snap unpack"
-  exit 1
-fi
-
 # copy overcloudrc for functest
 mkdir -p $HOME/cloner-info
 cp -f overcloudrc $HOME/cloner-info/
 
-admin_controller_ip=$(cat overcloudrc | grep -Eo "192.0.2.[0-9]+")
+admin_controller_ip=$(cat overcloudrc | grep -Eo -m 1 "192.0.2.[0-9]+")
 netvirt_url="http://${admin_controller_ip}:8081/restconf/operational/network-topology:network-topology/topology/netvirt:1"
 
 source overcloudrc
