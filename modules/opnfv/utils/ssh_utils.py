@@ -47,7 +47,7 @@ def get_ssh_client(hostname,
                            password=password)
 
         return client
-    except Exception, e:
+    except Exception as e:
         logger.error(e)
         return None
 
@@ -57,7 +57,7 @@ def get_file(ssh_conn, src, dest):
         sftp = ssh_conn.open_sftp()
         sftp.get(src, dest)
         return True
-    except Exception, e:
+    except Exception as e:
         logger.error("Error [get_file(ssh_conn, '%s', '%s']: %s" %
                      (src, dest, e))
         return None
@@ -68,7 +68,7 @@ def put_file(ssh_conn, src, dest):
         sftp = ssh_conn.open_sftp()
         sftp.put(src, dest)
         return True
-    except Exception, e:
+    except Exception as e:
         logger.error("Error [put_file(ssh_conn, '%s', '%s']: %s" %
                      (src, dest, e))
         return None
@@ -128,5 +128,5 @@ class ProxyHopClient(paramiko.SSHClient):
                                                 pkey=proxy_key,
                                                 sock=self.proxy_channel)
             os.remove(self.local_ssh_key)
-        except Exception, e:
+        except Exception as e:
             logger.error(e)

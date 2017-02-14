@@ -93,8 +93,8 @@ def getApiResults(case, installer, scenario, version):
         response = urlopen(request)
         k = response.read()
         results = json.loads(k)
-    except URLError, e:
-        print 'No kittez. Got an error code:', e
+    except URLError as e:
+        print('No kittez. Got an error code:', e)
 
     return results
 
@@ -115,8 +115,8 @@ def getScenarios(case, installer, version):
         k = response.read()
         results = json.loads(k)
         test_results = results['results']
-    except URLError, e:
-        print 'Got an error code:', e
+    except URLError as e:
+        print('Got an error code:', e)
 
     if test_results is not None:
         test_results.reverse()
@@ -132,8 +132,8 @@ def getScenarios(case, installer, version):
             exclude_virtual_pod = get_config('functest.exclude_virtual')
             exclude_noha = get_config('functest.exclude_noha')
             if ((exclude_virtual_pod and "virtual" in r['pod_name']) or
-               (exclude_noha and "noha" in r['scenario'])):
-                    print "exclude virtual pod results..."
+                    (exclude_noha and "noha" in r['scenario'])):
+                print("exclude virtual pod results...")
             else:
                 scenario_results[r['scenario']].append(r)
 
@@ -164,8 +164,8 @@ def getScenarioStatus(installer, version):
         response.close()
         results = json.loads(k)
         test_results = results['results']
-    except URLError, e:
-        print 'Got an error code:', e
+    except URLError as e:
+        print('Got an error code:', e)
 
     scenario_results = {}
     result_dict = {}
@@ -198,7 +198,7 @@ def getNbtestOk(results):
                 if "PASS" in v:
                     nb_test_ok += 1
             except:
-                print "Cannot retrieve test status"
+                print("Cannot retrieve test status")
     return nb_test_ok
 
 
@@ -269,10 +269,10 @@ def getJenkinsUrl(build_tag):
     url_base = get_config('functest.jenkins_url')
     try:
         build_id = [int(s) for s in build_tag.split("-") if s.isdigit()]
-        url_id = build_tag[8:-(len(build_id)+3)] + "/" + str(build_id[0])
+        url_id = build_tag[8:-(len(build_id) + 3)] + "/" + str(build_id[0])
         jenkins_url = url_base + url_id + "/console"
     except:
-        print 'Impossible to get jenkins url:'
+        print('Impossible to get jenkins url:')
 
     return jenkins_url
 
@@ -282,7 +282,7 @@ def getScenarioPercent(scenario_score, scenario_criteria):
     try:
         score = float(scenario_score) / float(scenario_criteria) * 100
     except:
-        print 'Impossible to calculate the percentage score'
+        print('Impossible to calculate the percentage score')
     return score
 
 
@@ -330,8 +330,8 @@ def get_percent(four_list, ten_list):
 
 def _test():
     status = getScenarioStatus("compass", "master")
-    print "status:++++++++++++++++++++++++"
-    print json.dumps(status, indent=4)
+    print("status:++++++++++++++++++++++++")
+    print(json.dumps(status, indent=4))
 
 
 # ----------------------------------------------------------

@@ -44,5 +44,5 @@ def main(method, parser):
     args = parser.parse_args()
     try:
         method(args)
-    except AssertionError, msg:
+    except AssertionError as msg:
         print(msg)

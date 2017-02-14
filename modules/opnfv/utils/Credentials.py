@@ -77,7 +77,7 @@ class Credentials(object):
         creds_file = '/root/openrc'
         try:
             self.handler.get_file_from_controller(creds_file, target_path)
-        except Exception, e:
+        except Exception as e:
             self.logger.error(
                 "Cannot get %s from controller. %e" % (creds_file, e))
         pass
