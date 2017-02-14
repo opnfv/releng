@@ -1,0 +1,92 @@
+- project:
+
+    name: 'daisy4nfv-project-jobs'
+
+    installer: 'daisy'
+
+    project: 'daisy'
+
+    slave-label: ''
+
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+        - danube:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
+            disabled: true
+
+    jobs:
+        - '{installer}-build-bin-{stream}'
+
+########################
+# job templates
+########################
+- job-template:
+    name: '{installer}-build-bin-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - logrotate-default
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+            option: 'project'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - daisy-project-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - 'opnfv-build-centos-defaults'
+        - '{installer}-defaults'
+
+    scm:
+        - git-scm
+
+    triggers:
+        - timed: 'H 8 * * *'
+
+    builders:
+        - shell:
+            !include-raw-escape: ./daisy4nfv-build.sh
+        - shell:
+            !include-raw-escape: ./daisy4nfv-upload-artifact.sh
+        - shell:
+            !include-raw-escape: ./daisy4nfv-workspace-cleanup.sh
+    
+    publishers:
+        - '{installer}-recipients'
+
+########################
+# parameter macros
+########################
+- publisher:
+    name: 'daisy-recipients'
+    publishers:
+        - email:
+            recipients: hu.zhijiang@zte.com.cn lu.yao135@zte.com.cn zhou.ya@zte.com.cn yangyang1@zte.com.cn julienjut@gmail.com
+
+- parameter:
+    name: 'daisy-project-parameter'
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache/$INSTALLER_TYPE
+            description: "Directory where the cache to be used during the build is located."
+        - string:
+            name: GS_URL
+            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+            description: "URL to Google Storage."
