@@ -1,0 +1,202 @@
+- project:
+
+    name: 'daisy4nfv-ci-jobs'
+
+    installer: 'daisy'
+
+    project: 'daisy'
+
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+        disabled: false
+    danube: &danube
+        stream: danube
+        branch: 'stable/{stream}'
+        gs-pathname: '/{stream}'
+        disabled: true
+#--------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#--------------------------------
+#        CI PODs
+#--------------------------------
+    pod:
+        - baremetal:
+            slave-label: daisy-baremetal
+            <<: *master
+        - virtual:
+            slave-label: daisy-virtual
+            <<: *master
+
+    scenario:
+        - 'os-nosdn-nofeature-ha':
+            disabled: false
+            auto-trigger-name: 'daisy-{scenario}-{pod}-{stream}-trigger'
+
+    jobs:
+        - 'daisy-{scenario}-{pod}-daily-{stream}'
+        - 'daisy-deploy-{pod}-daily-{stream}'
+
+########################
+# job templates
+########################
+- job-template:
+    name: 'daisy-{scenario}-{pod}-daily-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - logrotate-default
+        - throttle:
+            enabled: true
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - '{installer}-os-.*?-{pod}-daily-.*?'
+                - '{installer}-os-.*?-baremetal-daily-.*?'
+                - '{installer}-verify-[^-]*-[^-]*'
+            block-level: 'NODE'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - daisy-ci-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: '{scenario}'
+        - '{slave-label}-defaults'
+        - '{installer}-defaults'
+
+    triggers:
+        - '{auto-trigger-name}'
+
+    builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
+        - trigger-builds:
+            - project: '{installer}-deploy-{pod}-daily-{stream}'
+              current-parameters: true
+              predefined-parameters: |
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'functest-{installer}-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+
+- job-template:
+    name: 'daisy-deploy-{pod}-daily-{stream}'
+
+    disabled: false
+
+    concurrent: true
+
+    properties:
+        - logrotate-default
+        - throttle:
+            enabled: true
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - '{installer}-deploy-{pod}-daily-.*?'
+                - '{installer}-verify-deploy-.*?'
+            block-level: 'NODE'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+        - timeout:
+            timeout: 120
+            abort: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - daisy-ci-parameter:
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - '{slave-label}-defaults'
+        - '{installer}-defaults'
+
+    scm:
+        - git-scm
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+
+    builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
+        - shell:
+            !include-raw-escape: ./daisy4nfv-download-artifact.sh
+        - shell:
+            !include-raw-escape: ./daisy4nfv-deploy.sh
+        - shell:
+            !include-raw-escape: ./daisy4nfv-workspace-cleanup.sh
+
+########################
+# parameter macros
+########################
+- parameter:
+    name: 'daisy-ci-parameter'
+    parameters:
+        - string:
+            name: BUILD_DIRECTORY
+            default: $WORKSPACE/build_output
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: CACHE_DIRECTORY
+            default: $HOME/opnfv/cache/$INSTALLER_TYPE
+            description: "Directory where the cache to be used during the build is located."
+        - string:
+            name: GS_URL
+            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+            description: "URL to Google Storage."
+
+########################
+# trigger macros
+########################
+- trigger:
+    name: 'daisy-os-nosdn-nofeature-ha-baremetal-master-trigger'
+    triggers:
+        - timed: '0 2 * * *'
+
+- trigger:
+    name: 'daisy-os-nosdn-nofeature-ha-baremetal-danube-trigger'
+    triggers:
+        - timed: ''
+
+- trigger:
+    name: 'daisy-os-nosdn-nofeature-ha-virtual-master-trigger'
+    triggers:
+        - timed: '0 21 * * *'
+
+- trigger:
+    name: 'daisy-os-nosdn-nofeature-ha-virtual-danube-trigger'
+    triggers:
+        - timed: '0 21 * * *'
