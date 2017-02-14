@@ -43,7 +43,8 @@ class TestCase(object):
                                'parser': 'Parser',
                                'connection_check': 'Health (connection)',
                                'api_check': 'Health (api)',
-                               'snaps_smoke': 'SNAPS'}
+                               'snaps_smoke': 'SNAPS',
+                               'snaps_health_check': 'Health (dhcp)'}
         try:
             self.displayName = display_name_matrix[self.name]
         except:
@@ -138,7 +139,8 @@ class TestCase(object):
                              'parser': 'parser-basics',
                              'connection_check': 'connection_check',
                              'api_check': 'api_check',
-                             'snaps_smoke': 'snaps_smoke'
+                             'snaps_smoke': 'snaps_smoke',
+                             'snaps_health_check': 'snaps_health_check'
                              }
         try:
             return test_match_matrix[self.name]

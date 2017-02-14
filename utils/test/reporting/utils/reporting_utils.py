@@ -269,7 +269,8 @@ def getJenkinsUrl(build_tag):
     url_base = get_config('functest.jenkins_url')
     try:
         build_id = [int(s) for s in build_tag.split("-") if s.isdigit()]
-        url_id = build_tag[8:-(len(build_id) + 3)] + "/" + str(build_id[0])
+        url_id = (build_tag[8:-(len(str(build_id[0])) + 1)] +
+                  "/" + str(build_id[0]))
         jenkins_url = url_base + url_id + "/console"
     except:
         print('Impossible to get jenkins url:')
