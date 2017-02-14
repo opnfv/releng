@@ -28,8 +28,10 @@
     phase:
         - 'build':
             slave-label: 'opnfv-build-centos'
-        - 'deploy':
+        - 'deploy-baremetal':
             slave-label: 'daisy-baremetal'
+        - 'deploy-virtual':
+            slave-label: 'daisy-virtual'
         - 'test':
             slave-label: 'opnfv-build-centos'
     jobs:
@@ -94,10 +96,24 @@
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
-            name: deploy
+            name: deploy-baremetal
             condition: SUCCESSFUL
             projects:
-                - name: '{installer}-deploy-daily-{stream}'
+                - name: '{installer}-deploy-baremetal-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    BRANCH=$BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: deploy-virtual
+            condition: SUCCESSFUL
+            projects:
+                - name: '{installer}-deploy-virtual-daily-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     BRANCH=$BRANCH
@@ -191,12 +207,22 @@
             !include-raw: ./daisy4nfv-workspace-cleanup.sh
 
 - builder:
-    name: 'daisy-deploy-daily-macro'
+    name: 'daisy-deploy-baremetal-daily-macro'
     builders:
         - shell:
             !include-raw: ./daisy4nfv-download-artifact.sh
         - shell:
             !include-raw: ./daisy4nfv-deploy.sh
+
+- builder:
+    name: 'daisy-deploy-virtual-daily-macro'
+    builders:
+        - shell:
+            !include-raw: ./daisy4nfv-download-artifact.sh
+        - shell:
+            !include-raw: ./daisy4nfv-virtual-deploy.sh
+        - shell:
+            !include-raw: ./daisy4nfv-workspace-cleanup.sh
 
 - builder:
     name: 'daisy-test-daily-macro'
