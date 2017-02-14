@@ -17,32 +17,34 @@ if [[ ${RC_FILE_PATH} != '' ]] && [[ -f ${RC_FILE_PATH} ]] ; then
     echo "Credentials file detected: ${RC_FILE_PATH}"
     # volume if credentials file path is given to Functest
     rc_file_vol="-v ${RC_FILE_PATH}:/home/opnfv/functest/conf/openstack.creds"
+    RC_FLAG=1
 fi
 
 
 if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
     ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-    if sudo virsh list | grep instack; then
-        instack_mac=$(sudo virsh domiflist instack | grep default | \
-                      grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
-    elif sudo virsh list | grep undercloud; then
+    if sudo virsh list | grep undercloud; then
+        echo "Installer VM detected"
         instack_mac=$(sudo virsh domiflist undercloud | grep default | \
                       grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
+        INSTALLER_IP=$(/usr/sbin/arp -e | grep ${instack_mac} | awk {'print $1'})
+        sshkey_vol="-v /root/.ssh/id_rsa:/root/.ssh/id_rsa"
+        sudo scp $ssh_options root@${INSTALLER_IP}:/home/stack/stackrc ${HOME}/stackrc
+        stackrc_vol="-v ${HOME}/stackrc:/home/opnfv/functest/conf/stackrc"
+
+        if sudo iptables -C FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable 2> ${redirect}; then
+            sudo iptables -D FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable
+        fi
+        if sudo iptables -C FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable 2> ${redirect}; then
+          sudo iptables -D FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable
+        fi
+    elif [[ -n "$RC_FLAG" && "$RC_FLAG" == 1 ]]; then
+        echo "No available installer VM, but credentials provided...continuing"
     else
         echo "No available installer VM exists...exiting"
         exit 1
     fi
-    INSTALLER_IP=$(/usr/sbin/arp -e | grep ${instack_mac} | awk {'print $1'})
-    sshkey_vol="-v /root/.ssh/id_rsa:/root/.ssh/id_rsa"
-    sudo scp $ssh_options root@${INSTALLER_IP}:/home/stack/stackrc ${HOME}/stackrc
-    stackrc_vol="-v ${HOME}/stackrc:/home/opnfv/functest/conf/stackrc"
 
-    if sudo iptables -C FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable 2> ${redirect}; then
-        sudo iptables -D FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable
-    fi
-    if sudo iptables -C FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable 2> ${redirect}; then
-        sudo iptables -D FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable
-    fi
 fi
 
 
