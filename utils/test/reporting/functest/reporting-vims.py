@@ -51,7 +51,7 @@ for version in versions:
             response = urlopen(request)
             k = response.read()
             results = json.loads(k)
-        except URLError, e:
+        except URLError as e:
             logger.error("Error code: %s" % e)
 
         test_results = results['results']
@@ -91,7 +91,7 @@ for version in versions:
 
                 result['pr_step_ok'] = 0
                 if nb_step != 0:
-                    result['pr_step_ok'] = (float(nb_step_ok)/nb_step)*100
+                    result['pr_step_ok'] = (float(nb_step_ok) / nb_step) * 100
                 try:
                     logger.debug("Scenario %s, Installer %s"
                                  % (s_result[1]['scenario'], installer))

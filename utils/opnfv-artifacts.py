@@ -28,56 +28,55 @@ from apiclient.errors import HttpError
 
 import argparse
 import json
-import os
 import sys
 
 api = {
-  'projects': {},
-  'docs': {},
-  'releases': {},
+    'projects': {},
+    'docs': {},
+    'releases': {},
 }
 
 releases = [
-  'arno.2015.1.0',
-  'arno.2015.2.0',
-  'brahmaputra.1.0',
+    'arno.2015.1.0',
+    'arno.2015.2.0',
+    'brahmaputra.1.0',
 ]
 
 # List of file extensions to filter out
 ignore_extensions = [
-  '.buildinfo',
-  '.woff',
-  '.ttf',
-  '.svg',
-  '.eot',
-  '.pickle',
-  '.doctree',
-  '.js',
-  '.png',
-  '.css',
-  '.gif',
-  '.jpeg',
-  '.jpg',
-  '.bmp',
+    '.buildinfo',
+    '.woff',
+    '.ttf',
+    '.svg',
+    '.eot',
+    '.pickle',
+    '.doctree',
+    '.js',
+    '.png',
+    '.css',
+    '.gif',
+    '.jpeg',
+    '.jpg',
+    '.bmp',
 ]
 
 
 parser = argparse.ArgumentParser(
-             description='OPNFV Artifacts JSON Generator')
+    description='OPNFV Artifacts JSON Generator')
 
 parser.add_argument(
-        '-k',
-        dest='key',
-        default='',
-        help='API Key for Google Cloud Storage')
+    '-k',
+    dest='key',
+    default='',
+    help='API Key for Google Cloud Storage')
 
 parser.add_argument(
-        '-p',
-        default=None,
-        dest='pretty',
-        action='store_const',
-        const=2,
-        help='pretty print the output')
+    '-p',
+    default=None,
+    dest='pretty',
+    action='store_const',
+    const=2,
+    help='pretty print the output')
 
 # Parse and assign arguments
 args = parser.parse_args()
@@ -130,7 +129,6 @@ def has_logs(gerrit_review):
     return False
 
 
-
 def has_ignorable_extension(filename):
     for extension in ignore_extensions:
         if filename.lower().endswith(extension):
@@ -148,11 +146,11 @@ def get_results(key):
     files = storage.objects().list(bucket='artifacts.opnfv.org',
                                    fields='nextPageToken,'
                                           'items('
-                                              'name,'
-                                              'mediaLink,'
-                                              'updated,'
-                                              'contentType,'
-                                              'size'
+                                   'name,'
+                                   'mediaLink,'
+                                   'updated,'
+                                   'contentType,'
+                                   'size'
                                           ')')
     while (files is not None):
         sites = files.execute()
@@ -173,7 +171,8 @@ def get_results(key):
 
             project = site_split[0]
             name = '/'.join(site_split[1:])
-            proxy = "http://build.opnfv.org/artifacts.opnfv.org/%s" % site['name']
+            proxy = "http://build.opnfv.org/artifacts.opnfv.org/%s" % site[
+                'name']
             if name.endswith('.html'):
                 href = "http://artifacts.opnfv.org/%s" % site['name']
                 href_type = 'view'
@@ -183,7 +182,7 @@ def get_results(key):
 
             gerrit = has_gerrit_review(site_split)
             logs = False  # has_logs(gerrit)
-            documentation = has_documentation(site_split)
+            # documentation = has_documentation(site_split)
             release = has_release(site_split)
 
             category = 'project'

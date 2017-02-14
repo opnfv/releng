@@ -44,7 +44,7 @@ for version in rp_utils.get_config('general.versions'):
             response = urlopen(request)
             k = response.read()
             results = json.loads(k)
-        except URLError, e:
+        except URLError as e:
             logger.error("Error code: %s" % e)
 
         test_results = results['results']
@@ -73,9 +73,9 @@ for version in rp_utils.get_config('general.versions'):
                 nb_tests_run = result['details']['tests']
                 nb_tests_failed = result['details']['failures']
                 if nb_tests_run != 0:
-                    success_rate = 100*((int(nb_tests_run) -
-                                        int(nb_tests_failed)) /
-                                        int(nb_tests_run))
+                    success_rate = 100 * ((int(nb_tests_run) -
+                                           int(nb_tests_failed)) /
+                                          int(nb_tests_run))
                 else:
                     success_rate = 0
 

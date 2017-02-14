@@ -27,7 +27,8 @@ parser.add_argument('-ld', '--latest-days',
                     metavar='N',
                     help='get entries old at most N days from mongodb and'
                          ' parse those that are not already in elasticsearch.'
-                         ' If not present, will get everything from mongodb, which is the default')
+                         ' If not present, will get everything from mongodb,'
+                         ' which is the default')
 
 args = parser.parse_args()
 CONF = APIConfig().parse(args.config_file)
@@ -37,6 +38,7 @@ tmp_docs_file = './mongo-{}.json'.format(uuid.uuid4())
 
 
 class DocumentVerification(object):
+
     def __init__(self, doc):
         super(DocumentVerification, self).__init__()
         self.doc = doc
@@ -55,8 +57,8 @@ class DocumentVerification(object):
         for key, value in self.doc.items():
             if key in mandatory_fields:
                 if value is None:
-                    logger.info("Skip testcase '%s' because field '%s' missing" %
-                                (self.doc_id, key))
+                    logger.info("Skip testcase '%s' because field "
+                                "'%s' missing" % (self.doc_id, key))
                     self.skip = True
                 else:
                     mandatory_fields.remove(key)
@@ -131,10 +133,12 @@ class DocumentPublisher(object):
             self._publish()
 
     def _publish(self):
-        status, data = elastic_access.publish_docs(self.elastic_url, self.creds, self.doc)
+        status, data = elastic_access.publish_docs(
+            self.elastic_url, self.creds, self.doc)
         if status > 300:
             logger.error('Publish record[{}] failed, due to [{}]'
-                         .format(self.doc, json.loads(data)['error']['reason']))
+                         .format(self.doc,
+                                 json.loads(data)['error']['reason']))
 
     def _fix_date(self, date_string):
         if isinstance(date_string, dict):
@@ -163,7 +167,8 @@ class DocumentsPublisher(object):
 
     def export(self):
         if self.days > 0:
-            past_time = datetime.datetime.today() - datetime.timedelta(days=self.days)
+            past_time = datetime.datetime.today(
+            ) - datetime.timedelta(days=self.days)
             query = '''{{
                           "project_name": "{}",
                           "case_name": "{}",
@@ -182,7 +187,7 @@ class DocumentsPublisher(object):
         try:
             subprocess.check_call(cmd)
             return self
-        except Exception, err:
+        except Exception as err:
             logger.error("export mongodb failed: %s" % err)
             self._remove()
             exit(-1)
@@ -217,7 +222,8 @@ class DocumentsPublisher(object):
                    }}'''.format(self.project, self.case, self.days)
         else:
             raise Exception('Update days must be non-negative')
-        self.existed_docs = elastic_access.get_docs(self.elastic_url, self.creds, body)
+        self.existed_docs = elastic_access.get_docs(
+            self.elastic_url, self.creds, body)
         return self
 
     def publish(self):
