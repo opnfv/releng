@@ -14,6 +14,7 @@ EXIT_OK = 0
 EXIT_RUN_ERROR = -1
 EXIT_PUSH_TO_TEST_DB_ERROR = -2
 
+
 class Constants(object):
     INSTALLERS = ['apex', 'fuel', 'compass', 'joid', "daisy"]
     VERSIONS = ['arno', 'brahmaputra', 'colorado', 'danube']

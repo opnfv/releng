@@ -16,6 +16,7 @@ logger = OPNFVLogger.Logger('ovs_logger').getLogger()
 
 
 class OVSLogger(object):
+
     def __init__(self, basedir, ft_resdir):
         self.ovs_dir = basedir
         self.ft_resdir = ft_resdir
@@ -32,7 +33,7 @@ class OVSLogger(object):
             hosts = stdout.readline().strip().split(' ')
             found_host = [h for h in hosts if h.startswith(host_prefix)][0]
             return found_host
-        except Exception, e:
+        except Exception as e:
             logger.error(e)
 
     def __dump_to_file(self, operation, host, text, timestamp=None):
@@ -55,7 +56,7 @@ class OVSLogger(object):
                                 .format(cmd, host))
             output = ''.join(stdout.readlines())
             return output
-        except Exception, e:
+        except Exception as e:
             logger.error('[__remote_command(ssh_client, {0})]: {1}'
                          .format(cmd, e))
             return None
@@ -78,7 +79,7 @@ class OVSLogger(object):
             host = self.__ssh_host(ssh_conn)
             self.__dump_to_file(operation, host, output, timestamp=timestamp)
             return output
-        except Exception, e:
+        except Exception as e:
             logger.error('[ofctl_dump_flows(ssh_client, {0}, {1})]: {2}'
                          .format(br, choose_table, e))
             return None
@@ -91,7 +92,7 @@ class OVSLogger(object):
             host = self.__ssh_host(ssh_conn)
             self.__dump_to_file(operation, host, output, timestamp=timestamp)
             return output
-        except Exception, e:
+        except Exception as e:
             logger.error('[vsctl_show(ssh_client)]: {0}'.format(e))
             return None
 

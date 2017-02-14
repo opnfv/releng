@@ -18,4 +18,4 @@ for node in nodes:
     print("Hello, I am node '%s' and my ip is %s." %
           (node.run_cmd('hostname'), node.ip))
 
-print handler.get_deployment_info()
+print(handler.get_deployment_info())

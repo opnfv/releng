@@ -56,7 +56,7 @@ class Deployment(object):
             version = self.deployment_info['openstack_version'].split('.')[0]
             name = os_versions[version]
             return name
-        except Exception as e:
+        except Exception:
             return 'Unknown release'
 
     def get_dict(self):
