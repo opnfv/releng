@@ -183,6 +183,8 @@ if [[ "$JOB_NAME" == *virtual* ]]; then
   # settings for virtual deployment
   if [ "$IPV6_FLAG" == "True" ]; then
     NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings_v6.yaml"
+  elif echo ${DEPLOY_SCENARIO} | grep fdio; then
+    NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings_vpp.yaml"
   else
     NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings.yaml"
   fi
