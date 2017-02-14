@@ -36,14 +36,14 @@ class TestCase(object):
                                'moon': 'Moon',
                                'copper': 'Copper',
                                'security_scan': 'Security',
-                               'multisite':'Multisite',
-                               'domino':'Domino',
-                               'odl-sfc':'SFC',
-                               'onos_sfc':'SFC',
-                               'parser':'Parser',
-                               'connection_check':'Health (connection)',
-                               'api_check':'Health (api)',
-                               'snaps_smoke':'SNAPS' }
+                               'multisite': 'Multisite',
+                               'domino': 'Domino',
+                               'odl-sfc': 'SFC',
+                               'onos_sfc': 'SFC',
+                               'parser': 'Parser',
+                               'connection_check': 'Health (connection)',
+                               'api_check': 'Health (api)',
+                               'snaps_smoke': 'SNAPS'}
         try:
             self.displayName = display_name_matrix[self.name]
         except:
@@ -131,14 +131,14 @@ class TestCase(object):
                              'moon': 'moon_authentication',
                              'copper': 'copper-notification',
                              'security_scan': 'security',
-                             'multisite':'multisite',
-                             'domino':'domino-multinode',
-                             'odl-sfc':'functest-odl-sfc',
-                             'onos_sfc':'onos_sfc',
-                             'parser':'parser-basics',
-                             'connection_check':'connection_check',
-                             'api_check':'api_check',
-                             'snaps_smoke':'snaps_smoke'
+                             'multisite': 'multisite',
+                             'domino': 'domino-multinode',
+                             'odl-sfc': 'functest-odl-sfc',
+                             'onos_sfc': 'onos_sfc',
+                             'parser': 'parser-basics',
+                             'connection_check': 'connection_check',
+                             'api_check': 'api_check',
+                             'snaps_smoke': 'snaps_smoke'
                              }
         try:
             return test_match_matrix[self.name]
@@ -147,4 +147,3 @@ class TestCase(object):
 
     def getDisplayName(self):
         return self.displayName
-

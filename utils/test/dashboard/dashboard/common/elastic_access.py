@@ -30,7 +30,7 @@ def publish_docs(url, creds=None, body=None):
 
 def _get_docs_nr(url, creds=None, body=None):
     res_data = _get('{}/_search?size=0'.format(url), creds=creds, body=body)
-    print type(res_data), res_data
+    print(type(res_data), res_data)
     return res_data['hits']['total']
 
 

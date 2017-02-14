@@ -2,7 +2,8 @@ import json
 
 from jinja2 import Environment, PackageLoader
 
-env = Environment(loader=PackageLoader('dashboard', 'elastic2kibana/templates'))
+env = Environment(loader=PackageLoader('dashboard',
+                                       'elastic2kibana/templates'))
 env.filters['jsonify'] = json.dumps
 
 

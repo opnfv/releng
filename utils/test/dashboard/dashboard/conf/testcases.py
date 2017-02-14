@@ -21,4 +21,4 @@ def get_format(project, case):
 
 if __name__ == '__main__':
     fmt = get_format('functest', 'vping_ssh')
-    print fmt
+    print(fmt)

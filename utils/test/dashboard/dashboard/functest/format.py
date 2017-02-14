@@ -6,7 +6,8 @@ def _convert_value(value):
 
 
 def _convert_duration(duration):
-    if (isinstance(duration, str) or isinstance(duration, unicode)) and ':' in duration:
+    if ((isinstance(duration, str) or
+            isinstance(duration, unicode)) and ':' in duration):
         hours, minutes, seconds = duration.split(":")
         hours = _convert_value(hours)
         minutes = _convert_value(minutes)
@@ -42,10 +43,10 @@ def format_normal(testcase):
         testcase_tests = float(testcase_details['tests'])
         testcase_failures = float(testcase_details['failures'])
         if testcase_tests != 0:
-            testcase_details['success_percentage'] = 100 * (testcase_tests - testcase_failures) / testcase_tests
+            testcase_details['success_percentage'] = 100 * \
+                (testcase_tests - testcase_failures) / testcase_tests
         else:
             testcase_details['success_percentage'] = 0
-
 
     return found
 
@@ -115,28 +116,33 @@ def format_onos(testcase):
     """
     testcase_details = testcase['details']
 
-    if 'FUNCvirNet' not in testcase_details or 'FUNCvirNetL3' not in testcase_details:
+    if ('FUNCvirNet' not in testcase_details or
+            'FUNCvirNetL3' not in testcase_details):
         return False
 
     funcvirnet_details = testcase_details['FUNCvirNet']['status']
-    funcvirnet_stats = _get_statistics(funcvirnet_details, ('Case result',), ('PASS', 'FAIL'))
+    funcvirnet_stats = _get_statistics(
+        funcvirnet_details, ('Case result',), ('PASS', 'FAIL'))
     funcvirnet_passed = funcvirnet_stats['PASS']
     funcvirnet_failed = funcvirnet_stats['FAIL']
     funcvirnet_all = funcvirnet_passed + funcvirnet_failed
 
     funcvirnetl3_details = testcase_details['FUNCvirNetL3']['status']
-    funcvirnetl3_stats = _get_statistics(funcvirnetl3_details, ('Case result',), ('PASS', 'FAIL'))
+    funcvirnetl3_stats = _get_statistics(
+        funcvirnetl3_details, ('Case result',), ('PASS', 'FAIL'))
     funcvirnetl3_passed = funcvirnetl3_stats['PASS']
     funcvirnetl3_failed = funcvirnetl3_stats['FAIL']
     funcvirnetl3_all = funcvirnetl3_passed + funcvirnetl3_failed
 
     testcase_details['FUNCvirNet'] = {
-        'duration': _convert_duration(testcase_details['FUNCvirNet']['duration']),
+        'duration':
+        _convert_duration(testcase_details['FUNCvirNet']['duration']),
         'tests': funcvirnet_all,
         'failures': funcvirnet_failed
     }
     testcase_details['FUNCvirNetL3'] = {
-        'duration': _convert_duration(testcase_details['FUNCvirNetL3']['duration']),
+        'duration':
+        _convert_duration(testcase_details['FUNCvirNetL3']['duration']),
         'tests': funcvirnetl3_all,
         'failures': funcvirnetl3_failed
     }
