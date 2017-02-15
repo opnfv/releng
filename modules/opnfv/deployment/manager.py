@@ -27,7 +27,7 @@ class Deployment(object):
                  status,
                  openstack_version,
                  sdn_controller,
-                 nodes=[]):
+                 nodes=None):
 
         self.deployment_info = {
             'installer': installer,
@@ -116,9 +116,9 @@ class Node(object):
                  ip,
                  name,
                  status,
-                 roles=[],
+                 roles=None,
                  ssh_client=None,
-                 info={}):
+                 info=None):
         self.id = id
         self.ip = ip
         self.name = name
@@ -126,6 +126,16 @@ class Node(object):
         self.ssh_client = ssh_client
         self.roles = roles
         self.info = info
+
+        self.cpu_info = 'unknown'
+        self.memory = 'unknown'
+        self.ovs = 'unknown'
+
+        if ssh_client:
+            sys_info = self.get_system_info()
+            self.cpu_info = sys_info['cpu_info']
+            self.memory = sys_info['memory']
+            self.ovs = self.get_ovs_info()
 
     def get_file(self, src, dest):
         '''
@@ -184,14 +194,11 @@ class Node(object):
             'name': self.name,
             'status': self.status,
             'roles': self.roles,
+            'cpu_info': self.cpu_info,
+            'memory': self.memory,
+            'ovs': self.ovs,
             'info': self.info
         }
-
-    def get_attribute(self, attribute):
-        '''
-        Returns an attribute given the name
-        '''
-        return self.get_dict()[attribute]
 
     def is_controller(self):
         '''
@@ -216,21 +223,50 @@ class Node(object):
         cmd = "ovs-vsctl --version|head -1| sed 's/^.*) //'"
         return self.run_cmd(cmd)
 
+    def get_system_info(self):
+        '''
+        Returns the ovs version installed
+        '''
+        cmd = 'grep MemTotal /proc/meminfo'
+        memory = self.run_cmd(cmd).partition('MemTotal:')[-1].strip().encode()
+
+        cpu_info = {}
+        cmd = 'lscpu'
+        result = self.run_cmd(cmd)
+        for line in result.splitlines():
+            if line.startswith('CPU(s)'):
+                cpu_info['num_cpus'] = line.split(' ')[-1].encode()
+            elif line.startswith('Thread(s) per core'):
+                cpu_info['threads/core'] = line.split(' ')[-1].encode()
+            elif line.startswith('Core(s) per socket'):
+                cpu_info['cores/socket'] = line.split(' ')[-1].encode()
+            elif line.startswith('Model name'):
+                cpu_info['model'] = line.partition(
+                    'Model name:')[-1].strip().encode()
+            elif line.startswith('Architecture'):
+                cpu_info['arch'] = line.split(' ')[-1].encode()
+
+        return {'memory': memory, 'cpu_info': cpu_info}
+
     def __str__(self):
         return '''
-            name:   {name}
-            id:     {id}
-            ip:     {ip}
-            status: {status}
-            roles:  {roles}
-            ovs:    {ovs}
-            info:   {info}'''.format(name=self.name,
-                                     id=self.id,
-                                     ip=self.ip,
-                                     status=self.status,
-                                     roles=self.roles,
-                                     ovs=self.get_ovs_info(),
-                                     info=self.info)
+            name:    {name}
+            id:      {id}
+            ip:      {ip}
+            status:  {status}
+            roles:   {roles}
+            cpu:     {cpu_info}
+            memory:  {memory}
+            ovs:     {ovs}
+            info:    {info}'''.format(name=self.name,
+                                      id=self.id,
+                                      ip=self.ip,
+                                      status=self.status,
+                                      roles=self.roles,
+                                      cpu_info=self.cpu_info,
+                                      memory=self.memory,
+                                      ovs=self.ovs,
+                                      info=self.info)
 
 
 class DeploymentHandler(object):
