@@ -116,6 +116,17 @@ class ScenarioGURHandler(GenericScenarioHandler):
         db_keys = ['name']
         self._update(query, db_keys)
 
+    @swagger.operation(nickname="deleteScenarioByName")
+    def delete(self, name):
+        """
+        @description: delete a scenario by name
+        @return 200: delete success
+        @raise 404: scenario not exist:
+        """
+
+        query = {'name': name}
+        self._delete(query)
+
     def _update_query(self, keys, data):
         query = dict()
         equal = True
