@@ -55,10 +55,11 @@
             branch: '{branch}'
         - string:
             name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/releng
+            default: https://gerrit.opnfv.org/gerrit/opnfvdocs
             description: 'Git URL to use on this Jenkins Slave'
     scm:
-        - git-scm-gerrit
+        - git-scm-with-submodules:
+            branch: '{branch}'
 
     triggers:
         - gerrit-trigger-patchset-created:
@@ -66,11 +67,6 @@
             project: '**'
             branch: '{branch}'
             files: 'docs/**/*.rst'
-            skip-vote:
-                successful: true
-                failed: true
-                unstable: true
-                notbuilt: true
         - timed: 'H H * * *'
 
     builders:
