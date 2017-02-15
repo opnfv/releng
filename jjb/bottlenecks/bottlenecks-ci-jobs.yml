@@ -72,7 +72,8 @@
     suite:
         - 'rubbos'
         - 'vstf'
-        - 'posca'
+        - 'posca_stress_traffic'
+        - 'posca_stress_ping'
 
     jobs:
         - 'bottlenecks-{installer}-{suite}-{pod}-daily-{stream}'
@@ -142,19 +143,111 @@
             set -e
             [[ $GERRIT_REFSPEC_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 
+            BOTTLENECKS_IMAGE=opnfv/bottlenecks
             echo "Bottlenecks: docker containers/images cleaning up"
-            if [[ ! -z $(docker ps -a | grep opnfv/bottlenecks) ]]; then
-                echo "removing existing opnfv/bottlenecks containers"
-                docker ps -a | grep opnfv/bottlenecks | awk '{print $1}' | xargs docker rm -f >$redirect
+
+            dangling_images=($(docker images -f "dangling=true" | grep $BOTTLENECKS_IMAGE | awk '{print $3}'))
+            if [[ -n $dangling_images ]]; then
+                echo "Removing $BOTTLENECKS_IMAGE:<none> dangling images and their containers"
+                docker images | head -1 && docker images | grep $dangling_images
+                for image_id in "${dangling_images[@]}"; do
+                    echo "Bottlenecks: Removing dangling image $image_id"
+                    docker rmi -f $image_id >${redirect}
+                done
             fi
 
-            if [[ ! -z $(docker images | grep opnfv/bottlenecks) ]]; then
+            for image_id in "${dangling_images[@]}"; do
+                if [[ -n $(docker ps -a | grep $image_id) ]]; then
+                    echo "Bottlenecks: Removing containers associated with dangling image: $image_id"
+                    docker ps -a | head -1 && docker ps -a | grep $image_id
+                    docker ps -a | grep $image_id | awk '{print $1}'| xargs docker rm -f >${redirect}
+                fi
+            done
+
+            if [[ -n $(docker ps -a | grep $BOTTLENECKS_IMAGE) ]]; then
+                echo "Removing existing $BOTTLENECKS_IMAGE containers"
+                docker ps -a | grep $BOTTLENECKS_IMAGE | awk '{print $1}' | xargs docker rm -f >$redirect
+            fi
+
+            if [[ -n $(docker images | grep $BOTTLENECKS_IMAGE) ]]; then
                 echo "Bottlenecks: docker images to remove:"
-                docker images | head -1 && docker images | grep opnfv/bottlenecks
-                image_tags=($(docker images | grep opnfv/bottlenecks | awk '{print $2}'))
+                docker images | head -1 && docker images | grep $BOTTLENECKS_IMAGE
+                image_tags=($(docker images | grep $BOTTLENECKS_IMAGE | awk '{print $2}'))
                 for tag in "${image_tags[@]}"; do
-                    echo "Removing docker image opnfv/bottlenecks:$tag..."
-                    docker rmi opnfv/bottlenecks:$tag >$redirect
+                    echo "Removing docker image $BOTTLENECKS_IMAGE:$tag..."
+                    docker rmi $BOTTLENECKS_IMAGE:$tag >$redirect
+                done
+            fi
+
+            echo "Yardstick: docker containers/images cleaning up"
+            YARDSTICK_IMAGE=opnfv/yardstick
+
+            dangling_images=($(docker images -f "dangling=true" | grep $YARDSTICK_IMAGE | awk '{print $3}'))
+            if [[ -n $dangling_images ]]; then
+                echo "Removing $YARDSTICK_IMAGE:<none> dangling images and their containers"
+                docker images | head -1 && docker images | grep $dangling_images
+                for image_id in "${dangling_images[@]}"; do
+                    echo "Yardstick: Removing dangling image $image_id"
+                    docker rmi -f $image_id >${redirect}
+                done
+            fi
+
+            for image_id in "${dangling_images[@]}"; do
+                if [[ -n $(docker ps -a | grep $image_id) ]]; then
+                    echo "Yardstick: Removing containers associated with dangling image: $image_id"
+                    docker ps -a | head -1 && docker ps -a | grep $image_id
+                    docker ps -a | grep $image_id | awk '{print $1}'| xargs docker rm -f >${redirect}
+                fi
+            done
+
+            if [[ -n $(docker ps -a | grep $YARDSTICK_IMAGE) ]]; then
+                echo "Removing existing $YARDSTICK_IMAGE containers"
+                docker ps -a | grep $YARDSTICK_IMAGE | awk '{print $1}' | xargs docker rm -f >$redirect
+            fi
+
+            if [[ -n $(docker images | grep $YARDSTICK_IMAGE) ]]; then
+                echo "Yardstick: docker images to remove:"
+                docker images | head -1 && docker images | grep $YARDSTICK_IMAGE
+                image_tags=($(docker images | grep $YARDSTICK_IMAGE | awk '{print $2}'))
+                for tag in "${image_tags[@]}"; do
+                    echo "Removing docker image $YARDSTICK_IMAGE:$tag..."
+                    docker rmi $YARDSTICK_IMAGE:$tag >$redirect
+                done
+            fi
+
+            echo "InfluxDB: docker containers/images cleaning up"
+            INFLUXDB_IMAGE=tutum/influxdb
+
+            dangling_images=($(docker images -f "dangling=true" | grep $INFLUXDB_IMAGE | awk '{print $3}'))
+            if [[ -n $dangling_images ]]; then
+                echo "Removing $INFLUXDB_IMAGE:<none> dangling images and their containers"
+                docker images | head -1 && docker images | grep $dangling_images
+                for image_id in "${dangling_images[@]}"; do
+                    echo "InfluxDB: Removing dangling image $image_id"
+                    docker rmi -f $image_id >${redirect}
+                done
+            fi
+
+            for image_id in "${dangling_images[@]}"; do
+                if [[ -n $(docker ps -a | grep $image_id) ]]; then
+                    echo "InfluxDB: Removing containers associated with dangling image: $image_id"
+                    docker ps -a | head -1 && docker ps -a | grep $image_id
+                    docker ps -a | grep $image_id | awk '{print $1}'| xargs docker rm -f >${redirect}
+                fi
+            done
+
+            if [[ -n $(docker ps -a | grep $INFLUXDB_IMAGE) ]]; then
+                echo "Removing existing $INFLUXDB_IMAGE containers"
+                docker ps -a | grep $INFLUXDB_IMAGE | awk '{print $1}' | xargs docker rm -f >$redirect
+            fi
+
+            if [[ -n $(docker images | grep $INFLUXDB_IMAGE) ]]; then
+                echo "InfluxDB: docker images to remove:"
+                docker images | head -1 && docker images | grep $INFLUXDB_IMAGE
+                image_tags=($(docker images | grep $INFLUXDB_IMAGE | awk '{print $2}'))
+                for tag in "${image_tags[@]}"; do
+                    echo "Removing docker image $INFLUXDB_IMAGE:$tag..."
+                    docker rmi $INFLUXDB_IMAGE:$tag >$redirect
                 done
             fi
 
@@ -163,39 +256,70 @@
     builders:
         - shell: |
             #!/bin/bash
-            set -e
+            #set -e
             [[ $GERRIT_REFSPEC_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
+            BOTTLENECKS_IMAGE=opnfv/bottlenecks
 
-            echo "Bottlenecks: to pull image opnfv/bottlenecks:${DOCKER_TAG}"
-            docker pull opnfv/bottlenecks:$DOCKER_TAG >${redirect}
+            if [[ $SUITE_NAME == rubbos || $SUITE_NAME == vstf ]]; then
+                echo "Bottlenecks: to pull image $BOTTLENECKS_IMAGE:${DOCKER_TAG}"
+                docker pull $BOTTLENECKS_IMAGE:$DOCKER_TAG >${redirect}
 
-            echo "Bottlenecks: docker start running"
-            opts="--privileged=true -id"
-            envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
-                  -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NET=${EXTERNAL_NETWORK} \
-                  -e BOTTLENECKS_BRANCH=${BOTTLENECKS_BRANCH} -e GERRIT_REFSPEC_DEBUG=${GERRIT_REFSPEC_DEBUG} \
-                  -e BOTTLENECKS_DB_TARGET=${BOTTLENECKS_DB_TARGET} -e PACKAGE_URL=${PACKAGE_URL}"
-            cmd="sudo docker run ${opts} ${envs} opnfv/bottlenecks:${DOCKER_TAG} /bin/bash"
-            echo "Bottlenecks: docker cmd running ${cmd}"
-            ${cmd} >${redirect}
+                echo "Bottlenecks: docker start running"
+                opts="--privileged=true -id"
+                envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
+                      -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NET=${EXTERNAL_NETWORK} \
+                      -e BOTTLENECKS_BRANCH=${BOTTLENECKS_BRANCH} -e GERRIT_REFSPEC_DEBUG=${GERRIT_REFSPEC_DEBUG} \
+                      -e BOTTLENECKS_DB_TARGET=${BOTTLENECKS_DB_TARGET} -e PACKAGE_URL=${PACKAGE_URL}"
+                cmd="sudo docker run ${opts} ${envs} $BOTTLENECKS_IMAGE:${DOCKER_TAG} /bin/bash"
+                echo "Bottlenecks: docker cmd running ${cmd}"
+                ${cmd} >${redirect}
 
-            echo "Bottlenecks: obtain docker id"
-            container_id=$(docker ps | grep "opnfv/bottlenecks:${DOCKER_TAG}" | awk '{print $1}' | head -1)
-            if [ -z ${container_id} ]; then
-                echo "Cannot find opnfv/bottlenecks container ID ${container_id}. Please check if it exists."
-                docker ps -a
-                exit 1
+                echo "Bottlenecks: obtain docker id"
+                container_id=$(docker ps    | grep "$BOTTLENECKS_IMAGE:${DOCKER_TAG}" | awk '{print $1}' | head -1)
+                if [ -z ${container_id} ]; then
+                    echo "Cannot find $BOTTLENECKS_IMAGE container ID ${container_id}. Please check if it exists."
+                    docker ps -a
+                    exit 1
+                fi
+
+                echo "Bottlenecks: to prepare openstack environment"
+                prepare_env="${REPO_DIR}/ci/prepare_env.sh"
+                echo "Bottlenecks: docker cmd running: ${prepare_env}"
+                sudo docker exec ${container_id} ${prepare_env}
+
+                echo "Bottlenecks: to run testsuite ${SUITE_NAME}"
+                run_testsuite="${REPO_DIR}/run_tests.sh -s ${SUITE_NAME}"
+                echo "Bottlenecks: docker cmd running: ${run_testsuite}"
+                sudo docker exec ${container_id} ${run_testsuite}
+            else
+                echo "Bottlenecks: installing POSCA docker-compose"
+                if [ -d usr/local/bin/docker-compose ]; then
+                    rm -rf usr/local/bin/docker-compose
+                fi
+                curl -L https://github.com/docker/compose/releases/download/1.11.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+                chmod +x /usr/local/bin/docker-compose
+
+                echo "Bottlenecks: composing up dockers"
+                cd $WORKSPACE
+                docker-compose -f $WORKSPACE/docker/bottleneck-compose/docker-compose.yml up -d
+                
+                echo "Bottlenecks: pulling tutum/influxdb for yardstick"
+                docker pull tutum/influxdb:0.13
+                sleep 5
+
+                echo "Bottlenecks: running traffic stress/factor testing in posca testsuite "
+                POSCA_SCRIPT=/home/opnfv/bottlenecks/testsuites/posca
+                if [[ $SUITE_NAME == posca_stress_traffic ]]; then
+                    TEST_CASE=posca_stress_traffic
+                    docker exec bottleneckcompose_bottlenecks_1 python ${POSCA_SCRIPT}/run_posca.py testcase $TEST_CASE
+                elif [[ $SUITE_NAME == posca_stress_ping ]]; then
+                    TEST_CASE=posca_stress_ping
+                    docker exec bottleneckcompose_bottlenecks_1 python ${POSCA_SCRIPT}/run_posca.py testcase $TEST_CASE
+                fi
+
+                echo "Bottlenecks: cleaning up docker-compose images and dockers"
+                docker-compose -f $WORKSPACE/docker/bottleneck-compose/docker-compose.yml down --rmi all        
             fi
-
-            echo "Bottlenecks: to prepare openstack environment"
-            prepare_env="${REPO_DIR}/ci/prepare_env.sh"
-            echo "Bottlenecks: docker cmd running: ${prepare_env}"
-            sudo docker exec ${container_id} ${prepare_env}
-
-            echo "Bottlenecks: to run testsuite ${SUITE_NAME}"
-            run_testsuite="${REPO_DIR}/run_tests.sh -s ${SUITE_NAME}"
-            echo "Bottlenecks: docker cmd running: ${run_testsuite}"
-            sudo docker exec ${container_id} ${run_testsuite}
 
 ####################
 # parameter macros
