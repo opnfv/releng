@@ -7,7 +7,7 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-import opnfv.utils.OPNFVLogger as OPNFVLogger
+import opnfv.utils.opnfv_logger as OPNFVLogger
 import os
 import time
 import shutil
