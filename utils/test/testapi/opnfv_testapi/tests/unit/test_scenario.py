@@ -1,11 +1,9 @@
 from copy import deepcopy
+from datetime import datetime
 import json
 import os
-from datetime import datetime
 
-from opnfv_testapi.common.constants import HTTP_BAD_REQUEST
-from opnfv_testapi.common.constants import HTTP_FORBIDDEN
-from opnfv_testapi.common.constants import HTTP_OK
+from opnfv_testapi.common import constants
 import opnfv_testapi.resources.scenario_models as models
 from test_testcase import TestBase
 
@@ -38,7 +36,7 @@ class TestScenarioBase(TestBase):
         return res.href.split('/')[-1]
 
     def assert_res(self, code, scenario, req=None):
-        self.assertEqual(code, HTTP_OK)
+        self.assertEqual(code, constants.HTTP_OK)
         if req is None:
             req = self.req_d
         scenario_dict = scenario.format_http()
@@ -61,29 +59,29 @@ class TestScenarioBase(TestBase):
 class TestScenarioCreate(TestScenarioBase):
     def test_withoutBody(self):
         (code, body) = self.create()
-        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
 
     def test_emptyName(self):
         req_empty = models.ScenarioCreateRequest('')
         (code, body) = self.create(req_empty)
-        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
         self.assertIn('name missing', body)
 
     def test_noneName(self):
         req_none = models.ScenarioCreateRequest(None)
         (code, body) = self.create(req_none)
-        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
         self.assertIn('name missing', body)
 
     def test_success(self):
         (code, body) = self.create_d()
-        self.assertEqual(code, HTTP_OK)
+        self.assertEqual(code, constants.HTTP_OK)
         self.assert_create_body(body)
 
     def test_alreadyExist(self):
         self.create_d()
         (code, body) = self.create_d()
-        self.assertEqual(code, HTTP_FORBIDDEN)
+        self.assertEqual(code, constants.HTTP_FORBIDDEN)
         self.assertIn('already exists', body)
 
 
@@ -126,7 +124,7 @@ class TestScenarioGet(TestScenarioBase):
     def _query_and_assert(self, query, found=True, reqs=None):
         code, body = self.query(query)
         if not found:
-            self.assertEqual(code, HTTP_OK)
+            self.assertEqual(code, constants.HTTP_OK)
             self.assertEqual(0, len(body.scenarios))
         else:
             self.assertEqual(len(reqs), len(body.scenarios))
@@ -296,10 +294,23 @@ class TestScenarioUpdate(TestScenarioBase):
 
     def _update_and_assert(self, update_req, new_scenario, name=None):
         code, _ = self.update(update_req, self.scenario)
-        self.assertEqual(code, HTTP_OK)
+        self.assertEqual(code, constants.HTTP_OK)
         self._get_and_assert(self._none_default(name, self.scenario),
                              new_scenario)
 
     @staticmethod
     def _none_default(check, default):
         return check if check else default
+
+
+class TestScenarioDelete(TestScenarioBase):
+    def test_notFound(self):
+        code, body = self.delete('notFound')
+        self.assertEqual(code, constants.HTTP_NOT_FOUND)
+
+    def test_success(self):
+        scenario = self.create_return_name(self.req_d)
+        code, _ = self.delete(scenario)
+        self.assertEqual(code, constants.HTTP_OK)
+        code, _ = self.get(scenario)
+        self.assertEqual(code, constants.HTTP_NOT_FOUND)
