@@ -72,7 +72,8 @@
     suite:
         - 'rubbos'
         - 'vstf'
-        - 'posca'
+        - 'posca_stress_traffic'
+        - 'posca_stress_ping'
 
     jobs:
         - 'bottlenecks-{installer}-{suite}-{pod}-daily-{stream}'
@@ -137,65 +138,14 @@
 - builder:
     name: bottlenecks-env-cleanup
     builders:
-        - shell: |
-            #!/bin/bash
-            set -e
-            [[ $GERRIT_REFSPEC_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
-
-            echo "Bottlenecks: docker containers/images cleaning up"
-            if [[ ! -z $(docker ps -a | grep opnfv/bottlenecks) ]]; then
-                echo "removing existing opnfv/bottlenecks containers"
-                docker ps -a | grep opnfv/bottlenecks | awk '{print $1}' | xargs docker rm -f >$redirect
-            fi
-
-            if [[ ! -z $(docker images | grep opnfv/bottlenecks) ]]; then
-                echo "Bottlenecks: docker images to remove:"
-                docker images | head -1 && docker images | grep opnfv/bottlenecks
-                image_tags=($(docker images | grep opnfv/bottlenecks | awk '{print $2}'))
-                for tag in "${image_tags[@]}"; do
-                    echo "Removing docker image opnfv/bottlenecks:$tag..."
-                    docker rmi opnfv/bottlenecks:$tag >$redirect
-                done
-            fi
+        - shell:
+            !include-raw: ./bottlenecks-cleanup.sh
 
 - builder:
     name: bottlenecks-run-suite
     builders:
-        - shell: |
-            #!/bin/bash
-            set -e
-            [[ $GERRIT_REFSPEC_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
-
-            echo "Bottlenecks: to pull image opnfv/bottlenecks:${DOCKER_TAG}"
-            docker pull opnfv/bottlenecks:$DOCKER_TAG >${redirect}
-
-            echo "Bottlenecks: docker start running"
-            opts="--privileged=true -id"
-            envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
-                  -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NET=${EXTERNAL_NETWORK} \
-                  -e BOTTLENECKS_BRANCH=${BOTTLENECKS_BRANCH} -e GERRIT_REFSPEC_DEBUG=${GERRIT_REFSPEC_DEBUG} \
-                  -e BOTTLENECKS_DB_TARGET=${BOTTLENECKS_DB_TARGET} -e PACKAGE_URL=${PACKAGE_URL}"
-            cmd="sudo docker run ${opts} ${envs} opnfv/bottlenecks:${DOCKER_TAG} /bin/bash"
-            echo "Bottlenecks: docker cmd running ${cmd}"
-            ${cmd} >${redirect}
-
-            echo "Bottlenecks: obtain docker id"
-            container_id=$(docker ps | grep "opnfv/bottlenecks:${DOCKER_TAG}" | awk '{print $1}' | head -1)
-            if [ -z ${container_id} ]; then
-                echo "Cannot find opnfv/bottlenecks container ID ${container_id}. Please check if it exists."
-                docker ps -a
-                exit 1
-            fi
-
-            echo "Bottlenecks: to prepare openstack environment"
-            prepare_env="${REPO_DIR}/ci/prepare_env.sh"
-            echo "Bottlenecks: docker cmd running: ${prepare_env}"
-            sudo docker exec ${container_id} ${prepare_env}
-
-            echo "Bottlenecks: to run testsuite ${SUITE_NAME}"
-            run_testsuite="${REPO_DIR}/run_tests.sh -s ${SUITE_NAME}"
-            echo "Bottlenecks: docker cmd running: ${run_testsuite}"
-            sudo docker exec ${container_id} ${run_testsuite}
+        - shell:
+            !include-raw: ./bottlenecks-run-suite.sh
 
 ####################
 # parameter macros
