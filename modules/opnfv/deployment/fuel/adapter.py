@@ -124,26 +124,36 @@ class FuelAdapter(manager.DeploymentHandler):
             fields = lines[i].rsplit(' | ')
             id = fields[index_id].strip().encode()
             ip = fields[index_ip].strip().encode()
-            status_node = fields[index_status].strip().encode()
+            status_node = fields[index_status].strip().encode().lower()
             name = fields[index_name].strip().encode()
-            roles = fields[index_roles].strip().encode()
+            roles_all = fields[index_roles].strip().encode().lower()
+
+            roles = [x for x in [manager.Role.CONTROLLER,
+                                 manager.Role.COMPUTE,
+                                 manager.Role.ODL] if x in roles_all]
 
             dict = {"cluster": fields[index_cluster].strip().encode(),
                     "mac": fields[index_mac].strip().encode(),
                     "status_node": status_node,
                     "online": fields[index_online].strip().encode()}
 
+            ssh_client = None
             if status_node == 'ready':
-                status = manager.Node.STATUS_OK
+                status = manager.NodeStatus.STATUS_OK
                 proxy = {'ip': self.installer_ip,
                          'username': self.installer_user,
                          'password': self.installer_pwd}
                 ssh_client = ssh_utils.get_ssh_client(hostname=ip,
                                                       username='root',
                                                       proxy=proxy)
+            elif 'error' in status_node:
+                status = manager.NodeStatus.STATUS_ERROR
+            elif 'off' in status_node:
+                status = manager.NodeStatus.STATUS_OFFLINE
+            elif 'discover' in status_node:
+                status = manager.NodeStatus.STATUS_UNUSED
             else:
-                status = manager.Node.STATUS_INACTIVE
-                ssh_client = None
+                status = manager.NodeStatus.STATUS_INACTIVE
 
             node = manager.Node(
                 id, ip, name, status, roles, ssh_client, dict)
@@ -160,7 +170,7 @@ class FuelAdapter(manager.DeploymentHandler):
         cmd = 'source openrc;nova-manage version 2>/dev/null'
         version = None
         for node in self.nodes:
-            if 'controller' in node.get_attribute('roles'):
+            if node.is_controller():
                 version = node.run_cmd(cmd)
                 break
         return version
@@ -169,7 +179,7 @@ class FuelAdapter(manager.DeploymentHandler):
         cmd = "apt-cache show opendaylight|grep Version|sed 's/^.*\: //'"
         version = None
         for node in self.nodes:
-            if 'controller' in node.get_attribute('roles'):
+            if node.is_controller():
                 odl_version = node.run_cmd(cmd)
                 if odl_version:
                     version = 'OpenDaylight ' + odl_version
