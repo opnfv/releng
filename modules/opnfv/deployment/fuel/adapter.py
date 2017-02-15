@@ -66,7 +66,7 @@ class FuelAdapter(manager.DeploymentHandler):
         if options and options['cluster'] and len(self.nodes) > 0:
             n = []
             for node in self.nodes:
-                if node.info['cluster'] == options['cluster']:
+                if str(node.info['cluster']) == str(options['cluster']):
                     n.append(node)
             return n
 
