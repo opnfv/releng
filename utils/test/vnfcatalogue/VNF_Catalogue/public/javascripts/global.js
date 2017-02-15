@@ -8,7 +8,18 @@
  *******************************************************************************/
 
 $(document).ready( function() {
+    $(".button-collapse").sideNav();
     $('#Search').click(function() {
+        var tags = $('#Tags').val().toLowerCase().split(/[ ,]+/);
+        window.location.href = '/search_projects?tags=' + tags;
+        return false;
+    });
+    $('#SearchSpan').click(function(){
+        var tags = $('#Tags').val().toLowerCase().split(/[ ,]+/);
+        window.location.href = '/search_projects?tags=' + tags;
+        return false;
+    });
+    $('div.form-group-custom i.material-icons').click(function(e){
         var tags = $('#Tags').val().toLowerCase().split(/[ ,]+/);
         window.location.href = '/search_projects?tags=' + tags;
         return false;
