@@ -22,13 +22,14 @@
 
 import json
 from datetime import datetime
+import functools 
 
 from tornado import gen
 from tornado.web import RequestHandler, asynchronous, HTTPError
 
 from models import CreateResponse
 from opnfv_testapi.common.constants import DEFAULT_REPRESENTATION, \
-    HTTP_BAD_REQUEST, HTTP_NOT_FOUND, HTTP_FORBIDDEN
+    HTTP_BAD_REQUEST, HTTP_NOT_FOUND, HTTP_FORBIDDEN, HTTP_UNAUTHORIZED
 from opnfv_testapi.tornado_swagger import swagger
 
 
@@ -71,8 +72,25 @@ class GenericApiHandler(RequestHandler):
         cls_data = self.table_cls.from_dict(data)
         return cls_data.format_http()
 
+    def authenticate(method):
+        @gen.coroutine
+        @functools.wraps(method)
+        def wrapper(self, *args, **kwargs):
+            try:
+                token = self.request.headers['Authorization']
+            except KeyError:
+                raise HTTPError(HTTP_UNAUTHORIZED, "No Authentication Header.")
+            query = {'uuid': token}
+            check = yield self._eval_db_find_one(query, 'tokens')
+            if not check:
+                raise HTTPError(HTTP_FORBIDDEN,"Invalid Token.")
+            else:
+                ret = yield gen.coroutine(method)(self, *args, **kwargs)
+                raise gen.Return(ret)
+        return wrapper
+
     @asynchronous
-    @gen.coroutine
+    @authenticate
     def _create(self, miss_checks, db_checks, **kwargs):
         """
         :param miss_checks: [miss1, miss2]
@@ -137,7 +155,7 @@ class GenericApiHandler(RequestHandler):
         self.finish_request(self.format_data(data))
 
     @asynchronous
-    @gen.coroutine
+    @authenticate
     def _delete(self, query):
         data = yield self._eval_db_find_one(query)
         if data is None:
@@ -149,7 +167,7 @@ class GenericApiHandler(RequestHandler):
         self.finish_request()
 
     @asynchronous
-    @gen.coroutine
+    @authenticate
     def _update(self, query, db_keys):
         if self.json_args is None:
             raise HTTPError(HTTP_BAD_REQUEST, "No payload")
@@ -227,7 +245,6 @@ class GenericApiHandler(RequestHandler):
         if table is None:
             table = self.table
         return self._eval_db(table, 'find_one', query)
-
 
 class VersionHandler(GenericApiHandler):
     @swagger.operation(nickname='listAllVersions')
