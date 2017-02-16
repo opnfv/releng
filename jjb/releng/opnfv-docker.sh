@@ -43,11 +43,11 @@ fi
 if [[ -n "$(docker images | grep $DOCKER_REPO_NAME)" ]]; then
     echo "Docker images to remove:"
     docker images | head -1 && docker images | grep $DOCKER_REPO_NAME
-    image_tags=($(docker images | grep $DOCKER_REPO_NAME | awk '{print $2}'))
-    for tag in "${image_tags[@]}"; do
-        if [[ -n "$(docker images|grep $DOCKER_REPO_NAME|grep $tag)" ]]; then
-            echo "Removing docker image $DOCKER_REPO_NAME:$tag..."
-            docker rmi -f $DOCKER_REPO_NAME:$tag
+    image_ids=($(docker images | grep $DOCKER_REPO_NAME | awk '{print $3}'))
+    for id in "${image_ids[@]}"; do
+        if [[ -n "$(docker images|grep $DOCKER_REPO_NAME|grep $id)" ]]; then
+            echo "Removing docker image $DOCKER_REPO_NAME:$id..."
+            docker rmi -f $id
         fi
     done
 fi
