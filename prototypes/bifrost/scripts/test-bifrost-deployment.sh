@@ -79,6 +79,11 @@ source ${ANSIBLE_INSTALL_ROOT}/ansible/hacking/env-setup
 ANSIBLE=$(which ansible-playbook)
 set -x -o nounset
 
+logs_on_exit() {
+    $SCRIPT_HOME/collect-test-info.sh
+}
+trap logs_on_exit EXIT
+
 # Change working directory
 cd $BIFROST_HOME/playbooks
 
@@ -128,7 +133,5 @@ if [ $EXITCODE != 0 ]; then
     echo "Test failed. See logs folder"
     echo "****************************"
 fi
-
-$SCRIPT_HOME/collect-test-info.sh
 
 exit $EXITCODE
