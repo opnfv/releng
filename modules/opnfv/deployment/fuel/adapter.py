@@ -114,7 +114,7 @@ class FuelAdapter(manager.DeploymentHandler):
                 index_ip = i
             elif "mac" in fields[i]:
                 index_mac = i
-            elif "roles " in fields[i]:
+            elif "roles " in fields[i] and "pending_roles" not in fields[i]:
                 index_roles = i
             elif "online" in fields[i]:
                 index_online = i
