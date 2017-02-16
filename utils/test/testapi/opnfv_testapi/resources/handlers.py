@@ -21,6 +21,7 @@
 ##############################################################################
 
 from datetime import datetime
+import functools
 import json
 
 from tornado import gen
@@ -43,6 +44,7 @@ class GenericApiHandler(web.RequestHandler):
         self.db_testcases = 'testcases'
         self.db_results = 'results'
         self.db_scenarios = 'scenarios'
+        self.auth = self.settings["auth"]
 
     def prepare(self):
         if self.request.method != "GET" and self.request.method != "DELETE":
@@ -70,8 +72,29 @@ class GenericApiHandler(web.RequestHandler):
         cls_data = self.table_cls.from_dict(data)
         return cls_data.format_http()
 
+    def authenticate(method):
+        @web.asynchronous
+        @gen.coroutine
+        @functools.wraps(method)
+        def wrapper(self, *args, **kwargs):
+            if self.auth:
+                try:
+                    token = self.request.headers['X-Auth-Token']
+                except KeyError:
+                    raise web.HTTPError(web.HTTP_UNAUTHORIZED,
+                                        "No Authentication Header.")
+                query = {'access_token': token}
+                check = yield self._eval_db_find_one(query, 'tokens')
+                if not check:
+                    raise web.HTTPError(web.HTTP_FORBIDDEN,
+                                        "Invalid Token.")
+            ret = yield gen.coroutine(method)(self, *args, **kwargs)
+            raise gen.Return(ret)
+        return wrapper
+
     @web.asynchronous
     @gen.coroutine
+    @authenticate
     def _create(self, miss_checks, db_checks, **kwargs):
         """
         :param miss_checks: [miss1, miss2]
@@ -137,6 +160,7 @@ class GenericApiHandler(web.RequestHandler):
 
     @web.asynchronous
     @gen.coroutine
+    @authenticate
     def _delete(self, query):
         data = yield self._eval_db_find_one(query)
         if data is None:
@@ -149,6 +173,7 @@ class GenericApiHandler(web.RequestHandler):
 
     @web.asynchronous
     @gen.coroutine
+    @authenticate
     def _update(self, query, db_keys):
         if self.json_args is None:
             raise web.HTTPError(constants.HTTP_BAD_REQUEST, "No payload")
