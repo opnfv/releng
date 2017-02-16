@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "dabed58f_0b74d4cd",
+        "filename": "modules/opnfv/deployment/manager.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 121,
+      "author": {
+        "id": 2479
+      },
+      "writtenOn": "2017-02-16T14:58:01Z",
+      "side": 1,
+      "message": "This is not quite related to this PR, but i didn\u0027t this until today. Jose, these default arguments are dangerous. They make it possible for one instance to poison the state of the other. See http://stackoverflow.com/questions/1132941/least-astonishment-and-the-mutable-default-argument. \nThey need to follow the pattern roles\u003dNone in the initialization/if roles is None; roles \u003d [] in the code.\nThe whole codebase needs to be sanitized to fix these {} and [] initialisations or there is a chance very subtle and painful to debug bugs will appear.",
+      "range": {
+        "startLine": 119,
+        "startChar": 16,
+        "endLine": 121,
+        "endChar": 24
+      },
+      "revId": "dae25ffcc1a24c82d31a477912285ca12bffc927",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dabed58f_f20b7929",
         "filename": "modules/opnfv/deployment/manager.py",
         "patchSetId": 2
