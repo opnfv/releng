@@ -57,6 +57,7 @@ def make_app():
         url_mappings.mappings,
         db=db,
         debug=CONF.api_debug_on,
+        auth=CONF.api_authenticate_on
     )
 
 
