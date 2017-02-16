@@ -36,6 +36,7 @@ class APIConfig:
         self.mongo_dbname = None
         self.api_port = None
         self.api_debug_on = None
+        self.api_authenticate_on = None
         self._parser = None
         self.swagger_base_url = None
 
@@ -79,6 +80,8 @@ class APIConfig:
 
         obj.api_port = obj._get_int_parameter("api", "port")
         obj.api_debug_on = obj._get_bool_parameter("api", "debug")
+        obj.api_authenticate_on = obj._get_bool_parameter("api",
+            "authenticate")
         obj.swagger_base_url = obj._get_parameter("swagger", "base_url")
 
         return obj
@@ -92,4 +95,5 @@ class APIConfig:
                                              self.mongo_dbname,
                                              self.api_port,
                                              self.api_debug_on,
+                                             self.api_authenticate_on,
                                              self.swagger_base_url)
