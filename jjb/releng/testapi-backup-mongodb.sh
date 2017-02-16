@@ -27,5 +27,5 @@ if [ $? != 0 ]; then
 else
     echo "Uploading mongodump to artifact $artifact_dir"
     /usr/local/bin/gsutil cp -r "$workspace"/"$file_name" gs://artifacts.opnfv.org/"$artifact_dir"/
-    echo "MongoDump can be found at http://artifacts.opnfv.org/$artifact_dir"
+    echo "MongoDump can be found at http://artifacts.opnfv.org/$artifact_dir.html"
 fi
