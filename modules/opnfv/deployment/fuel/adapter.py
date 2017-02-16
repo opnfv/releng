@@ -114,7 +114,7 @@ class FuelAdapter(manager.DeploymentHandler):
                 index_ip = i
             elif "mac" in fields[i]:
                 index_mac = i
-            elif "roles " in fields[i]:
+            elif "roles " in fields[i] and not "pending_roles" in fields[i]:
                 index_roles = i
             elif "online" in fields[i]:
                 index_online = i
@@ -126,11 +126,23 @@ class FuelAdapter(manager.DeploymentHandler):
             ip = fields[index_ip].strip().encode()
             status_node = fields[index_status].strip().encode().lower()
             name = fields[index_name].strip().encode()
+
             roles_all = fields[index_roles].strip().encode().lower()
+            if (id =='7'):
+                print(fields)
+                print(id)
+                print(name)
+                print(index_roles)
+                print(index_name)
+                print("before:")
+                print(roles_all)
 
             roles = [x for x in [manager.Role.CONTROLLER,
                                  manager.Role.COMPUTE,
                                  manager.Role.ODL] if x in roles_all]
+            if (id =='7'):
+                print("after:")
+                print(roles)
 
             dict = {"cluster": fields[index_cluster].strip().encode(),
                     "mac": fields[index_mac].strip().encode(),
@@ -162,7 +174,7 @@ class FuelAdapter(manager.DeploymentHandler):
                     nodes.append(node)
             else:
                 nodes.append(node)
-
+        
         self.get_nodes_called = True
         return nodes
 
