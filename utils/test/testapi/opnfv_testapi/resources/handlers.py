@@ -21,6 +21,7 @@
 ##############################################################################
 
 import json
+import functools
 from datetime import datetime
 
 from tornado import gen
@@ -28,7 +29,7 @@ from tornado.web import RequestHandler, asynchronous, HTTPError
 
 from models import CreateResponse
 from opnfv_testapi.common.constants import DEFAULT_REPRESENTATION, \
-    HTTP_BAD_REQUEST, HTTP_NOT_FOUND, HTTP_FORBIDDEN
+    HTTP_BAD_REQUEST, HTTP_NOT_FOUND, HTTP_FORBIDDEN, HTTP_UNAUTHORIZED
 from opnfv_testapi.tornado_swagger import swagger
 
 
@@ -44,6 +45,7 @@ class GenericApiHandler(RequestHandler):
         self.db_testcases = 'testcases'
         self.db_results = 'results'
         self.db_scenarios = 'scenarios'
+        self.auth = self.settings["auth"]
 
     def prepare(self):
         if self.request.method != "GET" and self.request.method != "DELETE":
@@ -71,8 +73,26 @@ class GenericApiHandler(RequestHandler):
         cls_data = self.table_cls.from_dict(data)
         return cls_data.format_http()
 
+    def authenticate(method):
+        @gen.coroutine
+        @functools.wraps(method)
+        def wrapper(self, *args, **kwargs):
+            if self.auth:
+                try:
+                    token = self.request.headers['X-Auth-Token']
+                except KeyError:
+                    raise HTTPError(HTTP_UNAUTHORIZED, \
+                            "No Authentication Header.")
+                query = {'access_token': token}
+                check = yield self._eval_db_find_one(query, 'tokens')
+                if not check:
+                    raise HTTPError(HTTP_FORBIDDEN,"Invalid Token.")
+            ret = yield gen.coroutine(method)(self, *args, **kwargs)
+            raise gen.Return(ret)
+        return wrapper
+
     @asynchronous
-    @gen.coroutine
+    @authenticate
     def _create(self, miss_checks, db_checks, **kwargs):
         """
         :param miss_checks: [miss1, miss2]
@@ -108,7 +128,7 @@ class GenericApiHandler(RequestHandler):
         self.finish_request(self._create_response(resource))
 
     @asynchronous
-    @gen.coroutine
+    @authenticate
     def _list(self, query=None, res_op=None, *args, **kwargs):
         if query is None:
             query = {}
@@ -137,7 +157,7 @@ class GenericApiHandler(RequestHandler):
         self.finish_request(self.format_data(data))
 
     @asynchronous
-    @gen.coroutine
+    @authenticate
     def _delete(self, query):
         data = yield self._eval_db_find_one(query)
         if data is None:
@@ -149,7 +169,7 @@ class GenericApiHandler(RequestHandler):
         self.finish_request()
 
     @asynchronous
-    @gen.coroutine
+    @authenticate
     def _update(self, query, db_keys):
         if self.json_args is None:
             raise HTTPError(HTTP_BAD_REQUEST, "No payload")
