@@ -35,6 +35,7 @@ class TestBase(testing.AsyncHTTPTestCase):
             url_mappings.mappings,
             db=fake_pymongo,
             debug=True,
+            auth=False
         )
 
     def create_d(self, *args):
