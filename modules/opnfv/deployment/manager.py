@@ -164,13 +164,15 @@ class Node(object):
         Run command remotely on a node
         '''
         if self.status is not NodeStatus.STATUS_OK:
-            logger.error("The node %s is not active" % self.ip)
+            logger.error(
+                "Error running command %s. The node %s is not active"
+                % (cmd, self.ip))
             return None
         _, stdout, stderr = (self.ssh_client.exec_command(cmd))
         error = stderr.readlines()
         if len(error) > 0:
             logger.error("error %s" % ''.join(error))
-            return error
+            return None
         output = ''.join(stdout.readlines()).rstrip()
         return output
 
@@ -193,6 +195,14 @@ class Node(object):
         '''
         return self.get_dict()[attribute]
 
+    def is_active(self):
+        '''
+        Returns if the node is active
+        '''
+        if self.status == NodeStatus.STATUS_OK:
+            return True
+        return False
+
     def is_controller(self):
         '''
         Returns if the node is a controller
@@ -213,8 +223,10 @@ class Node(object):
         '''
         Returns the ovs version installed
         '''
-        cmd = "ovs-vsctl --version|head -1| sed 's/^.*) //'"
-        return self.run_cmd(cmd)
+        if self.is_active():
+            cmd = "ovs-vsctl --version|head -1| sed 's/^.*) //'"
+            return self.run_cmd(cmd)
+        return None
 
     def __str__(self):
         return '''
