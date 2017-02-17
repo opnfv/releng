@@ -189,6 +189,9 @@ if [[ "$JOB_NAME" == *virtual* ]]; then
     NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings.yaml"
   fi
   DEPLOY_CMD="${DEPLOY_CMD} -v"
+  if [[ "${DEPLOY_SCENARIO}" =~ fdio|ovs ]]; then
+    DEPLOY_CMD="${DEPLOY_CMD} --virtual-ram 14"
+  fi
   if [[ "$JOB_NAME" == *csit* ]]; then
     DEPLOY_CMD="${DEPLOY_CMD} -e csit-environment.yaml --virtual-computes 2"
   fi
