@@ -76,11 +76,9 @@
                 git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
             fi
         - shell: |
-            sudo pip install virtualenv virtualenvwrapper
-            export WORKON_HOME=$HOME/.virtualenvs
-            source /usr/local/bin/virtualenvwrapper.sh
-            mkvirtualenv $WORKSPACE/venv
-            workon $WORKSPACE/venv
+            sudo pip install virtualenv 
+            virtualenv $WORKSPACE/venv
+            source $WORKSPACE/venv/bin/activate
             pip install --upgrade pip
             pip freeze
             pip install tox
