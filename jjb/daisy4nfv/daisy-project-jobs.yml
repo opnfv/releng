@@ -105,8 +105,21 @@
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                     GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
                   node-parameters: false
+                  node-label: 'daisy-baremetal'
                   kill-phase-on: FAILURE
                   abort-all-job: true
+                - name: '{installer}-deploy-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    BRANCH=$BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                    slave-label='daisy-virtual'
+                  node-parameters: false
+                  node-label: 'daisy-virtual'
+                  kill-phase-on: FAILURE
+                  abort-all-job: false
         - multijob:
             name: test
             condition: SUCCESSFUL
