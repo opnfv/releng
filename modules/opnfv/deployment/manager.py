@@ -357,6 +357,14 @@ class DeploymentHandler(object):
         '''
         return self.installer_node
 
+    def get_arch():
+        '''
+            Returns the architecture of the first compute node found
+        '''
+        for node in self.nodes:
+            if node.is_compute():
+                return node.cpu.get('arch', None)
+
     def get_deployment_info(self):
         '''
             Returns an object of type Deployment
