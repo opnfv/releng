@@ -181,13 +181,6 @@ fi
 
 if [[ "$JOB_NAME" == *virtual* ]]; then
   # settings for virtual deployment
-  if [ "$IPV6_FLAG" == "True" ]; then
-    NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings_v6.yaml"
-  elif echo ${DEPLOY_SCENARIO} | grep fdio; then
-    NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings_vpp.yaml"
-  else
-    NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings.yaml"
-  fi
   DEPLOY_CMD="${DEPLOY_CMD} -v"
   if [[ "${DEPLOY_SCENARIO}" =~ fdio|ovs ]]; then
     DEPLOY_CMD="${DEPLOY_CMD} --virtual-ram 14"
@@ -197,13 +190,6 @@ if [[ "$JOB_NAME" == *virtual* ]]; then
   fi
 else
   # settings for bare metal deployment
-  if [ "$IPV6_FLAG" == "True" ]; then
-    NETWORK_FILE="/root/network/network_settings_v6.yaml"
-  elif [[ "$JOB_NAME" == *master* ]]; then
-    NETWORK_FILE="/root/network/network_settings-master.yaml"
-  else
-    NETWORK_FILE="/root/network/network_settings.yaml"
-  fi
   INVENTORY_FILE="/root/inventory/pod_settings.yaml"
 
   if ! sudo test -e "$INVENTORY_FILE"; then
@@ -212,6 +198,14 @@ else
   fi
   # include inventory file for bare metal deployment
   DEPLOY_CMD="${DEPLOY_CMD} -i ${INVENTORY_FILE}"
+fi
+
+if [ "$IPV6_FLAG" == "True" ]; then
+  NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings_v6.yaml"
+elif echo ${DEPLOY_SCENARIO} | grep fdio; then
+  NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings_vpp.yaml"
+else
+  NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings.yaml"
 fi
 
 # Check that network settings file exists
