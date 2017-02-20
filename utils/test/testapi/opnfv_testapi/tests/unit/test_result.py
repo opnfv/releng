@@ -7,17 +7,15 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 import copy
-import unittest
 from datetime import datetime, timedelta
+import unittest
 
-from opnfv_testapi.common.constants import HTTP_OK, HTTP_BAD_REQUEST, \
-    HTTP_NOT_FOUND
-from opnfv_testapi.resources.pod_models import PodCreateRequest
-from opnfv_testapi.resources.project_models import ProjectCreateRequest
-from opnfv_testapi.resources.result_models import ResultCreateRequest, \
-    TestResult, TestResults, ResultUpdateRequest, TI, TIHistory
-from opnfv_testapi.resources.testcase_models import TestcaseCreateRequest
-from test_base import TestBase
+from opnfv_testapi.common import constants
+from opnfv_testapi.resources import pod_models
+from opnfv_testapi.resources import project_models
+from opnfv_testapi.resources import result_models
+from opnfv_testapi.resources import testcase_models
+import test_base as base
 
 
 class Details(object):
@@ -49,7 +47,7 @@ class Details(object):
         return t
 
 
-class TestResultBase(TestBase):
+class TestResultBase(base.TestBase):
     def setUp(self):
         self.pod = 'zte-pod1'
         self.project = 'functest'
@@ -59,34 +57,41 @@ class TestResultBase(TestBase):
         self.build_tag = 'v3.0'
         self.scenario = 'odl-l2'
         self.criteria = 'passed'
-        self.trust_indicator = TI(0.7)
+        self.trust_indicator = result_models.TI(0.7)
         self.start_date = "2016-05-23 07:16:09.477097"
         self.stop_date = "2016-05-23 07:16:19.477097"
         self.update_date = "2016-05-24 07:16:19.477097"
         self.update_step = -0.05
         super(TestResultBase, self).setUp()
         self.details = Details(timestart='0', duration='9s', status='OK')
-        self.req_d = ResultCreateRequest(pod_name=self.pod,
-                                         project_name=self.project,
-                                         case_name=self.case,
-                                         installer=self.installer,
-                                         version=self.version,
-                                         start_date=self.start_date,
-                                         stop_date=self.stop_date,
-                                         details=self.details.format(),
-                                         build_tag=self.build_tag,
-                                         scenario=self.scenario,
-                                         criteria=self.criteria,
-                                         trust_indicator=self.trust_indicator)
-        self.get_res = TestResult
-        self.list_res = TestResults
-        self.update_res = TestResult
+        self.req_d = result_models.ResultCreateRequest(
+            pod_name=self.pod,
+            project_name=self.project,
+            case_name=self.case,
+            installer=self.installer,
+            version=self.version,
+            start_date=self.start_date,
+            stop_date=self.stop_date,
+            details=self.details.format(),
+            build_tag=self.build_tag,
+            scenario=self.scenario,
+            criteria=self.criteria,
+            trust_indicator=self.trust_indicator)
+        self.get_res = result_models.TestResult
+        self.list_res = result_models.TestResults
+        self.update_res = result_models.TestResult
         self.basePath = '/api/v1/results'
-        self.req_pod = PodCreateRequest(self.pod, 'metal', 'zte pod 1')
-        self.req_project = ProjectCreateRequest(self.project, 'vping test')
-        self.req_testcase = TestcaseCreateRequest(self.case,
-                                                  '/cases/vping',
-                                                  'vping-ssh test')
+        self.req_pod = pod_models.PodCreateRequest(
+            self.pod,
+            'metal',
+            'zte pod 1')
+        self.req_project = project_models.ProjectCreateRequest(
+            self.project,
+            'vping test')
+        self.req_testcase = testcase_models.TestcaseCreateRequest(
+            self.case,
+            '/cases/vping',
+            'vping-ssh test')
         self.create_help('/api/v1/pods', self.req_pod)
         self.create_help('/api/v1/projects', self.req_project)
         self.create_help('/api/v1/projects/%s/cases',
@@ -94,7 +99,7 @@ class TestResultBase(TestBase):
                          self.project)
 
     def assert_res(self, code, result, req=None):
-        self.assertEqual(code, HTTP_OK)
+        self.assertEqual(code, constants.HTTP_OK)
         if req is None:
             req = self.req_d
         self.assertEqual(result.pod_name, req.pod_name)
@@ -129,78 +134,78 @@ class TestResultBase(TestBase):
 class TestResultCreate(TestResultBase):
     def test_nobody(self):
         (code, body) = self.create(None)
-        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
         self.assertIn('no body', body)
 
     def test_podNotProvided(self):
         req = self.req_d
         req.pod_name = None
         (code, body) = self.create(req)
-        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
         self.assertIn('pod_name missing', body)
 
     def test_projectNotProvided(self):
         req = self.req_d
         req.project_name = None
         (code, body) = self.create(req)
-        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
         self.assertIn('project_name missing', body)
 
     def test_testcaseNotProvided(self):
         req = self.req_d
         req.case_name = None
         (code, body) = self.create(req)
-        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
         self.assertIn('case_name missing', body)
 
     def test_noPod(self):
         req = self.req_d
         req.pod_name = 'notExistPod'
         (code, body) = self.create(req)
-        self.assertEqual(code, HTTP_NOT_FOUND)
+        self.assertEqual(code, constants.HTTP_NOT_FOUND)
         self.assertIn('Could not find pod', body)
 
     def test_noProject(self):
         req = self.req_d
         req.project_name = 'notExistProject'
         (code, body) = self.create(req)
-        self.assertEqual(code, HTTP_NOT_FOUND)
+        self.assertEqual(code, constants.HTTP_NOT_FOUND)
         self.assertIn('Could not find project', body)
 
     def test_noTestcase(self):
         req = self.req_d
         req.case_name = 'notExistTestcase'
         (code, body) = self.create(req)
-        self.assertEqual(code, HTTP_NOT_FOUND)
+        self.assertEqual(code, constants.HTTP_NOT_FOUND)
         self.assertIn('Could not find testcase', body)
 
     def test_success(self):
         (code, body) = self.create_d()
-        self.assertEqual(code, HTTP_OK)
+        self.assertEqual(code, constants.HTTP_OK)
         self.assert_href(body)
 
     def test_key_with_doc(self):
         req = copy.deepcopy(self.req_d)
         req.details = {'1.name': 'dot_name'}
         (code, body) = self.create(req)
-        self.assertEqual(code, HTTP_OK)
+        self.assertEqual(code, constants.HTTP_OK)
         self.assert_href(body)
 
     def test_no_ti(self):
-        req = ResultCreateRequest(pod_name=self.pod,
-                                  project_name=self.project,
-                                  case_name=self.case,
-                                  installer=self.installer,
-                                  version=self.version,
-                                  start_date=self.start_date,
-                                  stop_date=self.stop_date,
-                                  details=self.details.format(),
-                                  build_tag=self.build_tag,
-                                  scenario=self.scenario,
-                                  criteria=self.criteria)
+        req = result_models.ResultCreateRequest(pod_name=self.pod,
+                                                project_name=self.project,
+                                                case_name=self.case,
+                                                installer=self.installer,
+                                                version=self.version,
+                                                start_date=self.start_date,
+                                                stop_date=self.stop_date,
+                                                details=self.details.format(),
+                                                build_tag=self.build_tag,
+                                                scenario=self.scenario,
+                                                criteria=self.criteria)
         (code, res) = self.create(req)
         _id = res.href.split('/')[-1]
-        self.assertEqual(code, HTTP_OK)
+        self.assertEqual(code, constants.HTTP_OK)
         code, body = self.get(_id)
         self.assert_res(code, body, req)
 
@@ -240,7 +245,7 @@ class TestResultGet(TestResultBase):
 
     def test_queryPeriodNotInt(self):
         code, body = self.query(self._set_query('period=a'))
-        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
         self.assertIn('period must be int', body)
 
     def test_queryPeriodFail(self):
@@ -253,7 +258,7 @@ class TestResultGet(TestResultBase):
 
     def test_queryLastNotInt(self):
         code, body = self.query(self._set_query('last=a'))
-        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
         self.assertIn('last must be int', body)
 
     def test_queryLast(self):
@@ -292,7 +297,7 @@ class TestResultGet(TestResultBase):
             req = self._create_changed_date(**kwargs)
         code, body = self.query(query)
         if not found:
-            self.assertEqual(code, HTTP_OK)
+            self.assertEqual(code, constants.HTTP_OK)
             self.assertEqual(0, len(body.results))
         else:
             self.assertEqual(1, len(body.results))
@@ -326,10 +331,11 @@ class TestResultUpdate(TestResultBase):
 
         new_ti = copy.deepcopy(self.trust_indicator)
         new_ti.current += self.update_step
-        new_ti.histories.append(TIHistory(self.update_date, self.update_step))
+        new_ti.histories.append(
+            result_models.TIHistory(self.update_date, self.update_step))
         new_data = copy.deepcopy(self.req_d)
         new_data.trust_indicator = new_ti
-        update = ResultUpdateRequest(trust_indicator=new_ti)
+        update = result_models.ResultUpdateRequest(trust_indicator=new_ti)
         code, body = self.update(update, _id)
         self.assertEqual(_id, body._id)
         self.assert_res(code, body, new_data)

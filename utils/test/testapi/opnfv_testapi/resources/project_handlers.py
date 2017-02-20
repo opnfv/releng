@@ -6,19 +6,19 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+import handlers
+from opnfv_testapi.common import constants
 from opnfv_testapi.tornado_swagger import swagger
-from handlers import GenericApiHandler
-from opnfv_testapi.common.constants import HTTP_FORBIDDEN
-from project_models import Project
+import project_models
 
 
-class GenericProjectHandler(GenericApiHandler):
+class GenericProjectHandler(handlers.GenericApiHandler):
     def __init__(self, application, request, **kwargs):
         super(GenericProjectHandler, self).__init__(application,
                                                     request,
                                                     **kwargs)
         self.table = 'projects'
-        self.table_cls = Project
+        self.table_cls = project_models.Project
 
 
 class ProjectCLHandler(GenericProjectHandler):
@@ -48,7 +48,7 @@ class ProjectCLHandler(GenericProjectHandler):
 
         def error(data):
             message = '{} already exists as a project'.format(data.name)
-            return HTTP_FORBIDDEN, message
+            return constants.HTTP_FORBIDDEN, message
 
         miss_checks = ['name']
         db_checks = [(self.table, False, query, error)]

@@ -6,17 +6,17 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+import handlers
+from opnfv_testapi.common import constants
 from opnfv_testapi.tornado_swagger import swagger
-from handlers import GenericApiHandler
-from pod_models import Pod
-from opnfv_testapi.common.constants import HTTP_FORBIDDEN
+import pod_models
 
 
-class GenericPodHandler(GenericApiHandler):
+class GenericPodHandler(handlers.GenericApiHandler):
     def __init__(self, application, request, **kwargs):
         super(GenericPodHandler, self).__init__(application, request, **kwargs)
         self.table = 'pods'
-        self.table_cls = Pod
+        self.table_cls = pod_models.Pod
 
 
 class PodCLHandler(GenericPodHandler):
@@ -46,7 +46,7 @@ class PodCLHandler(GenericPodHandler):
 
         def error(data):
             message = '{} already exists as a pod'.format(data.name)
-            return HTTP_FORBIDDEN, message
+            return constants.HTTP_FORBIDDEN, message
 
         miss_checks = ['name']
         db_checks = [(self.table, False, query, error)]

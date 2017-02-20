@@ -8,20 +8,20 @@
 ##############################################################################
 import json
 
-from tornado.web import Application
-from tornado.testing import AsyncHTTPTestCase
+from tornado import testing
+from tornado import web
 
-from opnfv_testapi.router import url_mappings
-from opnfv_testapi.resources.models import CreateResponse
 import fake_pymongo
+from opnfv_testapi.resources import models
+from opnfv_testapi.router import url_mappings
 
 
-class TestBase(AsyncHTTPTestCase):
+class TestBase(testing.AsyncHTTPTestCase):
     headers = {'Content-Type': 'application/json; charset=UTF-8'}
 
     def setUp(self):
         self.basePath = ''
-        self.create_res = CreateResponse
+        self.create_res = models.CreateResponse
         self.get_res = None
         self.list_res = None
         self.update_res = None
@@ -31,7 +31,7 @@ class TestBase(AsyncHTTPTestCase):
         super(TestBase, self).setUp()
 
     def get_app(self):
-        return Application(
+        return web.Application(
             url_mappings.mappings,
             db=fake_pymongo,
             debug=True,

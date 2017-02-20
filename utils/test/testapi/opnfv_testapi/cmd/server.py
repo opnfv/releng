@@ -31,19 +31,19 @@ TODOs :
 
 import argparse
 
-import tornado.ioloop
 import motor
+import tornado.ioloop
 
-from opnfv_testapi.common.config import APIConfig
-from opnfv_testapi.tornado_swagger import swagger
+from opnfv_testapi.common import config
 from opnfv_testapi.router import url_mappings
+from opnfv_testapi.tornado_swagger import swagger
 
 # optionally get config file from command line
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config-file", dest='config_file',
                     help="Config file location")
 args = parser.parse_args()
-CONF = APIConfig().parse(args.config_file)
+CONF = config.APIConfig().parse(args.config_file)
 
 # connecting to MongoDB server, and choosing database
 client = motor.MotorClient(CONF.mongo_url)

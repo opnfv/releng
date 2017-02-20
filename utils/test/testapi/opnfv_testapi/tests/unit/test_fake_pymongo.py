@@ -9,13 +9,13 @@
 import unittest
 
 from tornado import gen
-from tornado.testing import AsyncHTTPTestCase, gen_test
-from tornado.web import Application
+from tornado import testing
+from tornado import web
 
 import fake_pymongo
 
 
-class MyTest(AsyncHTTPTestCase):
+class MyTest(testing.AsyncHTTPTestCase):
     def setUp(self):
         super(MyTest, self).setUp()
         self.db = fake_pymongo
@@ -23,7 +23,7 @@ class MyTest(AsyncHTTPTestCase):
         self.io_loop.run_sync(self.fixture_setup)
 
     def get_app(self):
-        return Application()
+        return web.Application()
 
     @gen.coroutine
     def fixture_setup(self):
@@ -32,13 +32,13 @@ class MyTest(AsyncHTTPTestCase):
         yield self.db.pods.insert({'_id': '1', 'name': 'test1'})
         yield self.db.pods.insert({'name': 'test2'})
 
-    @gen_test
+    @testing.gen_test
     def test_find_one(self):
         user = yield self.db.pods.find_one({'name': 'test1'})
         self.assertEqual(user, self.test1)
         self.db.pods.remove()
 
-    @gen_test
+    @testing.gen_test
     def test_find(self):
         cursor = self.db.pods.find()
         names = []
@@ -47,7 +47,7 @@ class MyTest(AsyncHTTPTestCase):
             names.append(ob.get('name'))
         self.assertItemsEqual(names, ['test1', 'test2'])
 
-    @gen_test
+    @testing.gen_test
     def test_update(self):
         yield self.db.pods.update({'_id': '1'}, {'name': 'new_test1'})
         user = yield self.db.pods.find_one({'_id': '1'})
@@ -71,7 +71,7 @@ class MyTest(AsyncHTTPTestCase):
                             None,
                             check_keys=False)
 
-    @gen_test
+    @testing.gen_test
     def test_remove(self):
         yield self.db.pods.remove({'_id': '1'})
         user = yield self.db.pods.find_one({'_id': '1'})
@@ -104,7 +104,7 @@ class MyTest(AsyncHTTPTestCase):
     def _insert_assert(self, docs, error=None, **kwargs):
         self._db_assert('insert', error, docs, **kwargs)
 
-    @gen_test
+    @testing.gen_test
     def _db_assert(self, method, error, *args, **kwargs):
         name_error = None
         try:

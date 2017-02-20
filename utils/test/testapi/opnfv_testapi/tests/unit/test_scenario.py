@@ -5,10 +5,10 @@ import os
 
 from opnfv_testapi.common import constants
 import opnfv_testapi.resources.scenario_models as models
-from test_testcase import TestBase
+import test_base as base
 
 
-class TestScenarioBase(TestBase):
+class TestScenarioBase(base.TestBase):
     def setUp(self):
         super(TestScenarioBase, self).setUp()
         self.get_res = models.Scenario

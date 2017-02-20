@@ -7,9 +7,7 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 # feng.xiaowei@zte.com.cn remove prepare_put_request            5-30-2016
 ##############################################################################
-
-
-from ConfigParser import SafeConfigParser, NoOptionError
+import ConfigParser
 
 
 class ParseError(Exception):
@@ -42,7 +40,7 @@ class APIConfig:
     def _get_parameter(self, section, param):
         try:
             return self._parser.get(section, param)
-        except NoOptionError:
+        except ConfigParser.NoOptionError:
             raise ParseError("[%s.%s] parameter not found" % (section, param))
 
     def _get_int_parameter(self, section, param):
@@ -68,7 +66,7 @@ class APIConfig:
         if config_location is None:
             config_location = obj._default_config_location
 
-        obj._parser = SafeConfigParser()
+        obj._parser = ConfigParser.SafeConfigParser()
         obj._parser.read(config_location)
         if not obj._parser:
             raise ParseError("%s not found" % config_location)
