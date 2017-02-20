@@ -1,5 +1,7 @@
 #!/bin/bash
 
+: ${SERVER_URL:='http://testresults.opnfv.org/reporting/api'}
+
 export PYTHONPATH="${PYTHONPATH}:."
 export CONFIG_REPORTING_YAML=./reporting.yaml
 
@@ -73,6 +75,7 @@ cp /home/opnfv/utils/test/reporting/docker/supervisor.conf /etc/supervisor/conf.
 
 # build pages
 cd pages
+echo "var BASE_URL = '${SERVER_URL}'" > app/scripts/app.config.js
 ln -s /usr/bin/nodejs /usr/bin/node
 npm install
 npm install -g grunt bower
