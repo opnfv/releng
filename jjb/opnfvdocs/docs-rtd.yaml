@@ -56,7 +56,7 @@
             default: https://gerrit.opnfv.org/gerrit/opnfvdocs
             description: 'Git URL to use on this Jenkins Slave'
     scm:
-        - git-scm-with-submodules:
+        - git-scm-gerrit:
             branch: '{branch}'
 
     triggers:
@@ -69,12 +69,19 @@
 
     builders:
         - shell: |
+            git submodule update --init
             if [ "$GERRIT_PROJECT" != "opnfvdocs" ]; then
                 cd docs/submodules/$GERRIT_PROJECT
                 git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
-            else
-                git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
             fi
+            cd "$WORKSPACE"
+            for x in $(git submodule | awk '{print $2}');
+            do
+              cd "$x"
+              git filter-branch --subdirectory-filter docs/
+              cd -
+            done
+
         - shell: |
             sudo pip install virtualenv 
             virtualenv $WORKSPACE/venv
