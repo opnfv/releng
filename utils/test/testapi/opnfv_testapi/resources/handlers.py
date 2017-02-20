@@ -128,7 +128,7 @@ class GenericApiHandler(RequestHandler):
         self.finish_request(self._create_response(resource))
 
     @asynchronous
-    @authenticate
+    @gen.coroutine
     def _list(self, query=None, res_op=None, *args, **kwargs):
         if query is None:
             query = {}
