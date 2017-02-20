@@ -8,255 +8,131 @@
  * Controller of the opnfvdashBoardAngularApp
  */
 angular.module('opnfvApp')
-    .controller('TableController', ['$scope', '$state', '$stateParams', 'TableFactory', function ($scope, $state, $stateParams, TableFactory) {
+    .controller('TableController', ['$scope', '$state', '$stateParams', '$http', 'TableFactory', function($scope, $state, $stateParams, $http, TableFactory) {
 
         $scope.filterlist = [];
         $scope.selection = [];
-        $scope.statusList = ["Success", "Warning", "Danger"];
-        $scope.projectList = ["Deployment", "Functest", "Yardstick"];
-        $scope.installerList = ["apex", "compass", "fuel", "joid"];
-        $scope.versionlist = ["Colorado", "Master"];
-        $scope.loopci = ["Daily", "Weekly", "Monthly"];
-        $scope.time = ["10 days", "1 Month"];
+        $scope.statusList = [];
+        $scope.projectList = [];
+        $scope.installerList = [];
+        $scope.versionlist = [];
+        $scope.loopci = [];
+        $scope.time = [];
         $scope.tableDataAll = {};
         $scope.tableInfoAll = {};
+        $scope.scenario = {};
+
+        $scope.VersionConfig = {
+            create: true,
+            valueField: 'title',
+            labelField: 'title',
+            delimiter: '|',
+            maxItems: 1,
+            placeholder: 'Version',
+            onChange: function(value) {
+                checkElementArrayValue($scope.selection, $scope.VersionOption);
+                $scope.selection.push(value);
+                // console.log($scope.selection);
+                getScenarioData();
+
+            }
+        }
+
+        $scope.LoopConfig = {
+            create: true,
+            valueField: 'title',
+            labelField: 'title',
+            delimiter: '|',
+            maxItems: 1,
+            placeholder: 'Loop',
+            onChange: function(value) {
+                checkElementArrayValue($scope.selection, $scope.LoopOption);
+                $scope.selection.push(value);
+                // console.log($scope.selection);
+                getScenarioData();
+
+            }
+        }
+
+        $scope.TimeConfig = {
+            create: true,
+            valueField: 'title',
+            labelField: 'title',
+            delimiter: '|',
+            maxItems: 1,
+            placeholder: 'Time',
+            onChange: function(value) {
+                checkElementArrayValue($scope.selection, $scope.TimeOption);
+                $scope.selection.push(value);
+                // console.log($scope.selection)
+                getScenarioData();
 
 
-
-        $scope.scenario =
-            {
-                "scenarios": {
-                    "os-nosdn-kvm-noha": {
-                        "status": "Success",
-                        "installers": {
-                            "apex": [
-                                {
-                                    "project": "Deployment",
-                                    "score": "13/14",
-                                    "status": "SUCCESS",
+            }
+        }
 
 
-                                },
-                                {
-                                    "project": "Functest",
-                                    "score": "null",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Yardstick",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                }
-                            ],
-                            "compass": [
-                                {
-                                    "project": "Deployment",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Functest",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Yardstick",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                }
-                            ],
-                            "fuel": [
-                                {
-                                    "project": "Deployment",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Functest",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Yardstick",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                }
-                            ],
-                            "joid": [
-                                {
-                                    "project": "Deployment",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Functest",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Yardstick",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                }
-                            ]
-                        }
-                    },
-                    "os-nosdn-ovs-ha": {
-                        "status": "Danger",
-                        "installers": {
-                            "apex": [
-                                {
-                                    "project": "Deployment",
-                                    "score": "13/14",
-                                    "status": "SUCCESS",
+        init();
+
+        function init() {
+            $scope.toggleSelection = toggleSelection;
+            getScenarioData();
+            // radioSetting();
+            getFilters();
+        }
+
+        function getFilters() {
+            TableFactory.getFilter().get({
 
 
-                                },
-                                {
-                                    "project": "Functest",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Yardstick",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                }
-                            ],
-                            "compass": [
-                                {
-                                    "project": "Deployment",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Functest",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Yardstick",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                }
-                            ],
-                            "fuel": [
-                                {
-                                    "project": "Deployment",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Functest",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Yardstick",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                }
-                            ],
-                            "joid": [
-                                {
-                                    "project": "Deployment",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Functest",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Yardstick",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                }
-                            ]
-                        }
-                    },
-                    "os-nosdn-ovs-noha": {
-                        "status": "Warning",
-                        "installers": {
-                            "apex": [
-                                {
-                                    "project": "Deployment",
-                                    "score": "13/14",
-                                    "status": "SUCCESS",
+            }).$promise.then(function(response) {
+                if (response != null) {
+                    $scope.statusList = response.filters.status;
+                    $scope.projectList = response.filters.projects;
+                    $scope.installerList = response.filters.installers;
+                    $scope.versionlist = response.filters.version;
+                    $scope.loopci = response.filters.loops;
+                    $scope.time = response.filters.time;
 
+                    $scope.statusListString = $scope.statusList.toString();
+                    $scope.projectListString = $scope.projectList.toString();
+                    $scope.installerListString = $scope.installerList.toString();
+                    $scope.VersionSelected = $scope.versionlist[1];
+                    $scope.LoopCiSelected = $scope.loopci[0];
+                    $scope.TimeSelected = $scope.time[0];
+                    radioSetting($scope.versionlist, $scope.loopci, $scope.time);
 
-                                },
-                                {
-                                    "project": "Functest",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Yardstick",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                }
-                            ],
-                            "compass": [
-                                {
-                                    "project": "Deployment",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Functest",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Yardstick",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                }
-                            ],
-                            "fuel": [
-                                {
-                                    "project": "Deployment",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Functest",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Yardstick",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                }
-                            ],
-                            "joid": [
-                                {
-                                    "project": "Deployment",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Functest",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                },
-                                {
-                                    "project": "Yardstick",
-                                    "score": "13/14",
-                                    "status": "SUCCESS"
-                                }
-                            ]
-                        }
-                    }
+                } else {
+                    alert("网络错误");
                 }
-            };
+            })
+        }
 
-        // var headData = Object.keys($scope.scenario.scenarios.os_nosdn_kvm_noha.installers);
-        // $scope.headData = headData;
-        //construct json
+        function getScenarioData() {
+
+            var utl = BASE_URL + '/scenarios';
+            var data = {
+                'status': ['success', 'danger', 'warning'],
+                'projects': ['functest', 'yardstick'],
+                'installers': ['apex', 'compass', 'fuel', 'joid'],
+                'version': $scope.VersionSelected,
+                'loops': $scope.LoopCiSelected,
+                'time': $scope.TimeSelected
+            };
+            var config = {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
+                }
+            }
+            $http.post(utl, data, config).then(function(response) {
+                if (response.status == 200) {
+                    $scope.scenario = response.data;
+                    constructJson();
+                }
+            })
+        }
+
+        //construct json 
         function constructJson() {
 
             var colspan;
@@ -267,18 +143,21 @@ angular.module('opnfvApp')
 
             for (var item in $scope.scenario.scenarios) {
 
-
-
-
-                var headData = Object.keys($scope.scenario.scenarios[item].installers);
+                var headData = Object.keys($scope.scenario.scenarios[item].installers).sort();
                 var scenarioStatus = $scope.scenario.scenarios[item].status;
-
+                var scenarioStatusDisplay;
+                if (scenarioStatus == "success") {
+                    scenarioStatusDisplay = "navy";
+                } else if (scenarioStatus == "danger") {
+                    scenarioStatusDisplay = "danger";
+                } else if (scenarioStatus == "warning") {
+                    scenarioStatusDisplay = "warning";
+                }
 
                 InstallerData = headData;
                 var projectData = [];
                 var datadisplay = [];
                 var projects = [];
-
 
                 for (var j = 0; j < headData.length; j++) {
 
@@ -289,9 +168,30 @@ angular.module('opnfvApp')
                     for (var k = 0; k < projectData[j].length; k++) {
                         projects.push(projectData[j][k].project);
                         var temArray = [];
-                        temArray.push(projectData[j][k].score);
-                        temArray.push(projectData[j][k].project);
-                        temArray.push(headData[j]);
+                        if (projectData[j][k].score == null) {
+                            temArray.push("null");
+                            temArray.push(projectData[j][k].project);
+                            temArray.push(headData[j]);
+                        } else {
+                            temArray.push(projectData[j][k].score);
+                            temArray.push(projectData[j][k].project);
+                            temArray.push(headData[j]);
+                        }
+
+
+                        if (projectData[j][k].status == "platinium") {
+                            temArray.push("primary");
+                            temArray.push("P");
+                        } else if (projectData[j][k].status == "gold") {
+                            temArray.push("danger");
+                            temArray.push("G");
+                        } else if (projectData[j][k].status == "silver") {
+                            temArray.push("warning");
+                            temArray.push("S");
+                        } else if (projectData[j][k].status == null) {
+                            temArray.push("null");
+                        }
+
                         datadisplay.push(temArray);
 
                     }
@@ -301,12 +201,20 @@ angular.module('opnfvApp')
                 colspan = projects.length / headData.length;
 
                 var tabledata = {
-                    scenarioName: item, Installer: InstallerData, projectData: projectData, projects: projects,
-                    datadisplay: datadisplay, colspan: colspan, status: scenarioStatus
+                    scenarioName: item,
+                    Installer: InstallerData,
+                    projectData: projectData,
+                    projects: projects,
+                    datadisplay: datadisplay,
+                    colspan: colspan,
+                    status: scenarioStatus,
+                    statusDisplay: scenarioStatusDisplay
                 };
 
                 JSON.stringify(tabledata);
                 $scope.tableDataAll.scenario.push(tabledata);
+
+                // console.log(tabledata);
 
             }
 
@@ -315,15 +223,13 @@ angular.module('opnfvApp')
 
             var tempHeadData = [];
 
-
-
             for (var i = 0; i < InstallerData.length; i++) {
                 for (var j = 0; j < colspan; j++) {
                     tempHeadData.push(InstallerData[i]);
                 }
             }
 
-            console.log(tempHeadData);
+            //console.log(tempHeadData);
 
             var projectsInfoAll = [];
 
@@ -334,13 +240,14 @@ angular.module('opnfvApp')
                 projectsInfoAll.push(tempA);
 
             }
-            console.log(projectsInfoAll);
+            //console.log(projectsInfoAll);
 
             $scope.tableDataAll["colspan"] = colspan;
             $scope.tableDataAll["Installer"] = InstallerData;
             $scope.tableDataAll["Projects"] = projectsInfoAll;
 
-            console.log($scope.tableDataAll);
+            // console.log($scope.tableDataAll);
+            $scope.colspan = $scope.tableDataAll.colspan;
 
         }
 
@@ -353,58 +260,11 @@ angular.module('opnfvApp')
             return size;
         }
 
-        init();
-        function init() {
-            $scope.toggleSelection = toggleSelection;
-
-            constructJson();
-
-        }
-
-        // $scope.test=false;
-
-        var statusListString = $scope.statusList.toString();
-        var projectListString = $scope.projectList.toString();
-        var installerListString = $scope.installerList.toString();
+        $scope.colspan = $scope.tableDataAll.colspan;
+        // console.log($scope.colspan);
 
 
-        $scope.colspan=$scope.tableDataAll.colspan;
-        //filter function
-        function filterData() {
-
-
-            $scope.selectInstallers = [];
-            $scope.selectProjects = [];
-            $scope.selectStatus = [];
-            for (var i = 0; i < $scope.selection.length; i++) {
-                if (statusListString.indexOf($scope.selection[i]) > -1) {
-                    $scope.selectStatus.push($scope.selection[i]);
-                }
-                if (projectListString.indexOf($scope.selection[i]) > -1) {
-                    $scope.selectProjects.push($scope.selection[i]);
-                }
-                if (installerListString.indexOf($scope.selection[i]) > -1) {
-                    $scope.selectInstallers.push($scope.selection[i]);
-                }
-            }
-
-            $scope.colspan=$scope.selectProjects.length;
-            //when some selection is empty, we set it full
-            if($scope.selectInstallers.length==0){
-                $scope.selectInstallers=$scope.installerList;
-
-            }
-            if($scope.selectProjects.length==0){
-                $scope.selectProjects=$scope.projectList;
-                $scope.colspan=$scope.tableDataAll.colspan;
-            }
-            if($scope.selectStatus.length==0){
-                $scope.selectStatus=$scope.statusList
-            }
-        }
-
-
-        //find all same element index
+        //find all same element index 
         function getSameElementIndex(array, element) {
             var indices = [];
             var idx = array.indexOf(element);
@@ -424,64 +284,31 @@ angular.module('opnfvApp')
 
         }
 
-
-        $scope.VersionOption = [
-            { title: 'Colorado' },
-            { title: 'Master' }
-        ];
-        $scope.VersionConfig = {
-            create: true,
-            valueField: 'title',
-            labelField: 'title',
-            delimiter: '|',
-            maxItems: 1,
-            placeholder: 'Version',
-            onChange: function (value) {
-                checkElementArrayValue($scope.selection, $scope.VersionOption);
-                $scope.selection.push(value);
-                // console.log($scope.selection);
-
+        function radioSetting(array1, array2, array3) {
+            var tempVersion = [];
+            var tempLoop = [];
+            var tempTime = [];
+            for (var i = 0; i < array1.length; i++) {
+                var temp = {
+                    title: array1[i]
+                };
+                tempVersion.push(temp);
             }
-
-        }
-
-        $scope.LoopOption = [
-            { title: 'Daily' },
-            { title: 'Weekly' },
-            { title: 'Monthly' }
-        ];
-        $scope.LoopConfig = {
-            create: true,
-            valueField: 'title',
-            labelField: 'title',
-            delimiter: '|',
-            maxItems: 1,
-            placeholder: 'Loop',
-            onChange: function (value) {
-                checkElementArrayValue($scope.selection, $scope.LoopOption);
-                $scope.selection.push(value);
-                // console.log($scope.selection);
-
+            for (var i = 0; i < array2.length; i++) {
+                var temp = {
+                    title: array2[i]
+                };
+                tempLoop.push(temp);
             }
-        }
-
-        $scope.TimeOption = [
-            { title: '10 days' },
-            { title: '1 month' }
-        ];
-        $scope.TimeConfig = {
-            create: true,
-            valueField: 'title',
-            labelField: 'title',
-            delimiter: '|',
-            maxItems: 1,
-            placeholder: 'Time',
-            onChange: function (value) {
-                checkElementArrayValue($scope.selection, $scope.TimeOption);
-                $scope.selection.push(value);
-                // console.log($scope.selection)
-
+            for (var i = 0; i < array3.length; i++) {
+                var temp = {
+                    title: array3[i]
+                };
+                tempTime.push(temp);
             }
+            $scope.VersionOption = tempVersion;
+            $scope.LoopOption = tempLoop;
+            $scope.TimeOption = tempTime;
         }
 
         //remove element in the array
@@ -508,13 +335,51 @@ angular.module('opnfvApp')
 
             if (idx > -1) {
                 $scope.selection.splice(idx, 1);
-            }
-            else {
+                filterData($scope.selection)
+            } else {
                 $scope.selection.push(status);
+                filterData($scope.selection)
             }
-            console.log($scope.selection);
-            filterData();
+            // console.log($scope.selection);
 
         }
+
+        //filter function
+        function filterData(selection) {
+
+            $scope.selectInstallers = [];
+            $scope.selectProjects = [];
+            $scope.selectStatus = [];
+            for (var i = 0; i < selection.length; i++) {
+                if ($scope.statusListString.indexOf(selection[i]) > -1) {
+                    $scope.selectStatus.push(selection[i]);
+                }
+                if ($scope.projectListString.indexOf(selection[i]) > -1) {
+                    $scope.selectProjects.push(selection[i]);
+                }
+                if ($scope.installerListString.indexOf(selection[i]) > -1) {
+                    $scope.selectInstallers.push(selection[i]);
+                }
+            }
+
+            $scope.colspan = $scope.selectProjects.length;
+            //when some selection is empty, we set it full
+            if ($scope.selectInstallers.length == 0) {
+                $scope.selectInstallers = $scope.installerList;
+
+            }
+            if ($scope.selectProjects.length == 0) {
+                $scope.selectProjects = $scope.projectList;
+                $scope.colspan = $scope.tableDataAll.colspan;
+            }
+            if ($scope.selectStatus.length == 0) {
+                $scope.selectStatus = $scope.statusList
+            }
+
+            // console.log($scope.selectStatus);
+            // console.log($scope.selectProjects);
+
+        }
+
 
     }]);
