@@ -6,37 +6,34 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-from opnfv_testapi.resources.handlers import VersionHandler
-from opnfv_testapi.resources.testcase_handlers import TestcaseCLHandler, \
-    TestcaseGURHandler
-from opnfv_testapi.resources.pod_handlers import PodCLHandler, PodGURHandler
-from opnfv_testapi.resources.project_handlers import ProjectCLHandler, \
-    ProjectGURHandler
-from opnfv_testapi.resources.result_handlers import ResultsCLHandler, \
-    ResultsGURHandler
-from opnfv_testapi.resources.scenario_handlers import ScenariosCLHandler
-from opnfv_testapi.resources.scenario_handlers import ScenarioGURHandler
+from opnfv_testapi.resources import handlers
+from opnfv_testapi.resources import pod_handlers
+from opnfv_testapi.resources import project_handlers
+from opnfv_testapi.resources import result_handlers
+from opnfv_testapi.resources import scenario_handlers
+from opnfv_testapi.resources import testcase_handlers
 
 mappings = [
     # GET /versions => GET API version
-    (r"/versions", VersionHandler),
+    (r"/versions", handlers.VersionHandler),
 
     # few examples:
     # GET /api/v1/pods => Get all pods
     # GET /api/v1/pods/1 => Get details on POD 1
-    (r"/api/v1/pods", PodCLHandler),
-    (r"/api/v1/pods/([^/]+)", PodGURHandler),
+    (r"/api/v1/pods", pod_handlers.PodCLHandler),
+    (r"/api/v1/pods/([^/]+)", pod_handlers.PodGURHandler),
 
     # few examples:
     # GET /projects
     # GET /projects/yardstick
-    (r"/api/v1/projects", ProjectCLHandler),
-    (r"/api/v1/projects/([^/]+)", ProjectGURHandler),
+    (r"/api/v1/projects", project_handlers.ProjectCLHandler),
+    (r"/api/v1/projects/([^/]+)", project_handlers.ProjectGURHandler),
 
     # few examples
     # GET /projects/qtip/cases => Get cases for qtip
-    (r"/api/v1/projects/([^/]+)/cases", TestcaseCLHandler),
-    (r"/api/v1/projects/([^/]+)/cases/([^/]+)", TestcaseGURHandler),
+    (r"/api/v1/projects/([^/]+)/cases", testcase_handlers.TestcaseCLHandler),
+    (r"/api/v1/projects/([^/]+)/cases/([^/]+)",
+     testcase_handlers.TestcaseGURHandler),
 
     # new path to avoid a long depth
     # GET /results?project=functest&case=keystone.catalog&pod=1
@@ -44,10 +41,10 @@ mappings = [
     # POST /results =>
     # Push results with mandatory request payload parameters
     # (project, case, and pod)
-    (r"/api/v1/results", ResultsCLHandler),
-    (r"/api/v1/results/([^/]+)", ResultsGURHandler),
+    (r"/api/v1/results", result_handlers.ResultsCLHandler),
+    (r"/api/v1/results/([^/]+)", result_handlers.ResultsGURHandler),
 
     # scenarios
-    (r"/api/v1/scenarios", ScenariosCLHandler),
-    (r"/api/v1/scenarios/([^/]+)", ScenarioGURHandler),
+    (r"/api/v1/scenarios", scenario_handlers.ScenariosCLHandler),
+    (r"/api/v1/scenarios/([^/]+)", scenario_handlers.ScenarioGURHandler),
 ]

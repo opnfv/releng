@@ -1,17 +1,16 @@
-from opnfv_testapi.common.constants import HTTP_FORBIDDEN
-from opnfv_testapi.resources.handlers import GenericApiHandler
-from opnfv_testapi.resources.scenario_models import Scenario
+from opnfv_testapi.common import constants
+from opnfv_testapi.resources import handlers
 import opnfv_testapi.resources.scenario_models as models
 from opnfv_testapi.tornado_swagger import swagger
 
 
-class GenericScenarioHandler(GenericApiHandler):
+class GenericScenarioHandler(handlers.GenericApiHandler):
     def __init__(self, application, request, **kwargs):
         super(GenericScenarioHandler, self).__init__(application,
                                                      request,
                                                      **kwargs)
         self.table = self.db_scenarios
-        self.table_cls = Scenario
+        self.table_cls = models.Scenario
 
 
 class ScenariosCLHandler(GenericScenarioHandler):
@@ -81,7 +80,7 @@ class ScenariosCLHandler(GenericScenarioHandler):
 
         def error(data):
             message = '{} already exists as a scenario'.format(data.name)
-            return HTTP_FORBIDDEN, message
+            return constants.HTTP_FORBIDDEN, message
 
         miss_checks = ['name']
         db_checks = [(self.table, False, query, error)]

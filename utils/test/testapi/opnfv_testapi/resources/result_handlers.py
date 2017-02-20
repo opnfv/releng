@@ -6,30 +6,32 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
-from bson.objectid import ObjectId
-from tornado.web import HTTPError
+from bson import objectid
+from tornado import web
 
-from opnfv_testapi.common.constants import HTTP_BAD_REQUEST, HTTP_NOT_FOUND
-from opnfv_testapi.resources.handlers import GenericApiHandler
-from opnfv_testapi.resources.result_models import TestResult
+from opnfv_testapi.common import constants
+from opnfv_testapi.resources import handlers
+from opnfv_testapi.resources import result_models
 from opnfv_testapi.tornado_swagger import swagger
 
 
-class GenericResultHandler(GenericApiHandler):
+class GenericResultHandler(handlers.GenericApiHandler):
     def __init__(self, application, request, **kwargs):
         super(GenericResultHandler, self).__init__(application,
                                                    request,
                                                    **kwargs)
         self.table = self.db_results
-        self.table_cls = TestResult
+        self.table_cls = result_models.TestResult
 
     def get_int(self, key, value):
         try:
             value = int(value)
         except:
-            raise HTTPError(HTTP_BAD_REQUEST, '{} must be int'.format(key))
+            raise web.HTTPError(constants.HTTP_BAD_REQUEST,
+                                '{} must be int'.format(key))
         return value
 
     def set_query(self):
@@ -144,14 +146,14 @@ class ResultsCLHandler(GenericResultHandler):
 
         def pod_error(data):
             message = 'Could not find pod [{}]'.format(data.pod_name)
-            return HTTP_NOT_FOUND, message
+            return constants.HTTP_NOT_FOUND, message
 
         def project_query(data):
             return {'name': data.project_name}
 
         def project_error(data):
             message = 'Could not find project [{}]'.format(data.project_name)
-            return HTTP_NOT_FOUND, message
+            return constants.HTTP_NOT_FOUND, message
 
         def testcase_query(data):
             return {'project_name': data.project_name, 'name': data.case_name}
@@ -159,7 +161,7 @@ class ResultsCLHandler(GenericResultHandler):
         def testcase_error(data):
             message = 'Could not find testcase [{}] in project [{}]'\
                 .format(data.case_name, data.project_name)
-            return HTTP_NOT_FOUND, message
+            return constants.HTTP_NOT_FOUND, message
 
         miss_checks = ['pod_name', 'project_name', 'case_name']
         db_checks = [('pods', True, pod_query, pod_error),
@@ -178,7 +180,7 @@ class ResultsGURHandler(GenericResultHandler):
             @raise 404: test result not exist
         """
         query = dict()
-        query["_id"] = ObjectId(result_id)
+        query["_id"] = objectid.ObjectId(result_id)
         self._get_one(query)
 
     @swagger.operation(nickname="updateTestResultById")
@@ -193,6 +195,6 @@ class ResultsGURHandler(GenericResultHandler):
             @raise 404: result not exist
             @raise 403: nothing to update
         """
-        query = {'_id': ObjectId(result_id)}
+        query = {'_id': objectid.ObjectId(result_id)}
         db_keys = []
         self._update(query, db_keys)

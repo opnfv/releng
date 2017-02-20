@@ -8,14 +8,14 @@
 ##############################################################################
 import unittest
 
-from test_base import TestBase
-from opnfv_testapi.resources.models import Versions
+from opnfv_testapi.resources import models
+import test_base as base
 
 
-class TestVersionBase(TestBase):
+class TestVersionBase(base.TestBase):
     def setUp(self):
         super(TestVersionBase, self).setUp()
-        self.list_res = Versions
+        self.list_res = models.Versions
         self.basePath = '/versions'
 
 

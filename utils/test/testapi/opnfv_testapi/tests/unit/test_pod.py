@@ -8,20 +8,19 @@
 ##############################################################################
 import unittest
 
-from test_base import TestBase
-from opnfv_testapi.resources.pod_models import PodCreateRequest, Pod, Pods
-from opnfv_testapi.common.constants import HTTP_OK, HTTP_BAD_REQUEST, \
-    HTTP_FORBIDDEN, HTTP_NOT_FOUND
+from opnfv_testapi.common import constants
+from opnfv_testapi.resources import pod_models
+import test_base as base
 
 
-class TestPodBase(TestBase):
+class TestPodBase(base.TestBase):
     def setUp(self):
         super(TestPodBase, self).setUp()
-        self.req_d = PodCreateRequest('zte-1', 'virtual',
-                                      'zte pod 1', 'ci-pod')
-        self.req_e = PodCreateRequest('zte-2', 'metal', 'zte pod 2')
-        self.get_res = Pod
-        self.list_res = Pods
+        self.req_d = pod_models.PodCreateRequest('zte-1', 'virtual',
+                                                 'zte pod 1', 'ci-pod')
+        self.req_e = pod_models.PodCreateRequest('zte-2', 'metal', 'zte pod 2')
+        self.get_res = pod_models.Pod
+        self.list_res = pod_models.Pods
         self.basePath = '/api/v1/pods'
 
     def assert_get_body(self, pod, req=None):
@@ -38,36 +37,36 @@ class TestPodBase(TestBase):
 class TestPodCreate(TestPodBase):
     def test_withoutBody(self):
         (code, body) = self.create()
-        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
 
     def test_emptyName(self):
-        req_empty = PodCreateRequest('')
+        req_empty = pod_models.PodCreateRequest('')
         (code, body) = self.create(req_empty)
-        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
         self.assertIn('name missing', body)
 
     def test_noneName(self):
-        req_none = PodCreateRequest(None)
+        req_none = pod_models.PodCreateRequest(None)
         (code, body) = self.create(req_none)
-        self.assertEqual(code, HTTP_BAD_REQUEST)
+        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
         self.assertIn('name missing', body)
 
     def test_success(self):
         code, body = self.create_d()
-        self.assertEqual(code, HTTP_OK)
+        self.assertEqual(code, constants.HTTP_OK)
         self.assert_create_body(body)
 
     def test_alreadyExist(self):
         self.create_d()
         code, body = self.create_d()
-        self.assertEqual(code, HTTP_FORBIDDEN)
+        self.assertEqual(code, constants.HTTP_FORBIDDEN)
         self.assertIn('already exists', body)
 
 
 class TestPodGet(TestPodBase):
     def test_notExist(self):
         code, body = self.get('notExist')
-        self.assertEqual(code, HTTP_NOT_FOUND)
+        self.assertEqual(code, constants.HTTP_NOT_FOUND)
 
     def test_getOne(self):
         self.create_d()

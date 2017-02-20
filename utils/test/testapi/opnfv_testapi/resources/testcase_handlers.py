@@ -6,19 +6,19 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-from opnfv_testapi.common.constants import HTTP_FORBIDDEN
-from opnfv_testapi.resources.handlers import GenericApiHandler
-from opnfv_testapi.resources.testcase_models import Testcase
+from opnfv_testapi.common import constants
+from opnfv_testapi.resources import handlers
+from opnfv_testapi.resources import testcase_models
 from opnfv_testapi.tornado_swagger import swagger
 
 
-class GenericTestcaseHandler(GenericApiHandler):
+class GenericTestcaseHandler(handlers.GenericApiHandler):
     def __init__(self, application, request, **kwargs):
         super(GenericTestcaseHandler, self).__init__(application,
                                                      request,
                                                      **kwargs)
         self.table = self.db_testcases
-        self.table_cls = Testcase
+        self.table_cls = testcase_models.Testcase
 
 
 class TestcaseCLHandler(GenericTestcaseHandler):
@@ -58,12 +58,12 @@ class TestcaseCLHandler(GenericTestcaseHandler):
 
         def p_error(data):
             message = 'Could not find project [{}]'.format(data.project_name)
-            return HTTP_FORBIDDEN, message
+            return constants.HTTP_FORBIDDEN, message
 
         def tc_error(data):
             message = '{} already exists as a testcase in project {}'\
                 .format(data.name, data.project_name)
-            return HTTP_FORBIDDEN, message
+            return constants.HTTP_FORBIDDEN, message
 
         miss_checks = ['name']
         db_checks = [(self.db_projects, True, p_query, p_error),
