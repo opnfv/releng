@@ -34,6 +34,7 @@
          - 'os-nosdn-ovs-noha'
          - 'os-nosdn-fdio-noha'
          - 'os-nosdn-fdio-ha'
+         - 'os-odl_l2-fdio-noha'
          - 'os-odl_l2-fdio-ha'
          - 'os-odl_l2-netvirt_gbp_fdio-noha'
          - 'os-odl_l2-sfc-noha'
@@ -702,6 +703,67 @@
                 build-step-failure-threshold: 'never'
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'apex-deploy-baremetal-os-odl_l2-fdio-noha-{stream}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-build-{stream}/.build
+              OPNFV_CLEAN=yes
+            git-revision: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+            block: true
+        - trigger-builds:
+          - project: 'functest-apex-{daily-slave}-daily-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl_l2-fdio-noha
+            block: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'yardstick-apex-{slave}-daily-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl_l2-fdio-noha
+            block: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'apex-deploy-baremetal-os-odl_l2-fdio-ha-{stream}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-build-{stream}/.build
+              OPNFV_CLEAN=yes
+            git-revision: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+            block: true
+        - trigger-builds:
+          - project: 'functest-apex-{daily-slave}-daily-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl_l2-fdio-ha
+            block: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'yardstick-apex-{slave}-daily-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl_l2-fdio-ha
+            block: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+
 # Colorado Build
 - job-template:
     name: 'apex-build-colorado'
