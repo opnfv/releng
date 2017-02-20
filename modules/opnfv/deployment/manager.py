@@ -209,6 +209,14 @@ class Node(object):
             return True
         return False
 
+    def is_odl(self):
+        '''
+        Returns if the node is opendaylight
+        '''
+        if 'opendaylight' in self.roles:
+            return True
+        return False
+
     def get_ovs_info(self):
         '''
         Returns the ovs version installed
