@@ -9,12 +9,13 @@
  * Main module of the application.
  */
 angular
-  .module('opnfvApp', [
-    'ngAnimate',
-    'ui.router',
-    'oc.lazyLoad',
-    'ui.bootstrap',
-    'ngResource',
-    'selectize'
+    .module('opnfvApp', [
+        'ngAnimate',
+        'ui.router',
+        'oc.lazyLoad',
+        'ui.bootstrap',
+        'ngResource',
+        'selectize',
+        '720kb.tooltips'
 
-  ]);
+    ]);
