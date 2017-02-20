@@ -81,12 +81,12 @@ class GenericApiHandler(web.RequestHandler):
                 try:
                     token = self.request.headers['X-Auth-Token']
                 except KeyError:
-                    raise web.HTTPError(web.HTTP_UNAUTHORIZED,
+                    raise web.HTTPError(constants.HTTP_UNAUTHORIZED,
                                         "No Authentication Header.")
                 query = {'access_token': token}
                 check = yield self._eval_db_find_one(query, 'tokens')
                 if not check:
-                    raise web.HTTPError(web.HTTP_FORBIDDEN,
+                    raise web.HTTPError(constants.HTTP_FORBIDDEN,
                                         "Invalid Token.")
             ret = yield gen.coroutine(method)(self, *args, **kwargs)
             raise gen.Return(ret)
