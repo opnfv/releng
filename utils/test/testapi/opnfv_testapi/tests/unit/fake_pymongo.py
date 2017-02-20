@@ -242,3 +242,5 @@ projects = MemDb('projects')
 testcases = MemDb('testcases')
 results = MemDb('results')
 scenarios = MemDb('scenarios')
+tokens = MemDb('tokens')
+
