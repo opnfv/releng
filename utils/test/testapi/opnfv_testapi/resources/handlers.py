@@ -21,6 +21,7 @@
 ##############################################################################
 
 from datetime import datetime
+import functools
 import json
 
 from tornado import gen
@@ -72,6 +73,7 @@ class GenericApiHandler(web.RequestHandler):
         return cls_data.format_http()
 
     def authenticate(method):
+        @web.asynchronous
         @gen.coroutine
         @functools.wraps(method)
         def wrapper(self, *args, **kwargs):
@@ -79,12 +81,12 @@ class GenericApiHandler(web.RequestHandler):
                 try:
                     token = self.request.headers['X-Auth-Token']
                 except KeyError:
-                    raise HTTPError(HTTP_UNAUTHORIZED,
+                    raise web.HTTPError(constants.HTTP_UNAUTHORIZED,
                                     "No Authentication Header.")
                 query = {'access_token': token}
                 check = yield self._eval_db_find_one(query, 'tokens')
                 if not check:
-                    raise HTTPError(HTTP_FORBIDDEN, "Invalid Token.")
+                    raise web.HTTPError(constants.HTTP_FORBIDDEN, "Invalid Token.")
             ret = yield gen.coroutine(method)(self, *args, **kwargs)
             raise gen.Return(ret)
         return wrapper
