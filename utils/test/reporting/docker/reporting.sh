@@ -79,10 +79,4 @@ echo "daemon off;" >> /etc/nginx/nginx.conf
 # supervisor config
 cp /home/opnfv/utils/test/reporting/docker/supervisor.conf /etc/supervisor/conf.d/
 
-# build pages
-cd pages
 ln -s /usr/bin/nodejs /usr/bin/node
-npm install
-npm install -g grunt bower
-bower install --allow-root
-grunt build
