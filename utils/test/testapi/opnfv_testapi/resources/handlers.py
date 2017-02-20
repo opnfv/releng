@@ -21,6 +21,7 @@
 ##############################################################################
 
 from datetime import datetime
+import functools
 import json
 
 from tornado import gen
