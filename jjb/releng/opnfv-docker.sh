@@ -77,8 +77,12 @@ fi
 echo "Building docker image: $DOCKER_REPO_NAME:$DOCKER_TAG"
 echo "--------------------------------------------------------"
 echo
-cmd="docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG --build-arg BRANCH=$BRANCH
-    -f $DOCKERFILE ."
+if [[ $DOCKER_REPO_NAME == *"dovetail"* ]]; then
+    cmd="docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG -f $DOCKERFILE ."
+else
+    cmd="docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG --build-arg BRANCH=$BRANCH
+        -f $DOCKERFILE ."
+fi
 
 echo ${cmd}
 ${cmd}
