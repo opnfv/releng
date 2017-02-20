@@ -23,7 +23,7 @@ angular.module('opnfvApp')
             $stateProvider
                 .state('landingpage', {
                     url: "/landingpage",
-                    //controller: 'MainCtrl',
+                    controller: 'MainController',
                     templateUrl: "views/main.html",
                     data: { pageTitle: '首页', specialClass: 'landing-page' },
                     resolve: {

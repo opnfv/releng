@@ -29,81 +29,85 @@
                     <div class=" col-md-12" data-toggle="buttons" aria-pressed="false">
 
                         <label> Status </label> &nbsp;&nbsp; &nbsp;
-                          <label class="btn btn-outline btn-success btn-sm" style="height:25px; margin-right: 5px;" ng-repeat="status in statusList"
-                           value={{status}} ng-checked="selection.indexOf(status)>-1" ng-click="toggleSelection(status)">
+                        <label class="btn btn-outline btn-success btn-sm" style="height:25px; margin-right: 5px;" ng-repeat="status in statusList" value={{status}} ng-checked="selection.indexOf(status)>-1" ng-click="toggleSelection(status)">
                               <input type="checkbox"  disabled="disabled" > {{status}}
+                            
                           </label>
                     </div>
 
-                <hr class="myhr">
+                    <hr class="myhr">
 
                     <div class=" col-md-12" data-toggle="buttons">
-                     <label> Projects </label> &nbsp;
-                        <label class="btn btn-outline btn-success btn-sm " style="height:25px;margin-right: 5px;" ng-repeat="project in projectList"
-                        value={{project}} ng-checked="selection.indexOf(project)>-1" ng-click="toggleSelection(project)">
+                        <label> Projects </label> &nbsp;
+                        <label class="btn btn-outline btn-success btn-sm " style="height:25px;margin-right: 5px;" ng-repeat="project in projectList" value={{project}} ng-checked="selection.indexOf(project)>-1" ng-click="toggleSelection(project)">
                             <input type="checkbox" disabled="disabled"> {{project}}
                         </label>
 
                     </div>
-              <hr class="myhr">
+                    <hr class="myhr">
                     <div class=" col-md-12" data-toggle="buttons">
                         <label> Installers </label>
-                            <label class="btn btn-outline btn-success btn-sm" style="height:25px;margin-right: 5px;" ng-repeat="installer in installerList"
-                            value={{installer}} ng-checked="selection.indexOf(installer)" ng-click="toggleSelection(installer)">
+                        <label class="btn btn-outline btn-success btn-sm" style="height:25px;margin-right: 5px;" ng-repeat="installer in installerList" value={{installer}} ng-checked="selection.indexOf(installer)>-1" ng-click="toggleSelection(installer)">
                             <input type="checkbox" disabled="disabled"> {{installer}}
                             </label>
-                   </div>
+                    </div>
 
-                <hr style="border:0.5px dashed #e7eaec;border-top:1px;margin-bottom:10px;">
+                    <hr style="border:0.5px dashed #e7eaec;border-top:1px;margin-bottom:10px;">
 
 
-                <div class=" col-md-1" style="margin-top:5px;margin-right: 5px;">
-                    <selectize options="VersionOption" ng-model="VersionSelected" config="VersionConfig"></selectize>
+                    <div class=" col-md-1" style="margin-top:5px;margin-right: 5px;">
+                        <selectize options="VersionOption" ng-model="VersionSelected" config="VersionConfig"></selectize>
 
+                    </div>
+
+                    <div class=" col-md-1" style="margin-top:5px;margin-right: 5px;">
+                        <selectize options="LoopOption" ng-model="LoopCiSelected" config="LoopConfig"></selectize>
+
+                    </div>
+
+                    <div class=" col-md-1" style="margin-top:5px;margin-right: 5px;">
+                        <selectize options="TimeOption" ng-model="TimeSelected" config="TimeConfig"></selectize>
+                    </div>
+                </div>
+                <div class="table-responsive">
+
+                    <table class="table table-bordered" id="table" ng-model="tableDataAll">
+                        <thead class="thead">
+                            <tr>
+                                <th>Scenario </th>
+                                <th colspan={{colspan}} ng-show="selectInstallers.indexOf(key)!=-1" value={{key}} ng-repeat="key in tableDataAll.Installer"><a href="notfound.html">{{key}}</a> </th>
+                            </tr>
+
+                            <tr>
+
+                                <td></td>
+                                <td ng-show="selectProjects.indexOf(project[0])!=-1 && selectInstallers.indexOf(project[1])!=-1" ng-repeat="project in tableDataAll.Projects track by $index" data={{project[1]}} value={{project[0]}}>{{project[0]}}</td>
+
+                            </tr>
+                        </thead>
+                        <tbody class="tbody">
+                            <tr ng-repeat="scenario in tableDataAll.scenario" ng-show="selectStatus.indexOf(scenario.status)!=-1">
+
+                                <td nowrap="nowrap" data={{scenario.status}}><span class="fa fa-circle text-{{scenario.statusDisplay}}"></span> <a href="notfound.html">{{scenario.scenarioName}}</a> </td>
+
+                                <!--<td style="background-color:#e7eaec" align="justify" ng-if="data[0]=='Not Support'" ng-repeat="data in scenario.datadisplay track by $index" data={{data[1]}} value={{data[2]}}></td>-->
+
+                                <td nowrap="nowrap" ng-show="selectInstallers.indexOf(data[2])!=-1 && selectProjects.indexOf(data[1])!=-1" ng-repeat="data in scenario.datadisplay track by $index" data={{data[1]}} value={{data[2]}} class={{data[0]}}>
+                                    <span class="label label-{{data[3]}}">{{data[4]}}</a></span> {{data[0]}}</td>
+
+
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <div class=" col-md-1" style="margin-top:5px;margin-left: 5px;margin-right: 5px;">
-                     <selectize options="LoopOption" ng-model="LoopCiSelected" config="LoopConfig"></selectize>
-
+                <div class="pull-right" style="margin-top: 5px">
+                    <span class="label label-danger">G</span>gold<span style="padding-left:20px"></span>
+                    <span class="label label-primary">P</span><span>platinium</span><span style="padding-left:20px"></span>
+                    <span class="label label-warning">S</span><span>silver</span>
                 </div>
-
-                <div class=" col-md-1" style="margin-top:5px;margin-left: 5px;margin-right: 5px;">
-                     <selectize options="TimeOption" ng-model="TimeSelected" config="TimeConfig"></selectize>
-                </div>
-
-
-</div>
-
-<table class="table table-bordered" id="table" ng-model="tableDataAll">
-    <thead class="thead">
-        <tr >
-            <th>Scenario </th>
-            <th colspan={{colspan}} ng-show="selectInstallers.indexOf(key)!=-1" value={{key}} ng-repeat="key in tableDataAll.Installer"><a href="notfound.html">{{key}}</a> </th>
-        </tr>
-
-        <tr>
-
-            <td align="justify"></td>
-            <td align="justify" ng-show="selectProjects.indexOf(project[0])!=-1 && selectInstallers.indexOf(project[1])!=-1" ng-repeat="project in tableDataAll.Projects track by $index" data={{project[1]}} value={{project[0]}}>{{project[0]}}</td>
-        </tr>
-    </thead>
-    <tbody class="tbody">
-        <tr ng-repeat="scenario in tableDataAll.scenario" ng-show="selectStatus.indexOf(scenario.status)!=-1" >
-
-            <td align="justify" data={{scenario.status}}><span class="fa fa-circle text-warning"><a href="notfound.html">{{scenario.scenarioName}}</a></span> </td>
-            <td align="justify" ng-show="selectInstallers.indexOf(data[2])!=-1 && selectProjects.indexOf(data[1])!=-1" ng-repeat="data in scenario.datadisplay track by $index" data={{data[1]}} value={{data[2]}} ><span class="label label-danger">D<a href="notfound.html"></a></span> {{data[0]}}</td>
-        </tr>
-    </tbody>
-</table>
-
-                <div class="pull-right">
-                <span class="label label-danger">D</span>danger<span style="padding-left:20px"></span>
-                <span class="label label-primary">S</span><span>success</span><span style="padding-left:20px"></span>
-                <span class="label label-warning">W</span><span>warning</span>
-
-                </div>
+            </div>
         </div>
     </div>
-</div>
 
 </section>
