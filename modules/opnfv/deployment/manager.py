@@ -204,17 +204,19 @@ class Node(object):
         '''
         Returns if the node is a controller
         '''
-        if 'controller' in self.roles:
-            return True
-        return False
+        return Role.CONTROLLER in self.roles
 
     def is_compute(self):
         '''
         Returns if the node is a compute
         '''
-        if 'compute' in self.roles:
-            return True
-        return False
+        return Role.COMPUTE in self.roles
+
+    def is_odl(self):
+        '''
+        Returns if the node is an opendaylight
+        '''
+        return Role.ODL in self.roles
 
     def get_ovs_info(self):
         '''
