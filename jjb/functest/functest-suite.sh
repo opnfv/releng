@@ -1,19 +1,22 @@
 #!/bin/bash
-set -e
 
-echo "Functest: run $FUNCTEST_SUITE_NAME on branch $BRANCH"
-if [[ "$BRANCH" =~ 'brahmaputra' ]]; then
-    cmd="${FUNCTEST_REPO_DIR}/docker/run_tests.sh --test $FUNCTEST_SUITE_NAME"
-elif [[ "$BRANCH" =~ 'colorado' ]]; then
-    cmd="python ${FUNCTEST_REPO_DIR}/ci/run_tests.py -t $FUNCTEST_SUITE_NAME"
-else
-    cmd="functest testcase run $FUNCTEST_SUITE_NAME"
-fi
+FUNCTEST_SUITE_NAME=barometer,vping_userdata
 container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
-docker exec $container_id $cmd
+if [ -z $container_id ]; then
+    echo "Functest container not found"
+    exit 1
+fi
 
-ret_value=$?
-ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
-echo ${ret_value}>${ret_val_file}
+global_ret_val=0
 
-exit 0
+tests=($(echo $FUNCTEST_SUITE_NAME | tr "," "\n"))
+for test in ${tests[@]}; do
+    cmd="python /home/opnfv/repos/functest/functest/ci/run_tests.py -t $test"
+    docker exec $container_id $cmd
+    ret_val=$?
+    if [[ $ret_val -ne 0 ]]; then
+        global_ret_val=1
+    fi
+done
+
+exit $global_ret_val
