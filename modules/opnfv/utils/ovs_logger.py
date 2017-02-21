@@ -101,19 +101,13 @@ class OVSLogger(object):
         if timestamp is None:
             timestamp = time.strftime("%Y%m%d-%H%M%S")
 
-        for controller_client in controller_clients:
-            self.ofctl_dump_flows(controller_client,
-                                  timestamp=timestamp)
-            self.vsctl_show(controller_client,
-                            timestamp=timestamp)
-
-        for compute_client in compute_clients:
-            self.ofctl_dump_flows(compute_client,
-                                  timestamp=timestamp)
-            self.vsctl_show(compute_client,
-                            timestamp=timestamp)
+        clients = controller_clients + compute_clients
+        for client in clients:
+            self.ofctl_dump_flows(client, timestamp=timestamp)
+            self.vsctl_show(client, timestamp=timestamp)
 
         if related_error is not None:
             dumpdir = os.path.join(self.ovs_dir, timestamp)
+            self.__mkdir_p(dumpdir)
             with open(os.path.join(dumpdir, 'error'), 'w') as f:
                 f.write(related_error)
