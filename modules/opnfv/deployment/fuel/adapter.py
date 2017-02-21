@@ -170,26 +170,30 @@ class FuelAdapter(manager.DeploymentHandler):
         cmd = 'source openrc;nova-manage version 2>/dev/null'
         version = None
         for node in self.nodes:
-            if node.is_controller():
+            if node.is_controller() and node.is_active():
                 version = node.run_cmd(cmd)
                 break
         return version
 
     def get_sdn_version(self):
-        cmd = "apt-cache show opendaylight|grep Version|sed 's/^.*\: //'"
+        cmd = "apt-cache show opendaylight|grep Version"
         version = None
         for node in self.nodes:
-            if node.is_controller():
+            if manager.Role.ODL in node.roles and node.is_active():
                 odl_version = node.run_cmd(cmd)
                 if odl_version:
-                    version = 'OpenDaylight ' + odl_version
-                break
+                    version = 'OpenDaylight ' + odl_version.split(' ')[-1]
+                    break
         return version
 
     def get_deployment_status(self):
-        cmd = 'fuel env|grep operational'
+        cmd = "fuel env|tail -1|awk '{print $3}'"
         result = self.installer_node.run_cmd(cmd)
         if result is None or len(result) == 0:
-            return 'failed'
+            return 'unknown'
+        elif 'operational' in result:
+            return 'active'
+        elif 'deploy' in result:
+            return 'deploying'
         else:
             return 'active'
