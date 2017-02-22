@@ -41,4 +41,5 @@ class Factory(object):
                                             installer_user=installer_user,
                                             installer_pwd=installer_pwd)
         else:
-            raise Exception("Installer adapter is not implemented.")
+            raise Exception("Installer adapter is not implemented for "
+                            "the given installer.")

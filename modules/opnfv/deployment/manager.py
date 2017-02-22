@@ -95,6 +95,7 @@ class Deployment(object):
 
 
 class Role():
+    INSTALLER = 'installer'
     CONTROLLER = 'controller'
     COMPUTE = 'compute'
     ODL = 'opendaylight'
@@ -131,7 +132,7 @@ class Node(object):
         self.memory = 'unknown'
         self.ovs = 'unknown'
 
-        if ssh_client:
+        if ssh_client and Role.INSTALLER not in self.roles:
             sys_info = self.get_system_info()
             self.cpu_info = sys_info['cpu_info']
             self.memory = sys_info['memory']
@@ -318,7 +319,7 @@ class DeploymentHandler(object):
                                        name=installer,
                                        status=NodeStatus.STATUS_OK,
                                        ssh_client=self.installer_connection,
-                                       roles='installer node')
+                                       roles=Role.INSTALLER)
         else:
             raise Exception(
                 'Cannot establish connection to the installer node!')
