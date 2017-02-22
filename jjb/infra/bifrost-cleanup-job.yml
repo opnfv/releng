@@ -50,7 +50,7 @@
             set -eu
 
             # DO NOT change this unless you know what you are doing.
-            BIFROST_GS_URL='gs://artifacts.opnfv.org/cross-community-ci/openstack/bifrost/$GERRIT_NAME/$GERRIT_CHANGE_NUMBER/'
+            BIFROST_GS_URL="gs://artifacts.opnfv.org/cross-community-ci/openstack/bifrost/$GERRIT_NAME/$GERRIT_CHANGE_NUMBER/"
 
             # This should never happen... even 'recheck' uses the last jobs'
             # gerrit information. Better exit with error so we can investigate
@@ -94,12 +94,9 @@
                 # We only run this when the change is merged since
                 # we don't need the logs anymore
                 - change-merged-event: 'true'
+                - change-abandoned-event: 'true'
                 - change-restored-event: 'false'
                 - draft-published-event: 'false'
-                # We need this in order to be able to trigger a cleanup
-                # from Gerrit should it be necessary
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
             # This is an OPNFV maintenance job. We don't want to provide
             # feedback on Gerrit
             silent: true
@@ -130,14 +127,9 @@
                 # We only run this when the change is merged since
                 # we don't need the logs anymore
                 - change-merged-event: 'true'
+                - change-abandoned-event: 'true'
                 - change-restored-event: 'false'
                 - draft-published-event: 'false'
-                # We need this in order to be able to trigger a cleanup
-                # from Gerrit should it be necessary
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
             # This is an OPNFV maintenance job. We don't want to provide
             # feedback on Gerrit
             silent: true
