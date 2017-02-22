@@ -22,8 +22,11 @@ cd $WORKSPACE
 BASE_DIR=$(cd ./;pwd)
 
 echo "Cloning securedlab repo $BRANCH"
-git clone ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab --quiet \
+git clone ssh://jenkins-zte@gerrit.opnfv.org:29418/securedlab --quiet \
     --branch $BRANCH
+
+# daisy ci/deploy/deploy.sh use $BASE_DIR/labs dir
+cp -r securedlab/labs .
 
 DEPLOY_COMMAND="sudo ./ci/deploy/deploy.sh -b $BASE_DIR \
                 -l $LAB_NAME -p $POD_NAME -B $BRIDGE"
@@ -45,7 +48,7 @@ $DEPLOY_COMMAND
 """
 
 # start the deployment
-#$DEPLOY_COMMAND
+$DEPLOY_COMMAND
 
 if [ $? -ne 0 ]; then
     echo
