@@ -86,13 +86,8 @@
             server-name: 'review.openstack.org'
             escape-quotes: true
             trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - patchset-uploaded-event: 'false'
-                # We only run this when the change is merged since
-                # we don't need the logs anymore
+                # We only run this when the change is merged or
+                # abandoned since we don't need the logs anymore
                 - change-merged-event: 'true'
                 - change-abandoned-event: 'true'
                 - change-restored-event: 'false'
@@ -119,13 +114,8 @@
         - gerrit:
             server-name: 'gerrit.opnfv.org'
             trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - patchset-uploaded-event: 'false'
-                # We only run this when the change is merged since
-                # we don't need the logs anymore
+                # We only run this when the change is merged or
+                # abandoned since we don't need the logs anymore
                 - change-merged-event: 'true'
                 - change-abandoned-event: 'true'
                 - change-restored-event: 'false'
