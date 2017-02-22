@@ -21,6 +21,14 @@ Make changes::
     To ssh://agardner@gerrit.opnfv.org:29418/releng.git
      * [new branch]      HEAD -> refs/publish/master
 
+Test with tox::
+
+    tox -v -ejjb
+
+Submit the change to gerrit::
+
+    git review -v
+
 Follow the link to gerrit https://gerrit.opnfv.org/gerrit/51 in a few moments
 the verify job will have completed and you will see Verified +1 jenkins-ci in
 the gerrit ui.
