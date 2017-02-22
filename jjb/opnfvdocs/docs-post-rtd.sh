@@ -4,4 +4,4 @@ if [ $GERRIT_BRANCH == "master" ]; then
 else
     RTD_BUILD_VERSION=${{GERRIT_BRANCH/\//-}}
 fi
-curl -X POST --data "version_slug=$RTD_BUILD_VERSION" https://readthedocs.org/build/{rtdproject}
+curl -X POST --data "version_slug=$RTD_BUILD_VERSION" https://readthedocs.org/build/opnfvdocsdemo
