@@ -8,6 +8,7 @@
 # feng.xiaowei@zte.com.cn remove prepare_put_request            5-30-2016
 ##############################################################################
 import ConfigParser
+import os
 
 
 class ParseError(Exception):
@@ -42,13 +43,13 @@ class APIConfig:
         try:
             return self._parser.get(section, param)
         except ConfigParser.NoOptionError:
-            raise ParseError("[%s.%s] parameter not found" % (section, param))
+            raise ParseError("No parameter: [%s.%s]" % (section, param))
 
     def _get_int_parameter(self, section, param):
         try:
             return int(self._get_parameter(section, param))
         except ValueError:
-            raise ParseError("[%s.%s] not an int" % (section, param))
+            raise ParseError("Not int: [%s.%s]" % (section, param))
 
     def _get_bool_parameter(self, section, param):
         result = self._get_parameter(section, param)
@@ -58,7 +59,7 @@ class APIConfig:
             return False
 
         raise ParseError(
-            "[%s.%s : %s] not a boolean" % (section, param, result))
+            "Not boolean: [%s.%s : %s]" % (section, param, result))
 
     @staticmethod
     def parse(config_location=None):
@@ -67,10 +68,11 @@ class APIConfig:
         if config_location is None:
             config_location = obj._default_config_location
 
+        if not os.path.exists(config_location):
+            raise ParseError("%s not found" % config_location)
+
         obj._parser = ConfigParser.SafeConfigParser()
         obj._parser.read(config_location)
-        if not obj._parser:
-            raise ParseError("%s not found" % config_location)
 
         # Linking attributes to keys from file with their sections
         obj.mongo_url = obj._get_parameter("mongo", "url")
@@ -84,15 +86,3 @@ class APIConfig:
         obj.swagger_base_url = obj._get_parameter("swagger", "base_url")
 
         return obj
-
-    def __str__(self):
-        return "mongo_url = %s \n" \
-               "mongo_dbname = %s \n" \
-               "api_port = %s \n" \
-               "api_debug_on = %s \n" \
-               "swagger_base_url = %s \n" % (self.mongo_url,
-                                             self.mongo_dbname,
-                                             self.api_port,
-                                             self.api_debug_on,
-                                             self.api_authenticate_on,
-                                             self.swagger_base_url)
