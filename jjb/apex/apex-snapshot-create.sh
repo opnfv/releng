@@ -13,6 +13,7 @@ set -o nounset
 set -o pipefail
 
 SSH_OPTIONS=(-o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null -o LogLevel=error)
+SNAP_TYPE=$(echo ${JOB_NAME} | sed -n 's/^apex-\(.\+\)-promote.*$/\1/p')
 
 echo "Creating Apex snapshot..."
 echo "-------------------------"
@@ -81,17 +82,19 @@ sudo chown jenkins-ci:jenkins-ci *
 
 # tar up artifacts
 DATE=`date +%Y-%m-%d`
-tar czf ../apex-csit-snap-${DATE}.tar.gz .
+tar czf ../apex-${SNAP_TYPE}-snap-${DATE}.tar.gz .
 popd > /dev/null
 sudo rm -rf ${tmp_dir}
-echo "Snapshot saved as apex-csit-snap-${DATE}.tar.gz"
+echo "Snapshot saved as apex-${SNAP_TYPE}-snap-${DATE}.tar.gz"
 
 # update opnfv properties file
-curl -O -L http://$GS_URL/snapshot.properties
-sed -i '/^OPNFV_SNAP_URL=/{h;s#=.*#='${GS_URL}'/apex-csit-snap-'${DATE}'.tar.gz#};${x;/^$/{s##OPNFV_SNAP_URL='${GS_URL}'/apex-csit-snap-'${DATE}'.tar.gz#;H};x}' snapshot.properties
-snap_sha=$(sha512sum apex-csit-snap-${DATE}.tar.gz | cut -d' ' -f1)
-sed -i '/^OPNFV_SNAP_SHA512SUM=/{h;s/=.*/='${snap_sha}'/};${x;/^$/{s//OPNFV_SNAP_SHA512SUM='${snap_sha}'/;H};x}' snapshot.properties
-echo "OPNFV_SNAP_URL=$GS_URL/apex-csit-snap-${DATE}.tar.gz"
-echo "OPNFV_SNAP_SHA512SUM=$(sha512sum apex-csit-snap-${DATE}.tar.gz | cut -d' ' -f1)"
-echo "Updated properties file: "
-cat snapshot.properties
+if [ "$SNAP_TYPE" == 'csit' ]; then
+  curl -O -L http://$GS_URL/snapshot.properties
+  sed -i '/^OPNFV_SNAP_URL=/{h;s#=.*#='${GS_URL}'/apex-csit-snap-'${DATE}'.tar.gz#};${x;/^$/{s##OPNFV_SNAP_URL='${GS_URL}'/apex-csit-snap-'${DATE}'.tar.gz#;H};x}' snapshot.properties
+  snap_sha=$(sha512sum apex-csit-snap-${DATE}.tar.gz | cut -d' ' -f1)
+  sed -i '/^OPNFV_SNAP_SHA512SUM=/{h;s/=.*/='${snap_sha}'/};${x;/^$/{s//OPNFV_SNAP_SHA512SUM='${snap_sha}'/;H};x}' snapshot.properties
+  echo "OPNFV_SNAP_URL=$GS_URL/apex-csit-snap-${DATE}.tar.gz"
+  echo "OPNFV_SNAP_SHA512SUM=$(sha512sum apex-csit-snap-${DATE}.tar.gz | cut -d' ' -f1)"
+  echo "Updated properties file: "
+  cat snapshot.properties
+fi

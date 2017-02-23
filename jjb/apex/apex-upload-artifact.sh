@@ -76,12 +76,15 @@ gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/latest.properties > gsutil.la
 uploadsnap () {
   # Uploads snapshot artifact and updated properties file
   echo "Uploading snapshot artifacts"
-  gsutil cp $WORKSPACE/apex-csit-snap-`date +%Y-%m-%d`.tar.gz gs://$GS_URL/ > gsutil.iso.log
-  gsutil cp $WORKSPACE/snapshot.properties gs://$GS_URL/snapshot.properties > gsutil.latest.log
+  SNAP_TYPE=$(echo ${JOB_NAME} | sed -n 's/^apex-\(.\+\)-promote.*$/\1/p')
+  gsutil cp $WORKSPACE/apex-${SNAP_TYPE}-snap-`date +%Y-%m-%d`.tar.gz gs://$GS_URL/ > gsutil.iso.log
+  if [ "$SNAP_TYPE" == 'csit' ]; then
+    gsutil cp $WORKSPACE/snapshot.properties gs://$GS_URL/snapshot.properties > gsutil.latest.log
+  fi
   echo "Upload complete for Snapshot"
 }
 
-if echo $WORKSPACE | grep csit > /dev/null; then
+if echo $WORKSPACE | grep promote > /dev/null; then
   uploadsnap
 elif gpg2 --list-keys | grep "opnfv-helpdesk@rt.linuxfoundation.org"; then
   echo "Signing Key avaliable"

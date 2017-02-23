@@ -14,6 +14,7 @@
         - 'apex-build-colorado'
         - 'apex-deploy-baremetal-os-odl_l2-fdio-ha-colorado'
         - 'apex-csit-promote-daily-{stream}'
+        - 'apex-fdio-promote-daily-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
@@ -304,7 +305,7 @@
             blocking-jobs:
                 - 'apex-daily.*'
                 - 'apex-verify.*'
-                - 'apex-csit.*'
+                - 'apex-.*-promote.*'
 
     builders:
         - trigger-builds:
@@ -556,7 +557,7 @@
                 - 'apex-deploy.*'
                 - 'apex-build.*'
                 - 'apex-runner.*'
-                - 'apex-csit.*'
+                - 'apex-.*-promote.*'
 
     triggers:
         - 'apex-{stream}'
@@ -954,6 +955,55 @@
             predefined-parameters: |
               DEPLOY_SCENARIO=os-odl_l3-nofeature-noha
               FUNCTEST_SUITE_NAME=tempest_smoke_serial
+            block: true
+            same-node: true
+        - shell:
+            !include-raw-escape: ./apex-snapshot-create.sh
+        - shell:
+            !include-raw-escape: ./apex-upload-artifact.sh
+
+# FDIO promote
+- job-template:
+    name: 'apex-fdio-promote-daily-{stream}'
+
+    # Job template for promoting CSIT Snapshots
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: '{daily-slave}'
+
+    disabled: false
+
+    scm:
+        - git-scm
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    properties:
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-verify.*'
+                - 'apex-deploy.*'
+                - 'apex-build.*'
+                - 'apex-runner.*'
+                - 'apex-daily.*'
+
+    builders:
+        - 'apex-build'
+        - trigger-builds:
+          - project: 'apex-deploy-virtual-os-odl_l2-fdio-noha-{stream}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-fdio-promote-daily-{stream}
+              OPNFV_CLEAN=yes
+            git-revision: false
             block: true
             same-node: true
         - shell:
