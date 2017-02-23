@@ -44,9 +44,7 @@ class TestCase(object):
                                'connection_check': 'Health (connection)',
                                'api_check': 'Health (api)',
                                'snaps_smoke': 'SNAPS',
-                               'snaps_health_check': 'Health (dhcp)',
-                               'gluon_vping': 'Netready',
-                               'barometercollectd': 'Barometer'}
+                               'snaps_health_check': 'Health (dhcp)'}
         try:
             self.displayName = display_name_matrix[self.name]
         except:
@@ -142,9 +140,8 @@ class TestCase(object):
                              'connection_check': 'connection_check',
                              'api_check': 'api_check',
                              'snaps_smoke': 'snaps_smoke',
-                             'snaps_health_check': 'snaps_health_check',
-                             'gluon_vping': 'gluon_vping',
-                             'barometercollectd': 'barometercollectd'}
+                             'snaps_health_check': 'snaps_health_check'
+                             }
         try:
             return test_match_matrix[self.name]
         except:
