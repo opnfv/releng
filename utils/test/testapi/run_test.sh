@@ -15,6 +15,7 @@ source $SCRIPTDIR/testapi_venv/bin/activate
 pip install -r $SCRIPTDIR/requirements.txt
 pip install coverage
 pip install nose>=1.3.1
+pip install pytest
 
 find . -type f -name "*.pyc" -delete
 
