@@ -4,7 +4,7 @@ export PYTHONPATH="${PYTHONPATH}:."
 export CONFIG_REPORTING_YAML=./reporting.yaml
 
 declare -a versions=(colorado master)
-declare -a projects=(functest yardstick)
+declare -a projects=(functest storperf yardstick)
 
 project=$1
 reporting_type=$2
@@ -30,6 +30,7 @@ cp -Rf js display
 #   $1      |          $2
 # functest  | status, vims, tempest
 # yardstick |
+# storperf  |
 
 if [ -z "$1" ]; then
   echo "********************************"
@@ -52,6 +53,13 @@ if [ -z "$1" ]; then
   echo "********************************"
   python ./yardstick/reporting-status.py
   echo "Yardstick reporting status...OK"
+
+  echo "********************************"
+  echo " Storperf reporting "
+  echo "********************************"
+  python ./storperf/reporting-status.py
+  echo "Storperf reporting status...OK"
+
 else
   if [ -z "$2" ]; then
     reporting_type="status"

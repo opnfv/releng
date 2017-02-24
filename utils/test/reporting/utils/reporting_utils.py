@@ -101,7 +101,15 @@ def getApiResults(case, installer, scenario, version):
 
 def getScenarios(case, installer, version):
 
-    case = case.getName()
+    try:
+        case = case.getName()
+    except:
+        # if case is not an object test case, try the string
+        if type(case) == str:
+            case = case
+        else:
+            raise ValueError("Case cannot be evaluated")
+
     period = get_config('general.period')
     url_base = get_config('testapi.url')
 
