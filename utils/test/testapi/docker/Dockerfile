@@ -8,13 +8,12 @@
 #    $ docker build -t opnfv/testapi:tag .
 #
 # Execution:
-#    $ docker run -dti -p 8000:8000 \
-#      -e "swagger_url=http://10.63.243.17:8000" \
+#    $ docker run -dti -p 8001:8000 \
+#      -e "swagger_url=http://10.63.243.17:8001" \
 #      -e "mongodb_url=mongodb://10.63.243.17:27017/" \
-#      -e "api_port=8000"
 #      opnfv/testapi:tag
 #
-# NOTE: providing swagger_url, api_port, mongodb_url is optional.
+# NOTE: providing swagger_url, mongodb_url is optional.
 #       If not provided, it will use the default one
 #       configured in config.ini
 #

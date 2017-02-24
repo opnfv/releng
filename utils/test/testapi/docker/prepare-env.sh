@@ -9,8 +9,3 @@ fi
 if [ "$swagger_url" != "" ]; then
     sudo crudini --set --existing $FILE swagger base_url $swagger_url
 fi
-
-if [ "$api_port" != "" ];then
-    sudo crudini --set --existing $FILE api port $api_port
-fi
-
