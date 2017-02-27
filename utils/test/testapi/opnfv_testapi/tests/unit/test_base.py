@@ -7,19 +7,21 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 import json
+from os import path
 
+import mock
 from tornado import testing
-from tornado import web
 
 import fake_pymongo
+from opnfv_testapi.cmd import server
 from opnfv_testapi.resources import models
-from opnfv_testapi.router import url_mappings
 
 
 class TestBase(testing.AsyncHTTPTestCase):
     headers = {'Content-Type': 'application/json; charset=UTF-8'}
 
     def setUp(self):
+        self._patch_server()
         self.basePath = ''
         self.create_res = models.CreateResponse
         self.get_res = None
@@ -30,13 +32,24 @@ class TestBase(testing.AsyncHTTPTestCase):
         self.addCleanup(self._clear)
         super(TestBase, self).setUp()
 
+    def tearDown(self):
+        self.db_patcher.stop()
+
+    def _patch_server(self):
+        server.parse_config([
+            '--config-file',
+            path.join(path.dirname(__file__), 'common/normal.ini')
+        ])
+        self.db_patcher = mock.patch('opnfv_testapi.cmd.server.get_db',
+                                     self._fake_pymongo)
+        self.db_patcher.start()
+
+    @staticmethod
+    def _fake_pymongo():
+        return fake_pymongo
+
     def get_app(self):
-        return web.Application(
-            url_mappings.mappings,
-            db=fake_pymongo,
-            debug=True,
-            auth=False
-        )
+        return server.make_app()
 
     def create_d(self, *args):
         return self.create(self.req_d, *args)

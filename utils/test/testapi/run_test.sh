@@ -16,6 +16,7 @@ pip install -r $SCRIPTDIR/requirements.txt
 pip install coverage
 pip install nose>=1.3.1
 pip install pytest
+pip install mock
 
 find . -type f -name "*.pyc" -delete
 
