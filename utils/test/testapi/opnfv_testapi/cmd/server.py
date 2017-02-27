@@ -30,6 +30,7 @@ TODOs :
 """
 
 import argparse
+import sys
 
 import motor
 import tornado.ioloop
@@ -38,30 +39,34 @@ from opnfv_testapi.common import config
 from opnfv_testapi.router import url_mappings
 from opnfv_testapi.tornado_swagger import swagger
 
-# optionally get config file from command line
-parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--config-file", dest='config_file',
-                    help="Config file location")
-args = parser.parse_args()
-CONF = config.APIConfig().parse(args.config_file)
+CONF = None
 
-# connecting to MongoDB server, and choosing database
-client = motor.MotorClient(CONF.mongo_url)
-db = client[CONF.mongo_dbname]
 
-swagger.docs(base_url=CONF.swagger_base_url)
+def parse_config(argv=[]):
+    global CONF
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--config-file", dest='config_file',
+                        help="Config file location")
+    args = parser.parse_args(argv)
+    CONF = config.APIConfig().parse(args.config_file)
+
+
+def get_db():
+    return motor.MotorClient(CONF.mongo_url)[CONF.mongo_dbname]
 
 
 def make_app():
+    swagger.docs(base_url=CONF.swagger_base_url)
     return swagger.Application(
         url_mappings.mappings,
-        db=db,
+        db=get_db(),
         debug=CONF.api_debug_on,
         auth=CONF.api_authenticate_on
     )
 
 
 def main():
+    parse_config(sys.argv[1:])
     application = make_app()
     application.listen(CONF.api_port)
     tornado.ioloop.IOLoop.current().start()
