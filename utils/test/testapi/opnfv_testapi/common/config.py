@@ -23,7 +23,7 @@ class ParseError(Exception):
         return 'error parsing config file : %s' % self.msg
 
 
-class APIConfig:
+class APIConfig(object):
     """
     The purpose of this class is to load values correctly from the config file.
     Each key is declared as an attribute in __init__() and linked in parse()
