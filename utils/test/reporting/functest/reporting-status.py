@@ -28,9 +28,9 @@ testValid = []
 otherTestCases = []
 reportingDate = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
-# init just snaps_health_check to get the list of scenarios
-# as all the scenarios run snaps_health_check
-snaps_health_check = tc.TestCase("snaps_health_check", "functest", -1)
+# init just connection_check to get the list of scenarios
+# as all the scenarios run connection_check
+healthcheck = tc.TestCase("connection_check", "functest", -1)
 
 # Retrieve the Functest configuration to detect which tests are relevant
 # according to the installer, scenario
@@ -92,7 +92,7 @@ for version in versions:
     # For all the installers
     for installer in installers:
         # get scenarios
-        scenario_results = rp_utils.getScenarios(snaps_health_check,
+        scenario_results = rp_utils.getScenarios(healthcheck,
                                                  installer,
                                                  version)
         scenario_stats = rp_utils.getScenarioStats(scenario_results)
