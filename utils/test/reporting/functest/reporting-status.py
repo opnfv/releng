@@ -28,9 +28,9 @@ testValid = []
 otherTestCases = []
 reportingDate = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
-# init just tempest to get the list of scenarios
-# as all the scenarios run Tempest
-tempest = tc.TestCase("tempest_smoke_serial", "functest", -1)
+# init just snaps_health_check to get the list of scenarios
+# as all the scenarios run snaps_health_check
+snaps_health_check = tc.TestCase("snaps_health_check", "functest", -1)
 
 # Retrieve the Functest configuration to detect which tests are relevant
 # according to the installer, scenario
@@ -92,7 +92,9 @@ for version in versions:
     # For all the installers
     for installer in installers:
         # get scenarios
-        scenario_results = rp_utils.getScenarios(tempest, installer, version)
+        scenario_results = rp_utils.getScenarios(snaps_health_check,
+                                                 installer,
+                                                 version)
         scenario_stats = rp_utils.getScenarioStats(scenario_results)
         items = {}
         scenario_result_criteria = {}
