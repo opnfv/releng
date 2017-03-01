@@ -102,19 +102,19 @@
                 - comment-added-contains-event:
                     comment-contains-value: 'reverify'
             projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: 'ANT'
-                    pattern: '{files}'
+                - project-compare-type: 'ANT'
+                  project-pattern: '{project}'
+                  branches:
+                      - branch-compare-type: 'ANT'
+                        branch-pattern: '**/{branch}'
+                  file-paths:
+                      - compare-type: 'ANT'
+                        pattern: '{files}'
             skip-vote:
-                successful: true
-                failed: true
-                unstable: true
-                notbuilt: true
+                successful: false
+                failed: false
+                unstable: false
+                notbuilt: false
 
 - trigger:
     name: gerrit-trigger-change-merged
@@ -131,6 +131,9 @@
                 branches:
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: '{files}'
 
 - trigger:
     name: 'experimental'
