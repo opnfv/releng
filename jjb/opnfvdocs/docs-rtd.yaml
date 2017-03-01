@@ -33,7 +33,9 @@
         - git-scm
 
     triggers:
-        - gerrit-trigger-change-merged
+        - gerrit-trigger-change-merged:
+            files: 'docs/**/*.rst'
+        - timed: 'H H * * *'
 
     builders:
         - shell: !include-raw: docs-post-rtd.sh
@@ -61,7 +63,6 @@
 
     triggers:
         - gerrit-trigger-patchset-created:
-            server: 'gerrit.opnfv.org'
             project: '**'
             branch: '{branch}'
             files: 'docs/**/*.rst'
