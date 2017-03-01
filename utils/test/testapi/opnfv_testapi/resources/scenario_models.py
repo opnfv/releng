@@ -49,6 +49,24 @@ class ScenarioProject(models.ModelBase):
         return {'scores': ScenarioScore,
                 'trust_indicators': ScenarioTI}
 
+    def __eq__(self, other):
+        return [self.project == other.project and
+                self._customs_eq(other) and
+                self._scores_eq(other) and
+                self._ti_eq(other)]
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def _customs_eq(self, other):
+        return set(self.customs) == set(other.customs)
+
+    def _scores_eq(self, other):
+        return set(self.scores) == set(other.scores)
+
+    def _ti_eq(self, other):
+        return set(self.trust_indicators) == set(other.trust_indicators)
+
 
 @swagger.model()
 class ScenarioVersion(models.ModelBase):
@@ -64,6 +82,21 @@ class ScenarioVersion(models.ModelBase):
     def attr_parser():
         return {'projects': ScenarioProject}
 
+    def __eq__(self, other):
+        return [self.version == other.version and self._projects_eq(other)]
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def _projects_eq(self, other):
+        for s_project in self.projects:
+            for o_project in other.projects:
+                if s_project.project == o_project.project:
+                    if s_project != o_project:
+                        return False
+
+        return True
+
 
 @swagger.model()
 class ScenarioInstaller(models.ModelBase):
@@ -78,6 +111,21 @@ class ScenarioInstaller(models.ModelBase):
     @staticmethod
     def attr_parser():
         return {'versions': ScenarioVersion}
+
+    def __eq__(self, other):
+        return [self.installer == other.installer and self._versions_eq(other)]
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def _versions_eq(self, other):
+        for s_version in self.versions:
+            for o_version in other.versions:
+                if s_version.version == o_version.version:
+                    if s_version != o_version:
+                        return False
+
+        return True
 
 
 @swagger.model()
@@ -125,6 +173,21 @@ class Scenario(models.ModelBase):
     @staticmethod
     def attr_parser():
         return {'installers': ScenarioInstaller}
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __eq__(self, other):
+        return [self.name == other.name and self._installers_eq(other)]
+
+    def _installers_eq(self, other):
+        for s_install in self.installers:
+            for o_install in other.installers:
+                if s_install.installer == o_install.installer:
+                    if s_install != o_install:
+                        return False
+
+        return True
 
 
 @swagger.model()
