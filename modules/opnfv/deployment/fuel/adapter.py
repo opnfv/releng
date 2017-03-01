@@ -176,7 +176,7 @@ class FuelAdapter(manager.DeploymentHandler):
         return version
 
     def get_sdn_version(self):
-        cmd = "apt-cache show opendaylight|grep Version"
+        cmd = "apt-cache policy opendaylight|grep Installed"
         version = None
         for node in self.nodes:
             if manager.Role.ODL in node.roles and node.is_active():
