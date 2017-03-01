@@ -39,10 +39,10 @@ class TestScenarioBase(base.TestBase):
         self.assertEqual(code, constants.HTTP_OK)
         if req is None:
             req = self.req_d
-        scenario_dict = scenario.format_http()
-        self.assertIsNotNone(scenario_dict['_id'])
-        self.assertIsNotNone(scenario_dict['creation_date'])
-        self.assertDictContainsSubset(req, scenario_dict)
+        self.assertIsNotNone(scenario._id)
+        self.assertIsNotNone(scenario.creation_date)
+
+        scenario == models.Scenario.from_dict(req)
 
     @staticmethod
     def _set_query(*args):
