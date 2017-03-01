@@ -201,6 +201,17 @@ elif [ "$installer_type" == "foreman" ]; then
         'source keystonerc_admin;keystone endpoint-list'" \
         | grep $admin_ip | sed 's/ /\n/g' | grep ^http | head -1) &> /dev/null
 
+elif [ "$installer_type" == "daisy" ]; then
+    verify_connectivity $installer_ip
+    cluster=$(sshpass -p r00tme ssh 2>/dev/null $ssh_options root@${installer_ip} \
+            "source ~/daisyrc_admin; daisy cluster-list"|grep active|head -1|awk -F "|" '{print $3}') &> /dev/null
+    if [ -z $cluster ]; then
+        echo "No active cluster detected in daisy"
+        exit 1
+    fi
+
+    sshpass -p r00tme scp 2>/dev/null $ssh_options root@${installer_ip}:/etc/kolla/admin-openrc.sh $dest_path &> /dev/null
+
 else
     error "Installer $installer is not supported by this script"
 fi
