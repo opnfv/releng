@@ -15,39 +15,19 @@
 # feng.xiaowei@zte.com.cn  add ModelBase                           12-20-2016
 ##############################################################################
 import copy
+import ast
+
 
 from opnfv_testapi.tornado_swagger import swagger
 
 
 class ModelBase(object):
 
-    def _format(self, excludes):
-        new_obj = copy.deepcopy(self)
-        dicts = new_obj.__dict__
-        for k in dicts.keys():
-            if k in excludes:
-                del dicts[k]
-            elif dicts[k]:
-                if hasattr(dicts[k], 'format'):
-                    dicts[k] = dicts[k].format()
-                elif isinstance(dicts[k], list):
-                    hs = list()
-                    [hs.append(h.format() if hasattr(h, 'format') else str(h))
-                     for h in dicts[k]]
-                    dicts[k] = hs
-                elif not isinstance(dicts[k], (str, int, float, dict)):
-                    dicts[k] = str(dicts[k])
-        return dicts
-
     def format(self):
         return self._format(['_id'])
 
     def format_http(self):
         return self._format([])
-
-    @staticmethod
-    def attr_parser():
-        return {}
 
     @classmethod
     def from_dict(cls, a_dict):
@@ -68,6 +48,44 @@ class ModelBase(object):
             t.__setattr__(k, value)
 
         return t
+
+    @staticmethod
+    def attr_parser():
+        return {}
+
+    def _format(self, excludes):
+        new_obj = copy.deepcopy(self)
+        dicts = new_obj.__dict__
+        for k in dicts.keys():
+            if k in excludes:
+                del dicts[k]
+            elif dicts[k]:
+                dicts[k] = self._obj_format(dicts[k])
+        return dicts
+
+    def _obj_format(self, obj):
+        if self._has_format(obj):
+            obj = obj.format()
+        elif isinstance(obj, unicode):
+            try:
+                obj = self._obj_format(ast.literal_eval(obj))
+            except:
+                try:
+                    obj = str(obj)
+                except:
+                    obj = obj
+        elif isinstance(obj, list):
+            hs = list()
+            for h in obj:
+                hs.append(self._obj_format(h))
+            obj = hs
+        elif not isinstance(obj, (str, int, float, dict)):
+            obj = str(obj)
+        return obj
+
+    @staticmethod
+    def _has_format(obj):
+        return not isinstance(obj, (str, unicode)) and hasattr(obj, 'format')
 
 
 @swagger.model()
