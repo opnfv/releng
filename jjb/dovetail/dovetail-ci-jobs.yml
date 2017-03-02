@@ -81,27 +81,23 @@
             SUT: compass
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *danube
-#apex CI PODs
-        - apex-verify-master:
+#--------------------------------
+#    Installers not using labels
+#            CI PODs
+# This section should only contain the installers
+# that have not been switched using labels for slaves
+#--------------------------------
+#apex PODs
+        - lf-pod1:
             slave-label: '{pod}'
             SUT: apex
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *master
-        - apex-daily-master:
+        - lf-pod1:
             slave-label: '{pod}'
             SUT: apex
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-#        - apex-verify-colorado:
-#            slave-label: '{pod}'
-#            SUT: apex
-#            auto-trigger-name: 'daily-trigger-disabled'
-#            <<: *danube
-#        - apex-daily-colorado:
-#            slave-label: '{pod}'
-#            SUT: apex
-#            auto-trigger-name: 'daily-trigger-disabled'
-#            <<: *danube
+            <<: *danube
 #armband CI PODs
         - armband-baremetal:
             slave-label: armband-baremetal
