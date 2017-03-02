@@ -2,9 +2,9 @@
 # job configuration for functest
 ###################################
 - project:
-    name: functest
+    name: functest-daily
 
-    project: '{name}'
+    project: functest
 
 #--------------------------------
 # BRANCH ANCHORS
@@ -198,8 +198,6 @@
             job-timeout: 60
         - 'daily':
             job-timeout: 180
-        - 'weekly':
-            job-timeout: 400
 
     jobs:
         - 'functest-{installer}-{pod}-{testsuite}-{stream}'
@@ -252,7 +250,7 @@
 
     builders:
         - description-setter:
-            description: "POD: $NODE_NAME"
+            description: "Built on $NODE_NAME"
         - 'functest-{testsuite}-builder'
 
 ########################
@@ -265,13 +263,6 @@
             name: FUNCTEST_SUITE_NAME
             default: 'daily'
             description: "Daily suite name to run"
-- parameter:
-    name: functest-weekly-parameter
-    parameters:
-        - string:
-            name: FUNCTEST_SUITE_NAME
-            default: 'weekly'
-            description: "Weekly suite name to run"
 - parameter:
     name: functest-suite-parameter
     parameters:
@@ -343,15 +334,6 @@
         - 'functest-exit'
 
 - builder:
-    name: functest-weekly-builder
-    builders:
-        - 'functest-cleanup'
-        - 'set-functest-env'
-        - 'functest-weekly'
-        - 'functest-store-results'
-        - 'functest-exit'
-
-- builder:
     name: functest-suite-builder
     builders:
         - 'functest-cleanup'
@@ -364,11 +346,6 @@
         - shell:
             !include-raw: ./functest-loop.sh
 
-- builder:
-    name: functest-weekly
-    builders:
-        - shell:
-            !include-raw: ./functest-loop.sh
 
 - builder:
     name: functest-suite
