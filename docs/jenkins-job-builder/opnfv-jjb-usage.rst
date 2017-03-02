@@ -70,6 +70,7 @@ reviewed and submitted.
 * jose.lausuch@ericsson.com
 * koffirodrigue@gmail.com
 * r-mibu@cq.jp.nec.com
+* tbramwell@linuxfoundation.org
 
 Or Add the group releng-contributors
 
