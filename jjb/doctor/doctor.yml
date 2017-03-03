@@ -153,10 +153,15 @@
             grep -e ' OK$' $functest_log || exit 1
 
     publishers:
+        - postbuildscript:
+            builders:
+                - shell: |
+                    cp $HOME/opnfv/functest/results/{stream}/{project}.log \
+                    tests/functest-{project}.log
+            script-only-if-succeeded: False
+            script-only-if-failed: False
         - archive:
             artifacts: 'tests/*.log'
-        - archive:
-            artifacts: '$HOME/opnfv/functest/results/{stream}/{project}.log'
 
 
 #####################################
