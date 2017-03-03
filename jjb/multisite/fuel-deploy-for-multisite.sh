@@ -27,6 +27,9 @@ if [[ -z "FUEL_PROPERTIES_FILE" ]]; then
     echo "Unable to extract the url to Fuel ISO properties from ${FUEL_DEPLOY_URL}"
     exit 1
 fi
+
+# use known/working version of fuel
+FUEL_PROPERTIES_FILE="opnfv-2017-03-02_04-00-09.properties"
 curl -L -s -o $WORKSPACE/latest.properties http://artifacts.opnfv.org/fuel/$FUEL_PROPERTIES_FILE
 
 # source the file so we get OPNFV vars
