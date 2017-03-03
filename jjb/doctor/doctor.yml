@@ -145,6 +145,15 @@
 
     builders:
         - 'clean-workspace-log'
+        - shell: |
+            # NOTE: Create symbolic link, so that we can archive file outside
+            #       of $WORKSPACE .
+            # NOTE: We are printing all logs under 'tests/' during test run,
+            #       so this symbolic link should not be in 'tests/'.
+            #       Otherwise, we'll the same log twice in jenkins console log.
+            functest_log="$HOME/opnfv/functest/results/{stream}/{project}.log"
+            to_be_archived="$WORKSPACE/functest-{project}.log"
+            ln -sf $functest_log $to_be_archived
         - 'functest-suite-builder'
         - shell: |
             functest_log="$HOME/opnfv/functest/results/{stream}/{project}.log"
@@ -153,15 +162,10 @@
             grep -e ' OK$' $functest_log || exit 1
 
     publishers:
-        - postbuildscript:
-            builders:
-                - shell: |
-                    cp $HOME/opnfv/functest/results/{stream}/{project}.log \
-                    tests/functest-{project}.log
-            script-only-if-succeeded: False
-            script-only-if-failed: False
         - archive:
             artifacts: 'tests/*.log'
+        - archive:
+            artifacts: 'functest-{project}.log'
 
 
 #####################################
