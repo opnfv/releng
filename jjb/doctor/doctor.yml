@@ -149,14 +149,12 @@
             # NOTE: Create symbolic link, so that we can archive file outside
             #       of $WORKSPACE .
             # NOTE: We are printing all logs under 'tests/' during test run,
-            #       so this symbolic link should not be in 'tests/'.
-            #       Otherwise, we'll the same log twice in jenkins console log.
-            functest_log="$HOME/functest/results/{stream}/{project}.log"
-            to_be_archived="$WORKSPACE/functest-{project}.log"
-            ln -sf $functest_log $to_be_archived
+            #       so this symbolic link should not be in 'tests/'. Otherwise,
+            #       we'll have the same log twice in jenkins console log.
+            ln -sfn $HOME/opnfv/functest/results/{stream} functest_results
         - 'functest-suite-builder'
         - shell: |
-            functest_log="$HOME/functest/results/{stream}/{project}.log"
+            functest_log="$HOME/opnfv/functest/results/{stream}/{project}.log"
             # NOTE: checking the test result, as the previous job could return
             #       0 regardless the result of doctor test scenario.
             grep -e ' OK$' $functest_log || exit 1
@@ -165,7 +163,7 @@
         - archive:
             artifacts: 'tests/*.log'
         - archive:
-            artifacts: 'functest-{project}.log'
+            artifacts: 'functest_results/{project}.log'
 
 
 #####################################
