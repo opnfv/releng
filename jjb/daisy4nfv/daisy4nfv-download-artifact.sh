@@ -36,6 +36,25 @@ echo "Using $OPNFV_ARTIFACT for deployment"
 
 [[ "$NODE_NAME" =~ (zte) ]] && OPNFV_ARTIFACT_URL=${GS_BASE_PROXY%%/*}/$OPNFV_ARTIFACT_URL
 
+if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
+    # check if we already have the image to avoid redownload
+    BINSTORE="/bin_mount/opnfv_ci/${BRANCH##*/}"
+    if [[ -f "$BINSTORE/$OPNFV_ARTIFACT" && ! -z $OPNFV_ARTIFACT_SHA512SUM ]]; then
+        echo "BIN exists locally. Starting to check the sha512sum."
+        if [[ $OPNFV_ARTIFACT_SHA512SUM = $(sha512sum -b $BINSTORE/$OPNFV_ARTIFACT | cut -d' ' -f1) ]]; then
+            echo "Sha512sum is verified. Skipping the download and using the file from BIN store."
+            ln -s $BINSTORE/$OPNFV_ARTIFACT $WORKSPACE/opnfv.bin
+            echo "--------------------------------------------------------"
+            echo
+            ls -al $WORKSPACE/opnfv.bin
+            echo
+            echo "--------------------------------------------------------"
+            echo "Done!"
+            exit 0
+        fi
+    fi
+fi
+
 # log info to console
 echo "Downloading the $INSTALLER_TYPE artifact using URL http://$OPNFV_ARTIFACT_URL"
 echo "This could take some time..."
