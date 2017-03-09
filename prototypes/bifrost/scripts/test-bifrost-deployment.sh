@@ -53,7 +53,11 @@ WRITE_INTERFACES_FILE=true
 export BIFROST_INVENTORY_SOURCE=/tmp/baremetal.csv
 
 # DIB custom elements path
-export ELEMENTS_PATH=/usr/share/diskimage-builder/elements:/opt/puppet-infracloud/files/elements
+export ELEMENTS_PATH=/opt/puppet-infracloud/files/elements
+# Get the default ones too
+for x in $(find /usr/lib -type d -name "diskimage_builder"); do
+    ELEMENTS_PATH+=":${x}/elements"
+done
 
 # settings for console access
 export DIB_DEV_USER_PWDLESS_SUDO=yes
