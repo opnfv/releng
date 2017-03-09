@@ -37,6 +37,7 @@
 #####################################
     jobs:
         - 'compass-verify-{distro}-{stream}'
+        - 'compass-verify-k8s-{distro}-{stream}'
         - 'compass-verify-{phase}-{distro}-{stream}'
 #####################################
 # job templates
@@ -158,6 +159,106 @@
                     FUNCTEST_SUITE_NAME=vping_ssh
                   node-parameters: true
                   kill-phase-on: NEVER
+                  abort-all-job: true
+
+- job-template:
+    name: 'compass-verify-k8s-{distro}-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - logrotate-default
+        - throttle:
+            enabled: true
+            max-total: 4
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'compass-verify-[^-]*-[^-]*'
+                - 'compass-os-.*?-virtual-daily-.*?'
+            block-level: 'NODE'
+
+    scm:
+        - git-scm-gerrit
+
+    wrappers:
+        - ssh-agent-wrapper
+        - timeout:
+            timeout: 120
+            fail: true
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - comment-added-contains-event:
+                    comment-contains-value: 'check-k8s'
+                - comment-added-contains-event:
+                    comment-contains-value: 'verify-k8s'
+                - comment-added-contains-event:
+                    comment-contains-value: 'check-kubernetes'
+                - comment-added-contains-event:
+                    comment-contains-value: 'verify-kubernetes'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: '**/*'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**'
+            readable-message: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - 'compass-virtual-defaults'
+        - '{installer}-defaults'
+        - 'compass-verify-defaults':
+            installer: '{installer}'
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'k8s-nosdn-nofeature-ha'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: basic
+            condition: SUCCESSFUL
+            projects:
+                - name: 'opnfv-lint-verify-{stream}'
+                  current-parameters: true
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                - name: 'opnfv-yamllint-verify-{stream}'
+                  current-parameters: true
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: deploy-virtual
+            condition: SUCCESSFUL
+            projects:
+                - name: 'compass-verify-deploy-virtual-{distro}-{stream}'
+                  current-parameters: true
+                  predefined-parameters: |
+                    COMPASS_OS_VERSION={os-version}
+                  node-parameters: true
+                  kill-phase-on: FAILURE
                   abort-all-job: true
 
 - job-template:
