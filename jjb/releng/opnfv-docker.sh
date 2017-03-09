@@ -54,8 +54,18 @@ fi
 
 cd $WORKSPACE/docker
 if [ ! -f ${DOCKERFILE} ]; then
-    echo "ERROR: Dockerfile not found."
-    exit 1
+    # If this is supposed to be an aarch64 Dockerfile and it does not exist
+    # but an aarch64 patch exists, then apply the patch and create the
+    # Dockerfile.aarch file
+    if [ ${DOCKERFILE} contains "aarch64" ] && \
+       [ -f 0001-Apply-aarch64-to-Dockerfile.patch]; then
+        cmd="git am ${PWD}/0001-Adapt-Dockerfile-to-aarch64.patch"
+        ${cmd}
+        mv Dockerfile Dockerfile.aarch64
+    else
+        echo "ERROR: Dockerfile not found."
+        exit 1
+    fi
 fi
 
 # Get tag version
