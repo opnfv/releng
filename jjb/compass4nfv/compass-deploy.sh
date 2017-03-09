@@ -34,6 +34,8 @@ if [[ "${DEPLOY_SCENARIO}" =~ "-ocl" ]]; then
     export NETWORK_CONF_FILE=network_ocl.yml
 elif [[ "${DEPLOY_SCENARIO}" =~ "-onos" ]]; then
     export NETWORK_CONF_FILE=network_onos.yml
+elif [[ "${DEPLOY_SCENARIO}" =~ "-openo" ]]; then
+    export NETWORK_CONF_FILE=network_openo.yml
 else
     export NETWORK_CONF_FILE=network.yml
 fi
