@@ -18,6 +18,7 @@ ENABLE_VENV="false"
 USE_DHCP="false"
 USE_VENV="false"
 BUILD_IMAGE=true
+BAREMETAL_DATA_FILE=${BAREMETAL_DATA_FILE:-'/tmp/baremetal.json'}
 PROVISION_WAIT_TIMEOUT=${PROVISION_WAIT_TIMEOUT:-3600}
 
 # Set defaults for ansible command-line options to drive the different
@@ -50,7 +51,7 @@ INVENTORY_DHCP_STATIC_IP=false
 WRITE_INTERFACES_FILE=true
 
 # Set BIFROST_INVENTORY_SOURCE
-export BIFROST_INVENTORY_SOURCE=/tmp/baremetal.csv
+export BIFROST_INVENTORY_SOURCE=/tmp/baremetal.json
 
 # DIB custom elements path
 export ELEMENTS_PATH=/usr/share/diskimage-builder/elements:/opt/puppet-infracloud/files/elements
@@ -107,7 +108,8 @@ ${ANSIBLE} -vvvv \
        -e test_vm_num_nodes=${TEST_VM_NUM_NODES} \
        -e test_vm_memory_size=${VM_MEMORY_SIZE} \
        -e enable_venv=${ENABLE_VENV} \
-       -e test_vm_domain_type=${VM_DOMAIN_TYPE}
+       -e test_vm_domain_type=${VM_DOMAIN_TYPE} \
+       -e baremetal_json_file=${BAREMETAL_DATA_FILE}
 
 # Execute the installation and VM startup test.
 ${ANSIBLE} -vvvv \
