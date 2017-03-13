@@ -13,6 +13,11 @@
         branch: '{stream}'
         gs-pathname: ''
         docker-tag: latest
+    danube: &danube
+        stream: danube
+        branch: 'stable/{stream}'
+        gs-pathname: '/{stream}'
+        docker-tag: 'stable'
 
 #--------------------------------
 # JOB VARIABLES
@@ -24,6 +29,9 @@
         - zte-pod3:
             installer: fuel
             <<: *master
+        - zte-pod3:
+            installer: fuel
+            <<: *danube
     task:
         - daily:
             auto-builder-name: qtip-validate-deploy
