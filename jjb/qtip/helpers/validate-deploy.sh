@@ -8,15 +8,14 @@
 ##############################################################################
 set -e
 
-envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} -e NODE_NAME=${NODE_NAME}"
-suite="TEST_CASE=all"
+envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP}
+-e NODE_NAME=${NODE_NAME} -e CI_DEBUG=${CI_DEBUG}"
 dir_imgstore="${HOME}/imgstore"
-img_volume="${dir_imgstore}:/home/opnfv/imgstore"
 
 echo "Qtip: Pulling docker image: opnfv/qtip:${DOCKER_TAG}"
 docker pull opnfv/qtip:$DOCKER_TAG
 
-cmd=" docker run -id -e $envs -e $suite -v ${img_volume} opnfv/qtip:${DOCKER_TAG} /bin/bash"
+cmd=" docker run -id -e $envs opnfv/qtip:${DOCKER_TAG} /bin/bash"
 echo "Qtip: Running docker command: ${cmd}"
 ${cmd}
 
@@ -27,7 +26,10 @@ if [ $(docker ps | grep 'opnfv/qtip' | wc -l) == 0 ]; then
 else
     echo "The container ID is: ${container_id}"
     QTIP_REPO=/home/opnfv/repos/qtip
-# TODO(yujunz): execute benchmark plan for compute-qpi
+# TODO: use qtip cli to execute benchmark test in the future
+    docker exec -t ${container_id} bash -c "cd ${QTIP_REPO}/qtip/runner/ &&
+    python runner.py -d /home/opnfv/qtip/results/ -b all"
+
 fi
 
 echo "Qtip done!"
