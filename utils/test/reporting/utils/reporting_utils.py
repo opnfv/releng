@@ -283,6 +283,9 @@ def getJenkinsUrl(build_tag):
     except:
         print('Impossible to get jenkins url:')
 
+    if "jenkins-" not in build_tag:
+        jenkins_url = None
+
     return jenkins_url
 
 

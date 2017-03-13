@@ -98,8 +98,14 @@ for version in versions:
         scenario_stats = rp_utils.getScenarioStats(scenario_results)
         items = {}
         scenario_result_criteria = {}
-        scenario_file_name = ("./display/" + version +
-                              "/functest/scenario_history.txt")
+        scenario_directory = "./display/" + version + "/functest/"
+        scenario_file_name = scenario_directory + "scenario_history.txt"
+
+        # check that the directory exists, if not create it
+        # (first run on new version)
+        if not os.path.exists(scenario_directory):
+            os.makedirs(scenario_directory)
+
         # initiate scenario file if it does not exist
         if not os.path.isfile(scenario_file_name):
             with open(scenario_file_name, "a") as my_file:
@@ -122,7 +128,9 @@ for version in versions:
             if len(s_result) > 0:
                 build_tag = s_result[len(s_result)-1]['build_tag']
                 logger.debug("Build tag: %s" % build_tag)
-                s_url = s_url = rp_utils.getJenkinsUrl(build_tag)
+                s_url = rp_utils.getJenkinsUrl(build_tag)
+                if s_url is None:
+                    s_url = "http://testresultS.opnfv.org/reporting"
                 logger.info("last jenkins url: %s" % s_url)
             testCases2BeDisplayed = []
             # Check if test case is runnable / installer, scenario
