@@ -26,8 +26,8 @@
             branch: 'stable/danube'
             gs-pathname: '/danube'
             slave: 'lf-pod1'
-            verify-slave: 'apex-verify-master'
-            daily-slave: 'apex-daily-master'
+            verify-slave: 'apex-verify-danube'
+            daily-slave: 'apex-daily-danube'
 
     project: 'apex'
 
@@ -795,6 +795,36 @@
           - project: 'yardstick-apex-{slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-nosdn-kvm-ha
+            block: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'apex-deploy-baremetal-os-odl_l3-fdio-noha-{stream}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-build-{stream}/.build
+              OPNFV_CLEAN=yes
+            git-revision: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+            block: true
+        - trigger-builds:
+          - project: 'functest-apex-{daily-slave}-daily-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl_l3-fdio-noha
+            block: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'yardstick-apex-{slave}-daily-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl_l3-fdio-noha
             block: true
             same-node: true
             block-thresholds:
