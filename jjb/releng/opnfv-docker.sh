@@ -64,7 +64,7 @@ echo "Current branch: $BRANCH"
 if [[ "$BRANCH" == "master" ]]; then
     DOCKER_TAG="latest"
 else
-    if [[ "$RELEASE_VERSION" != "" ]]; then
+    if [[ -n "${RELEASE_VERSION-}" ]]; then
         release=${BRANCH##*/}
         DOCKER_TAG=${release}.${RELEASE_VERSION}
         # e.g. colorado.1.0, colorado.2.0, colorado.3.0
