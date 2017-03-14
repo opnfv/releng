@@ -31,10 +31,16 @@ var Schema = {
         lines_of_code: {type: 'integer', nullable: true, unsigned: true},
         versions: {type: 'integer', nullable: true, unsigned: true},
         no_of_developers: {type: 'integer', nullable: true, unsigned: true},
+        no_of_stars: {type: 'integer', nullable: true, unsigned: true},
+        license: {type: 'enum', nullable: false, values: ['MIT', 'GPL', 'GPL_V2', 'BSD', 'APACHE']},
+        opnfv_indicator: {type: 'enum', nullable: false, values: ['gold', 'silver', 'platinum']},
+        complexity: {type: 'enum', nullable: true, values: ['low', 'medium', 'high']},
+        activity: {type: 'enum', nullable: true, values: ['low', 'medium', 'high']},
+        last_updated: {type: 'dateTime', nullable: true},
     },
     tag: {
         tag_id: {type: 'increments', nullable: false, primary: true},
-        name: {type: 'string', maxlength: 150, nullable: false}
+        tag_name: {type: 'string', maxlength: 150, nullable: false}
     },
     vnf_tags: {
         vnf_tag_id: {type: 'increments', nullable: false, primary: true},
