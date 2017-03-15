@@ -1,11 +1,12 @@
+---
 # SPDX-license-identifier: Apache-2.0
-##############################################################################
+# #############################################################################
 # Copyright (c) 2016 RedHat and others.
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Apache License, Version 2.0
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
-##############################################################################
+# #############################################################################
 ---
 - hosts: localhost
   connection: local
@@ -13,8 +14,8 @@
   become: yes
   ignore_errors: yes
   tasks:
-  - name: Remove pre-existing leases file
-    file: path=/var/lib/misc/dnsmasq.leases state=absent
+    - name: Remove pre-existing leases file
+      file: path=/var/lib/misc/dnsmasq.leases state=absent
 - hosts: localhost
   connection: local
   name: "Executes install, enrollment, and testing in one playbook"
@@ -23,9 +24,9 @@
   pre_tasks:
     - name: "Override the ipv4_gateway setting"
       set_fact:
-         ipv4_gateway: "192.168.122.1"
+        ipv4_gateway: "192.168.122.1"
   roles:
-    - { role: bifrost-prep-for-install, when: skip_install is not defined }
+    - {role: bifrost-prep-for-install, when: skip_install is not defined}
   environment:
     http_proxy: "{{ lookup('env','http_proxy') }}"
     https_proxy: "{{ lookup('env','https_proxy') }}"
@@ -38,9 +39,9 @@
     - role: bifrost-ironic-install
       cleaning: false
       testing: true
-    # NOTE(TheJulia): While the next step creates a ramdisk, some elements
-    # do not support ramdisk-image-create as they invoke steps to cleanup
-    # the ramdisk which causes ramdisk-image-create to believe it failed.
+      # NOTE(TheJulia): While the next step creates a ramdisk, some elements
+      # do not support ramdisk-image-create as they invoke steps to cleanup
+      # the ramdisk which causes ramdisk-image-create to believe it failed.
     - role: bifrost-create-dib-image
       dib_imagename: "{{ http_boot_folder }}/ipa"
       build_ramdisk: false
@@ -58,19 +59,19 @@
       dib_packages: "{{ lookup('env', 'DIB_OS_PACKAGES') }}"
       when: create_image_via_dib | bool == true and transform_boot_image | bool == false
   environment:
-    http_proxy: "{{ lookup('env','http_proxy') }}"
-    https_proxy: "{{ lookup('env','https_proxy') }}"
+  http_proxy: "{{ lookup('env','http_proxy') }}"
+  https_proxy: "{{ lookup('env','https_proxy') }}"
 - hosts: baremetal
   name: "Enroll node with Ironic"
   become: no
   connection: local
   roles:
     - role: ironic-enroll-dynamic
-    - { role: ironic-inspect-node, when: inspect_nodes | default('false') | bool == true }
+    - {role: ironic-inspect-node, when: inspect_nodes | default('false') | bool == true}
 - hosts: baremetal
   name: "Create configuration drive files and deploy machines"
   vars:
-    multinode_testing: "{{ inventory_dhcp | bool == true }}"
+  multinode_testing: "{{ inventory_dhcp | bool == true }}"
   become: no
   connection: local
   roles:
