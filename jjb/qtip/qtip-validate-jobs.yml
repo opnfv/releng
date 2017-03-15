@@ -38,7 +38,7 @@
             auto-trigger-name: 'qtip-daily-{pod}-trigger'
         - validate:
             auto-builder-name: qtip-validate-setup
-            auto-trigger-name: qtip-validate-trigger
+            auto-trigger-name: gerrit-trigger-change-merged
         - experimental:
             auto-builder-name: qtip-validate-setup
             auto-trigger-name: experimental
@@ -144,11 +144,3 @@
     name: qtip-daily-zte-pod3-trigger
     triggers:
         - timed: '0 1 * * *'
-
-- trigger:
-    name: qtip-validate-trigger
-    triggers:
-        - gerrit-trigger-change-merged:
-            project: '{project}'
-            branch: '{branch}'
-            files: '**'
