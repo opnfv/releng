@@ -28,6 +28,14 @@ function createTable(tableName) {
         if (Schema[tableName][key].type === 'text' && Schema[tableName][key].hasOwnProperty('fieldtype')) {
         column = table[Schema[tableName][key].type](key, Schema[tableName][key].fieldtype);
         }
+        else if (Schema[tableName][key].type === 'enum' && Schema[tableName][key].hasOwnProperty('values') && Schema[tableName][key].nullable === true) {
+        console.log(Schema[tableName][key].values);
+        column = table[Schema[tableName][key].type](key, Schema[tableName][key].values).nullable();
+        }
+        else if (Schema[tableName][key].type === 'enum' && Schema[tableName][key].hasOwnProperty('values')) {
+        console.log(Schema[tableName][key].values);
+        column = table[Schema[tableName][key].type](key, Schema[tableName][key].values).notNullable();
+        }
         else if (Schema[tableName][key].type === 'string' && Schema[tableName][key].hasOwnProperty('maxlength')) {
         column = table[Schema[tableName][key].type](key, Schema[tableName][key].maxlength);
         }
