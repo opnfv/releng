@@ -28,6 +28,7 @@ class TestCase(object):
                                'tempest_smoke_serial': 'Tempest (smoke)',
                                'tempest_full_parallel': 'Tempest (full)',
                                'tempest_defcore': 'Tempest (Defcore)',
+                               'refstack_defcore': 'Refstack',
                                'rally_sanity': 'Rally (smoke)',
                                'bgpvpn': 'bgpvpn',
                                'rally_full': 'Rally (full)',
@@ -47,6 +48,11 @@ class TestCase(object):
                                'snaps_smoke': 'SNAPS',
                                'snaps_health_check': 'Health (dhcp)',
                                'netready': 'Netready',
+                               'fds': 'FDS',
+                               'cloudify_ims': 'vIMS (Cloudify)',
+                               'orchestra_ims': 'OpenIMS (OpenBaton)',
+                               'opera_ims': 'vIMS (Open-O)',
+                               'vyos_vrouter': 'vyos',
                                'barometer': 'Barometer'}
         try:
             self.displayName = display_name_matrix[self.name]
@@ -127,6 +133,7 @@ class TestCase(object):
                              'tempest_smoke_serial': 'tempest_smoke_serial',
                              'tempest_full_parallel': 'tempest_full_parallel',
                              'tempest_defcore': 'tempest_defcore',
+                             'refstack_defcore': 'refstack_defcore',
                              'rally_sanity': 'rally_sanity',
                              'bgpvpn': 'bgpvpn',
                              'rally_full': 'rally_full',
@@ -146,6 +153,11 @@ class TestCase(object):
                              'snaps_smoke': 'snaps_smoke',
                              'snaps_health_check': 'snaps_health_check',
                              'netready': 'gluon_vping',
+                             'fds': 'fds',
+                             'cloudify_ims': 'cloudify_ims',
+                             'orchestra_ims': 'orchestra_ims',
+                             'opera_ims': 'opera_ims',
+                             'vyos_vrouter': 'vyos_vrouter',
                              'barometer': 'barometercollectd'}
         try:
             return test_match_matrix[self.name]
