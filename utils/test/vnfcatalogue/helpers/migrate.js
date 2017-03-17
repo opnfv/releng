@@ -11,8 +11,8 @@ var knex = require('knex')({
     client: 'mysql',
     connection: {
         host     : 'localhost',
-        user     : '*',
-        password : '*',
+        user     : 'myuser',
+        password : 'mypassword',
         database : 'vnf_catalogue',
         charset  : 'utf8'
     }
