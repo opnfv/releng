@@ -1,0 +1,218 @@
+- project:
+    name: 'bifrost-osa-daily'
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+    ocata: &ocata
+        stream: ocata
+        branch: 'stable/{stream}'
+        gs-pathname: '/{stream}'
+#--------------------------------
+#       scenarios
+#--------------------------------
+    scenario:
+        # HA scenarios
+        - 'os-nosdn-nofeature-ha':
+            auto-trigger-name: 'daily-trigger-disabled'
+#--------------------------------
+#        XCI PODs
+#--------------------------------
+    pod:
+        - virtual:
+            <<: *master
+#--------------------------------
+#        Supported Distros
+#--------------------------------
+    distro:
+        - 'xenial':
+            disabled: false
+            slave-label: xci-xenial-virtual
+            dib-os-release: 'xenial'
+            dib-os-element: 'ubuntu-minimal'
+            dib-os-packages: 'vlan,vim,less,bridge-utils,sudo,language-pack-en,iputils-ping,rsyslog,curl,python,debootstrap,ifenslave,ifenslave-2.6,lsof,lvm2,tcpdump,nfs-kernel-server,chrony'
+            extra-dib-elements: 'openssh-server'
+        - 'centos7':
+            disabled: true
+            slave-label: xci-centos7-virtual
+            dib-os-release: '7'
+            dib-os-element: 'centos7'
+            dib-os-packages: 'vim,less,bridge-utils,iputils,rsyslog,curl'
+            extra-dib-elements: 'openssh-server'
+        - 'suse':
+            disabled: true
+            slave-label: xci-suse-virtual
+            dib-os-release: '42.2'
+            dib-os-element: 'opensuse-minimal'
+            dib-os-packages: 'vim,less,bridge-utils,iputils,rsyslog,curl'
+            extra-dib-elements: 'openssh-server'
+#--------------------------------
+#        Phases
+#--------------------------------
+    phase:
+        - 'provision':
+            project: 'openstack'
+            project-repo: 'https://git.openstack.org/openstack/bifrost'
+            project-branch: '{branch}'
+            clone-location: '/opt/bifrost'
+        - 'deploy':
+            project: 'openstack'
+            project-repo: 'https://git.openstack.org/openstack/openstack-ansible'
+            project-branch: '{branch}'
+            clone-location: '/opt/openstack-ansible'
+        - 'functest':
+            project: 'opnfv'
+            project-repo: 'https://gerrit.opnfv.org/gerrit/functest'
+            project-branch: 'master'
+            clone-location: '/opt/functest'
+#--------------------------------
+# jobs
+#--------------------------------
+    jobs:
+        - 'xci-{scenario}-{pod}-{distro}-daily-{stream}'
+        - 'xci-{phase}-{pod}-{distro}-daily-{stream}'
+
+#--------------------------------
+# job templates
+#--------------------------------
+- job-template:
+    name: 'xci-{scenario}-{pod}-{distro}-daily-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'xci-os-.*?-{pod}-daily-.*'
+            block-level: 'NODE'
+
+    parameters:
+        - string:
+            name: DEPLOY_SCENARIO
+            default: '{scenario}'
+        - label:
+            name: SLAVE_LABEL
+            default: '{slave-label}'
+
+    triggers:
+        - '{auto-trigger-name}'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - trigger-builds:
+            - project: 'xci-provision-{pod}-{distro}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'xci-deploy-{pod}-{distro}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'xci-functest-{pod}-{distro}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+              same-node: true
+              block: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+
+    publishers:
+        - email:
+            recipients: fatih.degirmenci@ericsson.com yroblamo@redhat.com mchandras@suse.de jack.morgan@intel.com julienjut@gmail.com
+
+- job-template:
+    name: 'xci-{phase}-{pod}-{distro}-daily-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'xci-provision-.*?-{pod}-daily-.*'
+                - 'xci-deploy-.*?-{pod}-daily-.*'
+                - 'xci-functest-.*?-{pod}-daily-.*'
+            block-level: 'NODE'
+
+    parameters:
+        - string:
+            name: PROJECT
+            default: '{project}'
+        - string:
+            name: PROJECT_REPO
+            default: '{project-repo}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: '{scenario}'
+        - string:
+            name: CLONE_LOCATION
+            default: '{clone-location}'
+        - string:
+            name: DISTRO
+            default: '{distro}'
+        - string:
+            name: DIB_OS_RELEASE
+            default: '{dib-os-release}'
+        - string:
+            name: DIB_OS_ELEMENT
+            default: '{dib-os-element}'
+        - string:
+            name: EXTRA_DIB_ELEMENTS
+            default: '{extra-dib-elements}'
+        - string:
+            name: DIB_OS_PACKAGES
+            default: '{dib-os-packages}'
+        - string:
+            name: CLEAN_DIB_IMAGES
+            default: 'true'
+
+    scm:
+        - git:
+            url: '$PROJECT_REPO'
+            branches:
+                - 'origin/{project-branch}'
+            wipe-workspace: true
+            timeout: 15
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME - Scenario: $DEPLOY_SCENARIO"
+        - 'xci-{phase}-builder'
+#---------------------------
+# builder macros
+#---------------------------
+- builder:
+    name: xci-provision-builder
+    builders:
+        - shell:
+            !include-raw: ./xci-provision.sh
+- builder:
+    name: xci-deploy-builder
+    builders:
+        - shell:
+            !include-raw: ./xci-deploy.sh
+- builder:
+    name: xci-functest-builder
+    builders:
+        - shell:
+            !include-raw: ./xci-functest.sh
