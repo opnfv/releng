@@ -4,7 +4,6 @@ export OSA_PATH=/opt/openstack-ansible
 export LOG_PATH=$OSA_PATH/log
 export PLAYBOOK_PATH=$OSA_PATH/playbooks
 export OSA_BRANCH=${OSA_BRANCH:-"master"}
-
 JUMPHOST_IP="192.168.122.2"
 
 sudo /bin/rm -rf $LOG_PATH
