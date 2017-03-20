@@ -5,11 +5,13 @@
 #--------------------------------
     master: &master
         stream: master
-        branch: '{stream}'
+        openstack-branch: '{stream}'
+        opnfv-branch: 'master'
         gs-pathname: ''
     ocata: &ocata
         stream: ocata
-        branch: 'stable/{stream}'
+        openstack-branch: 'stable/{stream}'
+        opnfv-branch: 'master'
         gs-pathname: '/{stream}'
 #--------------------------------
 #       scenarios
@@ -55,21 +57,9 @@
 #        Phases
 #--------------------------------
     phase:
-        - 'provision':
-            project: 'openstack'
-            project-repo: 'https://git.openstack.org/openstack/bifrost'
-            project-branch: '{branch}'
-            clone-location: '/opt/bifrost'
-        - 'deploy':
-            project: 'openstack'
-            project-repo: 'https://git.openstack.org/openstack/openstack-ansible'
-            project-branch: '{branch}'
-            clone-location: '/opt/openstack-ansible'
-        - 'functest':
-            project: 'opnfv'
-            project-repo: 'https://gerrit.opnfv.org/gerrit/functest'
-            project-branch: 'master'
-            clone-location: '/opt/functest'
+        - 'provision'
+        - 'deploy'
+        - 'functest'
 #--------------------------------
 # jobs
 #--------------------------------
@@ -158,17 +148,17 @@
 
     parameters:
         - string:
-            name: PROJECT
-            default: '{project}'
+            name: OPENSTACK_BRANCH
+            default: '{openstack-branch}'
         - string:
-            name: PROJECT_REPO
-            default: '{project-repo}'
+            name: OPNFV_BRANCH
+            default: '{opnfv-branch}'
+        - string:
+            name: USE_PROMOTED_VERSIONS
+            default: 'true'
         - string:
             name: DEPLOY_SCENARIO
-            default: '{scenario}'
-        - string:
-            name: CLONE_LOCATION
-            default: '{clone-location}'
+            default: 'os-nosdn-nofeature-ha'
         - string:
             name: DISTRO
             default: '{distro}'
@@ -187,14 +177,6 @@
         - string:
             name: CLEAN_DIB_IMAGES
             default: 'true'
-
-    scm:
-        - git:
-            url: '$PROJECT_REPO'
-            branches:
-                - 'origin/{project-branch}'
-            wipe-workspace: true
-            timeout: 15
 
     builders:
         - description-setter:

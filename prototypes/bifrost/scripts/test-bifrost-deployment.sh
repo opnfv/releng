@@ -18,7 +18,8 @@ ENABLE_VENV="false"
 USE_DHCP="false"
 USE_VENV="false"
 BUILD_IMAGE=true
-BAREMETAL_DATA_FILE=${BAREMETAL_DATA_FILE:-'/tmp/baremetal.json'}
+export BAREMETAL_DATA_FILE=${BAREMETAL_DATA_FILE:-'/tmp/baremetal.json'}
+export BIFROST_INVENTORY_SOURCE=${BIFROST_INVENTORY_SOURCE:-'/tmp/baremetal.csv'}
 PROVISION_WAIT_TIMEOUT=${PROVISION_WAIT_TIMEOUT:-3600}
 
 # Set defaults for ansible command-line options to drive the different
@@ -38,7 +39,7 @@ export VM_DOMAIN_TYPE="kvm"
 export VM_CPU=${VM_CPU:-4}
 export VM_DISK=${VM_DISK:-100}
 export VM_DISK_CACHE=${VM_DISK_CACHE:-unsafe}
-TEST_PLAYBOOK="test-bifrost-infracloud.yaml"
+TEST_PLAYBOOK="opnfv-virtual.yaml"
 USE_INSPECTOR=true
 USE_CIRROS=false
 TESTING_USER=root
