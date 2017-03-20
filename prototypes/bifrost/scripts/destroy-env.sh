@@ -27,6 +27,9 @@ done
 
 service ironic-conductor stop || true
 
+echo "removing inventory files created by previous builds"
+rm -rf /tmp/baremetal.*
+
 echo "removing ironic database"
 if $(which mysql &> /dev/null); then
     mysql -u root ironic --execute "drop database ironic;"
