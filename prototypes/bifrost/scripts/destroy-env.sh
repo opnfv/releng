@@ -20,6 +20,10 @@ for vm in $(virsh list --all --name); do
     virsh destroy $vm || true
     virsh undefine $vm || true
 done
+# Delete all hosts from vbmc (look for a port number)
+for vm in $(vbmc list | awk '/[0-9]/{{ print $2 }}'); do
+    vbmc delete $vm
+done
 
 service ironic-conductor stop || true
 
