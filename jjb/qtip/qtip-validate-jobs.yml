@@ -59,15 +59,21 @@
     name: 'qtip-{task}-{installer}-{pod}-{stream}'
     disabled: false
     parameters:
-        - qtip-common-parameters:
+        - project-parameter:
             project: '{project}'
             branch: '{branch}'
-            docker-tag: '{docker-tag}'
         - '{installer}-defaults'
         - '{pod}-defaults'
         - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-nofeature-ha'
+        - string:
+            name: DOCKER_TAG
+            default: '{docker-tag}'
+            description: 'Tag to pull docker image'
+        - string:
             name: CI_DEBUG
-            default: 'false'
+            default: 'true'
             description: "Show debug output information"
     scm:
         - git-scm
@@ -109,20 +115,6 @@
 #-----------
 # parameter
 #-----------
-
-- parameter:
-    name: qtip-common-parameters
-    parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'os-nosdn-nofeature-ha'
-        - string:
-            name: DOCKER_TAG
-            default: '{docker-tag}'
-            description: 'Tag to pull docker image'
 
 #-----------
 # publisher
