@@ -23,19 +23,22 @@
 # JOB VARIABLES
 #--------------------------------
     pod:
-        - zte-pod2:
+        - zte-pod1:
             installer: fuel
             <<: *master
         - zte-pod3:
             installer: fuel
             <<: *master
+        - zte-pod1:
+            installer: fuel
+            <<: *danube
         - zte-pod3:
             installer: fuel
             <<: *danube
     task:
         - daily:
             auto-builder-name: qtip-validate-deploy
-            auto-trigger-name: 'qtip-daily-{pod}-trigger'
+            auto-trigger-name: 'qtip-{pod}-daily-{stream}-trigger'
         - validate:
             auto-builder-name: qtip-validate-setup
             auto-trigger-name: gerrit-trigger-change-merged
@@ -136,11 +139,29 @@
 #---------
 
 - trigger:
-    name: qtip-daily-zte-pod2-trigger
+    name: 'qtip-zte-pod1-daily-master-trigger'
+    triggers:
+        - timed: '30 0 * * *'
+
+- trigger:
+    name: 'qtip-zte-pod3-daily-master-trigger'
+    triggers:
+        - timed: '30 0 * * *'
+
+- trigger:
+    name: 'qtip-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: '0 7 * * *'
 
 - trigger:
-    name: qtip-daily-zte-pod3-trigger
+    name: 'qtip-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: '0 1 * * *'
+
+- trigger:
+    name: qtip-validate-trigger
+    triggers:
+        - gerrit-trigger-change-merged:
+            project: '{project}'
+            branch: '{branch}'
+            files: '**'
