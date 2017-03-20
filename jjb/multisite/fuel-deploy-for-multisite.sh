@@ -19,9 +19,9 @@ else
 fi
 
 export TERM="vt220"
-
+export BRANCH=$(echo $BRANCH | sed 's/stable\///g')
 # get the latest successful job console log and extract the properties filename
-FUEL_DEPLOY_BUILD_URL="https://build.opnfv.org/ci/job/fuel-deploy-virtual-daily-master/lastSuccessfulBuild/consoleText"
+FUEL_DEPLOY_BUILD_URL="https://build.opnfv.org/ci/job/fuel-deploy-virtual-daily-$BRANCH/lastSuccessfulBuild/consoleText"
 FUEL_PROPERTIES_FILE=$(curl -s -L ${FUEL_DEPLOY_BUILD_URL} | grep 'ISO:' | awk '{print $2}' | sed 's/iso/properties/g')
 if [[ -z "FUEL_PROPERTIES_FILE" ]]; then
     echo "Unable to extract the url to Fuel ISO properties from ${FUEL_DEPLOY_URL}"
@@ -29,8 +29,8 @@ if [[ -z "FUEL_PROPERTIES_FILE" ]]; then
 fi
 
 # use known/working version of fuel
-FUEL_PROPERTIES_FILE="opnfv-2017-03-06_16-00-15.properties"
-curl -L -s -o $WORKSPACE/latest.properties http://artifacts.opnfv.org/fuel/$FUEL_PROPERTIES_FILE
+#FUEL_PROPERTIES_FILE="opnfv-2017-03-06_16-00-15.properties"
+curl -L -s -o $WORKSPACE/latest.properties $GS_PATH/$FUEL_PROPERTIES_FILE
 
 # source the file so we get OPNFV vars
 source latest.properties

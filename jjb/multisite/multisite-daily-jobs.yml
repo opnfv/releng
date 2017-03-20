@@ -24,7 +24,12 @@
             branch: '{stream}'
             gs-pathname: ''
             disabled: false
-            timed: '@midnight'
+            timed: '0 12 * * *'
+        - danube:
+            branch: 'stable/{stream}'
+            gs-pathname: '/{stream}'
+            disabled: false
+            timed: '0 0 * * *'
 
 - job-template:
     name: 'multisite-kingbird-virtual-daily-{stream}'
@@ -47,6 +52,9 @@
         - string:
             name: KINGBIRD_LOG_FILE
             default: $WORKSPACE/kingbird.log
+        - string:
+            name: GS_PATH
+            default: 'http://artifacts.opnfv.org/fuel{gs-pathname}'
         - 'opnfv-build-defaults'
 
     triggers:
