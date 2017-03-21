@@ -79,7 +79,10 @@ ANSIBLE=$(which ansible-playbook)
 set -x -o nounset
 
 logs_on_exit() {
-    $SCRIPT_HOME/collect-test-info.sh
+    # We need to collect logs as jenkins
+    shopt -s expand_aliases
+    alias sudo='sudo -u jenkins'
+    cd ../ && source $SCRIPT_HOME/collect-test-info.sh
 }
 trap logs_on_exit EXIT
 
