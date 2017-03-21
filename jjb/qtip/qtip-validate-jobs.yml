@@ -25,38 +25,36 @@
     pod:
         - zte-pod1:
             installer: fuel
+            scenario: os-odl_l2-nofeature-ha
             <<: *master
         - zte-pod3:
             installer: fuel
+            scenario: os-nosdn-kvm-ha
             <<: *master
         - zte-pod1:
             installer: fuel
+            scenario: os-odl_l2-nofeature-ha
             <<: *danube
         - zte-pod3:
             installer: fuel
+            scenario: os-nosdn-nofeature-ha
             <<: *danube
-    task:
-        - daily:
-            auto-builder-name: qtip-validate-deploy
-            auto-trigger-name: 'qtip-{pod}-daily-{stream}-trigger'
-        - validate:
-            auto-builder-name: qtip-validate-setup
-            auto-trigger-name: gerrit-trigger-change-merged
-        - experimental:
-            auto-builder-name: qtip-validate-setup
-            auto-trigger-name: experimental
+        - zte-pod3:
+            installer: fuel
+            scenario: os-nosdn-kvm-ha
+            <<: *danube
 
 #--------------------------------
 # JOB LIST
 #--------------------------------
     jobs:
-        - 'qtip-{task}-{installer}-{pod}-{stream}'
+        - 'qtip-{scenario}-{pod}-daily-{stream}'
 
 ################################
 # job templates
 ################################
 - job-template:
-    name: 'qtip-{task}-{installer}-{pod}-{stream}'
+    name: 'qtip-{scenario}-{pod}-daily-{stream}'
     disabled: false
     parameters:
         - project-parameter:
@@ -66,7 +64,7 @@
         - '{pod}-defaults'
         - string:
             name: DEPLOY_SCENARIO
-            default: 'os-nosdn-nofeature-ha'
+            default: '{scenario}'
         - string:
             name: DOCKER_TAG
             default: '{docker-tag}'
@@ -78,10 +76,11 @@
     scm:
         - git-scm
     triggers:
-        - '{auto-trigger-name}'
+        - 'qtip-{scenario}-{pod}-daily-{stream}-trigger'
     builders:
-        - qtip-common-builders
-        - '{auto-builder-name}'
+        - description-setter:
+            description: "POD: $NODE_NAME"
+        - qtip-validate-deploy
     publishers:
         - qtip-common-publishers
 
@@ -93,24 +92,12 @@
 # builder
 #---------
 - builder:
-    name: qtip-common-builders
-    builders:
-        - description-setter:
-            description: "POD: $NODE_NAME"
-
-- builder:
     name: qtip-validate-deploy
     builders:
         - shell:
             !include-raw: ./helpers/validate-deploy.sh
         - shell:
             !include-raw: ./helpers/cleanup-deploy.sh
-
-- builder:
-    name: qtip-validate-setup
-    builders:
-        - shell:
-            !include-raw: ./helpers/validate-setup.sh
 
 #-----------
 # parameter
@@ -131,29 +118,26 @@
 #---------
 
 - trigger:
-    name: 'qtip-zte-pod1-daily-master-trigger'
+    name: 'qtip-os-odl_l2-nofeature-ha-zte-pod1-daily-master-trigger'
     triggers:
-        - timed: '30 0 * * *'
+        - timed: '0 15 * * *'
 
 - trigger:
-    name: 'qtip-zte-pod3-daily-master-trigger'
+    name: 'qtip-os-nosdn-kvm-ha-zte-pod3-daily-master-trigger'
     triggers:
-        - timed: '30 0 * * *'
+        - timed: '0 15 * * *'
 
 - trigger:
-    name: 'qtip-zte-pod1-daily-danube-trigger'
+    name: 'qtip-os-odl_l2-nofeature-ha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: '0 7 * * *'
 
 - trigger:
-    name: 'qtip-zte-pod3-daily-danube-trigger'
+    name: 'qtip-os-nosdn-kvm-ha-zte-pod3-daily-danube-trigger'
     triggers:
         - timed: '0 7 * * *'
 
 - trigger:
-    name: qtip-validate-trigger
+    name: 'qtip-os-nosdn-nofeature-ha-zte-pod3-daily-danube-trigger'
     triggers:
-        - gerrit-trigger-change-merged:
-            project: '{project}'
-            branch: '{branch}'
-            files: '**'
+        - timed: '30 0 * * *'
