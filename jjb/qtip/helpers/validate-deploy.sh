@@ -15,6 +15,12 @@ dir_imgstore="${HOME}/imgstore"
 echo "Qtip: Pulling docker image: opnfv/qtip:${DOCKER_TAG}"
 docker pull opnfv/qtip:$DOCKER_TAG
 
+echo "--------------------------------------------------------"
+echo "POD: $NODE_NAME"
+echo "INSTALLER: $INSTALLER_TYPE"
+echo "Scenario: $DEPLOY_SCENARIO"
+echo "--------------------------------------------------------"
+
 cmd=" docker run -id -e $envs opnfv/qtip:${DOCKER_TAG} /bin/bash"
 echo "Qtip: Running docker command: ${cmd}"
 ${cmd}
