@@ -206,6 +206,7 @@
         - description-setter:
             description: "POD: $NODE_NAME"
         - 'dovetail-cleanup'
+        - 'fetch-openrc'
         - 'dovetail-run'
 
     publishers:
@@ -228,3 +229,9 @@
     builders:
         - shell:
             !include-raw: ./dovetail-cleanup.sh
+
+- builder:
+    name: fetch-openrc
+    builders:
+        - shell:
+            !include-raw: ../../utils/fetch_os_creds.sh
