@@ -8,19 +8,11 @@
 ##############################################################################
 import requests
 
-from tornado.web import RequestHandler
 from tornado.escape import json_encode
 from tornado.escape import json_decode
 
-
-class BaseHandler(RequestHandler):
-    def _set_header(self):
-        self.set_header('Access-Control-Allow-Origin', '*')
-        self.set_header('Access-Control-Allow-Headers',
-                        'Content-Type, Content-Length, Authorization, \
-                        Accept, X-Requested-With , PRIVATE-TOKEN')
-        self.set_header('Access-Control-Allow-Methods',
-                        'PUT, POST, GET, DELETE, OPTIONS')
+from api.handlers import BaseHandler
+from api import conf
 
 
 class FiltersHandler(BaseHandler):
@@ -85,7 +77,7 @@ class ScenariosHandler(BaseHandler):
         return atom
 
     def _get_scenarios(self):
-        url = 'http://testresults.opnfv.org/test/api/v1/scenarios'
+        url = '{}/scenarios'.format(conf.base_url)
         resp = requests.get(url).json()
         data = self._change_to_utf8(resp).get('scenarios', {})
         return {a.get('name'): self._get_scenario(a.get('installers', [])

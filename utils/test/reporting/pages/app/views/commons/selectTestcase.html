@@ -1,0 +1,142 @@
+<!--select page-->
+<div class="row">
+    <div classs="container">
+        <div class="col-lg-8">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <div>
+                        <!--<span class="pull-right text-right">
+                                        <small>Average value of sales in the past month in: <strong>United states</strong></small>
+                                            <br/>
+                                            All sales: 162,862
+                                        </span>-->
+                        <h3 class="font-bold no-margins">
+                            Select Project
+                        </h3>
+                        <small>Choose a Project to Select Test cases.</small>
+                        <div class="pull-right">
+                            <selectize options="VersionOption" ng-model="VersionSelected" config="VersionConfig"></selectize>
+                        </div>
+                    </div>
+                    <hr>
+
+                    <div class="m-t-sm">
+
+                        <div class="row">
+
+                            <center>
+                                <div data-toggle="buttons" class="m-t-sm">
+                                    <label class="btn btn-outline btn-success " style=" margin-right: 5px;" ng-click="toggleSelection('FuncTest')">
+                              <input type="radio"  disabled="disabled"  >FuncTest
+                            
+                                </label>
+                                    <label class="btn btn-outline btn-success " style=" margin-right: 5px;" ng-click="toggleSelection('YardStick')">
+                              <input type="radio"  disabled="disabled" > YardStick
+                            
+                                </label>
+                                    <label class="btn btn-outline btn-success " style=" margin-right: 5px;" ng-click="toggleSelection('Bottleneck')">
+                              <input type="radio"  disabled="disabled" > Bottleneck
+                            
+                                </label>
+                                </div>
+                            </center>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <div>
+                        <!--<span class="pull-right text-right">
+                                        <small>Average value of sales in the past month in: <strong>United states</strong></small>
+                                            <br/>
+                                            All sales: 162,862
+                                        </span>-->
+                        <h3 class="font-bold no-margins">
+                            Project Description
+
+                        </h3>
+
+
+
+                    </div>
+                    <hr>
+                    <div class="m-t-sm" ng-show="projectSelect.indexOf('YardStick')!=-1">
+                        <p>
+                            YardStick is a someting.......
+                        </p>
+                    </div>
+                    <div class="m-t-sm" ng-show="projectSelect.indexOf('FuncTest')!=-1">
+                        <p>
+                            FuncTest is a someting.......
+                        </p>
+                    </div>
+                    <div class="m-t-sm" ng-show="projectSelect.indexOf('Bottleneck')!=-1">
+                        <p>
+                            Bottleneck is a someting.......
+                        </p>
+                    </div>
+
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <div>
+                        <!--<span class="pull-right text-right">
+                                        <small>Average value of sales in the past month in: <strong>United states</strong></small>
+                                            <br/>
+                                            All sales: 162,862
+                                        </span>-->
+                        <h3 class="font-bold no-margins">
+                            Select Test Case
+                        </h3>
+                        <small>Choose Test Cases </small>
+
+                    </div>
+                    <hr>
+
+                    <div class="m-t-sm">
+                        <div data-toggle="buttons" class="m-t-sm" ng-show="projectSelect.indexOf('FuncTest')!=-1">
+                            <label class="btn btn-outline btn-success " style=" margin-right: 5px;" tooltips tooltip-template="FuncTest is something" tooltip-size="small" ng-repeat="case in funcTestCase" value={{case}} ng-class="{'active': case == selectedFunc}">
+                              <input type="checkbox"  disabled="disabled"  >{{case}}
+                            
+                                </label>
+                        </div>
+                        <div data-toggle="buttons" class="m-t-sm" ng-show="projectSelect.indexOf('YardStick')!=-1">
+                            <label class="btn btn-outline btn-success " style=" margin-right: 5px;" tooltips tooltip-template="FuncTest is something" tooltip-size="small" ng-repeat="case in yardStickCase" value={{case}}>
+                              <input type="checkbox"  disabled="disabled"  >{{case}}
+                            
+                                </label>
+                        </div>
+                        <div data-toggle="buttons" class="m-t-sm" ng-show="projectSelect.indexOf('Bottleneck')!=-1">
+                            <label class="btn btn-outline btn-success " style=" margin-right: 5px;" tooltips tooltip-template="FuncTest is something" tooltip-size="small" ng-repeat="case in bottleNeckCase" value={{case}} ng-class="{'active': case == selectBottle}">
+                              <input type="checkbox"  disabled="disabled"  >{{case}}
+                            
+                                </label>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+    </div>
+    <div style="margin-top: 10px;" class="pull-right">
+        <button class="btn btn-primary" ng-click="test()">Submit</button>
+    </div>
+
+
+</div>

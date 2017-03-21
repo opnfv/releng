@@ -21,6 +21,28 @@ angular.module('opnfvApp')
                         method: 'POST',
                     }
                 })
+            },
+            getProjectUrl: function() {
+                return $resource(PROJECT_URL + '/projects-page/projects', {}, {
+                    'get': {
+                        method: 'GET'
+                    }
+                })
+            },
+            getProjectTestCases: function() {
+                return $resource(PROJECT_URL + '/projects/:project/cases', { project: '@project' }, {
+                    'get': {
+                        method: 'GET'
+                    }
+                })
+            },
+            getProjectTestCaseDetail: function() {
+                return $resource(PROJECT_URL + '/projects/:project/cases/:testcase', { project: '@project', testcase: '@testcase' }, {
+                    'get': {
+
+                        method: 'GET'
+                    }
+                })
             }
         };
     });
