@@ -31,7 +31,7 @@ Please follow that steps:
     cd /opt/bifrost
     sudo ./scripts/destroy-env.sh
 
-8. Run deployment script to spin up 3 vms with bifrost: jumphost, controller and compute::
+8. Run deployment script to spin up 3 vms with bifrost: xcimaster, controller and compute::
 
     cd /opt/bifrost
     sudo ./scripts/test-bifrost-deployment.sh
