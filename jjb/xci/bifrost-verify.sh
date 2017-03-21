@@ -101,6 +101,8 @@ sudo /bin/rm -rf /opt/bifrost /opt/stack /opt/releng
 fix_ownership
 
 # clone all the repos first and checkout the patch afterwards
+export OPENSTACK_BRANCH=${OPENSTACK_BRANCH:-master}
+export OPNFV_BRANCH=${OPNFV_BRANCH:-master}
 sudo git clone https://git.openstack.org/openstack/bifrost /opt/bifrost
 sudo git clone https://gerrit.opnfv.org/gerrit/releng /opt/releng
 
