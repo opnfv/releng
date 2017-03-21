@@ -8,15 +8,14 @@
 angular.module('opnfvApp')
     .run([
         '$rootScope', '$state', '$stateParams',
-        function ($rootScope, $state, $stateParams) {
+        function($rootScope, $state, $stateParams) {
 
             $rootScope.$state = $state;
             $rootScope.$stateParams = $stateParams;
 
         }
-    ]
-    ).config(['$stateProvider', '$urlRouterProvider',
-        function ($stateProvider, $urlRouterProvider) {
+    ]).config(['$stateProvider', '$urlRouterProvider',
+        function($stateProvider, $urlRouterProvider) {
 
             $urlRouterProvider.otherwise('/landingpage/table');
 
@@ -27,7 +26,7 @@ angular.module('opnfvApp')
                     templateUrl: "views/main.html",
                     data: { pageTitle: '首页', specialClass: 'landing-page' },
                     resolve: {
-                        controller: ['$ocLazyLoad', function ($ocLazyLoad) {
+                        controller: ['$ocLazyLoad', function($ocLazyLoad) {
                             return $ocLazyLoad.load([
 
                             ])
@@ -36,10 +35,10 @@ angular.module('opnfvApp')
                 })
                 .state('landingpage.table', {
                     url: "/table",
-                    controller:'TableController',
+                    controller: 'TableController',
                     templateUrl: "views/commons/table.html",
                     resolve: {
-                        controller: ['$ocLazyLoad', function ($ocLazyLoad) {
+                        controller: ['$ocLazyLoad', function($ocLazyLoad) {
                             return $ocLazyLoad.load([
                                 // 'scripts/controllers/table.controller.js'
 
@@ -48,6 +47,38 @@ angular.module('opnfvApp')
                         }]
                     }
                 })
+                .state('select', {
+                    url: '/select',
+                    templateUrl: "views/testcase.html",
+                    data: { specialClass: 'top-navigation' },
 
-        }])
+                })
+                .state('select.selectTestCase', {
+                    url: "/selectCase",
+                    controller: 'CaseController',
+                    templateUrl: "views/commons/selectTestcase.html",
+
+                })
+                .state('select.testlist', {
+                    url: "/caselist",
+                    templateUrl: "views/commons/testCaseList.html"
+                })
+                .state('select.admin', {
+                    url: "/admin",
+                    controller: 'AdminController',
+                    templateUrl: "views/commons/admin.html"
+                })
+                .state('select.testVisual', {
+                    url: "/visual",
+                    controller: "testVisualController",
+                    templateUrl: "views/commons/testCaseVisual.html"
+                })
+                // .state('admin', {
+                //     url: '/admin',
+                //     data: { specialClass: ' fixed-sidebar  pace-done' },
+                //     templateUrl: "views/commons/admin.html"
+                // })
+
+        }
+    ])
     .run();

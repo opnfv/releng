@@ -42,6 +42,10 @@ RUN pip install --upgrade pip
 RUN git clone --depth 1 https://gerrit.opnfv.org/gerrit/releng /home/opnfv
 RUN pip install -r ${working_dir}/docker/requirements.pip
 
+WORKDIR ${working_dir}/api
+RUN pip install -r requirements.txt
+RUN python setup.py install
+
 WORKDIR ${working_dir}
 RUN docker/reporting.sh
 
