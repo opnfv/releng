@@ -12,6 +12,12 @@ envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP}
 -e NODE_NAME=${NODE_NAME} -e CI_DEBUG=${CI_DEBUG}"
 dir_imgstore="${HOME}/imgstore"
 
+echo "--------------------------------------------------------"
+echo "POD: $NODE_NAME"
+echo "INSTALLER: $INSTALLER_TYPE"
+echo "Scenario: $DEPLOY_SCENARIO"
+echo "--------------------------------------------------------"
+
 echo "Qtip: Pulling docker image: opnfv/qtip:${DOCKER_TAG}"
 docker pull opnfv/qtip:$DOCKER_TAG
 
