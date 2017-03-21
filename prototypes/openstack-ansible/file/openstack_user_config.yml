@@ -67,9 +67,9 @@ global_overrides:
           - cinder_volume
           - nova_compute
 
-###
-### Infrastructure
-###
+# ##
+# ## Infrastructure
+# ##
 
 # galera, memcache, rabbitmq, utility
 shared-infra_hosts:
@@ -101,13 +101,13 @@ haproxy_hosts:
     ip: 172.29.236.13
 
 # rsyslog server
-#log_hosts:
- # log1:
- #  ip: 172.29.236.14
+# log_hosts:
+# log1:
+#  ip: 172.29.236.14
 
-###
-### OpenStack
-###
+# ##
+# ## OpenStack
+# ##
 
 # keystone
 identity_hosts:
@@ -133,36 +133,36 @@ storage-infra_hosts:
 # user_variables, but are left here to illustrate that
 # each container could have different storage targets.
 image_hosts:
-   controller00:
-     ip: 172.29.236.11
-     container_vars:
-       limit_container_types: glance
-       glance_nfs_client:
-         - server: "172.29.244.15"
-           remote_path: "/images"
-           local_path: "/var/lib/glance/images"
-           type: "nfs"
-           options: "_netdev,auto"
-   controller01:
-     ip: 172.29.236.12
-     container_vars:
-       limit_container_types: glance
-       glance_nfs_client:
-         - server: "172.29.244.15"
-           remote_path: "/images"
-           local_path: "/var/lib/glance/images"
-           type: "nfs"
-           options: "_netdev,auto"
-   controller02:
-     ip: 172.29.236.13
-     container_vars:
-       limit_container_types: glance
-       glance_nfs_client:
-         - server: "172.29.244.15"
-           remote_path: "/images"
-           local_path: "/var/lib/glance/images"
-           type: "nfs"
-           options: "_netdev,auto"
+  controller00:
+    ip: 172.29.236.11
+    container_vars:
+      limit_container_types: glance
+      glance_nfs_client:
+        - server: "172.29.244.15"
+          remote_path: "/images"
+          local_path: "/var/lib/glance/images"
+          type: "nfs"
+          options: "_netdev,auto"
+  controller01:
+    ip: 172.29.236.12
+    container_vars:
+      limit_container_types: glance
+      glance_nfs_client:
+        - server: "172.29.244.15"
+          remote_path: "/images"
+          local_path: "/var/lib/glance/images"
+          type: "nfs"
+          options: "_netdev,auto"
+  controller02:
+    ip: 172.29.236.13
+    container_vars:
+      limit_container_types: glance
+      glance_nfs_client:
+        - server: "172.29.244.15"
+          remote_path: "/images"
+          local_path: "/var/lib/glance/images"
+          type: "nfs"
+          options: "_netdev,auto"
 
 # nova api, conductor, etc services
 compute-infra_hosts:
