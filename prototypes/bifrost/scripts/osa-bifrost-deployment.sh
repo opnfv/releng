@@ -18,9 +18,15 @@ ENABLE_VENV="false"
 USE_DHCP="false"
 USE_VENV="false"
 BUILD_IMAGE=true
-export BAREMETAL_DATA_FILE=${BAREMETAL_DATA_FILE:-'/tmp/baremetal.json'}
-export BIFROST_INVENTORY_SOURCE=${BIFROST_INVENTORY_SOURCE:-'/tmp/baremetal.csv'}
 PROVISION_WAIT_TIMEOUT=${PROVISION_WAIT_TIMEOUT:-3600}
+
+# ensure the right inventory files is used based on branch
+export OPENSTACK_BRANCH=${OPENSTACK_BRANCH:-master}
+if [ $OPENSTACK_BRANCH = "master" ]; then
+    export BIFROST_INVENTORY_SOURCE=${BIFROST_INVENTORY_SOURCE:-'/tmp/baremetal.json'}
+else
+    export BIFROST_INVENTORY_SOURCE=${BIFROST_INVENTORY_SOURCE:-'/tmp/baremetal.csv'}
+fi
 
 # Set defaults for ansible command-line options to drive the different
 # tests.
