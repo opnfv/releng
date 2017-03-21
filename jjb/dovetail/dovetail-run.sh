@@ -32,21 +32,47 @@ if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FOR
     sudo iptables -I FORWARD -j RETURN
 fi
 
+# Get the openrc.sh file
+echo "INFO: Creating openstack credentials .."
+OPENRC=/home/opnfv/openrc.sh
+INSTALLERS=(apex compass fuel joid)
+
+if [ ! -f $OPENRC ]; then
+    # credentials file is not given, check if environment variables are set
+    # to get the creds using fetch_os_creds.sh later on
+    echo "INFO: Checking environment variables INSTALLER_TYPE and INSTALLER_IP"
+    if [ -z ${INSTALLER_TYPE} ]; then
+        echo "environment variable 'INSTALLER_TYPE' is not defined."
+        exit 1
+    elif [[ ${INSTALLERS[@]} =~ ${INSTALLER_TYPE} ]]; then
+        echo "INSTALLER_TYPE env variable found: ${INSTALLER_TYPE}"
+    else
+        echo "Invalid env variable INSTALLER_TYPE=${INSTALLER_TYPE}"
+        exit 1
+    fi
+
+    if [ "$DEPLOY_TYPE" == "virt" ]; then
+        FETCH_CRED_ARG="-v -d $OPENRC -i ${INSTALLER_TYPE} -a ${INSTALLER_IP}"
+    else
+        FETCH_CRED_ARG="-d $OPENRC -i ${INSTALLER_TYPE} -a ${INSTALLER_IP}"
+    fi
+
+    utils_script_path=$PWD/`dirname $0`/../../utils
+    $utils_script_path/fetch_os_creds.sh $FETCH_CRED_ARG
+
+fi
+
 opts="--privileged=true -id"
-envs="-e CI_DEBUG=${CI_DEBUG} \
-      -e INSTALLER_TYPE=${INSTALLER_TYPE} \
-      -e INSTALLER_IP=${INSTALLER_IP} \
-      -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
-      -e DEPLOY_TYPE=${DEPLOY_TYPE}"
 results_envs="-v /var/run/docker.sock:/var/run/docker.sock \
               -v /home/opnfv/dovetail/results:/home/opnfv/dovetail/results"
+openrc_vloume="-v ${OPENRC}:${OPENRC}"
 
 # Pull the image with correct tag
 echo "Dovetail: Pulling image opnfv/dovetail:${DOCKER_TAG}"
 docker pull opnfv/dovetail:$DOCKER_TAG >$redirect
 
-cmd="sudo docker run ${opts} ${envs} ${results_envs} ${labconfig} ${sshkey} \
-     opnfv/dovetail:${DOCKER_TAG} /bin/bash"
+cmd="sudo docker run ${opts} ${results_envs} ${openrc_vloume} ${labconfig} \
+     ${sshkey} opnfv/dovetail:${DOCKER_TAG} /bin/bash"
 echo "Dovetail: running docker run command: ${cmd}"
 ${cmd} >${redirect}
 sleep 5
@@ -67,7 +93,7 @@ if [ $(docker ps | grep "opnfv/dovetail:${DOCKER_TAG}" | wc -l) == 0 ]; then
 fi
 
 list_cmd="dovetail list ${TESTSUITE}"
-run_cmd="dovetail run --testsuite ${TESTSUITE} -d true"
+run_cmd="dovetail run --openrc ${OPENRC} --testsuite ${TESTSUITE} -d"
 echo "Container exec command: ${list_cmd}"
 docker exec $container_id ${list_cmd}
 echo "Container exec command: ${run_cmd}"
