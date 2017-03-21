@@ -48,6 +48,10 @@ angular.module('opnfvApp')
                         }]
                     }
                 })
-
+                .state('select.testVisual', {
+                    url: "/visual",
+                    controller: "testVisualController",
+                    templateUrl: "views/commons/testCaseVisual.html"
+                })
         }])
     .run();

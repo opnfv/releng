@@ -11,7 +11,7 @@ import tornado.web
 from tornado.options import define
 from tornado.options import options
 
-from urls import mappings
+from api.urls import mappings
 
 define("port", default=8000, help="run on the given port", type=int)
 

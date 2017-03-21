@@ -16,6 +16,9 @@ angular
         'ui.bootstrap',
         'ngResource',
         'selectize',
-        '720kb.tooltips'
+        '720kb.tooltips',
+        'ngDialog',
+        'angularUtils.directives.dirPagination',
+        'darthwade.dwLoading'
 
     ]);

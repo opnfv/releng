@@ -6,9 +6,15 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-from handlers import landing
+from api.handlers import landing
+from api.handlers import projects
+from api.handlers import testcases
 
 mappings = [
     (r"/landing-page/filters", landing.FiltersHandler),
-    (r"/landing-page/scenarios", landing.ScenariosHandler)
+    (r"/landing-page/scenarios", landing.ScenariosHandler),
+
+    (r"/projects-page/projects", projects.Projects),
+    (r"/projects/([^/]+)/cases", testcases.TestCases),
+    (r"/projects/([^/]+)/cases/([^/]+)", testcases.TestCase)
 ]
