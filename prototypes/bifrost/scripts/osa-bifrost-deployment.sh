@@ -18,9 +18,17 @@ ENABLE_VENV="false"
 USE_DHCP="false"
 USE_VENV="false"
 BUILD_IMAGE=true
-export BAREMETAL_DATA_FILE=${BAREMETAL_DATA_FILE:-'/tmp/baremetal.json'}
-export BIFROST_INVENTORY_SOURCE=${BIFROST_INVENTORY_SOURCE:-'/tmp/baremetal.csv'}
 PROVISION_WAIT_TIMEOUT=${PROVISION_WAIT_TIMEOUT:-3600}
+
+# ensure the branch is set
+export OPENSTACK_BRANCH=${OPENSTACK_BRANCH:-master}
+
+# ensure the right inventory files is used based on branch
+if [ $OPENSTACK_BRANCH = "master" ]; then
+    export BIFROST_INVENTORY_SOURCE=${BIFROST_INVENTORY_SOURCE:-'/tmp/baremetal.json'}
+else
+    export BIFROST_INVENTORY_SOURCE=${BIFROST_INVENTORY_SOURCE:-'/tmp/baremetal.csv'}
+fi
 
 # Set defaults for ansible command-line options to drive the different
 # tests.
@@ -34,7 +42,7 @@ PROVISION_WAIT_TIMEOUT=${PROVISION_WAIT_TIMEOUT:-3600}
 # use cirros.
 
 TEST_VM_NUM_NODES=6
-export TEST_VM_NODE_NAMES="jumphost controller00 controller01 controller02 compute00 compute01"
+export TEST_VM_NODE_NAMES="xcimaster controller00 controller01 controller02 compute00 compute01"
 export VM_DOMAIN_TYPE="kvm"
 # 8 vCPU, 60 GB HDD are minimum equipment
 export VM_CPU=${VM_CPU:-8}
@@ -107,8 +115,7 @@ ${ANSIBLE} \
        -e test_vm_num_nodes=${TEST_VM_NUM_NODES} \
        -e test_vm_memory_size=${VM_MEMORY_SIZE} \
        -e enable_venv=${ENABLE_VENV} \
-       -e test_vm_domain_type=${VM_DOMAIN_TYPE} \
-       -e baremetal_json_file=${BAREMETAL_DATA_FILE}
+       -e test_vm_domain_type=${VM_DOMAIN_TYPE}
 
 # Execute the installation and VM startup test.
 ${ANSIBLE} \
