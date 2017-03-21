@@ -9,7 +9,7 @@ JUMPHOST_IP="192.168.122.2"
 sudo /bin/rm -rf $LOG_PATH
 sudo /bin/mkdir -p $LOG_PATH
 sudo /bin/cp /root/.ssh/id_rsa.pub ../file/authorized_keys
-sudo echo -e '\n'>>../file/authorized_keys
+echo -e '\n' | sudo tee --append ../file/authorized_keys
 
 cd ../playbooks/
 # this will prepare the jump host
