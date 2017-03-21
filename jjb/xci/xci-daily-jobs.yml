@@ -96,6 +96,9 @@
     triggers:
         - '{auto-trigger-name}'
 
+    wrappers:
+        - xci-fix-perms-workspace
+
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
@@ -181,10 +184,25 @@
             name: SLAVE_LABEL
             default: '{slave-label}'
 
+    wrappers:
+        - xci-fix-perms-workspace
+
     builders:
         - description-setter:
             description: "Built on $NODE_NAME - Scenario: $DEPLOY_SCENARIO"
         - 'xci-{phase}-builder'
+
+#---------------------------
+# wrapper macros
+#---------------------------
+- wrapper:
+    name: xci-fix-perms-workspace
+    wrappers:
+        - pre-scm-buildstep:
+          - shell: |
+                #!/bin/bash
+                sudo -R chown $SUDO_USER $WORKSPACE || exit 1
+
 #---------------------------
 # builder macros
 #---------------------------

@@ -145,6 +145,9 @@
         - bifrost-set-name
         - bifrost-build
 
+    wrappers:
+        - bifrost-fix-perms-workspace
+
     publishers:
         - email:
             recipients: fatih.degirmenci@ericsson.com yroblamo@redhat.com mchandras@suse.de jack.morgan@intel.com julienjut@gmail.com
@@ -206,6 +209,17 @@
                   - compare-type: ANT
                     pattern: 'prototypes/bifrost/**'
             readable-message: true
+
+#---------------------------
+# wrapper macros
+#---------------------------
+- wrapper:
+    name: bifrost-fix-perms-workspace
+    wrappers:
+        - pre-scm-buildstep:
+          - shell: |
+                #!/bin/bash
+                sudo chown -R $SUDO_USER $WORKSPACE || exit 1
 
 #---------------------------
 # builder macros
