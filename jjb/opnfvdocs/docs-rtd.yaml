@@ -27,11 +27,6 @@
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
-        - string:
-            name: GIT_BASE
-            description: 'Git URL to use on this Jenkins Slave'
-    scm:
-        - git-scm
 
     triggers:
         - gerrit-trigger-change-merged:
@@ -40,7 +35,14 @@
             files: 'docs/**/*.*'
 
     builders:
-        - shell: !include-raw: docs-post-rtd.sh
+        - shell: |
+        if [ $GERRIT_BRANCH == "master" ]; then
+          RTD_BUILD_VERSION=latest
+        else
+          RTD_BUILD_VERSION=${{GERRIT_BRANCH/\//-}}
+        fi
+        curl -X POST --data "version_slug=$RTD_BUILD_VERSION" https://readthedocs.org/build/opnfvdocsdemo
+
 
 - job-template:
     name: 'docs-verify-rtd-{stream}'
