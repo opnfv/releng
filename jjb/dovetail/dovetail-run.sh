@@ -32,21 +32,21 @@ if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FOR
     sudo iptables -I FORWARD -j RETURN
 fi
 
+# The path of openrc.sh is defined in fetch_os_creds.sh
+OPENRC=$HOME/opnfv-openrc.sh
+echo "INFO: openstack credentials is $OPENRC"
+
 opts="--privileged=true -id"
-envs="-e CI_DEBUG=${CI_DEBUG} \
-      -e INSTALLER_TYPE=${INSTALLER_TYPE} \
-      -e INSTALLER_IP=${INSTALLER_IP} \
-      -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
-      -e DEPLOY_TYPE=${DEPLOY_TYPE}"
 results_envs="-v /var/run/docker.sock:/var/run/docker.sock \
               -v /home/opnfv/dovetail/results:/home/opnfv/dovetail/results"
+openrc_volume="-v ${OPENRC}:${OPENRC}"
 
 # Pull the image with correct tag
 echo "Dovetail: Pulling image opnfv/dovetail:${DOCKER_TAG}"
 docker pull opnfv/dovetail:$DOCKER_TAG >$redirect
 
-cmd="sudo docker run ${opts} ${envs} ${results_envs} ${labconfig} ${sshkey} \
-     opnfv/dovetail:${DOCKER_TAG} /bin/bash"
+cmd="sudo docker run ${opts} ${results_envs} ${openrc_volume} ${labconfig} \
+     ${sshkey} opnfv/dovetail:${DOCKER_TAG} /bin/bash"
 echo "Dovetail: running docker run command: ${cmd}"
 ${cmd} >${redirect}
 sleep 5
@@ -67,7 +67,7 @@ if [ $(docker ps | grep "opnfv/dovetail:${DOCKER_TAG}" | wc -l) == 0 ]; then
 fi
 
 list_cmd="dovetail list ${TESTSUITE}"
-run_cmd="dovetail run --testsuite ${TESTSUITE} -d true"
+run_cmd="dovetail run --openrc ${OPENRC} --testsuite ${TESTSUITE} -d"
 echo "Container exec command: ${list_cmd}"
 docker exec $container_id ${list_cmd}
 echo "Container exec command: ${run_cmd}"
