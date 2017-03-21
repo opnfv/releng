@@ -18,7 +18,8 @@ ENABLE_VENV="false"
 USE_DHCP="false"
 USE_VENV="false"
 BUILD_IMAGE=true
-BAREMETAL_DATA_FILE=${BAREMETAL_DATA_FILE:-'/tmp/baremetal.json'}
+export BAREMETAL_DATA_FILE=${BAREMETAL_DATA_FILE:-'/tmp/baremetal.json'}
+export BIFROST_INVENTORY_SOURCE=${BIFROST_INVENTORY_SOURCE:-'/tmp/baremetal.csv'}
 PROVISION_WAIT_TIMEOUT=${PROVISION_WAIT_TIMEOUT:-3600}
 
 # Set defaults for ansible command-line options to drive the different
@@ -39,7 +40,7 @@ export VM_DOMAIN_TYPE="kvm"
 export VM_CPU=${VM_CPU:-8}
 export VM_DISK=${VM_DISK:-100}
 export VM_DISK_CACHE=${VM_DISK_CACHE:-unsafe}
-TEST_PLAYBOOK="test-bifrost-infracloud.yaml"
+TEST_PLAYBOOK="opnfv-virtual.yaml"
 USE_INSPECTOR=true
 USE_CIRROS=false
 TESTING_USER=root
@@ -53,8 +54,6 @@ INVENTORY_DHCP=false
 INVENTORY_DHCP_STATIC_IP=false
 WRITE_INTERFACES_FILE=true
 
-# Set BIFROST_INVENTORY_SOURCE
-export BIFROST_INVENTORY_SOURCE=/tmp/baremetal.json
 
 # DIB custom elements path
 export ELEMENTS_PATH=/opt/puppet-infracloud/files/elements
@@ -93,11 +92,11 @@ cd $BIFROST_HOME/playbooks
 
 # Syntax check of dynamic inventory test path
 for task in syntax-check list-tasks; do
-    ${ANSIBLE} -vvvv \
+    ${ANSIBLE} \
            -i inventory/localhost \
            test-bifrost-create-vm.yaml \
            --${task}
-    ${ANSIBLE} -vvvv \
+    ${ANSIBLE} \
            -i inventory/localhost \
            ${TEST_PLAYBOOK} \
            --${task} \
@@ -105,7 +104,7 @@ for task in syntax-check list-tasks; do
 done
 
 # Create the test VMS
-${ANSIBLE} -vvvv \
+${ANSIBLE} \
        -i inventory/localhost \
        test-bifrost-create-vm.yaml \
        -e test_vm_num_nodes=${TEST_VM_NUM_NODES} \
@@ -115,7 +114,7 @@ ${ANSIBLE} -vvvv \
        -e baremetal_json_file=${BAREMETAL_DATA_FILE}
 
 # Execute the installation and VM startup test.
-${ANSIBLE} -vvvv \
+${ANSIBLE} \
     -i inventory/bifrost_inventory.py \
     ${TEST_PLAYBOOK} \
     -e use_cirros=${USE_CIRROS} \
