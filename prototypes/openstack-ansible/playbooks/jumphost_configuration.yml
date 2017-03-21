@@ -1,5 +1,5 @@
 ---
-- hosts: jumphost
+- hosts: xcimaster
   remote_user: root
   vars_files:
     - ../var/ubuntu.yml
@@ -13,7 +13,11 @@
     - name: remove the directory
       shell: "rm -rf {{OSA_PATH}} {{OSA_ETC_PATH}}"
     - name: git openstack ansible
-      shell: "git clone {{OSA_URL}} {{OSA_PATH}} -b {{OSA_BRANCH}}"
+      shell: "git clone {{OSA_URL}} {{OSA_PATH}} -b {{OPENSTACK_BRANCH}}"
+    - name: copy opnfv-setup-openstack.yml to /opt/openstack-ansible/playbooks
+      copy:
+        src: ../file/opnfv-setup-openstack.yml
+        dest: "{{OSA_PATH}}/playbooks/opnfv-setup-openstack.yml"
     - name: copy /opt/openstack-ansible/etc/openstack_deploy to /etc/openstack_deploy
       shell: "/bin/cp -rf {{OSA_PATH}}/etc/openstack_deploy {{OSA_ETC_PATH}}"
     - name: bootstrap
@@ -50,4 +54,4 @@
   remote_user: root
   tasks:
     - name: Generate authorized_keys
-      shell: "/bin/cat /jumphost/root/.ssh/id_rsa.pub >> ../file/authorized_keys"
+      shell: "/bin/cat /xcimaster/root/.ssh/id_rsa.pub >> ../file/authorized_keys"
