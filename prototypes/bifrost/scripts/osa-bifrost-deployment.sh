@@ -55,9 +55,6 @@ INVENTORY_DHCP_STATIC_IP=false
 WRITE_INTERFACES_FILE=true
 
 
-# DIB custom elements path
-export ELEMENTS_PATH=/opt/puppet-infracloud/files/elements
-
 # settings for console access
 export DIB_DEV_USER_PWDLESS_SUDO=yes
 export DIB_DEV_USER_PASSWORD=devuser
