@@ -24,7 +24,6 @@ PROVISION_WAIT_TIMEOUT=${PROVISION_WAIT_TIMEOUT:-3600}
 
 # Set defaults for ansible command-line options to drive the different
 # tests.
-
 # NOTE(TheJulia/cinerama): The variables defined on the command line
 # for the default and DHCP tests are to drive the use of Cirros as the
 # deployed operating system, and as such sets the test user to cirros,
