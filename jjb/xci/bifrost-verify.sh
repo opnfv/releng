@@ -115,7 +115,7 @@ sudo /bin/cp -rf /opt/releng/prototypes/bifrost/* /opt/bifrost/
 cd /opt/bifrost
 sudo -E ./scripts/destroy-env.sh
 
-# provision 3 VMs; jumphost, controller, and compute
+# provision 3 VMs; xci-master, controller, and compute
 cd /opt/bifrost
 sudo -E ./scripts/test-bifrost-deployment.sh
 

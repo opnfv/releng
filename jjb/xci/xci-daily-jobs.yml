@@ -78,12 +78,12 @@
     concurrent: false
 
     properties:
-        - logrotate-default
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - 'xci-os-.*?-{pod}-daily-.*'
+                - '^xci-os.*'
             block-level: 'NODE'
+        - logrotate-default
 
     parameters:
         - string:
@@ -137,14 +137,14 @@
     concurrent: false
 
     properties:
-        - logrotate-default
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - 'xci-provision-.*?-{pod}-daily-.*'
-                - 'xci-deploy-.*?-{pod}-daily-.*'
-                - 'xci-functest-.*?-{pod}-daily-.*'
+                - '^xci-provision.*'
+                - '^xci-deploy.*'
+                - '^xci-functest.*'
             block-level: 'NODE'
+        - logrotate-default
 
     parameters:
         - string:
@@ -177,6 +177,9 @@
         - string:
             name: CLEAN_DIB_IMAGES
             default: 'true'
+        - label:
+            name: SLAVE_LABEL
+            default: '{slave-label}'
 
     builders:
         - description-setter:
