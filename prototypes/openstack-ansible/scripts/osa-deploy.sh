@@ -29,6 +29,7 @@ echo "*                                                                     *"
 echo "*                        Configure XCI Master                         *"
 echo "*                                                                     *"
 echo "*  Bootstrap xci-master, configure network, clone openstack-ansible   *"
+echo "*                Playbooks: configure-xcimaster.yml                   *"
 echo "*                                                                     *"
 echo "***********************************************************************"
 echo -e "\n"
@@ -47,6 +48,7 @@ echo "*                                                                     *"
 echo "*                          Configure Nodes                            *"
 echo "*                                                                     *"
 echo "*       Configure network on OpenStack Nodes, configure NFS           *"
+echo "*                Playbooks: configure-targethosts.yml                 *"
 echo "*                                                                     *"
 echo "***********************************************************************"
 echo -e "\n"
@@ -64,6 +66,7 @@ echo "*                                                                     *"
 echo "*                       Set Up OpenStack Nodes                        *"
 echo "*                                                                     *"
 echo "*            Set up OpenStack Nodes using openstack-ansible           *"
+echo "*         Playbooks: setup-hosts.yml, setup-infrastructure.yml        *"
 echo "*                                                                     *"
 echo "***********************************************************************"
 echo -e "\n"
@@ -114,16 +117,17 @@ echo -e "\n"
 echo "***********************************************************************"
 echo "*                                                                     *"
 echo "*                           Install OpenStack                         *"
+echo "*                 Playbooks: opnfv-setup-openstack.yml                *"
 echo "*                                                                     *"
 echo "***********************************************************************"
 echo -e "\n"
 
 sudo -E /bin/sh -c "ssh root@$XCIMASTER_IP openstack-ansible \
-     $PLAYBOOK_PATH/setup-openstack.yml" | \
-     tee $LOG_PATH/setup-openstack.log
+     $PLAYBOOK_PATH/opnfv-setup-openstack.yml" | \
+     tee $LOG_PATH/opnfv-setup-openstack.log
 
-grep "failed=1" $LOG_PATH/setup-openstack.log>/dev/null \
-  || grep "unreachable=1" $LOG_PATH/setup-openstack.log>/dev/null
+grep "failed=1" $LOG_PATH/opnfv-setup-openstack.log>/dev/null \
+  || grep "unreachable=1" $LOG_PATH/opnfv-setup-openstack.log>/dev/null
 if [ $? -eq 0 ]; then
    echo "OpenStack installation failed!"
    exit 1
