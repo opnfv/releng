@@ -9,6 +9,15 @@ if [[ ! -z $(docker ps -a | grep opnfv/yardstick) ]]; then
 
 fi
 
+# Remove existing images with tag:<None>
+dangling_images=($(docker images -f "dangling=true" | grep opnfv/yardstick | awk '{print $3}'))
+if [[ -n ${dangling_images} ]]; then
+    for image_id in "${dangling_images[@]}"; do
+        echo "Removing Yardstick Docker image with tag:<None>, image id:$image_id"
+        docker rmi $image_id >${redirect}
+    done
+fi
+
 # Remove existing images if exist
 if [[ ! -z $(docker images | grep opnfv/yardstick) ]]; then
     echo "Docker images to remove:"
@@ -20,3 +29,4 @@ if [[ ! -z $(docker images | grep opnfv/yardstick) ]]; then
 
     done
 fi
+
