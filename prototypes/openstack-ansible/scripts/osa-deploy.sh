@@ -29,6 +29,7 @@ echo "*                                                                     *"
 echo "*                        Configure XCI Master                         *"
 echo "*                                                                     *"
 echo "*  Bootstrap xci-master, configure network, clone openstack-ansible   *"
+echo "*                Playbooks: configure-xcimaster.yml                   *"
 echo "*                                                                     *"
 echo "***********************************************************************"
 echo -e "\n"
@@ -47,6 +48,7 @@ echo "*                                                                     *"
 echo "*                          Configure Nodes                            *"
 echo "*                                                                     *"
 echo "*       Configure network on OpenStack Nodes, configure NFS           *"
+echo "*                Playbooks: configure-targethosts.yml                 *"
 echo "*                                                                     *"
 echo "***********************************************************************"
 echo -e "\n"
@@ -64,6 +66,7 @@ echo "*                                                                     *"
 echo "*                       Set Up OpenStack Nodes                        *"
 echo "*                                                                     *"
 echo "*            Set up OpenStack Nodes using openstack-ansible           *"
+echo "*         Playbooks: setup-hosts.yml, setup-infrastructure.yml        *"
 echo "*                                                                     *"
 echo "***********************************************************************"
 echo -e "\n"
@@ -74,11 +77,9 @@ sudo -E /bin/sh -c "ssh root@$XCIMASTER_IP openstack-ansible \
      $PLAYBOOK_PATH/setup-hosts.yml" | \
      tee $LOG_PATH/setup-host.log
 
-#check the result of openstack-ansible setup-hosts.yml
-#if failed, exit with exit code 1
-grep "failed=1" $LOG_PATH/setup-host.log>/dev/null \
-  || grep "unreachable=1" $LOG_PATH/setup-host.log>/dev/null
-if [ $? -eq 0 ]; then
+# check the result of openstack-ansible setup-hosts.yml
+# if failed, exit with exit code 1
+if grep -q 'failed=1\|unreachable=1' $LOG_PATH/setup-host.log; then
     echo "OpenStack node setup failed!"
     exit 1
 fi
@@ -87,10 +88,10 @@ sudo -E /bin/sh -c "ssh root@$XCIMASTER_IP openstack-ansible \
      $PLAYBOOK_PATH/setup-infrastructure.yml" | \
      tee $LOG_PATH/setup-infrastructure.log
 
-grep "failed=1" $LOG_PATH/setup-infrastructure.log>/dev/null \
-  || grep "unreachable=1" $LOG_PATH/setup-infrastructure.log>/dev/null
-if [ $? -eq 0 ]; then
-    echo "failed setup infrastructure!"
+# check the result of openstack-ansible setup-infrastructure.yml
+# if failed, exit with exit code 1
+if grep -q 'failed=1\|unreachable=1' $LOG_PATH/setup-infrastructure.log; then
+    echo "OpenStack node setup failed!"
     exit 1
 fi
 
@@ -101,8 +102,7 @@ sudo -E /bin/sh -c "ssh root@$XCIMASTER_IP ansible -i $PLAYBOOK_PATH/inventory/ 
            -a "mysql -h localhost -e 'show status like \"%wsrep_cluster_%\";'"" \
            | tee $LOG_PATH/galera.log
 
-grep "FAILED" $LOG_PATH/galera.log>/dev/null
-if [ $? -eq 0 ]; then
+if grep -q 'FAILED' $LOG_PATH/galera.log; then
     echo "Database cluster verification failed!"
     exit 1
 else
@@ -114,17 +114,16 @@ echo -e "\n"
 echo "***********************************************************************"
 echo "*                                                                     *"
 echo "*                           Install OpenStack                         *"
+echo "*                 Playbooks: opnfv-setup-openstack.yml                *"
 echo "*                                                                     *"
 echo "***********************************************************************"
 echo -e "\n"
 
 sudo -E /bin/sh -c "ssh root@$XCIMASTER_IP openstack-ansible \
-     $PLAYBOOK_PATH/setup-openstack.yml" | \
-     tee $LOG_PATH/setup-openstack.log
+     $PLAYBOOK_PATH/opnfv-setup-openstack.yml" | \
+     tee $LOG_PATH/opnfv-setup-openstack.log
 
-grep "failed=1" $LOG_PATH/setup-openstack.log>/dev/null \
-  || grep "unreachable=1" $LOG_PATH/setup-openstack.log>/dev/null
-if [ $? -eq 0 ]; then
+if grep -q 'failed=1\|unreachable=1' $LOG_PATH/opnfv-setup-openstack.log; then
    echo "OpenStack installation failed!"
    exit 1
 else
