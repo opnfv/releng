@@ -13,10 +13,10 @@ fi
 if [[ ! -z $(docker images | grep opnfv/yardstick) ]]; then
     echo "Docker images to remove:"
     docker images | head -1 && docker images | grep opnfv/yardstick
-    image_tags=($(docker images | grep opnfv/yardstick | awk '{print $2}'))
-    for tag in "${image_tags[@]}"; do
-        echo "Removing docker image opnfv/yardstick:$tag..."
-        docker rmi opnfv/yardstick:$tag >$redirect
+    image_id=($(docker images | grep opnfv/yardstick | awk '{print $3}'))
+    for id in "${image_id[@]}"; do
+        echo "Removing Yardstick Docker image, image id:$id"
+        docker rmi $id >$redirect
 
     done
 fi
