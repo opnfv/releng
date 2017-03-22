@@ -3,15 +3,22 @@
 #--------------------------------
 # BRANCH ANCHORS
 #--------------------------------
+# the versions stated here default to branches which then later
+# on used for checking out the branches, pulling in head of the branch.
+# but they also allow us to state sha1 so instead of checking out the
+# branches, we can check out sha1 if we want to use locked/specific
+# sha1 or manually enter sha1.
     master: &master
         stream: master
-        openstack-branch: '{stream}'
-        opnfv-branch: 'master'
+        openstack-osa-version: '{stream}'
+        openstack-bifrost-version: '{stream}'
+        opnfv-releng-version: 'master'
         gs-pathname: ''
     ocata: &ocata
         stream: ocata
-        openstack-branch: 'stable/{stream}'
-        opnfv-branch: 'master'
+        openstack-osa-version: 'stable/{stream}'
+        openstack-bifrost-version: 'stable/{stream}'
+        opnfv-releng-version: 'master'
         gs-pathname: '/{stream}'
 #--------------------------------
 #       scenarios
@@ -87,6 +94,18 @@
 
     parameters:
         - string:
+            name: OPENSTACK_OSA_VERSION
+            default: '{openstack-osa-version}'
+        - string:
+            name: OPENSTACK_BIFROST_VERSION
+            default: '{openstack-osa-version}'
+        - string:
+            name: OPNFV_RELENG_VERSION
+            default: '{opnfv-releng-version}'
+        - string:
+            name: USE_PROMOTED_VERSIONS
+            default: 'true'
+        - string:
             name: DEPLOY_SCENARIO
             default: '{scenario}'
         - label:
@@ -151,11 +170,14 @@
 
     parameters:
         - string:
-            name: OPENSTACK_BRANCH
-            default: '{openstack-branch}'
+            name: OPENSTACK_OSA_VERSION
+            default: '{openstack-osa-version}'
         - string:
-            name: OPNFV_BRANCH
-            default: '{opnfv-branch}'
+            name: OPENSTACK_BIFROST_VERSION
+            default: '{openstack-osa-version}'
+        - string:
+            name: OPNFV_RELENG_VERSION
+            default: '{opnfv-releng-version}'
         - string:
             name: USE_PROMOTED_VERSIONS
             default: 'true'

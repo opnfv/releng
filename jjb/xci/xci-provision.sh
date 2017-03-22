@@ -43,11 +43,32 @@ sudo /bin/rm -rf /opt/bifrost /opt/openstack-ansible /opt/stack /opt/releng /opt
 # Fix up permissions
 fix_ownership
 
-# ensure the branches to use are set
-export OPENSTACK_BRANCH=${OPENSTACK_BRANCH:-master}
-export OPNFV_BRANCH=${OPNFV_BRANCH:-master}
-sudo git clone -b $OPENSTACK_BRANCH https://git.openstack.org/openstack/bifrost /opt/bifrost
-sudo git clone -b $OPNFV_BRANCH https://gerrit.opnfv.org/gerrit/releng /opt/releng
+# ensure the versions to checkout are set
+export OPENSTACK_BIFROST_VERSION=${OPENSTACK_BIFROST_VERSION:-master}
+export OPNFV_RELENG_VERSION=${OPNFV_RELENG_VERSION:-master}
+
+# log some info
+echo -e "\n"
+echo "***********************************************************************"
+echo "*                                                                     *"
+echo "*                      Provision OpenStack Nodes                      *"
+echo "*                                                                     *"
+echo "                       bifrost version: $OPENSTACK_BIFROST_VERSION"
+echo "                       releng version: $OPNFV_RELENG_VERSION"
+echo "*                                                                     *"
+echo "***********************************************************************"
+echo -e "\n"
+
+# clone the repos and checkout the versions
+sudo git clone --quiet https://git.openstack.org/openstack/bifrost /opt/bifrost
+cd /opt/bifrost && sudo git checkout --quiet $OPENSTACK_BIFROST_VERSION
+echo "xci: using bifrost commit"
+git show --oneline -s --pretty=format:'%h - %s (%cr) <%an>'
+
+sudo git clone --quiet https://gerrit.opnfv.org/gerrit/releng /opt/releng
+cd /opt/releng && sudo git checkout --quiet $OPNFV_RELENG_VERSION
+echo "xci: using releng commit"
+git show --oneline -s --pretty=format:'%h - %s (%cr) <%an>'
 
 # this script will be reused for promoting bifrost versions and using
 # promoted bifrost versions as part of xci daily.
@@ -72,3 +93,12 @@ cd /opt/bifrost
 source env-vars
 ironic node-list
 virsh list
+
+# log some info
+echo -e "\n"
+echo "***********************************************************************"
+echo "*                                                                     *"
+echo "*                 OpenStack nodes are provisioned!                    *"
+echo "*                                                                     *"
+echo "***********************************************************************"
+echo -e "\n"
