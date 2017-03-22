@@ -67,4 +67,4 @@ if [ $USE_PROMOTED_VERSIONS = "true" ]; then
 fi
 
 cd /opt/releng/prototypes/openstack-ansible/scripts
-sudo -E ./osa_deploy.sh
+sudo -E ./osa-deploy.sh
