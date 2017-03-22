@@ -52,16 +52,30 @@ source env-vars
 ironic node-list
 virsh list
 
-# ensure the branches to use are set
-export OPNFV_BRANCH=${OPNFV_BRANCH:-master}
-export OPENSTACK_BRANCH=${OPENSTACK_BRANCH:-master}
+# ensure the versions to checkout are set
+export OPENSTACK_OSA_VERSION=${OPENSTACK_OSA_VERSION:-master}
+export OPNFV_RELENG_VERSION=${OPNFV_RELENG_VERSION:-master}
+
+# log some info
+echo -e "\n"
+echo "***********************************************************************"
+echo "*                                                                     *"
+echo "*                         Deploy OpenStack                            *"
+echo "*                                                                     *"
+echo "                 openstack-ansible version: $OPENSTACK_OSA_VERSION"
+echo "                    opnfv/releng version: $OPNFV_RELENG_VERSION"
+echo "*                                                                     *"
+echo "***********************************************************************"
+echo -e "\n"
 
 # clone releng repo
-sudo git clone -b $OPNFV_BRANCH https://gerrit.opnfv.org/gerrit/releng /opt/releng
+sudo git clone --quiet https://gerrit.opnfv.org/gerrit/releng /opt/releng
+cd /opt/releng && sudo git checkout --quiet $OPNFV_RELENG_VERSION
+git show --oneline -s --pretty=format:'%h - %s (%cr) <%an>'
 
 # this script will be reused for promoting openstack-ansible versions and using
 # promoted openstack-ansible versions as part of xci daily.
-USE_PROMOTED_VERSIONS=${USE_PROMOTED_VERSIONS:-false}
+USE_PROMOTED_VERSIONS=${USEt add_PROMOTED_VERSIONS:-false}
 if [ $USE_PROMOTED_VERSIONS = "true" ]; then
     echo "TBD: Will use the promoted versions of openstack/opnfv projects"
 fi
