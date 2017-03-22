@@ -46,18 +46,31 @@ fix_ownership
 # openstack-ansible enables strict host key checking by default
 export ANSIBLE_HOST_KEY_CHECKING=False
 
+# ensure the versions to checkout are set
+export OPENSTACK_OSA_VERSION=${OPENSTACK_OSA_VERSION:-master}
+export OPNFV_RELENG_VERSION=${OPNFV_RELENG_VERSION:-master}
+
+# log some info
+echo -e "\n"
+echo "***********************************************************************"
+echo "*                                                                     *"
+echo "*                         Deploy OpenStack                            *"
+echo "*                                                                     *"
+echo "                 openstack-ansible version: $OPENSTACK_OSA_VERSION"
+echo "                       releng version: $OPNFV_RELENG_VERSION"
+echo "*                                                                     *"
+echo "***********************************************************************"
+echo -e "\n"
 # display the nodes
 cd /opt/bifrost
 source env-vars
 ironic node-list
-virsh list
-
-# ensure the branches to use are set
-export OPNFV_BRANCH=${OPNFV_BRANCH:-master}
-export OPENSTACK_BRANCH=${OPENSTACK_BRANCH:-master}
 
 # clone releng repo
-sudo git clone -b $OPNFV_BRANCH https://gerrit.opnfv.org/gerrit/releng /opt/releng
+sudo git clone --quiet https://gerrit.opnfv.org/gerrit/releng /opt/releng
+cd /opt/releng && sudo git checkout --quiet $OPNFV_RELENG_VERSION
+echo "xci: using openstack-ansible commit"
+git show --oneline -s --pretty=format:'%h - %s (%cr) <%an>'
 
 # this script will be reused for promoting openstack-ansible versions and using
 # promoted openstack-ansible versions as part of xci daily.
@@ -68,3 +81,12 @@ fi
 
 cd /opt/releng/prototypes/openstack-ansible/scripts
 sudo -E ./osa-deploy.sh
+
+# log some info
+echo -e "\n"
+echo "***********************************************************************"
+echo "*                                                                     *"
+echo "*                OpenStack deployment is completed!                   *"
+echo "*                                                                     *"
+echo "***********************************************************************"
+echo -e "\n"

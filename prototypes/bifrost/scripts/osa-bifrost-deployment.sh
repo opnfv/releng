@@ -20,11 +20,9 @@ USE_VENV="false"
 BUILD_IMAGE=true
 PROVISION_WAIT_TIMEOUT=${PROVISION_WAIT_TIMEOUT:-3600}
 
-# ensure the branch is set
-export OPENSTACK_BRANCH=${OPENSTACK_BRANCH:-master}
-
 # ensure the right inventory files is used based on branch
-if [ $OPENSTACK_BRANCH = "master" ]; then
+CURRENT_BIFROST_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ $CURRENT_BIFROST_BRANCH = "master" ]; then
     export BIFROST_INVENTORY_SOURCE=${BIFROST_INVENTORY_SOURCE:-'/tmp/baremetal.json'}
 else
     export BIFROST_INVENTORY_SOURCE=${BIFROST_INVENTORY_SOURCE:-'/tmp/baremetal.csv'}
