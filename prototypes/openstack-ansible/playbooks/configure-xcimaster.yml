@@ -10,10 +10,19 @@
         creates: /root/.ssh/id_rsa
     - name: fetch public key
       fetch: src="/root/.ssh/id_rsa.pub" dest="/"
-    - name: remove the directory
-      shell: "rm -rf {{OSA_PATH}} {{OSA_ETC_PATH}}"
-    - name: git openstack ansible
-      shell: "git clone {{OSA_URL}} {{OSA_PATH}} -b {{OPENSTACK_BRANCH}}"
+    - name: remove openstack-ansible directories
+      file:
+        path={{ item }}
+        state=absent
+        recurse=no
+      with_items:
+        - "{{OSA_PATH}}"
+        - "{{OSA_ETC_PATH}}"
+    - name: clone openstack-ansible
+      git:
+        repo: "{{OSA_URL}}"
+        dest: "{{OSA_PATH}}"
+        version: "{{OPENSTACK_OSA_VERSION}}"
     - name: copy opnfv-setup-openstack.yml to /opt/openstack-ansible/playbooks
       copy:
         src: ../file/opnfv-setup-openstack.yml
