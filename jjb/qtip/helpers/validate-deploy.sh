@@ -10,7 +10,9 @@ set -e
 
 envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP}
 -e NODE_NAME=${NODE_NAME} -e CI_DEBUG=${CI_DEBUG}"
+ramfs=/tmp/qtip/ramfs
 dir_imgstore="${HOME}/imgstore"
+ramfs_volume="$ramfs:/mnt/ramfs"
 
 echo "--------------------------------------------------------"
 echo "POD: $NODE_NAME"
@@ -21,7 +23,24 @@ echo "--------------------------------------------------------"
 echo "Qtip: Pulling docker image: opnfv/qtip:${DOCKER_TAG}"
 docker pull opnfv/qtip:$DOCKER_TAG
 
-cmd=" docker run -id -e $envs opnfv/qtip:${DOCKER_TAG} /bin/bash"
+# use ramfs to fix docker socket connection issue with overlay mode in centos
+if [ ! -d $ramfs ]; then
+    mkdir -p $ramfs
+fi
+
+if [ ! -z $(df $ramfs | tail -n -1 | grep $ramfs) ]; then
+    sudo mount -t tmpfs -o size=32M tmpfs $ramfs
+fi
+
+# enable contro path in docker
+echo <<EOF > /tmp/ansible.cfg
+[defaults]
+callback_whitelist = profile_tasks
+[ssh_connection]
+control_path=/mnt/ramfs/ansible-ssh-%%h-%%p-%%r
+EOF
+
+cmd=" docker run -id -e $envs -v ${ramfs_volume} opnfv/qtip:${DOCKER_TAG} /bin/bash"
 echo "Qtip: Running docker command: ${cmd}"
 ${cmd}
 
@@ -32,6 +51,7 @@ if [ $(docker ps | grep 'opnfv/qtip' | wc -l) == 0 ]; then
 else
     echo "The container ID is: ${container_id}"
     QTIP_REPO=/home/opnfv/repos/qtip
+    docker cp ${container_id} /tmp/ansible.cfg /home/opnfv/.ansible.cfg
 # TODO(zhihui_wu): use qtip cli to execute benchmark test in the future
     docker exec -t ${container_id} bash -c "cd ${QTIP_REPO}/qtip/runner/ &&
     python runner.py -d /home/opnfv/qtip/results/ -b all"
