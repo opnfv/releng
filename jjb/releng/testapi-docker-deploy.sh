@@ -23,6 +23,14 @@ contId=$(sudo docker ps | grep "opnfv/testapi:latest" | awk '{print $1}')
 echo "Pulling the latest image"
 sudo docker pull opnfv/testapi:latest
 
+#lets keep tack of docker pull failures here
+touch "$BUILD_TAG"_"$?"
+gsutil cp "$BUILD_TAG"_"$?" gs://artifacts.opnfv.org/Docker_pull_logs/"$BUILD_TAG"_"$?" || true
+
+
+touch "$BUILD_TAG"_"$?" 
+gsutil cp "$BUILD_TAG"_"$?" gs://artifacts.opnfv.org/Docker_pull_logs/"$BUILD_TAG"_"$?" || true
+
 echo "Deleting old containers of opnfv/testapi:old"
 sudo docker ps -a | grep "opnfv/testapi" | grep "old" | awk '{print $1}' | xargs -r sudo docker rm -f
 
