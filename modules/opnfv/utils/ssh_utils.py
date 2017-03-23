@@ -15,6 +15,7 @@ import paramiko
 from opnfv.utils import opnfv_logger as logger
 
 logger = logger.Logger("SSH utils").getLogger()
+SSH_TIMEOUT = 60
 
 
 def get_ssh_client(hostname,
@@ -40,11 +41,13 @@ def get_ssh_client(hostname,
             client.load_system_host_keys()
             client.connect(hostname,
                            username=username,
-                           pkey=key)
+                           pkey=key,
+                           timeout=SSH_TIMEOUT)
         else:
             client.connect(hostname,
                            username=username,
-                           password=password)
+                           password=password,
+                           timeout=SSH_TIMEOUT)
 
         return client
     except Exception as e:
@@ -96,7 +99,8 @@ class ProxyHopClient(paramiko.SSHClient):
         self.proxy_ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.proxy_ssh.connect(jh_ip,
                                username=jh_user,
-                               password=jh_pass)
+                               password=jh_pass,
+                               timeout=SSH_TIMEOUT)
         self.proxy_transport = self.proxy_ssh.get_transport()
 
     def connect(self, hostname, port=22, username='root', password=None,
@@ -126,7 +130,8 @@ class ProxyHopClient(paramiko.SSHClient):
             super(ProxyHopClient, self).connect(hostname,
                                                 username=username,
                                                 pkey=proxy_key,
-                                                sock=self.proxy_channel)
+                                                sock=self.proxy_channel,
+                                                timeout=timeout)
             os.remove(self.local_ssh_key)
         except Exception as e:
             logger.error(e)
