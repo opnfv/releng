@@ -23,10 +23,13 @@ PROVISION_WAIT_TIMEOUT=${PROVISION_WAIT_TIMEOUT:-3600}
 # ensure the right inventory files is used based on branch
 CURRENT_BIFROST_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 if [ $CURRENT_BIFROST_BRANCH = "master" ]; then
-    export BIFROST_INVENTORY_SOURCE=${BIFROST_INVENTORY_SOURCE:-'/tmp/baremetal.json'}
+    BAREMETAL_DATA_FILE=${BAREMETAL_DATA_FILE:-'/tmp/baremetal.json'}
+    INVENTORY_FILE_FORMAT="baremetal_json_file"
 else
-    export BIFROST_INVENTORY_SOURCE=${BIFROST_INVENTORY_SOURCE:-'/tmp/baremetal.csv'}
+    BAREMETAL_DATA_FILE=${BAREMETAL_DATA_FILE:-'/tmp/baremetal.csv'}
+    INVENTORY_FILE_FORMAT="baremetal_csv_file"
 fi
+export BIFROST_INVENTORY_SOURCE=$BAREMETAL_DATA_FILE
 
 # Set defaults for ansible command-line options to drive the different
 # tests.
@@ -113,7 +116,8 @@ ${ANSIBLE} \
        -e test_vm_num_nodes=${TEST_VM_NUM_NODES} \
        -e test_vm_memory_size=${VM_MEMORY_SIZE} \
        -e enable_venv=${ENABLE_VENV} \
-       -e test_vm_domain_type=${VM_DOMAIN_TYPE}
+       -e test_vm_domain_type=${VM_DOMAIN_TYPE} \
+       -e ${INVENTORY_FILE_FORMAT}=${BAREMETAL_DATA_FILE}
 
 # Execute the installation and VM startup test.
 ${ANSIBLE} \
