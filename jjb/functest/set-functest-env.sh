@@ -82,6 +82,11 @@ fi
 echo "Functest: Pulling image ${FUNCTEST_IMAGE}:${DOCKER_TAG}"
 docker pull ${FUNCTEST_IMAGE}:$DOCKER_TAG >/dev/null
 
+#lets keep track of docker pull failures here
+touch "$BUILD_TAG"_"$?"
+gsutil cp "$BUILD_TAG"_"$?" gs://artifacts.opnfv.org/Docker_pull_logs/"$BUILD_TAG"_"$?" || true
+
+
 cmd="sudo docker run --privileged=true -id ${envs} ${volumes} \
      ${custom_params} ${TESTCASE_OPTIONS} \
      ${FUNCTEST_IMAGE}:${DOCKER_TAG} /bin/bash"

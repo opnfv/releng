@@ -35,7 +35,12 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
 
 # Pull the image with correct tag
 echo "Yardstick: Pulling image opnfv/yardstick:${DOCKER_TAG}"
-docker pull opnfv/yardstick:$DOCKER_TAG >$redirect
+docker pull opnfv/yardstick:"$DOCKER_TAG" >"$redirect"
+
+#lets keep track of docker pull failures here
+touch "$BUILD_TAG"_"$?"
+gsutil cp "$BUILD_TAG"_"$?" gs://artifacts.opnfv.org/Docker_pull_logs/"$BUILD_TAG"_"$?" || true
+
 
 # map log directory
 branch=${BRANCH##*/}

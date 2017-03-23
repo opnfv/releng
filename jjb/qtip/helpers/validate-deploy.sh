@@ -23,6 +23,11 @@ echo "--------------------------------------------------------"
 echo "Qtip: Pulling docker image: opnfv/qtip:${DOCKER_TAG}"
 docker pull opnfv/qtip:$DOCKER_TAG
 
+#lets keep track of docker pull failures here
+touch "$BUILD_TAG"_"$?"
+gsutil cp "$BUILD_TAG"_"$?" gs://artifacts.opnfv.org/Docker_pull_logs/"$BUILD_TAG"_"$?" || true
+
+
 # use ramfs to fix docker socket connection issue with overlay mode in centos
 if [ ! -d $ramfs ]; then
     mkdir -p $ramfs

@@ -7,6 +7,11 @@ if [[ $SUITE_NAME == rubbos || $SUITE_NAME == vstf ]]; then
     echo "Bottlenecks: to pull image $BOTTLENECKS_IMAGE:${DOCKER_TAG}"
     docker pull $BOTTLENECKS_IMAGE:$DOCKER_TAG >${redirect}
 
+	#lets keep track of docker pull failures here
+	touch "$BUILD_TAG"_"$?"
+	gsutil cp "$BUILD_TAG"_"$?" gs://artifacts.opnfv.org/Docker_pull_logs/"$BUILD_TAG"_"$?" || true
+
+
     echo "Bottlenecks: docker start running"
     opts="--privileged=true -id"
     envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
