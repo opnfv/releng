@@ -100,7 +100,7 @@ class ProxyHopClient(paramiko.SSHClient):
         self.proxy_transport = self.proxy_ssh.get_transport()
 
     def connect(self, hostname, port=22, username='root', password=None,
-                pkey=None, key_filename=None, timeout=None, allow_agent=True,
+                pkey=None, key_filename=None, timeout=30, allow_agent=True,
                 look_for_keys=True, compress=False, sock=None, gss_auth=False,
                 gss_kex=False, gss_deleg_creds=True, gss_host=None,
                 banner_timeout=None):
