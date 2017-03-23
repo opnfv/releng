@@ -15,6 +15,11 @@ echo "dovetail: pull and save the images"
 
 cd ${CACHE_DIR}
 sudo docker pull ${DOCKER_REPO_NAME}:${DOCKER_TAG}
+
+#lets keep track of docker pull failures here
+touch "$BUILD_TAG"_"$?"
+gsutil cp "$BUILD_TAG"_"$?" gs://artifacts.opnfv.org/Docker_pull_logs/"$BUILD_TAG"_"$?" || true
+
 sudo docker save -o ${STORE_FILE_NAME} ${DOCKER_REPO_NAME}:${DOCKER_TAG}
 sudo chmod og+rw ${STORE_FILE_NAME}
 
