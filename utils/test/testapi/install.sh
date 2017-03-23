@@ -26,3 +26,6 @@ fi
 cp -fr 3rd_party/static opnfv_testapi/tornado_swagger
 python setup.py install
 rm -fr opnfv_testapi/tornado_swagger/static
+if [ ! -z "$VIRTUAL_ENV" ]; then
+    sed -i -e 's#etc/opnfv_testapi =#/etc/opnfv_testapi =#g' setup.cfg
+fi
