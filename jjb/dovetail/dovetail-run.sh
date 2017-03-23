@@ -45,6 +45,10 @@ results_envs="-v /var/run/docker.sock:/var/run/docker.sock \
 echo "Dovetail: Pulling image opnfv/dovetail:${DOCKER_TAG}"
 docker pull opnfv/dovetail:$DOCKER_TAG >$redirect
 
+#lets keep track of docker pull failures here
+touch "$BUILD_TAG"_"$?"
+gsutil cp "$BUILD_TAG"_"$?" gs://artifacts.opnfv.org/Docker_pull_logs/"$BUILD_TAG"_"$?" || true
+
 cmd="sudo docker run ${opts} ${envs} ${results_envs} ${labconfig} ${sshkey} \
      opnfv/dovetail:${DOCKER_TAG} /bin/bash"
 echo "Dovetail: running docker run command: ${cmd}"
