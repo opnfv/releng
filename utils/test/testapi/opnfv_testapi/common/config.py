@@ -30,7 +30,7 @@ class APIConfig(object):
     """
 
     def __init__(self):
-        self._default_config_location = "/etc/opnfv_testapi/config.ini"
+        self._set_default_config()
         self.mongo_url = None
         self.mongo_dbname = None
         self.api_port = None
@@ -38,6 +38,11 @@ class APIConfig(object):
         self.api_authenticate_on = None
         self._parser = None
         self.swagger_base_url = None
+
+    def _set_default_config(self):
+        venv = os.getenv('VIRTUAL_ENV')
+        self._default_config = os.path.join('/' if not venv else venv,
+                                            'etc/opnfv_testapi/config.ini')
 
     def _get_parameter(self, section, param):
         try:
@@ -66,7 +71,7 @@ class APIConfig(object):
         obj = APIConfig()
 
         if config_location is None:
-            config_location = obj._default_config_location
+            config_location = obj._default_config
 
         if not os.path.exists(config_location):
             raise ParseError("%s not found" % config_location)
