@@ -64,7 +64,7 @@ echo -e "\n"
 # clone releng repo
 sudo git clone --quiet https://gerrit.opnfv.org/gerrit/releng /opt/releng
 cd /opt/releng && sudo git checkout --quiet $OPNFV_RELENG_VERSION
-echo "xci: using openstack-ansible commit"
+echo "xci: using releng commit"
 git show --oneline -s --pretty=format:'%h - %s (%cr) <%an>'
 
 # display the nodes
