@@ -92,8 +92,6 @@ class GenericApiHandler(web.RequestHandler):
             raise gen.Return(ret)
         return wrapper
 
-    @web.asynchronous
-    @gen.coroutine
     @authenticate
     def _create(self, miss_checks, db_checks, **kwargs):
         """
@@ -158,8 +156,6 @@ class GenericApiHandler(web.RequestHandler):
                                 .format(query, self.table))
         self.finish_request(self.format_data(data))
 
-    @web.asynchronous
-    @gen.coroutine
     @authenticate
     def _delete(self, query):
         data = yield self._eval_db_find_one(query)
@@ -171,8 +167,6 @@ class GenericApiHandler(web.RequestHandler):
         yield self._eval_db(self.table, 'remove', query)
         self.finish_request()
 
-    @web.asynchronous
-    @gen.coroutine
     @authenticate
     def _update(self, query, db_keys):
         if self.json_args is None:
