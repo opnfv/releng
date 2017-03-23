@@ -124,22 +124,34 @@
         - trigger-builds:
             - project: 'xci-provision-{pod}-{distro}-daily-{stream}'
               current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO={scenario}
+              predefined-parameters: |
+                OPENSTACK_OSA_VERSION=$OPENSTACK_OSA_VERSION
+                OPENSTACK_BIFROST_VERSION=$OPENSTACK_BIFROST_VERSION
+                OPNFV_RELENG_VERSION=$OPNFV_RELENG_VERSION
+                USE_PROMOTED_VERSIONS=$USE_PROMOTED_VERSIONS
+                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
               same-node: true
               block: true
         - trigger-builds:
             - project: 'xci-deploy-{pod}-{distro}-daily-{stream}'
               current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO={scenario}
+              predefined-parameters: |
+                OPENSTACK_OSA_VERSION=$OPENSTACK_OSA_VERSION
+                OPENSTACK_BIFROST_VERSION=$OPENSTACK_BIFROST_VERSION
+                OPNFV_RELENG_VERSION=$OPNFV_RELENG_VERSION
+                USE_PROMOTED_VERSIONS=$USE_PROMOTED_VERSIONS
+                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
               same-node: true
               block: true
         - trigger-builds:
             - project: 'xci-functest-{pod}-{distro}-daily-{stream}'
               current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO={scenario}
+              predefined-parameters: |
+                OPENSTACK_OSA_VERSION=$OPENSTACK_OSA_VERSION
+                OPENSTACK_BIFROST_VERSION=$OPENSTACK_BIFROST_VERSION
+                OPNFV_RELENG_VERSION=$OPNFV_RELENG_VERSION
+                USE_PROMOTED_VERSIONS=$USE_PROMOTED_VERSIONS
+                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
               same-node: true
               block: true
               block-thresholds:
