@@ -20,6 +20,8 @@ USE_VENV="false"
 BUILD_IMAGE=true
 PROVISION_WAIT_TIMEOUT=${PROVISION_WAIT_TIMEOUT:-3600}
 BAREMETAL_DATA_FILE=${BAREMETAL_DATA_FILE:-'/tmp/baremetal.json'}
+INVENTORY_FILE_FORMAT="baremetal_json_file"
+export BIFROST_INVENTORY_SOURCE=$BAREMETAL_DATA_FILE
 
 # Set defaults for ansible command-line options to drive the different
 # tests.
@@ -49,9 +51,6 @@ INSPECT_NODES=true
 INVENTORY_DHCP=false
 INVENTORY_DHCP_STATIC_IP=false
 WRITE_INTERFACES_FILE=true
-
-# Set BIFROST_INVENTORY_SOURCE
-export BIFROST_INVENTORY_SOURCE=/tmp/baremetal.json
 
 # settings for console access
 export DIB_DEV_USER_PWDLESS_SUDO=yes
@@ -106,7 +105,7 @@ ${ANSIBLE} -vvvv \
        -e test_vm_memory_size=${VM_MEMORY_SIZE} \
        -e enable_venv=${ENABLE_VENV} \
        -e test_vm_domain_type=${VM_DOMAIN_TYPE} \
-       -e baremetal_json_file=${BAREMETAL_DATA_FILE}
+       -e ${INVENTORY_FILE_FORMAT}=${BAREMETAL_DATA_FILE}
 
 # Execute the installation and VM startup test.
 ${ANSIBLE} -vvvv \
