@@ -11,6 +11,7 @@ set -e
 envs="INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP}
 -e NODE_NAME=${NODE_NAME} -e CI_DEBUG=${CI_DEBUG}"
 ramfs=/tmp/qtip/ramfs
+cfg_dir=$(dirname $ramfs)
 dir_imgstore="${HOME}/imgstore"
 ramfs_volume="$ramfs:/mnt/ramfs"
 
@@ -28,12 +29,12 @@ if [ ! -d $ramfs ]; then
     mkdir -p $ramfs
 fi
 
-if [ ! -z $(df $ramfs | tail -n -1 | grep $ramfs) ]; then
+if [ ! -z "$(df $ramfs | tail -n -1 | grep $ramfs)" ]; then
     sudo mount -t tmpfs -o size=32M tmpfs $ramfs
 fi
 
 # enable contro path in docker
-echo <<EOF > /tmp/ansible.cfg
+cat <<EOF > ${cfg_dir}/ansible.cfg
 [defaults]
 callback_whitelist = profile_tasks
 [ssh_connection]
@@ -51,7 +52,7 @@ if [ $(docker ps | grep 'opnfv/qtip' | wc -l) == 0 ]; then
 else
     echo "The container ID is: ${container_id}"
     QTIP_REPO=/home/opnfv/repos/qtip
-    docker cp /tmp/ansible.cfg ${container_id}:/home/opnfv/.ansible.cfg
+    docker cp ${cfg_dir}/ansible.cfg ${container_id}:/home/opnfv/.ansible.cfg
 # TODO(zhihui_wu): use qtip cli to execute benchmark test in the future
     docker exec -t ${container_id} bash -c "cd ${QTIP_REPO}/qtip/runner/ &&
     python runner.py -d /home/opnfv/qtip/results/ -b all"
