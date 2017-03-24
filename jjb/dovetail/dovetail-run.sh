@@ -85,9 +85,11 @@ echo "Container exec command: ${run_cmd}"
 docker exec $container_id ${run_cmd}
 
 sudo cp -r ${DOVETAIL_REPO_DIR}/results ./
-#To make sure the file owner is jenkins, for the copied results files in the above line
+#To make sure the file owner is the current user, for the copied results files in the above line
 #if not, there will be error when next time to wipe workspace
-sudo chown -R jenkins:jenkins ${WORKSPACE}/results
+CURRENT_USER=${SUDO_USER:-$USER}
+PRIMARY_GROUP=$(id -gn $CURRENT_USER)
+sudo chown -R ${CURRENT_USER}:${PRIMARY_GROUP} ${WORKSPACE}/results
 
 echo "Dovetail: done!"
 
