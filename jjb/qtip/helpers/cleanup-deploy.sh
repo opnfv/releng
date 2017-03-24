@@ -7,20 +7,15 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 # Remove previous running containers if exist
-if [[ ! -z $(docker ps -a | grep opnfv/qtip) ]]; then
+if [[ ! -z $(docker ps -a | grep "opnfv/qtip:$DOCKER_TAG") ]]; then
     echo "Removing existing opnfv/qtip containers..."
     # workaround: sometimes it throws an error when stopping qtip container.
     # To make sure ci job unblocked, remove qtip container by force without stopping it.
-    docker rm -f $(docker ps -a | grep opnfv/qtip | awk '{print $1}')
+    docker rm -f $(docker ps -a | grep "opnfv/qtip:$DOCKER_TAG" | awk '{print $1}')
 fi
 
 # Remove existing images if exist
-if [[ ! -z $(docker images | grep opnfv/qtip) ]]; then
-    echo "Docker images to remove:"
-    docker images | head -1 && docker images | grep opnfv/qtip
-    image_tags=($(docker images | grep opnfv/qtip | awk '{print $2}'))
-    for tag in "${image_tags[@]}"; do
-        echo "Removing docker image opnfv/qtip:$tag..."
-        docker rmi opnfv/qtip:$tag
-    done
+if [[ $(docker images opnfv/qtip:${DOCKER_TAG} | wc -l) -gt 1 ]]; then
+    echo "Removing docker image opnfv/qtip:$DOCKER_TAG..."
+    docker rmi opnfv/qtip:$DOCKER_TAG
 fi
