@@ -60,6 +60,20 @@
             dib-os-element: 'opensuse-minimal'
             dib-os-packages: 'vim,less,bridge-utils,iputils,rsyslog,curl'
             extra-dib-elements: 'openssh-server'
+
+#--------------------------------
+# VM defaults
+#--------------------------------
+- defaults:
+    name: daily_vm_defaults
+    test-vm-num-nodes: '6'
+    test-vm-node-names: 'xcimaster controller00 controller01 controller02 compute00 compute01'
+    vm-domain-type: 'kvm'
+    vm-cpu: '8'
+    vm-disk: '100'
+    vm-memory-size: '16384'
+    vm-disk-cache: 'unsafe'
+
 #--------------------------------
 #        Phases
 #--------------------------------
@@ -168,6 +182,8 @@
 
     disabled: '{obj:disabled}'
 
+    defaults: daily_vm_defaults
+
     concurrent: false
 
     properties:
@@ -211,6 +227,27 @@
         - string:
             name: DIB_OS_PACKAGES
             default: '{dib-os-packages}'
+        - string:
+            name: TEST_VM_NUM_NODES
+            default: '{test-vm-num-nodes}'
+        - string:
+            name: TEST_VM_NODE_NAMES
+            default: '{test-vm-node-names}'
+        - string:
+            name: VM_DOMAIN_TYPE
+            default: '{vm-domain-type}'
+        - string:
+            name: VM_CPU
+            default: '{vm-cpu}'
+        - string:
+            name: VM_DISK
+            default: '{vm-disk}'
+        - string:
+            name: VM_MEMORY_SIZE
+            default: '{vm-memory-size}'
+        - string:
+            name: VM_DISK_CACHE
+            default: '{vm-disk-cache}'
         - string:
             name: CLEAN_DIB_IMAGES
             default: 'true'

@@ -7,9 +7,9 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-
 set -eux
 set -o pipefail
+
 export PYTHONUNBUFFERED=1
 SCRIPT_HOME="$(cd "$(dirname "$0")" && pwd)"
 BIFROST_HOME=$SCRIPT_HOME/..
@@ -20,7 +20,7 @@ USE_VENV="false"
 BUILD_IMAGE=true
 PROVISION_WAIT_TIMEOUT=${PROVISION_WAIT_TIMEOUT:-3600}
 
-# ensure the right inventory files is used based on branch
+# Ensure the right inventory files is used based on branch
 CURRENT_BIFROST_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 if [ $CURRENT_BIFROST_BRANCH = "master" ]; then
     BAREMETAL_DATA_FILE=${BAREMETAL_DATA_FILE:-'/tmp/baremetal.json'}
@@ -31,31 +31,20 @@ else
 fi
 export BIFROST_INVENTORY_SOURCE=$BAREMETAL_DATA_FILE
 
-# Set defaults for ansible command-line options to drive the different
-# tests.
-
-# NOTE(TheJulia/cinerama): The variables defined on the command line
-# for the default and DHCP tests are to drive the use of Cirros as the
-# deployed operating system, and as such sets the test user to cirros,
-# and writes a debian style interfaces file out to the configuration
-# drive as cirros does not support the network_info.json format file
-# placed in the configuration drive. The "build image" test does not
-# use cirros.
-
-TEST_VM_NUM_NODES=6
-export TEST_VM_NODE_NAMES="xcimaster controller00 controller01 controller02 compute00 compute01"
-export VM_DOMAIN_TYPE="kvm"
-# 8 vCPU, 60 GB HDD are minimum equipment
-export VM_CPU=${VM_CPU:-8}
+# Default settings for VMs
+export TEST_VM_NUM_NODES=${TEST_VM_NUM_NODES:-3}
+export TEST_VM_NODE_NAMES=${TEST_VM_NODE_NAMES:-"xcimaster controller00 compute00"}
+export VM_DOMAIN_TYPE=${VM_DOMAIN_TYPE:-kvm}
+export VM_CPU=${VM_CPU:-4}
 export VM_DISK=${VM_DISK:-100}
+export VM_MEMORY_SIZE=${VM_MEMORY_SIZE:-8192}
 export VM_DISK_CACHE=${VM_DISK_CACHE:-unsafe}
+
+# Settings for bifrost
 TEST_PLAYBOOK="opnfv-virtual.yaml"
 USE_INSPECTOR=true
 USE_CIRROS=false
 TESTING_USER=root
-# seting the memory to 16 GB to make more easily success
-# 8 GB RAM is minimum equipment, but it work with at least 12 GB.
-VM_MEMORY_SIZE=${VM_MEMORY_SIZE:-16384}
 DOWNLOAD_IPA=true
 CREATE_IPA_IMAGE=false
 INSPECT_NODES=true
@@ -63,25 +52,21 @@ INVENTORY_DHCP=false
 INVENTORY_DHCP_STATIC_IP=false
 WRITE_INTERFACES_FILE=true
 
-
-# settings for console access
+# Settings for console access
 export DIB_DEV_USER_PWDLESS_SUDO=yes
 export DIB_DEV_USER_PASSWORD=devuser
 
-# settings for distro: trusty/ubuntu-minimal, 7/centos7
-export DIB_OS_RELEASE=${DIB_OS_RELEASE:-xenial}
+# Settings for distro: trusty/ubuntu-minimal, 7/centos7, 42.2/suse
+export DIB_OS_RELEASE=${DIB_OS_RELEASE:-trusty}
 export DIB_OS_ELEMENT=${DIB_OS_ELEMENT:-ubuntu-minimal}
 
-# for centos 7: "vim,less,bridge-utils,iputils,rsyslog,curl"
-export DIB_OS_PACKAGES=${DIB_OS_PACKAGES:-"vlan,vim,less,bridge-utils,sudo,language-pack-en,iputils-ping,rsyslog,curl,python,debootstrap,ifenslave,ifenslave-2.6,lsof,lvm2,tcpdump,nfs-kernel-server,chrony"}
+# DIB OS packages
+export DIB_OS_PACKAGES=${DIB_OS_PACKAGES:-"vlan,vim,less,bridge-utils,language-pack-en,iputils-ping,rsyslog,curl"}
 
 # Additional dib elements
 export EXTRA_DIB_ELEMENTS=${EXTRA_DIB_ELEMENTS:-"openssh-server"}
 
 # Source Ansible
-# NOTE(TheJulia): Ansible stable-1.9 source method tosses an error deep
-# under the hood which -x will detect, so for this step, we need to suspend
-# and then re-enable the feature.
 set +x +o nounset
 $SCRIPT_HOME/env-setup.sh
 source ${ANSIBLE_INSTALL_ROOT}/ansible/hacking/env-setup
@@ -98,11 +83,11 @@ cd $BIFROST_HOME/playbooks
 
 # Syntax check of dynamic inventory test path
 for task in syntax-check list-tasks; do
-    ${ANSIBLE} \
+    ${ANSIBLE} -vvvv \
            -i inventory/localhost \
            test-bifrost-create-vm.yaml \
            --${task}
-    ${ANSIBLE} \
+    ${ANSIBLE} -vvvv \
            -i inventory/localhost \
            ${TEST_PLAYBOOK} \
            --${task} \
@@ -110,7 +95,7 @@ for task in syntax-check list-tasks; do
 done
 
 # Create the test VMS
-${ANSIBLE} \
+${ANSIBLE} -vvvv \
        -i inventory/localhost \
        test-bifrost-create-vm.yaml \
        -e test_vm_num_nodes=${TEST_VM_NUM_NODES} \
@@ -120,7 +105,7 @@ ${ANSIBLE} \
        -e ${INVENTORY_FILE_FORMAT}=${BAREMETAL_DATA_FILE}
 
 # Execute the installation and VM startup test.
-${ANSIBLE} \
+${ANSIBLE} -vvvv \
     -i inventory/bifrost_inventory.py \
     ${TEST_PLAYBOOK} \
     -e use_cirros=${USE_CIRROS} \
@@ -139,9 +124,9 @@ ${ANSIBLE} \
 EXITCODE=$?
 
 if [ $EXITCODE != 0 ]; then
-    echo "****************************"
-    echo "Test failed. See logs folder"
-    echo "****************************"
+    echo "************************************"
+    echo "Provisioning failed. See logs folder"
+    echo "************************************"
 fi
 
 exit $EXITCODE
