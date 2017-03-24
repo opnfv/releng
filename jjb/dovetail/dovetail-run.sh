@@ -6,9 +6,9 @@
 set -e
 [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 
-# labconfig is used only for joid
-labconfig=""
 sshkey=""
+# The path of openrc.sh is defined in fetch_os_creds.sh
+OPENRC=$WORKSPACE/opnfv-openrc.sh
 if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
     instack_mac=$(sudo virsh domiflist undercloud | grep default | \
                   grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
@@ -22,7 +22,7 @@ if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
 elif [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     # If production lab then creds may be retrieved dynamically
     # creds are on the jumphost, always in the same folder
-    labconfig="-v $LAB_CONFIG/admin-openrc:/home/opnfv/functest/conf/openstack.creds"
+    sudo cp $LAB_CONFIG/admin-openrc $OPENRC
     # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
     # replace the default one by the customized one provided by jenkins config
 fi
@@ -32,21 +32,32 @@ if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FOR
     sudo iptables -I FORWARD -j RETURN
 fi
 
+if [[ ${INSTALLER_TYPE} != 'joid' ]]; then
+    releng_repo=${WORKSPACE}/releng
+    [ -d ${releng_repo} ] && sudo rm -rf ${releng_repo}
+    git clone https://gerrit.opnfv.org/gerrit/releng ${releng_repo} >/dev/null
+    ${releng_repo}/utils/fetch_os_creds.sh -d ${OPENRC} -i ${INSTALLER_TYPE} -a ${INSTALLER_IP} >${redirect}
+fi
+
+if [[ -f $OPENRC ]]; then
+    echo "INFO: openstack credentials path is $OPENRC"
+    cat $OPENRC
+else
+    echo "ERROR: file $OPENRC does not exist."
+    exit 1
+fi
+
 opts="--privileged=true -id"
-envs="-e CI_DEBUG=${CI_DEBUG} \
-      -e INSTALLER_TYPE=${INSTALLER_TYPE} \
-      -e INSTALLER_IP=${INSTALLER_IP} \
-      -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
-      -e DEPLOY_TYPE=${DEPLOY_TYPE}"
 results_envs="-v /var/run/docker.sock:/var/run/docker.sock \
               -v /home/opnfv/dovetail/results:/home/opnfv/dovetail/results"
+openrc_volume="-v ${OPENRC}:${OPENRC}"
 
 # Pull the image with correct tag
 echo "Dovetail: Pulling image opnfv/dovetail:${DOCKER_TAG}"
 docker pull opnfv/dovetail:$DOCKER_TAG >$redirect
 
-cmd="sudo docker run ${opts} ${envs} ${results_envs} ${labconfig} ${sshkey} \
-     opnfv/dovetail:${DOCKER_TAG} /bin/bash"
+cmd="docker run ${opts} ${results_envs} ${openrc_volume} \
+     ${sshkey} opnfv/dovetail:${DOCKER_TAG} /bin/bash"
 echo "Dovetail: running docker run command: ${cmd}"
 ${cmd} >${redirect}
 sleep 5
@@ -67,7 +78,7 @@ if [ $(docker ps | grep "opnfv/dovetail:${DOCKER_TAG}" | wc -l) == 0 ]; then
 fi
 
 list_cmd="dovetail list ${TESTSUITE}"
-run_cmd="dovetail run --testsuite ${TESTSUITE} -d true"
+run_cmd="dovetail run --openrc ${OPENRC} --testsuite ${TESTSUITE} -d"
 echo "Container exec command: ${list_cmd}"
 docker exec $container_id ${list_cmd}
 echo "Container exec command: ${run_cmd}"
@@ -79,3 +90,4 @@ sudo cp -r ${DOVETAIL_REPO_DIR}/results ./
 sudo chown -R jenkins:jenkins ${WORKSPACE}/results
 
 echo "Dovetail: done!"
+
