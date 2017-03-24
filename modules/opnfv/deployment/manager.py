@@ -108,6 +108,7 @@ class NodeStatus():
     STATUS_OFFLINE = 'offline'
     STATUS_ERROR = 'error'
     STATUS_UNUSED = 'unused'
+    STATUS_UNKNOWN = 'unknown'
 
 
 class Node(object):
@@ -383,4 +384,4 @@ class DeploymentHandler(object):
                           pod=os.getenv('NODE_NAME', 'Unknown'),
                           openstack_version=self.get_openstack_version(),
                           sdn_controller=self.get_sdn_version(),
-                          nodes=self.get_nodes())
+                          nodes=self.nodes)
