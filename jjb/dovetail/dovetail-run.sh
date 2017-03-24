@@ -76,6 +76,10 @@ docker exec $container_id ${run_cmd}
 sudo cp -r ${DOVETAIL_REPO_DIR}/results ./
 #To make sure the file owner is jenkins, for the copied results files in the above line
 #if not, there will be error when next time to wipe workspace
-sudo chown -R jenkins:jenkins ${WORKSPACE}/results
+if [[ $NODE_NAME == 'lf-pod1' ]] || [[ $NODE_NAME == 'lf-pod2' ]]; then
+    sudo chown -R jenkins-ci:jenkins-ci ${WORKSPACE}/results
+else
+    sudo chown -R jenkins:jenkins ${WORKSPACE}/results
+fi
 
 echo "Dovetail: done!"
