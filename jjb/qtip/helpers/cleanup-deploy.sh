@@ -18,9 +18,9 @@ fi
 if [[ ! -z $(docker images | grep opnfv/qtip) ]]; then
     echo "Docker images to remove:"
     docker images | head -1 && docker images | grep opnfv/qtip
-    image_tags=($(docker images | grep opnfv/qtip | awk '{print $2}'))
-    for tag in "${image_tags[@]}"; do
-        echo "Removing docker image opnfv/qtip:$tag..."
-        docker rmi opnfv/qtip:$tag
+    image_ids=($(docker images | grep opnfv/qtip | awk '{print $3}'))
+    for id in "${image_ids[@]}"; do
+        echo "Removing docker image opnfv/qtip:$id..."
+        docker rmi -f $id
     done
 fi
