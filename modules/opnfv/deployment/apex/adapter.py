@@ -43,7 +43,7 @@ class ApexAdapter(manager.DeploymentHandler):
             if 'compute' in line:
                 roles.append(manager.Role.COMPUTE)
             if 'opendaylight' in line.lower():
-                roles.append(manager.Role.ODL)
+                roles.append(manager.Role.OPENDAYLIGHT)
 
             fields = line.split('|')
             id = re.sub('[!| ]', '', fields[1]).encode()

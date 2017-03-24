@@ -98,8 +98,9 @@ class Role():
     INSTALLER = 'installer'
     CONTROLLER = 'controller'
     COMPUTE = 'compute'
-    ODL = 'opendaylight'
+    OPENDAYLIGHT = 'opendaylight'
     ONOS = 'onos'
+    ODL = 'odl'
 
 
 class NodeStatus():
@@ -108,6 +109,7 @@ class NodeStatus():
     STATUS_OFFLINE = 'offline'
     STATUS_ERROR = 'error'
     STATUS_UNUSED = 'unused'
+    STATUS_UNKNOWN = 'unknown'
 
 
 class Node(object):
@@ -227,7 +229,14 @@ class Node(object):
         '''
         Returns if the node is an opendaylight
         '''
-        return Role.ODL in self.roles
+        return any(role in self.roles
+                   for role in (Role.OPENDAYLIGHT, Role.ODL))
+
+    def is_onos(self):
+        '''
+        Returns if the node is an ONOS
+        '''
+        return Role.ONOS in self.roles
 
     def get_ovs_info(self):
         '''
@@ -383,4 +392,4 @@ class DeploymentHandler(object):
                           pod=os.getenv('NODE_NAME', 'Unknown'),
                           openstack_version=self.get_openstack_version(),
                           sdn_controller=self.get_sdn_version(),
-                          nodes=self.get_nodes())
+                          nodes=self.nodes)

@@ -130,7 +130,7 @@ class FuelAdapter(manager.DeploymentHandler):
 
             roles = [x for x in [manager.Role.CONTROLLER,
                                  manager.Role.COMPUTE,
-                                 manager.Role.ODL] if x in roles_all]
+                                 manager.Role.OPENDAYLIGHT] if x in roles_all]
 
             dict = {"cluster": fields[index_cluster].strip().encode(),
                     "mac": fields[index_mac].strip().encode(),
@@ -179,7 +179,7 @@ class FuelAdapter(manager.DeploymentHandler):
         cmd = "apt-cache policy opendaylight|grep Installed"
         version = None
         for node in self.nodes:
-            if manager.Role.ODL in node.roles and node.is_active():
+            if manager.Role.OPENDAYLIGHT in node.roles and node.is_active():
                 odl_version = node.run_cmd(cmd)
                 if odl_version:
                     version = 'OpenDaylight ' + odl_version.split(' ')[-1]
