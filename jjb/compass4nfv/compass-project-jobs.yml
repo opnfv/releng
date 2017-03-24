@@ -12,10 +12,12 @@
         - master:
             branch: '{stream}'
             gs-pathname: ''
+            ppa-pathname: '/{stream}'
             disabled: false
         - danube:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
+            ppa-pathname: '/{stream}'
             disabled: false
 
     jobs:
@@ -47,6 +49,7 @@
         - compass-project-parameter:
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
+            ppa-pathname: '{ppa-pathname}'
         - 'opnfv-build-ubuntu-defaults'
         - '{installer}-defaults'
 
@@ -90,6 +93,7 @@
         - compass-project-parameter:
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
+            ppa-pathname: '{ppa-pathname}'
         - '{node}-defaults'
         - '{installer}-defaults'
     scm:
@@ -121,7 +125,7 @@
             description: "URL to Google Storage."
         - string:
             name: PPA_REPO
-            default: "http://205.177.226.237:9999{gs-pathname}"
+            default: "http://205.177.226.237:9999{ppa-pathname}"
         - string:
             name: PPA_CACHE
             default: "$WORKSPACE/work/repo/"
