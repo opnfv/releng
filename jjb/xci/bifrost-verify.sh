@@ -117,7 +117,7 @@ sudo -E ./scripts/destroy-env.sh
 
 # provision 3 VMs; xcimaster, controller, and compute
 cd /opt/bifrost
-sudo -E ./scripts/test-bifrost-deployment.sh
+sudo -E ./scripts/bifrost-provision.sh
 
 # list the provisioned VMs
 cd /opt/bifrost

@@ -54,10 +54,13 @@
 #--------------------------------
 - defaults:
     name: vm_defaults
-    vm-disk: '30'
-    vm-disk-cache: 'unsafe'
-    vm-memory: '4096'
+    test-vm-num-nodes: '3'
+    test-vm-node-names: 'xcimaster controller00 compute00'
+    vm-domain-type: 'kvm'
     vm-cpu: '2'
+    vm-disk: '30'
+    vm-memory-size: '4096'
+    vm-disk-cache: 'unsafe'
 
 #--------------------------------
 # job templates
@@ -105,17 +108,26 @@
             name: DIB_OS_PACKAGES
             default: '{dib-os-packages}'
         - string:
-            name: VM_DISK
-            default: '{vm-disk}'
+            name: TEST_VM_NUM_NODES
+            default: '{test-vm-num-nodes}'
         - string:
-            name: VM_DISK_CACHE
-            default: '{vm-disk-cache}'
+            name: TEST_VM_NODE_NAMES
+            default: '{test-vm-node-names}'
         - string:
-            name: VM_MEMORY
-            default: '{vm-memory}'
+            name: VM_DOMAIN_TYPE
+            default: '{vm-domain-type}'
         - string:
             name: VM_CPU
             default: '{vm-cpu}'
+        - string:
+            name: VM_DISK
+            default: '{vm-disk}'
+        - string:
+            name: VM_MEMORY_SIZE
+            default: '{vm-memory-size}'
+        - string:
+            name: VM_DISK_CACHE
+            default: '{vm-disk-cache}'
         - string:
             name: CLEAN_DIB_IMAGES
             default: 'true'
