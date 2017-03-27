@@ -1,4 +1,28 @@
 #-------------------------------------------------------------------------------
+# Set Deployment Flavor
+#-------------------------------------------------------------------------------
+# OPNFV XCI currently supports 4 different types of flavors:
+#   - all in one (aio): 1 xci VM which acts as controller and compute node
+#   - mini: 3 VMs, 1 xci VM, 1 controller, and 1 compute nodes
+#   - noha: 4 VMs, 1 xci VM, 1 controller, and 2 compute nodes
+#   - ha: 6 VMs, 1 xci VM, 3 controllers, and 2 compute nodes
+#
+# Apart from having different number of nodes, CPU, RAM, and disk allocations
+# also differ from each other. Please take a look at the env-vars files for
+# each of these flavors.
+#
+# Examples:
+#   export XCI_FLAVOR="aio"
+# or
+#   export XCI_FLAVOR="mini"
+# or
+#   export XCI_FLAVOR="noha"
+# or
+#   export XCI_FLAVOR="ha"
+#-------------------------------------------------------------------------------
+export XCI_FLAVOR=${XCI_FLAVOR:-aio}
+
+#-------------------------------------------------------------------------------
 # Set Paths to where git repositories of XCI Components will be cloned
 #-------------------------------------------------------------------------------
 # OPNFV XCI Sandbox is not verified to be used as non-root user as of yet so
@@ -9,30 +33,6 @@ export OPENSTACK_BIFROST_PATH=/opt/bifrost
 export OPENSTACK_OSA_PATH=/opt/openstack-ansible
 
 #-------------------------------------------------------------------------------
-# Set Deployment Flavor
-#-------------------------------------------------------------------------------
-# OPNFV XCI currently supports 4 different types of flavors:
-#   - all in one (aio) - xci-aio.sh: 1 VM which acts as controller and compute node
-#   - mini opnfv: 3 VMs, 1 xcimaster, 1 controller, and 1 compute nodes
-#   - noha: 4 VMs, 1 xcimaster, 1 controller, and 2 compute nodes
-#   - ha: 6 VMs, 1 xcimaster, 3 controllers, and 2 compute nodes
-#
-# Apart from having different number of nodes, CPU, RAM, and disk allocations
-# also differ from each other. Please take a look at the env-vars files for
-# each of these flavors.
-#
-# Examples:
-#   export XCI_FLAVOR="xci-aio"
-# or
-#   export XCI_FLAVOR="xci-mini"
-# or
-#   export XCI_FLAVOR="xci-noha"
-# or
-#   export XCI_FLAVOR="xci-ha"
-#-------------------------------------------------------------------------------
-export XCI_FLAVOR=${XCI_FLAVOR:-xci-mini}
-
-#-------------------------------------------------------------------------------
 # Configure some other stuff
 #-------------------------------------------------------------------------------
 # Set the verbosity for ansible
@@ -41,4 +41,4 @@ export XCI_FLAVOR=${XCI_FLAVOR:-xci-mini}
 #   ANSIBLE_VERBOSITY="-v"
 # or
 #   ANSIBLE_VERBOSITY="-vvvv"
-export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY:-""}
+export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY-""}
