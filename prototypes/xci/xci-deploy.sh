@@ -20,7 +20,7 @@ source $XCI_PATH/config/pinned-versions
 source $XCI_PATH/config/user-vars
 
 # source flavor configuration
-source $XCI_PATH/flavors/$XCI_FLAVOR
+source $XCI_PATH/config/$XCI_FLAVOR
 
 # source xci configuration
 source $XCI_PATH/config/env-vars
