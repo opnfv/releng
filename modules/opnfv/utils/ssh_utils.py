@@ -17,6 +17,21 @@ from opnfv.utils import opnfv_logger as logger
 logger = logger.Logger("SSH utils").getLogger()
 SSH_TIMEOUT = 60
 
+### Monkey Patch paramiko _custom_start_client ###
+# We are using paramiko 2.1.1 and in the CI in the SFC
+# test we are facing this issue:
+# https://github.com/robotframework/SSHLibrary/issues/158
+# The fix was merged in paramiko 2.1.3 in this PR:
+# https://github.com/robotframework/SSHLibrary/pull/159/files
+# Until we upgrade we can use this monkey patch to work
+# around the issue
+def _custom_start_client(self, *args, **kwargs):
+    self.banner_timeout = 45
+    self._orig_start_client(*args, **kwargs)
+
+
+paramiko.transport.Transport.start_client = _custom_start_client
+### Monkey Patch paramiko _custom_start_client ###
 
 def get_ssh_client(hostname,
                    username,
