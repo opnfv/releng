@@ -1,0 +1,44 @@
+---
+- hosts: xci
+  remote_user: root
+  vars_files:
+    - ../var/ubuntu.yml
+  tasks:
+    - name: remove remnants of previous deployment
+      file:
+        path={{ item }}
+        state=absent
+        recurse=no
+      with_items:
+        - "{{OPNFV_RELENG_PATH}}"
+        - "{{OPENSTACK_OSA_PATH}}"
+        - "{{OPENSTACK_OSA_ETC_PATH}}"
+    - name: clone opnfv/releng repository and checkout version "{{OPNFV_RELENG_VERSION}}"
+      git:
+        repo: "{{OPNFV_RELENG_GIT_URL}}"
+        dest: "{{OPNFV_RELENG_PATH}}"
+        version: "{{OPNFV_RELENG_VERSION}}"
+        refspec: ""
+    - name: copy flavor inventory
+      copy:
+        src: "{{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/inventory"
+        dest: "{{OPNFV_RELENG_PATH}}/prototypes/xci/playbooks"
+    - name: copy flavor vars
+      copy:
+        src: "{{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/flavor.yml"
+        dest: "{{OPNFV_RELENG_PATH}}/prototypes/xci/var"
+    - name: clone openstack-ansible
+      git:
+        repo: "{{OPENSTACK_OSA_GIT_URL}}"
+        dest: "{{OPENSTACK_OSA_PATH}}"
+        version: "{{OPENSTACK_OSA_VERSION}}"
+    - name: copy /opt/openstack-ansible/etc/openstack_deploy to {{OPENSTACK_OSA_ETC_PATH}}
+      shell: "/bin/cp -rf {{OPENSTACK_OSA_PATH}}/etc/openstack_deploy {{OPENSTACK_OSA_ETC_PATH}}"
+    - name: bootstrap ansible on xci host
+      command: "/bin/bash ./scripts/bootstrap-ansible.sh"
+      args:
+        chdir: "{{OPENSTACK_OSA_PATH}}"
+    - name: generate password token
+      command: "python pw-token-gen.py --file {{OPENSTACK_OSA_ETC_PATH}}/user_secrets.yml"
+      args:
+        chdir: "{{OPENSTACK_OSA_PATH}}/scripts"
