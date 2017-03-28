@@ -1,0 +1,126 @@
+<!--select page-->
+
+
+<div class="row">
+
+
+    <div class="row  border-bottom white-bg dashboard-header" style="border-radius: 5px 5px 5px 5px ">
+
+        <h3>OPNFV Test ecosystem
+            <small> *mouse over display test case list</small>
+        </h3>
+        <p>There are several projects dealing with integration and testing</p>
+
+        <div>
+            <img src="images/overview.png" usemap="#overview" class="img-responsive">
+            <map name="overview">
+                <area shape="rect" coords={{dovet}} alt="test" href="{{doveturl}}" onmouseover="pop(event)" ng-mouseover="myTrigger('dovetail')"/>
+               <area shape="rect" coords={{functest}} alt="test" href="{{functesturl}}"  onmouseover="pop(event)" ng-mouseover="myTrigger('functest')" />
+                <area shape="rect" coords={{yardstick}} alt="test" href="{{yardstickurl}}" onmouseover="pop(event)" ng-mouseover="myTrigger('yardstick')"/>
+                 <area shape="rect" coords={{vsperf}} alt="test" href="{{vsperfurl}}" onmouseover="pop(event)" ng-mouseover="myTrigger('vsperf')" />
+                  <area shape="rect" coords={{stor}} alt="test" href="{{storperfurl}}" onmouseover="pop(event)" ng-mouseover="myTrigger('storperf')"/>
+                   <area shape="rect" coords={{qtip}} alt="test" href="{{qtipurl}}"  onmouseover="pop(event)" ng-mouseover="myTrigger('qtip')" />
+                    <area shape="rect" coords={{bootleneck}} alt="test"  href="{{bottlenecksurl}}" onmouseover="pop(event)" ng-mouseover="myTrigger('bootlenecks')" />
+                     <area shape="rect" coords={{noPopArea1}} alt="test" onmouseover="pophide(event)"  />
+                      <area shape="rect" coords={{noPopArea2}} alt="test"  onmouseover="pophide(event)"  />
+                       <area shape="rect" coords={{noPopArea3}} alt="test"  onmouseover="pophide(event)"  />
+                
+           </map>
+
+        </div>
+    </div>
+    <div style="display: inline-block;">
+        <div class="row  border-bottom white-bg dashboard-header" style="border-radius: 5px 5px 5px 5px;margin-right:30px;margin-top:10px;display:inline-block; ">
+            <h4>Introduction</h4>
+            <p>
+                Testing is still a key challenge for OPNFV.
+            </p>
+            <p>
+                All the projects must manage their test strategy (unit, functional, security, performance)
+            </p>
+            <p>
+                Several specific test projects have been validated by TSC and already deal with:
+                <ul>
+                    <li>Define testcases</li>
+                    <li>Perform tests not covered by a single project</li>
+                    <li>Create tooling</li>
+                    <li>Study Performance end to end</li>
+                </ul>
+            </p>
+
+
+        </div>
+        <div class="row  border-bottom white-bg dashboard-header" style="border-radius: 5px 5px 5px 5px;margin-top:10px;display:inline-block;">
+            <h4>Project details</h4>
+
+            We consider the projects referenced on the wiki main page:
+            <ul>
+                <li>Functest: VIM and NFVI funcionnal testing Umbrella project for functional testing</li>
+                <li>Yardstick: Verification of the infrastructure compliance when running VNF applications.
+                    <br>Umbrella project for performance testing</li>
+                <li>Storperf: Storage Perfomance testing</li>
+                <li>VSperf: Data-plane performance testing</li>
+                <li>CPerf: Controller performance testing</li>
+                <li>Bottlenecks:Detect Bottlenecks in OPNFV solution</li>
+                <li>QTIP: Platform Performance Benchmarking</li>
+                <li>Dovetail: Test OPNFV validation criteria for use of OPNFV trademarks</li>
+            </ul>
+            </p>
+        </div>
+    </div>
+
+
+    <div id="popup" class="popup" style="width: 20%;height: 35%" dw-loading="Key">
+
+        <div ng-show="tableData.length==0">
+            <center>
+                <h3> No Data </h3>
+            </center>
+        </div>
+        <div ng-show="tableData.length!=0">
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <td>
+                            <h3>Name</h3>
+                        </td>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr dir-paginate="data in tableData | itemsPerPage: 8  track by $index ">
+                        <td><a ng-click="getDetail(data)"> {{data}}</a></td>
+                        <tr>
+
+                </tbody>
+
+            </table>
+
+            <center>
+                <dir-pagination-controls></dir-pagination-controls>
+            </center>
+        </div>
+
+    </div>
+
+
+    <script>
+        $(document).ready(function(e) {
+            $('img[usemap]').rwdImageMaps();
+
+        });
+
+        function pop(e) {
+            var thing = document.getElementById("popup");
+            thing.style.left = e.clientX + 'px';
+            thing.style.top = e.clientY + 'px';
+            setTimeout('$("#popup").show()', 1000);
+            return true;
+        }
+
+        function pophide(e) {
+            $('#popup').hide();
+            return true;
+        }
+    </script>

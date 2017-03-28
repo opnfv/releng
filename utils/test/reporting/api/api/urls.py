@@ -6,22 +6,15 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-import tornado.ioloop
-import tornado.web
-from tornado.options import define
-from tornado.options import options
+from api.handlers import landing
+from api.handlers import projects
+from api.handlers import testcases
 
-from urls import mappings
+mappings = [
+    (r"/landing-page/filters", landing.FiltersHandler),
+    (r"/landing-page/scenarios", landing.ScenariosHandler),
 
-define("port", default=8000, help="run on the given port", type=int)
-
-
-def main():
-    tornado.options.parse_command_line()
-    application = tornado.web.Application(mappings)
-    application.listen(options.port)
-    tornado.ioloop.IOLoop.current().start()
-
-
-if __name__ == "__main__":
-    main()
+    (r"/projects-page/projects", projects.Projects),
+    (r"/projects/([^/]+)/cases", testcases.TestCases),
+    (r"/projects/([^/]+)/cases/([^/]+)", testcases.TestCase)
+]
