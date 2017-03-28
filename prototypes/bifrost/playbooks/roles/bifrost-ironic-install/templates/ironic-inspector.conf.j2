@@ -1,0 +1,66 @@
+{#
+# Note(TheJulia): This file is based upon the file format provided by the git
+# committed example located at:
+# http://git.openstack.org/cgit/openstack/ironic-inspector/tree/example.conf
+#}
+[DEFAULT]
+{% if enable_keystone is defined and enable_keystone | bool == true %}
+auth_strategy = keystone
+{% else %}
+auth_strategy = {{ inspector_auth | default('noauth') }}
+{% endif %}
+debug = {{ inspector_debug | bool }}
+
+[database]
+connection=mysql+pymysql://inspector:{{ ironic_db_password }}@localhost/inspector?charset=utf8
+min_pool_size = 1
+max_pool_size = 5
+
+[firewall]
+manage_firewall = {{ inspector_manage_firewall | bool | default('false') }}
+
+[ironic]
+{% if enable_keystone is defined and enable_keystone | bool == true %}
+os_region = {{ keystone.bootstrap.region_name | default('RegionOne') }}
+project_name = baremetal
+username = {{ ironic_inspector.keystone.default_username }}
+password = {{ ironic_inspector.keystone.default_password }}
+auth_url = {{ ironic_inspector.service_catalog.auth_url }}
+auth_type = password
+auth_strategy = keystone
+user_domain_id = default
+project_domain_id = default
+
+{% else %}
+auth_strategy = {{ ironic_auth_strategy | default('noauth') }}
+{% endif %}
+
+{% if enable_keystone is defined and enable_keystone | bool == true %}
+[keystone_authtoken]
+auth_plugin = password
+auth_url = {{ ironic_inspector.service_catalog.auth_url }}
+username = {{ ironic_inspector.service_catalog.username }}
+password = {{ ironic_inspector.service_catalog.password }}
+user_domain_id = default
+project_name = service
+project_domain_id = default
+
+{% endif %}
+{#
+# Note(TheJulia) preserving ironic_url in the configuration
+# in case future changes allow breaking of the deployment across
+# multiple nodes.
+#ironic_url = http://localhost:6385/
+#}
+
+[processing]
+add_ports = {{ inspector_port_addition | default('pxe') }}
+keep_ports = {{ inspector_keep_ports | default('present') }}
+ramdisk_logs_dir = {{ inspector_data_dir }}/log
+always_store_ramdisk_logs = {{ inspector_store_ramdisk_logs | default('true') | bool }}
+{% if inspector.discovery.enabled == true %}
+node_not_found_hook = enroll
+
+[discovery]
+enroll_node_driver = {{ inspector.discovery.default_node_driver }}
+{% endif %}
