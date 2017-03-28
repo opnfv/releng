@@ -57,6 +57,7 @@
          - 'os-odl_l3-fdio_dvr-ha'
          - 'os-odl_l3-csit-noha'
          - 'os-onos-nofeature-ha'
+         - 'os-ovn-nofeature-noha'
          - 'gate'
 
     platform:
@@ -919,6 +920,36 @@
           - project: 'yardstick-apex-{slave}-daily-{stream}'
             predefined-parameters:
               DEPLOY_SCENARIO=os-odl_l3-ovs-ha
+            block: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'apex-deploy-baremetal-os-ovn-nofeature-noha-{stream}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-build-{stream}/.build
+              OPNFV_CLEAN=yes
+            git-revision: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+            block: true
+        - trigger-builds:
+          - project: 'functest-apex-{daily-slave}-daily-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-ovn-nofeature-noha
+            block: true
+            same-node: true
+            block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+          - project: 'yardstick-apex-{slave}-daily-{stream}'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-ovn-nofeature-noha
             block: true
             same-node: true
             block-thresholds:
