@@ -196,14 +196,16 @@ else
   NETWORK_SETTINGS_DIR="/root/network"
   INVENTORY_FILE="/root/inventory/pod_settings.yaml"
 
+# (trozet) According to FDS folks uio_pci_generic works with UCS-B
+# and there appears to be a bug with vfio-pci
   # if fdio on baremetal, then we are using UCS enic and
   # need to use vfio-pci instead of uio generic
-  if [[ "$DEPLOY_SCENARIO" == *fdio* ]]; then
-    TMP_DEPLOY_FILE="${WORKSPACE}/${DEPLOY_SCENARIO}.yaml"
-    cp -f ${DEPLOY_FILE} ${TMP_DEPLOY_FILE}
-    sed -i 's/^\(\s*uio-driver:\).*$/\1 vfio-pci/g' ${TMP_DEPLOY_FILE}
-    DEPLOY_FILE=${TMP_DEPLOY_FILE}
-  fi
+#  if [[ "$DEPLOY_SCENARIO" == *fdio* ]]; then
+#    TMP_DEPLOY_FILE="${WORKSPACE}/${DEPLOY_SCENARIO}.yaml"
+#    cp -f ${DEPLOY_FILE} ${TMP_DEPLOY_FILE}
+#    sed -i 's/^\(\s*uio-driver:\).*$/\1 vfio-pci/g' ${TMP_DEPLOY_FILE}
+#    DEPLOY_FILE=${TMP_DEPLOY_FILE}
+#  fi
 
   if ! sudo test -e "$INVENTORY_FILE"; then
     echo "ERROR: Required settings file missing: Inventory settings file ${INVENTORY_FILE}"
