@@ -55,7 +55,7 @@ else
         sleep 5
         docker exec bottleneckcompose_bottlenecks_1 python ${POSCA_SCRIPT}/run_posca.py testcase $TEST_CASE
     elif [[ $SUITE_NAME == posca_stress_ping ]]; then
-        TEST_CASE=posca_stress_ping
+        TEST_CASE=posca_factor_ping
         sleep 5
         docker exec bottleneckcompose_bottlenecks_1 python ${POSCA_SCRIPT}/run_posca.py testcase $TEST_CASE
     fi
