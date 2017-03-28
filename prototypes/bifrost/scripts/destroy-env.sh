@@ -14,14 +14,10 @@ if [[ $(whoami) != "root" ]]; then
     exit 1
 fi
 
-# Delete all VMs on the slave since proposed patchsets
-# may leave undesired VM leftovers
-for vm in $(virsh list --all --name); do
+# Delete all libvirt VMs and hosts from vbmc (look for a port number)
+for vm in $(vbmc list | awk '/[0-9]/{{ print $2 }}'); do
     virsh destroy $vm || true
     virsh undefine $vm || true
-done
-# Delete all hosts from vbmc (look for a port number)
-for vm in $(vbmc list | awk '/[0-9]/{{ print $2 }}'); do
     vbmc delete $vm
 done
 
