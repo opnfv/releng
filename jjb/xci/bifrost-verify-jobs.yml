@@ -161,7 +161,7 @@
         - bifrost-build
 
     wrappers:
-        - bifrost-fix-perms-workspace
+        - fix-workspace-permissions
 
     publishers:
         - email:
@@ -224,17 +224,6 @@
                   - compare-type: ANT
                     pattern: 'prototypes/bifrost/**'
             readable-message: true
-
-#---------------------------
-# wrapper macros
-#---------------------------
-- wrapper:
-    name: bifrost-fix-perms-workspace
-    wrappers:
-        - pre-scm-buildstep:
-          - shell: |
-                #!/bin/bash
-                sudo chown -R $USER $WORKSPACE || exit 1
 
 #---------------------------
 # builder macros

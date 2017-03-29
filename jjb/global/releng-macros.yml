@@ -164,6 +164,14 @@
             users:
                 - 'd42411ac011ad6f3dd2e1fa34eaa5d87f910eb2e'
 
+- wrapper:
+    name: fix-workspace-permissions
+    wrappers:
+        - pre-scm-buildstep:
+          - shell: |
+                #!/bin/bash
+                sudo chown -R $USER $WORKSPACE || exit 1
+
 - builder:
     name: build-html-and-pdf-docs-output
     builders:
