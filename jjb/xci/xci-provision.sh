@@ -38,7 +38,7 @@ if [[ ! "$DISTRO" =~ (xenial|centos7|suse) ]]; then
 fi
 
 # remove previously cloned repos
-sudo /bin/rm -rf /opt/bifrost /opt/openstack-ansible /opt/stack /opt/releng /opt/functest
+sudo /bin/rm -rf /opt/bifrost /opt/openstack-ansible /opt/releng /opt/functest
 
 # Fix up permissions
 fix_ownership
