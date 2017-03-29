@@ -1,0 +1,49 @@
+##################################################################
+#   Docker-Compose for setting up and running vnf_catalogue webapp
+##################################################################
+# Purpose: To setup and run vnf_catalogue webapp
+# Usage: docker-compose up
+#
+# The webapp would be accessible at ip_address:3000
+#
+# Maintained by Kumar Rishabh :: penguinRaider
+##
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+
+version: "2"
+services:
+    mysql:
+    # mysql service built on top of vanilla mysql container.
+    # Defines mysql credentials.
+
+        image: mysql
+        container_name: vnf_catalogue_database
+        environment:
+            - MYSQL_USER=vnf_user
+            - MYSQL_PASSWORD=vnf_password
+            - MYSQL_DATABASE=vnf_catalogue
+            - MYSQL_ROOT_PASSWORD=root
+    vnf_catalogue:
+    # The vnf_catalogue webapp service.
+        build: .
+        container_name: vnf_catalogue_webapp
+        depends_on:
+            - mysql
+        # Port on which the node.js server would be exposed <host:container>
+        # To change host port to say 80 use 80:3000
+
+        ports:
+            - "3000:3000"
+    vnf_catalogue_migrate:
+    # We define another service for database migration. This service will
+    # migrate the database schema.(Dockerfile resides in migration
+    # directory).
+
+        build: ./migration
+        container_name: vnf_catalogue_migrate
+        depends_on:
+            - mysql
