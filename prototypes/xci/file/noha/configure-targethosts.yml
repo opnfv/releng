@@ -1,0 +1,36 @@
+---
+- hosts: all
+  remote_user: root
+  tasks:
+    - name: add public key to host
+      copy:
+        src: ../file/authorized_keys
+        dest: /root/.ssh/authorized_keys
+    - name: configure modules
+      copy:
+        src: ../file/modules
+        dest: /etc/modules
+
+- hosts: controller
+  remote_user: root
+  vars_files:
+    - ../var/{{ ansible_os_family }}.yml
+    - ../var/flavor-vars.yml
+  roles:
+    # TODO: this only works for ubuntu/xenial and need to be adjusted for other distros
+    - { role: configure-network, when: ansible_distribution_release == "xenial", src: "../template/controller.interface.j2", dest: "/etc/network/interfaces" }
+
+- hosts: compute
+  remote_user: root
+  vars_files:
+    - ../var/{{ ansible_os_family }}.yml
+    - ../var/flavor-vars.yml
+  roles:
+    # TODO: this only works for ubuntu/xenial and need to be adjusted for other distros
+    - { role: configure-network, when: ansible_distribution_release == "xenial", src: "../template/compute.interface.j2", dest: "/etc/network/interfaces" }
+
+- hosts: compute01
+  remote_user: root
+  # TODO: this role is for configuring NFS on xenial and adjustment needed for other distros
+  roles:
+    - role: configure-nfs
