@@ -139,6 +139,7 @@ class TestScenarioUpdate(TestScenarioBase):
     def setUp(self):
         super(TestScenarioUpdate, self).setUp()
         self.scenario = self.create_return_name(self.req_d)
+        self.scenario_2 = self.create_return_name(self.req_2)
 
     def _execute(set_update):
         @functools.wraps(set_update)
@@ -147,15 +148,69 @@ class TestScenarioUpdate(TestScenarioBase):
             self._update_and_assert(update, scenario)
         return magic
 
-    def test_renameScenario(self):
+    def _update(set_update):
+        @functools.wraps(set_update)
+        def wrap(self):
+            update, scenario = set_update(self, deepcopy(self.req_d))
+            code, body = self.update(update, self.scenario)
+            return code, body, scenario
+        return wrap
+
+    def _success(update):
+        @functools.wraps(update)
+        def wrap(self):
+            code, body, new_scenario = update(self)
+            self.assertEqual(code, constants.HTTP_OK)
+            self._get_and_assert(new_scenario.get('name'),
+                                 new_scenario)
+        return wrap
+
+    def _forbidden(update):
+        @functools.wraps(update)
+        def wrap(self):
+            code, body, new_scenario = update(self)
+            self.assertEqual(code, constants.HTTP_FORBIDDEN)
+        return wrap
+
+    def _bad_request(update):
+        @functools.wraps(update)
+        def wrap(self):
+            code, body, new_scenario = update(self)
+            self.assertEqual(code, constants.HTTP_BAD_REQUEST)
+        return wrap
+
+    @_success
+    @_update
+    def test_renameScenario(self, scenario):
         new_name = 'nosdn-nofeature-noha'
-        new_scenario = deepcopy(self.req_d)
-        new_scenario['name'] = new_name
+        scenario['name'] = new_name
         update_req = models.ScenarioUpdateRequest(field='name',
                                                   op='update',
                                                   locate={},
                                                   term={'name': new_name})
-        self._update_and_assert(update_req, new_scenario, new_name)
+        return update_req, scenario
+
+    @_forbidden
+    @_update
+    def test_renameScenario_exist(self, scenario):
+        new_name = self.scenario_2
+        scenario['name'] = new_name
+        update_req = models.ScenarioUpdateRequest(field='name',
+                                                  op='update',
+                                                  locate={},
+                                                  term={'name': new_name})
+        return update_req, scenario
+
+    @_bad_request
+    @_update
+    def test_renameScenario_noName(self, scenario):
+        new_name = self.scenario_2
+        scenario['name'] = new_name
+        update_req = models.ScenarioUpdateRequest(field='name',
+                                                  op='update',
+                                                  locate={},
+                                                  term={})
+        return update_req, scenario
 
     @_execute
     def test_addInstaller(self, scenario):
@@ -294,15 +349,21 @@ class TestScenarioUpdate(TestScenarioBase):
                                               term=add.format())
         return update, scenario
 
+    def _expected_success(self, code, body, new_scenario, name):
+        self.assertEqual(code, constants.HTTP_OK)
+        self._get_and_assert(_none_default(name, self.scenario),
+                             new_scenario)
+
     def _update_and_assert(self, update_req, new_scenario, name=None):
         code, _ = self.update(update_req, self.scenario)
         self.assertEqual(code, constants.HTTP_OK)
-        self._get_and_assert(self._none_default(name, self.scenario),
+        self._get_and_assert(_none_default(name, self.scenario),
                              new_scenario)
 
-    @staticmethod
-    def _none_default(check, default):
-        return check if check else default
+    def _rename_already_exist(self, update_req, new_scenario, name=None):
+        code, body = self.update(update_req, self.scenario)
+        self.assertEqual(code, constants.HTTP_FORBIDDEN)
+        self.assertIn('already exists'.format(name), body)
 
 
 class TestScenarioDelete(TestScenarioBase):
@@ -316,3 +377,7 @@ class TestScenarioDelete(TestScenarioBase):
         self.assertEqual(code, constants.HTTP_OK)
         code, _ = self.get(scenario)
         self.assertEqual(code, constants.HTTP_NOT_FOUND)
+
+
+def _none_default(check, default):
+    return check if check else default
