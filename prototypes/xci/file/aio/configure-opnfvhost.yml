@@ -1,0 +1,31 @@
+---
+- hosts: opnfv
+  remote_user: root
+  vars_files:
+    - ../var/ubuntu.yml
+  tasks:
+    - name: remove remnants of previous deployment
+      file:
+        path={{ item }}
+        state=absent
+        recurse=no
+      with_items:
+        - "{{OPENSTACK_OSA_PATH}}"
+        - "{{OPENSTACK_OSA_ETC_PATH}}"
+    - name: clone openstack-ansible
+      git:
+        repo: "{{OPENSTACK_OSA_GIT_URL}}"
+        dest: "{{OPENSTACK_OSA_PATH}}"
+        version: "{{OPENSTACK_OSA_VERSION}}"
+    - name: bootstrap ansible on opnfv host
+      command: "/bin/bash ./scripts/bootstrap-ansible.sh"
+      args:
+        chdir: "{{OPENSTACK_OSA_PATH}}"
+    - name: bootstrap opnfv host as aio
+      command: "/bin/bash ./scripts/bootstrap-aio.sh"
+      args:
+        chdir: "{{OPENSTACK_OSA_PATH}}"
+    - name: install OpenStack on opnfv host
+      command: "/bin/bash ./scripts/run-playbooks.sh"
+      args:
+        chdir: "{{OPENSTACK_OSA_PATH}}"
