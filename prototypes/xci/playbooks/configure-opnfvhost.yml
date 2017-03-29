@@ -1,0 +1,68 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2017 Ericsson AB and others.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+- hosts: opnfv
+  remote_user: root
+  vars_files:
+    - ../var/{{ ansible_os_family }}.yml
+    - ../var/flavor-vars.yml
+  roles:
+    - role: remove-folders
+    - { role: clone-repository, project: "opnfv/releng", repo: "{{ OPNFV_RELENG_GIT_URL }}", dest: "{{ OPNFV_RELENG_PATH }}", version: "{{ OPNFV_RELENG_VERSION }}" }
+    - { role: clone-repository, project: "openstack/openstack-ansible", repo: "{{ OPENSTACK_OSA_GIT_URL }}", dest: "{{ OPENSTACK_OSA_PATH }}", version: "{{ OPENSTACK_OSA_VERSION }}" }
+  tasks:
+    - name: generate SSH keys
+      shell: ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
+      args:
+        creates: /root/.ssh/id_rsa
+    - name: fetch public key
+      fetch: src="/root/.ssh/id_rsa.pub" dest="/"
+    - name: copy flavor inventory
+      shell: "/bin/cp -rf {{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/inventory {{OPNFV_RELENG_PATH}}/prototypes/xci/playbooks"
+    - name: copy flavor vars
+      shell: "/bin/cp -rf {{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/flavor-vars.yml {{OPNFV_RELENG_PATH}}/prototypes/xci/var"
+    - name: copy openstack_deploy
+      shell: "/bin/cp -rf {{OPENSTACK_OSA_PATH}}/etc/openstack_deploy {{OPENSTACK_OSA_ETC_PATH}}"
+    - name: copy openstack_user_config.yml
+      shell: "/bin/cp -rf {{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/openstack_user_config.yml {{OPENSTACK_OSA_ETC_PATH}}"
+    - name: copy user_variables.yml
+      shell: "/bin/cp -rf {{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/user_variables.yml {{OPENSTACK_OSA_ETC_PATH}}"
+    - name: copy cinder.yml
+      shell: "/bin/cp -rf {{OPNFV_RELENG_PATH}}/prototypes/xci/file/cinder.yml {{OPENSTACK_OSA_ETC_PATH}}/env.d"
+    - name: bootstrap ansible on opnfv host
+      command: "/bin/bash ./scripts/bootstrap-ansible.sh"
+      args:
+        chdir: "{{OPENSTACK_OSA_PATH}}"
+    - name: generate password token
+      command: "python pw-token-gen.py --file {{OPENSTACK_OSA_ETC_PATH}}/user_secrets.yml"
+      args:
+        chdir: "{{OPENSTACK_OSA_PATH}}/scripts"
+    - name: copy OPNFV OpenStack playbook
+      shell: "/bin/cp -rf {{OPNFV_RELENG_PATH}}/prototypes/xci/file/setup-openstack.yml {{OPENSTACK_OSA_PATH}}/playbooks"
+    - name: copy OPNFV role requirements
+      shell: "/bin/cp -rf {{OPNFV_RELENG_PATH}}/prototypes/xci/file/ansible-role-requirements.yml {{OPENSTACK_OSA_PATH}}"
+    # TODO: this only works for ubuntu/xenial and need to be adjusted for other distros
+    # TODO: convert this into a role
+    - name: configure network for ubuntu xenial
+      template:
+        src: ../template/opnfv.interface.j2
+        dest: /etc/network/interfaces
+      notify:
+        - restart ubuntu xenial network service
+      when: ansible_distribution_release == "xenial"
+  handlers:
+    - name: restart ubuntu xenial network service
+      shell: "/sbin/ifconfig ens3 0 &&/sbin/ifdown -a && /sbin/ifup -a"
+- hosts: localhost
+  remote_user: root
+  tasks:
+    - name: Generate authorized_keys
+      shell: "/bin/cat /opnfv/root/.ssh/id_rsa.pub >> ../file/authorized_keys"
+    - name: Append public keys to authorized_keys
+      shell: "/bin/cat /root/.ssh/id_rsa.pub >> ../file/authorized_keys"
