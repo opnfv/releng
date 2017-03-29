@@ -1,3 +1,5 @@
+import functools
+
 from opnfv_testapi.common import constants
 from opnfv_testapi.resources import handlers
 import opnfv_testapi.resources.scenario_models as models
@@ -158,18 +160,21 @@ class ScenarioGURHandler(GenericScenarioHandler):
         return data.format()
 
     def _iter_installers(xstep):
+        @functools.wraps(xstep)
         def magic(self, data):
             [xstep(self, installer)
              for installer in self._filter_installers(data.installers)]
         return magic
 
     def _iter_versions(xstep):
+        @functools.wraps(xstep)
         def magic(self, installer):
             [xstep(self, version)
              for version in (self._filter_versions(installer.versions))]
         return magic
 
     def _iter_projects(xstep):
+        @functools.wraps(xstep)
         def magic(self, version):
             [xstep(self, project)
              for project in (self._filter_projects(version.projects))]

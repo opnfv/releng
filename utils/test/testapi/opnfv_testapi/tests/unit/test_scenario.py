@@ -1,5 +1,6 @@
 from copy import deepcopy
 from datetime import datetime
+import functools
 import json
 import os
 
@@ -140,6 +141,7 @@ class TestScenarioUpdate(TestScenarioBase):
         self.scenario = self.create_return_name(self.req_d)
 
     def _execute(set_update):
+        @functools.wraps(set_update)
         def magic(self):
             update, scenario = set_update(self, deepcopy(self.req_d))
             self._update_and_assert(update, scenario)
