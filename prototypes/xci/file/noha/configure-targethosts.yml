@@ -1,0 +1,63 @@
+---
+- hosts: all
+  remote_user: root
+  vars_files:
+    - ../var/ubuntu.yml
+    - ../var/flavor-vars.yml
+  tasks:
+    - name: add public key to host
+      copy:
+        src: ../file/authorized_keys
+        dest: /root/.ssh/authorized_keys
+    - name: configure modules
+      copy:
+        src: ../file/modules
+        dest: /etc/modules
+- hosts: controller
+  remote_user: root
+  vars_files:
+    - ../var/ubuntu.yml
+    - ../var/flavor-vars.yml
+  tasks:
+    - name: configure network
+      template:
+        src: ../template/controller.interface.j2
+        dest: /etc/network/interfaces
+      notify:
+        - restart network service
+  handlers:
+    - name: restart network service
+      shell: "/sbin/ifconfig ens3 0 &&/sbin/ifdown -a && /sbin/ifup -a"
+
+- hosts: compute
+  remote_user: root
+  vars_files:
+    - ../var/ubuntu.yml
+    - ../var/flavor-vars.yml
+  tasks:
+    - name: configure network
+      template:
+        src: ../template/compute.interface.j2
+        dest: /etc/network/interfaces
+      notify:
+        - restart network service
+  handlers:
+    - name: restart network service
+      shell: "/sbin/ifconfig ens3 0 &&/sbin/ifdown -a && /sbin/ifup -a"
+
+- hosts: compute01
+  remote_user: root
+  tasks:
+    - name: make NFS dir
+      file: "dest=/images mode=777 state=directory"
+    - name: configure NFS service
+      shell: "echo 'nfs        2049/tcp' >>  /etc/services && echo 'nfs        2049/udp' >>  /etc/services"
+    - name: configure NFS exports
+      copy:
+        src: ../file/exports
+        dest: /etc/exports
+      notify:
+        - restart NFS service
+  handlers:
+    - name: restart NFS service
+      service: name=nfs-kernel-server state=restarted
