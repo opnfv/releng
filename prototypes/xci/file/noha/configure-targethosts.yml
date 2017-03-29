@@ -1,0 +1,67 @@
+---
+- hosts: all
+  remote_user: root
+  tasks:
+    - name: add public key to host
+      copy:
+        src: ../file/authorized_keys
+        dest: /root/.ssh/authorized_keys
+    - name: configure modules
+      copy:
+        src: ../file/modules
+        dest: /etc/modules
+- hosts: controller
+  remote_user: root
+  tasks:
+    # TODO: this only works for ubuntu/xenial and need to be adjusted for other distros
+    # TODO: convert this into a role
+    - name: configure network for ubuntu xenial
+      template:
+        src: ../template/controller.interface.j2
+        dest: /etc/network/interfaces
+      notify:
+        - restart ubuntu xenial network service
+      when: ansible_distribution_release == "xenial"
+  handlers:
+    - name: restart ubuntu xenial network service
+      shell: "/sbin/ifconfig ens3 0 &&/sbin/ifdown -a && /sbin/ifup -a"
+
+- hosts: compute
+  remote_user: root
+  tasks:
+    # TODO: this only works for ubuntu/xenial and need to be adjusted for other distros
+    # TODO: convert this into a role
+    - name: configure network for ubuntu xenial
+      template:
+        src: ../template/opnfv.interface.j2
+        dest: /etc/network/interfaces
+      notify:
+        - restart ubuntu xenial network service
+      when: ansible_distribution_release == "xenial"
+  handlers:
+    - name: restart ubuntu xenial network service
+      shell: "/sbin/ifconfig ens3 0 &&/sbin/ifdown -a && /sbin/ifup -a"
+
+- hosts: compute01
+  remote_user: root
+  tasks:
+    - name: make NFS dir
+      file: "dest=/images mode=777 state=directory"
+    - name: configure NFS service
+      lineinfile:
+        path: /etc/services
+        line: "{{ item }}"
+      with_items:
+        - "nfs        2049/tcp"
+        - "nfs        2049/udp"
+    # TODO: this is verified to work for ubuntu/xenial and need to be adjusted for other distros
+    - name: configure NFS exports on ubuntu xenial
+      copy:
+        src: ../file/exports
+        dest: /etc/exports
+      notify:
+        - restart ubuntu xenial NFS service
+      when: ansible_distribution_release == "xenial"
+  handlers:
+    - name: restart ubuntu xenial NFS service
+      service: name=nfs-kernel-server state=restarted
