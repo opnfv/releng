@@ -208,15 +208,29 @@
         - 'dovetail-cleanup'
         - 'dovetail-run'
 
+    wrappers:
+        - dovetail-fix-perms-workspace
+
     publishers:
         - archive:
             artifacts: 'results/**/*'
             allow-empty: true
             fingerprint: true
 
-########################
+#---------------------------
+# wrapper macros
+#---------------------------
+- wrapper:
+    name: dovetail-fix-perms-workspace
+    wrappers:
+        - pre-scm-buildstep:
+          - shell: |
+                #!/bin/bash
+                sudo chown -R $USER $WORKSPACE || exit 1
+
+#--------------------------
 # builder macros
-########################
+#--------------------------
 - builder:
     name: dovetail-run
     builders:
