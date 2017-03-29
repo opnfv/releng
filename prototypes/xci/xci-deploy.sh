@@ -40,7 +40,7 @@ echo "-------------------------------------------------------------------------"
 #-------------------------------------------------------------------------------
 echo "Info: Cleaning up the previous deployment"
 $XCI_PATH/../bifrost/scripts/destroy-env.sh > /dev/null 2>&1
-/bin/rm -rf /opt/releng /opt/bifrost /opt/openstack-ansible /opt/stack
+/bin/rm -rf /opt/releng /opt/bifrost /opt/openstack-ansible
 
 #-------------------------------------------------------------------------------
 # Clone the repositories and checkout the versions

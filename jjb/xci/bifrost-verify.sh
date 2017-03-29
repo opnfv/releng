@@ -95,7 +95,7 @@ if [[ ! "$DISTRO" =~ (trusty|centos7|suse) ]]; then
 fi
 
 # remove previously cloned repos
-sudo /bin/rm -rf /opt/bifrost /opt/stack /opt/releng
+sudo /bin/rm -rf /opt/bifrost /opt/releng
 
 # Fix up permissions
 fix_ownership
