@@ -1,3 +1,4 @@
+---
 # SPDX-license-identifier: Apache-2.0
 ##############################################################################
 # Copyright (c) 2017 Ericsson AB and others.
@@ -6,5 +7,8 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-[opnfv]
-opnfv ansible_ssh_host=192.168.122.2
+- name: clone "{{ project }}" and checkout "{{ version }}"
+  git:
+    repo: "{{ repo }}"
+    dest: "{{ dest }}"
+    version: "{{ version }}"

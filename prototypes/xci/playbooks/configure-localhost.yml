@@ -1,0 +1,38 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2017 Ericsson AB and others.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+- hosts: localhost
+  remote_user: root
+  vars_files:
+    - ../var/{{ ansible_os_family }}.yml
+  roles:
+    - role: remove-folders
+    - { role: clone-repository, project: "opnfv/releng", repo: "{{ OPNFV_RELENG_GIT_URL }}", dest: "{{ OPNFV_RELENG_PATH }}", version: "{{ OPNFV_RELENG_VERSION }}" }
+  tasks:
+    - name:  create log directory {{LOG_PATH}}
+      file:
+        path: "{{LOG_PATH}}"
+        state: directory
+        recurse: no
+    # when the deployment is not aio, we use playbook, configure-targethosts.yml, to configure all the hosts
+    - name: copy multihost playbook
+      copy:
+        src: "{{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/configure-targethosts.yml"
+        dest: "{{OPNFV_RELENG_PATH}}/prototypes/xci/playbooks"
+      when: XCI_FLAVOR != "aio"
+    # when the deployment is aio, we overwrite and use playbook, configure-opnfvhost.yml, since everything gets installed on opnfv host
+    - name: copy aio playbook
+      copy:
+        src: "{{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/configure-opnfvhost.yml"
+        dest: "{{OPNFV_RELENG_PATH}}/prototypes/xci/playbooks"
+      when: XCI_FLAVOR == "aio"
+    - name: copy flavor vars
+      copy:
+        src: "{{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/flavor-vars.yml"
+        dest: "{{OPNFV_RELENG_PATH}}/prototypes/xci/var"
