@@ -1,0 +1,34 @@
+---
+- hosts: localhost
+  remote_user: root
+  vars_files:
+    - ../var/ubuntu.yml
+  tasks:
+    - name: remove remnants of previous deployment
+      file:
+        path: {{ item }}
+        state: absent
+        recurse: no
+      with_items:
+        - "{{OPNFV_RELENG_PATH}}"
+        - "{{LOG_PATH}}"
+    - name: clone opnfv/releng repository and checkout version
+      git:
+        repo: "{{OPNFV_RELENG_GIT_URL}}"
+        dest: "{{OPNFV_RELENG_PATH}}"
+        version: "{{OPNFV_RELENG_VERSION}}"
+    - name:  create log directory {{LOG_PATH}}
+      file:
+        path: "{{LOG_PATH}}"
+        state: directory
+        recurse: no
+    # when the deployment is not aio, we use playbook, configure-targethosts.yml, to configure all the hosts
+    - name: copy multihost playbook
+      shell: "/bin/cp -rf {{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/configure-targethosts.yml {{OPNFV_RELENG_PATH}}/prototypes/xci/playbooks"
+      when: XCI_FLAVOR != "aio"
+    # when the deployment is aio, we overwrite and use playbook, configure-opnfvhost.yml, since everything gets installed on opnfv host
+    - name: copy aio playbook
+      shell: "/bin/cp -rf {{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/configure-opnfvhost.yml {{OPNFV_RELENG_PATH}}/prototypes/xci/playbooks"
+      when: XCI_FLAVOR == "aio"
+    - name: copy flavor vars
+      shell: "/bin/cp -rf {{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/flavor-vars.yml {{OPNFV_RELENG_PATH}}/prototypes/xci/var"
