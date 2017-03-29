@@ -1,0 +1,56 @@
+---
+- hosts: all
+  remote_user: root
+  tasks:
+    - name: add public key to host
+      copy:
+        src: ../file/authorized_keys
+        dest: /root/.ssh/authorized_keys
+    - name: configure modules
+      copy:
+        src: ../file/modules
+        dest: /etc/modules
+
+- hosts: controller
+  remote_user: root
+  vars_files:
+    - ../var/{{ ansible_os_family }}.yml
+    - ../var/flavor-vars.yml
+  roles:
+    # TODO: this only works for ubuntu/xenial and need to be adjusted for other distros
+    - { role: configure-network, when: ansible_distribution_release == "xenial", src: "../template/controller.interface.j2", dest: "/etc/network/interfaces" }
+
+- hosts: compute
+  remote_user: root
+  vars_files:
+    - ../var/{{ ansible_os_family }}.yml
+    - ../var/flavor-vars.yml
+  roles:
+    # TODO: this only works for ubuntu/xenial and need to be adjusted for other distros
+    - { role: configure-network, when: ansible_distribution_release == "xenial", src: "../template/compute.interface.j2", dest: "/etc/network/interfaces" }
+  tasks:
+    - name: make NFS dir
+      file:
+        dest: /images
+        mode: 777
+        state: directory
+    - name: configure NFS service
+      lineinfile:
+        dest: /etc/services
+        create: yes
+        state: present
+        line: "{{ item }}"
+      with_items:
+        - "nfs        2049/tcp"
+        - "nfs        2049/udp"
+    - name: configure NFS exports on ubuntu xenial
+      copy:
+        src: ../file/exports
+        dest: /etc/exports
+      when: ansible_distribution_release == "xenial"
+    # TODO: the service name might be different on other distros and needs to be adjusted
+    - name: restart ubuntu xenial NFS service
+      service:
+        name: nfs-kernel-server
+        state: restarted
+      when: ansible_distribution_release == "xenial"
