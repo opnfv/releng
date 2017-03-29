@@ -1,3 +1,4 @@
+---
 # SPDX-license-identifier: Apache-2.0
 ##############################################################################
 # Copyright (c) 2017 Ericsson AB and others.
@@ -6,5 +7,13 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-[opnfv]
-opnfv ansible_ssh_host=192.168.122.2
+- name: cleanup leftovers of previous deployment
+  file:
+    path: "{{ item }}"
+    state: absent
+    recurse: no
+  with_items:
+    - "{{ OPNFV_RELENG_PATH }}"
+    - "{{ OPENSTACK_OSA_PATH }}"
+    - "{{ OPENSTACK_OSA_ETC_PATH }}"
+    - "{{ LOG_PATH }} "
