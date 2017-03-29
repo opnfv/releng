@@ -45,17 +45,17 @@
          - 'os-odl_l2-fdio-ha'
          - 'os-odl_l2-netvirt_gbp_fdio-noha'
          - 'os-odl_l2-sfc-noha'
-         - 'os-odl_l3-nofeature-noha'
-         - 'os-odl_l3-nofeature-ha'
-         - 'os-odl_l3-ovs-noha'
-         - 'os-odl_l3-ovs-ha'
+         - 'os-odl-nofeature-noha'
+         - 'os-odl-nofeature-ha'
+         - 'os-odl-ovs-noha'
+         - 'os-odl-ovs-ha'
          - 'os-odl-bgpvpn-ha'
          - 'os-odl-gluon-noha'
-         - 'os-odl_l3-fdio-noha'
-         - 'os-odl_l3-fdio-ha'
-         - 'os-odl_l3-fdio_dvr-noha'
-         - 'os-odl_l3-fdio_dvr-ha'
-         - 'os-odl_l3-csit-noha'
+         - 'os-odl-fdio-noha'
+         - 'os-odl-fdio-ha'
+         - 'os-odl-fdio_dvr-noha'
+         - 'os-odl-fdio_dvr-ha'
+         - 'os-odl-csit-noha'
          - 'os-onos-nofeature-ha'
          - 'os-ovn-nofeature-noha'
          - 'gate'
@@ -189,7 +189,7 @@
         - 'apex-unit-test'
         - 'apex-build'
         - trigger-builds:
-          - project: 'apex-deploy-virtual-os-odl_l3-nofeature-ha-{stream}'
+          - project: 'apex-deploy-virtual-os-odl-nofeature-ha-{stream}'
             predefined-parameters: |
               BUILD_DIRECTORY=apex-verify-{stream}
               OPNFV_CLEAN=yes
@@ -199,7 +199,7 @@
         - trigger-builds:
           - project: 'functest-apex-{verify-slave}-suite-{stream}'
             predefined-parameters: |
-              DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
+              DEPLOY_SCENARIO=os-odl-nofeature-ha
               FUNCTEST_SUITE_NAME=healthcheck
             block: true
             same-node: true
@@ -380,7 +380,7 @@
 
     builders:
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l3-nofeature-noha-{stream}'
+          - project: 'apex-deploy-baremetal-os-odl-nofeature-noha-{stream}'
             predefined-parameters:
               OPNFV_CLEAN=yes
             git-revision: false
@@ -389,7 +389,7 @@
         - trigger-builds:
           - project: 'cperf-apex-intel-pod2-daily-master'
             predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l3-nofeature-noha
+              DEPLOY_SCENARIO=os-odl-nofeature-noha
             block: true
             same-node: true
 
@@ -627,7 +627,7 @@
         #        failure-threshold: 'never'
         #        unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l3-nofeature-ha-{stream}'
+          - project: 'apex-deploy-baremetal-os-odl-nofeature-ha-{stream}'
             predefined-parameters: |
               BUILD_DIRECTORY=apex-build-{stream}/.build
               OPNFV_CLEAN=yes
@@ -639,7 +639,7 @@
         - trigger-builds:
           - project: 'functest-apex-{daily-slave}-daily-{stream}'
             predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
+              DEPLOY_SCENARIO=os-odl-nofeature-ha
             block: true
             same-node: true
             block-thresholds:
@@ -649,7 +649,7 @@
         - trigger-builds:
           - project: 'yardstick-apex-{slave}-daily-{stream}'
             predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
+              DEPLOY_SCENARIO=os-odl-nofeature-ha
             block: true
             same-node: true
             block-thresholds:
@@ -807,7 +807,7 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l3-fdio-noha-{stream}'
+          - project: 'apex-deploy-baremetal-os-odl-fdio-noha-{stream}'
             predefined-parameters: |
               BUILD_DIRECTORY=apex-build-{stream}/.build
               OPNFV_CLEAN=yes
@@ -819,7 +819,7 @@
         - trigger-builds:
           - project: 'functest-apex-{daily-slave}-daily-{stream}'
             predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l3-fdio-noha
+              DEPLOY_SCENARIO=os-odl-fdio-noha
             block: true
             same-node: true
             block-thresholds:
@@ -829,7 +829,7 @@
         - trigger-builds:
           - project: 'yardstick-apex-{slave}-daily-{stream}'
             predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l3-fdio-noha
+              DEPLOY_SCENARIO=os-odl-fdio-noha
             block: true
             same-node: true
             block-thresholds:
@@ -897,7 +897,7 @@
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
-          - project: 'apex-deploy-baremetal-os-odl_l3-ovs-ha-{stream}'
+          - project: 'apex-deploy-baremetal-os-odl-ovs-ha-{stream}'
             predefined-parameters: |
               BUILD_DIRECTORY=apex-build-{stream}/.build
               OPNFV_CLEAN=yes
@@ -909,7 +909,7 @@
         - trigger-builds:
           - project: 'functest-apex-{daily-slave}-daily-{stream}'
             predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l3-ovs-ha
+              DEPLOY_SCENARIO=os-odl-ovs-ha
             block: true
             same-node: true
             block-thresholds:
@@ -919,7 +919,7 @@
         - trigger-builds:
           - project: 'yardstick-apex-{slave}-daily-{stream}'
             predefined-parameters:
-              DEPLOY_SCENARIO=os-odl_l3-ovs-ha
+              DEPLOY_SCENARIO=os-odl-ovs-ha
             block: true
             same-node: true
             block-thresholds:
@@ -997,7 +997,7 @@
     builders:
         - 'apex-build'
         - trigger-builds:
-          - project: 'apex-deploy-virtual-os-odl_l3-csit-noha-{stream}'
+          - project: 'apex-deploy-virtual-os-odl-csit-noha-{stream}'
             predefined-parameters: |
               BUILD_DIRECTORY=apex-csit-promote-daily-{stream}
               OPNFV_CLEAN=yes
@@ -1007,7 +1007,7 @@
         - trigger-builds:
           - project: 'functest-apex-{daily-slave}-suite-{stream}'
             predefined-parameters: |
-              DEPLOY_SCENARIO=os-odl_l3-nofeature-noha
+              DEPLOY_SCENARIO=os-odl-nofeature-noha
               FUNCTEST_SUITE_NAME=tempest_smoke_serial
             block: true
             same-node: true
