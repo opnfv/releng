@@ -33,6 +33,10 @@
         src: "{{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/configure-opnfvhost.yml"
         dest: "{{OPNFV_RELENG_PATH}}/prototypes/xci/playbooks"
       when: XCI_FLAVOR == "aio"
+    - name: copy flavor inventory
+      copy:
+        src: "{{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/inventory"
+        dest: "{{OPNFV_RELENG_PATH}}/prototypes/xci/playbooks"
     - name: copy flavor vars
       copy:
         src: "{{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/flavor-vars.yml"
