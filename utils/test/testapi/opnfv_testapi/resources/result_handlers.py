@@ -11,8 +11,8 @@ from datetime import timedelta
 import httplib
 
 from bson import objectid
-from tornado import web
 
+from opnfv_testapi.common import raises
 from opnfv_testapi.resources import handlers
 from opnfv_testapi.resources import result_models
 from opnfv_testapi.tornado_swagger import swagger
@@ -30,8 +30,7 @@ class GenericResultHandler(handlers.GenericApiHandler):
         try:
             value = int(value)
         except:
-            raise web.HTTPError(httplib.BAD_REQUEST,
-                                '{} must be int'.format(key))
+            raises.BadRequest('{} must be int'.format(key))
         return value
 
     def set_query(self):
