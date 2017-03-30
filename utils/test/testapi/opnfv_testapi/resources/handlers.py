@@ -22,13 +22,13 @@
 
 from datetime import datetime
 import functools
-import httplib
 import json
 
 from tornado import gen
 from tornado import web
 
 import models
+from opnfv_testapi.common import raises
 from opnfv_testapi.tornado_swagger import swagger
 
 DEFAULT_REPRESENTATION = "application/json"
@@ -56,9 +56,7 @@ class GenericApiHandler(web.RequestHandler):
                     try:
                         self.json_args = json.loads(self.request.body)
                     except (ValueError, KeyError, TypeError) as error:
-                        raise web.HTTPError(httplib.BAD_REQUEST,
-                                            "Bad Json format [{}]".
-                                            format(error))
+                        raises.BadRequest("Bad Json format [{}]".format(error))
 
     def finish_request(self, json_object=None):
         if json_object:
@@ -83,13 +81,11 @@ class GenericApiHandler(web.RequestHandler):
                 try:
                     token = self.request.headers['X-Auth-Token']
                 except KeyError:
-                    raise web.HTTPError(httplib.UNAUTHORIZED,
-                                        "No Authentication Header.")
+                    raises.Unauthorized("No Authentication Header.")
                 query = {'access_token': token}
                 check = yield self._eval_db_find_one(query, 'tokens')
                 if not check:
-                    raise web.HTTPError(httplib.FORBIDDEN,
-                                        "Invalid Token.")
+                    raises.Forbidden("Invalid Token.")
             ret = yield gen.coroutine(method)(self, *args, **kwargs)
             raise gen.Return(ret)
         return wrapper
@@ -101,14 +97,13 @@ class GenericApiHandler(web.RequestHandler):
         :param db_checks: [(table, exist, query, error)]
         """
         if self.json_args is None:
-            raise web.HTTPError(httplib.BAD_REQUEST, "no body")
+            raises.BadRequest('no body')
 
         data = self.table_cls.from_dict(self.json_args)
         for miss in miss_checks:
             miss_data = data.__getattribute__(miss)
             if miss_data is None or miss_data == '':
-                raise web.HTTPError(httplib.BAD_REQUEST,
-                                    '{} missing'.format(miss))
+                raises.BadRequest('{} missing'.format(miss))
 
         for k, v in kwargs.iteritems():
             data.__setattr__(k, v)
@@ -117,7 +112,7 @@ class GenericApiHandler(web.RequestHandler):
             check = yield self._eval_db_find_one(query(data), table)
             if (exist and not check) or (not exist and check):
                 code, message = error(data)
-                raise web.HTTPError(code, message)
+                raises.CodeTBD(code, message)
 
         if self.table != 'results':
             data.creation_date = datetime.now()
@@ -153,18 +148,16 @@ class GenericApiHandler(web.RequestHandler):
     def _get_one(self, query):
         data = yield self._eval_db_find_one(query)
         if data is None:
-            raise web.HTTPError(httplib.NOT_FOUND,
-                                "[{}] not exist in table [{}]"
-                                .format(query, self.table))
+            raises.NotFound("[{}] not exist in table [{}]"
+                            .format(query, self.table))
         self.finish_request(self.format_data(data))
 
     @authenticate
     def _delete(self, query):
         data = yield self._eval_db_find_one(query)
         if data is None:
-            raise web.HTTPError(httplib.NOT_FOUND,
-                                "[{}] not exit in table [{}]"
-                                .format(query, self.table))
+            raises.NotFound("[{}] not exit in table [{}]"
+                            .format(query, self.table))
 
         yield self._eval_db(self.table, 'remove', query)
         self.finish_request()
@@ -172,14 +165,13 @@ class GenericApiHandler(web.RequestHandler):
     @authenticate
     def _update(self, query, db_keys):
         if self.json_args is None:
-            raise web.HTTPError(httplib.BAD_REQUEST, "No payload")
+            raises.BadRequest("No payload")
 
         # check old data exist
         from_data = yield self._eval_db_find_one(query)
         if from_data is None:
-            raise web.HTTPError(httplib.NOT_FOUND,
-                                "{} could not be found in table [{}]"
-                                .format(query, self.table))
+            raises.NotFound("{} could not be found in table [{}]"
+                            .format(query, self.table))
 
         data = self.table_cls.from_dict(from_data)
         # check new data exist
@@ -187,9 +179,8 @@ class GenericApiHandler(web.RequestHandler):
         if not equal:
             to_data = yield self._eval_db_find_one(new_query)
             if to_data is not None:
-                raise web.HTTPError(httplib.FORBIDDEN,
-                                    "{} already exists in table [{}]"
-                                    .format(new_query, self.table))
+                raises.Forbidden("{} already exists in table [{}]"
+                                 .format(new_query, self.table))
 
         # we merge the whole document """
         edit_request = self._update_requests(data)
@@ -206,7 +197,7 @@ class GenericApiHandler(web.RequestHandler):
             request = self._update_request(request, k, v,
                                            data.__getattribute__(k))
         if not request:
-            raise web.HTTPError(httplib.FORBIDDEN, "Nothing to update")
+            raises.Forbidden("Nothing to update")
 
         edit_request = data.format()
         edit_request.update(request)
