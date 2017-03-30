@@ -70,6 +70,12 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
     -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
     -e BUILD_TAG=${BUILD_TAG} -e CI_DEBUG=${CI_DEBUG} -e DEPLOY_TYPE=${DEPLOY_TYPE}"
 
+if [[ ${INSTALLER_TYPE} == 'compass4nfv' || ${DEPLOY_SCENARIO} == 'os-nosdn-openo-ha' ]]; then
+    envs="-e INSTALLER_TYPE=unknown -e INSTALLER_IP=${INSTALLER_IP} \
+    -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=unknown \
+    -e BUILD_TAG=${BUILD_TAG} -e CI_DEBUG=${CI_DEBUG} -e DEPLOY_TYPE=${DEPLOY_TYPE}\
+    -e OPENO_MSB_ENDPOINT=${OPENO_MSB_ENDPOINT}"
+fi
 
 volumes="${results_vol} ${sshkey_vol} ${stackrc_vol} ${rc_file_vol}"
 
