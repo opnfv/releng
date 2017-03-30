@@ -48,18 +48,9 @@
       shell: "/bin/cp -rf {{OPNFV_RELENG_PATH}}/prototypes/xci/file/setup-openstack.yml {{OPENSTACK_OSA_PATH}}/playbooks"
     - name: copy OPNFV role requirements
       shell: "/bin/cp -rf {{OPNFV_RELENG_PATH}}/prototypes/xci/file/ansible-role-requirements.yml {{OPENSTACK_OSA_PATH}}"
+  roles:
     # TODO: this only works for ubuntu/xenial and need to be adjusted for other distros
-    # TODO: convert this into a role
-    - name: configure network for ubuntu xenial
-      template:
-        src: ../template/opnfv.interface.j2
-        dest: /etc/network/interfaces
-      notify:
-        - restart ubuntu xenial network service
-      when: ansible_distribution_release == "xenial"
-  handlers:
-    - name: restart ubuntu xenial network service
-      shell: "/sbin/ifconfig ens3 0 &&/sbin/ifdown -a && /sbin/ifup -a"
+    - { role: configure-network, when: ansible_distribution_release == "xenial", src: "../template/opnfv.interface.j2", dest: "/etc/network/interfaces" }
 - hosts: localhost
   remote_user: root
   tasks:
