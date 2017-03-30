@@ -17,13 +17,19 @@ echo "Starting opnfv-docker for $DOCKER_REPO_NAME ..."
 echo "--------------------------------------------------------"
 echo
 
-
-if [[ -n $(ps -ef|grep 'docker build'|grep -v grep) ]]; then
-    echo "There is already another build process in progress:"
-    echo $(ps -ef|grep 'docker build'|grep -v grep)
-    # Abort this job since it will collide and might mess up the current one.
-    echo "Aborting..."
-    exit 1
+proc=$(ps -ef|grep 'docker build'|grep -v grep)
+if [[ -n $proc ]]; then
+    echo "There is already another build process in progress: $proc"
+    echo "Waiting until it finishes to start this one..."
+    count=40 # docker build jobs might take up to ~30 min
+    while [[ -n `ps -ef|grep 'docker build'|grep -v grep` ]]; do
+        sleep 60
+        count=$(( $count - 1 ))
+        if [ $count -eq 0 ]; then
+            echo "Timeout. Aborting..."
+            exit 1
+        fi
+    done
 fi
 
 # Remove previous running containers if exist
