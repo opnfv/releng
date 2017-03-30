@@ -37,6 +37,8 @@
       command: "python pw-token-gen.py --file /etc/openstack_deploy/user_secrets.yml"
       args:
         chdir: /opt/openstack-ansible/scripts/
+    - name: change the haproxy state from disable to enable
+      command: "/bin/sed -i 's/disable/enable/g' /opt/openstack-ansible/playbooks/os-keystone-install.yml"
     - name: copy openstack_user_config.yml to /etc/openstack_deploy
       copy:
         src: ../file/openstack_user_config.yml

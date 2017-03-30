@@ -24,7 +24,7 @@ message "OpenStack deployed successfully".
   2.1 ssh into the controller::
       ssh 192.168.122.3
   2.2 Enter into the lxc container::
-      lxcname=$(lxc-ls | grep utility)
+      lxcname=$(lxc-ls --line | grep utility)
       lxc-attach -n $lxcname
   2.3 Verify the OpenStack API::
       source /root/openrc
