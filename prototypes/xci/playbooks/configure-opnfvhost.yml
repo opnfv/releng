@@ -17,6 +17,8 @@
     - role: remove-folders
     - { role: clone-repository, project: "opnfv/releng", repo: "{{ OPNFV_RELENG_GIT_URL }}", dest: "{{ OPNFV_RELENG_PATH }}", version: "{{ OPNFV_RELENG_VERSION }}" }
     - { role: clone-repository, project: "openstack/openstack-ansible", repo: "{{ OPENSTACK_OSA_GIT_URL }}", dest: "{{ OPENSTACK_OSA_PATH }}", version: "{{ OPENSTACK_OSA_VERSION }}" }
+    # TODO: this only works for ubuntu/xenial and need to be adjusted for other distros
+    - { role: configure-network, when: ansible_distribution_release == "xenial", src: "../template/opnfv.interface.j2", dest: "/etc/network/interfaces" }
   tasks:
     - name: generate SSH keys
       shell: ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
@@ -48,9 +50,6 @@
       shell: "/bin/cp -rf {{OPNFV_RELENG_PATH}}/prototypes/xci/file/setup-openstack.yml {{OPENSTACK_OSA_PATH}}/playbooks"
     - name: copy OPNFV role requirements
       shell: "/bin/cp -rf {{OPNFV_RELENG_PATH}}/prototypes/xci/file/ansible-role-requirements.yml {{OPENSTACK_OSA_PATH}}"
-  roles:
-    # TODO: this only works for ubuntu/xenial and need to be adjusted for other distros
-    - { role: configure-network, when: ansible_distribution_release == "xenial", src: "../template/opnfv.interface.j2", dest: "/etc/network/interfaces" }
 - hosts: localhost
   remote_user: root
   tasks:
