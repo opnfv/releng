@@ -8,11 +8,9 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-BASEDIR=`dirname $0`
-
 #clean up correlated dockers and their images
-bash ${BASEDIR}/docker_cleanup.sh -d bottlenecks --debug
-bash ${BASEDIR}/docker_cleanup.sh -d yardstick --debug
-bash ${BASEDIR}/docker_cleanup.sh -d kibana --debug
-bash ${BASEDIR}/docker_cleanup.sh -d elasticsearch --debug
-bash ${BASEDIR}/docker_cleanup.sh -d influxdb --debug
+bash $WORKSPACE/docker/docker_cleanup.sh -d bottlenecks --debug
+bash $WORKSPACE/docker/docker_cleanup.sh -d yardstick --debug
+bash $WORKSPACE/docker/docker_cleanup.sh -d kibana --debug
+bash $WORKSPACE/docker/docker_cleanup.sh -d elasticsearch --debug
+bash $WORKSPACE/docker/docker_cleanup.sh -d influxdb --debug
