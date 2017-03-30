@@ -1,0 +1,22 @@
+---
+- hosts: opnfv
+  remote_user: root
+  vars_files:
+  vars_files:
+    - ../var/opnfv.yml
+  roles:
+    - role: remove-folders
+    - { role: clone-repository, project: "openstack/openstack-ansible", repo: "{{ OPENSTACK_OSA_GIT_URL }}", dest: "{{ OPENSTACK_OSA_PATH }}", version: "{{ OPENSTACK_OSA_VERSION }}" }
+  tasks:
+    - name: bootstrap ansible on opnfv host
+      command: "/bin/bash ./scripts/bootstrap-ansible.sh"
+      args:
+        chdir: "{{OPENSTACK_OSA_PATH}}"
+    - name: bootstrap opnfv host as aio
+      command: "/bin/bash ./scripts/bootstrap-aio.sh"
+      args:
+        chdir: "{{OPENSTACK_OSA_PATH}}"
+    - name: install OpenStack on opnfv host - this command doesn't log anything to console
+      command: "/bin/bash ./scripts/run-playbooks.sh"
+      args:
+        chdir: "{{OPENSTACK_OSA_PATH}}"
