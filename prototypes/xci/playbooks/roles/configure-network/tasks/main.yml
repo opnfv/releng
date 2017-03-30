@@ -7,5 +7,10 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-# this is the interface the VM nodes are connected to libvirt network "default"
-interface: "ens3"
+# TODO: this role needs to be adjusted for different distros
+- name: configure network for {{ ansible_os_family }} on interface {{ interface }}
+  template:
+    src: "{{ src }}"
+    dest: "{{ dest }}"
+- name: restart ubuntu xenial network service
+  shell: "/sbin/ifconfig {{ interface }} 0 &&/sbin/ifdown -a && /sbin/ifup -a"

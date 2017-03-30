@@ -6,23 +6,23 @@ auto lo
 iface lo inet loopback
 
 # Physical interface
-auto ens3
-iface ens3 inet manual
+auto {{ interface }}
+iface {{ interface }} inet manual
 
 # Container/Host management VLAN interface
-auto ens3.10
-iface ens3.10 inet manual
-    vlan-raw-device ens3
+auto {{ interface }}.10
+iface {{ interface }}.10 inet manual
+    vlan-raw-device {{ interface }}
 
 # OpenStack Networking VXLAN (tunnel/overlay) VLAN interface
-auto ens3.30
-iface ens3.30 inet manual
-    vlan-raw-device ens3
+auto {{ interface }}.30
+iface {{ interface }}.30 inet manual
+    vlan-raw-device {{ interface }}
 
 # Storage network VLAN interface (optional)
-auto ens3.20
-iface ens3.20 inet manual
-    vlan-raw-device ens3
+auto {{ interface }}.20
+iface {{ interface }}.20 inet manual
+    vlan-raw-device {{ interface }}
 
 # Container/Host management bridge
 auto br-mgmt
@@ -30,7 +30,7 @@ iface br-mgmt inet static
     bridge_stp off
     bridge_waitport 0
     bridge_fd 0
-    bridge_ports ens3.10
+    bridge_ports {{ interface }}.10
     address {{host_info[inventory_hostname].MGMT_IP}}
     netmask 255.255.252.0
 
@@ -46,7 +46,7 @@ iface br-vxlan inet manual
     bridge_stp off
     bridge_waitport 0
     bridge_fd 0
-    bridge_ports ens3.30
+    bridge_ports {{ interface }}.30
 
 # OpenStack Networking VLAN bridge
 auto br-vlan
@@ -54,7 +54,7 @@ iface br-vlan inet static
     bridge_stp off
     bridge_waitport 0
     bridge_fd 0
-    bridge_ports ens3
+    bridge_ports {{ interface }}
     address {{host_info[inventory_hostname].VLAN_IP}}
     netmask 255.255.255.0
     gateway 192.168.122.1
@@ -66,6 +66,6 @@ iface br-storage inet static
     bridge_stp off
     bridge_waitport 0
     bridge_fd 0
-    bridge_ports ens3.20
+    bridge_ports {{ interface }}.20
     address {{host_info[inventory_hostname].STORAGE_IP}}
     netmask 255.255.252.0
