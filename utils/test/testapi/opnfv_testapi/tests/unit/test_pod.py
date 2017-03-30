@@ -6,9 +6,9 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+import httplib
 import unittest
 
-from opnfv_testapi.common import constants
 from opnfv_testapi.resources import pod_models
 import test_base as base
 
@@ -37,36 +37,36 @@ class TestPodBase(base.TestBase):
 class TestPodCreate(TestPodBase):
     def test_withoutBody(self):
         (code, body) = self.create()
-        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
+        self.assertEqual(code, httplib.BAD_REQUEST)
 
     def test_emptyName(self):
         req_empty = pod_models.PodCreateRequest('')
         (code, body) = self.create(req_empty)
-        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
+        self.assertEqual(code, httplib.BAD_REQUEST)
         self.assertIn('name missing', body)
 
     def test_noneName(self):
         req_none = pod_models.PodCreateRequest(None)
         (code, body) = self.create(req_none)
-        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
+        self.assertEqual(code, httplib.BAD_REQUEST)
         self.assertIn('name missing', body)
 
     def test_success(self):
         code, body = self.create_d()
-        self.assertEqual(code, constants.HTTP_OK)
+        self.assertEqual(code, httplib.OK)
         self.assert_create_body(body)
 
     def test_alreadyExist(self):
         self.create_d()
         code, body = self.create_d()
-        self.assertEqual(code, constants.HTTP_FORBIDDEN)
+        self.assertEqual(code, httplib.FORBIDDEN)
         self.assertIn('already exists', body)
 
 
 class TestPodGet(TestPodBase):
     def test_notExist(self):
         code, body = self.get('notExist')
-        self.assertEqual(code, constants.HTTP_NOT_FOUND)
+        self.assertEqual(code, httplib.NOT_FOUND)
 
     def test_getOne(self):
         self.create_d()

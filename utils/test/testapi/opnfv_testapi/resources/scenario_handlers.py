@@ -1,8 +1,8 @@
 import functools
+import httplib
 
 from tornado import web
 
-from opnfv_testapi.common import constants
 from opnfv_testapi.resources import handlers
 import opnfv_testapi.resources.scenario_models as models
 from opnfv_testapi.tornado_swagger import swagger
@@ -84,7 +84,7 @@ class ScenariosCLHandler(GenericScenarioHandler):
 
         def error(data):
             message = '{} already exists as a scenario'.format(data.name)
-            return constants.HTTP_FORBIDDEN, message
+            return httplib.FORBIDDEN, message
 
         miss_checks = ['name']
         db_checks = [(self.table, False, query, error)]
@@ -185,7 +185,7 @@ class ScenarioGURHandler(GenericScenarioHandler):
     def _update_requests_rename(self, data):
         data.name = self._term.get('name')
         if not data.name:
-            raise web.HTTPError(constants.HTTP_BAD_REQUEST,
+            raise web.HTTPError(httplib.BAD_REQUEST,
                                 "new scenario name is not provided")
 
     def _update_requests_add_installer(self, data):

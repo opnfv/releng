@@ -6,9 +6,9 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+import httplib
 import unittest
 
-from opnfv_testapi.common import constants
 from opnfv_testapi.resources import project_models
 import test_base as base
 
@@ -37,41 +37,41 @@ class TestProjectBase(base.TestBase):
 class TestProjectCreate(TestProjectBase):
     def test_withoutBody(self):
         (code, body) = self.create()
-        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
+        self.assertEqual(code, httplib.BAD_REQUEST)
 
     def test_emptyName(self):
         req_empty = project_models.ProjectCreateRequest('')
         (code, body) = self.create(req_empty)
-        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
+        self.assertEqual(code, httplib.BAD_REQUEST)
         self.assertIn('name missing', body)
 
     def test_noneName(self):
         req_none = project_models.ProjectCreateRequest(None)
         (code, body) = self.create(req_none)
-        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
+        self.assertEqual(code, httplib.BAD_REQUEST)
         self.assertIn('name missing', body)
 
     def test_success(self):
         (code, body) = self.create_d()
-        self.assertEqual(code, constants.HTTP_OK)
+        self.assertEqual(code, httplib.OK)
         self.assert_create_body(body)
 
     def test_alreadyExist(self):
         self.create_d()
         (code, body) = self.create_d()
-        self.assertEqual(code, constants.HTTP_FORBIDDEN)
+        self.assertEqual(code, httplib.FORBIDDEN)
         self.assertIn('already exists', body)
 
 
 class TestProjectGet(TestProjectBase):
     def test_notExist(self):
         code, body = self.get('notExist')
-        self.assertEqual(code, constants.HTTP_NOT_FOUND)
+        self.assertEqual(code, httplib.NOT_FOUND)
 
     def test_getOne(self):
         self.create_d()
         code, body = self.get(self.req_d.name)
-        self.assertEqual(code, constants.HTTP_OK)
+        self.assertEqual(code, httplib.OK)
         self.assert_body(body)
 
     def test_list(self):
@@ -88,23 +88,23 @@ class TestProjectGet(TestProjectBase):
 class TestProjectUpdate(TestProjectBase):
     def test_withoutBody(self):
         code, _ = self.update(None, 'noBody')
-        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
+        self.assertEqual(code, httplib.BAD_REQUEST)
 
     def test_notFound(self):
         code, _ = self.update(self.req_e, 'notFound')
-        self.assertEqual(code, constants.HTTP_NOT_FOUND)
+        self.assertEqual(code, httplib.NOT_FOUND)
 
     def test_newNameExist(self):
         self.create_d()
         self.create_e()
         code, body = self.update(self.req_e, self.req_d.name)
-        self.assertEqual(code, constants.HTTP_FORBIDDEN)
+        self.assertEqual(code, httplib.FORBIDDEN)
         self.assertIn("already exists", body)
 
     def test_noUpdate(self):
         self.create_d()
         code, body = self.update(self.req_d, self.req_d.name)
-        self.assertEqual(code, constants.HTTP_FORBIDDEN)
+        self.assertEqual(code, httplib.FORBIDDEN)
         self.assertIn("Nothing to update", body)
 
     def test_success(self):
@@ -114,7 +114,7 @@ class TestProjectUpdate(TestProjectBase):
 
         req = project_models.ProjectUpdateRequest('newName', 'new description')
         code, body = self.update(req, self.req_d.name)
-        self.assertEqual(code, constants.HTTP_OK)
+        self.assertEqual(code, httplib.OK)
         self.assertEqual(_id, body._id)
         self.assert_body(body, req)
 
@@ -126,16 +126,16 @@ class TestProjectUpdate(TestProjectBase):
 class TestProjectDelete(TestProjectBase):
     def test_notFound(self):
         code, body = self.delete('notFound')
-        self.assertEqual(code, constants.HTTP_NOT_FOUND)
+        self.assertEqual(code, httplib.NOT_FOUND)
 
     def test_success(self):
         self.create_d()
         code, body = self.delete(self.req_d.name)
-        self.assertEqual(code, constants.HTTP_OK)
+        self.assertEqual(code, httplib.OK)
         self.assertEqual(body, '')
 
         code, body = self.get(self.req_d.name)
-        self.assertEqual(code, constants.HTTP_NOT_FOUND)
+        self.assertEqual(code, httplib.NOT_FOUND)
 
 if __name__ == '__main__':
     unittest.main()

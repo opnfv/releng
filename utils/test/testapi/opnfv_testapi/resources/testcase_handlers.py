@@ -6,7 +6,8 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-from opnfv_testapi.common import constants
+import httplib
+
 from opnfv_testapi.resources import handlers
 from opnfv_testapi.resources import testcase_models
 from opnfv_testapi.tornado_swagger import swagger
@@ -58,12 +59,12 @@ class TestcaseCLHandler(GenericTestcaseHandler):
 
         def p_error(data):
             message = 'Could not find project [{}]'.format(data.project_name)
-            return constants.HTTP_FORBIDDEN, message
+            return httplib.FORBIDDEN, message
 
         def tc_error(data):
             message = '{} already exists as a testcase in project {}'\
                 .format(data.name, data.project_name)
-            return constants.HTTP_FORBIDDEN, message
+            return httplib.FORBIDDEN, message
 
         miss_checks = ['name']
         db_checks = [(self.db_projects, True, p_query, p_error),

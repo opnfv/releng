@@ -3,12 +3,12 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 
+import httplib
 import unittest
 
 from tornado import web
 
 import fake_pymongo
-from opnfv_testapi.common import constants
 from opnfv_testapi.resources import project_models
 from opnfv_testapi.router import url_mappings
 import test_base as base
@@ -34,19 +34,19 @@ class TestTokenCreateProject(TestToken):
     def test_projectCreateTokenInvalid(self):
         self.headers['X-Auth-Token'] = '1234'
         code, body = self.create_d()
-        self.assertEqual(code, constants.HTTP_FORBIDDEN)
+        self.assertEqual(code, httplib.FORBIDDEN)
         self.assertIn('Invalid Token.', body)
 
     def test_projectCreateTokenUnauthorized(self):
         self.headers.pop('X-Auth-Token')
         code, body = self.create_d()
-        self.assertEqual(code, constants.HTTP_UNAUTHORIZED)
+        self.assertEqual(code, httplib.UNAUTHORIZED)
         self.assertIn('No Authentication Header.', body)
 
     def test_projectCreateTokenSuccess(self):
         self.headers['X-Auth-Token'] = '12345'
         code, body = self.create_d()
-        self.assertEqual(code, constants.HTTP_OK)
+        self.assertEqual(code, httplib.OK)
 
 
 class TestTokenDeleteProject(TestToken):
@@ -61,7 +61,7 @@ class TestTokenDeleteProject(TestToken):
         self.create_d()
         self.headers['X-Auth-Token'] = '1234'
         code, body = self.delete(self.req_d.name)
-        self.assertEqual(code, constants.HTTP_FORBIDDEN)
+        self.assertEqual(code, httplib.FORBIDDEN)
         self.assertIn('Invalid Token.', body)
 
     def test_projectDeleteTokenUnauthorized(self):
@@ -69,14 +69,14 @@ class TestTokenDeleteProject(TestToken):
         self.create_d()
         self.headers.pop('X-Auth-Token')
         code, body = self.delete(self.req_d.name)
-        self.assertEqual(code, constants.HTTP_UNAUTHORIZED)
+        self.assertEqual(code, httplib.UNAUTHORIZED)
         self.assertIn('No Authentication Header.', body)
 
     def test_projectDeleteTokenSuccess(self):
         self.headers['X-Auth-Token'] = '12345'
         self.create_d()
         code, body = self.delete(self.req_d.name)
-        self.assertEqual(code, constants.HTTP_OK)
+        self.assertEqual(code, httplib.OK)
 
 
 class TestTokenUpdateProject(TestToken):
@@ -93,7 +93,7 @@ class TestTokenUpdateProject(TestToken):
         self.headers['X-Auth-Token'] = '1234'
         req = project_models.ProjectUpdateRequest('newName', 'new description')
         code, body = self.update(req, self.req_d.name)
-        self.assertEqual(code, constants.HTTP_FORBIDDEN)
+        self.assertEqual(code, httplib.FORBIDDEN)
         self.assertIn('Invalid Token.', body)
 
     def test_projectUpdateTokenUnauthorized(self):
@@ -103,7 +103,7 @@ class TestTokenUpdateProject(TestToken):
         self.headers.pop('X-Auth-Token')
         req = project_models.ProjectUpdateRequest('newName', 'new description')
         code, body = self.update(req, self.req_d.name)
-        self.assertEqual(code, constants.HTTP_UNAUTHORIZED)
+        self.assertEqual(code, httplib.UNAUTHORIZED)
         self.assertIn('No Authentication Header.', body)
 
     def test_projectUpdateTokenSuccess(self):
@@ -112,7 +112,7 @@ class TestTokenUpdateProject(TestToken):
         code, body = self.get(self.req_d.name)
         req = project_models.ProjectUpdateRequest('newName', 'new description')
         code, body = self.update(req, self.req_d.name)
-        self.assertEqual(code, constants.HTTP_OK)
+        self.assertEqual(code, httplib.OK)
 
 if __name__ == '__main__':
     unittest.main()

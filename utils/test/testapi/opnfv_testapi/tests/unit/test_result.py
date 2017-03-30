@@ -8,9 +8,9 @@
 ##############################################################################
 import copy
 from datetime import datetime, timedelta
+import httplib
 import unittest
 
-from opnfv_testapi.common import constants
 from opnfv_testapi.resources import pod_models
 from opnfv_testapi.resources import project_models
 from opnfv_testapi.resources import result_models
@@ -99,7 +99,7 @@ class TestResultBase(base.TestBase):
                          self.project)
 
     def assert_res(self, code, result, req=None):
-        self.assertEqual(code, constants.HTTP_OK)
+        self.assertEqual(code, httplib.OK)
         if req is None:
             req = self.req_d
         self.assertEqual(result.pod_name, req.pod_name)
@@ -134,61 +134,61 @@ class TestResultBase(base.TestBase):
 class TestResultCreate(TestResultBase):
     def test_nobody(self):
         (code, body) = self.create(None)
-        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
+        self.assertEqual(code, httplib.BAD_REQUEST)
         self.assertIn('no body', body)
 
     def test_podNotProvided(self):
         req = self.req_d
         req.pod_name = None
         (code, body) = self.create(req)
-        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
+        self.assertEqual(code, httplib.BAD_REQUEST)
         self.assertIn('pod_name missing', body)
 
     def test_projectNotProvided(self):
         req = self.req_d
         req.project_name = None
         (code, body) = self.create(req)
-        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
+        self.assertEqual(code, httplib.BAD_REQUEST)
         self.assertIn('project_name missing', body)
 
     def test_testcaseNotProvided(self):
         req = self.req_d
         req.case_name = None
         (code, body) = self.create(req)
-        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
+        self.assertEqual(code, httplib.BAD_REQUEST)
         self.assertIn('case_name missing', body)
 
     def test_noPod(self):
         req = self.req_d
         req.pod_name = 'notExistPod'
         (code, body) = self.create(req)
-        self.assertEqual(code, constants.HTTP_NOT_FOUND)
+        self.assertEqual(code, httplib.NOT_FOUND)
         self.assertIn('Could not find pod', body)
 
     def test_noProject(self):
         req = self.req_d
         req.project_name = 'notExistProject'
         (code, body) = self.create(req)
-        self.assertEqual(code, constants.HTTP_NOT_FOUND)
+        self.assertEqual(code, httplib.NOT_FOUND)
         self.assertIn('Could not find project', body)
 
     def test_noTestcase(self):
         req = self.req_d
         req.case_name = 'notExistTestcase'
         (code, body) = self.create(req)
-        self.assertEqual(code, constants.HTTP_NOT_FOUND)
+        self.assertEqual(code, httplib.NOT_FOUND)
         self.assertIn('Could not find testcase', body)
 
     def test_success(self):
         (code, body) = self.create_d()
-        self.assertEqual(code, constants.HTTP_OK)
+        self.assertEqual(code, httplib.OK)
         self.assert_href(body)
 
     def test_key_with_doc(self):
         req = copy.deepcopy(self.req_d)
         req.details = {'1.name': 'dot_name'}
         (code, body) = self.create(req)
-        self.assertEqual(code, constants.HTTP_OK)
+        self.assertEqual(code, httplib.OK)
         self.assert_href(body)
 
     def test_no_ti(self):
@@ -205,7 +205,7 @@ class TestResultCreate(TestResultBase):
                                                 criteria=self.criteria)
         (code, res) = self.create(req)
         _id = res.href.split('/')[-1]
-        self.assertEqual(code, constants.HTTP_OK)
+        self.assertEqual(code, httplib.OK)
         code, body = self.get(_id)
         self.assert_res(code, body, req)
 
@@ -245,7 +245,7 @@ class TestResultGet(TestResultBase):
 
     def test_queryPeriodNotInt(self):
         code, body = self.query(self._set_query('period=a'))
-        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
+        self.assertEqual(code, httplib.BAD_REQUEST)
         self.assertIn('period must be int', body)
 
     def test_queryPeriodFail(self):
@@ -258,7 +258,7 @@ class TestResultGet(TestResultBase):
 
     def test_queryLastNotInt(self):
         code, body = self.query(self._set_query('last=a'))
-        self.assertEqual(code, constants.HTTP_BAD_REQUEST)
+        self.assertEqual(code, httplib.BAD_REQUEST)
         self.assertIn('last must be int', body)
 
     def test_queryLast(self):
@@ -297,7 +297,7 @@ class TestResultGet(TestResultBase):
             req = self._create_changed_date(**kwargs)
         code, body = self.query(query)
         if not found:
-            self.assertEqual(code, constants.HTTP_OK)
+            self.assertEqual(code, httplib.OK)
             self.assertEqual(0, len(body.results))
         else:
             self.assertEqual(1, len(body.results))

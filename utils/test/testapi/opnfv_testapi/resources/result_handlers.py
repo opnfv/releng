@@ -8,11 +8,11 @@
 ##############################################################################
 from datetime import datetime
 from datetime import timedelta
+import httplib
 
 from bson import objectid
 from tornado import web
 
-from opnfv_testapi.common import constants
 from opnfv_testapi.resources import handlers
 from opnfv_testapi.resources import result_models
 from opnfv_testapi.tornado_swagger import swagger
@@ -30,7 +30,7 @@ class GenericResultHandler(handlers.GenericApiHandler):
         try:
             value = int(value)
         except:
-            raise web.HTTPError(constants.HTTP_BAD_REQUEST,
+            raise web.HTTPError(httplib.BAD_REQUEST,
                                 '{} must be int'.format(key))
         return value
 
@@ -146,14 +146,14 @@ class ResultsCLHandler(GenericResultHandler):
 
         def pod_error(data):
             message = 'Could not find pod [{}]'.format(data.pod_name)
-            return constants.HTTP_NOT_FOUND, message
+            return httplib.NOT_FOUND, message
 
         def project_query(data):
             return {'name': data.project_name}
 
         def project_error(data):
             message = 'Could not find project [{}]'.format(data.project_name)
-            return constants.HTTP_NOT_FOUND, message
+            return httplib.NOT_FOUND, message
 
         def testcase_query(data):
             return {'project_name': data.project_name, 'name': data.case_name}
@@ -161,7 +161,7 @@ class ResultsCLHandler(GenericResultHandler):
         def testcase_error(data):
             message = 'Could not find testcase [{}] in project [{}]'\
                 .format(data.case_name, data.project_name)
-            return constants.HTTP_NOT_FOUND, message
+            return httplib.NOT_FOUND, message
 
         miss_checks = ['pod_name', 'project_name', 'case_name']
         db_checks = [('pods', True, pod_query, pod_error),

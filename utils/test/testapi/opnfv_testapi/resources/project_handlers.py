@@ -6,8 +6,9 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+import httplib
+
 import handlers
-from opnfv_testapi.common import constants
 from opnfv_testapi.tornado_swagger import swagger
 import project_models
 
@@ -48,7 +49,7 @@ class ProjectCLHandler(GenericProjectHandler):
 
         def error(data):
             message = '{} already exists as a project'.format(data.name)
-            return constants.HTTP_FORBIDDEN, message
+            return httplib.FORBIDDEN, message
 
         miss_checks = ['name']
         db_checks = [(self.table, False, query, error)]
