@@ -70,6 +70,17 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
     -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
     -e BUILD_TAG=${BUILD_TAG} -e CI_DEBUG=${CI_DEBUG} -e DEPLOY_TYPE=${DEPLOY_TYPE}"
 
+if [[ ${INSTALLER_TYPE} == 'compass' || ${DEPLOY_SCENARIO} == 'os-nosdn-openo-ha' ]]; then
+    ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+    openo_msb_endpoint=$(sshpass -p'root' ssh 2>/dev/null $ssh_options root@${installer_ip} \
+    'mysql -ucompass -pcompass -Dcompass -e "select package_config from cluster;" \
+    | sed s/,/\\n/g | grep openo_ip | cut -d \" -f 4')
+
+    envs="-e INSTALLER_TYPE=unknown -e INSTALLER_IP=${INSTALLER_IP} \
+    -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=unknown \
+    -e BUILD_TAG=${BUILD_TAG} -e CI_DEBUG=${CI_DEBUG} -e DEPLOY_TYPE=${DEPLOY_TYPE}\
+    -e OPENO_MSB_ENDPOINT=${openo_msb_endpoint}"
+fi
 
 volumes="${results_vol} ${sshkey_vol} ${stackrc_vol} ${rc_file_vol}"
 
