@@ -443,7 +443,16 @@
             git-revision: false
             same-node: true
             block: true
-        - 'apex-upload-artifact'
+        - 'apex-upload-rpm-artifact'
+        - trigger-builds:
+          - project: 'apex-iso-verify-{stream}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-build-{stream}/.build
+              OPNFV_CLEAN=yes
+            git-revision: false
+            block: false
+            same-node: true
+        - 'apex-upload-iso-artifact'
 
 - job-template:
     name: 'apex-deploy-virtual-{scenario}-{stream}'
@@ -1014,7 +1023,17 @@
         - shell:
             !include-raw-escape: ./apex-snapshot-create.sh
         - shell:
-            !include-raw-escape: ./apex-upload-artifact.sh
+            !include-raw-escape: ./apex-upload-artifact.sh rpm
+        - trigger-builds:
+          - project: 'apex-iso-verify-{stream}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-csit-promote-daily-{stream}
+              OPNFV_CLEAN=yes
+            git-revision: false
+            block: false
+            same-node: true
+        - shell:
+            !include-raw-escape: ./apex-upload-artifact.sh iso
 
 # FDIO promote
 - job-template:
@@ -1063,7 +1082,17 @@
         - shell:
             !include-raw-escape: ./apex-snapshot-create.sh
         - shell:
-            !include-raw-escape: ./apex-upload-artifact.sh
+            !include-raw-escape: ./apex-upload-artifact.sh rpm
+        - trigger-builds:
+          - project: 'apex-iso-verify-{stream}'
+            predefined-parameters: |
+              BUILD_DIRECTORY=apex-fdio-promote-daily-{stream}
+              OPNFV_CLEAN=yes
+            git-revision: false
+            block: false
+            same-node: true
+        - shell:
+            !include-raw-escape: ./apex-upload-artifact.sh iso
 
 - job-template:
     name: 'apex-gs-clean-{stream}'
@@ -1147,10 +1176,22 @@
             !include-raw: ./apex-workspace-cleanup.sh
 
 - builder:
-    name: 'apex-upload-artifact'
+    name: 'apex-iso-verify-{stream}'
     builders:
         - shell:
-            !include-raw: ./apex-upload-artifact.sh
+            !include-raw: ./apex-iso-verify.sh
+
+- builder:
+    name: 'apex-upload-rpm-artifact'
+    builders:
+        - shell:
+            !include-raw: ./apex-upload-artifact.sh rpm
+
+- builder:
+    name: 'apex-upload-iso-artifact'
+    builders:
+        - shell:
+            !include-raw: ./apex-upload-artifact.sh iso
 
 - builder:
     name: 'apex-gs-cleanup'
