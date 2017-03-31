@@ -1,0 +1,36 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2017 Ericsson AB and others.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+# TODO: this is for xenial and needs to be adjusted for different distros
+- block:
+    - name: make NFS dir
+      file:
+        dest: /images
+        mode: 777
+        state: directory
+    - name: configure NFS service
+      lineinfile:
+        dest: /etc/services
+        state: present
+        create: yes
+        line: "{{ item }}"
+      with_items:
+        - "nfs        2049/tcp"
+        - "nfs        2049/udp"
+    - name: configure NFS exports on ubuntu xenial
+      copy:
+        src: ../file/exports
+        dest: /etc/exports
+      when: ansible_distribution_release == "xenial"
+    # TODO: the service name might be different on other distros and needs to be adjusted
+    - name: restart ubuntu xenial NFS service
+      service:
+        name: nfs-kernel-server
+        state: restarted
+  when: ansible_distribution_release == "xenial"
