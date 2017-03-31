@@ -11,83 +11,63 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-trap cleanup_and_upload EXIT
+cd $WORKSPACE/prototypes/xci
 
-function fix_ownership() {
-    if [ -z "${JOB_URL+x}" ]; then
-        echo "Not running as part of Jenkins. Handle the logs manually."
-    else
-        # Make sure cache exists
-        [[ ! -d ${HOME}/.cache ]] && mkdir ${HOME}/.cache
+# for daily jobs, we want to use working versions
+# for periodic jobs, we will use whatever is set in the job, probably master
+if [[ "$JOB_NAME" =~ "daily" ]]; then
+    # source pinned-vars to get releng version
+    source ./config/pinned-versions
 
-        sudo chown -R jenkins:jenkins $WORKSPACE
-        sudo chown -R jenkins:jenkins ${HOME}/.cache
-    fi
-}
-
-function cleanup_and_upload() {
-    original_exit=$?
-    fix_ownership
-    exit $original_exit
-}
-
-# check distro to see if we support it
-if [[ ! "$DISTRO" =~ (xenial|centos7|suse) ]]; then
-    echo "Distro $DISTRO is not supported!"
-    exit 1
+    # checkout the version
+    git checkout -q $OPNFV_RELENG_VERSION
+    echo "Info: Using $OPNFV_RELENG_VERSION"
+elif [[ "$JOB_NAME" =~ "periodic" ]]; then
+    echo "Info: Using $OPNFV_RELENG_VERSION"
 fi
 
-# remove previously cloned repos
-sudo /bin/rm -rf /opt/openstack-ansible /opt/stack /opt/releng /opt/functest
+# this is just an example to give the idea about what we need to do
+# so ignore this part for the timebeing as we need to adjust xci-deploy.sh
+# to take this into account while deploying anyways
+# clone openstack-ansible
+# stable/ocata already use pinned versions so this is only valid for master
+if [[ "$JOB_NAME" =~ "periodic" && "$OPENSTACK_OSA_VERSION" == "master" ]]; then
+    cd $WORKSPACE
+    # get the url to openstack-ansible git
+    source ./config/env-vars
+    echo "Info: Capture the ansible role requirement versions before doing anything"
+    git clone -q $OPENSTACK_OSA_GIT_URL
+    cd openstack-ansible
+    cat ansible-role-requirements.yml | while IFS= read -r line
+    do
+        if [[ $line =~ "src:" ]]; then
+            repo_url=$(echo $line | awk {'print $2'})
+            repo_sha1=$(git ls-remote $repo_url $OPENSTACK_OSA_VERSION | awk {'print $1'})
+        fi
+        echo "$line" | sed -e "s|master|$repo_sha1|" >> opnfv-ansible-role-requirements.yml
+    done
+    echo "Info: SHA1s of ansible role requirements"
+    echo "-------------------------------------------------------------------------"
+    cat opnfv-ansible-role-requirements.yml
+    echo "-------------------------------------------------------------------------"
+fi
 
-# Fix up permissions
-fix_ownership
+# proceed with the deployment
+cd $WORKSPACE/prototypes/xci
+sudo -E ./xci-deploy.sh
 
-# openstack-ansible enables strict host key checking by default
-export ANSIBLE_HOST_KEY_CHECKING=False
-
-# ensure the versions to checkout are set
-export OPENSTACK_OSA_VERSION=${OPENSTACK_OSA_VERSION:-master}
-export OPNFV_RELENG_VERSION=${OPNFV_RELENG_VERSION:-master}
+# if we arrived here without failing, it means we have something we can pin
+# this is again here to show the intention
+cd $WORKSPACE/openstack-ansible
+OSA_GIT_SHA1=$(git rev-parse HEAD)
 
 # log some info
 echo -e "\n"
 echo "***********************************************************************"
+echo "*                          OSA SHA1 TO PIN                            *"
 echo "*                                                                     *"
-echo "*                         Deploy OpenStack                            *"
-echo "*                                                                     *"
-echo "                 openstack-ansible version: $OPENSTACK_OSA_VERSION"
-echo "                       releng version: $OPNFV_RELENG_VERSION"
+echo "    $OSA_GIT_SHA1"
 echo "*                                                                     *"
 echo "***********************************************************************"
-echo -e "\n"
-# clone releng repo
-sudo git clone --quiet https://gerrit.opnfv.org/gerrit/releng /opt/releng
-cd /opt/releng && sudo git checkout --quiet $OPNFV_RELENG_VERSION
-echo "xci: using openstack-ansible commit"
-git show --oneline -s --pretty=format:'%h - %s (%cr) <%an>'
 
-# display the nodes
-echo "xci: OpenStack nodes"
-cd /opt/bifrost
-source env-vars
-ironic node-list
-
-# this script will be reused for promoting openstack-ansible versions and using
-# promoted openstack-ansible versions as part of xci daily.
-USE_PROMOTED_VERSIONS=${USE_PROMOTED_VERSIONS:-false}
-if [ $USE_PROMOTED_VERSIONS = "true" ]; then
-    echo "TBD: Will use the promoted versions of openstack/opnfv projects"
-fi
-
-cd /opt/releng/prototypes/openstack-ansible/scripts
-sudo -E ./osa-deploy.sh
-
-# log some info
-echo -e "\n"
-echo "***********************************************************************"
-echo "*                                                                     *"
-echo "*                OpenStack deployment is completed!                   *"
-echo "*                                                                     *"
-echo "***********************************************************************"
 echo -e "\n"
