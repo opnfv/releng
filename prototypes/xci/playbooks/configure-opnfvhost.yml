@@ -46,6 +46,12 @@
       command: "python pw-token-gen.py --file {{OPENSTACK_OSA_ETC_PATH}}/user_secrets.yml"
       args:
         chdir: "{{OPENSTACK_OSA_PATH}}/scripts"
+    # TODO: We need to get rid of this as soon as the issue is fixed upstream
+    - name: change the haproxy state from disable to enable
+      replace:
+        dest: "{{OPENSTACK_OSA_PATH}}/playbooks/os-keystone-install.yml"
+        regexp: '(\s+)haproxy_state: disabled'
+        replace: '\1haproxy_state: enabled'
     - name: copy OPNFV OpenStack playbook
       shell: "/bin/cp -rf {{OPNFV_RELENG_PATH}}/prototypes/xci/file/setup-openstack.yml {{OPENSTACK_OSA_PATH}}/playbooks"
     - name: copy OPNFV role requirements
