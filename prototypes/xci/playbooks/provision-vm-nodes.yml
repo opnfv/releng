@@ -1,0 +1,32 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2017 Ericsson AB and others.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+- hosts: localhost
+  remote_user: root
+  vars_files:
+    - ../var/{{ ansible_os_family }}.yml
+    - ../var/opnfv.yml
+  roles:
+    # using these roles here ensures that we can reuse this playbook in different context
+    - role: remove-folders
+    - { role: clone-repository, project: "opnfv/releng", repo: "{{ OPNFV_RELENG_GIT_URL }}", dest: "{{ OPNFV_RELENG_PATH }}", version: "{{ OPNFV_RELENG_VERSION }}" }
+    - { role: clone-repository, project: "opnfv/bifrost", repo: "{{ OPENSTACK_BIFROST_GIT_URL }}", dest: "{{ OPENSTACK_BIFROST_PATH }}", version: "{{ OPENSTACK_BIFROST_VERSION }}" }
+  tasks:
+    - name: combine opnfv/releng and openstack/bifrost scripts/playbooks
+      copy:
+        src: "{{ OPNFV_RELENG_PATH }}/prototypes/bifrost/"
+        dest: "{{ OPENSTACK_BIFROST_PATH }}"
+    - name: destroy VM nodes created by previous deployment
+      command: "/bin/bash ./scripts/destroy-env.sh"
+      args:
+        chdir: "{{ OPENSTACK_BIFROST_PATH }}"
+    - name: create and provision VM nodes for the flavor {{ XCI_FLAVOR }}
+      command: "/bin/bash ./scripts/bifrost-provision.sh"
+      args:
+        chdir: "{{ OPENSTACK_BIFROST_PATH }}"

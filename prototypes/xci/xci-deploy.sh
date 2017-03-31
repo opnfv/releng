@@ -36,41 +36,16 @@ echo "openstack/openstack-ansible version: $OPENSTACK_OSA_VERSION"
 echo "-------------------------------------------------------------------------"
 
 #-------------------------------------------------------------------------------
-# Cleanup the leftovers from the previous deployment
+# install ansible on localhost
 #-------------------------------------------------------------------------------
-echo "Info: Cleaning up the previous deployment"
-$XCI_PATH/../bifrost/scripts/destroy-env.sh > /dev/null 2>&1
-/bin/rm -rf /opt/releng /opt/bifrost /opt/openstack-ansible
-
-#-------------------------------------------------------------------------------
-# Clone the repositories and checkout the versions
-#-------------------------------------------------------------------------------
-echo "Info: Cloning repositories and checking out versions"
-git clone --quiet $OPNFV_RELENG_GIT_URL $OPNFV_RELENG_PATH && \
-    cd $OPNFV_RELENG_PATH
-echo "Info: Cloned opnfv/releng. HEAD currently points at"
-echo "      $(git show --oneline -s --pretty=format:'%h - %s (%cr) <%an>')"
-git clone --quiet $OPENSTACK_BIFROST_GIT_URL $OPENSTACK_BIFROST_PATH && \
-    cd $OPENSTACK_BIFROST_PATH
-echo "Info: Cloned openstack/bifrost. HEAD currently points at"
-echo "      $(git show --oneline -s --pretty=format:'%h - %s (%cr) <%an>')"
-
-#-------------------------------------------------------------------------------
-# Combine opnfv and upstream scripts/playbooks
-#-------------------------------------------------------------------------------
-echo "Info: Combining opnfv/releng and opestack/bifrost scripts/playbooks"
-/bin/cp -rf $OPNFV_RELENG_PATH/prototypes/bifrost/* $OPENSTACK_BIFROST_PATH/
+pip install ansible==$XCI_ANSIBLE_PIP_VERSION
 
 #-------------------------------------------------------------------------------
 # Start provisioning VM nodes
 #-------------------------------------------------------------------------------
 echo "Info: Starting provisining VM nodes using openstack/bifrost"
-echo "      This might take between 10 to 20 minutes depending on the flavor and the host"
 echo "-------------------------------------------------------------------------"
-cd $OPENSTACK_BIFROST_PATH
-STARTTIME=$(date +%s)
-./scripts/bifrost-provision.sh
-ENDTIME=$(date +%s)
+cd $XCI_PATH/playbooks
+ansible-playbook $ANSIBLE_VERBOSITY -i inventory provision-vm-nodes.yml
 echo "-----------------------------------------------------------------------"
 echo "Info: VM nodes are provisioned!"
-echo "Info: It took $(($ENDTIME - $STARTTIME)) seconds to provising the VM nodes"
