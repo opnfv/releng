@@ -1,10 +1,7 @@
 - project:
     name: 'daisy4nfv-verify-jobs'
-
     project: 'daisy'
-
     installer: 'daisy'
-
 ##########################################################
 # use alias to keep the jobs'name existed alread unchanged
 ##########################################################
@@ -26,7 +23,9 @@
 # patch verification phases
 #####################################
     phase:
-        - 'build':
+        - unit:
+            slave-label: 'opnfv-build'
+        - build:
             slave-label: 'opnfv-build-centos'
 #####################################
 # jobs
@@ -39,29 +38,22 @@
 #####################################
 - job-template:
     name: '{alias}-verify-{stream}'
-
     project-type: multijob
-
     disabled: false
-
     concurrent: true
-
     properties:
         - logrotate-default
         - throttle:
             enabled: true
             max-total: 4
             option: 'project'
-
     scm:
         - git-scm
-
     wrappers:
         - ssh-agent-wrapper
         - timeout:
             timeout: 360
             fail: true
-
     triggers:
         - gerrit:
             server-name: 'gerrit.opnfv.org'
@@ -108,6 +100,15 @@
         - description-setter:
             description: "Built on $NODE_NAME"
         - multijob:
+            name: unit
+            condition: SUCCESSFUL
+            projects:
+                - name: '{alias}-verify-{name}-{stream}'
+                  current-parameters: true
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
             name: build
             condition: SUCCESSFUL
             projects:
@@ -124,11 +125,8 @@
 
 - job-template:
     name: '{alias}-verify-{phase}-{stream}'
-
     disabled: '{obj:disabled}'
-
     concurrent: true
-
     properties:
         - logrotate-default
         - throttle:
@@ -141,16 +139,13 @@
                 - '{alias}-(merge|verify)-.*'
                 - '{installer}-daily-.*'
             block-level: 'NODE'
-
     scm:
         - git-scm
-
     wrappers:
         - ssh-agent-wrapper
         - timeout:
             timeout: 360
             fail: true
-
     parameters:
         - project-parameter:
             project: '{project}'
@@ -158,7 +153,6 @@
         - '{slave-label}-defaults'
         - '{alias}-verify-defaults':
             gs-pathname: '{gs-pathname}'
-
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
@@ -176,6 +170,16 @@
             !include-raw: ./daisy4nfv-build.sh
         - shell:
             !include-raw: ./daisy4nfv-workspace-cleanup.sh
+
+- builder:
+    name: daisy-verify-unit-macro
+    builders:
+        - shell:
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+            set -o xtrace
+            tox -e py27
 
 #####################################
 # parameter macros
