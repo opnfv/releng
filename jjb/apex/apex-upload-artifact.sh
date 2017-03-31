@@ -3,8 +3,15 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+if [ $
+    artifact="rpm"
+fi
+if [ $
+    artifact="iso"
+fi
+
 # log info to console
-echo "Uploading the Apex artifact. This could take some time..."
+echo "Uploading the Apex $artifact artifact. This could take some time..."
 echo "--------------------------------------------------------"
 echo
 
@@ -88,17 +95,21 @@ if echo $WORKSPACE | grep promote > /dev/null; then
   uploadsnap
 elif gpg2 --list-keys | grep "opnfv-helpdesk@rt.linuxfoundation.org"; then
   echo "Signing Key avaliable"
-  signiso
-  uploadiso
-  signrpm
-  uploadrpm
+  if [ $artifact == 'iso' ]; then
+    signiso
+    uploadiso
+  fi
+  if [ $artifact == 'rpm' ]; then
+    signrpm
+    uploadrpm
+  fi
 else
-  uploadiso
-  uploadrpm
+  if [ $artifact == 'iso' ]; then uploadiso; fi
+  if [ $artifact == 'rpm' ]; then uploadrpm; fi
 fi
 
 echo
 echo "--------------------------------------------------------"
 echo "Done!"
-echo "ISO Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
-echo "RPM Artifact is available as http://$GS_URL/$(basename $OPNFV_RPM_URL)"
+if [ $artifact == 'iso' ]; then echo "ISO Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"; fi
+if [ $artifact == 'rpm' ]; then echo "RPM Artifact is available as http://$GS_URL/$(basename $OPNFV_RPM_URL)"; fi
