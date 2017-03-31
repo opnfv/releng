@@ -4,7 +4,7 @@ set -o nounset
 set -o pipefail
 
 # log info to console
-echo "Uploading the Apex artifact. This could take some time..."
+echo "Uploading the Apex $1 artifact. This could take some time..."
 echo "--------------------------------------------------------"
 echo
 
@@ -18,7 +18,7 @@ echo "Cloning releng repository..."
 [ -d releng ] && rm -rf releng
 git clone https://gerrit.opnfv.org/gerrit/releng $WORKSPACE/releng/ &> /dev/null
 #this is where we import the siging key
-if [ -f $WORKSPACE/releng/utils/gpg_import_key.sh ]; then 
+if [ -f $WORKSPACE/releng/utils/gpg_import_key.sh ]; then
   source $WORKSPACE/releng/utils/gpg_import_key.sh
 fi
 
@@ -88,17 +88,21 @@ if echo $WORKSPACE | grep promote > /dev/null; then
   uploadsnap
 elif gpg2 --list-keys | grep "opnfv-helpdesk@rt.linuxfoundation.org"; then
   echo "Signing Key avaliable"
-  signiso
-  uploadiso
-  signrpm
-  uploadrpm
+  if [ $1 == 'iso' ]; then
+    signiso
+    uploadiso
+  fi
+  if [ $1 == 'rpm' ]; then
+    signrpm
+    uploadrpm
+  fi
 else
-  uploadiso
-  uploadrpm
+  if [ $1 == 'iso' ]; then uploadiso; fi
+  if [ $1 == 'rpm' ]; then uploadrpm; fi
 fi
 
 echo
 echo "--------------------------------------------------------"
 echo "Done!"
-echo "ISO Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
-echo "RPM Artifact is available as http://$GS_URL/$(basename $OPNFV_RPM_URL)"
+if [ $1 == 'iso' ]; then echo "ISO Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"; fi
+if [ $1 == 'rpm' ]; then echo "RPM Artifact is available as http://$GS_URL/$(basename $OPNFV_RPM_URL)"; fi
