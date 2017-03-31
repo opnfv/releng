@@ -28,10 +28,10 @@ cd $WORKSPACE/ci
 ./build.sh $BUILD_ARGS
 RPM_VERSION=$(grep Version: $WORKSPACE/build/rpm_specs/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '_-')
 # list the contents of BUILD_OUTPUT directory
-echo "Build Directory is ${BUILD_DIRECTORY}"
+echo "Build Directory is ${BUILD_DIRECTORY}/../.build"
 echo "Build Directory Contents:"
 echo "-------------------------"
-ls -al $BUILD_DIRECTORY
+ls -al ${BUILD_DIRECTORY}/../.build
 
 # list the contents of CACHE directory
 echo "Cache Directory is ${CACHE_DIRECTORY}"
@@ -47,10 +47,10 @@ if ! echo $BUILD_TAG | grep "apex-verify" 1> /dev/null; then
     echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
     echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
     echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
-    echo "OPNFV_ARTIFACT_SHA512SUM=$(sha512sum $BUILD_DIRECTORY/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso | cut -d' ' -f1)"
+    echo "OPNFV_ARTIFACT_SHA512SUM=$(sha512sum $BUILD_DIRECTORY/../.build/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso | cut -d' ' -f1)"
     echo "OPNFV_SRPM_URL=$GS_URL/opnfv-apex-$RPM_VERSION.src.rpm"
     echo "OPNFV_RPM_URL=$GS_URL/opnfv-apex-$RPM_VERSION.noarch.rpm"
-    echo "OPNFV_RPM_SHA512SUM=$(sha512sum $BUILD_DIRECTORY/noarch/opnfv-apex-$RPM_VERSION.noarch.rpm | cut -d' ' -f1)"
+    echo "OPNFV_RPM_SHA512SUM=$(sha512sum $BUILD_DIRECTORY/../.build/noarch/opnfv-apex-$RPM_VERSION.noarch.rpm | cut -d' ' -f1)"
     echo "OPNFV_BUILD_URL=$BUILD_URL"
   ) > $WORKSPACE/opnfv.properties
 fi
