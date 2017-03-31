@@ -26,6 +26,48 @@ elif [[ "$JOB_NAME" =~ "periodic" ]]; then
     echo "Info: Using $OPNFV_RELENG_VERSION"
 fi
 
+# this is just an example to give the idea about what we need to do
+# so ignore this part for the timebeing as we need to adjust xci-deploy.sh
+# to take this into account while deploying anyways
+# clone openstack-ansible
+# stable/ocata already use pinned versions so this is only valid for master
+if [[ "$JOB_NAME" =~ "periodic" && "$OPENSTACK_OSA_VERSION" == "master" ]]; then
+    cd $WORKSPACE
+    # get the url to openstack-ansible git
+    source ./config/env-vars
+    echo "Info: Capture the ansible role requirement versions before doing anything"
+    git clone -q $OPENSTACK_OSA_GIT_URL
+    cd openstack-ansible
+    cat ansible-role-requirements.yml | while IFS= read -r line
+    do
+        if [[ $line =~ "src:" ]]; then
+            repo_url=$(echo $line | awk {'print $2'})
+            repo_sha1=$(git ls-remote $repo_url $OPENSTACK_OSA_VERSION | awk {'print $1'})
+        fi
+        echo "$line" | sed -e "s|master|$repo_sha1|" >> opnfv-ansible-role-requirements.yml
+    done
+    echo "Info: SHA1s of ansible role requirements"
+    echo "-------------------------------------------------------------------------"
+    cat opnfv-ansible-role-requirements.yml
+    echo "-------------------------------------------------------------------------"
+fi
+
 # proceed with the deployment
 cd $WORKSPACE/prototypes/xci
 sudo -E ./xci-deploy.sh
+
+# if we arrived here without failing, it means we have something we can pin
+# this is again here to show the intention
+cd $WORKSPACE/openstack-ansible
+OSA_GIT_SHA1=$(git rev-parse HEAD)
+
+# log some info
+echo -e "\n"
+echo "***********************************************************************"
+echo "*                          OSA SHA1 TO PIN                            *"
+echo "*                                                                     *"
+echo "    $OSA_GIT_SHA1"
+echo "*                                                                     *"
+echo "***********************************************************************"
+
+echo -e "\n"
