@@ -3,8 +3,15 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+if [ $
+    artifact="rpm"
+fi
+if [ $
+    artifact="iso"
+fi
+
 # log info to console
-echo "Uploading the Apex artifact. This could take some time..."
+echo "Uploading the Apex $artifact artifact. This could take some time..."
 echo "--------------------------------------------------------"
 echo
 
@@ -24,13 +31,13 @@ fi
 
 signrpm () {
 for artifact in $RPM_LIST $SRPM_LIST; do
-  echo "Signing artifact: ${artifact}"
+  echo "Signing artifact: $1"
   gpg2 -vvv --batch --yes --no-tty \
     --default-key opnfv-helpdesk@rt.linuxfoundation.org \
     --passphrase besteffort \
     --detach-sig $artifact
     gsutil cp "$artifact".sig gs://$GS_URL/$(basename "$artifact".sig)
-    echo "Upload complete for ${artifact} signature"
+    echo "Upload complete for $1 signature"
 done
 }
 
@@ -65,9 +72,9 @@ done
 uploadrpm () {
 #This is where we upload the rpms
 for artifact in $RPM_LIST $SRPM_LIST; do
-  echo "Uploading artifact: ${artifact}"
+  echo "Uploading artifact: $1"
   gsutil cp $artifact gs://$GS_URL/$(basename $artifact) > gsutil.iso.log
-  echo "Upload complete for ${artifact}"
+  echo "Upload complete for $1"
 done
 gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log
 gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/latest.properties > gsutil.latest.log
@@ -88,17 +95,21 @@ if echo $WORKSPACE | grep promote > /dev/null; then
   uploadsnap
 elif gpg2 --list-keys | grep "opnfv-helpdesk@rt.linuxfoundation.org"; then
   echo "Signing Key avaliable"
-  signiso
-  uploadiso
-  signrpm
-  uploadrpm
+  if [ $artifact == 'iso' ]; then
+    signiso
+    uploadiso
+  fi
+  if [ $artifact == 'rpm' ]; then
+    signrpm
+    uploadrpm
+  fi
 else
-  uploadiso
-  uploadrpm
+  if [ $artifact == 'iso' ]; then uploadiso; fi
+  if [ $artifact == 'rpm' ]; then uploadrpm; fi
 fi
 
 echo
 echo "--------------------------------------------------------"
 echo "Done!"
-echo "ISO Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
-echo "RPM Artifact is available as http://$GS_URL/$(basename $OPNFV_RPM_URL)"
+if [ $artifact == 'iso' ]; then echo "ISO Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"; fi
+if [ $artifact == 'rpm' ]; then echo "RPM Artifact is available as http://$GS_URL/$(basename $OPNFV_RPM_URL)"; fi
