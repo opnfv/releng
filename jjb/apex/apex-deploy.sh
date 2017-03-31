@@ -123,7 +123,7 @@ if [[ "$BUILD_DIRECTORY" == *verify* || "$BUILD_DIRECTORY" == *promote* ]]; then
 # use RPMs
 else
     # find version of RPM
-    VERSION_EXTENSION=$(echo $(basename $RPM_LIST) | grep -Eo '[0-9]+\.[0-9]+-[0-9]{8}')
+    VERSION_EXTENSION=$(echo $(basename $RPM_LIST) | grep -Eo '[0-9]+\.[0-9]+-([0-9]{8}|[a-z]+-[0-9]\.[0-9]+)')
     # build RPM List which already includes base Apex RPM
     for pkg in ${APEX_PKGS}; do
         RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}.noarch.rpm"
