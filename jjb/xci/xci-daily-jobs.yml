@@ -1,34 +1,37 @@
+#--------------------------------
+# These jobs run on a daily basis and deploy OpenStack
+# using the pinned versions of opnfv/releng, openstack/bifrost
+# and openstack/openstack-ansible. Due to this, there is no
+# version/branch is set/passed to jobs and instead the versions
+# are checked out based on what is configured.
+#--------------------------------
 - project:
-    name: 'bifrost-osa-daily'
+    project: 'releng'
+
+    name: 'xci-daily'
 #--------------------------------
-# BRANCH ANCHORS
+# Branch Anchors
 #--------------------------------
-# the versions stated here default to branches which then later
-# on used for checking out the branches, pulling in head of the branch.
-# but they also allow us to state sha1 so instead of checking out the
-# branches, we can check out sha1 if we want to use locked/specific
-# sha1 or manually enter sha1.
     master: &master
         stream: master
-        openstack-osa-version: '{stream}'
-        openstack-bifrost-version: '{stream}'
-        opnfv-releng-version: 'master'
+        opnfv-branch: master
         gs-pathname: ''
     ocata: &ocata
         stream: ocata
-        openstack-osa-version: 'stable/{stream}'
-        openstack-bifrost-version: 'stable/{stream}'
-        opnfv-releng-version: 'master'
+        opnfv-branch: master
         gs-pathname: '/{stream}'
 #--------------------------------
-#       scenarios
+# Scenarios
 #--------------------------------
     scenario:
-        # HA scenarios
         - 'os-nosdn-nofeature-ha':
             auto-trigger-name: 'daily-trigger-disabled'
+            xci-flavor: 'ha'
+        - 'os-nosdn-nofeature-noha':
+            auto-trigger-name: 'daily-trigger-disabled'
+            xci-flavor: 'noha'
 #--------------------------------
-#        XCI PODs
+# XCI PODs
 #--------------------------------
     pod:
         - virtual:
@@ -36,7 +39,7 @@
         - virtual:
             <<: *ocata
 #--------------------------------
-#        Supported Distros
+# Supported Distros
 #--------------------------------
     distro:
         - 'xenial':
@@ -44,7 +47,7 @@
             slave-label: xci-xenial-virtual
             dib-os-release: 'xenial'
             dib-os-element: 'ubuntu-minimal'
-            dib-os-packages: 'vlan,vim,less,bridge-utils,sudo,language-pack-en,iputils-ping,rsyslog,curl,python,debootstrap,ifenslave,ifenslave-2.6,lsof,lvm2,tcpdump,nfs-kernel-server,chrony'
+            dib-os-packages: 'vlan,vim,less,bridge-utils,sudo,language-pack-en,iputils-ping,rsyslog,curl,python,debootstrap,ifenslave,ifenslave-2.6,lsof,lvm2,tcpdump,nfs-kernel-server,chrony,iptabls'
             extra-dib-elements: 'openssh-server'
         - 'centos7':
             disabled: true
@@ -65,7 +68,6 @@
 #        Phases
 #--------------------------------
     phase:
-        - 'provision'
         - 'deploy'
         - 'functest'
 #--------------------------------
@@ -74,19 +76,6 @@
     jobs:
         - 'xci-{scenario}-{pod}-{distro}-daily-{stream}'
         - 'xci-{phase}-{pod}-{distro}-daily-{stream}'
-
-#--------------------------------
-# VM defaults
-#--------------------------------
-- defaults:
-    name: daily_vm_defaults
-    test-vm-num-nodes: '6'
-    test-vm-node-names: 'xcimaster controller00 controller01 controller02 compute00 compute01'
-    vm-domain-type: 'kvm'
-    vm-cpu: '8'
-    vm-disk: '100'
-    vm-memory-size: '16384'
-    vm-disk-cache: 'unsafe'
 
 #--------------------------------
 # job templates
@@ -108,20 +97,11 @@
 
     parameters:
         - string:
-            name: OPENSTACK_OSA_VERSION
-            default: '{openstack-osa-version}'
-        - string:
-            name: OPENSTACK_BIFROST_VERSION
-            default: '{openstack-osa-version}'
-        - string:
-            name: OPNFV_RELENG_VERSION
-            default: '{opnfv-releng-version}'
-        - string:
-            name: USE_PROMOTED_VERSIONS
-            default: 'true'
-        - string:
             name: DEPLOY_SCENARIO
             default: '{scenario}'
+        - string:
+            name: XCI_FLAVOR
+            default: '{xci-flavor}'
         - label:
             name: SLAVE_LABEL
             default: '{slave-label}'
@@ -130,42 +110,25 @@
         - '{auto-trigger-name}'
 
     wrappers:
-        - xci-fix-perms-workspace
+        - fix-workspace-permissions
 
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
         - trigger-builds:
-            - project: 'xci-provision-{pod}-{distro}-daily-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                OPENSTACK_OSA_VERSION=$OPENSTACK_OSA_VERSION
-                OPENSTACK_BIFROST_VERSION=$OPENSTACK_BIFROST_VERSION
-                OPNFV_RELENG_VERSION=$OPNFV_RELENG_VERSION
-                USE_PROMOTED_VERSIONS=$USE_PROMOTED_VERSIONS
-                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-              same-node: true
-              block: true
-        - trigger-builds:
             - project: 'xci-deploy-{pod}-{distro}-daily-{stream}'
               current-parameters: false
               predefined-parameters: |
-                OPENSTACK_OSA_VERSION=$OPENSTACK_OSA_VERSION
-                OPENSTACK_BIFROST_VERSION=$OPENSTACK_BIFROST_VERSION
-                OPNFV_RELENG_VERSION=$OPNFV_RELENG_VERSION
-                USE_PROMOTED_VERSIONS=$USE_PROMOTED_VERSIONS
                 DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                XCI_FLAVOR=$XCI_FLAVOR
               same-node: true
               block: true
         - trigger-builds:
             - project: 'xci-functest-{pod}-{distro}-daily-{stream}'
               current-parameters: false
               predefined-parameters: |
-                OPENSTACK_OSA_VERSION=$OPENSTACK_OSA_VERSION
-                OPENSTACK_BIFROST_VERSION=$OPENSTACK_BIFROST_VERSION
-                OPNFV_RELENG_VERSION=$OPNFV_RELENG_VERSION
-                USE_PROMOTED_VERSIONS=$USE_PROMOTED_VERSIONS
                 DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                XCI_FLAVOR=$XCI_FLAVOR
               same-node: true
               block: true
               block-thresholds:
@@ -182,36 +145,35 @@
 
     disabled: '{obj:disabled}'
 
-    defaults: daily_vm_defaults
-
     concurrent: false
 
     properties:
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - '^xci-provision.*'
                 - '^xci-deploy.*'
                 - '^xci-functest.*'
+                - '^bifrost-periodic-.*'
+                - '^osa-periodic-.*'
             block-level: 'NODE'
         - logrotate-default
 
+    wrappers:
+        - fix-workspace-permissions
+
+    scm:
+        - git-scm
+
     parameters:
-        - string:
-            name: OPENSTACK_OSA_VERSION
-            default: '{openstack-osa-version}'
-        - string:
-            name: OPENSTACK_BIFROST_VERSION
-            default: '{openstack-osa-version}'
-        - string:
-            name: OPNFV_RELENG_VERSION
-            default: '{opnfv-releng-version}'
-        - string:
-            name: USE_PROMOTED_VERSIONS
-            default: 'true'
+        - project-parameter:
+            project: '{project}'
+            branch: '{opnfv-branch}'
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-nosdn-nofeature-ha'
+        - string:
+            name: XCI_FLAVOR
+            default: 'ha'
         - string:
             name: DISTRO
             default: '{distro}'
@@ -222,32 +184,11 @@
             name: DIB_OS_ELEMENT
             default: '{dib-os-element}'
         - string:
-            name: EXTRA_DIB_ELEMENTS
-            default: '{extra-dib-elements}'
-        - string:
             name: DIB_OS_PACKAGES
             default: '{dib-os-packages}'
         - string:
-            name: TEST_VM_NUM_NODES
-            default: '{test-vm-num-nodes}'
-        - string:
-            name: TEST_VM_NODE_NAMES
-            default: '{test-vm-node-names}'
-        - string:
-            name: VM_DOMAIN_TYPE
-            default: '{vm-domain-type}'
-        - string:
-            name: VM_CPU
-            default: '{vm-cpu}'
-        - string:
-            name: VM_DISK
-            default: '{vm-disk}'
-        - string:
-            name: VM_MEMORY_SIZE
-            default: '{vm-memory-size}'
-        - string:
-            name: VM_DISK_CACHE
-            default: '{vm-disk-cache}'
+            name: EXTRA_DIB_ELEMENTS
+            default: '{extra-dib-elements}'
         - string:
             name: CLEAN_DIB_IMAGES
             default: 'true'
@@ -258,38 +199,20 @@
             name: ANSIBLE_VERBOSITY
             default: ''
 
-    wrappers:
-        - xci-fix-perms-workspace
-
     builders:
         - description-setter:
             description: "Built on $NODE_NAME - Scenario: $DEPLOY_SCENARIO"
         - 'xci-{phase}-builder'
 
 #---------------------------
-# wrapper macros
-#---------------------------
-- wrapper:
-    name: xci-fix-perms-workspace
-    wrappers:
-        - pre-scm-buildstep:
-          - shell: |
-                #!/bin/bash
-                sudo chown -R $USER $WORKSPACE || exit 1
-
-#---------------------------
 # builder macros
 #---------------------------
-- builder:
-    name: xci-provision-builder
-    builders:
-        - shell:
-            !include-raw: ./xci-provision.sh
 - builder:
     name: xci-deploy-builder
     builders:
         - shell:
             !include-raw: ./xci-deploy.sh
+
 - builder:
     name: xci-functest-builder
     builders:
