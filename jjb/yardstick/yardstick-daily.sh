@@ -18,7 +18,7 @@ if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
 elif [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     # If production lab then creds may be retrieved dynamically
     # creds are on the jumphost, always in the same folder
-    labconfig="-v $LAB_CONFIG/admin-openrc:/home/opnfv/openrc"
+    labconfig="-v $LAB_CONFIG/admin-openrc:/etc/yardstick/openstack.creds"
     # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
     # replace the default one by the customized one provided by jenkins config
 fi
