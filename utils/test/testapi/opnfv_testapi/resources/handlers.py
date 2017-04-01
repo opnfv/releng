@@ -30,6 +30,7 @@ from tornado import web
 import models
 from opnfv_testapi.common import raises
 from opnfv_testapi.tornado_swagger import swagger
+from opnfv_testapi.common import message
 
 DEFAULT_REPRESENTATION = "application/json"
 
@@ -96,15 +97,64 @@ class GenericApiHandler(web.RequestHandler):
         :param miss_checks: [miss1, miss2]
         :param db_checks: [(table, exist, query, error)]
         """
+        data = self._pre_create(miss_checks, db_checks, **kwargs)
+        if self.table != 'results':
+            data.creation_date = datetime.now()
+        _id = yield self._eval_db(self.table, 'insert', data.format(),
+                                  check_keys=False)
+        resource = self._created_resource(_id, data)
+        self.finish_request(self._create_response(resource))
+
+    @authenticate
+    def _create_within(self, query, child_query):
+        if self.json_args is None:
+            raises.BadRequest(message.no_body())
+
+        # get the carrier
+        from_data = yield self._eval_db_find_one(query())
+        if from_data is None:
+            raises.NotFound(message.not_found('scenario', query()))
+        data = self.table_cls.from_dict(from_data)
+
+        # check child-item exist
+        if child_query():
+            to_data = yield self._eval_db_find_one(child_query())
+            if to_data:
+                raises.Forbidden(message.exist('installer', child_query()))
+
+        # we merge the whole document
+        edit = self._update_requests(data)
+
+        """ Updating the DB """
+        yield self._eval_db(self.table, 'update', query(), edit,
+                            check_keys=False)
+        self.finish_request(edit)
+
+    def _created_resource(self, _id, data):
+        if 'name' in self.json_args:
+            resource = data.name
+        else:
+            resource = _id
+        return resource
+
+    def _pre_create(self, miss_checks, db_checks, **kwargs):
         if self.json_args is None:
             raises.BadRequest('no body')
-
         data = self.table_cls.from_dict(self.json_args)
+        self._create_miss_check(data, miss_checks)
+        self._create_exist_check(data, db_checks, **kwargs)
+        if self.table != 'results':
+            data.creation_date = datetime.now()
+        return data
+
+    @staticmethod
+    def _create_miss_check(data, miss_checks):
         for miss in miss_checks:
             miss_data = data.__getattribute__(miss)
             if miss_data is None or miss_data == '':
                 raises.BadRequest('{} missing'.format(miss))
 
+    def _create_exist_check(self, data, db_checks, **kwargs):
         for k, v in kwargs.iteritems():
             data.__setattr__(k, v)
 
@@ -113,16 +163,6 @@ class GenericApiHandler(web.RequestHandler):
             if (exist and not check) or (not exist and check):
                 code, message = error(data)
                 raises.CodeTBD(code, message)
-
-        if self.table != 'results':
-            data.creation_date = datetime.now()
-        _id = yield self._eval_db(self.table, 'insert', data.format(),
-                                  check_keys=False)
-        if 'name' in self.json_args:
-            resource = data.name
-        else:
-            resource = _id
-        self.finish_request(self._create_response(resource))
 
     @web.asynchronous
     @gen.coroutine

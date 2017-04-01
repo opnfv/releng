@@ -5,6 +5,7 @@ from opnfv_testapi.common import raises
 from opnfv_testapi.resources import handlers
 import opnfv_testapi.resources.scenario_models as models
 from opnfv_testapi.tornado_swagger import swagger
+from opnfv_testapi.common import message
 
 
 class GenericScenarioHandler(handlers.GenericApiHandler):
@@ -289,3 +290,29 @@ class ScenarioGURHandler(GenericScenarioHandler):
     @property
     def _term(self):
         return self.json_args.get('term')
+
+
+class ScenarioInstallersHandler(GenericScenarioHandler):
+    @swagger.operation(nickname="AddNewInstaller2Scenario")
+    def post(self, scenario_name):
+        """
+            @description: create a testcase of a project by project_name
+            @param body: testcase to be created
+            @type body: L{TestcaseCreateRequest}
+            @in body: body
+            @rtype: L{CreateResponse}
+            @return 200: testcase is created in this project.
+            @raise 403: project not exist
+                        or testcase already exists in this project
+            @raise 400: body or name not provided
+        """
+        s_query = lambda: {'name': scenario_name}
+        i_query = lambda: {'name': scenario_name,
+                           'installers': {
+                               '$elemMatch': {
+                                   'installer': self.json_args.get('installer')}}}
+        self._create_within(s_query, i_query)
+
+    def _update_requests(self, data):
+        data.installers.append(models.ScenarioInstaller.from_dict(self.json_args))
+        return data.format()

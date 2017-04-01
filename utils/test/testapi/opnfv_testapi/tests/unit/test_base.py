@@ -80,6 +80,14 @@ class TestBase(testing.AsyncHTTPTestCase):
             return self.get_res \
                 if num != self._need_arg_num(self.basePath) else self.list_res
         return self._get_return(res, inner())
+    
+    def get_by_url(self, url):
+        res = self.fetch(url,
+                         method='GET',
+                         headers=self.headers)
+        code = res.code
+        body = res.body
+        return code, self._get_return_body(code, body, self.get_res)
 
     def query(self, query):
         res = self.fetch(self._get_query_uri(query),

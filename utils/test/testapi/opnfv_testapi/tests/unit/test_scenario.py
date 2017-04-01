@@ -5,8 +5,13 @@ import httplib
 import json
 import os
 
+from opnfv_testapi.common import message
 import opnfv_testapi.resources.scenario_models as models
 import test_base as base
+
+
+def _none_default(check, default):
+    return check if check else default
 
 
 class TestScenarioBase(base.TestBase):
@@ -15,8 +20,8 @@ class TestScenarioBase(base.TestBase):
         self.get_res = models.Scenario
         self.list_res = models.Scenarios
         self.basePath = '/api/v1/scenarios'
-        self.req_d = self._load_request('scenario-c1.json')
-        self.req_2 = self._load_request('scenario-c2.json')
+        self.req_d = self.load_request('scenario-c1.json')
+        self.req_2 = self.load_request('scenario-c2.json')
 
     def tearDown(self):
         pass
@@ -25,8 +30,8 @@ class TestScenarioBase(base.TestBase):
         pass
 
     @staticmethod
-    def _load_request(f_req):
-        abs_file = os.path.join(os.path.dirname(__file__), f_req)
+    def load_request(f_req):
+        abs_file = os.path.join(os.path.dirname(__file__), 'data/', f_req)
         with open(abs_file, 'r') as f:
             loader = json.load(f)
             f.close()
@@ -355,5 +360,53 @@ class TestScenarioDelete(TestScenarioBase):
         self.assertEqual(code, httplib.NOT_FOUND)
 
 
-def _none_default(check, default):
-    return check if check else default
+class TestScenarioAddInstaller(TestScenarioBase):
+    def setUp(self):
+        super(TestScenarioAddInstaller, self).setUp()
+        self.scenario = self.create_return_name(self.req_d)
+        self.basePath = '/api/v1/scenarios/%s/installers'
+        self.req_scenario = self.load_request('scenario_installer.json')
+
+    def _add(expected, e_code, e_message=None):
+        def __add(add):
+            @functools.wraps(add)
+            def wrap(self):
+                installer, scenario = add(self)
+                code, body = self.create(installer, scenario)
+                self.assertEqual(e_code, code)
+                if expected == '_success':
+                    getattr(self, '_success')()
+                else:
+                    self.assertIn(e_message, body)
+            return wrap
+        return __add
+
+    @_add('_noBody',
+          httplib.BAD_REQUEST,
+          message.no_body())
+    def test_noBody(self):
+        return None, self.scenario
+
+    @_add('_noScenario',
+          httplib.NOT_FOUND,
+          message.not_found_base)
+    def test_noScenario(self):
+        return self.req_scenario, 'noScenario'
+
+    @_add('_exist',
+          httplib.FORBIDDEN,
+          message.exist_base)
+    def test_exist(self):
+        return self.req_d['installers'][0], self.scenario
+
+    @_add('_success', httplib.OK)
+    def test_success(self):
+        add = models.ScenarioInstaller(installer='daisy', versions=list())
+        return add, self.scenario
+
+    def _success(self):
+        code, body = self.get_by_url('/api/v1/scenarios/{}'.format(self.scenario))
+        daisy_exist = filter(
+            lambda installer: 'daisy' == installer,
+            [installer.installer for installer in body.installers])
+        self.assertIsNotNone(daisy_exist)
