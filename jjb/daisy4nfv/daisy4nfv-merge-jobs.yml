@@ -29,7 +29,7 @@
         - 'build':
             slave-label: 'opnfv-build-centos'
         - 'deploy-virtual':
-            slave-label: 'opnfv-build-centos'
+            slave-label: 'daisy-virtual'
 #####################################
 # jobs
 #####################################
@@ -148,8 +148,7 @@
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - '{alias}-(merge|verify)-.*'
-                - '{project}-daily-.*'
+                - '{alias}-merge-(master|danube)'
             block-level: 'NODE'
 
     scm:
