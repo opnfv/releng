@@ -126,18 +126,20 @@
             undercloud_mac=$(sudo virsh domiflist undercloud | grep default | \
                               grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
             INSTALLER_IP=$(/usr/sbin/arp -e | grep ${undercloud_mac} | awk {'print $1'})
+
             sudo scp -o StrictHostKeyChecking=no root@$INSTALLER_IP:/home/stack/overcloudrc /tmp/overcloudrc
             sudo chmod 755 /tmp/overcloudrc
             source /tmp/overcloudrc
 
             # robot suites need the ssh key to log in to controller nodes, so throwing it
             # in tmp, and mounting /tmp as $HOME as far as robot is concerned
-            sudo mkdir -p /tmp/.ssh
+            sudo rm -rf /tmp/.ssh
+            sudo mkdir /tmp/.ssh
+            sudo chmod 0700 /tmp/.ssh
             sudo scp -o StrictHostKeyChecking=no root@$INSTALLER_IP:/home/stack/.ssh/id_rsa /tmp/.ssh/
             sudo chown -R jenkins-ci:jenkins-ci /tmp/.ssh
             # done with sudo. jenkins-ci is the user from this point
-            sudo mv /tmp/.ssh/id_rsa ~jenkins-ci/.ssh/
-            chmod -R 0600 ~jenkins-ci/.ssh
+            chmod 0600 /tmp/.ssh/id_rsa
 
             # cbench requires the openflow drop test feature to be installed.
             sshpass -p karaf ssh -o StrictHostKeyChecking=no \
@@ -148,7 +150,7 @@
 
             docker pull opnfv/cperf:$DOCKER_TAG
 
-            robot_cmd="pybot -e exclude -L TRACE \
+            robot_cmd="pybot -e exclude -L TRACE -d /tmp \
                         -v ODL_SYSTEM_1_IP:${SDN_CONTROLLER_IP} \
                         -v ODL_SYSTEM_IP:${SDN_CONTROLLER_IP} \
                         -v BUNDLEFOLDER:/opt/opendaylight \
@@ -160,7 +162,7 @@
                         -v of_port:6653"
             robot_suite="/home/opnfv/repos/odl_test/csit/suites/openflowplugin/Performance/010_Cbench.robot"
 
-            docker run -v /tmp:/tmp opnfv/cperf:$DOCKER_TAG ${robot_cmd} ${robot_suite}
+            docker run -ti -v /tmp:/tmp opnfv/cperf:$DOCKER_TAG ${robot_cmd} ${robot_suite}
 
 - builder:
     name: cperf-cleanup
