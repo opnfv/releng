@@ -5,6 +5,7 @@ from opnfv_testapi.common import raises
 from opnfv_testapi.resources import handlers
 import opnfv_testapi.resources.scenario_models as models
 from opnfv_testapi.tornado_swagger import swagger
+from opnfv_testapi.common import message
 
 
 class GenericScenarioHandler(handlers.GenericApiHandler):
@@ -289,3 +290,30 @@ class ScenarioGURHandler(GenericScenarioHandler):
     @property
     def _term(self):
         return self.json_args.get('term')
+
+
+class ScenarioInstallersHandler(GenericScenarioHandler):
+    @swagger.operation(nickname="AddNewInstaller2Scenario")
+    def post(self, scenario_name):
+        """
+            @description: create a testcase of a project by project_name
+            @param body: testcase to be created
+            @type body: L{TestcaseCreateRequest}
+            @in body: body
+            @rtype: L{CreateResponse}
+            @return 200: testcase is created in this project.
+            @raise 403: project not exist
+                        or testcase already exists in this project
+            @raise 400: body or name not provided
+        """
+        s_query = lambda data: {'name': scenario_name}
+        s_error = lambda data: (httplib.FORBIDDEN,
+                                message.not_found('scenario', scenario_name))
+        i_query = lambda data: {'installers': {'$elemMatch': {'installer': data.installer}}, 'name': scenario_name}
+        i_exist = lambda data: (httplib.FORBIDDEN,
+                                message.exist('installer', data.installer))
+
+        miss_checks = ['installer']
+        db_checks = [(self.db_scenarios, True, s_query, s_error),
+                     (self.db_scenarios, False, i_query, i_exist)]
+        self._create(miss_checks, db_checks)
