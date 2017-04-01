@@ -47,4 +47,5 @@ mappings = [
     # scenarios
     (r"/api/v1/scenarios", scenario_handlers.ScenariosCLHandler),
     (r"/api/v1/scenarios/([^/]+)", scenario_handlers.ScenarioGURHandler),
+    (r"/api/v1/scenarios/([^/]+)/installers", scenario_handlers.ScenarioInstallersHandler),
 ]
