@@ -31,7 +31,7 @@ source $XCI_PATH/config/user-vars
 # source pinned versions
 source $XCI_PATH/config/pinned-versions
 # source flavor configuration
-source "$XCI_PATH/flavors/${XCI_FLAVOR}-vars"
+source "$XCI_PATH/config/${XCI_FLAVOR}-vars"
 # source xci configuration
 source $XCI_PATH/config/env-vars
 

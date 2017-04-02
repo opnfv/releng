@@ -77,8 +77,8 @@
                 - '^xci-os.*'
                 - '^xci-deploy.*'
                 - '^xci-functest.*'
-                - '^bifrost-periodic-.*'
-                - '^osa-periodic-.*'
+                - '^bifrost-.*periodic.*'
+                - '^osa-.*periodic.*'
             block-level: 'NODE'
         - logrotate-default
 
@@ -86,6 +86,9 @@
         - project-parameter:
             project: '{project}'
             branch: '{opnfv-releng-version}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
         - string:
             name: XCI_FLAVOR
             default: 'ha'
@@ -133,7 +136,7 @@
 
     builders:
         - description-setter:
-            description: "Built on $NODE_NAME - Scenario: $DEPLOY_SCENARIO"
+            description: "Built on $NODE_NAME - Flavor: $XCI_FLAVOR"
         - 'bifrost-provision-builder'
 
 #---------------------------
