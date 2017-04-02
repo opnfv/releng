@@ -70,6 +70,9 @@ cd /opt/releng && sudo git checkout --quiet $OPNFV_RELENG_VERSION
 echo "xci: using releng commit"
 git show --oneline -s --pretty=format:'%h - %s (%cr) <%an>'
 
+# source flavor vars
+source "$WORKSPACE/prototypes/xci/config/${XCI_FLAVOR}-vars"
+
 # combine opnfv and upstream scripts/playbooks
 sudo /bin/cp -rf /opt/releng/prototypes/bifrost/* /opt/bifrost/
 
@@ -77,7 +80,7 @@ sudo /bin/cp -rf /opt/releng/prototypes/bifrost/* /opt/bifrost/
 cd /opt/bifrost
 sudo -E ./scripts/destroy-env.sh
 
-# provision 6 VMs; xcimaster, controller00, controller01, controller02, compute00, and compute01
+# provision VMs for the flavor
 cd /opt/bifrost
 sudo -E ./scripts/bifrost-provision.sh
 
@@ -86,7 +89,6 @@ cd /opt/bifrost
 source env-vars
 ironic node-list
 virsh list
-
 
 echo "OpenStack nodes are provisioned!"
 # here we have to do something in order to capture what was the working sha1
