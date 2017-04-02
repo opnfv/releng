@@ -94,8 +94,8 @@
                 - '^xci-os.*'
                 - '^xci-deploy.*'
                 - '^xci-functest.*'
-                - '^bifrost-periodic-.*'
-                - '^osa-periodic-.*'
+                - '^bifrost-.*periodic.*'
+                - '^osa-.*periodic.*'
             block-level: 'NODE'
         - logrotate-default
 
@@ -155,10 +155,11 @@
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
+                - '^xci-os.*'
                 - '^xci-deploy.*'
                 - '^xci-functest.*'
-                - '^bifrost-periodic-.*'
-                - '^osa-periodic-.*'
+                - '^bifrost-.*periodic.*'
+                - '^osa-.*periodic.*'
             block-level: 'NODE'
         - logrotate-default
 
@@ -172,6 +173,9 @@
         - project-parameter:
             project: '{project}'
             branch: '{opnfv-releng-version}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-nosdn-nofeature-ha'

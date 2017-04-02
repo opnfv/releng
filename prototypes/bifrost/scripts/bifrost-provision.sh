@@ -34,7 +34,7 @@ export BIFROST_INVENTORY_SOURCE=$BAREMETAL_DATA_FILE
 
 # Default settings for VMs
 export TEST_VM_NUM_NODES=${TEST_VM_NUM_NODES:-3}
-export TEST_VM_NODE_NAMES=${TEST_VM_NODE_NAMES:-"xcimaster controller00 compute00"}
+export TEST_VM_NODE_NAMES=${TEST_VM_NODE_NAMES:-"opnfv controller00 compute00"}
 export VM_DOMAIN_TYPE=${VM_DOMAIN_TYPE:-kvm}
 export VM_CPU=${VM_CPU:-4}
 export VM_DISK=${VM_DISK:-100}
