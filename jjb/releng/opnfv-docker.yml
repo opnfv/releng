@@ -121,6 +121,15 @@
     triggers:
         - pollscm:
             cron: "*/30 * * * *"
+        - gerrit:
+            trigger-on:
+              - ref-updated-event
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                    - branch-compare-type: 'REG_EXP'
+                      branch-pattern: 'refs/tags/(danube).*'
 
     publishers:
         - email:
