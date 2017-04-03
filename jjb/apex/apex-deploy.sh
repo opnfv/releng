@@ -87,8 +87,8 @@ if [[ "$BUILD_DIRECTORY" == *verify* || "$BUILD_DIRECTORY" == *promote* ]]; then
     DEPLOY_SETTINGS_DIR="${WORKSPACE}/config/deploy"
     NETWORK_SETTINGS_DIR="${WORKSPACE}/config/network"
     DEPLOY_CMD="$(pwd)/deploy.sh"
-    RESOURCES="${WORKSPACE}/.build/"
-    CONFIG="${WORKSPACE}/build"
+    IMAGES="${WORKSPACE}/.build/"
+    BASE="${WORKSPACE}/build"
     LIB="${WORKSPACE}/lib"
     # Make sure python34 deps are installed
     for dep_pkg in epel-release python34 python34-PyYAML python34-setuptools; do
@@ -145,13 +145,13 @@ else
     DEPLOY_CMD=opnfv-deploy
     DEPLOY_SETTINGS_DIR="/etc/opnfv-apex/"
     NETWORK_SETTINGS_DIR="/etc/opnfv-apex/"
-    RESOURCES="/var/opt/opnfv/images"
-    CONFIG="/var/opt/opnfv"
+    IMAGES="/var/opt/opnfv/images"
+    BASE="/var/opt/opnfv"
     LIB="/var/opt/opnfv/lib"
 fi
 
 # set env vars to deploy cmd
-DEPLOY_CMD="CONFIG=${CONFIG} RESOURCES=${RESOURCES} LIB=${LIB} ${DEPLOY_CMD}"
+DEPLOY_CMD="BASE=${BASE} IMAGES=${IMAGES} LIB=${LIB} ${DEPLOY_CMD}"
 
 if [ "$OPNFV_CLEAN" == 'yes' ]; then
   if sudo test -e '/root/inventory/pod_settings.yaml'; then
@@ -160,9 +160,9 @@ if [ "$OPNFV_CLEAN" == 'yes' ]; then
     clean_opts=''
   fi
   if [[ "$BUILD_DIRECTORY" == *verify* || "$BUILD_DIRECTORY" == *promote* ]]; then
-    sudo CONFIG=${CONFIG} LIB=${LIB} ./clean.sh ${clean_opts}
+    sudo BASE=${BASE} LIB=${LIB} ./clean.sh ${clean_opts}
   else
-    sudo CONFIG=${CONFIG} LIB=${LIB} opnfv-clean ${clean_opts}
+    sudo BASE=${BASE} LIB=${LIB} opnfv-clean ${clean_opts}
   fi
 fi
 

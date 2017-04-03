@@ -22,7 +22,7 @@ echo
 
 echo "Cleaning server"
 pushd ci > /dev/null
-sudo CONFIG=../build/ LIB=../lib ./clean.sh
+sudo BASE=../build/ LIB=../lib ./clean.sh
 popd > /dev/null
 
 echo "Downloading latest snapshot properties file"
