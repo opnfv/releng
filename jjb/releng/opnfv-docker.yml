@@ -121,6 +121,15 @@
     triggers:
         - pollscm:
             cron: "*/30 * * * *"
+        - gerrit:
+            trigger-on:
+              - ref-updated-event
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: 'refs/tags/{stream}*'
 
     publishers:
         - email:
