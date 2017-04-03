@@ -59,6 +59,12 @@ else
     fi
 fi
 
+# rename odl_l3 to odl only for master
+# this can be removed once all the odl_l3 references
+# are updated to odl after the danube jobs are removed
+if [[ "$BUILD_DIRECTORY" == *master* ]]; then
+    DEPLOY_SCENARIO=${DEPLOY_SCENARIO/odl_l3/odl}
+fi
 if [ -z "$DEPLOY_SCENARIO" ]; then
   echo "Deploy scenario not set!"
   exit 1
