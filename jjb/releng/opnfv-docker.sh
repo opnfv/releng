@@ -17,6 +17,18 @@ echo "Starting opnfv-docker for $DOCKER_REPO_NAME ..."
 echo "--------------------------------------------------------"
 echo
 
+# Judge whether is it triggered by period or by ref-udpate
+if [[ "$GERRIT_EVENT_TYPE" == "ref-updated" ]] && [[ "$GERRIT_REFNAME" =~ (danube) ]]; then
+	echo "Triggered by: $GERRIT_EVENT_TYPE"
+    echo "Tag name: $GERRIT_REFNAME"
+
+    # Checkout the commit speficied refname, and the commit can be in review
+    git checkout $GERRIT_REFNAME
+
+    # Get RELEASE_VERSION from refname to void to triger the job manually
+    export RELEASE_VERSION=${GERRIT_REFNAME#refs/tags/*.}
+fi
+
 count=30 # docker build jobs might take up to ~30 min
 while [[ -n `ps -ef|grep 'docker build'|grep -v grep` ]]; do
     echo "Build in progress. Waiting..."
