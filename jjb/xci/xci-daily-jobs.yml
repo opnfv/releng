@@ -109,6 +109,9 @@
         - label:
             name: SLAVE_LABEL
             default: '{slave-label}'
+        - string:
+            name: XCI_LOOP
+            default: 'daily'
 
     triggers:
         - '{auto-trigger-name}'
@@ -125,6 +128,7 @@
               predefined-parameters: |
                 DEPLOY_SCENARIO=$DEPLOY_SCENARIO
                 XCI_FLAVOR=$XCI_FLAVOR
+                XCI_LOOP=$XCI_LOOP
               same-node: true
               block: true
         - trigger-builds:
@@ -133,6 +137,7 @@
               predefined-parameters: |
                 DEPLOY_SCENARIO=$DEPLOY_SCENARIO
                 XCI_FLAVOR=$XCI_FLAVOR
+                XCI_LOOP=$XCI_LOOP
               same-node: true
               block: true
               block-thresholds:
@@ -205,6 +210,9 @@
         - string:
             name: ANSIBLE_VERBOSITY
             default: ''
+        - string:
+            name: XCI_LOOP
+            default: 'daily'
 
     builders:
         - description-setter:
