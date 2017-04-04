@@ -56,18 +56,20 @@ fi
 cd $WORKSPACE/prototypes/xci
 sudo -E ./xci-deploy.sh
 
-# if we arrived here without failing, it means we have something we can pin
-# this is again here to show the intention
-cd $WORKSPACE/openstack-ansible
-OSA_GIT_SHA1=$(git rev-parse HEAD)
+if [[ "$JOB_NAME" =~ "periodic" && "$OPENSTACK_OSA_VERSION" == "master" ]]; then
+    # if we arrived here without failing, it means we have something we can pin
+    # this is again here to show the intention
+    cd $WORKSPACE/openstack-ansible
+    OSA_GIT_SHA1=$(git rev-parse HEAD)
 
-# log some info
-echo -e "\n"
-echo "***********************************************************************"
-echo "*                          OSA SHA1 TO PIN                            *"
-echo "*                                                                     *"
-echo "    $OSA_GIT_SHA1"
-echo "*                                                                     *"
-echo "***********************************************************************"
+    # log some info
+    echo -e "\n"
+    echo "***********************************************************************"
+    echo "*                          OSA SHA1 TO PIN                            *"
+    echo "*                                                                     *"
+    echo "    $OSA_GIT_SHA1"
+    echo "*                                                                     *"
+    echo "***********************************************************************"
+fi
 
 echo -e "\n"
