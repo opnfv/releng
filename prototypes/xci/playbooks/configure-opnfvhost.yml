@@ -54,8 +54,10 @@
         replace: '\1haproxy_state: enabled'
     - name: copy OPNFV OpenStack playbook
       shell: "/bin/cp -rf {{OPNFV_RELENG_PATH}}/prototypes/xci/file/setup-openstack.yml {{OPENSTACK_OSA_PATH}}/playbooks"
+    # Copy pinned role requirements if we are running as part of daily CI loop
     - name: copy OPNFV role requirements
       shell: "/bin/cp -rf {{OPNFV_RELENG_PATH}}/prototypes/xci/file/ansible-role-requirements.yml {{OPENSTACK_OSA_PATH}}"
+      when: XCI_LOOP == "daily"
 - hosts: localhost
   remote_user: root
   tasks:
