@@ -70,7 +70,9 @@ cd $XCI_PATH/playbooks
 ansible-playbook $ANSIBLE_VERBOSITY -i inventory provision-vm-nodes.yml
 echo "-----------------------------------------------------------------------"
 echo "Info: VM nodes are provisioned!"
-
+source $OPENSTACK_BIFROST_PATH/env-vars
+ironic node-list
+echo
 #-------------------------------------------------------------------------------
 # Configure localhost
 #-------------------------------------------------------------------------------
