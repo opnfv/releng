@@ -9,6 +9,7 @@ import unittest
 from tornado import web
 
 import fake_pymongo
+from opnfv_testapi.common import message
 from opnfv_testapi.resources import project_models
 from opnfv_testapi.router import url_mappings
 import test_base as base
@@ -35,13 +36,13 @@ class TestTokenCreateProject(TestToken):
         self.headers['X-Auth-Token'] = '1234'
         code, body = self.create_d()
         self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn('Invalid Token.', body)
+        self.assertIn(message.invalid_token(), body)
 
     def test_projectCreateTokenUnauthorized(self):
         self.headers.pop('X-Auth-Token')
         code, body = self.create_d()
         self.assertEqual(code, httplib.UNAUTHORIZED)
-        self.assertIn('No Authentication Header.', body)
+        self.assertIn(message.unauthorized(), body)
 
     def test_projectCreateTokenSuccess(self):
         self.headers['X-Auth-Token'] = '12345'
@@ -62,7 +63,7 @@ class TestTokenDeleteProject(TestToken):
         self.headers['X-Auth-Token'] = '1234'
         code, body = self.delete(self.req_d.name)
         self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn('Invalid Token.', body)
+        self.assertIn(message.invalid_token(), body)
 
     def test_projectDeleteTokenUnauthorized(self):
         self.headers['X-Auth-Token'] = '12345'
@@ -70,7 +71,7 @@ class TestTokenDeleteProject(TestToken):
         self.headers.pop('X-Auth-Token')
         code, body = self.delete(self.req_d.name)
         self.assertEqual(code, httplib.UNAUTHORIZED)
-        self.assertIn('No Authentication Header.', body)
+        self.assertIn(message.unauthorized(), body)
 
     def test_projectDeleteTokenSuccess(self):
         self.headers['X-Auth-Token'] = '12345'
@@ -94,7 +95,7 @@ class TestTokenUpdateProject(TestToken):
         req = project_models.ProjectUpdateRequest('newName', 'new description')
         code, body = self.update(req, self.req_d.name)
         self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn('Invalid Token.', body)
+        self.assertIn(message.invalid_token(), body)
 
     def test_projectUpdateTokenUnauthorized(self):
         self.headers['X-Auth-Token'] = '12345'
@@ -104,7 +105,7 @@ class TestTokenUpdateProject(TestToken):
         req = project_models.ProjectUpdateRequest('newName', 'new description')
         code, body = self.update(req, self.req_d.name)
         self.assertEqual(code, httplib.UNAUTHORIZED)
-        self.assertIn('No Authentication Header.', body)
+        self.assertIn(message.unauthorized(), body)
 
     def test_projectUpdateTokenSuccess(self):
         self.headers['X-Auth-Token'] = '12345'
