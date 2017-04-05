@@ -10,6 +10,7 @@ import copy
 import httplib
 import unittest
 
+from opnfv_testapi.common import message
 from opnfv_testapi.resources import project_models
 from opnfv_testapi.resources import testcase_models
 import test_base as base
@@ -84,19 +85,19 @@ class TestCaseCreate(TestCaseBase):
     def test_noProject(self):
         code, body = self.create(self.req_d, 'noProject')
         self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn('Could not find project', body)
+        self.assertIn(message.not_found_base, body)
 
     def test_emptyName(self):
         req_empty = testcase_models.TestcaseCreateRequest('')
         (code, body) = self.create(req_empty, self.project)
         self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn('name missing', body)
+        self.assertIn(message.missing('name'), body)
 
     def test_noneName(self):
         req_none = testcase_models.TestcaseCreateRequest(None)
         (code, body) = self.create(req_none, self.project)
         self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn('name missing', body)
+        self.assertIn(message.missing('name'), body)
 
     def test_success(self):
         code, body = self.create_d()
@@ -107,7 +108,7 @@ class TestCaseCreate(TestCaseBase):
         self.create_d()
         code, body = self.create_d()
         self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn('already exists', body)
+        self.assertIn(message.exist_base, body)
 
 
 class TestCaseGet(TestCaseBase):
@@ -146,13 +147,13 @@ class TestCaseUpdate(TestCaseBase):
         self.create_e()
         code, body = self.update(self.update_e, self.req_d.name)
         self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn("already exists", body)
+        self.assertIn(message.exist_base, body)
 
     def test_noUpdate(self):
         self.create_d()
         code, body = self.update(self.update_d, self.req_d.name)
         self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn("Nothing to update", body)
+        self.assertIn(message.no_update(), body)
 
     def test_success(self):
         self.create_d()

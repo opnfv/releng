@@ -1,6 +1,7 @@
 import functools
 import httplib
 
+from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
 from opnfv_testapi.resources import handlers
 import opnfv_testapi.resources.scenario_models as models
@@ -184,7 +185,7 @@ class ScenarioGURHandler(GenericScenarioHandler):
     def _update_requests_rename(self, data):
         data.name = self._term.get('name')
         if not data.name:
-            raises.BadRequest("new scenario name is not provided")
+            raises.BadRequest(message.missing('name'))
 
     def _update_requests_add_installer(self, data):
         data.installers.append(models.ScenarioInstaller.from_dict(self._term))

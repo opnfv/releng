@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 import httplib
 import unittest
 
+from opnfv_testapi.common import message
 from opnfv_testapi.resources import pod_models
 from opnfv_testapi.resources import project_models
 from opnfv_testapi.resources import result_models
@@ -135,49 +136,49 @@ class TestResultCreate(TestResultBase):
     def test_nobody(self):
         (code, body) = self.create(None)
         self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn('no body', body)
+        self.assertIn(message.no_body(), body)
 
     def test_podNotProvided(self):
         req = self.req_d
         req.pod_name = None
         (code, body) = self.create(req)
         self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn('pod_name missing', body)
+        self.assertIn(message.missing('pod_name'), body)
 
     def test_projectNotProvided(self):
         req = self.req_d
         req.project_name = None
         (code, body) = self.create(req)
         self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn('project_name missing', body)
+        self.assertIn(message.missing('project_name'), body)
 
     def test_testcaseNotProvided(self):
         req = self.req_d
         req.case_name = None
         (code, body) = self.create(req)
         self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn('case_name missing', body)
+        self.assertIn(message.missing('case_name'), body)
 
     def test_noPod(self):
         req = self.req_d
         req.pod_name = 'notExistPod'
         (code, body) = self.create(req)
         self.assertEqual(code, httplib.NOT_FOUND)
-        self.assertIn('Could not find pod', body)
+        self.assertIn(message.not_found_base, body)
 
     def test_noProject(self):
         req = self.req_d
         req.project_name = 'notExistProject'
         (code, body) = self.create(req)
         self.assertEqual(code, httplib.NOT_FOUND)
-        self.assertIn('Could not find project', body)
+        self.assertIn(message.not_found_base, body)
 
     def test_noTestcase(self):
         req = self.req_d
         req.case_name = 'notExistTestcase'
         (code, body) = self.create(req)
         self.assertEqual(code, httplib.NOT_FOUND)
-        self.assertIn('Could not find testcase', body)
+        self.assertIn(message.not_found_base, body)
 
     def test_success(self):
         (code, body) = self.create_d()
