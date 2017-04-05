@@ -12,6 +12,7 @@ import httplib
 
 from bson import objectid
 
+from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
 from opnfv_testapi.resources import handlers
 from opnfv_testapi.resources import result_models
@@ -30,7 +31,7 @@ class GenericResultHandler(handlers.GenericApiHandler):
         try:
             value = int(value)
         except:
-            raises.BadRequest('{} must be int'.format(key))
+            raises.BadRequest(message.must_int(key))
         return value
 
     def set_query(self):
@@ -144,23 +145,21 @@ class ResultsCLHandler(GenericResultHandler):
             return {'name': data.pod_name}
 
         def pod_error(data):
-            message = 'Could not find pod [{}]'.format(data.pod_name)
-            return httplib.NOT_FOUND, message
+            return httplib.NOT_FOUND, message.not_found('pod', data.pod_name)
 
         def project_query(data):
             return {'name': data.project_name}
 
         def project_error(data):
-            message = 'Could not find project [{}]'.format(data.project_name)
-            return httplib.NOT_FOUND, message
+            return httplib.NOT_FOUND, message.not_found('project',
+                                                        data.project_name)
 
         def testcase_query(data):
             return {'project_name': data.project_name, 'name': data.case_name}
 
         def testcase_error(data):
-            message = 'Could not find testcase [{}] in project [{}]'\
-                .format(data.case_name, data.project_name)
-            return httplib.NOT_FOUND, message
+            return httplib.NOT_FOUND, message.not_found('testcase',
+                                                        data.case_name)
 
         miss_checks = ['pod_name', 'project_name', 'case_name']
         db_checks = [('pods', True, pod_query, pod_error),

@@ -9,6 +9,7 @@
 import httplib
 
 import handlers
+from opnfv_testapi.common import message
 from opnfv_testapi.tornado_swagger import swagger
 import pod_models
 
@@ -46,8 +47,7 @@ class PodCLHandler(GenericPodHandler):
             return {'name': data.name}
 
         def error(data):
-            message = '{} already exists as a pod'.format(data.name)
-            return httplib.FORBIDDEN, message
+            return httplib.FORBIDDEN, message.exist('pod', data.name)
 
         miss_checks = ['name']
         db_checks = [(self.table, False, query, error)]

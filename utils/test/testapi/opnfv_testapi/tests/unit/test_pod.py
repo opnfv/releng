@@ -9,6 +9,7 @@
 import httplib
 import unittest
 
+from opnfv_testapi.common import message
 from opnfv_testapi.resources import pod_models
 import test_base as base
 
@@ -43,13 +44,13 @@ class TestPodCreate(TestPodBase):
         req_empty = pod_models.PodCreateRequest('')
         (code, body) = self.create(req_empty)
         self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn('name missing', body)
+        self.assertIn(message.missing('name'), body)
 
     def test_noneName(self):
         req_none = pod_models.PodCreateRequest(None)
         (code, body) = self.create(req_none)
         self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn('name missing', body)
+        self.assertIn(message.missing('name'), body)
 
     def test_success(self):
         code, body = self.create_d()
@@ -60,7 +61,7 @@ class TestPodCreate(TestPodBase):
         self.create_d()
         code, body = self.create_d()
         self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn('already exists', body)
+        self.assertIn(message.exist_base, body)
 
 
 class TestPodGet(TestPodBase):

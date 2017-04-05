@@ -9,6 +9,7 @@
 import httplib
 
 import handlers
+from opnfv_testapi.common import message
 from opnfv_testapi.tornado_swagger import swagger
 import project_models
 
@@ -48,8 +49,7 @@ class ProjectCLHandler(GenericProjectHandler):
             return {'name': data.name}
 
         def error(data):
-            message = '{} already exists as a project'.format(data.name)
-            return httplib.FORBIDDEN, message
+            return httplib.FORBIDDEN, message.exist('project', data.name)
 
         miss_checks = ['name']
         db_checks = [(self.table, False, query, error)]
