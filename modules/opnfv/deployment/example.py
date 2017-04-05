@@ -34,3 +34,17 @@ print("List of nodes in cluster 4:")
 nodes = handler.get_nodes({'cluster': '4'})
 for node in nodes:
     print(node)
+
+
+print("########## COMPASS ##########")
+handler = factory.Factory.get_handler('compass',
+                                      '192.168.200.2',
+                                      'root',
+                                      installer_pwd='root')
+
+print(handler.get_deployment_status())
+print(handler.get_deployment_info())
+print('Details of each node:')
+nodes = handler.nodes
+for node in nodes:
+    print(node)

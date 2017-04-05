@@ -9,6 +9,7 @@
 
 
 from opnfv.deployment.apex import adapter as apex_adapter
+from opnfv.deployment.compass import adapter as compass_adapter
 from opnfv.deployment.fuel import adapter as fuel_adapter
 from opnfv.utils import opnfv_logger as logger
 
@@ -40,6 +41,11 @@ class Factory(object):
             return fuel_adapter.FuelAdapter(installer_ip=installer_ip,
                                             installer_user=installer_user,
                                             installer_pwd=installer_pwd)
+        elif installer.lower() == "compass":
+            return compass_adapter.CompassAdapter(
+                installer_ip=installer_ip,
+                installer_user=installer_user,
+                installer_pwd=installer_pwd)
         else:
             raise Exception("Installer adapter is not implemented for "
                             "the given installer.")
