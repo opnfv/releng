@@ -189,7 +189,7 @@ if [[ "$JOB_NAME" == *virtual* ]]; then
   # settings for virtual deployment
   DEPLOY_CMD="${DEPLOY_CMD} -v"
   if [[ "${DEPLOY_SCENARIO}" =~ fdio|ovs ]]; then
-    DEPLOY_CMD="${DEPLOY_CMD} --virtual-default-ram 14 --virtual-compute-ram 8"
+    DEPLOY_CMD="${DEPLOY_CMD} --virtual-default-ram 14 --virtual-compute-ram 6"
   fi
   if [[ "$JOB_NAME" == *csit* ]]; then
     DEPLOY_CMD="${DEPLOY_CMD} -e csit-environment.yaml"
