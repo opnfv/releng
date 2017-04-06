@@ -189,7 +189,11 @@ if [[ "$JOB_NAME" == *virtual* ]]; then
   # settings for virtual deployment
   DEPLOY_CMD="${DEPLOY_CMD} -v"
   if [[ "${DEPLOY_SCENARIO}" =~ fdio|ovs ]]; then
-    DEPLOY_CMD="${DEPLOY_CMD} --virtual-default-ram 14 --virtual-compute-ram 6"
+    DEPLOY_CMD="${DEPLOY_CMD} --virtual-default-ram 12 --virtual-compute-ram 4"
+    TMP_DEPLOY_FILE="${WORKSPACE}/${DEPLOY_SCENARIO}.yaml"
+    cp -f ${DEPLOY_FILE} ${TMP_DEPLOY_FILE}
+    sed -i 's/^\(\s*hugepages:\).*$/\1 1024/g' ${TMP_DEPLOY_FILE}
+    DEPLOY_FILE=${TMP_DEPLOY_FILE}
   fi
   if [[ "$JOB_NAME" == *csit* ]]; then
     DEPLOY_CMD="${DEPLOY_CMD} -e csit-environment.yaml"
