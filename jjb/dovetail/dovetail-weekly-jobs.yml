@@ -10,8 +10,8 @@
         dovetail-branch: '{stream}'
         gs-pathname: ''
         docker-tag: 'latest'
-    colorado: &colorado
-        stream: colorado
+    danube: &danube
+        stream: danube
         branch: 'stable/{stream}'
         dovetail-branch: master
         gs-pathname: '/{stream}'
@@ -28,40 +28,39 @@
     pod:
 #        - baremetal:
 #            slave-label: apex-baremetal
-#            sut: apex
-#            <<: *colorado
+#            SUT: apex
+#            <<: *danube
         - baremetal:
             slave-label: compass-baremetal
-            sut: compass
-            <<: *colorado
+            SUT: compass
+            <<: *danube
 #        - baremetal:
 #            slave-label: fuel-baremetal
-#            sut: fuel
-#            <<: *master
+#            SUT: fuel
+#            <<: *danube
 #        - baremetal:
 #            slave-label: joid-baremetal
-#            sut: joid
-#            <<: *colorado
+#            SUT: joid
+#            <<: *danube
 
     testsuite:
         - 'debug'
-        - 'proposed_tests'
         - 'compliance_set'
 
     loop:
         - 'weekly':
-            job-timeout: 60
+            job-timeout: 180
 
     jobs:
-        - 'dovetail-{sut}-{pod}-{testsuite}-{loop}-{stream}'
+        - 'dovetail-{SUT}-{pod}-{testsuite}-{loop}-{stream}'
 
 ################################
 # job template
 ################################
 - job-template:
-    name: 'dovetail-{sut}-{pod}-{testsuite}-{loop}-{stream}'
+    name: 'dovetail-{SUT}-{pod}-{testsuite}-{loop}-{stream}'
 
-    disabled: false
+    disabled: true
 
     concurrent: true
 
@@ -84,7 +83,7 @@
         - project-parameter:
             project: '{project}'
             branch: '{dovetail-branch}'
-        - '{sut}-defaults'
+        - '{SUT}-defaults'
         - '{slave-label}-defaults'
         - string:
             name: DEPLOY_SCENARIO

@@ -6,8 +6,8 @@
 #----------------------------------
 # BRANCH ANCHORS
 #----------------------------------
-    colorado: &colorado
-        stream: colorado
+    danube: &danube
+        stream: danube
         branch: 'stable/{stream}'
         gs-pathname: '/{stream}'
         disabled: false
@@ -20,14 +20,14 @@
     pod:
         - baremetal:
             slave-label: compass-baremetal
-            os-version: 'trusty'
-            <<: *colorado
+            os-version: 'xenial'
+            <<: *danube
 #-----------------------------------
 # scenarios
 #-----------------------------------
     scenario:
         - 'os-nosdn-nofeature-ha':
-            disabled: false
+            disabled: true
             auto-trigger-name: 'compass-{scenario}-{pod}-weekly-{stream}-trigger'
 
     jobs:
@@ -99,17 +99,6 @@
                 unstable-threshold: 'FAILURE'
         - trigger-builds:
             - project: 'dovetail-compass-{pod}-debug-weekly-{stream}'
-              current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO={scenario}
-              block: true
-              same-node: true
-              block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
-        - trigger-builds:
-            - project: 'dovetail-compass-{pod}-proposed_tests-weekly-{stream}'
               current-parameters: false
               predefined-parameters:
                 DEPLOY_SCENARIO={scenario}
@@ -192,13 +181,13 @@
         - choice:
             name: COMPASS_OPENSTACK_VERSION
             choices:
-                - 'mitaka'
+                - 'newton'
 
 ########################
 # trigger macros
 ########################
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-baremetal-weekly-colorado-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-baremetal-weekly-danube-trigger'
     triggers:
         - timed: 'H H * * 0'
 
