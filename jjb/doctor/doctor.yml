@@ -38,8 +38,20 @@
             profiler: 'poc'
             auto-trigger-name: 'experimental'
 
+    pod1:
+# armband CI PODs
+        - armband-baremetal:
+            slave1-label: armband-baremetal
+        - armband-virtual:
+            slave1-label: armband-virtual
+        - armband-baremetal:
+            slave1-label: armband-baremetal
+        - armband-virtual:
+            slave1-label: armband-virtual
+
     jobs:
         - 'doctor-verify-{stream}'
+        - 'doctor-verify-{pod1}-{stream}'
         - 'doctor-{task}-{installer}-{inspector}-{stream}'
 
 - job-template:
@@ -81,6 +93,52 @@
 
     builders:
         - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+
+- job-template:
+    name: 'doctor-verify-{pod1}-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - 'opnfv-build-enea-defaults'
+
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'tests/**'
+            skip-vote:
+                successful: true
+                failed: true
+                unstable: true
+                notbuilt: true
+
+    builders:
+        - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+
 
 - job-template:
     name: 'doctor-{task}-{installer}-{inspector}-{stream}'
