@@ -38,12 +38,22 @@
             profiler: 'poc'
             auto-trigger-name: 'experimental'
 
+    pod:
+# armband CI PODs
+        - armband-baremetal:
+            slave1-label: armband-baremetal
+        - armband-virtual:
+            slave1-label: armband-virtual
+
     jobs:
         - 'doctor-verify-{stream}'
+        - 'doctor-verify-{pod}-{stream}'
         - 'doctor-{task}-{installer}-{inspector}-{stream}'
 
 - job-template:
     name: 'doctor-verify-{stream}'
+
+    node: '{slave-label}'
 
     disabled: '{obj:disabled}'
 
@@ -81,6 +91,25 @@
 
     builders:
         - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+
+- job-template:
+    name: 'doctor-verify-{installer}-{pod}-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - 'opnfv-build-enea-defaults'
+
+    scm:
+        - git-scm-gerrit
+
+
+    builders:
+        - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+
 
 - job-template:
     name: 'doctor-{task}-{installer}-{inspector}-{stream}'
