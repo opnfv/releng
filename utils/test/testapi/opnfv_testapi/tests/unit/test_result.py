@@ -163,21 +163,21 @@ class TestResultCreate(TestResultBase):
         req = self.req_d
         req.pod_name = 'notExistPod'
         (code, body) = self.create(req)
-        self.assertEqual(code, httplib.NOT_FOUND)
+        self.assertEqual(code, httplib.FORBIDDEN)
         self.assertIn(message.not_found_base, body)
 
     def test_noProject(self):
         req = self.req_d
         req.project_name = 'notExistProject'
         (code, body) = self.create(req)
-        self.assertEqual(code, httplib.NOT_FOUND)
+        self.assertEqual(code, httplib.FORBIDDEN)
         self.assertIn(message.not_found_base, body)
 
     def test_noTestcase(self):
         req = self.req_d
         req.case_name = 'notExistTestcase'
         (code, body) = self.create(req)
-        self.assertEqual(code, httplib.NOT_FOUND)
+        self.assertEqual(code, httplib.FORBIDDEN)
         self.assertIn(message.not_found_base, body)
 
     def test_success(self):
