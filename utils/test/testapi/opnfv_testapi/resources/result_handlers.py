@@ -8,7 +8,6 @@
 ##############################################################################
 from datetime import datetime
 from datetime import timedelta
-import httplib
 
 from bson import objectid
 
@@ -127,7 +126,9 @@ class ResultsCLHandler(GenericResultHandler):
         if last is not None:
             last = self.get_int('last', last)
 
-        self._list(self.set_query(), sort=[('start_date', -1)], last=last)
+        self._list(query=self.set_query(),
+                   sort=[('start_date', -1)],
+                   last=last)
 
     @swagger.operation(nickname="createTestResult")
     def post(self):
@@ -141,31 +142,21 @@ class ResultsCLHandler(GenericResultHandler):
             @raise 404: pod/project/testcase not exist
             @raise 400: body/pod_name/project_name/case_name not provided
         """
-        def pod_query(data):
-            return {'name': data.pod_name}
+        def pod_query():
+            return {'name': self.json_args.get('pod_name')}
 
-        def pod_error(data):
-            return httplib.FORBIDDEN, message.not_found('pod', data.pod_name)
+        def project_query():
+            return {'name': self.json_args.get('project_name')}
 
-        def project_query(data):
-            return {'name': data.project_name}
+        def testcase_query():
+            return {'project_name': self.json_args.get('project_name'),
+                    'name': self.json_args.get('case_name')}
 
-        def project_error(data):
-            return httplib.FORBIDDEN, message.not_found('project',
-                                                        data.project_name)
-
-        def testcase_query(data):
-            return {'project_name': data.project_name, 'name': data.case_name}
-
-        def testcase_error(data):
-            return httplib.FORBIDDEN, message.not_found('testcase',
-                                                        data.case_name)
-
-        miss_checks = ['pod_name', 'project_name', 'case_name']
-        db_checks = [('pods', True, pod_query, pod_error),
-                     ('projects', True, project_query, project_error),
-                     ('testcases', True, testcase_query, testcase_error)]
-        self._create(miss_checks, db_checks)
+        miss_fields = ['pod_name', 'project_name', 'case_name']
+        carriers = [('pods', pod_query),
+                    ('projects', project_query),
+                    ('testcases', testcase_query)]
+        self._create(miss_fields=miss_fields, carriers=carriers)
 
 
 class ResultsGURHandler(GenericResultHandler):
@@ -179,7 +170,7 @@ class ResultsGURHandler(GenericResultHandler):
         """
         query = dict()
         query["_id"] = objectid.ObjectId(result_id)
-        self._get_one(query)
+        self._get_one(query=query)
 
     @swagger.operation(nickname="updateTestResultById")
     def put(self, result_id):
@@ -195,4 +186,4 @@ class ResultsGURHandler(GenericResultHandler):
         """
         query = {'_id': objectid.ObjectId(result_id)}
         db_keys = []
-        self._update(query, db_keys)
+        self._update(query=query, db_keys=db_keys)

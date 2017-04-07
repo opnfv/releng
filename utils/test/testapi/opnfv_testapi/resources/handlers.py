@@ -21,13 +21,13 @@
 ##############################################################################
 
 from datetime import datetime
-import functools
 import json
 
 from tornado import gen
 from tornado import web
 
 import models
+from opnfv_testapi.common import check
 from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
 from opnfv_testapi.tornado_swagger import swagger
@@ -73,47 +73,19 @@ class GenericApiHandler(web.RequestHandler):
         cls_data = self.table_cls.from_dict(data)
         return cls_data.format_http()
 
-    def authenticate(method):
-        @web.asynchronous
-        @gen.coroutine
-        @functools.wraps(method)
-        def wrapper(self, *args, **kwargs):
-            if self.auth:
-                try:
-                    token = self.request.headers['X-Auth-Token']
-                except KeyError:
-                    raises.Unauthorized(message.unauthorized())
-                query = {'access_token': token}
-                check = yield self._eval_db_find_one(query, 'tokens')
-                if not check:
-                    raises.Forbidden(message.invalid_token())
-            ret = yield gen.coroutine(method)(self, *args, **kwargs)
-            raise gen.Return(ret)
-        return wrapper
-
-    @authenticate
-    def _create(self, miss_checks, db_checks, **kwargs):
+    @check.authenticate
+    @check.no_body
+    @check.miss_fields
+    @check.carriers_exist
+    @check.new_not_exists
+    def _create(self, **kwargs):
         """
         :param miss_checks: [miss1, miss2]
         :param db_checks: [(table, exist, query, error)]
         """
-        if self.json_args is None:
-            raises.BadRequest(message.no_body())
-
         data = self.table_cls.from_dict(self.json_args)
-        for miss in miss_checks:
-            miss_data = data.__getattribute__(miss)
-            if miss_data is None or miss_data == '':
-                raises.BadRequest(message.missing(miss))
-
         for k, v in kwargs.iteritems():
             data.__setattr__(k, v)
-
-        for table, exist, query, error in db_checks:
-            check = yield self._eval_db_find_one(query(data), table)
-            if (exist and not check) or (not exist and check):
-                code, msg = error(data)
-                raises.CodeTBD(code, msg)
 
         if self.table != 'results':
             data.creation_date = datetime.now()
@@ -146,47 +118,27 @@ class GenericApiHandler(web.RequestHandler):
 
     @web.asynchronous
     @gen.coroutine
-    def _get_one(self, query):
-        data = yield self._eval_db_find_one(query)
-        if data is None:
-            raises.NotFound(message.not_found(self.table, query))
+    @check.not_exist
+    def _get_one(self, data, query=None):
         self.finish_request(self.format_data(data))
 
-    @authenticate
-    def _delete(self, query):
-        data = yield self._eval_db_find_one(query)
-        if data is None:
-            raises.NotFound(message.not_found(self.table, query))
-
+    @check.authenticate
+    @check.not_exist
+    def _delete(self, data, query=None):
         yield self._eval_db(self.table, 'remove', query)
         self.finish_request()
 
-    @authenticate
-    def _update(self, query, db_keys):
-        if self.json_args is None:
-            raises.BadRequest(message.no_body())
-
-        # check old data exist
-        from_data = yield self._eval_db_find_one(query)
-        if from_data is None:
-            raises.NotFound(message.not_found(self.table, query))
-
-        data = self.table_cls.from_dict(from_data)
-        # check new data exist
-        equal, new_query = self._update_query(db_keys, data)
-        if not equal:
-            to_data = yield self._eval_db_find_one(new_query)
-            if to_data is not None:
-                raises.Forbidden(message.exist(self.table, new_query))
-
-        # we merge the whole document """
-        edit_request = self._update_requests(data)
-
-        """ Updating the DB """
-        yield self._eval_db(self.table, 'update', query, edit_request,
+    @check.authenticate
+    @check.no_body
+    @check.not_exist
+    @check.updated_one_not_exist
+    def _update(self, data, query=None, **kwargs):
+        data = self.table_cls.from_dict(data)
+        update_req = self._update_requests(data)
+        yield self._eval_db(self.table, 'update', query, update_req,
                             check_keys=False)
-        edit_request['_id'] = str(data._id)
-        self.finish_request(edit_request)
+        update_req['_id'] = str(data._id)
+        self.finish_request(update_req)
 
     def _update_requests(self, data):
         request = dict()
@@ -219,13 +171,13 @@ class GenericApiHandler(web.RequestHandler):
         equal = True
         for key in keys:
             new = self.json_args.get(key)
-            old = data.__getattribute__(key)
+            old = data.get(key)
             if new is None:
                 new = old
             elif new != old:
                 equal = False
             query[key] = new
-        return equal, query
+        return query if not equal else dict()
 
     def _eval_db(self, table, method, *args, **kwargs):
         exec_collection = self.db.__getattr__(table)

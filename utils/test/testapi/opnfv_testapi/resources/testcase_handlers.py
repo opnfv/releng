@@ -6,9 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-import httplib
 
-from opnfv_testapi.common import message
 from opnfv_testapi.resources import handlers
 from opnfv_testapi.resources import testcase_models
 from opnfv_testapi.tornado_swagger import swagger
@@ -32,9 +30,7 @@ class TestcaseCLHandler(GenericTestcaseHandler):
                          empty list is no testcase exist in this project
             @rtype: L{TestCases}
         """
-        query = dict()
-        query['project_name'] = project_name
-        self._list(query)
+        self._list(query={'project_name': project_name})
 
     @swagger.operation(nickname="createTestCase")
     def post(self, project_name):
@@ -49,26 +45,18 @@ class TestcaseCLHandler(GenericTestcaseHandler):
                         or testcase already exists in this project
             @raise 400: body or name not provided
         """
-        def p_query(data):
-            return {'name': data.project_name}
+        def project_query():
+            return {'name': project_name}
 
-        def tc_query(data):
-            return {
-                'project_name': data.project_name,
-                'name': data.name
-            }
-
-        def p_error(data):
-            return httplib.FORBIDDEN, message.not_found('project',
-                                                        data.project_name)
-
-        def tc_error(data):
-            return httplib.FORBIDDEN, message.exist('testcase', data.name)
-
-        miss_checks = ['name']
-        db_checks = [(self.db_projects, True, p_query, p_error),
-                     (self.db_testcases, False, tc_query, tc_error)]
-        self._create(miss_checks, db_checks, project_name=project_name)
+        def testcase_query():
+            return {'project_name': project_name,
+                    'name': self.json_args.get('name')}
+        miss_fields = ['name']
+        carriers = [(self.db_projects, project_query)]
+        self._create(miss_fields=miss_fields,
+                     carriers=carriers,
+                     query=testcase_query,
+                     project_name=project_name)
 
 
 class TestcaseGURHandler(GenericTestcaseHandler):
@@ -84,7 +72,7 @@ class TestcaseGURHandler(GenericTestcaseHandler):
         query = dict()
         query['project_name'] = project_name
         query["name"] = case_name
-        self._get_one(query)
+        self._get_one(query=query)
 
     @swagger.operation(nickname="updateTestCaseByName")
     def put(self, project_name, case_name):
@@ -102,7 +90,7 @@ class TestcaseGURHandler(GenericTestcaseHandler):
         """
         query = {'project_name': project_name, 'name': case_name}
         db_keys = ['name', 'project_name']
-        self._update(query, db_keys)
+        self._update(query=query, db_keys=db_keys)
 
     @swagger.operation(nickname='deleteTestCaseByName')
     def delete(self, project_name, case_name):
@@ -112,4 +100,4 @@ class TestcaseGURHandler(GenericTestcaseHandler):
             @raise 404: testcase not exist
         """
         query = {'project_name': project_name, 'name': case_name}
-        self._delete(query)
+        self._delete(query=query)
