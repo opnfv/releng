@@ -38,8 +38,15 @@
             profiler: 'poc'
             auto-trigger-name: 'experimental'
 
+    pod:
+# armband CI PODs
+        - armband-baremetal:
+            slave-label: armband-baremetal
+            installer: fuel
+
     jobs:
         - 'doctor-verify-{stream}'
+        - 'doctor-verify-{installer}-{pod}-{stream}'
         - 'doctor-{task}-{installer}-{inspector}-{stream}'
 
 - job-template:
@@ -81,6 +88,28 @@
 
     builders:
         - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+
+- job-template:
+    name: 'doctor-verify-{installer}-{pod}-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - '{installer}-defaults'
+        - '{slave-label}-defaults':
+            installer: '{installer}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - git-scm-gerrit
+
+
+    builders:
+        - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+
 
 - job-template:
     name: 'doctor-{task}-{installer}-{inspector}-{stream}'
