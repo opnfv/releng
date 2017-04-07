@@ -38,8 +38,15 @@
             profiler: 'poc'
             auto-trigger-name: 'experimental'
 
+    pod:
+        - arm-pod2:
+            slave-label: '{pod}'
+        - arm-pod3:
+            slave-label: '{pod}'
+
     jobs:
         - 'doctor-verify-{stream}'
+        - 'doctor-{task}-{installer}-{inspector}-{pod}-{stream}'
         - 'doctor-{task}-{installer}-{inspector}-{stream}'
 
 - job-template:
@@ -81,6 +88,32 @@
 
     builders:
         - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+
+- job-template:
+    name: 'doctor-{task}-{installer}-{inspector}-{pod}-{stream}'
+
+    node: '{slave-label}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - git-scm-gerrit
+
+
+    triggers:
+        - '{auto-trigger-name}':
+            project: '{project}'
+            branch: '{branch}'
+
+    builders:
+        - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+
 
 - job-template:
     name: 'doctor-{task}-{installer}-{inspector}-{stream}'
