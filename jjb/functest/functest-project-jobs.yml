@@ -9,6 +9,7 @@
 
     jobs:
         - 'functest-verify-{stream}'
+        - 'functest-verify-{arch}-{stream}'
 
     stream:
         - master:
@@ -19,6 +20,19 @@
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
             disabled: false
+
+    pod:
+        - arm-pod2:
+            slave-label: '{pod}'
+            installer: fuel
+        - arm-pod3:
+            slave-label: '{pod}'
+            installer: fuel
+
+    arch:
+        -arm:
+            slave-label: '{pod}'
+            installer: fuel
 
 - job-template:
     name: 'functest-verify-{stream}'
@@ -57,6 +71,74 @@
                 forbidden-file-paths:
                   - compare-type: ANT
                     pattern: 'docs/**|.gitignore'
+
+    builders:
+        - functest-unit-tests-and-docs-build
+
+    publishers:
+        - junit:
+            results: nosetests.xml
+        - cobertura:
+            report-file: "coverage.xml"
+            only-stable: "true"
+            health-auto-update: "true"
+            stability-auto-update: "true"
+            zoom-coverage-chart: "true"
+            targets:
+                - files:
+                    healthy: 10
+                    unhealthy: 20
+                    failing: 30
+                - method:
+                    healthy: 50
+                    unhealthy: 40
+                    failing: 30
+
+- job-template:
+    name: 'functest-verify-{arch}-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - '{installer}-defaults'
+        - '{slave-label}-defaults':
+            installer: '{installer}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                disable-strict-forbidden-file-verification: 'true'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**|.gitignore'
+            skip-vote:
+                successful: true
+                failed: true
+                unstable: true
+                notbuilt: true
 
     builders:
         - functest-unit-tests-and-docs-build
