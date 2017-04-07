@@ -1,5 +1,4 @@
 import functools
-import httplib
 
 from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
@@ -65,7 +64,7 @@ class ScenariosCLHandler(GenericScenarioHandler):
                 query['installers'] = {'$elemMatch': elem_query}
             return query
 
-        self._list(_set_query())
+        self._list(query=_set_query())
 
     @swagger.operation(nickname="createScenario")
     def post(self):
@@ -79,15 +78,10 @@ class ScenariosCLHandler(GenericScenarioHandler):
             @raise 403: scenario already exists
             @raise 400:  body or name not provided
         """
-        def query(data):
-            return {'name': data.name}
-
-        def error(data):
-            return httplib.FORBIDDEN, message.exist('scenario', data.name)
-
-        miss_checks = ['name']
-        db_checks = [(self.table, False, query, error)]
-        self._create(miss_checks=miss_checks, db_checks=db_checks)
+        def query():
+            return {'name': self.json_args.get('name')}
+        miss_fields = ['name']
+        self._create(miss_fields=miss_fields, query=query)
 
 
 class ScenarioGURHandler(GenericScenarioHandler):
@@ -99,7 +93,7 @@ class ScenarioGURHandler(GenericScenarioHandler):
             @return 200: scenario exist
             @raise 404: scenario not exist
         """
-        self._get_one({'name': name})
+        self._get_one(query={'name': name})
         pass
 
     @swagger.operation(nickname="updateScenarioByName")
@@ -116,7 +110,7 @@ class ScenarioGURHandler(GenericScenarioHandler):
         """
         query = {'name': name}
         db_keys = ['name']
-        self._update(query, db_keys)
+        self._update(query=query, db_keys=db_keys)
 
     @swagger.operation(nickname="deleteScenarioByName")
     def delete(self, name):
@@ -126,19 +120,16 @@ class ScenarioGURHandler(GenericScenarioHandler):
         @raise 404: scenario not exist:
         """
 
-        query = {'name': name}
-        self._delete(query)
+        self._delete(query={'name': name})
 
     def _update_query(self, keys, data):
         query = dict()
-        equal = True
         if self._is_rename():
             new = self._term.get('name')
-            if data.name != new:
-                equal = False
+            if data.get('name') != new:
                 query['name'] = new
 
-        return equal, query
+        return query
 
     def _update_requests(self, data):
         updates = {
