@@ -11,6 +11,7 @@ import unittest
 
 from opnfv_testapi.common import message
 from opnfv_testapi.resources import pod_models
+from opnfv_testapi.tests.unit import executor
 from opnfv_testapi.tests.unit import test_base as base
 
 
@@ -36,48 +37,47 @@ class TestPodBase(base.TestBase):
 
 
 class TestPodCreate(TestPodBase):
+    @executor.create(httplib.BAD_REQUEST, message.no_body())
     def test_withoutBody(self):
-        (code, body) = self.create()
-        self.assertEqual(code, httplib.BAD_REQUEST)
+        return None
 
+    @executor.create(httplib.BAD_REQUEST, message.missing('name'))
     def test_emptyName(self):
-        req_empty = pod_models.PodCreateRequest('')
-        (code, body) = self.create(req_empty)
-        self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn(message.missing('name'), body)
+        return pod_models.PodCreateRequest('')
 
+    @executor.create(httplib.BAD_REQUEST, message.missing('name'))
     def test_noneName(self):
-        req_none = pod_models.PodCreateRequest(None)
-        (code, body) = self.create(req_none)
-        self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn(message.missing('name'), body)
+        return pod_models.PodCreateRequest(None)
 
+    @executor.create(httplib.OK, 'assert_create_body')
     def test_success(self):
-        code, body = self.create_d()
-        self.assertEqual(code, httplib.OK)
-        self.assert_create_body(body)
+        return self.req_d
 
+    @executor.create(httplib.FORBIDDEN, message.exist_base)
     def test_alreadyExist(self):
         self.create_d()
-        code, body = self.create_d()
-        self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn(message.exist_base, body)
+        return self.req_d
 
 
 class TestPodGet(TestPodBase):
-    def test_notExist(self):
-        code, body = self.get('notExist')
-        self.assertEqual(code, httplib.NOT_FOUND)
-
-    def test_getOne(self):
-        self.create_d()
-        code, body = self.get(self.req_d.name)
-        self.assert_get_body(body)
-
-    def test_list(self):
+    def setUp(self):
+        super(TestPodGet, self).setUp()
         self.create_d()
         self.create_e()
-        code, body = self.get()
+
+    @executor.get(httplib.NOT_FOUND, message.not_found_base)
+    def test_notExist(self):
+        return 'notExist'
+
+    @executor.get(httplib.OK, 'assert_get_body')
+    def test_getOne(self):
+        return self.req_d.name
+
+    @executor.get(httplib.OK, '_assert_list')
+    def test_list(self):
+        return None
+
+    def _assert_list(self, body):
         self.assertEqual(len(body.pods), 2)
         for pod in body.pods:
             if self.req_d.name == pod.name:
