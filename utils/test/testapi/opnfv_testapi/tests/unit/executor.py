@@ -36,3 +36,31 @@ def get(excepted_status, excepted_response, *args):
                 self.assertIn(excepted_response, body)
         return wrap
     return _get
+
+
+def update(excepted_status, excepted_response, *args):
+    def _update(update_request):
+        @functools.wraps(update_request)
+        def wrap(self):
+            request, project = update_request(self)
+            status, body = self.update(request, project, *args)
+            if excepted_status == httplib.OK:
+                getattr(self, excepted_response)(request, body, *args)
+            else:
+                self.assertIn(excepted_response, body)
+        return wrap
+    return _update
+
+
+def delete(excepted_status, excepted_response, *args):
+    def _delete(delete_request):
+        @functools.wraps(delete_request)
+        def wrap(self):
+            request = delete_request(self)
+            status, body = self.delete(request, *args)
+            if excepted_status == httplib.OK:
+                getattr(self, excepted_response)(body, *args)
+            else:
+                self.assertIn(excepted_response, body)
+        return wrap
+    return _delete
