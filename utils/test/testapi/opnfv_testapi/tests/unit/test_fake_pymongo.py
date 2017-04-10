@@ -12,7 +12,7 @@ from tornado import gen
 from tornado import testing
 from tornado import web
 
-import fake_pymongo
+from opnfv_testapi.tests.unit import fake_pymongo
 
 
 class MyTest(testing.AsyncHTTPTestCase):

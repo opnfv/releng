@@ -13,7 +13,7 @@ import unittest
 from opnfv_testapi.common import message
 from opnfv_testapi.resources import project_models
 from opnfv_testapi.resources import testcase_models
-import test_base as base
+from opnfv_testapi.tests.unit import test_base as base
 
 
 class TestCaseBase(base.TestBase):

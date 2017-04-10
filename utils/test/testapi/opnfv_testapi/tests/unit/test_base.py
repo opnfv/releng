@@ -12,9 +12,9 @@ from os import path
 import mock
 from tornado import testing
 
-import fake_pymongo
 from opnfv_testapi.cmd import server
 from opnfv_testapi.resources import models
+from opnfv_testapi.tests.unit import fake_pymongo
 
 
 class TestBase(testing.AsyncHTTPTestCase):

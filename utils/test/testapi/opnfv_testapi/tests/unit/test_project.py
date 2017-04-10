@@ -11,7 +11,7 @@ import unittest
 
 from opnfv_testapi.common import message
 from opnfv_testapi.resources import project_models
-import test_base as base
+from opnfv_testapi.tests.unit import test_base as base
 
 
 class TestProjectBase(base.TestBase):

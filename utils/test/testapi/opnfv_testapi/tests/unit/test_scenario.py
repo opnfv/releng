@@ -7,7 +7,7 @@ import os
 
 from opnfv_testapi.common import message
 import opnfv_testapi.resources.scenario_models as models
-import test_base as base
+from opnfv_testapi.tests.unit import test_base as base
 
 
 class TestScenarioBase(base.TestBase):
