@@ -5,6 +5,7 @@ import httplib
 import json
 import os
 
+from opnfv_testapi.common import message
 import opnfv_testapi.resources.scenario_models as models
 import test_base as base
 
@@ -66,13 +67,13 @@ class TestScenarioCreate(TestScenarioBase):
         req_empty = models.ScenarioCreateRequest('')
         (code, body) = self.create(req_empty)
         self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn('name missing', body)
+        self.assertIn(message.missing('name'), body)
 
     def test_noneName(self):
         req_none = models.ScenarioCreateRequest(None)
         (code, body) = self.create(req_none)
         self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn('name missing', body)
+        self.assertIn(message.missing('name'), body)
 
     def test_success(self):
         (code, body) = self.create_d()
@@ -83,7 +84,7 @@ class TestScenarioCreate(TestScenarioBase):
         self.create_d()
         (code, body) = self.create_d()
         self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn('already exists', body)
+        self.assertIn(message.exist_base, body)
 
 
 class TestScenarioGet(TestScenarioBase):

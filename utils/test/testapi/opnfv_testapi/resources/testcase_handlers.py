@@ -8,6 +8,7 @@
 ##############################################################################
 import httplib
 
+from opnfv_testapi.common import message
 from opnfv_testapi.resources import handlers
 from opnfv_testapi.resources import testcase_models
 from opnfv_testapi.tornado_swagger import swagger
@@ -58,13 +59,11 @@ class TestcaseCLHandler(GenericTestcaseHandler):
             }
 
         def p_error(data):
-            message = 'Could not find project [{}]'.format(data.project_name)
-            return httplib.FORBIDDEN, message
+            return httplib.FORBIDDEN, message.not_found('project',
+                                                        data.project_name)
 
         def tc_error(data):
-            message = '{} already exists as a testcase in project {}'\
-                .format(data.name, data.project_name)
-            return httplib.FORBIDDEN, message
+            return httplib.FORBIDDEN, message.exist('testcase', data.name)
 
         miss_checks = ['name']
         db_checks = [(self.db_projects, True, p_query, p_error),

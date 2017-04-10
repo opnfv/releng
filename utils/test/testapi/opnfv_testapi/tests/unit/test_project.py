@@ -9,6 +9,7 @@
 import httplib
 import unittest
 
+from opnfv_testapi.common import message
 from opnfv_testapi.resources import project_models
 import test_base as base
 
@@ -43,13 +44,13 @@ class TestProjectCreate(TestProjectBase):
         req_empty = project_models.ProjectCreateRequest('')
         (code, body) = self.create(req_empty)
         self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn('name missing', body)
+        self.assertIn(message.missing('name'), body)
 
     def test_noneName(self):
         req_none = project_models.ProjectCreateRequest(None)
         (code, body) = self.create(req_none)
         self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn('name missing', body)
+        self.assertIn(message.missing('name'), body)
 
     def test_success(self):
         (code, body) = self.create_d()
@@ -60,7 +61,7 @@ class TestProjectCreate(TestProjectBase):
         self.create_d()
         (code, body) = self.create_d()
         self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn('already exists', body)
+        self.assertIn(message.exist_base, body)
 
 
 class TestProjectGet(TestProjectBase):
@@ -99,13 +100,13 @@ class TestProjectUpdate(TestProjectBase):
         self.create_e()
         code, body = self.update(self.req_e, self.req_d.name)
         self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn("already exists", body)
+        self.assertIn(message.exist_base, body)
 
     def test_noUpdate(self):
         self.create_d()
         code, body = self.update(self.req_d, self.req_d.name)
         self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn("Nothing to update", body)
+        self.assertIn(message.no_update(), body)
 
     def test_success(self):
         self.create_d()
