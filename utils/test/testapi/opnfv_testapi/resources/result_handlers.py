@@ -145,20 +145,20 @@ class ResultsCLHandler(GenericResultHandler):
             return {'name': data.pod_name}
 
         def pod_error(data):
-            return httplib.NOT_FOUND, message.not_found('pod', data.pod_name)
+            return httplib.FORBIDDEN, message.not_found('pod', data.pod_name)
 
         def project_query(data):
             return {'name': data.project_name}
 
         def project_error(data):
-            return httplib.NOT_FOUND, message.not_found('project',
+            return httplib.FORBIDDEN, message.not_found('project',
                                                         data.project_name)
 
         def testcase_query(data):
             return {'project_name': data.project_name, 'name': data.case_name}
 
         def testcase_error(data):
-            return httplib.NOT_FOUND, message.not_found('testcase',
+            return httplib.FORBIDDEN, message.not_found('testcase',
                                                         data.case_name)
 
         miss_checks = ['pod_name', 'project_name', 'case_name']
