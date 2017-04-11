@@ -70,8 +70,8 @@
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
     builders:
-        - bottlenecks-hello
-        #- bottlenecks-unit-tests
+        #- bottlenecks-hello
+        - bottlenecks-unit-tests
 
 - job-template:
     name: 'bottlenecks-merge-{stream}'
@@ -209,7 +209,7 @@
             pip install -r requirements.txt
 
             # unit tests
-            /bin/bash $WORKSPACE/tests.sh
+            /bin/bash $WORKSPACE/verify.sh
 
             deactivate
 
@@ -220,4 +220,4 @@
             #!/bin/bash
             set -o errexit
 
-            echo "hello"
+            echo -e "Wellcome to Bottlenecks! \nMerge event is planning to support more functions! "
