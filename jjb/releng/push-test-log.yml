@@ -1,0 +1,33 @@
+- project:
+    name: opnfv-push-log
+
+    master: &master
+        stream: master
+        branch: '{stream}'
+        disabled: false
+    danube: &danube
+        stream: danube
+        branch: 'stable/{stream}'
+        disabled: false
+
+    project:
+        - 'functest':
+            <<: *master
+        - 'functest':
+            <<: *danube
+
+    jobs:
+        - '{project}-test-log-push-{stream}'
+
+- job-template:
+    name: '{project}-test-log-push-{stream}'
+    disabled: false
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+
+    builders:
+        - shell:
+            !include-raw: ../../utils/push-test-logs.sh
