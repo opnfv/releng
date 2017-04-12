@@ -1,0 +1,34 @@
+- project:
+    name: '{project}-test-log-push'
+
+    project: '{project}'
+
+    jobs:
+        - '{project}-test-log-push-{stream}'
+
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+
+
+- job-template:
+    name: '{project}-test-log-push-{stream}'
+
+    # Job template for daily builders
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: master
+
+    disabled: false
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+
+    builders:
+        - shell:
+            !include-raw: ../../utils/push-test-logs.sh

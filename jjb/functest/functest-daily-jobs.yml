@@ -338,8 +338,11 @@
         - 'functest-cleanup'
         - 'set-functest-env'
         - 'functest-daily'
-        - 'functest-store-results'
         - 'functest-exit'
+        - trigger-builds:
+            - project: '{project}-test-log-push-{stream}'
+              same-node: true
+              block: true
 
 - builder:
     name: functest-suite-builder
@@ -354,7 +357,6 @@
         - shell:
             !include-raw: ./functest-loop.sh
 
-
 - builder:
     name: functest-suite
     builders:
@@ -366,12 +368,6 @@
     builders:
         - shell:
             !include-raw: ./set-functest-env.sh
-
-- builder:
-    name: functest-store-results
-    builders:
-        - shell:
-            !include-raw: ../../utils/push-test-logs.sh
 
 - builder:
     name: functest-cleanup
