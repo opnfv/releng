@@ -7,6 +7,7 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 
+import json
 import netaddr
 import re
 
@@ -161,9 +162,10 @@ class CompassAdapter(manager.DeploymentHandler):
             fields = lines[i].strip().encode().rsplit('\t')
             host_id = fields[0].strip().encode()
             name = 'host{0}'.format(host_id)
-            node_roles = fields[1].strip().encode().lower()
+            node_roles_str = fields[1].strip().encode().lower()
+            node_roles_list = json.loads(node_roles_str)
             node_roles = [manager.Role.ODL if x == 'odl'
-                          else x for x in node_roles]
+                          else x for x in node_roles_list]
             roles = [x for x in [manager.Role.CONTROLLER,
                                  manager.Role.COMPUTE,
                                  manager.Role.ODL,
