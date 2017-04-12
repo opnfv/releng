@@ -17,6 +17,7 @@ from opnfv_testapi.resources import project_models
 from opnfv_testapi.resources import result_models
 from opnfv_testapi.resources import testcase_models
 from opnfv_testapi.tests.unit import test_base as base
+from opnfv_testapi.tests.unit import executor
 
 
 class Details(object):
@@ -99,8 +100,7 @@ class TestResultBase(base.TestBase):
                          self.req_testcase,
                          self.project)
 
-    def assert_res(self, code, result, req=None):
-        self.assertEqual(code, httplib.OK)
+    def assert_res(self, result, req=None):
         if req is None:
             req = self.req_d
         self.assertEqual(result.pod_name, req.pod_name)
@@ -133,65 +133,57 @@ class TestResultBase(base.TestBase):
 
 
 class TestResultCreate(TestResultBase):
+    @executor.create(httplib.BAD_REQUEST, message.no_body())
     def test_nobody(self):
-        (code, body) = self.create(None)
-        self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn(message.no_body(), body)
+        return None
 
+    @executor.create(httplib.BAD_REQUEST, message.missing('pod_name'))
     def test_podNotProvided(self):
         req = self.req_d
         req.pod_name = None
-        (code, body) = self.create(req)
-        self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn(message.missing('pod_name'), body)
+        return req
 
+    @executor.create(httplib.BAD_REQUEST, message.missing('project_name'))
     def test_projectNotProvided(self):
         req = self.req_d
         req.project_name = None
-        (code, body) = self.create(req)
-        self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn(message.missing('project_name'), body)
+        return req
 
+    @executor.create(httplib.BAD_REQUEST, message.missing('case_name'))
     def test_testcaseNotProvided(self):
         req = self.req_d
         req.case_name = None
-        (code, body) = self.create(req)
-        self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn(message.missing('case_name'), body)
+        return req
 
+    @executor.create(httplib.FORBIDDEN, message.not_found_base)
     def test_noPod(self):
         req = self.req_d
         req.pod_name = 'notExistPod'
-        (code, body) = self.create(req)
-        self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn(message.not_found_base, body)
+        return req
 
+    @executor.create(httplib.FORBIDDEN, message.not_found_base)
     def test_noProject(self):
         req = self.req_d
         req.project_name = 'notExistProject'
-        (code, body) = self.create(req)
-        self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn(message.not_found_base, body)
+        return req
 
+    @executor.create(httplib.FORBIDDEN, message.not_found_base)
     def test_noTestcase(self):
         req = self.req_d
         req.case_name = 'notExistTestcase'
-        (code, body) = self.create(req)
-        self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn(message.not_found_base, body)
+        return req
 
+    @executor.create(httplib.OK, 'assert_href')
     def test_success(self):
-        (code, body) = self.create_d()
-        self.assertEqual(code, httplib.OK)
-        self.assert_href(body)
+        return self.req_d
 
+    @executor.create(httplib.OK, 'assert_href')
     def test_key_with_doc(self):
         req = copy.deepcopy(self.req_d)
         req.details = {'1.name': 'dot_name'}
-        (code, body) = self.create(req)
-        self.assertEqual(code, httplib.OK)
-        self.assert_href(body)
+        return req
 
+    @executor.create(httplib.OK, '_assert_no_ti')
     def test_no_ti(self):
         req = result_models.ResultCreateRequest(pod_name=self.pod,
                                                 project_name=self.project,
@@ -204,106 +196,110 @@ class TestResultCreate(TestResultBase):
                                                 build_tag=self.build_tag,
                                                 scenario=self.scenario,
                                                 criteria=self.criteria)
-        (code, res) = self.create(req)
-        _id = res.href.split('/')[-1]
-        self.assertEqual(code, httplib.OK)
+        self.actual_req = req
+        return req
+
+    def _assert_no_ti(self, body):
+        _id = body.href.split('/')[-1]
         code, body = self.get(_id)
-        self.assert_res(code, body, req)
+        self.assert_res(body, self.actual_req)
 
 
 class TestResultGet(TestResultBase):
+    def setUp(self):
+        super(TestResultGet, self).setUp()
+        self.req_d_id = self._create_d()
+        self.req_10d_later = self._create_changed_date(days=10)
+        self.req_10d_before = self._create_changed_date(days=-10)
+
+    @executor.get(httplib.OK, 'assert_res')
     def test_getOne(self):
-        _id = self._create_d()
-        code, body = self.get(_id)
-        self.assert_res(code, body)
+        return self.req_d_id
 
+    @executor.query(httplib.OK, '_query_success', 3)
     def test_queryPod(self):
-        self._query_and_assert(self._set_query('pod'))
+        return self._set_query('pod')
 
+    @executor.query(httplib.OK, '_query_success', 3)
     def test_queryProject(self):
-        self._query_and_assert(self._set_query('project'))
+        return self._set_query('project')
 
+    @executor.query(httplib.OK, '_query_success', 3)
     def test_queryTestcase(self):
-        self._query_and_assert(self._set_query('case'))
+        return self._set_query('case')
 
+    @executor.query(httplib.OK, '_query_success', 3)
     def test_queryVersion(self):
-        self._query_and_assert(self._set_query('version'))
+        return self._set_query('version')
 
+    @executor.query(httplib.OK, '_query_success', 3)
     def test_queryInstaller(self):
-        self._query_and_assert(self._set_query('installer'))
+        return self._set_query('installer')
 
+    @executor.query(httplib.OK, '_query_success', 3)
     def test_queryBuildTag(self):
-        self._query_and_assert(self._set_query('build_tag'))
+        return self._set_query('build_tag')
 
+    @executor.query(httplib.OK, '_query_success', 3)
     def test_queryScenario(self):
-        self._query_and_assert(self._set_query('scenario'))
+        return self._set_query('scenario')
 
+    @executor.query(httplib.OK, '_query_success', 3)
     def test_queryTrustIndicator(self):
-        self._query_and_assert(self._set_query('trust_indicator'))
+        return self._set_query('trust_indicator')
 
+    @executor.query(httplib.OK, '_query_success', 3)
     def test_queryCriteria(self):
-        self._query_and_assert(self._set_query('criteria'))
+        return self._set_query('criteria')
 
+    @executor.query(httplib.BAD_REQUEST, message.must_int('period'))
     def test_queryPeriodNotInt(self):
-        code, body = self.query(self._set_query('period=a'))
-        self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn('period must be int', body)
+        return self._set_query('period=a')
 
-    def test_queryPeriodFail(self):
-        self._query_and_assert(self._set_query('period=1'),
-                               found=False, days=-10)
-
+    @executor.query(httplib.OK, '_query_last_one', 1)
     def test_queryPeriodSuccess(self):
-        self._query_and_assert(self._set_query('period=1'),
-                               found=True)
+        return self._set_query('period=1')
 
+    @executor.query(httplib.BAD_REQUEST, message.must_int('last'))
     def test_queryLastNotInt(self):
-        code, body = self.query(self._set_query('last=a'))
-        self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn('last must be int', body)
+        return self._set_query('last=a')
 
+    @executor.query(httplib.OK, '_query_last_one', 1)
     def test_queryLast(self):
-        self._create_changed_date()
-        req = self._create_changed_date(minutes=20)
-        self._create_changed_date(minutes=-20)
-        self._query_and_assert(self._set_query('last=1'), req=req)
+        return self._set_query('last=1')
 
+    @executor.query(httplib.OK, '_query_last_one', 1)
     def test_combination(self):
-        self._query_and_assert(self._set_query('pod',
-                                               'project',
-                                               'case',
-                                               'version',
-                                               'installer',
-                                               'build_tag',
-                                               'scenario',
-                                               'trust_indicator',
-                                               'criteria',
-                                               'period=1'))
+        return self._set_query('pod',
+                               'project',
+                               'case',
+                               'version',
+                               'installer',
+                               'build_tag',
+                               'scenario',
+                               'trust_indicator',
+                               'criteria',
+                               'period=1')
 
+    @executor.query(httplib.OK, '_query_success', 0)
     def test_notFound(self):
-        self._query_and_assert(self._set_query('pod=notExistPod',
-                                               'project',
-                                               'case',
-                                               'version',
-                                               'installer',
-                                               'build_tag',
-                                               'scenario',
-                                               'trust_indicator',
-                                               'criteria',
-                                               'period=1'),
-                               found=False)
+        return self._set_query('pod=notExistPod',
+                               'project',
+                               'case',
+                               'version',
+                               'installer',
+                               'build_tag',
+                               'scenario',
+                               'trust_indicator',
+                               'criteria',
+                               'period=1')
 
-    def _query_and_assert(self, query, found=True, req=None, **kwargs):
-        if req is None:
-            req = self._create_changed_date(**kwargs)
-        code, body = self.query(query)
-        if not found:
-            self.assertEqual(code, httplib.OK)
-            self.assertEqual(0, len(body.results))
-        else:
-            self.assertEqual(1, len(body.results))
-            for result in body.results:
-                self.assert_res(code, result, req)
+    def _query_success(self, body, number):
+        self.assertEqual(number, len(body.results))
+
+    def _query_last_one(self, body, number):
+        self.assertEqual(number, len(body.results))
+        self.assert_res(body.results[0], self.req_10d_later)
 
     def _create_changed_date(self, **kwargs):
         req = copy.deepcopy(self.req_d)
@@ -327,9 +323,12 @@ class TestResultGet(TestResultBase):
 
 
 class TestResultUpdate(TestResultBase):
-    def test_success(self):
-        _id = self._create_d()
+    def setUp(self):
+        super(TestResultUpdate, self).setUp()
+        self.req_d_id = self._create_d()
 
+    @executor.update(httplib.OK, '_assert_update_ti')
+    def test_success(self):
         new_ti = copy.deepcopy(self.trust_indicator)
         new_ti.current += self.update_step
         new_ti.histories.append(
@@ -337,13 +336,16 @@ class TestResultUpdate(TestResultBase):
         new_data = copy.deepcopy(self.req_d)
         new_data.trust_indicator = new_ti
         update = result_models.ResultUpdateRequest(trust_indicator=new_ti)
-        code, body = self.update(update, _id)
-        self.assertEqual(_id, body._id)
-        self.assert_res(code, body, new_data)
+        self.update_req = new_data
+        return update, self.req_d_id
 
-        code, new_body = self.get(_id)
-        self.assertEqual(_id, new_body._id)
-        self.assert_res(code, new_body, new_data)
+    def _assert_update_ti(self, request, body):
+        ti = body.trust_indicator
+        self.assertEqual(ti.current, request.trust_indicator.current)
+        if ti.histories:
+            history = ti.histories[0]
+            self.assertEqual(history.date, self.update_date)
+            self.assertEqual(history.step, self.update_step)
 
 
 if __name__ == '__main__':

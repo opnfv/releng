@@ -42,8 +42,8 @@ def update(excepted_status, excepted_response, *args):
     def _update(update_request):
         @functools.wraps(update_request)
         def wrap(self):
-            request, project = update_request(self)
-            status, body = self.update(request, project, *args)
+            request, resource = update_request(self)
+            status, body = self.update(request, resource, *args)
             if excepted_status == httplib.OK:
                 getattr(self, excepted_response)(request, body, *args)
             else:
@@ -64,3 +64,17 @@ def delete(excepted_status, excepted_response, *args):
                 self.assertIn(excepted_response, body)
         return wrap
     return _delete
+
+
+def query(excepted_status, excepted_response, number=0, *args):
+    def _query(get_request):
+        @functools.wraps(get_request)
+        def wrap(self):
+            request = get_request(self)
+            status, body = self.query(request, *args)
+            if excepted_status == httplib.OK:
+                getattr(self, excepted_response)(body, number, *args)
+            else:
+                self.assertIn(excepted_response, body)
+        return wrap
+    return _query
