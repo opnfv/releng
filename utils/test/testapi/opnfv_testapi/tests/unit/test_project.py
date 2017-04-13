@@ -95,24 +95,24 @@ class TestProjectUpdate(TestProjectBase):
 
     @executor.update(httplib.BAD_REQUEST, message.no_body())
     def test_withoutBody(self):
-        return None, 'noBody'
+        return None, ('noBody',)
 
     @executor.update(httplib.NOT_FOUND, message.not_found_base)
     def test_notFound(self):
-        return self.req_e, 'notFound'
+        return self.req_e, ('notFound',)
 
     @executor.update(httplib.FORBIDDEN, message.exist_base)
     def test_newNameExist(self):
-        return self.req_e, self.req_d.name
+        return self.req_e, (self.req_d.name,)
 
     @executor.update(httplib.FORBIDDEN, message.no_update())
     def test_noUpdate(self):
-        return self.req_d, self.req_d.name
+        return self.req_d, (self.req_d.name,)
 
     @executor.update(httplib.OK, '_assert_update')
     def test_success(self):
         req = project_models.ProjectUpdateRequest('newName', 'new description')
-        return req, self.req_d.name
+        return req, (self.req_d.name,)
 
     def _assert_update(self, req, body):
         self.assertEqual(self.index_d, body._id)

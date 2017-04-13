@@ -14,6 +14,7 @@ from opnfv_testapi.common import message
 from opnfv_testapi.resources import project_models
 from opnfv_testapi.resources import testcase_models
 from opnfv_testapi.tests.unit import test_base as base
+from opnfv_testapi.tests.unit import executor
 
 
 class TestCaseBase(base.TestBase):
@@ -70,6 +71,9 @@ class TestCaseBase(base.TestBase):
     def get(self, case=None):
         return super(TestCaseBase, self).get(self.project, case)
 
+    def create(self, req=None, *args):
+        return super(TestCaseBase, self).create(req, self.project)
+
     def update(self, new=None, case=None):
         return super(TestCaseBase, self).update(new, self.project, case)
 
@@ -78,54 +82,57 @@ class TestCaseBase(base.TestBase):
 
 
 class TestCaseCreate(TestCaseBase):
+    @executor.create(httplib.BAD_REQUEST, message.no_body())
     def test_noBody(self):
-        (code, body) = self.create(None, 'vping')
-        self.assertEqual(code, httplib.BAD_REQUEST)
+        return None
 
+    @executor.create(httplib.FORBIDDEN, message.not_found_base)
     def test_noProject(self):
-        code, body = self.create(self.req_d, 'noProject')
-        self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn(message.not_found_base, body)
+        self.project = 'noProject'
+        return self.req_d
 
+    @executor.create(httplib.BAD_REQUEST, message.missing('name'))
     def test_emptyName(self):
         req_empty = testcase_models.TestcaseCreateRequest('')
-        (code, body) = self.create(req_empty, self.project)
-        self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn(message.missing('name'), body)
+        return req_empty
 
+    @executor.create(httplib.BAD_REQUEST, message.missing('name'))
     def test_noneName(self):
         req_none = testcase_models.TestcaseCreateRequest(None)
-        (code, body) = self.create(req_none, self.project)
-        self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn(message.missing('name'), body)
+        return req_none
 
+    @executor.create(httplib.OK, '_assert_success')
     def test_success(self):
-        code, body = self.create_d()
-        self.assertEqual(code, httplib.OK)
-        self.assert_create_body(body, None, self.project)
+        return self.req_d
 
+    def _assert_success(self, body):
+        self.assert_create_body(body, self.req_d, self.project)
+
+    @executor.create(httplib.FORBIDDEN, message.exist_base)
     def test_alreadyExist(self):
         self.create_d()
-        code, body = self.create_d()
-        self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn(message.exist_base, body)
+        return self.req_d
 
 
 class TestCaseGet(TestCaseBase):
-    def test_notExist(self):
-        code, body = self.get('notExist')
-        self.assertEqual(code, httplib.NOT_FOUND)
-
-    def test_getOne(self):
-        self.create_d()
-        code, body = self.get(self.req_d.name)
-        self.assertEqual(code, httplib.OK)
-        self.assert_body(body)
-
-    def test_list(self):
+    def setUp(self):
+        super(TestCaseGet, self).setUp()
         self.create_d()
         self.create_e()
-        code, body = self.get()
+
+    @executor.get(httplib.NOT_FOUND, message.not_found_base)
+    def test_notExist(self):
+        return 'notExist'
+
+    @executor.get(httplib.OK, 'assert_body')
+    def test_getOne(self):
+        return self.req_d.name
+
+    @executor.get(httplib.OK, '_list')
+    def test_list(self):
+        return None
+
+    def _list(self, body):
         for case in body.testcases:
             if self.req_d.name == case.name:
                 self.assert_body(case)
@@ -134,60 +141,58 @@ class TestCaseGet(TestCaseBase):
 
 
 class TestCaseUpdate(TestCaseBase):
+    def setUp(self):
+        super(TestCaseUpdate, self).setUp()
+        self.create_d()
+
+    @executor.update(httplib.BAD_REQUEST, message.no_body())
     def test_noBody(self):
-        code, _ = self.update(case='noBody')
-        self.assertEqual(code, httplib.BAD_REQUEST)
+        return None, 'noBody'
 
+    @executor.update(httplib.NOT_FOUND, message.not_found_base)
     def test_notFound(self):
-        code, _ = self.update(self.update_e, 'notFound')
-        self.assertEqual(code, httplib.NOT_FOUND)
+        return self.update_e, 'notFound'
 
+    @executor.update(httplib.FORBIDDEN, message.exist_base)
     def test_newNameExist(self):
-        self.create_d()
         self.create_e()
-        code, body = self.update(self.update_e, self.req_d.name)
-        self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn(message.exist_base, body)
+        return self.update_e, self.req_d.name
 
+    @executor.update(httplib.FORBIDDEN, message.no_update())
     def test_noUpdate(self):
-        self.create_d()
-        code, body = self.update(self.update_d, self.req_d.name)
-        self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn(message.no_update(), body)
+        return self.update_d, self.req_d.name
 
+    @executor.update(httplib.OK, '_update_success')
     def test_success(self):
-        self.create_d()
-        code, body = self.get(self.req_d.name)
-        _id = body._id
+        return self.update_e, self.req_d.name
 
-        code, body = self.update(self.update_e, self.req_d.name)
-        self.assertEqual(code, httplib.OK)
-        self.assertEqual(_id, body._id)
-        self.assert_update_body(self.req_d, body, self.update_e)
-
-        _, new_body = self.get(self.req_e.name)
-        self.assertEqual(_id, new_body._id)
-        self.assert_update_body(self.req_d, new_body, self.update_e)
-
+    @executor.update(httplib.OK, '_update_success')
     def test_with_dollar(self):
-        self.create_d()
         update = copy.deepcopy(self.update_d)
         update.description = {'2. change': 'dollar change'}
-        code, body = self.update(update, self.req_d.name)
-        self.assertEqual(code, httplib.OK)
+        return update, self.req_d.name
+
+    def _update_success(self, request, body):
+        self.assert_update_body(self.req_d, body, request)
+        _, new_body = self.get(request.name)
+        self.assert_update_body(self.req_d, new_body, request)
 
 
 class TestCaseDelete(TestCaseBase):
-    def test_notFound(self):
-        code, body = self.delete('notFound')
-        self.assertEqual(code, httplib.NOT_FOUND)
-
-    def test_success(self):
+    def setUp(self):
+        super(TestCaseDelete, self).setUp()
         self.create_d()
-        code, body = self.delete(self.req_d.name)
-        self.assertEqual(code, httplib.OK)
-        self.assertEqual(body, '')
 
+    @executor.delete(httplib.NOT_FOUND, message.not_found_base)
+    def test_notFound(self):
+        return 'notFound'
+
+    @executor.delete(httplib.OK, '_delete_success')
+    def test_success(self):
+        return self.req_d.name
+
+    def _delete_success(self, body):
+        self.assertEqual(body, '')
         code, body = self.get(self.req_d.name)
         self.assertEqual(code, httplib.NOT_FOUND)
 
