@@ -11,6 +11,7 @@ from tornado import web
 from opnfv_testapi.common import message
 from opnfv_testapi.resources import project_models
 from opnfv_testapi.router import url_mappings
+from opnfv_testapi.tests.unit import executor
 from opnfv_testapi.tests.unit import fake_pymongo
 from opnfv_testapi.tests.unit import test_base as base
 
@@ -32,22 +33,24 @@ class TestTokenCreateProject(TestToken):
         fake_pymongo.tokens.insert({"access_token": "12345"})
         self.basePath = '/api/v1/projects'
 
+    @executor.create(httplib.FORBIDDEN, message.invalid_token())
     def test_projectCreateTokenInvalid(self):
         self.headers['X-Auth-Token'] = '1234'
-        code, body = self.create_d()
-        self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn(message.invalid_token(), body)
+        return self.req_d
 
+    @executor.create(httplib.UNAUTHORIZED, message.unauthorized())
     def test_projectCreateTokenUnauthorized(self):
-        self.headers.pop('X-Auth-Token')
-        code, body = self.create_d()
-        self.assertEqual(code, httplib.UNAUTHORIZED)
-        self.assertIn(message.unauthorized(), body)
+        if 'X-Auth-Token' in self.headers:
+            self.headers.pop('X-Auth-Token')
+        return self.req_d
 
+    @executor.create(httplib.OK, '_create_success')
     def test_projectCreateTokenSuccess(self):
         self.headers['X-Auth-Token'] = '12345'
-        code, body = self.create_d()
-        self.assertEqual(code, httplib.OK)
+        return self.req_d
+
+    def _create_success(self, body):
+        self.assertIn('CreateResponse', str(type(body)))
 
 
 class TestTokenDeleteProject(TestToken):
@@ -56,28 +59,25 @@ class TestTokenDeleteProject(TestToken):
         self.req_d = project_models.ProjectCreateRequest('vping')
         fake_pymongo.tokens.insert({"access_token": "12345"})
         self.basePath = '/api/v1/projects'
+        self.headers['X-Auth-Token'] = '12345'
+        self.create_d()
 
+    @executor.delete(httplib.FORBIDDEN, message.invalid_token())
     def test_projectDeleteTokenIvalid(self):
-        self.headers['X-Auth-Token'] = '12345'
-        self.create_d()
         self.headers['X-Auth-Token'] = '1234'
-        code, body = self.delete(self.req_d.name)
-        self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn(message.invalid_token(), body)
+        return self.req_d.name
 
+    @executor.delete(httplib.UNAUTHORIZED, message.unauthorized())
     def test_projectDeleteTokenUnauthorized(self):
-        self.headers['X-Auth-Token'] = '12345'
-        self.create_d()
         self.headers.pop('X-Auth-Token')
-        code, body = self.delete(self.req_d.name)
-        self.assertEqual(code, httplib.UNAUTHORIZED)
-        self.assertIn(message.unauthorized(), body)
+        return self.req_d.name
 
+    @executor.delete(httplib.OK, '_delete_success')
     def test_projectDeleteTokenSuccess(self):
-        self.headers['X-Auth-Token'] = '12345'
-        self.create_d()
-        code, body = self.delete(self.req_d.name)
-        self.assertEqual(code, httplib.OK)
+        return self.req_d.name
+
+    def _delete_success(self, body):
+        self.assertEqual('', body)
 
 
 class TestTokenUpdateProject(TestToken):
@@ -86,34 +86,28 @@ class TestTokenUpdateProject(TestToken):
         self.req_d = project_models.ProjectCreateRequest('vping')
         fake_pymongo.tokens.insert({"access_token": "12345"})
         self.basePath = '/api/v1/projects'
-
-    def test_projectUpdateTokenIvalid(self):
         self.headers['X-Auth-Token'] = '12345'
         self.create_d()
-        code, body = self.get(self.req_d.name)
+
+    @executor.update(httplib.FORBIDDEN, message.invalid_token())
+    def test_projectUpdateTokenIvalid(self):
         self.headers['X-Auth-Token'] = '1234'
         req = project_models.ProjectUpdateRequest('newName', 'new description')
-        code, body = self.update(req, self.req_d.name)
-        self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn(message.invalid_token(), body)
+        return req, self.req_d.name
 
+    @executor.update(httplib.UNAUTHORIZED, message.unauthorized())
     def test_projectUpdateTokenUnauthorized(self):
-        self.headers['X-Auth-Token'] = '12345'
-        self.create_d()
-        code, body = self.get(self.req_d.name)
         self.headers.pop('X-Auth-Token')
         req = project_models.ProjectUpdateRequest('newName', 'new description')
-        code, body = self.update(req, self.req_d.name)
-        self.assertEqual(code, httplib.UNAUTHORIZED)
-        self.assertIn(message.unauthorized(), body)
+        return req, self.req_d.name
 
+    @executor.update(httplib.OK, '_update_success')
     def test_projectUpdateTokenSuccess(self):
-        self.headers['X-Auth-Token'] = '12345'
-        self.create_d()
-        code, body = self.get(self.req_d.name)
         req = project_models.ProjectUpdateRequest('newName', 'new description')
-        code, body = self.update(req, self.req_d.name)
-        self.assertEqual(code, httplib.OK)
+        return req, self.req_d.name
+
+    def _update_success(self, request, body):
+        self.assertIn(request.name, body)
 
 if __name__ == '__main__':
     unittest.main()
