@@ -55,6 +55,12 @@ if [ -z "$1" ]; then
   echo "Yardstick reporting status...OK"
 
   echo "********************************"
+  echo " QTIP reporting "
+  echo "********************************"
+  python ./qtip/reporting-status.py
+  echo "QTIP reporting status...OK"
+
+  echo "********************************"
   echo " Storperf reporting "
   echo "********************************"
   python ./storperf/reporting-status.py
