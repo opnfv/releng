@@ -198,6 +198,35 @@ def getScenarioStatus(installer, version):
     return result_dict
 
 
+def getQtipResults(version, installer):
+    period = get_config('qtip.period')
+    url_base = get_config('testapi.url')
+
+    url = ("http://" + url_base + "?project=qtip" +
+           "&installer=" + installer +
+           "&version=" + version + "&period=" + str(period))
+    request = Request(url)
+
+    try:
+        response = urlopen(request)
+        k = response.read()
+        response.close()
+        results = json.loads(k)['results']
+    except URLError as e:
+        print('Got an error code:', e)
+
+    result_dict = {}
+    if results:
+        for r in results:
+            key = '{}/{}'.format(r['pod_name'], r['scenario'])
+            if key not in result_dict.keys():
+                result_dict[key] = []
+            result_dict[key].append(r['details']['score'])
+
+    # return scenario_results
+    return result_dict
+
+
 def getNbtestOk(results):
     nb_test_ok = 0
     for r in results:
@@ -365,6 +394,14 @@ def export_csv(scenario_file_name, installer, version):
             if installer in line:
                 scenario_installer_file.write(line)
         scenario_installer_file.close
+
+
+def generate_csv(scenario_file):
+    import shutil
+    # csv
+    # generate sub files based on scenario_history.txt
+    csv_file = scenario_file.replace('txt', 'csv')
+    shutil.copy2(scenario_file, csv_file)
 
 
 def export_pdf(pdf_path, pdf_doc_name):
