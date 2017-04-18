@@ -9,11 +9,14 @@
 ##############################################################################
 # TODO: this is for xenial and needs to be adjusted for different distros
 - block:
-    - name: make NFS dir
+    - name: make NFS directories
       file:
-        dest: /images
+        dest: "{{ item }}"
         mode: 0777
         state: directory
+      with_items:
+        - "/images"
+        - "/volumes"
     - name: configure NFS service
       lineinfile:
         dest: /etc/services
@@ -23,11 +26,15 @@
       with_items:
         - "nfs        2049/tcp"
         - "nfs        2049/udp"
-    - name: configure NFS exports on ubuntu xenial
-      copy:
-        src: ../file/exports
+    - name: configure NFS exports
+      lineinfile:
         dest: /etc/exports
-      when: ansible_distribution_release == "xenial"
+        state: present
+        create: yes
+        line: "{{ item }}"
+      with_items:
+        - "/images         *(rw,sync,no_subtree_check,no_root_squash)"
+        - "/volumes        *(rw,sync,no_subtree_check,no_root_squash)"
     # TODO: the service name might be different on other distros and needs to be adjusted
     - name: restart ubuntu xenial NFS service
       service:
