@@ -162,8 +162,11 @@ storage_hosts:
     container_vars:
       cinder_backends:
         limit_container_types: cinder_volume
-        lvm:
-          volume_group: cinder-volumes
-          volume_driver: cinder.volume.drivers.lvm.LVMVolumeDriver
-          volume_backend_name: LVM_iSCSI
-          iscsi_ip_address: "172.29.244.11"
+        nfs_volume:
+          volume_backend_name: NFS_VOLUME1
+          volume_driver: cinder.volume.drivers.nfs.NfsDriver
+          nfs_mount_options: "rsize=65535,wsize=65535,timeo=1200,actimeo=120"
+          nfs_shares_config: /etc/cinder/nfs_shares
+          shares:
+            - ip: "172.29.244.12"
+              share: "/volumes"
