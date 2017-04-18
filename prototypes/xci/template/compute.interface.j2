@@ -1,10 +1,6 @@
-# This file describes the network interfaces available on your system
-# and how to activate them. For more information, see interfaces(5).
-
 # The loopback network interface
 auto lo
 iface lo inet loopback
-
 
 # Physical interface
 auto {{ interface }}
@@ -20,7 +16,7 @@ auto {{ interface }}.30
 iface {{ interface }}.30 inet manual
     vlan-raw-device {{ interface }}
 
-# Storage network VLAN interface (optional)
+# Storage network VLAN interface
 auto {{ interface }}.20
 iface {{ interface }}.20 inet manual
     vlan-raw-device {{ interface }}
@@ -55,6 +51,7 @@ iface br-vlan inet static
     address {{host_info[inventory_hostname].VLAN_IP}}
     netmask 255.255.255.0
     gateway 192.168.122.1
+    dns-nameserver 8.8.8.8 8.8.4.4
     offload-sg off
     # Create veth pair, don't bomb if already exists
     pre-up ip link add br-vlan-veth type veth peer name eth12 || true
@@ -65,17 +62,7 @@ iface br-vlan inet static
     post-down ip link del br-vlan-veth || true
     bridge_ports br-vlan-veth
 
-# Add an additional address to br-vlan
-iface br-vlan inet static
-    # Flat network default gateway
-    # -- This needs to exist somewhere for network reachability
-    # -- from the router namespace for floating IP paths.
-    # -- Putting this here is primarily for tempest to work.
-    address {{host_info[inventory_hostname].VLAN_IP_SECOND}}
-    netmask 255.255.252.0
-    dns-nameserver 8.8.8.8 8.8.4.4
-
-# compute1 Storage bridge
+# OpenStack Storage bridge
 auto br-storage
 iface br-storage inet static
     bridge_stp off
