@@ -21,12 +21,6 @@
         path: "{{LOG_PATH}}"
         state: directory
         recurse: no
-    # when the deployment is not aio, we use playbook, configure-targethosts.yml, to configure all the hosts
-    - name: copy multihost playbook
-      copy:
-        src: "{{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/configure-targethosts.yml"
-        dest: "{{OPNFV_RELENG_PATH}}/prototypes/xci/playbooks"
-      when: XCI_FLAVOR != "aio"
     # when the deployment is aio, we overwrite and use playbook, configure-opnfvhost.yml, since everything gets installed on opnfv host
     - name: copy aio playbook
       copy:
