@@ -19,6 +19,8 @@
   roles:
     # TODO: this only works for ubuntu/xenial and need to be adjusted for other distros
     - { role: configure-network, when: ansible_distribution_release == "xenial", src: "../template/controller.interface.j2", dest: "/etc/network/interfaces" }
+    # we need to force sync time with ntp or the nodes will be out of sync timewise
+    - role: synchronize-time
 
 - hosts: compute
   remote_user: root
@@ -28,6 +30,8 @@
   roles:
     # TODO: this only works for ubuntu/xenial and need to be adjusted for other distros
     - { role: configure-network, when: ansible_distribution_release == "xenial", src: "../template/compute.interface.j2", dest: "/etc/network/interfaces" }
+    # we need to force sync time with ntp or the nodes will be out of sync timewise
+    - role: synchronize-time
 
 - hosts: compute01
   remote_user: root
