@@ -1,6 +1,3 @@
-# This file describes the network interfaces available on your system
-# and how to activate them. For more information, see interfaces(5).
-
 # The loopback network interface
 auto lo
 iface lo inet loopback
@@ -35,18 +32,14 @@ iface br-mgmt inet static
     netmask 255.255.252.0
 
 # OpenStack Networking VXLAN (tunnel/overlay) bridge
-#
-# Only the COMPUTE and NETWORK nodes must have an IP address
-# on this bridge. When used by infrastructure nodes, the
-# IP addresses are assigned to containers which use this
-# bridge.
-#
 auto br-vxlan
-iface br-vxlan inet manual
+iface br-vxlan inet static
     bridge_stp off
     bridge_waitport 0
     bridge_fd 0
     bridge_ports {{ interface }}.30
+    address {{host_info[inventory_hostname].VXLAN_IP}}
+    netmask 255.255.252.0
 
 # OpenStack Networking VLAN bridge
 auto br-vlan
@@ -60,7 +53,7 @@ iface br-vlan inet static
     gateway 192.168.122.1
     dns-nameserver 8.8.8.8 8.8.4.4
 
-# compute1 Storage bridge
+# OpenStack Storage bridge
 auto br-storage
 iface br-storage inet static
     bridge_stp off

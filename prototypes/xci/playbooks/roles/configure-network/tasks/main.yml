@@ -8,9 +8,27 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 # TODO: this role needs to be adjusted for different distros
-- name: configure network for {{ ansible_os_family }} on interface {{ interface }}
-  template:
-    src: "{{ src }}"
-    dest: "{{ dest }}"
-- name: restart ubuntu xenial network service
-  shell: "/sbin/ifconfig {{ interface }} 0 &&/sbin/ifdown -a && /sbin/ifup -a"
+- block:
+    - name: configure modules
+      lineinfile:
+        dest: /etc/modules
+        state: present
+        create: yes
+        line: "8021q"
+    - name: add modules
+      modprobe:
+        name: 8021q
+        state: present
+    - name: ensure glean rules are removed
+      file:
+        path: "/etc/udev/rules.d/99-glean.rules"
+        state: absent
+    - name: ensure interfaces.d folder is empty
+      shell: "/bin/rm -rf /etc/network/interfaces.d/*"
+    - name: ensure interfaces file is updated
+      template:
+        src: "{{ src }}"
+        dest: "{{ dest }}"
+    - name: restart network service
+      shell: "/sbin/ifconfig {{ interface }} 0 && /sbin/ifdown -a && /sbin/ifup -a"
+  when: ansible_distribution_release == "xenial"
