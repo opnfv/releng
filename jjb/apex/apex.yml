@@ -12,6 +12,7 @@
         - 'apex-daily-{stream}'
         - 'apex-csit-promote-daily-{stream}'
         - 'apex-fdio-promote-daily-{stream}'
+        - 'apex-verify-iso-{stream}'
 
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
@@ -445,14 +446,57 @@
             block: true
         - 'apex-upload-rpm-artifact'
         - trigger-builds:
-          - project: 'apex-iso-verify-{stream}'
+          - project: 'apex-verify-iso-{stream}'
             predefined-parameters: |
               BUILD_DIRECTORY=apex-build-{stream}/.build
-              OPNFV_CLEAN=yes
             git-revision: false
             block: true
             same-node: true
         - 'apex-upload-iso-artifact'
+
+# ISO verify job
+- job-template:
+    name: 'apex-verify-iso-{stream}'
+
+    # Job template for builds
+    #
+    # Required Variables:
+    #     stream:    branch with - in place of / (eg. stable)
+    #     branch:    branch (eg. stable)
+    node: '{daily-slave}'
+
+    disabled: false
+
+    concurrent: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+
+    scm:
+        - git-scm
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-deploy.*'
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - 'apex-iso-verify'
 
 - job-template:
     name: 'apex-deploy-virtual-{scenario}-{stream}'
@@ -1160,19 +1204,28 @@
             !include-raw: ./apex-iso-verify.sh
 
 - builder:
-    name: 'apex-upload-snapshot-artifact'
+    name: 'apex-upload-rpm-artifact'
     builders:
-        - shell: ./apex-upload-artifact.sh snapshot
+        - inject:
+           properties-content: ARTIFACT_TYPE=rpm
+           script-content:
+             !include-raw: ./apex-upload-artifact.sh
 
 - builder:
     name: 'apex-upload-iso-artifact'
     builders:
-        - shell: ./apex-upload-artifact.sh iso
+        - inject:
+           properties-content: ARTIFACT_TYPE=iso
+           script-content:
+             !include-raw: ./apex-upload-artifact.sh
 
 - builder:
-    name: 'apex-upload-rpm-artifact'
+    name: 'apex-upload-snapshot-artifact'
     builders:
-        - shell: ./apex-upload-artifact.sh rpm
+        - inject:
+           properties-content: ARTIFACT_TYPE=snapshot
+           script-content:
+             !include-raw: ./apex-upload-artifact.sh
 
 - builder:
     name: 'apex-gs-cleanup'
