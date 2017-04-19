@@ -6,10 +6,8 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-import httplib
 
 import handlers
-from opnfv_testapi.common import message
 from opnfv_testapi.tornado_swagger import swagger
 import project_models
 
@@ -45,15 +43,10 @@ class ProjectCLHandler(GenericProjectHandler):
             @raise 403: project already exists
             @raise 400:  body or name not provided
         """
-        def query(data):
-            return {'name': data.name}
-
-        def error(data):
-            return httplib.FORBIDDEN, message.exist('project', data.name)
-
-        miss_checks = ['name']
-        db_checks = [(self.table, False, query, error)]
-        self._create(miss_checks, db_checks)
+        def query():
+            return {'name': self.json_args.get('name')}
+        miss_fields = ['name']
+        self._create(miss_fields=miss_fields, query=query)
 
 
 class ProjectGURHandler(GenericProjectHandler):
@@ -65,7 +58,7 @@ class ProjectGURHandler(GenericProjectHandler):
             @return 200: project exist
             @raise 404: project not exist
         """
-        self._get_one({'name': project_name})
+        self._get_one(query={'name': project_name})
 
     @swagger.operation(nickname="updateProjectByName")
     def put(self, project_name):
@@ -81,7 +74,7 @@ class ProjectGURHandler(GenericProjectHandler):
         """
         query = {'name': project_name}
         db_keys = ['name']
-        self._update(query, db_keys)
+        self._update(query=query, db_keys=db_keys)
 
     @swagger.operation(nickname='deleteProjectByName')
     def delete(self, project_name):
@@ -90,4 +83,4 @@ class ProjectGURHandler(GenericProjectHandler):
             @return 200: delete success
             @raise 404: project not exist
         """
-        self._delete({'name': project_name})
+        self._delete(query={'name': project_name})

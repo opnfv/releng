@@ -6,10 +6,7 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-import httplib
-
 import handlers
-from opnfv_testapi.common import message
 from opnfv_testapi.tornado_swagger import swagger
 import pod_models
 
@@ -43,15 +40,10 @@ class PodCLHandler(GenericPodHandler):
             @raise 403: pod already exists
             @raise 400: body or name not provided
         """
-        def query(data):
-            return {'name': data.name}
-
-        def error(data):
-            return httplib.FORBIDDEN, message.exist('pod', data.name)
-
-        miss_checks = ['name']
-        db_checks = [(self.table, False, query, error)]
-        self._create(miss_checks, db_checks)
+        def query():
+            return {'name': self.json_args.get('name')}
+        miss_fields = ['name']
+        self._create(miss_fields=miss_fields, query=query)
 
 
 class PodGURHandler(GenericPodHandler):
@@ -63,9 +55,7 @@ class PodGURHandler(GenericPodHandler):
             @return 200: pod exist
             @raise 404: pod not exist
         """
-        query = dict()
-        query['name'] = pod_name
-        self._get_one(query)
+        self._get_one(query={'name': pod_name})
 
     def delete(self, pod_name):
         """ Remove a POD
