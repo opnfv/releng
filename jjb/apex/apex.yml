@@ -444,14 +444,7 @@
             same-node: true
             block: true
         - 'apex-upload-rpm-artifact'
-        - trigger-builds:
-          - project: 'apex-iso-verify-{stream}'
-            predefined-parameters: |
-              BUILD_DIRECTORY=apex-build-{stream}/.build
-              OPNFV_CLEAN=yes
-            git-revision: false
-            block: true
-            same-node: true
+        - 'apex-iso-verify'
         - 'apex-upload-iso-artifact'
 
 - job-template:
@@ -1162,17 +1155,17 @@
 - builder:
     name: 'apex-upload-snapshot-artifact'
     builders:
-        - shell: ./apex-upload-artifact.sh snapshot
+        - shell: releng/jjb/apex/apex-upload-artifact.sh snapshot
 
 - builder:
     name: 'apex-upload-iso-artifact'
     builders:
-        - shell: ./apex-upload-artifact.sh iso
+        - shell: releng/jjb/apex/apex-upload-artifact.sh iso
 
 - builder:
     name: 'apex-upload-rpm-artifact'
     builders:
-        - shell: ./apex-upload-artifact.sh rpm
+        - shell: releng/jjb/apex/apex-upload-artifact.sh rpm
 
 - builder:
     name: 'apex-gs-cleanup'
