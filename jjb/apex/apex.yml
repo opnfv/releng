@@ -444,7 +444,9 @@
             git-revision: false
             same-node: true
             block: true
-        - 'apex-upload-rpm-artifact'
+        - inject:
+           properties-content: ARTIFACT_TYPE=rpm
+        - 'apex-upload-artifact'
         - trigger-builds:
           - project: 'apex-verify-iso-{stream}'
             predefined-parameters: |
@@ -452,7 +454,9 @@
             git-revision: false
             block: true
             same-node: true
-        - 'apex-upload-iso-artifact'
+        - inject:
+           properties-content: ARTIFACT_TYPE=iso
+        - 'apex-upload-artifact'
 
 # ISO verify job
 - job-template:
@@ -1066,7 +1070,9 @@
             same-node: true
         - shell:
             !include-raw-escape: ./apex-snapshot-create.sh
-        - 'apex-upload-snapshot-artifact'
+        - inject:
+           properties-content: ARTIFACT_TYPE=snapshot
+        - 'apex-upload-artifact'
 
 # FDIO promote
 - job-template:
@@ -1114,7 +1120,9 @@
             same-node: true
         - shell:
             !include-raw-escape: ./apex-snapshot-create.sh
-        - 'apex-upload-snapshot-artifact'
+        - inject:
+           properties-content: ARTIFACT_TYPE=snapshot
+        - 'apex-upload-artifact'
 
 - job-template:
     name: 'apex-gs-clean-{stream}'
@@ -1203,29 +1211,12 @@
         - shell:
             !include-raw: ./apex-iso-verify.sh
 
-- builder:
-    name: 'apex-upload-rpm-artifact'
-    builders:
-        - inject:
-           properties-content: ARTIFACT_TYPE=rpm
-           script-content:
-             !include-raw: ./apex-upload-artifact.sh
 
 - builder:
-    name: 'apex-upload-iso-artifact'
+    name: 'apex-upload-artifact'
     builders:
-        - inject:
-           properties-content: ARTIFACT_TYPE=iso
-           script-content:
-             !include-raw: ./apex-upload-artifact.sh
-
-- builder:
-    name: 'apex-upload-snapshot-artifact'
-    builders:
-        - inject:
-           properties-content: ARTIFACT_TYPE=snapshot
-           script-content:
-             !include-raw: ./apex-upload-artifact.sh
+        - shell:
+            !include-raw: ./apex-upload-artifact.sh
 
 - builder:
     name: 'apex-gs-cleanup'
