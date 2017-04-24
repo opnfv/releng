@@ -58,6 +58,8 @@
     - name: copy OPNFV role requirements
       shell: "/bin/cp -rf {{OPNFV_RELENG_PATH}}/prototypes/xci/file/ansible-role-requirements.yml {{OPENSTACK_OSA_PATH}}"
       when: XCI_LOOP == "daily"
+    - name: change hosts
+      template: src=../template/opnfv.hosts.j2 dest=/etc/hosts
 - hosts: localhost
   remote_user: root
   tasks:
