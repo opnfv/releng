@@ -8,7 +8,7 @@ echo "Starting the Apex iso verify."
 echo "--------------------------------------------------------"
 echo
 
-source $BUILD_DIRECTORY/../opnfv.properties
+source $WORKSPACE/../$BUILD_DIRECTORY/../opnfv.properties
 
 if ! rpm -q virt-install > /dev/null; then
   sudo yum -y install virt-install
