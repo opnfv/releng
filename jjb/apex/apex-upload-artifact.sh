@@ -55,19 +55,6 @@ uploadiso () {
 }
 
 uploadrpm () {
-  RPM_INSTALL_PATH=$BUILD_DIRECTORY/noarch
-  RPM_LIST=$RPM_INSTALL_PATH/$(basename $OPNFV_RPM_URL)
-  VERSION_EXTENSION=$(echo $(basename $OPNFV_RPM_URL) | sed 's/opnfv-apex-//')
-  for pkg in common undercloud; do # removed onos for danube
-    RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
-  done
-  SRPM_INSTALL_PATH=$BUILD_DIRECTORY
-  SRPM_LIST=$SRPM_INSTALL_PATH/$(basename $OPNFV_SRPM_URL)
-  VERSION_EXTENSION=$(echo $(basename $OPNFV_SRPM_URL) | sed 's/opnfv-apex-//')
-  for pkg in common undercloud; do # removed onos for danube
-    SRPM_LIST+=" ${SRPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
-  done
-
   for artifact in $RPM_LIST $SRPM_LIST; do
     echo "Uploading artifact: ${artifact}"
     gsutil cp $artifact gs://$GS_URL/$(basename $artifact) > gsutil.iso.log
@@ -88,21 +75,39 @@ uploadsnap () {
   echo "Upload complete for Snapshot"
 }
 
+if gpg2 --list-keys | grep "opnfv-helpdesk@rt.linuxfoundation.org"; then
+  echo "Signing Key avaliable"
+  SIGN_ARTIFACT="true"
+fi
+
 if [ "$ARTIFACT_TYPE" == 'snapshot' ]; then
   uploadsnap
-elif gpg2 --list-keys | grep "opnfv-helpdesk@rt.linuxfoundation.org"; then
-  echo "Signing Key avaliable"
-  if [ "$ARTIFACT_TYPE" == 'iso' ]; then
+elif [ "$ARTIFACT_TYPE" == 'iso' ]; then
+  if [[ -n "$SIGN_ARTIFACT" && "$SIGN_ARTIFACT" == "true" ]]; then
     signiso
-    uploadiso
   fi
-  if [ "$ARTIFACT_TYPE" == 'rpm' ]; then
+  uploadiso
+elif [ "$ARTIFACT_TYPE" == 'rpm' ]; then
+  RPM_INSTALL_PATH=$BUILD_DIRECTORY/noarch
+  RPM_LIST=$RPM_INSTALL_PATH/$(basename $OPNFV_RPM_URL)
+  VERSION_EXTENSION=$(echo $(basename $OPNFV_RPM_URL) | sed 's/opnfv-apex-//')
+  for pkg in common undercloud; do # removed onos for danube
+    RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
+  done
+  SRPM_INSTALL_PATH=$BUILD_DIRECTORY
+  SRPM_LIST=$SRPM_INSTALL_PATH/$(basename $OPNFV_SRPM_URL)
+  VERSION_EXTENSION=$(echo $(basename $OPNFV_SRPM_URL) | sed 's/opnfv-apex-//')
+  for pkg in common undercloud; do # removed onos for danube
+    SRPM_LIST+=" ${SRPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
+  done
+
+  if [[ -n "$SIGN_ARTIFACT" && "$SIGN_ARTIFACT" == "true" ]]; then
     signrpm
-    uploadrpm
   fi
+  uploadrpm
 else
-  if [ "$ARTIFACT_TYPE" == 'iso' ]; then uploadiso; fi
-  if [ "$ARTIFACT_TYPE" == 'rpm' ]; then uploadrpm; fi
+  echo "ERROR: Unknown artifact type ${ARTIFACT_TYPE} to upload...exiting"
+  exit 1
 fi
 
 echo
