@@ -38,14 +38,6 @@
       shell: "/bin/cp -rf {{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/user_variables.yml {{OPENSTACK_OSA_ETC_PATH}}"
     - name: copy cinder.yml
       shell: "/bin/cp -rf {{OPNFV_RELENG_PATH}}/prototypes/xci/file/cinder.yml {{OPENSTACK_OSA_ETC_PATH}}/env.d"
-    - name: bootstrap ansible on opnfv host
-      command: "/bin/bash ./scripts/bootstrap-ansible.sh"
-      args:
-        chdir: "{{OPENSTACK_OSA_PATH}}"
-    - name: generate password token
-      command: "python pw-token-gen.py --file {{OPENSTACK_OSA_ETC_PATH}}/user_secrets.yml"
-      args:
-        chdir: "{{OPENSTACK_OSA_PATH}}/scripts"
     # TODO: We need to get rid of this as soon as the issue is fixed upstream
     - name: change the haproxy state from disable to enable
       replace:
@@ -56,6 +48,14 @@
       shell: "/bin/cp -rf {{OPNFV_RELENG_PATH}}/prototypes/xci/file/setup-openstack.yml {{OPENSTACK_OSA_PATH}}/playbooks"
     - name: copy OPNFV role requirements
       shell: "/bin/cp -rf {{OPNFV_RELENG_PATH}}/prototypes/xci/file/ansible-role-requirements.yml {{OPENSTACK_OSA_PATH}}"
+    - name: bootstrap ansible on opnfv host
+      command: "/bin/bash ./scripts/bootstrap-ansible.sh"
+      args:
+        chdir: "{{OPENSTACK_OSA_PATH}}"
+    - name: generate password token
+      command: "python pw-token-gen.py --file {{OPENSTACK_OSA_ETC_PATH}}/user_secrets.yml"
+      args:
+        chdir: "{{OPENSTACK_OSA_PATH}}/scripts"
 - hosts: localhost
   remote_user: root
   tasks:
