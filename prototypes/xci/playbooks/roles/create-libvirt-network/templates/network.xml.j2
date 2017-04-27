@@ -1,0 +1,15 @@
+<network>
+  <name>{{ item.key }}</name>
+  {% if item.value.forward_mode is defined %}
+  <forward mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
+  {% endif %}
+  <bridge name='{{ item.value.bridge_name }}' stp='on' delay='0'/>
+  {% if item.value.ip is defined %}
+  <ip address='{{ item.value.ip }}' netmask='{{ item.value.netmask }}'>
+  </ip>
+  {% endif %}
+</network>
