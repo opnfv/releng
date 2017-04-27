@@ -75,6 +75,11 @@
     name: validate-jnija-templates
     builders:
         -shell: |
+           set +x
            set -o errexit
-           ./utils/generate_config.py -y labs/intel/pod5/pod.yaml -j
-           installers/joid/labconfig.jinja2
+           for lab_configs in $(find labs/ -name 'pod.yaml' | grep -v zte); do
+                   while IFS= read -r jinja_templates; do
+                     echo "./utils/generate_config.py -y $lab_configs -j $jinja_templates"
+                     ./utils/generate_config.py -y $lab_configs -j $jinja_templates
+                   done < <(find installers/ -name '*.jinja2')
+           done
