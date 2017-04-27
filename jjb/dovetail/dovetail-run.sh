@@ -32,10 +32,11 @@ if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FOR
     sudo iptables -I FORWARD -j RETURN
 fi
 
+releng_repo=${WORKSPACE}/releng
+[ -d ${releng_repo} ] && sudo rm -rf ${releng_repo}
+git clone https://gerrit.opnfv.org/gerrit/releng ${releng_repo} >/dev/null
+
 if [[ ${INSTALLER_TYPE} != 'joid' ]]; then
-    releng_repo=${WORKSPACE}/releng
-    [ -d ${releng_repo} ] && sudo rm -rf ${releng_repo}
-    git clone https://gerrit.opnfv.org/gerrit/releng ${releng_repo} >/dev/null
     ${releng_repo}/utils/fetch_os_creds.sh -d ${OPENRC} -i ${INSTALLER_TYPE} -a ${INSTALLER_IP} >${redirect}
 fi
 
@@ -47,16 +48,50 @@ else
     exit 1
 fi
 
+cd ${releng_repo}/modules
+sudo pip install -e ./ >/dev/null
+
+if [[ ${INSTALLER_TYPE} == apex ]]; then
+    user='stack'
+    pkey='/root/.ssh/id_rsa'
+    password='nouse'
+elif [[ ${INSTALLER_TYPE} == compass ]]; then
+    user='root'
+    pkey='nouse'
+    password='root'
+elif [[ ${INSTALLER_TYPE} == fuel ]]; then
+    user='root'
+    pkey='nouse'
+    password='r00tme'
+else
+    echo "Don't support to generate pod.yaml on ${INSTALLER_TYPE} currently."
+    echo "HA test cases may not run properly."
+fi
+
+pod_file_dir="/home/opnfv/dovetail/userconfig"
+cmd="sudo python ${releng_repo}/jjb/dovetail/create_pod_file.py ${INSTALLER_TYPE} ${INSTALLER_IP} ${user} ${pkey} ${password}"
+echo ${cmd}
+${cmd}
+
+if [ -f ${pod_file_dir}/pod.yaml ]; then
+    echo "file ${pod_file_dir}/pod.yaml:"
+    cat ${pod_file_dir}/pod.yaml
+else
+    echo "Error: There doesn't exist file ${pod_file_dir}/pod.yaml."
+    echo "HA test cases may not run properly."
+fi
+
 opts="--privileged=true -id"
 results_envs="-v /var/run/docker.sock:/var/run/docker.sock \
               -v /home/opnfv/dovetail/results:/home/opnfv/dovetail/results"
 openrc_volume="-v ${OPENRC}:${OPENRC}"
+userconfig_volume="-v ${pod_file_dir}:${pod_file_dir}"
 
 # Pull the image with correct tag
 echo "Dovetail: Pulling image opnfv/dovetail:${DOCKER_TAG}"
 docker pull opnfv/dovetail:$DOCKER_TAG >$redirect
 
-cmd="docker run ${opts} ${results_envs} ${openrc_volume} \
+cmd="docker run ${opts} ${results_envs} ${openrc_volume} ${userconfig_volume} \
      ${sshkey} opnfv/dovetail:${DOCKER_TAG} /bin/bash"
 echo "Dovetail: running docker run command: ${cmd}"
 ${cmd} >${redirect}
