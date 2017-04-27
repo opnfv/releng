@@ -5,7 +5,7 @@
 
     name: validate-templates
 
-    project: securedlab
+    project: 'securedlab'
 
     jobs:
         - 'validate-jinja2-templates-{stream}'
@@ -70,16 +70,18 @@
                     pattern: '**/*.jinja2'
                   - compare-type: ANT
                     pattern: '**/*.yaml'
+    builders:
+        - check-jinja
 
 - builder:
-    name: validate-jnija-templates
-    builders:
-        -shell: |
-           set +x
-           set -o errexit
-           for lab_configs in $(find labs/ -name 'pod.yaml' | grep -v zte); do
-                   while IFS= read -r jinja_templates; do
-                     echo "./utils/generate_config.py -y $lab_configs -j $jinja_templates"
-                     ./utils/generate_config.py -y $lab_configs -j $jinja_templates
-                   done < <(find installers/ -name '*.jinja2')
-           done
+   name: check-jinja
+   builders:
+       -shell: |
+          set +x
+          set -o errexit
+          for lab_configs in $(find labs/ -name 'pod.yaml' | grep -v zte); do
+                  while IFS= read -r jinja_templates; do
+                    echo "./utils/generate_config.py -y $lab_configs -j $jinja_templates"
+                    ./utils/generate_config.py -y $lab_configs -j $jinja_templates
+                  done < <(find installers/ -name '*.jinja2')
+          done
