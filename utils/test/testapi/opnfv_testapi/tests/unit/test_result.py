@@ -16,7 +16,7 @@ from opnfv_testapi.resources import pod_models
 from opnfv_testapi.resources import project_models
 from opnfv_testapi.resources import result_models
 from opnfv_testapi.resources import testcase_models
-import test_base as base
+from opnfv_testapi.tests.unit import test_base as base
 
 
 class Details(object):

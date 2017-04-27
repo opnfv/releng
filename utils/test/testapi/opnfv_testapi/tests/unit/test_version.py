@@ -9,7 +9,7 @@
 import unittest
 
 from opnfv_testapi.resources import models
-import test_base as base
+from opnfv_testapi.tests.unit import test_base as base
 
 
 class TestVersionBase(base.TestBase):
