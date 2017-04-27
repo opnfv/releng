@@ -1,0 +1,32 @@
+---
+- name: collect facts about existing networks
+  virt_net:
+    command: facts
+- name: destroy libvirt network
+  virt_net:
+    name: "{{ item.key }}"
+    command: destroy
+  with_dict: "{{ networks }}"
+  when: "{{ item.key in ansible_libvirt_networks and ansible_libvirt_networks[ item.key ].state == 'active'}}"
+- name: undefine libvirt network
+  virt_net:
+    name: "{{ item.key }}"
+    command: undefine
+  with_dict: "{{ networks }}"
+  when: "{{ item.key in ansible_libvirt_networks }}"
+- name: define libvirt network
+  virt_net:
+    name: "{{ item.key }}"
+    command: define
+    xml: "{{ lookup('template', '../templates/network.xml.j2') }}"
+  with_dict: "{{ networks }}"
+- name: start libvirt network
+  virt_net:
+    name: "{{ item.key }}"
+    state: active
+  with_dict: "{{ networks }}"
+- name: set libvirt network to autostart
+  virt_net:
+    name: "{{ item.key }}"
+    autostart: yes
+  with_dict: "{{ networks }}"
