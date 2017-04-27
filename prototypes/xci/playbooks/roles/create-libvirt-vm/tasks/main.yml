@@ -1,0 +1,32 @@
+---
+- name: create directory to store qcow2 images
+  file: 
+    path: /var/lib/libvirt/images
+    state: directory
+    mode: 0755
+- name: destroy vm
+  virt:
+    name: "{{ item.key }}"
+    command: destroy
+  with_dict: "{{ vms }}"
+  ignore_errors: True
+- name: undefine vm
+  virt:
+    name: "{{ item.key }}"
+    command: undefine
+  with_dict: "{{ vms }}"
+  ignore_errors: True
+- name: remove qcow2 image for vm
+  file:
+    path: "/tmp/{{ item.key }}.qcow2"
+    state: absent
+  with_dict: "{{ vms }}"
+- name: create qcow2 image for vm
+  shell: "qemu-img create -f qcow2 /tmp/{{ item.key }}.qcow2 {{ item.value.disk_size }}"
+  with_dict: "{{ vms }}"
+- name: define vm
+  virt:
+    name: "{{ item.key }}"
+    command: define
+    xml: "{{ lookup('template', '../templates/vm.xml.j2') }}"
+  with_dict: "{{ vms }}"
