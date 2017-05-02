@@ -85,6 +85,11 @@ else
     fi
 fi
 
+# Get dovetail tag version
+if [[ $DOCKER_REPO_NAME == *"dovetail"* ]] && [[ -n "${RELEASE_VERSION-}" ]]; then
+    DOCKER_TAG=${RELEASE_VERSION}
+fi
+
 # Start the build
 echo "Building docker image: $DOCKER_REPO_NAME:$DOCKER_TAG"
 echo "--------------------------------------------------------"
