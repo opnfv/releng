@@ -75,14 +75,11 @@ echo "Current branch: $BRANCH"
 
 if [[ "$BRANCH" == "master" ]]; then
     DOCKER_TAG="latest"
+elif [[ -n "${RELEASE_VERSION-}" ]]; then
+    DOCKER_TAG=${BRANCH##*/}.${RELEASE_VERSION}
+    # e.g. danube.1.0, danube.2.0, danube.3.0
 else
-    if [[ -n "${RELEASE_VERSION-}" ]]; then
-        release=${BRANCH##*/}
-        DOCKER_TAG=${release}.${RELEASE_VERSION}
-        # e.g. colorado.1.0, colorado.2.0, colorado.3.0
-    else
-        DOCKER_TAG="stable"
-    fi
+    DOCKER_TAG="stable"
 fi
 
 # Start the build
@@ -90,6 +87,9 @@ echo "Building docker image: $DOCKER_REPO_NAME:$DOCKER_TAG"
 echo "--------------------------------------------------------"
 echo
 if [[ $DOCKER_REPO_NAME == *"dovetail"* ]]; then
+    if [[ -n "${RELEASE_VERSION-}" ]]; then
+        DOCKER_TAG=${RELEASE_VERSION}
+    fi
     cmd="docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG -f $DOCKERFILE ."
 else
     cmd="docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG --build-arg BRANCH=$BRANCH
