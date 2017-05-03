@@ -88,17 +88,18 @@
                   node-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
-#        - multijob:
-#            name: functest
-#            condition: SUCCESSFUL
-#            projects:
-#                - name: 'functest-compass-baremetal-suite-{stream}'
-#                  current-parameters: false
-#                  predefined-parameters:
-#                    FUNCTEST_SUITE_NAME=opera
-#                  node-parameters: true
-#                  kill-phase-on: NEVER
-#                  abort-all-job: true
+        - multijob:
+            name: functest
+            condition: SUCCESSFUL
+            projects:
+                - name: 'functest-compass-baremetal-suite-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    DEPLOY_SCENARIO=os-nosdn-openo-ha
+                    FUNCTEST_SUITE_NAME=vnf
+                  node-parameters: true
+                  kill-phase-on: NEVER
+                  abort-all-job: true
 
 - job-template:
     name: 'opera-daily-{phase}-{stream}'
