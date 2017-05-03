@@ -9,10 +9,12 @@
 
 from abc import abstractmethod
 import os
+import time
 
 
 from opnfv.utils import opnfv_logger as logger
 from opnfv.utils import ssh_utils
+
 
 logger = logger.Logger(__name__).getLogger()
 
@@ -171,7 +173,16 @@ class Node(object):
                         (src, dest, self.ip))
         return put_file_result
 
-    def run_cmd(self, cmd):
+    def _recv(self, function):
+        output = ''
+        while True:
+            out = function(4096)
+            if out == '':
+                break
+            output += out
+        return output
+
+    def run_cmd(self, cmd, check_exit_code=[0]):
         '''
         Run command remotely on a node
         '''
@@ -180,13 +191,32 @@ class Node(object):
                 "Error running command %s. The node %s is not active"
                 % (cmd, self.ip))
             return None
-        _, stdout, stderr = (self.ssh_client.exec_command(cmd))
-        error = stderr.readlines()
-        if len(error) > 0:
-            logger.error("error %s" % ''.join(error))
-            return None
-        output = ''.join(stdout.readlines()).rstrip()
-        return output
+        logger.debug("Running command {} on Node {}".format(cmd, self.ip))
+        channel = self.ssh_client.get_transport().open_session()
+        channel.exec_command(cmd)
+        first_time = True
+        timeout = timeout_orig = 300
+        while not channel.exit_status_ready():
+            if first_time and (timeout_orig - timeout) > 10:
+                logger.info("The command: \"{}\" seem to take longer waiting "
+                            "for return code. (Max waiting {} seconds)"
+                            "".format(cmd, timeout_orig))
+                first_time = False
+            time.sleep(1)
+            timeout -= 1
+            if timeout < 0:
+                raise Exception("Command \"{}\" did not end after {}.")
+        if not first_time:
+            logger.info("The command: \"{}\" did end after {} seconds"
+                        "".format(cmd, timeout_orig - timeout))
+        rc = channel.recv_exit_status()
+        stdout = self._recv(channel.recv).rstrip()
+        stderr = self._recv(channel.recv_stderr)
+        if rc not in check_exit_code:
+            logger.error("Return Code of command {} was {}. Stdout: {}, "
+                         "Error: {}".format(cmd, rc, stdout, stderr))
+            return stdout
+        return stdout
 
     def get_dict(self):
         '''
