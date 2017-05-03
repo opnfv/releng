@@ -48,10 +48,10 @@ else
     exit 1
 fi
 
-pip install virtualenv
+sudo pip install virtualenv
 
 cd ${releng_repo}/modules
-virtualenv venv
+sudo virtualenv venv
 source venv/bin/activate
 sudo pip install -e ./ >/dev/null
 
