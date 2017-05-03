@@ -16,6 +16,7 @@ fi
 
 # Start fresh
 rm -rf /opt/stack
+rm -rf ~${SUDO_USER:-root}/.config/openstack
 
 # Delete all libvirt VMs and hosts from vbmc (look for a port number)
 for vm in $(vbmc list | awk '/[0-9]/{{ print $2 }}'); do

@@ -70,7 +70,6 @@ export EXTRA_DIB_ELEMENTS=${EXTRA_DIB_ELEMENTS:-"openssh-server"}
 # Source Ansible
 set +x +o nounset
 $SCRIPT_HOME/env-setup.sh
-source ${ANSIBLE_INSTALL_ROOT}/ansible/hacking/env-setup
 ANSIBLE=$(which ansible-playbook)
 set -x -o nounset
 
@@ -121,7 +120,8 @@ ${ANSIBLE} ${ANSIBLE_VERBOSITY} \
     -e create_ipa_image=${CREATE_IPA_IMAGE} \
     -e write_interfaces_file=${WRITE_INTERFACES_FILE} \
     -e ipv4_gateway=192.168.122.1 \
-    -e wait_timeout=${PROVISION_WAIT_TIMEOUT}
+    -e wait_timeout=${PROVISION_WAIT_TIMEOUT} \
+    -e enable_keystone=false
 EXITCODE=$?
 
 if [ $EXITCODE != 0 ]; then
