@@ -6,30 +6,49 @@
 #####################################
 # branch definitions
 #####################################
-    stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            disabled: false
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+        disabled: false
+    danube: &danube
+        stream: danube
+        branch: 'stable/{stream}'
+        gs-pathname: '/{stream}'
+        disabled: false
 
 #####################################
-# patch verification phases
+# pod definitions
 #####################################
-    phase:
-        - 'basic'
-        - 'deploy'
+    pod:
+        - baremetal:
+            slave-label: compass-baremetal
+            os-version: 'xenial'
+            <<: *master
+        - virtual:
+            slave-label: compass-virtual
+            os-version: 'xenial'
+            <<: *master
+        - baremetal:
+            slave-label: compass-baremetal
+            os-version: 'xenial'
+            <<: *danube
+        - virtual:
+            slave-label: compass-virtual
+            os-version: 'xenial'
+            <<: *danube
 
 #####################################
 # jobs
 #####################################
     jobs:
-        - 'opera-daily-{stream}'
-        - 'opera-daily-{phase}-{stream}'
+        - 'opera-{pod}-daily-{stream}'
+
 #####################################
 # job templates
 #####################################
 - job-template:
-    name: 'opera-daily-{stream}'
+    name: 'opera-{pod}-daily-{stream}'
 
     project-type: multijob
 
@@ -80,7 +99,7 @@
             name: deploy
             condition: SUCCESSFUL
             projects:
-                - name: 'compass-deploy-virtual-daily-{stream}'
+                - name: 'compass-deploy-{pod}-daily-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     DEPLOY_SCENARIO=os-nosdn-openo-ha
@@ -88,60 +107,15 @@
                   node-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
-#        - multijob:
-#            name: functest
-#            condition: SUCCESSFUL
-#            projects:
-#                - name: 'functest-compass-baremetal-suite-{stream}'
-#                  current-parameters: false
-#                  predefined-parameters:
-#                    FUNCTEST_SUITE_NAME=opera
-#                  node-parameters: true
-#                  kill-phase-on: NEVER
-#                  abort-all-job: true
-
-- job-template:
-    name: 'opera-daily-{phase}-{stream}'
-
-    disabled: '{obj:disabled}'
-
-    concurrent: true
-
-    properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-per-node: 1
-            option: 'project'
-
-    scm:
-        - git-scm
-
-    wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 120
-            fail: true
-
-    builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - '{project}-daily-{phase}-macro'
-
-#####################################
-# builder macros
-#####################################
-- builder:
-    name: 'opera-daily-basic-macro'
-    builders:
-        - shell: |
-            #!/bin/bash
-            echo "Hello world!"
-
-- builder:
-    name: 'opera-daily-deploy-macro'
-    builders:
-        - shell: |
-            #!/bin/bash
-            echo "Hello world!"
-
+        - multijob:
+            name: functest
+            condition: SUCCESSFUL
+            projects:
+                - name: 'functest-compass-{pod}-suite-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    DEPLOY_SCENARIO=os-nosdn-openo-ha
+                    FUNCTEST_SUITE_NAME=opera_vims
+                  node-parameters: true
+                  kill-phase-on: NEVER
+                  abort-all-job: true
