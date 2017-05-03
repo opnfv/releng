@@ -4,6 +4,13 @@
     project: 'opera'
 
 #####################################
+# POD definitions
+#####################################
+    pod:
+        - 'barematel'
+        - 'virtual'
+
+#####################################
 # branch definitions
 #####################################
     stream:
@@ -23,13 +30,13 @@
 # jobs
 #####################################
     jobs:
-        - 'opera-daily-{stream}'
+        - 'opera-daily-{pod}-{stream}'
         - 'opera-daily-{phase}-{stream}'
 #####################################
 # job templates
 #####################################
 - job-template:
-    name: 'opera-daily-{stream}'
+    name: 'opera-daily-{pod}-{stream}'
 
     project-type: multijob
 
@@ -80,7 +87,7 @@
             name: deploy
             condition: SUCCESSFUL
             projects:
-                - name: 'compass-deploy-virtual-daily-{stream}'
+                - name: 'compass-deploy-{pod}-daily-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     DEPLOY_SCENARIO=os-nosdn-openo-ha
@@ -88,17 +95,18 @@
                   node-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
-#        - multijob:
-#            name: functest
-#            condition: SUCCESSFUL
-#            projects:
-#                - name: 'functest-compass-baremetal-suite-{stream}'
-#                  current-parameters: false
-#                  predefined-parameters:
-#                    FUNCTEST_SUITE_NAME=opera
-#                  node-parameters: true
-#                  kill-phase-on: NEVER
-#                  abort-all-job: true
+        - multijob:
+            name: functest
+            condition: SUCCESSFUL
+            projects:
+                - name: 'functest-compass-{pod}-suite-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    DEPLOY_SCENARIO=os-nosdn-openo-ha
+                    FUNCTEST_SUITE_NAME=vnf
+                  node-parameters: true
+                  kill-phase-on: NEVER
+                  abort-all-job: true
 
 - job-template:
     name: 'opera-daily-{phase}-{stream}'
