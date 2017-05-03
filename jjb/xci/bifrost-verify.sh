@@ -113,11 +113,11 @@ sudo /bin/cp -rf /opt/releng/prototypes/bifrost/* /opt/bifrost/
 
 # cleanup remnants of previous deployment
 cd /opt/bifrost
-sudo -E ./scripts/destroy-env.sh
+sudo -H -E ./scripts/destroy-env.sh
 
 # provision 3 VMs; xcimaster, controller, and compute
 cd /opt/bifrost
-sudo -E ./scripts/bifrost-provision.sh
+sudo -H -E ./scripts/bifrost-provision.sh
 
 # list the provisioned VMs
 cd /opt/bifrost
