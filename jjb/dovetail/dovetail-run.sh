@@ -71,6 +71,8 @@ ${cmd}
 
 deactivate
 
+cd ${WORKSPACE}
+
 if [ -f ${pod_file_dir}/pod.yaml ]; then
     echo "file ${pod_file_dir}/pod.yaml:"
     cat ${pod_file_dir}/pod.yaml
