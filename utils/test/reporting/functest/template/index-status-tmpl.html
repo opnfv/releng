@@ -15,27 +15,27 @@
         {% for scenario in scenario_stats.iteritems() -%}
     	    var gaugeScenario{{loop.index}} = gauge('#gaugeScenario{{loop.index}}');
         {%- endfor %}
-    	
+
     	// assign success rate to the gauge
     	function updateReadings() {
     	    {% for scenario,iteration in scenario_stats.iteritems() -%}
     	     	gaugeScenario{{loop.index}}.update({{scenario_results[scenario].getScorePercent()}});
     	     {%- endfor %}
     	}
-    	updateReadings();										
+    	updateReadings();
         }
-        
+
         // trend line management
-        d3.csv("./scenario_history.csv", function(data) {
+        d3.csv("./scenario_history.txt", function(data) {
        // ***************************************
        // Create the trend line
       {% for scenario,iteration in scenario_stats.iteritems() -%}
-       // for scenario {{scenario}} 
+       // for scenario {{scenario}}
        // Filter results
-        var trend{{loop.index}} = data.filter(function(row) { 
+        var trend{{loop.index}} = data.filter(function(row) {
     	     return row["scenario"]=="{{scenario}}" && row["installer"]=="{{installer}}";
     	})
-       // Parse the date 
+       // Parse the date
         trend{{loop.index}}.forEach(function(d) {
     	    d.date = parseDate(d.date);
     	    d.score = +d.score
@@ -44,7 +44,7 @@
         var mytrend = trend("#trend_svg{{loop.index}}",trend{{loop.index}})
         // ****************************************
         {%- endfor %}
-    });	    
+    });
     if ( !window.isLoaded ) {
         window.addEventListener("load", function() {
     			onDocumentReady();
@@ -61,7 +61,7 @@ $(document).ready(function (){
     });
 })
 </script>
-    
+
   </head>
     <body>
     <div class="container">
@@ -72,8 +72,8 @@ $(document).ready(function (){
             <li class="active"><a href="../../index.html">Home</a></li>
             <li><a href="status-apex.html">Apex</a></li>
             <li><a href="status-compass.html">Compass</a></li>
-            <li><a href="status-daisy.html">Daisy</a></li>
-            <li><a href="status-fuel.html">Fuel</a></li>
+            <li><a href="status-fuel@x86.html">fuel@x86</a></li>
+            <li><a href="status-fuel@aarch64.html">fuel@aarch64</a></li>
             <li><a href="status-joid.html">Joid</a></li>
           </ul>
         </nav>
