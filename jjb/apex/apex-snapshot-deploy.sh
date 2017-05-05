@@ -129,6 +129,7 @@ if [ -z "$virsh_vm_defs" ]; then
 fi
 
 for node_def in ${virsh_vm_defs}; do
+  sed  -ri "s/machine='[^\s]+'/machine='pc'/" ${node_def}
   sudo virsh define ${node_def}
   node=$(echo ${node_def} | awk -F '.' '{print $1}')
   sudo cp -f ${node}.qcow2 /var/lib/libvirt/images/
