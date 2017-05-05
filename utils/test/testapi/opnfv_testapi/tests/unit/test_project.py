@@ -1,16 +1,9 @@
-##############################################################################
-# Copyright (c) 2016 ZTE Corporation
-# feng.xiaowei@zte.com.cn
-# All rights reserved. This program and the accompanying materials
-# are made available under the terms of the Apache License, Version 2.0
-# which accompanies this distribution, and is available at
-# http://www.apache.org/licenses/LICENSE-2.0
-##############################################################################
 import httplib
 import unittest
 
 from opnfv_testapi.common import message
 from opnfv_testapi.resources import project_models
+from opnfv_testapi.tests.unit import executor
 from opnfv_testapi.tests.unit import test_base as base
 
 
@@ -36,49 +29,47 @@ class TestProjectBase(base.TestBase):
 
 
 class TestProjectCreate(TestProjectBase):
+    @executor.create(httplib.BAD_REQUEST, message.no_body())
     def test_withoutBody(self):
-        (code, body) = self.create()
-        self.assertEqual(code, httplib.BAD_REQUEST)
+        return None
 
+    @executor.create(httplib.BAD_REQUEST, message.missing('name'))
     def test_emptyName(self):
-        req_empty = project_models.ProjectCreateRequest('')
-        (code, body) = self.create(req_empty)
-        self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn(message.missing('name'), body)
+        return project_models.ProjectCreateRequest('')
 
+    @executor.create(httplib.BAD_REQUEST, message.missing('name'))
     def test_noneName(self):
-        req_none = project_models.ProjectCreateRequest(None)
-        (code, body) = self.create(req_none)
-        self.assertEqual(code, httplib.BAD_REQUEST)
-        self.assertIn(message.missing('name'), body)
+        return project_models.ProjectCreateRequest(None)
 
+    @executor.create(httplib.OK, 'assert_create_body')
     def test_success(self):
-        (code, body) = self.create_d()
-        self.assertEqual(code, httplib.OK)
-        self.assert_create_body(body)
+        return self.req_d
 
+    @executor.create(httplib.FORBIDDEN, message.exist_base)
     def test_alreadyExist(self):
         self.create_d()
-        (code, body) = self.create_d()
-        self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn(message.exist_base, body)
+        return self.req_d
 
 
 class TestProjectGet(TestProjectBase):
-    def test_notExist(self):
-        code, body = self.get('notExist')
-        self.assertEqual(code, httplib.NOT_FOUND)
-
-    def test_getOne(self):
-        self.create_d()
-        code, body = self.get(self.req_d.name)
-        self.assertEqual(code, httplib.OK)
-        self.assert_body(body)
-
-    def test_list(self):
+    def setUp(self):
+        super(TestProjectGet, self).setUp()
         self.create_d()
         self.create_e()
-        code, body = self.get()
+
+    @executor.get(httplib.NOT_FOUND, message.not_found_base)
+    def test_notExist(self):
+        return 'notExist'
+
+    @executor.get(httplib.OK, 'assert_body')
+    def test_getOne(self):
+        return self.req_d.name
+
+    @executor.get(httplib.OK, '_assert_list')
+    def test_list(self):
+        return None
+
+    def _assert_list(self, body):
         for project in body.projects:
             if self.req_d.name == project.name:
                 self.assert_body(project)
@@ -87,54 +78,57 @@ class TestProjectGet(TestProjectBase):
 
 
 class TestProjectUpdate(TestProjectBase):
-    def test_withoutBody(self):
-        code, _ = self.update(None, 'noBody')
-        self.assertEqual(code, httplib.BAD_REQUEST)
-
-    def test_notFound(self):
-        code, _ = self.update(self.req_e, 'notFound')
-        self.assertEqual(code, httplib.NOT_FOUND)
-
-    def test_newNameExist(self):
-        self.create_d()
+    def setUp(self):
+        super(TestProjectUpdate, self).setUp()
+        _, d_body = self.create_d()
+        _, get_res = self.get(self.req_d.name)
+        self.index_d = get_res._id
         self.create_e()
-        code, body = self.update(self.req_e, self.req_d.name)
-        self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn(message.exist_base, body)
 
+    @executor.update(httplib.BAD_REQUEST, message.no_body())
+    def test_withoutBody(self):
+        return None, 'noBody'
+
+    @executor.update(httplib.NOT_FOUND, message.not_found_base)
+    def test_notFound(self):
+        return self.req_e, 'notFound'
+
+    @executor.update(httplib.FORBIDDEN, message.exist_base)
+    def test_newNameExist(self):
+        return self.req_e, self.req_d.name
+
+    @executor.update(httplib.FORBIDDEN, message.no_update())
     def test_noUpdate(self):
-        self.create_d()
-        code, body = self.update(self.req_d, self.req_d.name)
-        self.assertEqual(code, httplib.FORBIDDEN)
-        self.assertIn(message.no_update(), body)
+        return self.req_d, self.req_d.name
 
+    @executor.update(httplib.OK, '_assert_update')
     def test_success(self):
-        self.create_d()
-        code, body = self.get(self.req_d.name)
-        _id = body._id
-
         req = project_models.ProjectUpdateRequest('newName', 'new description')
-        code, body = self.update(req, self.req_d.name)
-        self.assertEqual(code, httplib.OK)
-        self.assertEqual(_id, body._id)
-        self.assert_body(body, req)
+        return req, self.req_d.name
 
+    def _assert_update(self, req, body):
+        self.assertEqual(self.index_d, body._id)
+        self.assert_body(body, req)
         _, new_body = self.get(req.name)
-        self.assertEqual(_id, new_body._id)
+        self.assertEqual(self.index_d, new_body._id)
         self.assert_body(new_body, req)
 
 
 class TestProjectDelete(TestProjectBase):
-    def test_notFound(self):
-        code, body = self.delete('notFound')
-        self.assertEqual(code, httplib.NOT_FOUND)
-
-    def test_success(self):
+    def setUp(self):
+        super(TestProjectDelete, self).setUp()
         self.create_d()
-        code, body = self.delete(self.req_d.name)
-        self.assertEqual(code, httplib.OK)
-        self.assertEqual(body, '')
 
+    @executor.delete(httplib.NOT_FOUND, message.not_found_base)
+    def test_notFound(self):
+        return 'notFound'
+
+    @executor.delete(httplib.OK, '_assert_delete')
+    def test_success(self):
+        return self.req_d.name
+
+    def _assert_delete(self, body):
+        self.assertEqual(body, '')
         code, body = self.get(self.req_d.name)
         self.assertEqual(code, httplib.NOT_FOUND)
 
