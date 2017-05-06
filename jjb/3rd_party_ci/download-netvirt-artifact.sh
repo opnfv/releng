@@ -8,9 +8,10 @@ ODL_ZIP=distribution-karaf-0.6.0-SNAPSHOT.zip
 echo "Attempting to fetch the artifact location from ODL Jenkins"
 CHANGE_DETAILS_URL="https://git.opendaylight.org/gerrit/changes/netvirt~master~$GERRIT_CHANGE_ID/detail"
 # due to limitation with the Jenkins Gerrit Trigger, we need to use Gerrit REST API to get the change details
-ODL_BUILD_JOB_NUM=$(curl -s $CHANGE_DETAILS_URL | grep -Eo 'netvirt-distribution-check-carbon/[0-9]+' | tail -1 | grep -Eo [0-9]+)
+ODL_BUILD_JOB_NUM=$(curl -s $CHANGE_DETAILS_URL | grep -Eo 'netvirt-distribution-check-nitrogen/[0-9]+' | tail -1 | grep -Eo [0-9]+)
+DISTRO_CHECK_CONSOLE_LOG="https://logs.opendaylight.org/releng/jenkins092/netvirt-distribution-check-nitrogen/${ODL_BUILD_JOB_NUM}/console.log.gz"
+NETVIRT_ARTIFACT_URL=$(curl -s --compressed $DISTRO_CHECK_CONSOLE_LOG | grep 'BUNDLE_URL' | cut -d = -f 2)
 
-NETVIRT_ARTIFACT_URL="https://jenkins.opendaylight.org/releng/job/netvirt-distribution-check-carbon/${ODL_BUILD_JOB_NUM}/artifact/${ODL_ZIP}"
 echo -e "URL to artifact is\n\t$NETVIRT_ARTIFACT_URL"
 
 echo "Downloading the artifact. This could take time..."
