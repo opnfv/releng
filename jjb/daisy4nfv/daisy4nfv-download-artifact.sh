@@ -63,12 +63,12 @@ echo
 
 # download the file
 if [[ "$NODE_NAME" =~ (zte) ]] && [ -x "$(command -v aria2c)" ]; then
-    DOWNLOAD_CMD="aria2c -x 3"
+    DOWNLOAD_CMD="aria2c -x 3 --allow-overwrite=true -d $WORKSPACE -o opnfv.bin"
 else
-    DOWNLOAD_CMD="curl -L -s"
+    DOWNLOAD_CMD="curl -L -s -o $WORKSPACE/opnfv.bin"
 fi
 
-$DOWNLOAD_CMD -o $WORKSPACE/opnfv.bin http://$OPNFV_ARTIFACT_URL > gsutil.bin.log 2>&1
+$DOWNLOAD_CMD http://$OPNFV_ARTIFACT_URL > gsutil.bin.log 2>&1
 
 # list the file
 ls -al $WORKSPACE/opnfv.bin
