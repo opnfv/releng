@@ -57,12 +57,18 @@ fi
 
 # log info to console
 echo "Downloading the $INSTALLER_TYPE artifact using URL http://$OPNFV_ARTIFACT_URL"
-echo "This could take some time..."
+echo "This could take some time... Now the time is $(date -u)"
 echo "--------------------------------------------------------"
 echo
 
 # download the file
-curl -L -s -o $WORKSPACE/opnfv.bin http://$OPNFV_ARTIFACT_URL > gsutil.bin.log 2>&1
+if [[ "$NODE_NAME" =~ (zte) ]] && [ -x "$(command -v aria2c)" ]; then
+    DOWNLOAD_CMD="aria2c -x 3"
+else
+    DOWNLOAD_CMD="curl -L -s"
+fi
+
+$DOWNLOAD_CMD -o $WORKSPACE/opnfv.bin http://$OPNFV_ARTIFACT_URL > gsutil.bin.log 2>&1
 
 # list the file
 ls -al $WORKSPACE/opnfv.bin
