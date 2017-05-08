@@ -138,7 +138,7 @@ elif [ "$installer_type" == "apex" ]; then
     if [ -f /root/.ssh/id_rsa ]; then
         chmod 600 /root/.ssh/id_rsa
     fi
-    sudo scp $ssh_options root@$installer_ip:/home/stack/overcloudrc_v3 $dest_path
+    sudo scp $ssh_options root@$installer_ip:/home/stack/overcloudrc.v3 $dest_path
 
 elif [ "$installer_type" == "compass" ]; then
     verify_connectivity $installer_ip
