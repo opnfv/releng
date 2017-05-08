@@ -50,7 +50,7 @@ echo "-------------------------------------------------------------------------"
 #-------------------------------------------------------------------------------
 # Install ansible on localhost
 #-------------------------------------------------------------------------------
-pip install ansible==$XCI_ANSIBLE_PIP_VERSION
+source file/install-ansible.sh
 
 # TODO: The xci playbooks can be put into a playbook which will be done later.
 
