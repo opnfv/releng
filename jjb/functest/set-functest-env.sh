@@ -48,7 +48,6 @@ if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
 fi
 
 
-
 # Set iptables rule to allow forwarding return traffic for container
 if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FORWARD | awk 'NR==3' | grep RETURN 2> ${redirect}; then
     sudo iptables -I FORWARD -j RETURN
@@ -58,6 +57,12 @@ DEPLOY_TYPE=baremetal
 [[ $BUILD_TAG =~ "virtual" ]] && DEPLOY_TYPE=virt
 
 echo "Functest: Start Docker and prepare environment"
+
+echo "Functest: Download images that will be used by test cases"
+images_dir="${HOME}/opnfv/functest/images"
+chmod +x ${FUNCTEST_REPO_DIR}/functest/ci/download_images.sh
+${FUNCTEST_REPO_DIR}/functest/ci/download_images.sh ${images_dir}
+images_vol="-v ${images_dir}:/home/opnfv/functest/images"
 
 dir_result="${HOME}/opnfv/functest/results/${BRANCH##*/}"
 mkdir -p ${dir_result}
@@ -80,7 +85,7 @@ if [[ ${INSTALLER_TYPE} == 'compass' && ${DEPLOY_SCENARIO} == *'os-nosdn-openo-h
     envs=${env}" -e OPENO_MSB_ENDPOINT=${openo_msb_endpoint}"
 fi
 
-volumes="${results_vol} ${sshkey_vol} ${stackrc_vol} ${rc_file_vol}"
+volumes="${images_vol} ${results_vol} ${sshkey_vol} ${stackrc_vol} ${rc_file_vol}"
 
 HOST_ARCH=$(uname -m)
 FUNCTEST_IMAGE="opnfv/functest"
@@ -88,7 +93,7 @@ if [ "$HOST_ARCH" = "aarch64" ]; then
     FUNCTEST_IMAGE="${FUNCTEST_IMAGE}_${HOST_ARCH}"
 fi
 
-echo "Functest: Pulling image ${FUNCTEST_IMAGE}:${DOCKER_TAG}"
+echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE}:${DOCKER_TAG}"
 docker pull ${FUNCTEST_IMAGE}:$DOCKER_TAG >/dev/null
 
 cmd="sudo docker run --privileged=true -id ${envs} ${volumes} \
