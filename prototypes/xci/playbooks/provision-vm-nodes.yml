@@ -8,7 +8,7 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 - hosts: localhost
-  remote_user: root
+  connection: local
   vars_files:
     - ../var/{{ ansible_os_family }}.yml
     - ../var/opnfv.yml
@@ -22,10 +22,25 @@
       copy:
         src: "{{ OPNFV_RELENG_PATH }}/prototypes/bifrost/"
         dest: "{{ OPENSTACK_BIFROST_PATH }}"
+
+- hosts: localhost
+  connection: local
+  become: yes
+  vars_files:
+    - ../var/{{ ansible_os_family }}.yml
+    - ../var/opnfv.yml
+  tasks:
     - name: destroy VM nodes created by previous deployment
       command: "/bin/bash ./scripts/destroy-env.sh"
       args:
         chdir: "{{ OPENSTACK_BIFROST_PATH }}"
+
+- hosts: localhost
+  connection: local
+  vars_files:
+    - ../var/{{ ansible_os_family }}.yml
+    - ../var/opnfv.yml
+  tasks:
     - name: create and provision VM nodes for the flavor {{ XCI_FLAVOR }}
       command: "/bin/bash ./scripts/bifrost-provision.sh"
       args:
