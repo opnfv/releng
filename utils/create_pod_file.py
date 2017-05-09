@@ -63,17 +63,27 @@ def create_file(handler):
     node_list = []
     index = 1
     for node in nodes:
-        if node.roles[0].lower() == "controller":
-            node_info = {'name': "node%s" % index, 'role': node.roles[0],
-                         'ip': node.ip, 'user': 'root'}
+        try:
+            if node.roles[0].lower() == "controller":
+                node_info = {'name': "node%s" % index, 'role': node.roles[0],
+                             'ip': node.ip, 'user': 'root'}
+                node_list.append(node_info)
+                index += 1
+        except Exception:
+            node_info = {'name': node.name, 'role': 'unknown', 'ip': node.ip,
+                         'user': 'root'}
             node_list.append(node_info)
-            index += 1
     for node in nodes:
-        if node.roles[0].lower() == "compute":
-            node_info = {'name': "node%s" % index, 'role': node.roles[0],
-                         'ip': node.ip, 'user': 'root'}
+        try:
+            if node.roles[0].lower() == "compute":
+                node_info = {'name': "node%s" % index, 'role': node.roles[0],
+                             'ip': node.ip, 'user': 'root'}
+                node_list.append(node_info)
+                index += 1
+        except Exception:
+            node_info = {'name': node.name, 'role': 'unknown', 'ip': node.ip,
+                         'user': 'root'}
             node_list.append(node_info)
-            index += 1
     if args.INSTALLER_TYPE == 'compass':
         for item in node_list:
             item['password'] = 'root'
