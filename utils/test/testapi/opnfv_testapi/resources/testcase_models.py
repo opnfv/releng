@@ -13,12 +13,13 @@ from opnfv_testapi.tornado_swagger import swagger
 @swagger.model()
 class TestcaseCreateRequest(models.ModelBase):
     def __init__(self, name, url=None, description=None,
-                 tier=None, ci_loop=None, criteria=None,
-                 blocking=None, dependencies=None, run=None,
+                 catalog_description=None, tier=None, ci_loop=None,
+                 criteria=None, blocking=None, dependencies=None, run=None,
                  domains=None, tags=None, version=None):
         self.name = name
         self.url = url
         self.description = description
+        self.catalog_description = catalog_description
         self.tier = tier
         self.ci_loop = ci_loop
         self.criteria = criteria
@@ -34,11 +35,12 @@ class TestcaseCreateRequest(models.ModelBase):
 @swagger.model()
 class TestcaseUpdateRequest(models.ModelBase):
     def __init__(self, name=None, description=None, project_name=None,
-                 tier=None, ci_loop=None, criteria=None,
-                 blocking=None, dependencies=None, run=None,
+                 catalog_description=None, tier=None, ci_loop=None,
+                 criteria=None, blocking=None, dependencies=None, run=None,
                  domains=None, tags=None, version=None, trust=None):
         self.name = name
         self.description = description
+        self.catalog_description = catalog_description
         self.project_name = project_name
         self.tier = tier
         self.ci_loop = ci_loop
@@ -56,14 +58,15 @@ class TestcaseUpdateRequest(models.ModelBase):
 class Testcase(models.ModelBase):
     def __init__(self, _id=None, name=None, project_name=None,
                  description=None, url=None, creation_date=None,
-                 tier=None, ci_loop=None, criteria=None,
-                 blocking=None, dependencies=None, run=None,
+                 catalog_description=None, tier=None, ci_loop=None,
+                 criteria=None, blocking=None, dependencies=None, run=None,
                  domains=None, tags=None, version=None,
                  trust=None):
         self._id = None
         self.name = None
         self.project_name = None
         self.description = None
+        self.catalog_description = None
         self.url = None
         self.creation_date = None
         self.tier = None
