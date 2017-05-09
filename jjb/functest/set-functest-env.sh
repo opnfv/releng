@@ -112,12 +112,8 @@ if [ $(docker ps | grep "${FUNCTEST_IMAGE}:${DOCKER_TAG}" | wc -l) == 0 ]; then
     echo "The container ${FUNCTEST_IMAGE} with ID=${container_id} has not been properly started. Exiting..."
     exit 1
 fi
-if [[ "$BRANCH" =~ 'brahmaputra' ]]; then
-    cmd="${FUNCTEST_REPO_DIR}/docker/prepare_env.sh"
-elif [[ "$BRANCH" =~ 'colorado' ]]; then
-    cmd="python ${FUNCTEST_REPO_DIR}/ci/prepare_env.py start"
-else
-    cmd="python ${FUNCTEST_REPO_DIR}/functest/ci/prepare_env.py start"
-fi
+
+cmd="python ${FUNCTEST_REPO_DIR}/functest/ci/prepare_env.py start"
+
 echo "Executing command inside the docker: ${cmd}"
 docker exec ${container_id} ${cmd}
