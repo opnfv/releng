@@ -15,6 +15,28 @@
   roles:
     - role: remove-folders
     - { role: clone-repository, project: "opnfv/releng", repo: "{{ OPNFV_RELENG_GIT_URL }}", dest: "{{ OPNFV_RELENG_PATH }}", version: "{{ OPNFV_RELENG_VERSION }}" }
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ../var/{{ ansible_os_family }}.yml
+    - ../var/opnfv.yml
+  tasks:
+    - name: Synchronize local development releng repository to XCI paths
+      synchronize:
+        src: "{{ OPNFV_RELENG_DEV_PATH }}"
+        dest: "{{ OPNFV_RELENG_PATH }}"
+        recursive: yes
+        delete: yes
+      when:
+        - OPNFV_RELENG_DEV_PATH != ""
+
+- hosts: localhost
+  connection: local
+  vars_files:
+    - ../var/{{ ansible_os_family }}.yml
+    - ../var/opnfv.yml
   tasks:
     - name:  create log directory {{LOG_PATH}}
       file:
