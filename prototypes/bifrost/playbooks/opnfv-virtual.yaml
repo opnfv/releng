@@ -59,12 +59,7 @@
       dib_packages: "{{ lookup('env', 'DIB_OS_PACKAGES') }}"
       when: create_image_via_dib | bool == true and transform_boot_image | bool == false
     - role: bifrost-keystone-client-config
-      # NOTE(hwoarang): This should be ansible_env.SUDO_USER like in the
-      # upstream playbook. However, we run ansible as root (ie with sudo)
-      # so clouds.yaml will be placed in the user's home directory (see
-      # the bifrost-keystone-client-config role) and then ansible will look
-      # for one in /root and fail. As such we hardcode the user to be 'root'.
-      user: "root"
+      user: "{{ ansible_env.SUDO_USER }}"
       clouds:
         bifrost:
           config_username: "{{ ironic.keystone.default_username }}"
