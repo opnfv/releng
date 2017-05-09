@@ -148,13 +148,7 @@ set where the logs should be stored
 
 execute sandbox script
 
-    sudo -E ./xci-deploy.sh
-
-Warning::
-
-    Please encure you always execute the sandbox script using **sudo -E**
-    in order to make the environment variables you set available to the
-    sandbox script or you end up with the default settings.
+    ./xci-deploy.sh
 
 ===============
 User Variables
