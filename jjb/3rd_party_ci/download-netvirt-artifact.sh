@@ -6,11 +6,17 @@ set -o pipefail
 ODL_ZIP=distribution-karaf-0.6.0-SNAPSHOT.zip
 
 echo "Attempting to fetch the artifact location from ODL Jenkins"
-CHANGE_DETAILS_URL="https://git.opendaylight.org/gerrit/changes/netvirt~master~$GERRIT_CHANGE_ID/detail"
+if [ "$ODL_BRANCH" != 'master' ]; then
+  DIST=$(echo ${ODL_BRANCH} | sed -rn 's#([a-zA-Z]+)/([a-zA-Z]+)#\2#p')
+  ODL_BRANCH=$(echo ${ODL_BRANCH} | sed -rn 's#([a-zA-Z]+)/([a-zA-Z]+)#\1%2F\2#p')
+else
+  DIST='nitrogen'
+fi
+CHANGE_DETAILS_URL="https://git.opendaylight.org/gerrit/changes/netvirt~${ODL_BRANCH}~${GERRIT_CHANGE_ID}/detail"
 # due to limitation with the Jenkins Gerrit Trigger, we need to use Gerrit REST API to get the change details
-ODL_BUILD_JOB_NUM=$(curl -s $CHANGE_DETAILS_URL | grep -Eo 'netvirt-distribution-check-nitrogen/[0-9]+' | tail -1 | grep -Eo [0-9]+)
-DISTRO_CHECK_CONSOLE_LOG="https://logs.opendaylight.org/releng/jenkins092/netvirt-distribution-check-nitrogen/${ODL_BUILD_JOB_NUM}/console.log.gz"
-NETVIRT_ARTIFACT_URL=$(curl -s --compressed $DISTRO_CHECK_CONSOLE_LOG | grep 'BUNDLE_URL' | cut -d = -f 2)
+ODL_BUILD_JOB_NUM=$(curl --fail -s ${CHANGE_DETAILS_URL} | grep -Eo "netvirt-distribution-check-${DIST}/[0-9]+" | tail -1 | grep -Eo [0-9]+)
+DISTRO_CHECK_CONSOLE_LOG="https://logs.opendaylight.org/releng/jenkins092/netvirt-distribution-check-${DIST}/${ODL_BUILD_JOB_NUM}/console.log.gz"
+NETVIRT_ARTIFACT_URL=$(curl --fail -s --compressed ${DISTRO_CHECK_CONSOLE_LOG} | grep 'BUNDLE_URL' | cut -d = -f 2)
 
 echo -e "URL to artifact is\n\t$NETVIRT_ARTIFACT_URL"
 
