@@ -54,7 +54,7 @@ fi
 
 # proceed with the deployment
 cd $WORKSPACE/prototypes/xci
-sudo -E ./xci-deploy.sh
+./xci-deploy.sh
 
 if [[ "$JOB_NAME" =~ "periodic" && "$OPENSTACK_OSA_VERSION" == "master" ]]; then
     # if we arrived here without failing, it means we have something we can pin
