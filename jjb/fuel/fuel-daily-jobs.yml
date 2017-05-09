@@ -73,8 +73,8 @@
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-odl_l2-sfc-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
-        - 'os-odl_l2-bgpvpn-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+        # - 'os-odl_l2-bgpvpn-ha':
+        #    auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-nosdn-kvm-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-nosdn-ovs-ha':
@@ -112,6 +112,7 @@
     jobs:
         - 'fuel-{scenario}-{pod}-daily-{stream}'
         - 'fuel-deploy-{pod}-daily-{stream}'
+        - 'fuel-os-odl_l2-bgpvpn-ha-{pod}-daily-{stream}'
 
 ########################
 # job templates
@@ -193,6 +194,103 @@
     publishers:
         - email:
             recipients: peter.barabas@ericsson.com fzhadaev@mirantis.com
+
+- job-template:
+    name: 'fuel-os-odl_l2-bgpvpn-ha-{pod}-daily-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    properties:
+        - logrotate-default
+        - throttle:
+            enabled: true
+            max-total: 4
+            max-per-node: 1
+            option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'fuel-os-.*?-{pod}-daily-.*'
+                - 'fuel-os-.*?-{pod}-weekly-.*'
+            block-level: 'NODE'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: os-odl_l2-bgpvpn-ha'
+
+    triggers:
+        - 'fuel-os-odl_l2-bgpvpn-ha-{pod}-daily-{stream}-trigger'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - '{installer}-defaults'
+        - '{slave-label}-defaults':
+            installer: '{installer}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: "os-odl_l2-bgpvpn-ha"
+        - fuel-ci-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - trigger-builds:
+            - project: 'fuel-deploy-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO=os-odl_l2-bgpvpn-ha
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'functest-fuel-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO=os-odl_l2-bgpvpn-ha
+              same-node: true
+              block: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
+            - project: 'yardstick-fuel-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO=os-odl_l2-bgpvpn-ha
+              block: true
+              same-node: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        # 1.dovetail only master by now, not sync with A/B/C branches
+        # 2.here the stream means the SUT stream, dovetail stream is defined in its own job
+        # 3.only debug testsuite here(includes basic testcase,
+        #   i.e. refstack ipv6 vpn test cases from functest, HA test case
+        #   from yardstick)
+        # 4.not used for release criteria or compliance,
+        #   only to debug the dovetail tool bugs with fuel bgpvpn scenario
+        - trigger-builds:
+            - project: 'dovetail-fuel-{pod}-proposed_tests-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO=os-odl_l2-bgpvpn-ha
+              block: true
+              same-node: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+
+    publishers:
+        - email:
+            recipients: peter.barabas@ericsson.com fzhadaev@mirantis.com matthew.lijun@huawei.com
+
 
 - job-template:
     name: 'fuel-deploy-{pod}-daily-{stream}'
