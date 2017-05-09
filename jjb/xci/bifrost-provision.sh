@@ -82,13 +82,13 @@ sudo -E ./scripts/destroy-env.sh
 
 # provision VMs for the flavor
 cd /opt/bifrost
-sudo -E ./scripts/bifrost-provision.sh
+./scripts/bifrost-provision.sh
 
 # list the provisioned VMs
 cd /opt/bifrost
 source env-vars
 ironic node-list
-virsh list
+sudo -H -E virsh list
 
 echo "OpenStack nodes are provisioned!"
 # here we have to do something in order to capture what was the working sha1

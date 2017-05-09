@@ -117,10 +117,10 @@ sudo -H -E ./scripts/destroy-env.sh
 
 # provision 3 VMs; xcimaster, controller, and compute
 cd /opt/bifrost
-sudo -H -E ./scripts/bifrost-provision.sh
+./scripts/bifrost-provision.sh
 
 # list the provisioned VMs
 cd /opt/bifrost
 source env-vars
 ironic node-list
-virsh list
+sudo -H -E virsh list
