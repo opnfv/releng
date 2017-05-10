@@ -34,7 +34,8 @@
         - 'kvmfornfv-verify-{phase}-{stream}'
         - 'kvmfornfv-merge-{stream}'
         - 'kvmfornfv-daily-{stream}'
-        - 'kvmfornfv-{testname}-daily-{phase}-{stream}'
+        - 'kvmfornfv-cyclictest-daily-build-{stream}'
+        - 'kvmfornfv-{testname}-daily-test-{stream}'
 #####################################
 # job templates
 #####################################
@@ -226,16 +227,6 @@
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
-            name: packetforward-build
-            condition: SUCCESSFUL
-            projects:
-                - name: 'kvmfornfv-packet_forward-daily-build-{stream}'
-                  current-parameters: false
-                  node-parameters: false
-                  git-revision: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
             name: packetforward-test
             condition: SUCCESSFUL
             projects:
@@ -245,9 +236,41 @@
                   git-revision: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
+                  
+- job-template:
+    name: 'kvmfornfv-cyclictest-daily-build-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    scm:
+        - git-scm
+
+    wrappers:
+        - ssh-agent-wrapper
+        - timeout:
+            timeout: 360
+            fail: true
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - '{slave-label}-defaults'
+        - 'kvmfornfv-defaults':
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: PHASE
+            default: 'build'
+            description: "Execution of kvmfornfv daily 'build' job ."
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - '{project}-cyclictest-daily-build-macro'                  
 
 - job-template:
-    name: 'kvmfornfv-{testname}-daily-{phase}-{stream}'
+    name: 'kvmfornfv-{testname}-daily-test-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -274,13 +297,13 @@
             description: "Daily job to execute kvmfornfv '{testname}' testcase."
         - string:
             name: PHASE
-            default: '{phase}'
-            description: "Execution of kvmfornfv daily '{phase}' job ."
+            default: 'test'
+            description: "Execution of kvmfornfv daily 'test' job ."
 
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
-        - '{project}-{testname}-daily-{phase}-macro'
+        - '{project}-{testname}-daily-test-macro'
 #####################################
 # builder macros
 #####################################
@@ -312,13 +335,6 @@
             !include-raw: ./kvmfornfv-download-artifact.sh
         - shell:
             !include-raw: ./kvmfornfv-test.sh
-        - shell:
-            !include-raw: ./kvmfornfv-upload-artifact.sh
-- builder:
-    name: 'kvmfornfv-packet_forward-daily-build-macro'
-    builders:
-        - shell:
-            !include-raw: ./kvmfornfv-build.sh
         - shell:
             !include-raw: ./kvmfornfv-upload-artifact.sh
 - builder:
