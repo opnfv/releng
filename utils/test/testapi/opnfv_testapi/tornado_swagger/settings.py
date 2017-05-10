@@ -10,8 +10,8 @@ import os.path
 
 SWAGGER_VERSION = '1.2'
 SWAGGER_API_DOCS = 'swagger-api-docs'
-SWAGGER_API_LIST = 'swagger-api-list'
-SWAGGER_API_SPEC = 'swagger-api-spec'
+SWAGGER_RESOURCE_LISTING = 'swagger-resource-listing'
+SWAGGER_API_DECLARATION = 'swagger-api-declaration'
 STATIC_PATH = os.path.join(os.path.dirname(os.path.normpath(__file__)),
                            'static')
 
