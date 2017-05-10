@@ -10,6 +10,7 @@ from urllib2 import Request, urlopen, URLError
 import logging
 import json
 import os
+import requests
 import pdfkit
 import yaml
 
@@ -296,6 +297,44 @@ def getScenarioPercent(scenario_score, scenario_criteria):
     except:
         print('Impossible to calculate the percentage score')
     return score
+
+
+# *********
+# Functest
+# *********
+def getFunctestConfig(version=""):
+    config_file = get_config('functest.test_conf') + version
+    response = requests.get(config_file)
+    return yaml.safe_load(response.text)
+
+
+def getArchitectures(scenario_results):
+    supported_arch = ['x86']
+    if (len(scenario_results) > 0):
+        for scenario_result in scenario_results.values():
+            for value in scenario_result:
+                if ("armband" in value['build_tag']):
+                    supported_arch.append('aarch64')
+                    return supported_arch
+    return supported_arch
+
+
+def filterArchitecture(results, architecture):
+    filtered_results = {}
+    for name, results in results.items():
+        filtered_values = []
+        for value in results:
+            if (architecture is "x86"):
+                # drop aarch64 results
+                if ("armband" not in value['build_tag']):
+                    filtered_values.append(value)
+            elif(architecture is "aarch64"):
+                # drop x86 results
+                if ("armband" in value['build_tag']):
+                    filtered_values.append(value)
+        if (len(filtered_values) > 0):
+            filtered_results[name] = filtered_values
+    return filtered_results
 
 
 # *********
