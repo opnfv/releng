@@ -65,6 +65,11 @@ else
 fi
 
 pod_file_dir="/home/opnfv/dovetail/userconfig"
+if [ -d ${pod_file_dir} ]; then
+    sudo rm -r ${pod_file_dir}/*
+else
+    sudo mkdir -p ${pod_file_dir}
+fi
 cmd="sudo python ${releng_repo}/utils/create_pod_file.py -t ${INSTALLER_TYPE} -i ${INSTALLER_IP} ${options} -f ${pod_file_dir}/pod.yaml"
 echo ${cmd}
 ${cmd}

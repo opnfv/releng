@@ -58,7 +58,7 @@ def create_file(handler):
     Other installers use key file of each node.
     """
     if not os.path.exists(os.path.dirname(args.filepath)):
-        os.path.makedirs(os.path.dirname(args.filepath))
+        os.makedirs(os.path.dirname(args.filepath))
     nodes = handler.nodes
     node_list = []
     index = 1
