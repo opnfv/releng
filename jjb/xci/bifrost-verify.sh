@@ -95,32 +95,32 @@ if [[ ! "$DISTRO" =~ (trusty|centos7|suse) ]]; then
 fi
 
 # remove previously cloned repos
-sudo /bin/rm -rf /opt/bifrost /opt/releng
+sudo /bin/rm -rf $WORKSPACE/bifrost $WORKSPACE/releng
 
 # Fix up permissions
 fix_ownership
 
 # clone all the repos first and checkout the patch afterwards
-sudo git clone https://git.openstack.org/openstack/bifrost /opt/bifrost
-sudo git clone https://gerrit.opnfv.org/gerrit/releng /opt/releng
+sudo git clone https://git.openstack.org/openstack/bifrost $WORKSPACE/bifrost
+sudo git clone https://gerrit.opnfv.org/gerrit/releng $WORKSPACE/releng
 
 # checkout the patch
 cd $CLONE_LOCATION
 sudo git fetch $PROJECT_REPO $GERRIT_REFSPEC && sudo git checkout FETCH_HEAD
 
 # combine opnfv and upstream scripts/playbooks
-sudo /bin/cp -rf /opt/releng/prototypes/bifrost/* /opt/bifrost/
+sudo /bin/cp -rf $WORKSPACE/releng/prototypes/bifrost/* $WORKSPACE/bifrost/
 
 # cleanup remnants of previous deployment
-cd /opt/bifrost
+cd $WORKSPACE/bifrost
 sudo -H -E ./scripts/destroy-env.sh
 
 # provision 3 VMs; xcimaster, controller, and compute
-cd /opt/bifrost
+cd $WORKSPACE/bifrost
 ./scripts/bifrost-provision.sh
 
 # list the provisioned VMs
-cd /opt/bifrost
+cd $WORKSPACE/bifrost
 source env-vars
 ironic node-list
 sudo -H -E virsh list
