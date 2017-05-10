@@ -1124,30 +1124,6 @@
            properties-content: ARTIFACT_TYPE=snapshot
         - 'apex-upload-artifact'
 
-- job-template:
-    name: 'apex-gs-clean-{stream}'
-
-    # Job template for clean
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    node: '{slave}'
-
-    disabled: false
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - apex-parameter:
-            gs-pathname: '{gs-pathname}'
-
-    builders:
-        - 'apex-gs-clean'
-
-    triggers:
-        - 'apex-gs-clean-{stream}'
-
 
 ########################
 # parameter macros
@@ -1219,12 +1195,6 @@
             !include-raw: ./apex-upload-artifact.sh
 
 - builder:
-    name: 'apex-gs-cleanup'
-    builders:
-        - shell:
-            !include-raw: ./apex-gs-cleanup.sh
-
-- builder:
     name: 'apex-deploy'
     builders:
         - shell:
@@ -1242,7 +1212,3 @@
     name: 'apex-danube'
     triggers:
         - timed: '0 12 * * *'
-- trigger:
-    name: 'apex-gs-clean-{stream}'
-    triggers:
-        - timed: '0 2 * * *'
