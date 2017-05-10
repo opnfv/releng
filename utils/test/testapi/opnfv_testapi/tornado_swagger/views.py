@@ -17,39 +17,44 @@ from opnfv_testapi.tornado_swagger import settings
 
 
 def json_dumps(obj, pretty=False):
-    return json.dumps(obj, sort_keys=True, indent=4, separators=(',', ': ')) \
-        if pretty else json.dumps(obj)
+    return json.dumps(obj,
+                      sort_keys=True,
+                      indent=4,
+                      separators=(',', ': ')) if pretty else json.dumps(obj)
 
 
 class SwaggerUIHandler(tornado.web.RequestHandler):
-    def initialize(self, static_path, **kwds):
-        self.static_path = static_path
+    def initialize(self, **kwargs):
+        self.static_path = kwargs.get('static_path')
+        self.base_url = kwargs.get('base_url')
 
     def get_template_path(self):
         return self.static_path
 
     def get(self):
         discovery_url = os.path.join(
-            settings.basePath(),
-            self.reverse_url(settings.SWAGGER_RESOURCE_LISTING))
+            self.base_url,
+            self.reverse_url(settings.RESOURCE_LISTING_NAME))
         self.render('index.html', discovery_url=discovery_url)
 
 
 class SwaggerResourcesHandler(tornado.web.RequestHandler):
-    def initialize(self, api_version, exclude_namespaces, **kwds):
-        self.api_version = api_version
-        self.exclude_namespaces = exclude_namespaces
+    def initialize(self, **kwargs):
+        self.api_version = kwargs.get('api_version')
+        self.swagger_version = kwargs.get('swagger_version')
+        self.base_url = kwargs.get('base_url')
+        self.exclude_namespaces = kwargs.get('exclude_namespaces')
 
     def get(self):
         self.set_header('content-type', 'application/json')
         resources = {
             'apiVersion': self.api_version,
-            'swaggerVersion': settings.SWAGGER_VERSION,
-            'basePath': settings.basePath(),
+            'swaggerVersion': self.swagger_version,
+            'basePath': self.base_url,
             'produces': ["application/json"],
             'description': 'Test Api Spec',
             'apis': [{
-                'path': self.reverse_url(settings.SWAGGER_API_DECLARATION),
+                'path': self.reverse_url(settings.API_DECLARATION_NAME),
                 'description': 'Test Api Spec'
             }]
         }
@@ -58,9 +63,10 @@ class SwaggerResourcesHandler(tornado.web.RequestHandler):
 
 
 class SwaggerApiHandler(tornado.web.RequestHandler):
-    def initialize(self, api_version, base_url, **kwds):
-        self.api_version = api_version
-        self.base_url = base_url
+    def initialize(self, **kwargs):
+        self.api_version = kwargs.get('api_version')
+        self.swagger_version = kwargs.get('swagger_version')
+        self.base_url = kwargs.get('base_url')
 
     def get(self):
         self.set_header('content-type', 'application/json')
@@ -70,8 +76,8 @@ class SwaggerApiHandler(tornado.web.RequestHandler):
 
         specs = {
             'apiVersion': self.api_version,
-            'swaggerVersion': settings.SWAGGER_VERSION,
-            'basePath': settings.basePath(),
+            'swaggerVersion': self.swagger_version,
+            'basePath': self.base_url,
             'apis': [self.__get_api_spec__(path, spec, operations)
                      for path, spec, operations in apis],
             'models': self.__get_models_spec(settings.models)

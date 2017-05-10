@@ -8,25 +8,21 @@
 ##############################################################################
 import os.path
 
-SWAGGER_VERSION = '1.2'
-SWAGGER_API_DOCS = 'swagger-api-docs'
-SWAGGER_RESOURCE_LISTING = 'swagger-resource-listing'
-SWAGGER_API_DECLARATION = 'swagger-api-declaration'
+API_DOCS_NAME = 'swagger-api-docs'
+RESOURCE_LISTING_NAME = 'swagger-resource-listing'
+API_DECLARATION_NAME = 'swagger-api-declaration'
 STATIC_PATH = os.path.join(os.path.dirname(os.path.normpath(__file__)),
                            'static')
 
-default_settings = {
+docs_settings = {
     'base_url': '',
     'static_path': STATIC_PATH,
     'swagger_prefix': '/swagger',
     'api_version': 'v1.0',
+    'swagger_version': '1.2',
     'api_key': '',
     'enabled_methods': ['get', 'post', 'put', 'patch', 'delete'],
     'exclude_namespaces': [],
 }
 
 models = []
-
-
-def basePath():
-    return default_settings.get('base_url')
