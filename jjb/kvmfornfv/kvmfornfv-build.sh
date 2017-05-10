@@ -13,4 +13,4 @@ mkdir -p $OUTPUT_DIR
 
 # start the build
 cd $WORKSPACE
-./ci/build.sh $OUTPUT_DIR
+./ci/build.sh $OUTPUT_DIR $JOB_NAME
