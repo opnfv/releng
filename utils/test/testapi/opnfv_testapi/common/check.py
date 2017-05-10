@@ -8,9 +8,11 @@
 ##############################################################################
 import functools
 
-from tornado import web, gen
+from tornado import gen
+from tornado import web
 
-from opnfv_testapi.common import raises, message
+from opnfv_testapi.common import message
+from opnfv_testapi.common import raises
 
 
 def authenticate(method):

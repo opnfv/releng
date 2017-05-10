@@ -7,8 +7,8 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 import handlers
+from opnfv_testapi.resources import pod_models
 from opnfv_testapi.tornado_swagger import swagger
-import pod_models
 
 
 class GenericPodHandler(handlers.GenericApiHandler):

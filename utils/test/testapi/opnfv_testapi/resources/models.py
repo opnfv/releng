@@ -14,9 +14,8 @@
 # feng.xiaowei@zte.com.cn  mv TestResut to result_models.py        5-23-2016
 # feng.xiaowei@zte.com.cn  add ModelBase                           12-20-2016
 ##############################################################################
-import copy
 import ast
-
+import copy
 
 from opnfv_testapi.tornado_swagger import swagger
 
