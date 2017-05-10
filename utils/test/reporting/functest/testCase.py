@@ -33,27 +33,29 @@ class TestCase(object):
                                'bgpvpn': 'bgpvpn',
                                'rally_full': 'Rally (full)',
                                'vims': 'vIMS',
-                               'doctor': 'Doctor',
+                               'doctor-notification': 'Doctor',
                                'promise': 'Promise',
                                'moon': 'Moon',
                                'copper': 'Copper',
                                'security_scan': 'Security',
                                'multisite': 'Multisite',
-                               'domino': 'Domino',
-                               'odl-sfc': 'SFC',
+                               'domino-multinode': 'Domino',
+                               'functest-odl-sfc': 'SFC',
                                'onos_sfc': 'SFC',
-                               'parser': 'Parser',
+                               'parser-basics': 'Parser',
                                'connection_check': 'Health (connection)',
                                'api_check': 'Health (api)',
                                'snaps_smoke': 'SNAPS',
                                'snaps_health_check': 'Health (dhcp)',
-                               'netready': 'Netready',
+                               'gluon_vping': 'Netready',
                                'fds': 'FDS',
                                'cloudify_ims': 'vIMS (Cloudify)',
                                'orchestra_ims': 'OpenIMS (OpenBaton)',
                                'opera_ims': 'vIMS (Open-O)',
                                'vyos_vrouter': 'vyos',
-                               'barometer': 'Barometer'}
+                               'barometercollectd': 'Barometer',
+                               'odl_netvirt': 'Netvirt',
+                               'security_scan': 'Security'}
         try:
             self.displayName = display_name_matrix[self.name]
         except:
@@ -118,51 +120,6 @@ class TestCase(object):
                     ";Constraints=" + str(self.constraints) +
                     ";IsRunnable" + str(self.isRunnable))
         return testcase
-
-    def getDbName(self):
-        # Correspondance name of the test case / name in the DB
-        # ideally we should modify the DB to avoid such interface....
-        # '<name in the config>':'<name in the DB>'
-        # I know it is uggly...
-        test_match_matrix = {'healthcheck': 'healthcheck',
-                             'vping_ssh': 'vping_ssh',
-                             'vping_userdata': 'vping_userdata',
-                             'odl': 'odl',
-                             'onos': 'onos',
-                             'ocl': 'ocl',
-                             'tempest_smoke_serial': 'tempest_smoke_serial',
-                             'tempest_full_parallel': 'tempest_full_parallel',
-                             'tempest_defcore': 'tempest_defcore',
-                             'refstack_defcore': 'refstack_defcore',
-                             'rally_sanity': 'rally_sanity',
-                             'bgpvpn': 'bgpvpn',
-                             'rally_full': 'rally_full',
-                             'vims': 'vims',
-                             'doctor': 'doctor-notification',
-                             'promise': 'promise',
-                             'moon': 'moon_authentication',
-                             'copper': 'copper-notification',
-                             'security_scan': 'security',
-                             'multisite': 'multisite',
-                             'domino': 'domino-multinode',
-                             'odl-sfc': 'functest-odl-sfc',
-                             'onos_sfc': 'onos_sfc',
-                             'parser': 'parser-basics',
-                             'connection_check': 'connection_check',
-                             'api_check': 'api_check',
-                             'snaps_smoke': 'snaps_smoke',
-                             'snaps_health_check': 'snaps_health_check',
-                             'netready': 'gluon_vping',
-                             'fds': 'fds',
-                             'cloudify_ims': 'cloudify_ims',
-                             'orchestra_ims': 'orchestra_ims',
-                             'opera_ims': 'opera_ims',
-                             'vyos_vrouter': 'vyos_vrouter',
-                             'barometer': 'barometercollectd'}
-        try:
-            return test_match_matrix[self.name]
-        except:
-            return "unknown"
 
     def getDisplayName(self):
         return self.displayName
