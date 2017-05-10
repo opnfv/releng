@@ -27,12 +27,12 @@ def swagger_handlers():
             default_settings,
             name=SWAGGER_API_DOCS),
         URLSpec(
-            _path(r'spec.json$'),
+            _path(r'resources.json$'),
             SwaggerResourcesHandler,
             default_settings,
             name=SWAGGER_API_LIST),
         URLSpec(
-            _path(r'spec$'),
+            _path(r'APIs$'),
             SwaggerApiHandler,
             default_settings,
             name=SWAGGER_API_SPEC),
