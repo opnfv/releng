@@ -32,6 +32,22 @@ cp -Rf js display
 # yardstick |
 # storperf  |
 
+function report_project()
+{
+  project=$1
+  dir=$2
+  type=$3
+  echo "********************************"
+  echo " $project reporting "
+  echo "********************************"
+  python ./$dir/reporting-$type.py
+  if [ $? ]; then
+    echo "$project reporting $type...OK"
+  else
+    echo "$project reporting $type...KO"
+  fi
+}
+
 if [ -z "$1" ]; then
   echo "********************************"
   echo " Functest reporting "
@@ -59,6 +75,8 @@ if [ -z "$1" ]; then
   echo "********************************"
   python ./storperf/reporting-status.py
   echo "Storperf reporting status...OK"
+
+  report_project "QTIP" "qtip" "status"
 
 else
   if [ -z "$2" ]; then
