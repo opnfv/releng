@@ -163,14 +163,13 @@ for version in versions:
                                       test_case.isRunnable))
                         time.sleep(1)
                         if test_case.isRunnable:
-                            dbName = test_case.getDbName()
                             name = test_case.getName()
                             displayName = test_case.getDisplayName()
                             project = test_case.getProject()
                             nb_test_runnable_for_this_scenario += 1
                             logger.info(" Searching results for case %s " %
                                         (displayName))
-                            result = rp_utils.getResult(dbName, installer,
+                            result = rp_utils.getResult(name, installer,
                                                         s, version)
                             # if no result set the value to 0
                             if result < 0:
@@ -197,13 +196,12 @@ for version in versions:
                                       test_case.isRunnable))
                         time.sleep(1)
                         if test_case.isRunnable:
-                            dbName = test_case.getDbName()
                             name = test_case.getName()
                             displayName = test_case.getDisplayName()
                             project = test_case.getProject()
                             logger.info(" Searching results for case %s " %
                                         (displayName))
-                            result = rp_utils.getResult(dbName, installer,
+                            result = rp_utils.getResult(name, installer,
                                                         s, version)
                             # at least 1 result for the test
                             if result > -1:
