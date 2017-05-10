@@ -51,11 +51,9 @@ class SwaggerResourcesHandler(tornado.web.RequestHandler):
             'apiVersion': self.api_version,
             'swaggerVersion': self.swagger_version,
             'basePath': self.base_url,
-            'produces': ["application/json"],
-            'description': 'Test Api Spec',
             'apis': [{
                 'path': self.reverse_url(settings.API_DECLARATION_NAME),
-                'description': 'Test Api Spec'
+                'description': 'Restful APIs Specification'
             }]
         }
 
@@ -78,6 +76,8 @@ class SwaggerApiHandler(tornado.web.RequestHandler):
             'apiVersion': self.api_version,
             'swaggerVersion': self.swagger_version,
             'basePath': self.base_url,
+            'resourcePath': '/',
+            'produces': ["application/json"],
             'apis': [self.__get_api_spec__(path, spec, operations)
                      for path, spec, operations in apis],
             'models': self.__get_models_spec(settings.models)
