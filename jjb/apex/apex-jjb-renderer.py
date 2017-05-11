@@ -14,6 +14,7 @@ from jinja2 import FileSystemLoader
 
 gspathname = dict()
 branch = dict()
+build_slave = dict()
 env = Environment(loader=FileSystemLoader('./'), autoescape=True)
 
 with open('scenarios.yaml.hidden') as _:
@@ -31,9 +32,10 @@ for stream in scenarios:
     else:
         gspathname[stream] = '/' + stream
         branch[stream] = 'stable/' + stream
+    build_slave[stream] = 'apex-baremetal-{}'.format(stream)
 
 output = template.render(scenarios=scenarios, gspathname=gspathname,
-                         branch=branch)
+                         branch=branch, build_slave=build_slave)
 
 with open('./apex.yml', 'w') as fh:
     fh.write(output)
