@@ -54,6 +54,7 @@ cd ${releng_repo}/modules
 sudo virtualenv venv
 source venv/bin/activate
 sudo pip install -e ./ >/dev/null
+pip install netaddr
 
 if [[ ${INSTALLER_TYPE} == compass ]]; then
     options="-u root -p root"
@@ -66,7 +67,10 @@ fi
 
 pod_file_dir="/home/opnfv/dovetail/userconfig"
 if [ -d ${pod_file_dir} ]; then
-    sudo rm -r ${pod_file_dir}/*
+    if [ "$(ls -A $pod_file_dir)" ]; then
+        echo "dir ${pod_file_dir} is not empty, clean it..."
+        sudo rm -r ${pod_file_dir}/*
+    fi
 else
     sudo mkdir -p ${pod_file_dir}
 fi
