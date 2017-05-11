@@ -12,7 +12,8 @@ import json
 import tornado.template
 import tornado.web
 
-from settings import SWAGGER_VERSION, SWAGGER_API_LIST, SWAGGER_API_SPEC
+from settings import SWAGGER_VERSION
+from settings import SWAGGER_RESOURCE_LISTING, SWAGGER_API_DECLARATION
 from settings import models, basePath
 
 
@@ -29,7 +30,7 @@ class SwaggerUIHandler(tornado.web.RequestHandler):
         return self.static_path
 
     def get(self):
-        discovery_url = basePath() + self.reverse_url(SWAGGER_API_LIST)
+        discovery_url = basePath() + self.reverse_url(SWAGGER_RESOURCE_LISTING)
         self.render('index.html', discovery_url=discovery_url)
 
 
@@ -47,7 +48,7 @@ class SwaggerResourcesHandler(tornado.web.RequestHandler):
             'produces': ["application/json"],
             'description': 'Test Api Spec',
             'apis': [{
-                'path': self.reverse_url(SWAGGER_API_SPEC),
+                'path': self.reverse_url(SWAGGER_API_DECLARATION),
                 'description': 'Test Api Spec'
             }]
         }

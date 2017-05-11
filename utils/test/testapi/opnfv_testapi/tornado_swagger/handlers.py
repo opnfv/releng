@@ -9,7 +9,7 @@
 from tornado.web import URLSpec, StaticFileHandler
 
 from settings import default_settings, \
-    SWAGGER_API_DOCS, SWAGGER_API_LIST, SWAGGER_API_SPEC
+    SWAGGER_API_DOCS, SWAGGER_RESOURCE_LISTING, SWAGGER_API_DECLARATION
 from views import SwaggerUIHandler, SwaggerResourcesHandler, SwaggerApiHandler
 
 
@@ -27,15 +27,15 @@ def swagger_handlers():
             default_settings,
             name=SWAGGER_API_DOCS),
         URLSpec(
-            _path(r'spec.json$'),
+            _path(r'resources.json$'),
             SwaggerResourcesHandler,
             default_settings,
-            name=SWAGGER_API_LIST),
+            name=SWAGGER_RESOURCE_LISTING),
         URLSpec(
-            _path(r'spec$'),
+            _path(r'APIs$'),
             SwaggerApiHandler,
             default_settings,
-            name=SWAGGER_API_SPEC),
+            name=SWAGGER_API_DECLARATION),
         (
             _path(r'(.*\.(css|png|gif|js))'),
             StaticFileHandler,
