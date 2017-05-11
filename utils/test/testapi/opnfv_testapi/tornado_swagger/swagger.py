@@ -276,7 +276,7 @@ class operation(DocParser):
 
 
 def docs(**opts):
-    settings.default_settings.update(opts)
+    settings.docs_settings.update(opts)
 
 
 class Application(tornado.web.Application):

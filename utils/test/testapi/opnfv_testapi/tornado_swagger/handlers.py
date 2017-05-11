@@ -13,7 +13,7 @@ from opnfv_testapi.tornado_swagger import views
 
 
 def swagger_handlers():
-    prefix = settings.default_settings.get('swagger_prefix', '/swagger')
+    prefix = settings.docs_settings.get('swagger_prefix', '/swagger')
     if prefix[-1] != '/':
         prefix += '/'
 
@@ -23,20 +23,20 @@ def swagger_handlers():
         tornado.web.URLSpec(
             _path(r'spec.html$'),
             views.SwaggerUIHandler,
-            settings.default_settings,
-            name=settings.SWAGGER_API_DOCS),
+            settings.docs_settings,
+            name=settings.API_DOCS_NAME),
         tornado.web.URLSpec(
             _path(r'resources.json$'),
             views.SwaggerResourcesHandler,
-            settings.default_settings,
-            name=settings.SWAGGER_RESOURCE_LISTING),
+            settings.docs_settings,
+            name=settings.RESOURCE_LISTING_NAME),
         tornado.web.URLSpec(
             _path(r'APIs$'),
             views.SwaggerApiHandler,
-            settings.default_settings,
-            name=settings.SWAGGER_API_DECLARATION),
+            settings.docs_settings,
+            name=settings.API_DECLARATION_NAME),
         (
             _path(r'(.*\.(css|png|gif|js))'),
             tornado.web.StaticFileHandler,
-            {'path': settings.default_settings.get('static_path')}),
+            {'path': settings.docs_settings.get('static_path')}),
     ]
