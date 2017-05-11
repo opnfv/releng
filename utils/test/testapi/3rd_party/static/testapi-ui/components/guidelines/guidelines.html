@@ -1,0 +1,80 @@
+<h3>OpenStack Powered&#8482; Guidelines</h3>
+
+<!-- Guideline Filters -->
+<div class="row">
+    <div class="col-md-3">
+        <strong>Version:</strong>
+        <!-- Slicing the version file name here gets rid of the '.json' file extension -->
+        <select ng-model="ctrl.version"
+                ng-change="ctrl.update()"
+                class="form-control"
+                ng-options="versionFile.slice(0,-5) for versionFile in ctrl.versionList">
+        </select>
+    </div>
+    <div class="col-md-4">
+        <strong>Target Program:</strong>
+        <span class="program-about"><a target="_blank" href="http://www.openstack.org/brand/interop/">About</a></span>
+        <select ng-model="ctrl.target" class="form-control" ng-change="ctrl.updateTargetCapabilities()">
+            <option value="platform">OpenStack Powered Platform</option>
+            <option value="compute">OpenStack Powered Compute</option>
+            <option value="object">OpenStack Powered Object Storage</option>
+        </select>
+    </div>
+</div>
+
+<br />
+<div ng-if="ctrl.guidelines">
+    <strong>Guideline Status:</strong>
+    {{ctrl.guidelines.status | capitalize}}
+</div>
+
+<div ng-show="ctrl.guidelines">
+    <strong>Corresponding OpenStack Releases:</strong>
+    <ul class="list-inline">
+        <li ng-repeat="release in ctrl.guidelines.releases">
+            {{release | capitalize}}
+        </li>
+    </ul>
+</div>
+
+<strong>Capability Status:</strong>
+<div class="checkbox">
+    <label>
+    <input type="checkbox" ng-model="ctrl.status.required">
+    <span class="required">Required</span>
+    </label>
+    <label>
+    <input type="checkbox" ng-model="ctrl.status.advisory">
+    <span class="advisory">Advisory</span>
+    </label>
+    <label>
+    <input type="checkbox" ng-model="ctrl.status.deprecated">
+    <span class="deprecated">Deprecated</span>
+    </label>
+    <label>
+    <input type="checkbox" ng-model="ctrl.status.removed">
+    <span class="removed">Removed</span>
+    </label>
+    <a class="test-list-dl pull-right"
+       title="Get a test list for capabilities matching selected statuses."
+       ng-click="ctrl.openTestListModal()">
+
+        Test List <span class="glyphicon glyphicon-file"></span>
+    </a>
+</div>
+<!-- End Capability Filters -->
+
+<p><small>Tests marked with <span class="glyphicon glyphicon-flag text-warning"></span> are tests flagged by Interop Working Group.</small></p>
+
+<!-- Loading animation divs -->
+<div cg-busy="{promise:ctrl.versionsRequest,message:'Loading versions'}"></div>
+<div cg-busy="{promise:ctrl.capsRequest,message:'Loading capabilities'}"></div>
+
+<!-- Get the version-specific template -->
+<div ng-include src="ctrl.detailsTemplate"></div>
+
+<div ng-show="ctrl.showError" class="alert alert-danger" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Error:</span>
+    {{ctrl.error}}
+</div>

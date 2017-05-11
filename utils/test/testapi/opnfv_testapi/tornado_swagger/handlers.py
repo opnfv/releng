@@ -36,7 +36,7 @@ def swagger_handlers():
             settings.docs_settings,
             name=settings.API_DECLARATION_NAME),
         (
-            _path(r'(.*\.(css|png|gif|js))'),
+            _path(r'(.*\.(css|png|gif|js|html|json))'),
             tornado.web.StaticFileHandler,
             {'path': settings.docs_settings.get('static_path')}),
     ]

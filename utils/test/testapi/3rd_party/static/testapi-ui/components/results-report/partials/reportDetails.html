@@ -1,0 +1,87 @@
+<!--
+HTML for each accordion group that separates the status types on the results
+report page.
+-->
+
+<uib-accordion-group is-open="isOpen" is-disabled="ctrl.caps[status].caps.length == 0">
+    <uib-accordion-heading>
+        {{status | capitalize}}
+        <small>
+            (<strong>Total:</strong> {{ctrl.caps[status].caps.length}} capabilities, {{ctrl.caps[status].count}} tests)
+            <span ng-if="ctrl.testStatus !== 'total'">
+                (<strong>{{ctrl.testStatus | capitalize}}:</strong> {{ctrl.getStatusTestCount(status)}} tests)
+            </span>
+        </small>
+        <i class="pull-right glyphicon"
+           ng-class="{'glyphicon-chevron-down': isOpen, 'glyphicon-chevron-right': !isOpen}">
+        </i>
+    </uib-accordion-heading>
+    <ol class="capabilities">
+        <li ng-repeat="capability in ctrl.caps[status].caps | orderBy:'id'"
+            ng-if="ctrl.isCapabilityShown(capability)">
+
+            <a ng-click="showTests = !showTests"
+               title="{{ctrl.guidelineData.capabilities[capability.id].description}}">
+                   {{capability.id}}
+            </a>
+            <span ng-class="{'text-success': ctrl.testStatus === 'passed',
+                             'text-danger': ctrl.testStatus === 'not passed',
+                             'text-warning': ctrl.testStatus === 'flagged'}"
+                  ng-if="ctrl.testStatus !== 'total'">
+                [{{ctrl.getCapabilityTestCount(capability)}}]
+            </span>
+            <span ng-class="{'text-success': (capability.passedTests.length > 0 &&
+                                              capability.notPassedTests.length == 0),
+                             'text-danger': (capability.passedTests.length == 0 &&
+                                             capability.notPassedTests.length > 0),
+                             'text-warning': (capability.passedTests.length > 0 &&
+                                              capability.notPassedTests.length > 0)}"
+                  ng-if="ctrl.testStatus === 'total'">
+                [{{capability.passedTests.length}}/{{capability.passedTests.length +
+                                                     capability.notPassedTests.length}}]
+            </span>
+
+            <ul class="list-unstyled" uib-collapse="!showTests">
+                <!-- Start passed test list -->
+                <li ng-repeat="test in capability.passedTests | orderBy:'toString()'"
+                    ng-if="ctrl.isTestShown(test, capability)">
+
+                    <span class="glyphicon glyphicon-ok text-success"
+                          aria-hidden="true">
+                    </span>
+                    <span ng-class="{'glyphicon glyphicon-flag text-warning':
+                                     ctrl.isTestFlagged(test, ctrl.guidelineData.capabilities[capability.id])}"
+                          title="{{ctrl.getFlaggedReason(test, ctrl.guidelineData.capabilities[capability.id])}}">
+                    </span>
+                    {{test}}
+                    <span ng-if="ctrl.guidelineData.capabilities[capability.id].tests[test].aliases"> &mdash;
+                        <a ng-click="showAliases = !showAliases">[Aliases]</a>
+                        <div class="test-detail-report" ng-if="ctrl.guidelineData.capabilities[capability.id].tests[test].aliases && showAliases">
+                           <ul><li ng-repeat="alias in ctrl.guidelineData.capabilities[capability.id].tests[test].aliases">{{alias}}</li></ul>
+                        </div>
+                    </span>
+                </li>
+                <!-- End passed test list -->
+
+                <!-- Start not passed test list -->
+                <li ng-repeat="test in capability.notPassedTests | orderBy:'toString()'"
+                    ng-if="ctrl.isTestShown(test, capability)">
+
+                    <span class="glyphicon glyphicon-remove text-danger" aria-hidden="true"></span>
+                    <span ng-class="{'glyphicon glyphicon-flag text-warning':
+                                     ctrl.isTestFlagged(test, ctrl.guidelineData.capabilities[capability.id])}"
+                          title="{{ctrl.getFlaggedReason(test, ctrl.guidelineData.capabilities[capability.id])}}">
+                    </span>
+                    {{test}}
+                    <span ng-if="ctrl.guidelineData.capabilities[capability.id].tests[test].aliases"> &mdash;
+                        <a ng-click="showAliases = !showAliases">[Aliases]</a>
+                        <div class="test-detail-report" ng-if="ctrl.guidelineData.capabilities[capability.id].tests[test].aliases && showAliases">
+                           <ul><li ng-repeat="alias in ctrl.guidelineData.capabilities[capability.id].tests[test].aliases">{{alias}}</li></ul>
+                        </div>
+                    </span>
+                </li>
+                <!-- End not passed test list -->
+            </ul>
+        </li>
+    </ol>
+</uib-accordion-group>
