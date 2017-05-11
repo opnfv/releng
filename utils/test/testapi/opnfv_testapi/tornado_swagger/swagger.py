@@ -6,15 +6,15 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-import inspect
-from functools import wraps
 from HTMLParser import HTMLParser
+from functools import wraps
+import inspect
 
 import epydoc.markup
 import tornado.web
 
-from settings import default_settings, models
-from handlers import swagger_handlers
+from opnfv_testapi.tornado_swagger import handlers
+from opnfv_testapi.tornado_swagger import settings
 
 
 class EpytextParser(HTMLParser):
@@ -204,7 +204,7 @@ class model(DocParser):
         if '__init__' in dir(cls):
             self._parse_args(cls.__init__)
         self.parse_docstring(inspect.getdoc(cls))
-        models.append(self)
+        settings.models.append(self)
 
     def _parse_args(self, func):
         argspec = inspect.getargspec(func)
@@ -276,15 +276,16 @@ class operation(DocParser):
 
 
 def docs(**opts):
-    default_settings.update(opts)
+    settings.default_settings.update(opts)
 
 
 class Application(tornado.web.Application):
-    def __init__(self, handlers=None,
+    def __init__(self, app_handlers=None,
                  default_host="",
                  transforms=None,
                  **settings):
-        super(Application, self).__init__(swagger_handlers() + handlers,
-                                          default_host,
-                                          transforms,
-                                          **settings)
+        super(Application, self).__init__(
+            handlers.swagger_handlers() + app_handlers,
+            default_host,
+            transforms,
+            **settings)

@@ -8,13 +8,12 @@
 ##############################################################################
 import inspect
 import json
+import os.path
 
 import tornado.template
 import tornado.web
 
-from settings import SWAGGER_VERSION
-from settings import SWAGGER_RESOURCE_LISTING, SWAGGER_API_DECLARATION
-from settings import models, basePath
+from opnfv_testapi.tornado_swagger import settings
 
 
 def json_dumps(obj, pretty=False):
@@ -30,7 +29,9 @@ class SwaggerUIHandler(tornado.web.RequestHandler):
         return self.static_path
 
     def get(self):
-        discovery_url = basePath() + self.reverse_url(SWAGGER_RESOURCE_LISTING)
+        discovery_url = os.path.join(
+            settings.basePath(),
+            self.reverse_url(settings.SWAGGER_RESOURCE_LISTING))
         self.render('index.html', discovery_url=discovery_url)
 
 
@@ -43,12 +44,12 @@ class SwaggerResourcesHandler(tornado.web.RequestHandler):
         self.set_header('content-type', 'application/json')
         resources = {
             'apiVersion': self.api_version,
-            'swaggerVersion': SWAGGER_VERSION,
-            'basePath': basePath(),
+            'swaggerVersion': settings.SWAGGER_VERSION,
+            'basePath': settings.basePath(),
             'produces': ["application/json"],
             'description': 'Test Api Spec',
             'apis': [{
-                'path': self.reverse_url(SWAGGER_API_DECLARATION),
+                'path': self.reverse_url(settings.SWAGGER_API_DECLARATION),
                 'description': 'Test Api Spec'
             }]
         }
@@ -69,11 +70,11 @@ class SwaggerApiHandler(tornado.web.RequestHandler):
 
         specs = {
             'apiVersion': self.api_version,
-            'swaggerVersion': SWAGGER_VERSION,
-            'basePath': basePath(),
+            'swaggerVersion': settings.SWAGGER_VERSION,
+            'basePath': settings.basePath(),
             'apis': [self.__get_api_spec__(path, spec, operations)
                      for path, spec, operations in apis],
-            'models': self.__get_models_spec(models)
+            'models': self.__get_models_spec(settings.models)
         }
         self.finish(json_dumps(specs, self.get_arguments('pretty')))
 

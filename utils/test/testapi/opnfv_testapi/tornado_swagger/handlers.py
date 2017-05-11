@@ -6,38 +6,37 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-from tornado.web import URLSpec, StaticFileHandler
+import tornado.web
 
-from settings import default_settings, \
-    SWAGGER_API_DOCS, SWAGGER_RESOURCE_LISTING, SWAGGER_API_DECLARATION
-from views import SwaggerUIHandler, SwaggerResourcesHandler, SwaggerApiHandler
+from opnfv_testapi.tornado_swagger import settings
+from opnfv_testapi.tornado_swagger import views
 
 
 def swagger_handlers():
-    prefix = default_settings.get('swagger_prefix', '/swagger')
+    prefix = settings.default_settings.get('swagger_prefix', '/swagger')
     if prefix[-1] != '/':
         prefix += '/'
 
     def _path(suffix):
         return prefix + suffix
     return [
-        URLSpec(
+        tornado.web.URLSpec(
             _path(r'spec.html$'),
-            SwaggerUIHandler,
-            default_settings,
-            name=SWAGGER_API_DOCS),
-        URLSpec(
+            views.SwaggerUIHandler,
+            settings.default_settings,
+            name=settings.SWAGGER_API_DOCS),
+        tornado.web.URLSpec(
             _path(r'resources.json$'),
-            SwaggerResourcesHandler,
-            default_settings,
-            name=SWAGGER_RESOURCE_LISTING),
-        URLSpec(
+            views.SwaggerResourcesHandler,
+            settings.default_settings,
+            name=settings.SWAGGER_RESOURCE_LISTING),
+        tornado.web.URLSpec(
             _path(r'APIs$'),
-            SwaggerApiHandler,
-            default_settings,
-            name=SWAGGER_API_DECLARATION),
+            views.SwaggerApiHandler,
+            settings.default_settings,
+            name=settings.SWAGGER_API_DECLARATION),
         (
             _path(r'(.*\.(css|png|gif|js))'),
-            StaticFileHandler,
-            {'path': default_settings.get('static_path')}),
+            tornado.web.StaticFileHandler,
+            {'path': settings.default_settings.get('static_path')}),
     ]

@@ -7,9 +7,9 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-import handlers
+from opnfv_testapi.resources import handlers
+from opnfv_testapi.resources import project_models
 from opnfv_testapi.tornado_swagger import swagger
-import project_models
 
 
 class GenericProjectHandler(handlers.GenericApiHandler):

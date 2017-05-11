@@ -1,4 +1,4 @@
-import models
+from opnfv_testapi.resources import models
 from opnfv_testapi.tornado_swagger import swagger
 
 

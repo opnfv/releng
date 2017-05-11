@@ -26,10 +26,10 @@ import json
 from tornado import gen
 from tornado import web
 
-import models
 from opnfv_testapi.common import check
 from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
+from opnfv_testapi.resources import models
 from opnfv_testapi.tornado_swagger import swagger
 
 DEFAULT_REPRESENTATION = "application/json"
