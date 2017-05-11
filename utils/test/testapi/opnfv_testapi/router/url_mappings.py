@@ -13,8 +13,10 @@ from opnfv_testapi.resources import result_handlers
 from opnfv_testapi.resources import scenario_handlers
 from opnfv_testapi.resources import testcase_handlers
 
+
 mappings = [
     # GET /versions => GET API version
+    (r'/', handlers.UIHandler),
     (r"/versions", handlers.VersionHandler),
 
     # few examples:
