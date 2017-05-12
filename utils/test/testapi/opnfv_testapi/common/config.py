@@ -11,83 +11,41 @@ import ConfigParser
 import os
 
 
-class ParseError(Exception):
-    """
-    Custom exception class for config file
-    """
-
-    def __init__(self, message):
-        self.msg = message
-
-    def __str__(self):
-        return 'error parsing config file : %s' % self.msg
-
-
-class APIConfig(object):
-    """
-    The purpose of this class is to load values correctly from the config file.
-    Each key is declared as an attribute in __init__() and linked in parse()
-    """
+class Config(object):
+    CONFIG = None
 
     def __init__(self):
-        self._set_default_config()
-        self.mongo_url = None
-        self.mongo_dbname = None
-        self.api_port = None
-        self.api_debug_on = None
-        self.api_authenticate_on = None
-        self._parser = None
-        self.swagger_base_url = None
+        self.file = self.CONFIG if self.CONFIG else self._default_config()
+        self._parse()
 
-    def _set_default_config(self):
-        venv = os.getenv('VIRTUAL_ENV')
-        self._default_config = os.path.join('/' if not venv else venv,
-                                            'etc/opnfv_testapi/config.ini')
+    def _parse(self):
+        if not os.path.exists(self.file):
+            raise Exception("%s not found" % self.file)
 
-    def _get_parameter(self, section, param):
-        try:
-            return self._parser.get(section, param)
-        except ConfigParser.NoOptionError:
-            raise ParseError("No parameter: [%s.%s]" % (section, param))
+        config = ConfigParser.RawConfigParser()
+        config.read(self.file)
+        self._parse_section(config)
 
-    def _get_int_parameter(self, section, param):
-        try:
-            return int(self._get_parameter(section, param))
-        except ValueError:
-            raise ParseError("Not int: [%s.%s]" % (section, param))
+    def _parse_section(self, config):
+        [self._parse_item(config, section) for section in (config.sections())]
 
-    def _get_bool_parameter(self, section, param):
-        result = self._get_parameter(section, param)
-        if str(result).lower() == 'true':
-            return True
-        if str(result).lower() == 'false':
-            return False
-
-        raise ParseError(
-            "Not boolean: [%s.%s : %s]" % (section, param, result))
+    def _parse_item(self, config, section):
+        [setattr(self, '{}_{}'.format(section, k), self._parse_value(v))
+         for k, v in config.items(section)]
 
     @staticmethod
-    def parse(config_location=None):
-        obj = APIConfig()
+    def _parse_value(value):
+        try:
+            value = int(value)
+        except:
+            if str(value).lower() == 'true':
+                value = True
+            elif str(value).lower() == 'false':
+                value = False
+        return value
 
-        if config_location is None:
-            config_location = obj._default_config
-
-        if not os.path.exists(config_location):
-            raise ParseError("%s not found" % config_location)
-
-        obj._parser = ConfigParser.SafeConfigParser()
-        obj._parser.read(config_location)
-
-        # Linking attributes to keys from file with their sections
-        obj.mongo_url = obj._get_parameter("mongo", "url")
-        obj.mongo_dbname = obj._get_parameter("mongo", "dbname")
-
-        obj.api_port = obj._get_int_parameter("api", "port")
-        obj.api_debug_on = obj._get_bool_parameter("api", "debug")
-        obj.api_authenticate_on = obj._get_bool_parameter("api",
-                                                          "authenticate")
-
-        obj.swagger_base_url = obj._get_parameter("swagger", "base_url")
-
-        return obj
+    @staticmethod
+    def _default_config():
+        is_venv = os.getenv('VIRTUAL_ENV')
+        return os.path.join('/' if not is_venv else is_venv,
+                            'etc/opnfv_testapi/config.ini')
