@@ -48,7 +48,9 @@ def parse_config(argv=[]):
     parser.add_argument("-c", "--config-file", dest='config_file',
                         help="Config file location")
     args = parser.parse_args(argv)
-    CONF = config.APIConfig().parse(args.config_file)
+    if args.config_file:
+        config.Config.CONFIG = args.config_file
+    CONF = config.Config()
 
 
 def get_db():
@@ -60,8 +62,8 @@ def make_app():
     return swagger.Application(
         url_mappings.mappings,
         db=get_db(),
-        debug=CONF.api_debug_on,
-        auth=CONF.api_authenticate_on
+        debug=CONF.api_debug,
+        auth=CONF.api_authenticate
     )
 
 
