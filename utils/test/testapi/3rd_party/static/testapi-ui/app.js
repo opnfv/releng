@@ -37,56 +37,56 @@
         $stateProvider.
             state('home', {
                 url: '/',
-                templateUrl: '/swagger/testapi-ui/components/home/home.html'
+                templateUrl: '/testapi-ui/components/home/home.html'
             }).
             state('about', {
                 url: '/about',
-                templateUrl: '/swagger/testapi-ui/components/about/about.html'
+                templateUrl: '/testapi-ui/components/about/about.html'
             }).
             state('guidelines', {
                 url: '/guidelines',
-                templateUrl: '/swagger/testapi-ui/components/guidelines/guidelines.html',
+                templateUrl: '/testapi-ui/components/guidelines/guidelines.html',
                 controller: 'GuidelinesController as ctrl'
             }).
             state('communityResults', {
                 url: '/community_results',
-                templateUrl: '/swagger/testapi-ui/components/results/results.html',
+                templateUrl: '/testapi-ui/components/results/results.html',
                 controller: 'ResultsController as ctrl'
             }).
             state('userResults', {
                 url: '/user_results',
-                templateUrl: '/swagger/testapi-ui/components/results/results.html',
+                templateUrl: '/testapi-ui/components/results/results.html',
                 controller: 'ResultsController as ctrl'
             }).
             state('resultsDetail', {
                 url: '/results/:testID',
-                templateUrl: '/swagger/testapi-ui/components/results-report' +
+                templateUrl: '/testapi-ui/components/results-report' +
                              '/resultsReport.html',
                 controller: 'ResultsReportController as ctrl'
             }).
             state('profile', {
                 url: '/profile',
-                templateUrl: '/swagger/testapi-ui/components/profile/profile.html',
+                templateUrl: '/testapi-ui/components/profile/profile.html',
                 controller: 'ProfileController as ctrl'
             }).
             state('authFailure', {
                 url: '/auth_failure',
-                templateUrl: '/swagger/testapi-ui/components/home/home.html',
+                templateUrl: '/testapi-ui/components/home/home.html',
                 controller: 'AuthFailureController as ctrl'
             }).
             state('logout', {
                 url: '/logout',
-                templateUrl: '/swagger/testapi-ui/components/logout/logout.html',
+                templateUrl: '/testapi-ui/components/logout/logout.html',
                 controller: 'LogoutController as ctrl'
             }).
             state('userVendors', {
                 url: '/user_vendors',
-                templateUrl: '/swagger/testapi-ui/components/vendors/vendors.html',
+                templateUrl: '/testapi-ui/components/vendors/vendors.html',
                 controller: 'VendorsController as ctrl'
             }).
             state('publicVendors', {
                 url: '/public_vendors',
-                templateUrl: '/swagger/testapi-ui/components/vendors/vendors.html',
+                templateUrl: '/testapi-ui/components/vendors/vendors.html',
                 controller: 'VendorsController as ctrl'
             }).
             state('vendor', {
@@ -96,22 +96,22 @@
             }).
             state('userProducts', {
                 url: '/user_products',
-                templateUrl: '/swagger/testapi-ui/components/products/products.html',
+                templateUrl: '/testapi-ui/components/products/products.html',
                 controller: 'ProductsController as ctrl'
             }).
             state('publicProducts', {
                 url: '/public_products',
-                templateUrl: '/swagger/testapi-ui/components/products/products.html',
+                templateUrl: '/testapi-ui/components/products/products.html',
                 controller: 'ProductsController as ctrl'
             }).
             state('cloud', {
                 url: '/cloud/:id',
-                templateUrl: '/swagger/testapi-ui/components/products/cloud.html',
+                templateUrl: '/testapi-ui/components/products/cloud.html',
                 controller: 'ProductController as ctrl'
             }).
             state('distro', {
                 url: '/distro/:id',
-                templateUrl: '/swagger/testapi-ui/components/products/distro.html',
+                templateUrl: '/testapi-ui/components/products/distro.html',
                 controller: 'ProductController as ctrl'
             });
     }
@@ -211,7 +211,7 @@
             angular.bootstrap(document, ['testapiApp']);
         }
 
-        $http.get('swagger/testapi-ui/config.json').success(function (data) {
+        $http.get('testapi-ui/config.json').success(function (data) {
             startApp(data);
         }).error(function () {
             startApp({});
