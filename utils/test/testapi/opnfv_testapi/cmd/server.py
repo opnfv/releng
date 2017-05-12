@@ -58,7 +58,8 @@ def get_db():
 
 
 def make_app():
-    swagger.docs(base_url=CONF.swagger_base_url)
+    swagger.docs(base_url=CONF.swagger_base_url,
+                 static_path=CONF.static_path)
     return swagger.Application(
         url_mappings.mappings,
         db=get_db(),
