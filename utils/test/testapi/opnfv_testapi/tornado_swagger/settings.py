@@ -6,17 +6,14 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-import os.path
 
 API_DOCS_NAME = 'swagger-api-docs'
 RESOURCE_LISTING_NAME = 'swagger-resource-listing'
 API_DECLARATION_NAME = 'swagger-api-declaration'
-STATIC_PATH = os.path.join(os.path.dirname(os.path.normpath(__file__)),
-                           'static')
 
 docs_settings = {
     'base_url': '',
-    'static_path': STATIC_PATH,
+    'static_path': '',
     'swagger_prefix': '/swagger',
     'api_version': 'v1.0',
     'swagger_version': '1.2',
