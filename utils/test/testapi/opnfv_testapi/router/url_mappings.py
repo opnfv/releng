@@ -6,6 +6,9 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+import tornado.web
+
+from opnfv_testapi.common import config
 from opnfv_testapi.resources import handlers
 from opnfv_testapi.resources import pod_handlers
 from opnfv_testapi.resources import project_handlers
@@ -49,4 +52,9 @@ mappings = [
     # scenarios
     (r"/api/v1/scenarios", scenario_handlers.ScenariosCLHandler),
     (r"/api/v1/scenarios/([^/]+)", scenario_handlers.ScenarioGURHandler),
+
+    # static path
+    (r'/(.*\.(css|png|gif|js|html|json))',
+     tornado.web.StaticFileHandler,
+     {'path': config.Config().static_path}),
 ]

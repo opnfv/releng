@@ -17,6 +17,10 @@ class Config(object):
     def __init__(self):
         self.file = self.CONFIG if self.CONFIG else self._default_config()
         self._parse()
+        self.static_path = os.path.join(
+            os.path.dirname(os.path.normpath(__file__)),
+            os.pardir,
+            'static')
 
     def _parse(self):
         if not os.path.exists(self.file):

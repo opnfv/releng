@@ -12,9 +12,12 @@ from os import path
 import mock
 from tornado import testing
 
-from opnfv_testapi.cmd import server
+from opnfv_testapi.common import config
 from opnfv_testapi.resources import models
 from opnfv_testapi.tests.unit import fake_pymongo
+
+config.Config.CONFIG = path.join(path.dirname(__file__),
+                                 '../../../etc/config.ini')
 
 
 class TestBase(testing.AsyncHTTPTestCase):
@@ -36,6 +39,7 @@ class TestBase(testing.AsyncHTTPTestCase):
         self.db_patcher.stop()
 
     def _patch_server(self):
+        from opnfv_testapi.cmd import server
         server.parse_config([
             '--config-file',
             path.join(path.dirname(__file__), 'common/normal.ini')
@@ -49,6 +53,7 @@ class TestBase(testing.AsyncHTTPTestCase):
         return fake_pymongo
 
     def get_app(self):
+        from opnfv_testapi.cmd import server
         return server.make_app()
 
     def create_d(self, *args):
