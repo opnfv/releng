@@ -12,9 +12,11 @@ from opnfv_testapi.resources import project_handlers
 from opnfv_testapi.resources import result_handlers
 from opnfv_testapi.resources import scenario_handlers
 from opnfv_testapi.resources import testcase_handlers
+import opnfv_testapi.resources.ui_handlers
 
 mappings = [
     # GET /versions => GET API version
+    (r'/', opnfv_testapi.resources.ui_handlers.UIHandler),
     (r"/versions", handlers.VersionHandler),
 
     # few examples:

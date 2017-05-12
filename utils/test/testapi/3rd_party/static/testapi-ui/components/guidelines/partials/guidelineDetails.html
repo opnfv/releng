@@ -1,0 +1,50 @@
+<!--
+HTML for guidelines page for all OpenStack Powered (TM) guideline schemas
+This expects the JSON data of the guidelines file to be stored in scope
+variable 'guidelines'.
+-->
+
+<ol ng-show="ctrl.guidelines" class="capabilities">
+  <li class="capability-list-item" ng-repeat="capability in ctrl.guidelines.capabilities | arrayConverter | filter:ctrl.filterStatus | orderBy:'id'">
+    <span class="capability-name">{{capability.id}}</span><br />
+    <em>{{capability.description}}</em><br />
+    Status: <span class="{{ctrl.targetCapabilities[capability.id]}}">{{ctrl.targetCapabilities[capability.id]}}</span><br />
+    <span ng-if="capability.project">Project: {{capability.project | capitalize}}<br /></span>
+    <a ng-click="showAchievements = !showAchievements">Achievements ({{capability.achievements.length}})</a><br />
+    <ol uib-collapse="!showAchievements" class="list-inline">
+        <li ng-repeat="achievement in capability.achievements">
+            {{achievement}}
+        </li>
+    </ol>
+
+    <a ng-click="showTests = !showTests">Tests ({{ctrl.getObjectLength(capability.tests)}})</a>
+    <ul uib-collapse="!showTests">
+        <li ng-if="ctrl.guidelines.schema === '1.2'" ng-repeat="test in capability.tests">
+           <span ng-class="{'glyphicon glyphicon-flag text-warning': capability.flagged.indexOf(test) > -1}"></span>
+           {{test}}
+        </li>
+        <li ng-if="ctrl.guidelines.schema > '1.2'" ng-repeat="(testName, testDetails) in capability.tests">
+           <span ng-class="{'glyphicon glyphicon-flag text-warning': testDetails.flagged}" title="{{testDetails.flagged.reason}}"></span>
+           {{testName}}
+           <div class="test-detail" ng-if="testDetails.aliases">
+               <strong>Aliases:</strong>
+               <ul><li ng-repeat="alias in testDetails.aliases">{{alias}}</li></ul>
+           </div>
+        </li>
+    </ul>
+  </li>
+</ol>
+
+<div ng-show="ctrl.guidelines" class="criteria">
+    <hr>
+    <h4><a ng-click="showCriteria = !showCriteria">Criteria</a></h4>
+    <div uib-collapse="showCriteria">
+        <ul>
+            <li ng-repeat="(key, criterion) in ctrl.guidelines.criteria">
+                <span class="criterion-name">{{criterion.name}}</span><br />
+                <em>{{criterion.Description}}</em><br />
+                Weight: {{criterion.weight}}
+            </li>
+        </ul>
+    </div>
+</div>
