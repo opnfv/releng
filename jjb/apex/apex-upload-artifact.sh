@@ -13,10 +13,9 @@ echo "Uploading the Apex ${ARTIFACT_TYPE} artifact. This could take some time...
 echo "--------------------------------------------------------"
 echo
 
-# source the opnfv.properties to get ARTIFACT_VERSION
-source $WORKSPACE/opnfv.properties
+BUILD_DIRECTORY=$WORKSPACE/../$BUILD_DIRECTORY
 
-BUILD_DIRECTORY=${WORKSPACE}/.build
+source $BUILD_DIRECTORY/../opnfv.properties
 
 importkey () {
   # clone releng repository
