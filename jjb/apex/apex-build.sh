@@ -9,7 +9,7 @@ echo
 # create the cache directory if it doesn't exist
 [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
 # set OPNFV_ARTIFACT_VERSION
-if echo $ARTIFACT_VERSION | grep "apex-verify" 1> /dev/null; then
+if echo $ARTIFACT_VERSION | grep "dev" 1> /dev/null; then
   export OPNFV_ARTIFACT_VERSION="dev${GERRIT_CHANGE_NUMBER}${GERRIT_PATCHSET_NUMBER}"
   export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY"
 elif echo $BUILD_TAG | grep "csit" 1> /dev/null; then
@@ -42,7 +42,7 @@ echo "Cache Directory Contents:"
 echo "-------------------------"
 ls -al $CACHE_DIRECTORY
 
-if ! echo $ARTIFACT_VERSION | grep "apex-verify" 1> /dev/null; then
+if ! echo $ARTIFACT_VERSION | grep "dev" 1> /dev/null; then
   echo "Writing opnfv.properties file"
   # save information regarding artifact into file
   (
