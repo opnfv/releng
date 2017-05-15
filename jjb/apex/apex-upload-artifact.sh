@@ -13,8 +13,6 @@ echo "Uploading the Apex ${ARTIFACT_TYPE} artifact. This could take some time...
 echo "--------------------------------------------------------"
 echo
 
-BUILD_DIRECTORY=$WORKSPACE/../$BUILD_DIRECTORY
-
 if [[ ! "$ARTIFACT_VERSION" =~ dev ]]; then
   source $BUILD_DIRECTORY/../opnfv.properties
 fi
