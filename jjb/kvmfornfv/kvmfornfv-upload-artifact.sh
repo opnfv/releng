@@ -58,7 +58,7 @@ else
 fi
 
 # upload metadata file for the artifacts built by daily job
-if [[ "$JOB_TYPE" == "daily" ]]; then
+if [[ "$JOB_TYPE" == "daily" && "$PHASE" == "build" ]]; then
     gsutil cp $WORKSPACE/opnfv.properties $GS_UPLOAD_LOCATION/opnfv.properties > $WORKSPACE/gsutil.log 2>&1
     gsutil cp $WORKSPACE/opnfv.properties gs://$GS_URL/latest.properties > $WORKSPACE/gsutil.log 2>&1
     gsutil -m setmeta -r \
