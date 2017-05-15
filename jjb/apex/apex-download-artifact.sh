@@ -9,7 +9,8 @@ APEX_PKGS="common undercloud" # removed onos for danube
 
 if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
   # dev build
-  export OPNFV_ARTIFACT_VERSION="dev${GERRIT_CHANGE_NUMBER}${GERRIT_PATCHSET_NUMBER}"
+  GERRIT_PATCHSET_NUMBER=$(echo $GERRIT_REFSPEC | grep -Eo '[0-9]+$')
+  export OPNFV_ARTIFACT_VERSION="dev${GERRIT_CHANGE_NUMBER}_${GERRIT_PATCHSET_NUMBER}"
   # get build artifact
   pushd ${BUILD_DIRECTORY} > /dev/null
   echo "Downloading packaged dev build..."
