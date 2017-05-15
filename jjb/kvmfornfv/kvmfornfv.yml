@@ -34,7 +34,7 @@
         - 'kvmfornfv-verify-{phase}-{stream}'
         - 'kvmfornfv-merge-{stream}'
         - 'kvmfornfv-daily-{stream}'
-        - 'kvmfornfv-cyclictest-daily-build-{stream}'
+        - 'kvmfornfv-daily-build-{stream}'
         - 'kvmfornfv-{testname}-daily-test-{stream}'
 #####################################
 # job templates
@@ -210,7 +210,7 @@
             name: cyclictest-build
             condition: SUCCESSFUL
             projects:
-                - name: 'kvmfornfv-cyclictest-daily-build-{stream}'
+                - name: 'kvmfornfv-daily-build-{stream}'
                   current-parameters: false
                   node-parameters: false
                   git-revision: true
@@ -238,7 +238,7 @@
                   abort-all-job: true
 
 - job-template:
-    name: 'kvmfornfv-cyclictest-daily-build-{stream}'
+    name: 'kvmfornfv-daily-build-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -267,7 +267,7 @@
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
-        - '{project}-cyclictest-daily-build-macro'
+        - '{project}-daily-build-macro'
 
 - job-template:
     name: 'kvmfornfv-{testname}-daily-test-{stream}'
@@ -322,7 +322,7 @@
         - shell:
             !include-raw: ./kvmfornfv-test.sh
 - builder:
-    name: 'kvmfornfv-cyclictest-daily-build-macro'
+    name: 'kvmfornfv-daily-build-macro'
     builders:
         - shell:
             !include-raw: ./kvmfornfv-build.sh
