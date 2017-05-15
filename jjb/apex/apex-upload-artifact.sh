@@ -15,7 +15,9 @@ echo
 
 BUILD_DIRECTORY=$WORKSPACE/../$BUILD_DIRECTORY
 
-source $BUILD_DIRECTORY/../opnfv.properties
+if [[ ! "$ARTIFACT_VERSION" =~ dev ]]; then
+  source $BUILD_DIRECTORY/../opnfv.properties
+fi
 
 importkey () {
   # clone releng repository
@@ -85,7 +87,8 @@ uploadsnap () {
 
 uploadimages () {
   # Uploads dev tarball
-  export OPNFV_ARTIFACT_VERSION="dev${GERRIT_CHANGE_NUMBER}${GERRIT_PATCHSET_NUMBER}"
+  GERRIT_PATCHSET_NUMBER=$(echo $GERRIT_REFSPEC | grep -Eo '[0-9]+$')
+  export OPNFV_ARTIFACT_VERSION="dev${GERRIT_CHANGE_NUMBER}_${GERRIT_PATCHSET_NUMBER}"
   echo "Uploading development build tarball"
   pushd $BUILD_DIRECTORY > /dev/null
   tar czf apex-${OPNFV_ARTIFACT_VERSION}.tar.gz *.qcow2
