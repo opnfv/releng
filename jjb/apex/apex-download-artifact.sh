@@ -5,6 +5,11 @@ set -o pipefail
 
 APEX_PKGS="common undercloud" # removed onos for danube
 
+# log info to console
+echo "Downloading the Apex artifact. This could take some time..."
+echo "--------------------------------------------------------"
+echo
+
 [[ -d $BUILD_DIRECTORY ]] || mkdir -p $BUILD_DIRECTORY
 
 if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
@@ -13,13 +18,16 @@ if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
   export OPNFV_ARTIFACT_VERSION="dev${GERRIT_CHANGE_NUMBER}_${GERRIT_PATCHSET_NUMBER}"
   # get build artifact
   pushd ${BUILD_DIRECTORY} > /dev/null
-  echo "Downloading packaged dev build..."
+  echo "Downloading packaged dev build: apex-${OPNFV_ARTIFACT_VERSION}.tar.gz"
   curl --fail -s -o $BUILD_DIRECTORY/apex-${OPNFV_ARTIFACT_VERSION}.tar.gz http://$GS_URL/apex-${OPNFV_ARTIFACT_VERSION}.tar.gz
   tar -xvf apex-${OPNFV_ARTIFACT_VERSION}.tar.gz
   popd > /dev/null
 else
+  echo "Will download RPMs and ISO..."
+
   # Must be RPMs/ISO
   export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d")
+  echo "Downloading opnfv-${OPNFV_ARTIFACT_VERSION}.properties"
 
   # get the properties file in order to get info regarding artifacts
   curl --fail -s -o $BUILD_DIRECTORY/opnfv.properties http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties

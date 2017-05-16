@@ -199,6 +199,7 @@
                 - name: 'apex-deploy-virtual-{stream}'
                   current-parameters: false
                   predefined-parameters: |
+                    ARTIFACT_VERSION=$ARTIFACT_VERSION
                     DEPLOY_SCENARIO={verify-scenario}
                     OPNFV_CLEAN=yes
                     GERRIT_BRANCH=$GERRIT_BRANCH
@@ -247,6 +248,10 @@
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: "Used for overriding the GIT URL coming from parameters macro."
+        - string:
+            name: ARTIFACT_VERSION
+            default: dev
+            description: "Used for overriding the ARTIFACT_VERSION"
 
     scm:
         - git-scm-gerrit
@@ -297,6 +302,7 @@
                 - name: 'apex-deploy-virtual-{stream}'
                   current-parameters: false
                   predefined-parameters: |
+                    ARTIFACT_VERSION=$ARTIFACT_VERSION
                     DEPLOY_SCENARIO=gate
                     OPNFV_CLEAN=yes
                     GERRIT_BRANCH=$GERRIT_BRANCH
