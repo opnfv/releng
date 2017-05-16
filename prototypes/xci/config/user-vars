@@ -28,9 +28,10 @@ export XCI_FLAVOR=${XCI_FLAVOR:-aio}
 # OPNFV XCI Sandbox is not verified to be used as non-root user as of yet so
 # changing these paths might break things.
 #-------------------------------------------------------------------------------
-export OPNFV_RELENG_PATH=/opt/releng
-export OPENSTACK_BIFROST_PATH=/opt/bifrost
-export OPENSTACK_OSA_PATH=/opt/openstack-ansible
+export XCI_DEVEL_ROOT=${XCI_DEVEL_ROOT:-"/tmp/.xci-deploy-env"}
+export OPNFV_RELENG_PATH="${XCI_DEVEL_ROOT}/releng"
+export OPENSTACK_BIFROST_PATH="${XCI_DEVEL_ROOT}/bifrost"
+export OPENSTACK_OSA_PATH="${XCI_DEVEL_ROOT}/openstack-ansible"
 
 #-------------------------------------------------------------------------------
 # Set the playbook to use for OpenStack deployment
@@ -50,5 +51,5 @@ export OPNFV_OSA_PLAYBOOK=${OPNFV_OSA_PLAYBOOK:-"$OPENSTACK_OSA_PATH/playbooks/s
 # or
 #   ANSIBLE_VERBOSITY="-vvvv"
 export ANSIBLE_VERBOSITY=${ANSIBLE_VERBOSITY-""}
-export LOG_PATH=${LOG_PATH:-/opt/opnfv/logs}
+export LOG_PATH=${LOG_PATH:-${XCI_DEVEL_ROOT}/opnfv/logs}
 export RUN_TEMPEST=${RUN_TEMPEST:-false}
