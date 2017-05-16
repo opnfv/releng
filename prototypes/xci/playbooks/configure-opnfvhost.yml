@@ -55,8 +55,12 @@
       shell: ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
       args:
         creates: /root/.ssh/id_rsa
+    - name: ensure ssh key storage directory exists
+      file:
+        path: "{{ OPNFV_SSH_HOST_KEYS_PATH }}"
+        state: directory
     - name: fetch public key
-      fetch: src="/root/.ssh/id_rsa.pub" dest="/"
+      fetch: src="/root/.ssh/id_rsa.pub" dest="{{ OPNFV_SSH_HOST_KEYS_PATH }}"
     - name: copy flavor inventory
       shell: "/bin/cp -rf {{XCI_FLAVOR_ANSIBLE_FILE_PATH}}/inventory {{OPNFV_RELENG_PATH}}/prototypes/xci/playbooks"
     - name: copy flavor vars
@@ -89,8 +93,10 @@
         chdir: "{{OPENSTACK_OSA_PATH}}/scripts"
 - hosts: localhost
   remote_user: root
+  vars_files:
+    - ../var/opnfv.yml
   tasks:
     - name: Generate authorized_keys
-      shell: "/bin/cat /opnfv/root/.ssh/id_rsa.pub >> ../file/authorized_keys"
+      shell: "/bin/cat {{ OPNFV_SSH_HOST_KEYS_PATH }}/opnfv/root/.ssh/id_rsa.pub >> ../file/authorized_keys"
     - name: Append public keys to authorized_keys
       shell: "/bin/cat /root/.ssh/id_rsa.pub >> ../file/authorized_keys"
