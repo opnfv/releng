@@ -32,9 +32,8 @@ class SwaggerUIHandler(tornado.web.RequestHandler):
         return self.static_path
 
     def get(self):
-        discovery_url = os.path.join(
-            self.base_url,
-            self.reverse_url(settings.RESOURCE_LISTING_NAME))
+        resource_url = self.reverse_url(settings.RESOURCE_LISTING_NAME)
+        discovery_url = self.base_url + resource_url
         self.render('index.html', discovery_url=discovery_url)
 
 
