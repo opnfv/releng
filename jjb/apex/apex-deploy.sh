@@ -39,6 +39,8 @@ if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
   DEPLOY_CMD="${WORKSPACE}/ci/deploy.sh"
   RESOURCES="${WORKSPACE}/.build/"
   CONFIG="${WORKSPACE}/build"
+  BASE=$CONFIG
+  IMAGES=$RESOURCES
   LIB="${WORKSPACE}/lib"
 
   # Ensure artifacts were downloaded and extracted correctly
@@ -50,6 +52,8 @@ else
   DEPLOY_CMD="opnfv-deploy"
   RESOURCES="/var/opt/opnfv/images"
   CONFIG="/var/opt/opnfv"
+  BASE=$CONFIG
+  IMAGES=$RESOURCES
   LIB="/var/opt/opnfv/lib"
 
 fi
