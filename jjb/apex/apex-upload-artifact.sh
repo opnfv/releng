@@ -89,7 +89,7 @@ uploadimages () {
   export OPNFV_ARTIFACT_VERSION="dev${GERRIT_CHANGE_NUMBER}_${GERRIT_PATCHSET_NUMBER}"
   echo "Uploading development build tarball"
   pushd $BUILD_DIRECTORY > /dev/null
-  tar czf apex-${OPNFV_ARTIFACT_VERSION}.tar.gz *.qcow2
+  tar czf apex-${OPNFV_ARTIFACT_VERSION}.tar.gz *.qcow2 *.vmlinuz *.initrd
   gsutil cp apex-${OPNFV_ARTIFACT_VERSION}.tar.gz gs://$GS_URL/apex-${OPNFV_ARTIFACT_VERSION}.tar.gz > gsutil.latest.log
   popd > /dev/null
 }
