@@ -37,6 +37,7 @@ if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
   DEPLOY_SETTINGS_DIR="${WORKSPACE}/config/deploy"
   NETWORK_SETTINGS_DIR="${WORKSPACE}/config/network"
   DEPLOY_CMD="${WORKSPACE}/ci/deploy.sh"
+  CLEAN_CMD="${WORKSPACE}/ci/clean.sh"
   RESOURCES="${WORKSPACE}/.build/"
   CONFIG="${WORKSPACE}/build"
   BASE=$CONFIG
@@ -50,6 +51,7 @@ else
   DEPLOY_SETTINGS_DIR="/etc/opnfv-apex/"
   NETWORK_SETTINGS_DIR="/etc/opnfv-apex/"
   DEPLOY_CMD="opnfv-deploy"
+  CLEAN_CMD="opnfv-clean"
   RESOURCES="/var/opt/opnfv/images"
   CONFIG="/var/opt/opnfv"
   BASE=$CONFIG
@@ -101,11 +103,7 @@ if [ "$OPNFV_CLEAN" == 'yes' ]; then
     clean_opts=''
   fi
 
-  if [[ "$ARTIFACT_VERSION" =~ "dev" ]]; then
-    sudo CONFIG=${CONFIG} LIB=${LIB} ./clean.sh ${clean_opts}
-  else
-    sudo BASE=${BASE} LIB=${LIB} opnfv-clean ${clean_opts}
-  fi
+  sudo BASE=${BASE} LIB=${LIB} ${CLEAN_CMD} ${clean_opts}
 fi
 
 if echo ${DEPLOY_SCENARIO} | grep ipv6; then
