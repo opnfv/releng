@@ -139,7 +139,7 @@ echo "Info: Configured target hosts"
 #-------------------------------------------------------------------------------
 echo "Info: Setting up target hosts for openstack-ansible"
 echo "-----------------------------------------------------------------------"
-sudo -E /bin/sh -c "ssh root@$OPNFV_HOST_IP openstack-ansible \
+ssh root@$OPNFV_HOST_IP "openstack-ansible \
      $OPENSTACK_OSA_PATH/playbooks/setup-hosts.yml" | \
      tee $LOG_PATH/setup-hosts.log
 echo "-----------------------------------------------------------------------"
@@ -158,7 +158,7 @@ echo "Info: Set up target hosts for openstack-ansible successfuly"
 echo "Info: Setting up infrastructure"
 echo "-----------------------------------------------------------------------"
 echo "xci: running ansible playbook setup-infrastructure.yml"
-sudo -E /bin/sh -c "ssh root@$OPNFV_HOST_IP openstack-ansible \
+ssh root@$OPNFV_HOST_IP "openstack-ansible \
      $OPENSTACK_OSA_PATH/playbooks//setup-infrastructure.yml" | \
      tee $LOG_PATH/setup-infrastructure.log
 echo "-----------------------------------------------------------------------"
@@ -173,7 +173,7 @@ fi
 #-------------------------------------------------------------------------------
 echo "Info: Verifying database cluster"
 echo "-----------------------------------------------------------------------"
-sudo -E /bin/sh -c "ssh root@$OPNFV_HOST_IP ansible -i $OPENSTACK_OSA_PATH/playbooks/inventory/ \
+ssh root@$OPNFV_HOST_IP "ansible -i $OPENSTACK_OSA_PATH/playbooks/inventory/ \
            galera_container -m shell \
            -a "mysql -h localhost -e 'show status like \"%wsrep_cluster_%\";'"" \
            | tee $LOG_PATH/galera.log
@@ -192,7 +192,7 @@ echo "Info: Database cluster verification successful!"
 #-------------------------------------------------------------------------------
 echo "Info: Installing OpenStack on target hosts"
 echo "-----------------------------------------------------------------------"
-sudo -E /bin/sh -c "ssh root@$OPNFV_HOST_IP openstack-ansible \
+ssh root@$OPNFV_HOST_IP "openstack-ansible \
      $OPENSTACK_OSA_PATH/playbooks/setup-openstack.yml" | \
      tee $LOG_PATH/opnfv-setup-openstack.log
 echo "-----------------------------------------------------------------------"
