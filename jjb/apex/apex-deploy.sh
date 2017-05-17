@@ -128,7 +128,7 @@ if [[ "$JOB_NAME" =~ "virtual" ]]; then
   if [[ "$JOB_NAME" == *csit* ]]; then
     DEPLOY_CMD="${DEPLOY_CMD} -e csit-environment.yaml"
   fi
-  if [[ "$JOB_NAME" == *promote* ]]; then
+  if [[ "$PROMOTE" == "True" ]]; then
     DEPLOY_CMD="${DEPLOY_CMD} --virtual-computes 2"
   fi
 else
