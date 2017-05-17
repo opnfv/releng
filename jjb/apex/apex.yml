@@ -335,7 +335,6 @@
     name: 'apex-runner-cperf-{stream}'
 
     # runner cperf job
-    project-type: 'multijob'
     node: 'intel-pod2'
 
     disabled: false
@@ -367,33 +366,19 @@
             option: 'project'
 
     builders:
-        - description-setter:
-            description: "Deployed on $NODE_NAME"
-        - multijob:
-            name: 'Baremetal Deploy'
-            condition: ALWAYS
-            projects:
-                - name: 'apex-deploy-baremetal-{stream}'
-                  node-parameters: false
-                  current-parameters: true
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                    DEPLOY_SCENARIO={verify-scenario}
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-                  git-revision: false
-        - multijob:
-            name: Functest
-            condition: ALWAYS
-            projects:
-                - name: 'functest-apex-baremetal-daily-{stream}'
-                  node-parameters: true
-                  current-parameters: false
-                  predefined-parameters:
-                    DEPLOY_SCENARIO={verify-scenario}
-                  kill-phase-on: NEVER
-                  abort-all-job: false
-                  git-revision: false
+        - trigger-builds:
+          - project: 'apex-deploy-baremetal-os-odl_l3-nofeature-noha-{stream}'
+            predefined-parameters:
+              OPNFV_CLEAN=yes
+            git-revision: false
+            block: true
+            same-node: true
+        - trigger-builds:
+          - project: 'cperf-apex-intel-pod2-daily-master'
+            predefined-parameters:
+              DEPLOY_SCENARIO=os-odl_l3-nofeature-noha
+            block: true
+            same-node: true
 
 # Build phase
 - job-template:
