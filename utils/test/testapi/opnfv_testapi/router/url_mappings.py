@@ -15,11 +15,11 @@ from opnfv_testapi.resources import project_handlers
 from opnfv_testapi.resources import result_handlers
 from opnfv_testapi.resources import scenario_handlers
 from opnfv_testapi.resources import testcase_handlers
-import opnfv_testapi.resources.ui_handlers
+from opnfv_testapi.ui import root
+from opnfv_testapi.ui.auth import handlers as auth_handlers
 
 mappings = [
     # GET /versions => GET API version
-    (r'/', opnfv_testapi.resources.ui_handlers.UIHandler),
     (r"/versions", handlers.VersionHandler),
 
     # few examples:
@@ -54,7 +54,11 @@ mappings = [
     (r"/api/v1/scenarios/([^/]+)", scenario_handlers.ScenarioGURHandler),
 
     # static path
-    (r'/(.*\.(css|png|gif|js|html|json))',
+    (r'/(.*\.(css|png|gif|js|html|json|map))',
      tornado.web.StaticFileHandler,
      {'path': config.Config().static_path}),
+
+    (r'/', root.RootHandler),
+    (r'/api/v1/auth/signin', auth_handlers.SigninHandler),
+    (r'/api/v1/auth/signin_return', auth_handlers.SigninReturnHandler),
 ]
