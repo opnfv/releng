@@ -1,7 +1,7 @@
 #!/bin/bash
 set +e
 
-
+[[ "$PUSH_RESULTS_TO_DB" == "true" ]] && flags+="-r"
 cmd="python ${FUNCTEST_REPO_DIR}/functest/ci/run_tests.py -t all ${flags}"
 
 container_id=$(docker ps -a | grep opnfv/functest | awk '{print $1}' | head -1)
