@@ -1164,6 +1164,7 @@
                     GERRIT_REFSPEC=$GERRIT_REFSPEC
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                     GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                    PROMOTE=True
                   node-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
@@ -1268,6 +1269,7 @@
                     GERRIT_REFSPEC=$GERRIT_REFSPEC
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                     GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                    PROMOTE=True
                   node-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
@@ -1327,6 +1329,10 @@
             name: GS_URL
             default: $GS_BASE{gs-pathname}
             description: "URL to Google Storage."
+        - string:
+            name: PROMOTE
+            default: 'False'
+            description: "Flag to know if we should promote/upload snapshot artifacts."
 
 ########################
 # builder macros
