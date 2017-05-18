@@ -2,8 +2,8 @@
 
 [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 
-#clean up dependent project docker images, which has no containers and image tag None
-clean_images=(opnfv/functest opnfv/yardstick)
+# clean up dependent project docker images, which has no containers and image tag None
+clean_images=(opnfv/functest opnfv/yardstick opnfv/testapi mongo)
 for clean_image in "${clean_images[@]}"; do
     echo "Removing image $image_id, which has no containers and image tag is None"
     dangling_images=($(docker images -f "dangling=true" | grep ${clean_image} | awk '{print $3}'))
@@ -14,7 +14,7 @@ for clean_image in "${clean_images[@]}"; do
     fi
 done
 
-echo "Remove containers with image dovetail:<None>..."
+echo "Remove containers with image opnfv/dovetail:<None>..."
 dangling_images=($(docker images -f "dangling=true" | grep opnfv/dovetail | awk '{print $3}'))
 if [[ -n ${dangling_images} ]]; then
     for image_id in "${dangling_images[@]}"; do
@@ -24,7 +24,7 @@ if [[ -n ${dangling_images} ]]; then
     done
 fi
 
-echo "Cleaning up dovetail docker containers/images..."
+echo "Cleaning up dovetail docker containers..."
 if [[ ! -z $(docker ps -a | grep opnfv/dovetail) ]]; then
     echo "Removing existing opnfv/dovetail containers..."
     docker ps -a | grep opnfv/dovetail | awk '{print $1}' | xargs docker rm -f >${redirect}
