@@ -1,21 +1,19 @@
 from six.moves.urllib import parse
 
 from opnfv_testapi.common import config
-from opnfv_testapi.resources import handlers
+from opnfv_testapi.ui.auth import base
 from opnfv_testapi.ui.auth import constants as const
-from opnfv_testapi.ui.auth import utils
-
 
 CONF = config.Config()
 
 
-class SigninHandler(handlers.GenericApiHandler):
+class SigninHandler(base.BaseHandler):
     def get(self):
-        csrf_token = utils.get_token()
+        csrf_token = base.get_token()
         return_endpoint = parse.urljoin(CONF.api_url,
                                         CONF.osid_openid_return_to)
-        return_to = utils.set_query_params(return_endpoint,
-                                           {const.CSRF_TOKEN: csrf_token})
+        return_to = base.set_query_params(return_endpoint,
+                                          {const.CSRF_TOKEN: csrf_token})
 
         params = {
             const.OPENID_MODE: CONF.osid_openid_mode,
@@ -28,10 +26,20 @@ class SigninHandler(handlers.GenericApiHandler):
             const.OPENID_NS_SREG_REQUIRED: CONF.osid_openid_sreg_required,
         }
         url = CONF.osid_openstack_openid_endpoint
-        url = utils.set_query_params(url, params)
+        url = base.set_query_params(url, params)
         self.redirect(url=url, permanent=False)
 
 
-class SigninReturnHandler(handlers.GenericApiHandler):
+class SigninReturnHandler(base.BaseHandler):
     def get(self):
+        openid = self.get_query_argument(const.OPENID_CLAIMED_ID)
+        user_info = {
+            'openid': openid,
+            'email': self.get_query_argument(const.OPENID_NS_SREG_EMAIL),
+            'fullname': self.get_query_argument(const.OPENID_NS_SREG_FULLNAME)
+        }
+
+        self.db_save(self.table, user_info)
+        if not self.get_secure_cookie('openid'):
+            self.set_secure_cookie('openid', openid)
         self.redirect(url=CONF.ui_url)

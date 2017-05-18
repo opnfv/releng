@@ -64,7 +64,8 @@ def make_app():
         url_mappings.mappings,
         db=get_db(),
         debug=CONF.api_debug,
-        auth=CONF.api_authenticate
+        auth=CONF.api_authenticate,
+        cookie_secret='opnfv-testapi',
     )
 
 

@@ -16,7 +16,8 @@ from opnfv_testapi.resources import result_handlers
 from opnfv_testapi.resources import scenario_handlers
 from opnfv_testapi.resources import testcase_handlers
 from opnfv_testapi.ui import root
-from opnfv_testapi.ui.auth import handlers as auth_handlers
+from opnfv_testapi.ui.auth import sign
+from opnfv_testapi.ui.auth import user
 
 mappings = [
     # GET /versions => GET API version
@@ -59,6 +60,7 @@ mappings = [
      {'path': config.Config().static_path}),
 
     (r'/', root.RootHandler),
-    (r'/api/v1/auth/signin', auth_handlers.SigninHandler),
-    (r'/api/v1/auth/signin_return', auth_handlers.SigninReturnHandler),
+    (r'/api/v1/auth/signin', sign.SigninHandler),
+    (r'/api/v1/auth/signin_return', sign.SigninReturnHandler),
+    (r'/api/v1/profile', user.ProfileHandler),
 ]

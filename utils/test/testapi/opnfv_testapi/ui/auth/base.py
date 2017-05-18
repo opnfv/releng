@@ -3,6 +3,18 @@ import string
 
 from six.moves.urllib import parse
 
+from opnfv_testapi.resources import handlers
+
+
+class BaseHandler(handlers.GenericApiHandler):
+    def __init__(self, application, request, **kwargs):
+        super(BaseHandler, self).__init__(application, request, **kwargs)
+        self.table = 'users'
+
+    def set_cookies(self, cookies):
+        for cookie_n, cookie_v in cookies:
+            self.set_secure_cookie(cookie_n, cookie_v)
+
 
 def get_token(length=30):
     """Get random token."""

@@ -188,6 +188,14 @@ class GenericApiHandler(web.RequestHandler):
             table = self.table
         return self._eval_db(table, 'find_one', query)
 
+    def db_save(self, collection, data):
+        self._eval_db(collection, 'insert', data, check_keys=False)
+
+    def db_find_one(self, query, collection=None):
+        if not collection:
+            collection = self.table
+        return self._eval_db(collection, 'find_one', query)
+
 
 class VersionHandler(GenericApiHandler):
     @swagger.operation(nickname='listAllVersions')
