@@ -56,7 +56,7 @@
             branch: '{branch}'
 
     scm:
-        - git-scm-gerrit
+        - $SCM_MACRO
 
     triggers:
         - gerrit:
@@ -112,7 +112,7 @@
             default: dev
             description: "Used for overriding the ARTIFACT_VERSION"
     scm:
-        - git-scm-gerrit
+        - $SCM_MACRO
 
     triggers:
         - gerrit:
@@ -253,7 +253,7 @@
             description: "Used for overriding the ARTIFACT_VERSION"
 
     scm:
-        - git-scm-gerrit
+        - $SCM_MACRO
 
     triggers:
         - gerrit:
@@ -376,6 +376,7 @@
                   predefined-parameters: |
                     OPNFV_CLEAN=yes
                     DEPLOY_SCENARIO={verify-scenario}
+                    SCM_MACRO=git-scm
                   kill-phase-on: FAILURE
                   abort-all-job: true
                   git-revision: false
@@ -416,7 +417,7 @@
             gs-pathname: '{gs-pathname}'
 
     scm:
-        - git-scm-gerrit
+        - $SCM_MACRO
 
     wrappers:
         - timeout:
@@ -499,7 +500,7 @@
     disabled: false
 
     scm:
-        - git-scm-gerrit
+        - $SCM_MACRO
 
     wrappers:
         - timeout:
@@ -661,6 +662,7 @@
                 - name: 'apex-build-{{ stream }}'
                   current-parameters: false
                   predefined-parameters: |
+                    SCM_MACRO=git-scm
                     GERRIT_BRANCH=$GERRIT_BRANCH
                     GERRIT_REFSPEC=$GERRIT_REFSPEC
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
@@ -694,6 +696,7 @@
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
+                    SCM_MACRO=git-scm
                     DEPLOY_SCENARIO={{scenario}}
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
@@ -777,10 +780,7 @@
                 - name: 'apex-build-{stream}'
                   current-parameters: false
                   predefined-parameters: |
-                    GERRIT_BRANCH=$GERRIT_BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                    SCM_MACRO=git-scm
                   node-parameters: false
                   kill-phase-on: FAILURE
                   abort-all-job: true
@@ -794,10 +794,7 @@
                   predefined-parameters: |
                     DEPLOY_SCENARIO=os-odl_l3-csit-noha
                     OPNFV_CLEAN=yes
-                    GERRIT_BRANCH=$GERRIT_BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                    SCM_MACRO=git-scm
                   node-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
@@ -811,10 +808,6 @@
                 predefined-parameters: |
                   DEPLOY_SCENARIO=os-odl_l3-nofeature-noha
                   FUNCTEST_SUITE_NAME=tempest_smoke_serial
-                  GERRIT_BRANCH=$GERRIT_BRANCH
-                  GERRIT_REFSPEC=$GERRIT_REFSPEC
-                  GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                  GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
                 node-parameters: true
                 kill-phase-on: FAILURE
                 abort-all-job: true
@@ -881,10 +874,7 @@
                 - name: 'apex-build-{stream}'
                   current-parameters: false
                   predefined-parameters: |
-                    GERRIT_BRANCH=$GERRIT_BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                    SCM_MACRO=git-scm
                   node-parameters: false
                   kill-phase-on: FAILURE
                   abort-all-job: true
@@ -898,10 +888,6 @@
                   predefined-parameters: |
                     DEPLOY_SCENARIO=os-odl_l2-netvirt_gbp_fdio-noha
                     OPNFV_CLEAN=yes
-                    GERRIT_BRANCH=$GERRIT_BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
                   node-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
@@ -985,6 +971,10 @@
             name: GS_URL
             default: $GS_BASE{gs-pathname}
             description: "URL to Google Storage."
+        - string:
+            name: SCM_MACRO
+            default: git-scm-gerrit
+            description: "SCM macro to use"
 
 ########################
 # builder macros
