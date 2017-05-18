@@ -157,19 +157,25 @@
                 build-step-failure-threshold: 'never'
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
-        #dovetail only master by now, not sync with A/B/C branches
-        #here the stream means the SUT stream, dovetail stream is defined in its own job
-        - trigger-builds:
-            - project: 'dovetail-compass-{pod}-proposed_tests-{stream}'
-              current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO={scenario}
-              block: true
-              same-node: true
-              block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
+        # dovetail only master by now, not sync with A/B/C branches
+        # here the stream means the SUT stream, dovetail stream is defined in its own job
+        # only run on os-(nosdn|odl_l2)-(nofeature|bgpvpn)-ha scenario
+        - conditional-step:
+            condition-kind: regex-match
+            regex: os-(nosdn|odl_l2)-(nofeature|bgpvpn)-ha
+            label: ${scenario}
+            steps:
+                - trigger-builds:
+                    - project: 'dovetail-compass-{pod}-proposed_tests-{stream}'
+                      current-parameters: false
+                      predefined-parameters:
+                        DEPLOY_SCENARIO={scenario}
+                      block: true
+                      same-node: true
+                      block-thresholds:
+                      build-step-failure-threshold: 'never'
+                      failure-threshold: 'never'
+                      unstable-threshold: 'FAILURE'
 
 - job-template:
     name: 'compass-deploy-{pod}-daily-{stream}'
