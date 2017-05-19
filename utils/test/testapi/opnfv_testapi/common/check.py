@@ -61,7 +61,7 @@ def no_body(xstep):
 def miss_fields(xstep):
     @functools.wraps(xstep)
     def wrap(self, *args, **kwargs):
-        fields = kwargs.get('miss_fields')
+        fields = kwargs.pop('miss_fields', [])
         if fields:
             for miss in fields:
                 miss_data = self.json_args.get(miss)
@@ -75,7 +75,7 @@ def miss_fields(xstep):
 def carriers_exist(xstep):
     @functools.wraps(xstep)
     def wrap(self, *args, **kwargs):
-        carriers = kwargs.get('carriers')
+        carriers = kwargs.pop('carriers', {})
         if carriers:
             for table, query in carriers:
                 exist = yield self._eval_db_find_one(query(), table)
@@ -102,7 +102,7 @@ def new_not_exists(xstep):
 def updated_one_not_exist(xstep):
     @functools.wraps(xstep)
     def wrap(self, data, *args, **kwargs):
-        db_keys = kwargs.get('db_keys')
+        db_keys = kwargs.pop('db_keys', [])
         query = self._update_query(db_keys, data)
         if query:
             to_data = yield self._eval_db_find_one(query)

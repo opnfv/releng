@@ -85,7 +85,8 @@ class GenericApiHandler(web.RequestHandler):
         """
         data = self.table_cls.from_dict(self.json_args)
         for k, v in kwargs.iteritems():
-            data.__setattr__(k, v)
+            if k != 'query':
+                data.__setattr__(k, v)
 
         if self.table != 'results':
             data.creation_date = datetime.now()
