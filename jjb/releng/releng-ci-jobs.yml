@@ -3,6 +3,7 @@
     jobs:
         - 'releng-verify-jjb'
         - 'releng-merge-jjb'
+        - 'releng-comment-jjb'
         - 'releng-generate-artifacts-api'
 
     project: 'releng'
@@ -53,6 +54,35 @@
         - archive-artifacts:
             artifacts: 'job_output/*'
         - email-jenkins-admins-on-failure
+
+- job-template:
+    name: releng-comment-jjb
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: 'master'
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - experimental:
+            project: '{project}'
+            branch: 'master'
+            files: 'jjb/**'
+
+    builders:
+        - copyartifact:
+            project: releng-merge-jjb
+            filter: "job_output/*"
+            which-build: last-successful
+            stable: true
+            optional: false
+            flatten: false
+            do-not-fingerprint: true
+        - shell:
+            !include-raw-escape: generate-job-list.sh
+        - report-build-result-to-gerrit
 
 - job-template:
     name: 'releng-merge-jjb'
