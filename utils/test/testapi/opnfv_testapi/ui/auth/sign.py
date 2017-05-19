@@ -32,6 +32,9 @@ class SigninHandler(base.BaseHandler):
 
 class SigninReturnHandler(base.BaseHandler):
     def get(self):
+        if self.get_query_argument(const.OPENID_MODE) == 'cancel':
+            self._auth_failure('Authentication canceled.')
+
         openid = self.get_query_argument(const.OPENID_CLAIMED_ID)
         user_info = {
             'openid': openid,
@@ -43,6 +46,12 @@ class SigninReturnHandler(base.BaseHandler):
         if not self.get_secure_cookie('openid'):
             self.set_secure_cookie('openid', openid)
         self.redirect(url=CONF.ui_url)
+
+    def _auth_failure(self, message):
+        params = {'message': message}
+        url = parse.urljoin(CONF.ui_url,
+                            '/#/auth_failure?' + parse.urlencode(params))
+        self.redirect(url)
 
 
 class SignoutHandler(base.BaseHandler):

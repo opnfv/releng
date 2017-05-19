@@ -28,7 +28,7 @@
     function raiseAlert($uibModal) {
         return function(mode, title, text) {
             $uibModal.open({
-                templateUrl: '/shared/alerts/alertModal.html',
+                templateUrl: 'testapi-ui/shared/alerts/alertModal.html',
                 controller: 'RaiseAlertModalController as alert',
                 backdrop: true,
                 keyboard: true,
