@@ -43,3 +43,15 @@ class SigninReturnHandler(base.BaseHandler):
         if not self.get_secure_cookie('openid'):
             self.set_secure_cookie('openid', openid)
         self.redirect(url=CONF.ui_url)
+
+
+class SignoutHandler(base.BaseHandler):
+    def get(self):
+        """Handle signout request."""
+        openid = self.get_secure_cookie(const.OPENID)
+        if openid:
+            self.clear_cookie(const.OPENID)
+        params = {'openid_logout': CONF.osid_openid_logout_endpoint}
+        url = parse.urljoin(CONF.ui_url,
+                            '/#/logout?' + parse.urlencode(params))
+        self.redirect(url)

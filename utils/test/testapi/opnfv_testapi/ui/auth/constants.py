@@ -1,3 +1,5 @@
+OPENID = 'openid'
+
 # OpenID parameters
 OPENID_MODE = 'openid.mode'
 OPENID_NS = 'openid.ns'
