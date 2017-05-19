@@ -55,7 +55,7 @@ mappings = [
     (r"/api/v1/scenarios/([^/]+)", scenario_handlers.ScenarioGURHandler),
 
     # static path
-    (r'/(.*\.(css|png|gif|js|html|json|map))',
+    (r'/(.*\.(css|png|gif|js|html|json|map|woff2|woff|ttf))',
      tornado.web.StaticFileHandler,
      {'path': config.Config().static_path}),
 
