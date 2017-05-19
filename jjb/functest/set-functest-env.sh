@@ -61,7 +61,7 @@ echo "Functest: Start Docker and prepare environment"
 echo "Functest: Download images that will be used by test cases"
 images_dir="${HOME}/opnfv/functest/images"
 chmod +x ${WORKSPACE}/functest/ci/download_images.sh
-${WORKSPACE}/functest/ci/download_images.sh ${images_dir}
+${WORKSPACE}/functest/ci/download_images.sh ${images_dir} 2> ${redirect}
 images_vol="-v ${images_dir}:/home/opnfv/functest/images"
 
 dir_result="${HOME}/opnfv/functest/results/${BRANCH##*/}"
