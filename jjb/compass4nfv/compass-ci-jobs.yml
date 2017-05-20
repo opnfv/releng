@@ -163,7 +163,7 @@
         - conditional-step:
             condition-kind: regex-match
             regex: os-(nosdn|odl_l2)-(nofeature|bgpvpn)-ha
-            label: ${scenario}
+            label: '{scenario}'
             steps:
                 - trigger-builds:
                     - project: 'dovetail-compass-{pod}-proposed_tests-{stream}'
@@ -173,9 +173,9 @@
                       block: true
                       same-node: true
                       block-thresholds:
-                      build-step-failure-threshold: 'never'
-                      failure-threshold: 'never'
-                      unstable-threshold: 'FAILURE'
+                        build-step-failure-threshold: 'never'
+                        failure-threshold: 'never'
+                        unstable-threshold: 'FAILURE'
 
 - job-template:
     name: 'compass-deploy-{pod}-daily-{stream}'
