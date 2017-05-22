@@ -30,7 +30,7 @@ fi
 rm_apex_iso_verify
 
 #make sure there is not an existing console log file for the VM
-rm -f /var/log/libvirt/qemu/apex-iso-verify-console.log
+sudo rm -f /var/log/libvirt/qemu/apex-iso-verify-console.log
 
 # run an install from the iso
 # This streams a serial console to tcp port 3737 on localhost
