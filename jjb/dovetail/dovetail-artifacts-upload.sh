@@ -52,7 +52,7 @@ echo "signature Upload Complete!"
 
 upload () {
 # log info to console
-echo "Uploading to artifact. This could take some time..."
+echo "Uploading ${STORE_FILE_NAME} to artifact. This could take some time..."
 echo
 
 cd $WORKSPACE
