@@ -188,17 +188,23 @@
         #   i.e. one tempest smoke ipv6, two vping from functest)
         # 4.not used for release criteria or compliance,
         #   only to debug the dovetail tool bugs with arm pods
-        - trigger-builds:
-            - project: 'dovetail-{installer}-{pod}-proposed_tests-{stream}'
-              current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO={scenario}
-              block: true
-              same-node: true
-              block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
+        # 5,only run against scenario os-(nosdn|odl_l2)-(nofeature-bgpvpn)-ha
+        - conditional-step:
+            condition-kind: regex-match
+            regex: os-(nosdn|odl_l2)-(nofeature|bgpvpn)-ha
+            label: '{scenario}'
+            steps:
+                - trigger-builds:
+                    - project: 'dovetail-{installer}-{pod}-proposed_tests-{stream}'
+                      current-parameters: false
+                      predefined-parameters:
+                        DEPLOY_SCENARIO={scenario}
+                      block: true
+                      same-node: true
+                      block-thresholds:
+                        build-step-failure-threshold: 'never'
+                        failure-threshold: 'never'
+                        unstable-threshold: 'FAILURE'
 
 - job-template:
     name: '{installer}-deploy-{pod}-daily-{stream}'
