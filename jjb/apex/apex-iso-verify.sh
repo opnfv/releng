@@ -8,8 +8,6 @@ echo "Starting the Apex iso verify."
 echo "--------------------------------------------------------"
 echo
 
-BUILD_DIRECTORY=$WORKSPACE/../$BUILD_DIRECTORY
-
 source $BUILD_DIRECTORY/../opnfv.properties
 
 if ! rpm -q virt-install > /dev/null; then
