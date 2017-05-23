@@ -23,7 +23,7 @@ if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
   tar -xvf apex-${OPNFV_ARTIFACT_VERSION}.tar.gz
   popd > /dev/null
 else
-  echo "Will download RPMs and ISO..."
+  echo "Will download RPMs..."
 
   # Must be RPMs/ISO
   export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d")
@@ -56,15 +56,6 @@ else
     echo "Unable to install new RPMs: $RPM_LIST"
     exit 1
   fi
-
-  # log info to console
-  echo "Downloading the ISO artifact using URL http://$OPNFV_ARTIFACT_URL"
-  echo "--------------------------------------------------------"
-  echo
-
-  # Download ISO
-  curl --fail -s -o $BUILD_DIRECTORY/apex.iso http://$OPNFV_ARTIFACT_URL > gsutil.iso.log 2>&1
-
 fi
 
 # TODO: Uncomment these lines to verify SHA512SUMs once the sums are
