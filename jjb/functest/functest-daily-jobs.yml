@@ -374,7 +374,10 @@
     name: set-functest-env
     builders:
         - shell:
-            !include-raw: ./set-functest-env.sh
+            !include-raw:
+                - ./functest-env-presetup.sh
+                - ../../utils/fech_os_creds.sh
+                - ./set-functest-env.sh
 
 - builder:
     name: functest-store-results

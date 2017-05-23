@@ -3,41 +3,11 @@
 set -e
 [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 
-# Fetch INSTALLER_IP for APEX deployments
-if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
-    ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-    if sudo virsh list | grep undercloud; then
-        echo "Installer VM detected"
-        undercloud_mac=$(sudo virsh domiflist undercloud | grep default | \
-                      grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
-        INSTALLER_IP=$(/usr/sbin/arp -e | grep ${undercloud_mac} | awk {'print $1'})
-        sshkey_vol="-v /root/.ssh/id_rsa:/root/.ssh/id_rsa"
-        sudo scp $ssh_options root@${INSTALLER_IP}:/home/stack/stackrc ${HOME}/stackrc
-        stackrc_vol="-v ${HOME}/stackrc:/home/opnfv/functest/conf/stackrc"
-
-        if sudo iptables -C FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable 2> ${redirect}; then
-            sudo iptables -D FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable
-        fi
-        if sudo iptables -C FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable 2> ${redirect}; then
-          sudo iptables -D FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable
-        fi
-    else
-        echo "No available installer VM exists and no credentials provided...exiting"
-        exit 1
-    fi
-fi
-
-
 # Prepare OpenStack credentials volume
 if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     rc_file_vol="-v $LAB_CONFIG/admin-openrc:/home/opnfv/functest/conf/openstack.creds"
 else
-    ../../utils/fetch_os_creds.sh -d ${HOME}/rc_file -i ${INSTALLER_TYPE} -a ${INSTALLER_IP}
-    if [ $? -ne 0 ]; then
-        echo "Failed to fetch the credentials from the installer..."
-        exit 1
-    fi
-    rc_file_vol="-v ${HOME}/rc_file:/home/opnfv/functest/conf/openstack.creds"
+    rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/home/opnfv/functest/conf/openstack.creds"
 fi
 
 
