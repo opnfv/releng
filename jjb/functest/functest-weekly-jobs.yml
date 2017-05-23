@@ -115,7 +115,10 @@
         - shell:
             !include-raw: ./functest-cleanup.sh
         - shell:
-            !include-raw: ./set-functest-env.sh
+            !include-raw:
+                - ./functest-env-presetup.sh
+                - ../../utils/fetch_os_creds.sh
+                - ./set-functest-env.sh
         - shell:
             !include-raw: ./functest-loop.sh
         - shell:
