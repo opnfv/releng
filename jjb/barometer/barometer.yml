@@ -126,21 +126,16 @@
 
     disabled: '{obj:disabled}'
 
-    concurrent: true
+    concurrent: false
 
     properties:
         - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 3
-            max-per-node: 2
-            option: 'project'
 
     parameters:
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+        - 'opnfv-build-centos-defaults'
 
     scm:
         - git-scm
@@ -151,7 +146,6 @@
     builders:
         - shell: |
             pwd
-            cd src
-            ./install_build_deps.sh
-            make clobber
-            make
+            cd ci
+            ./install_dependencies.sh
+            ./build_rpm.sh
