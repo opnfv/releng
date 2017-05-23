@@ -51,11 +51,13 @@ DEPLOY_TYPE=baremetal
 
 echo "Functest: Start Docker and prepare environment"
 
-echo "Functest: Download images that will be used by test cases"
-images_dir="${HOME}/opnfv/functest/images"
-chmod +x ${WORKSPACE}/functest/ci/download_images.sh
-${WORKSPACE}/functest/ci/download_images.sh ${images_dir} 2> ${redirect}
-images_vol="-v ${images_dir}:/home/opnfv/functest/images"
+if [ "$BRANCH" != 'stable/danube' ]; then
+  echo "Functest: Download images that will be used by test cases"
+  images_dir="${HOME}/opnfv/functest/images"
+  chmod +x ${WORKSPACE}/functest/ci/download_images.sh
+  ${WORKSPACE}/functest/ci/download_images.sh ${images_dir} 2> ${redirect}
+  images_vol="-v ${images_dir}:/home/opnfv/functest/images"
+fi
 
 dir_result="${HOME}/opnfv/functest/results/${BRANCH##*/}"
 mkdir -p ${dir_result}
@@ -78,7 +80,11 @@ if [[ ${INSTALLER_TYPE} == 'compass' && ${DEPLOY_SCENARIO} == *'os-nosdn-openo-h
     envs=${env}" -e OPENO_MSB_ENDPOINT=${openo_msb_endpoint}"
 fi
 
-volumes="${images_vol} ${results_vol} ${sshkey_vol} ${stackrc_vol} ${rc_file_vol}"
+if [ "$BRANCH" != 'stable/danube' ]; then
+  volumes="${images_vol} ${results_vol} ${sshkey_vol} ${stackrc_vol} ${rc_file_vol}"
+else
+  volumes="${results_vol} ${sshkey_vol} ${stackrc_vol} ${rc_file_vol}"
+fi
 
 HOST_ARCH=$(uname -m)
 FUNCTEST_IMAGE="opnfv/functest"
