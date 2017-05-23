@@ -24,7 +24,16 @@ then
 fi
 
 cd $WORKSPACE/
-./build.sh  --iso-dir $BUILD_DIRECTORY/ --iso-name compass.iso -c $CACHE_DIRECTORY
+
+if [[ "$BRANCH" == 'danube' ]]; then
+    ./build.sh  --iso-dir $BUILD_DIRECTORY/ --iso-name compass.iso -c $CACHE_DIRECTOR
+    OPNFV_ARTIFACT_SHA512SUM=$(sha512sum $BUILD_DIRECTORY/compass.iso | cut -d' ' -f1)
+    OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso
+else
+    ./build.sh --tar-dir $BUILD_DIRECTORY/ --tar-name compass.tar.gz -c $CACHE_DIRECTOR
+    OPNFV_ARTIFACT_SHA512SUM=$(sha512sum $BUILD_DIRECTORY/compass.tar.gz | cut -d' ' -f1)
+    OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.tar.gz
+fi
 
 # list the build artifacts
 ls -al $BUILD_DIRECTORY
@@ -34,8 +43,8 @@ ls -al $BUILD_DIRECTORY
     echo "OPNFV_ARTIFACT_VERSION=$OPNFV_ARTIFACT_VERSION"
     echo "OPNFV_GIT_URL=$(git config --get remote.origin.url)"
     echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
-    echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
-    echo "OPNFV_ARTIFACT_SHA512SUM=$(sha512sum $BUILD_DIRECTORY/compass.iso | cut -d' ' -f1)"
+    echo "OPNFV_ARTIFACT_URL=$OPNFV_ARTIFACT_URL"
+    echo "OPNFV_ARTIFACT_SHA512SUM=$OPNFV_ARTIFACT_SHA512SUM"
     echo "OPNFV_BUILD_URL=$BUILD_URL"
 ) > $BUILD_DIRECTORY/opnfv.properties
 echo
