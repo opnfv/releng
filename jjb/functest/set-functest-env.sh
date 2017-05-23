@@ -2,25 +2,8 @@
 
 set -e
 [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
-# LAB_CONFIG is used only for joid
 
-
-if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
-    # If production lab then creds may be retrieved dynamically
-    # creds are on the jumphost, always in the same folder
-    rc_file_vol="-v $LAB_CONFIG/admin-openrc:/home/opnfv/functest/conf/openstack.creds"
-    # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
-    # replace the default one by the customized one provided by jenkins config
-fi
-
-if [[ ${RC_FILE_PATH} != '' ]] && [[ -f ${RC_FILE_PATH} ]] ; then
-    echo "Credentials file detected: ${RC_FILE_PATH}"
-    # volume if credentials file path is given to Functest
-    rc_file_vol="-v ${RC_FILE_PATH}:/home/opnfv/functest/conf/openstack.creds"
-    RC_FLAG=1
-fi
-
-
+# Fetch INSTALLER_IP for APEX deployments
 if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
     ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
     if sudo virsh list | grep undercloud; then
@@ -38,13 +21,23 @@ if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
         if sudo iptables -C FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable 2> ${redirect}; then
           sudo iptables -D FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable
         fi
-    elif [[ "$RC_FLAG" == 1 ]]; then
-        echo "No available installer VM, but credentials provided...continuing"
     else
         echo "No available installer VM exists and no credentials provided...exiting"
         exit 1
     fi
+fi
 
+
+# Prepare OpenStack credentials volume
+if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
+    rc_file_vol="-v $LAB_CONFIG/admin-openrc:/home/opnfv/functest/conf/openstack.creds"
+else
+    ../../utils/fetch_os_creds.sh -d ${HOME}/rc_file -i ${INSTALLER_TYPE} -a ${INSTALLER_IP}
+    if [ $? -ne 0 ]; then
+        echo "Failed to fetch the credentials from the installer..."
+        exit 1
+    fi
+    rc_file_vol="-v ${HOME}/rc_file:/home/opnfv/functest/conf/openstack.creds"
 fi
 
 
