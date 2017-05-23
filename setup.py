@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(
-    name="opnfv",
+    name="releng",
     version="master",
     url="https://www.opnfv.org",
 )
