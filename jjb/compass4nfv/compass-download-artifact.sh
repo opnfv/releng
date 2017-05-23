@@ -18,11 +18,17 @@ curl -s -o $BUILD_DIRECTORY/latest.properties http://$GS_URL/latest.properties
 # source the file so we get OPNFV vars
 source $BUILD_DIRECTORY/latest.properties
 
-# download the file
-curl -s -o $BUILD_DIRECTORY/compass.iso http://$OPNFV_ARTIFACT_URL > gsutil.iso.log 2>&1
-
-# list the file
-ls -al $BUILD_DIRECTORY/compass.iso
+if [[ "$BRANCH" == 'danube' ]]; then
+    # download the file
+    curl -s -o $BUILD_DIRECTORY/compass.iso http://$OPNFV_ARTIFACT_URL > gsutil.iso.log 2>&1
+    # list the file
+    ls -al $BUILD_DIRECTORY/compass.iso
+else
+    # download the file
+    curl -s -o $BUILD_DIRECTORY/compass.tar.gz http://$OPNFV_ARTIFACT_URL > gsutil.tar.gz.log 2>&1
+    # list the file
+    ls -al $BUILD_DIRECTORY/compass.tar.gz
+fi
 
 echo
 echo "--------------------------------------------------------"
