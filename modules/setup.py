@@ -16,6 +16,7 @@ setup(
     include_package_data=True,
     package_data={
     },
+    scripts=['../utils/fetch_os_creds.sh'],
     url="https://www.opnfv.org",
     install_requires=["paramiko>=2.0.1",
                       "mock==1.3.0",
