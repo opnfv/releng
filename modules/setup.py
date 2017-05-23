@@ -16,6 +16,10 @@ setup(
     include_package_data=True,
     package_data={
     },
+    scripts=['../utils/create_pod_file.py', '../utils/fetch_os_creds.sh',
+             '../utils/get_sdn_type.sh', '../utils/gpg_import_key.sh',
+             '../utils/jenkins-jnlp-connect.sh', '../utils/opnfv-artifacts.py',
+             '../utils/push-test-logs.sh', '../utils/retention_script.sh'],
     url="https://www.opnfv.org",
     install_requires=["paramiko>=2.0.1",
                       "mock==1.3.0",
