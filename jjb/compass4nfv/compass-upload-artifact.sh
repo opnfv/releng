@@ -7,6 +7,11 @@ echo "Uploading the $INSTALLER_TYPE artifact. This could take some time..."
 echo "--------------------------------------------------------"
 echo
 
+if [[ "$BRANCH" == 'danube' ]]; then
+    FILETYPE='iso'
+else
+    FILETYPE='tar.gz'
+fi
 # source the opnfv.properties to get ARTIFACT_VERSION
 source $BUILD_DIRECTORY/opnfv.properties
 
@@ -23,16 +28,16 @@ signiso () {
 time gpg2 -vvv --batch --yes --no-tty \
   --default-key opnfv-helpdesk@rt.linuxfoundation.org  \
   --passphrase besteffort \
-  --detach-sig $BUILD_DIRECTORY/compass.iso
+  --detach-sig $BUILD_DIRECTORY/compass.$FILETYPE
 
-gsutil cp $BUILD_DIRECTORY/compass.iso.sig gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso.sig
+gsutil cp $BUILD_DIRECTORY/compass.$FILETYPE.sig gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.$FILETYPE.sig
 echo "ISO signature Upload Complete!"
 }
 
 signiso
 
 # upload artifact and additional files to google storage
-gsutil cp $BUILD_DIRECTORY/compass.iso gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > gsutil.iso.log 2>&1
+gsutil cp $BUILD_DIRECTORY/compass.$FILETYPE gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.$FILETYPE > gsutil.$FILETYPE.log 2>&1
 gsutil cp $BUILD_DIRECTORY/opnfv.properties gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
 gsutil cp $BUILD_DIRECTORY/opnfv.properties gs://$GS_URL/latest.properties > gsutil.latest.log 2>&1
 
@@ -44,19 +49,19 @@ gsutil -m setmeta \
 
 gsutil -m setmeta \
     -h "Cache-Control:private, max-age=0, no-transform" \
-    gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > /dev/null 2>&1
+    gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.$FILETYPE > /dev/null 2>&1
 
 # disabled errexit due to gsutil setmeta complaints
 #   BadRequestException: 400 Invalid argument
 # check if we uploaded the file successfully to see if things are fine
-gsutil ls gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso > /dev/null 2>&1
+gsutil ls gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.$FILETYPE > /dev/null 2>&1
 if [[ $? -ne 0 ]]; then
     echo "Problem while uploading artifact!"
-    echo "Check log $WORKSPACE/gsutil.iso.log on the machine where this build is done."
+    echo "Check log $WORKSPACE/gsutil.$FILETYPE.log on the machine where this build is done."
     exit 1
 fi
 
 echo
 echo "--------------------------------------------------------"
 echo "Done!"
-echo "Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
+echo "Artifact is available as http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.$FILETYPE"

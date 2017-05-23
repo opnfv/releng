@@ -13,11 +13,13 @@
             gs-pathname: ''
             ppa-pathname: '/{stream}'
             disabled: false
+            openstack-version: ocata
         - danube:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
             ppa-pathname: '/{stream}'
             disabled: false
+            openstack-version: newton
 
     distro:
         - 'xenial':
@@ -143,6 +145,7 @@
                   current-parameters: true
                   predefined-parameters: |
                     COMPASS_OS_VERSION={os-version}
+                    COMPASS_OPENSTACK_VERSION={openstack-version}
                   node-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
@@ -343,10 +346,6 @@
         - string:
             name: PPA_CACHE
             default: "$WORKSPACE/work/repo/"
-        - choice:
-            name: COMPASS_OPENSTACK_VERSION
-            choices:
-                - 'newton'
         - choice:
             name: COMPASS_OS_VERSION
             choices:
