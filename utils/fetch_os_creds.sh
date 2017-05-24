@@ -7,7 +7,9 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-
+set -o errexit
+set -o nounset
+set -o pipefail
 
 usage() {
     echo "usage: $0 [-v] -d <destination> -i <installer_type> -a <installer_ip>" >&2
@@ -157,8 +159,8 @@ elif [ "$installer_type" == "compass" ]; then
     sshpass -p root scp 2>/dev/null $ssh_options root@${installer_ip}:~/admin-openrc.sh $dest_path &> /dev/null
 
     info "This file contains the mgmt keystone API, we need the public one for our rc file"
-    grep "OS_AUTH_URL.*v2" $dest_path > /dev/null 2>&1
-    if [ $?  -eq 0 ] ; then
+
+    if grep "OS_AUTH_URL.*v2" $dest_path > /dev/null 2>&1 ; then
         public_ip=$(sshpass -p root ssh $ssh_options root@${installer_ip} \
             "ssh ${controller_ip} 'source /opt/admin-openrc.sh; openstack endpoint show identity '" \
             | grep publicurl | awk '{print $4}')
