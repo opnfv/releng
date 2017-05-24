@@ -1,6 +1,9 @@
 #!/bin/bash
 
 set -e
+set +u
+set +o pipefail
+
 [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 
 # Prepare OpenStack credentials volume

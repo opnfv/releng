@@ -223,5 +223,3 @@ fi
 
 echo "-------- Credentials: --------"
 cat $dest_path
-
-exit 0
