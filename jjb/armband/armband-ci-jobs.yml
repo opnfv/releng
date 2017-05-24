@@ -182,23 +182,28 @@
                 build-step-failure-threshold: 'never'
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
-        # 1.dovetail only master by now, not sync with A/B/C branches
+        # 1.dovetail only master, based on D release
         # 2.here the stream means the SUT stream, dovetail stream is defined in its own job
-        # 3.only debug testsuite here(includes 3 basic testcase,
-        #   i.e. one tempest smoke ipv6, two vping from functest)
+        # 3.only proposed_tests testsuite here(refstack, ha, ipv6, bgpvpn)
         # 4.not used for release criteria or compliance,
         #   only to debug the dovetail tool bugs with arm pods
-        - trigger-builds:
-            - project: 'dovetail-{installer}-{pod}-proposed_tests-{stream}'
-              current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO={scenario}
-              block: true
-              same-node: true
-              block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
+        # 5.only run against scenario os-(nosdn|odl_l2)-(nofeature-bgpvpn)-ha
+        - conditional-step:
+            condition-kind: regex-match
+            regex: os-(nosdn|odl_l2)-(nofeature|bgpvpn)-ha
+            label: '{scenario}'
+            steps:
+                - trigger-builds:
+                    - project: 'dovetail-{installer}-{pod}-proposed_tests-{stream}'
+                      current-parameters: false
+                      predefined-parameters:
+                        DEPLOY_SCENARIO={scenario}
+                      block: true
+                      same-node: true
+                      block-thresholds:
+                        build-step-failure-threshold: 'never'
+                        failure-threshold: 'never'
+                        unstable-threshold: 'FAILURE'
 
 - job-template:
     name: '{installer}-deploy-{pod}-daily-{stream}'
