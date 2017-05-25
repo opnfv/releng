@@ -95,6 +95,11 @@
         - 'opnfv-build-centos-defaults'
         - '{alias}-verify-defaults':
             gs-pathname: '{gs-pathname}'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - '{installer}-merge-build-.*'
+            block-level: 'NODE'
 
     builders:
         - description-setter:
@@ -147,6 +152,13 @@
         - '{slave-label}-defaults'
         - '{alias}-verify-defaults':
             gs-pathname: '{gs-pathname}'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - '{installer}-merge-build-.*'
+                - '{alias}-verify-build-.*'
+            block-level: 'NODE'
+
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
