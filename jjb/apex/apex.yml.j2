@@ -374,16 +374,18 @@
                   node-parameters: false
                   current-parameters: true
                   predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=
                     OPNFV_CLEAN=yes
                     DEPLOY_SCENARIO={verify-scenario}
                   kill-phase-on: FAILURE
                   abort-all-job: true
                   git-revision: false
         - multijob:
-            name: Functest
-            condition: ALWAYS
+            name: CPERF
+            condition: SUCCESSFUL
             projects:
-                - name: 'functest-apex-baremetal-daily-{stream}'
+                - name: 'cperf-apex-intel-pod2-daily-master'
                   node-parameters: true
                   current-parameters: false
                   predefined-parameters:
