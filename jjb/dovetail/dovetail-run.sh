@@ -6,9 +6,19 @@
 set -e
 [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 
+DOVETAIL_HOME=/home/opnfv/cvp
+if [ -d ${DOVETAIL_HOME} ]; then
+    sudo rm -rf ${DOVETAIL_HOME}/*
+else
+    sudo mkdir -p ${DOVETAIL_HOME}
+fi
+
+DOVETAIL_CONFIG=${DOVETAIL_HOME}/pre_config
+sudo mkdir -p ${DOVETAIL_CONFIG}
+
 sshkey=""
 # The path of openrc.sh is defined in fetch_os_creds.sh
-OPENRC=$WORKSPACE/opnfv-openrc.sh
+OPENRC=${DOVETAIL_CONFIG}/env_config.sh
 if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
     instack_mac=$(sudo virsh domiflist undercloud | grep default | \
                   grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
@@ -65,13 +75,8 @@ else
     echo "HA test cases may not run properly."
 fi
 
-pod_file_dir="/home/opnfv/dovetail/userconfig"
-if [ -d ${pod_file_dir} ]; then
-    sudo rm -rf ${pod_file_dir}/*
-else
-    sudo mkdir -p ${pod_file_dir}
-fi
-cmd="sudo python ${releng_repo}/utils/create_pod_file.py -t ${INSTALLER_TYPE} -i ${INSTALLER_IP} ${options} -f ${pod_file_dir}/pod.yaml"
+cmd="sudo python ${releng_repo}/utils/create_pod_file.py -t ${INSTALLER_TYPE} \
+     -i ${INSTALLER_IP} ${options} -f ${DOVETAIL_CONFIG}/pod.yaml"
 echo ${cmd}
 ${cmd}
 
@@ -79,11 +84,11 @@ deactivate
 
 cd ${WORKSPACE}
 
-if [ -f ${pod_file_dir}/pod.yaml ]; then
-    echo "file ${pod_file_dir}/pod.yaml:"
-    cat ${pod_file_dir}/pod.yaml
+if [ -f ${DOVETAIL_CONFIG}/pod.yaml ]; then
+    echo "file ${DOVETAIL_CONFIG}/pod.yaml:"
+    cat ${DOVETAIL_CONFIG}/pod.yaml
 else
-    echo "Error: There doesn't exist file ${pod_file_dir}/pod.yaml."
+    echo "Error: There doesn't exist file ${DOVETAIL_CONFIG}/pod.yaml."
     echo "HA test cases may not run properly."
 fi
 
@@ -91,20 +96,19 @@ ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 if [ "$INSTALLER_TYPE" == "fuel" ]; then
     echo "Fetching id_rsa file from jump_server $INSTALLER_IP..."
-    sshpass -p r00tme sudo scp $ssh_options root@${INSTALLER_IP}:~/.ssh/id_rsa ${pod_file_dir}/id_rsa
+    sshpass -p r00tme sudo scp $ssh_options root@${INSTALLER_IP}:~/.ssh/id_rsa ${DOVETAIL_CONFIG}/id_rsa
 fi
 
 opts="--privileged=true -id"
-results_envs="-v /var/run/docker.sock:/var/run/docker.sock \
-              -v /home/opnfv/dovetail/results:/home/opnfv/dovetail/results"
-openrc_volume="-v ${OPENRC}:${OPENRC}"
-userconfig_volume="-v ${pod_file_dir}:${pod_file_dir}"
+
+docker_volume="-v /var/run/docker.sock:/var/run/docker.sock"
+dovetail_home_volume="-v ${DOVETAIL_HOME}:${DOVETAIL_HOME}"
 
 # Pull the image with correct tag
 echo "Dovetail: Pulling image opnfv/dovetail:${DOCKER_TAG}"
 docker pull opnfv/dovetail:$DOCKER_TAG >$redirect
 
-cmd="docker run ${opts} ${results_envs} ${openrc_volume} ${userconfig_volume} \
+cmd="docker run ${opts} -e ${DOVETAIL_HOME} ${docker_volume} ${dovetail_home_volume} \
      ${sshkey} opnfv/dovetail:${DOCKER_TAG} /bin/bash"
 echo "Dovetail: running docker run command: ${cmd}"
 ${cmd} >${redirect}
@@ -126,13 +130,13 @@ if [ $(docker ps | grep "opnfv/dovetail:${DOCKER_TAG}" | wc -l) == 0 ]; then
 fi
 
 list_cmd="dovetail list ${TESTSUITE}"
-run_cmd="dovetail run --openrc ${OPENRC} --testsuite ${TESTSUITE} -d"
+run_cmd="dovetail run --testsuite ${TESTSUITE} -d"
 echo "Container exec command: ${list_cmd}"
 docker exec $container_id ${list_cmd}
 echo "Container exec command: ${run_cmd}"
 docker exec $container_id ${run_cmd}
 
-sudo cp -r ${DOVETAIL_REPO_DIR}/results ./
+sudo cp -r ${DOVETAIL_HOME}/results ./
 # To make sure the file owner is the current user, for the copied results files in the above line
 # if not, there will be error when next time to wipe workspace
 # CURRENT_USER=${SUDO_USER:-$USER}
