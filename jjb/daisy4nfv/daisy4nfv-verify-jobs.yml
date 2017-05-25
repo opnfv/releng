@@ -48,7 +48,7 @@
             max-total: 4
             option: 'project'
     scm:
-        - git-scm
+        - git-scm-gerrit
     wrappers:
         - ssh-agent-wrapper
         - timeout:
@@ -103,8 +103,13 @@
             name: unit
             condition: SUCCESSFUL
             projects:
-                - name: '{alias}-verify-{name}-{stream}'
-                  current-parameters: true
+                - name: '{alias}-verify-unit-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    BRANCH=$BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
                   node-parameters: false
                   kill-phase-on: FAILURE
                   abort-all-job: true
@@ -134,7 +139,7 @@
             max-total: 6
             option: 'project'
     scm:
-        - git-scm
+        - git-scm-gerrit
     wrappers:
         - ssh-agent-wrapper
         - timeout:
