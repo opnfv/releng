@@ -26,6 +26,7 @@
             virtual-slave: 'apex-virtual-master'
             baremetal-slave: 'apex-baremetal-master'
             verify-scenario: 'os-odl-nofeature-ha'
+            concurrent-builds: 3
 
         - danube:
             branch: 'stable/danube'
@@ -34,6 +35,7 @@
             virtual-slave: 'apex-virtual-danube'
             baremetal-slave: 'apex-baremetal-danube'
             verify-scenario: 'os-odl_l3-nofeature-ha'
+            concurrent-builds: 1
             disabled: false
 
     platform:
@@ -428,7 +430,7 @@
     properties:
         - logrotate-default
         - throttle:
-            max-per-node: 3
+            max-per-node: {concurrent-builds}
             max-total: 10
             option: 'project'
 
