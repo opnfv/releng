@@ -54,6 +54,11 @@
             enabled: true
             max-total: 4
             option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - '{alias}-merge-(master|danube)'
+            block-level: 'NODE'
 
     scm:
         - git-scm
@@ -148,7 +153,7 @@
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - '{alias}-merge-(master|danube)'
+                - '{alias}-merge-{phase}-.*'
             block-level: 'NODE'
 
     scm:

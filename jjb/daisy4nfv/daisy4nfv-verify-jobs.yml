@@ -47,6 +47,12 @@
             enabled: true
             max-total: 4
             option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - '{installer}-merge-build-.*'
+            block-level: 'NODE'
+
     scm:
         - git-scm-gerrit
     wrappers:
@@ -138,6 +144,13 @@
             enabled: true
             max-total: 6
             option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - '{installer}-merge-build-.*'
+                - '{alias}-verify-build-.*'
+            block-level: 'NODE'
+
     scm:
         - git-scm-gerrit
     wrappers:
@@ -152,6 +165,7 @@
         - '{slave-label}-defaults'
         - '{alias}-verify-defaults':
             gs-pathname: '{gs-pathname}'
+
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
