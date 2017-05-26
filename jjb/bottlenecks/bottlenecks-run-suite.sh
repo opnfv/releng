@@ -2,6 +2,7 @@
 #set -e
 [[ $GERRIT_REFSPEC_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 BOTTLENECKS_IMAGE=opnfv/bottlenecks
+REPORT="True"
 
 if [[ $SUITE_NAME == rubbos || $SUITE_NAME == vstf ]]; then
     echo "Bottlenecks: to pull image $BOTTLENECKS_IMAGE:${DOCKER_TAG}"
@@ -53,11 +54,11 @@ else
         echo "Bottlenecks: pulling tutum/influxdb for yardstick"
         docker pull tutum/influxdb:0.13
         sleep 5
-        docker exec bottleneckcompose_bottlenecks_1 python ${POSCA_SCRIPT}/run_posca.py testcase $TEST_CASE
+        docker exec bottleneckcompose_bottlenecks_1 python ${POSCA_SCRIPT}/run_posca.py testcase $TEST_CASE $REPORT
     elif [[ $SUITE_NAME == posca_stress_ping ]]; then
         TEST_CASE=posca_factor_ping
         sleep 5
-        docker exec bottleneckcompose_bottlenecks_1 python ${POSCA_SCRIPT}/run_posca.py testcase $TEST_CASE
+        docker exec bottleneckcompose_bottlenecks_1 python ${POSCA_SCRIPT}/run_posca.py testcase $TEST_CASE $REPORT
     fi
 
     echo "Bottlenecks: cleaning up docker-compose images and dockers"
