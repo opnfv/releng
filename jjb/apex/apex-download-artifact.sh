@@ -26,11 +26,10 @@ else
   echo "Will download RPMs..."
 
   # Must be RPMs/ISO
-  export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d")
-  echo "Downloading opnfv-${OPNFV_ARTIFACT_VERSION}.properties"
+  echo "Downloading latest properties file"
 
   # get the properties file in order to get info regarding artifacts
-  curl --fail -s -o $BUILD_DIRECTORY/opnfv.properties http://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties
+  curl --fail -s -o $BUILD_DIRECTORY/opnfv.properties http://$GS_URL/latest.properties
 
   # source the file so we get OPNFV vars
   source $BUILD_DIRECTORY/opnfv.properties
