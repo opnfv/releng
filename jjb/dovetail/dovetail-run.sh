@@ -108,7 +108,7 @@ dovetail_home_volume="-v ${DOVETAIL_HOME}:${DOVETAIL_HOME}"
 echo "Dovetail: Pulling image opnfv/dovetail:${DOCKER_TAG}"
 docker pull opnfv/dovetail:$DOCKER_TAG >$redirect
 
-cmd="docker run ${opts} -e ${DOVETAIL_HOME} ${docker_volume} ${dovetail_home_volume} \
+cmd="docker run ${opts} -e DOVETAIL_HOME=${DOVETAIL_HOME} ${docker_volume} ${dovetail_home_volume} \
      ${sshkey} opnfv/dovetail:${DOCKER_TAG} /bin/bash"
 echo "Dovetail: running docker run command: ${cmd}"
 ${cmd} >${redirect}
@@ -136,7 +136,7 @@ docker exec $container_id ${list_cmd}
 echo "Container exec command: ${run_cmd}"
 docker exec $container_id ${run_cmd}
 
-sudo cp -r ${DOVETAIL_HOME}/results ./
+sudo cp -r ${DOVETAIL_CONFIG}/results ./
 # To make sure the file owner is the current user, for the copied results files in the above line
 # if not, there will be error when next time to wipe workspace
 # CURRENT_USER=${SUDO_USER:-$USER}
