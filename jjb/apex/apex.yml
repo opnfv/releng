@@ -147,13 +147,6 @@
 
     properties:
         - logrotate-default
-        - build-blocker:
-            use-build-blocker: true
-            block-level: 'NODE'
-            blocking-jobs:
-                - 'apex-daily.*'
-                - 'apex-deploy.*'
-                - 'apex-runner.*'
         - throttle:
             max-per-node: 3
             max-total: 10
@@ -281,13 +274,6 @@
 
     properties:
         - logrotate-default
-        - build-blocker:
-            use-build-blocker: true
-            block-level: 'NODE'
-            blocking-jobs:
-                - 'apex-daily.*'
-                - 'apex-deploy.*'
-                - 'apex-runner.*'
         - throttle:
             max-per-node: 3
             max-total: 10
@@ -433,6 +419,11 @@
             max-per-node: {concurrent-builds}
             max-total: 10
             option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-verify-iso-{stream}'
 
     builders:
         - 'apex-build'
@@ -471,11 +462,6 @@
 
     properties:
         - logrotate-default
-        - build-blocker:
-            use-build-blocker: true
-            block-level: 'NODE'
-            blocking-jobs:
-                - 'apex-deploy.*'
         - throttle:
             max-per-node: 1
             max-total: 10
