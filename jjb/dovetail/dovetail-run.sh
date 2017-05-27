@@ -136,7 +136,7 @@ docker exec $container_id ${list_cmd}
 echo "Container exec command: ${run_cmd}"
 docker exec $container_id ${run_cmd}
 
-sudo cp -r ${DOVETAIL_CONFIG}/results ./
+sudo cp -r ${DOVETAIL_HOME}/results ./
 # To make sure the file owner is the current user, for the copied results files in the above line
 # if not, there will be error when next time to wipe workspace
 # CURRENT_USER=${SUDO_USER:-$USER}
