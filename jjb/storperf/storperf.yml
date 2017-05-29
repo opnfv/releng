@@ -13,10 +13,12 @@
             branch: '{stream}'
             gs-pathname: ''
             disabled: false
+            docker-tag: 'latest'
         - danube:
             branch: 'stable/{stream}'
             gs-pathname: '/{stream}'
             disabled: false
+            docker-tag: 'stable'
 
 - job-template:
     name: 'storperf-verify-{stream}'
@@ -149,6 +151,13 @@
             project: '{project}'
             branch: '{branch}'
         - 'intel-pod9-defaults'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-nofeature-noha'
+        - string:
+            name: DOCKER_TAG
+            default: '{docker-tag}'
+            description: 'Tag to pull docker image'
 
     scm:
         - git-scm
