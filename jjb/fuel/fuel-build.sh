@@ -7,6 +7,10 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+
+# disable Fuel iso build for master branch
+[ "$BRANCH" = 'master' ] && exit 0
+
 set -o errexit
 set -o nounset
 set -o pipefail
