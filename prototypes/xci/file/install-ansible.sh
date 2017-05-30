@@ -76,12 +76,15 @@ fi
 if ! $(python --version &>/dev/null); then
     ${INSTALLER_CMD} ${PKG_MAP[python]}
 fi
+
 if ! $(gcc -v &>/dev/null); then
     ${INSTALLER_CMD} ${PKG_MAP[gcc]}
 fi
+
 if ! $(git --version &>/dev/null); then
     ${INSTALLER_CMD} ${PKG_MAP[git]}
 fi
+
 if ! $(wget --version &>/dev/null); then
     ${INSTALLER_CMD} ${PKG_MAP[wget]}
 fi
@@ -127,6 +130,10 @@ fi
 if ! which pip; then
     wget -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
     sudo -H -E ${PYTHON} /tmp/get-pip.py
+    if ! which pip; then
+       PIP27=$(which pip2.7)
+       sudo ln -s ${PIP27} /usr/local/bin/pip
+    fi
 fi
 
 PIP=$(which pip)
