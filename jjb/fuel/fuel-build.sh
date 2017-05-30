@@ -10,6 +10,7 @@
 
 # disable Fuel iso build for master branch
 if [[ "$BRANCH" == 'master' ]]; then
+    touch $WORKSPACE/.noupload
     echo "--------------------------------------------------------"
     echo "Done!"
     exit 0
