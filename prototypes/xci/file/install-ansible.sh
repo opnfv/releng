@@ -127,10 +127,14 @@ fi
 if ! which pip; then
     wget -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
     sudo -H -E ${PYTHON} /tmp/get-pip.py
+    if ! which pip; then
+       PIP27=$(which pip2.7)
+       sudo ln -s ${PIP27} /usr/local/bin/pip
+    fi
 fi
 
 PIP=$(which pip)
 
 sudo -H -E ${PIP} install "pip>6.0"
 
-pip install ansible==$XCI_ANSIBLE_PIP_VERSION
+sudo pip install ansible==$XCI_ANSIBLE_PIP_VERSION
