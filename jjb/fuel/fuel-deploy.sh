@@ -21,7 +21,7 @@ echo "Using ${OPNFV_ARTIFACT_URL/*\/} for deployment"
 if [[ "$JOB_NAME" =~ "merge" ]]; then
     # set simplest scenario for virtual deploys to run for merges
     DEPLOY_SCENARIO="os-nosdn-nofeature-ha"
-else
+elif [[ "$BRANCH" != 'master' ]]; then
     # for none-merge deployments
     # checkout the commit that was used for building the downloaded artifact
     # to make sure the ISO and deployment mechanism uses same versions
