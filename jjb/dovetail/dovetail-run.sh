@@ -6,7 +6,7 @@
 set -e
 [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 
-DOVETAIL_HOME=/home/opnfv/cvp
+DOVETAIL_HOME=${WORKSPACE}/cvp
 if [ -d ${DOVETAIL_HOME} ]; then
     sudo rm -rf ${DOVETAIL_HOME}/*
 else
@@ -54,7 +54,8 @@ if [[ -f $OPENRC ]]; then
     echo "INFO: openstack credentials path is $OPENRC"
     cat $OPENRC
 else
-    echo "ERROR: file $OPENRC does not exist."
+    echo "ERROR: cannot find file $OPENRC. Please check if it is existing."
+    sudo ls -al ${DOVETAIL_CONFIG}
     exit 1
 fi
 
@@ -88,7 +89,8 @@ if [ -f ${DOVETAIL_CONFIG}/pod.yaml ]; then
     echo "file ${DOVETAIL_CONFIG}/pod.yaml:"
     cat ${DOVETAIL_CONFIG}/pod.yaml
 else
-    echo "Error: There doesn't exist file ${DOVETAIL_CONFIG}/pod.yaml."
+    echo "Error: cannot find file ${DOVETAIL_CONFIG}/pod.yaml. Please check if it is existing."
+    sudo ls -al ${DOVETAIL_CONFIG}
     echo "HA test cases may not run properly."
 fi
 
