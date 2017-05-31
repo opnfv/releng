@@ -158,6 +158,47 @@
             name: DOCKER_TAG
             default: '{docker-tag}'
             description: 'Tag to pull docker image'
+        - choice:
+            name: DISK_TYPE
+            choices:
+                - 'SSD'
+                - 'HDD'
+            description: 'The type of hard disk that Cinder uses'
+        - validating-string:
+            name: AGENT_COUNT
+            regex: '[0-9]*'
+            msg: Must be numeric
+            description: 'The number of slave agents to start. Defaults to the cinder node count'
+        - validating-string:
+            name: VOLUME_SIZE
+            regex: '[0-9]*'
+            msg: Must be numeric
+            description: 'Size of Cinder volume (in GB)'
+        - string:
+            name: WORKLOADS
+            default: 'ws,wr,rs,rr,rw'
+            description: 'Workloads to run'
+        - string:
+            name: BLOCK_SIZES
+            default: 2048,8192,16384
+            description: 'Block sizes for VM I/O operations'
+        - string:
+            name: QUEUE_DEPTHS
+            default: 1,2,4
+            description: 'Number of simultaneous I/O operations to keep active'
+        - validating-string:
+            name: STEADY_STATE_SAMPLES
+            regex: '[0-9]*'
+            default: 10
+            description: 'Number of samples to use (1 per minute) to measure steady state'
+        - string:
+            name: DEADLINE
+            description: 'Maximum run time in minutes if steady state cannot be found. Defaults to 3 times steady state samples'
+        - choice:
+            name: TEST_CASE
+            choices:
+                - 'snia_steady_state'
+            description: 'The test case to run'
 
     scm:
         - git-scm
