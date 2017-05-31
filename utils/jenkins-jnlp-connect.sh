@@ -61,8 +61,8 @@ main () {
     #make pid dir
     pidfile="/var/run/$jenkinsuser/jenkins_jnlp_pid"
     if ! [ -d /var/run/$jenkinsuser/ ]; then
-        mkdir /var/run/$jenkinsuser/
-        chown $jenkinsuser:$jenkinsuser /var/run/$jenkinsuser/
+        sudo mkdir /var/run/$jenkinsuser/
+        sudo chown $jenkinsuser:$jenkinsuser /var/run/$jenkinsuser/
     fi
 
     if [[ $skip_monit != true ]]; then
