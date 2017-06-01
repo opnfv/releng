@@ -131,6 +131,6 @@ fi
 
 PIP=$(which pip)
 
-sudo -H -E ${PIP} install "pip>6.0"
+${PIP} install --user "pip>6.0"
 
-pip install ansible==$XCI_ANSIBLE_PIP_VERSION
+${PIP} install --user --upgrade ansible==$XCI_ANSIBLE_PIP_VERSION
