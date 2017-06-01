@@ -13,7 +13,11 @@ set -o nounset
 set -o pipefail
 
 SSH_OPTIONS=(-o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null -o LogLevel=error)
-SNAP_TYPE=$(echo ${JOB_NAME} | sed -n 's/^apex-\(.\+\)-promote.*$/\1/p')
+
+if [ -z "$SNAP_TYPE" ]; then
+  echo "ERROR: SNAP_TYPE not provided...exiting"
+  exit 1
+fi
 
 echo "Creating Apex snapshot..."
 echo "-------------------------"

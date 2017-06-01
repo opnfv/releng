@@ -75,7 +75,10 @@ uploadrpm () {
 uploadsnap () {
   # Uploads snapshot artifact and updated properties file
   echo "Uploading snapshot artifacts"
-  SNAP_TYPE=$(echo ${JOB_NAME} | sed -n 's/^apex-\(.\+\)-promote.*$/\1/p')
+  if [ -z "$SNAP_TYPE" ]; then
+    echo "ERROR: SNAP_TYPE not provided...exiting"
+    exit 1
+  fi
   gsutil cp $WORKSPACE/apex-${SNAP_TYPE}-snap-`date +%Y-%m-%d`.tar.gz gs://$GS_URL/ > gsutil.iso.log
   if [ "$SNAP_TYPE" == 'csit' ]; then
     gsutil cp $WORKSPACE/snapshot.properties gs://$GS_URL/snapshot.properties > gsutil.latest.log
