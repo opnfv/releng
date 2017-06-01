@@ -15,4 +15,6 @@ for test in ${tests[@]}; do
     let global_ret_val+=$?
 done
 
+ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
+echo ${global_ret_val} > ${ret_val_file}
 exit $global_ret_val
