@@ -6,7 +6,7 @@ echo "--------------------------------------------------------"
 echo "This is $INSTALLER_TYPE deploy job!"
 echo "--------------------------------------------------------"
 
-DEPLOY_SCENARIO=${DEPLOY_SCENARIO:-"os-nosdn-nofeature-ha"}
+DEPLOY_SCENARIO=${DEPLOY_SCENARIO:-"os-nosdn-nofeature-noha"}
 BRIDGE=${BRIDGE:-pxebr}
 LAB_NAME=${NODE_NAME/-*}
 POD_NAME=${NODE_NAME/*-}
@@ -29,7 +29,7 @@ git clone ssh://jenkins-zte@gerrit.opnfv.org:29418/securedlab --quiet \
 cp -r securedlab/labs .
 
 DEPLOY_COMMAND="sudo ./ci/deploy/deploy.sh -b $BASE_DIR \
-                -l $LAB_NAME -p $POD_NAME -B $BRIDGE"
+                -l $LAB_NAME -p $POD_NAME -B $BRIDGE -s $DEPLOY_SCENARIO"
 
 # log info to console
 echo """
