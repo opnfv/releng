@@ -101,6 +101,9 @@ if [ "$INSTALLER_TYPE" == "fuel" ]; then
     sshpass -p r00tme sudo scp $ssh_options root@${INSTALLER_IP}:~/.ssh/id_rsa ${DOVETAIL_CONFIG}/id_rsa
 fi
 
+# sdnvpn test case needs to download this image first before running
+sudo wget -nc http://artifacts.opnfv.org/sdnvpn/ubuntu-16.04-server-cloudimg-amd64-disk1.img -P ${DOVETAIL_CONFIG}
+
 opts="--privileged=true -id"
 
 docker_volume="-v /var/run/docker.sock:/var/run/docker.sock"
