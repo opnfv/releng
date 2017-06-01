@@ -118,6 +118,11 @@ execute sandbox script
 Issuing above command will start aio sandbox deployment and the sandbox
 should be ready between 1,5 and 2 hours depending on the host machine.
 
+Please remember that the user executing the XCI script will need to
+have an ssh key available. You can generate one by executing
+
+    ssh-keygen -t rsa
+
 Advanced Usage
 --------------
 
