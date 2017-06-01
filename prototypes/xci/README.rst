@@ -113,7 +113,7 @@ change into directory where the sandbox script is located
 
 execute sandbox script
 
-    sudo -E ./xci-deploy.sh
+    ./xci-deploy.sh
 
 Issuing above command will start aio sandbox deployment and the sandbox
 should be ready between 1,5 and 2 hours depending on the host machine.
