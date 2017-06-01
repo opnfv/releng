@@ -10,16 +10,16 @@
 angular.module('opnfvApp')
     .controller('testVisualController', ['$scope', '$state', '$stateParams', 'TableFactory', 'ngDialog', '$http', '$loading',
         function($scope, $state, $stateParams, TableFactory, ngDialog, $http, $loading) {
-            $scope.dovet = "59,222,156,317";
-            $scope.functest = "203,163,334,365";
-            $scope.yardstick = "398,161,513,384";
-            $scope.vsperf = "567,163,673,350";
-            $scope.stor = "686,165,789,341";
-            $scope.qtip = "802,164,905,341";
-            $scope.bootleneck = "917,161,1022,338";
-            $scope.noPopArea1 = "30,11,1243,146";
-            $scope.noPopArea2 = "1041,157,1250,561";
-            $scope.noPopArea3 = "15,392,1027,561";
+            $scope.dovet = "50,168,177,443";
+            $scope.functest = "194,173,356,442";
+            $scope.yardstick = "377,183,521,412";
+            $scope.vsperf = "542,185,640,414";
+            $scope.stor = "658,187,750,410";
+            $scope.qtip = "769,190,852,416";
+            $scope.bootleneck = "870,192,983,419";
+            $scope.noPopArea1 = "26,8,1190,180";
+            $scope.noPopArea2 = "1018,193,1190,590";
+            $scope.noPopArea3 = "37,455,1003,584";
 
             init();
             $scope.showSelectValue = 0;
@@ -51,11 +51,32 @@ angular.module('opnfvApp')
                 $http.get(url, config).then(function(response) {
                     if (response.status == 200) {
                         $scope.tableData = response.data;
+
+                        $scope.tableData = constructObjectArray($scope.tableData);
+                        console.log($scope.tableData);
                         $loading.finish('Key');
+
 
 
                     }
                 })
+            }
+
+            //construct key value for tableData
+            function constructObjectArray(array) {
+                var templateArray = [];
+                for (var i = 0; i < array.length; i++) {
+                    var key = Object.keys(array[i])[0];
+                    var value = array[i][key];
+                    var temp = {
+                        'key': key,
+                        'value': value
+                    };
+                    templateArray.push(temp);
+
+                }
+
+                return templateArray;
             }
 
             function getDetail(casename) {
@@ -64,7 +85,7 @@ angular.module('opnfvApp')
                     'testcase': casename
                 }).$promise.then(function(response) {
                     if (response != null) {
-                        $scope.project_name_modal = response.project_name;
+                        $scope.name_modal = response.name;
                         $scope.description_modal = response.description;
                         openTestDetail();
                     }
