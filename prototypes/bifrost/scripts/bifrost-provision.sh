@@ -57,8 +57,8 @@ WRITE_INTERFACES_FILE=true
 export DIB_DEV_USER_PWDLESS_SUDO=yes
 export DIB_DEV_USER_PASSWORD=devuser
 
-# Settings for distro: trusty/ubuntu-minimal, 7/centos7, 42.2/suse
-export DIB_OS_RELEASE=${DIB_OS_RELEASE:-trusty}
+# Settings for distro: xenial/ubuntu-minimal, 7/centos7, 42.2/suse
+export DIB_OS_RELEASE=${DIB_OS_RELEASE:-xenial}
 export DIB_OS_ELEMENT=${DIB_OS_ELEMENT:-ubuntu-minimal}
 
 # DIB OS packages
