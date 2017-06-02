@@ -179,6 +179,19 @@ continuously chasing the HEAD of corresponding branches.
 Once a working version is identified, the versions of the upstream components
 are then bumped in releng repo.
 
+================
+Development mode
+================
+
+It is possible to run XCI in development mode. It will use the working
+directory for releng, instead of cloning the whole repository on each run.
+To enable it, you need to export the OPNFV_RELENG_DEV_PATH var:
+
+export OPNFV_RELENG_DEV_PATH=/opt/releng/
+
+This will use the working copy stored at /opt/releng, instead of cloning
+from upstream when running the xci-deploy.sh script.
+
 ===========================================
 Limitations, Known Issues, and Improvements
 ===========================================
