@@ -42,6 +42,15 @@
         delete: yes
       when:
         - OPNFV_RELENG_DEV_PATH != ""
+    - name: Copy extra vars to releng and bifrost
+      synchronize:
+        src: "{{ XCI_EXTRA_VARS_PATH }}"
+        dest: "{{ item }}"
+      with_items:
+        - "{{ OPNFV_RELENG_PATH }}/prototypes/xci/playbooks"
+        - "{{ OPENSTACK_BIFROST_PATH }}/playbooks/inventory"
+      when:
+        - XCI_EXTRA_VARS_PATH != ""
 
 - hosts: localhost
   connection: local
