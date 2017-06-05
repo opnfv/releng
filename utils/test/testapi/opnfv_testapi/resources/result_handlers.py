@@ -35,6 +35,8 @@ class GenericResultHandler(handlers.GenericApiHandler):
 
     def set_query(self):
         query = dict()
+        date_range = dict()
+
         for k in self.request.query_arguments.keys():
             v = self.get_query_argument(k)
             if k == 'project' or k == 'pod' or k == 'case':
@@ -47,8 +49,14 @@ class GenericResultHandler(handlers.GenericApiHandler):
                     query['start_date'] = obj
             elif k == 'trust_indicator':
                 query[k + '.current'] = float(v)
+            elif k == 'begin_date':
+                date_range.update({'$gte': str(v)})
+            elif k == 'end_date':
+                date_range.update({'$lt': str(v)})
             elif k != 'last' and k != 'page':
                 query[k] = v
+            if date_range:
+                query['start_date'] = date_range
         return query
 
 
