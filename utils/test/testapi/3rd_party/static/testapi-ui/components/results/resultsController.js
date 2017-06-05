@@ -111,7 +111,7 @@
             var start = $filter('date')(ctrl.startDate, 'yyyy-MM-dd');
             if (start) {
                 content_url =
-                    content_url + '&start_date=' + start + ' 00:00:00';
+                    content_url + '&begin_date=' + start + ' 00:00:00';
             }
             var end = $filter('date')(ctrl.endDate, 'yyyy-MM-dd');
             if (end) {
