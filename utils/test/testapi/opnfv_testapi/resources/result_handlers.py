@@ -47,7 +47,7 @@ class GenericResultHandler(handlers.GenericApiHandler):
                     query['start_date'] = obj
             elif k == 'trust_indicator':
                 query[k + '.current'] = float(v)
-            elif k != 'last':
+            elif k != 'last' and k != 'page':
                 query[k] = v
         return query
 
@@ -125,6 +125,10 @@ class ResultsCLHandler(GenericResultHandler):
         last = self.get_query_argument('last', 0)
         if last is not None:
             last = self.get_int('last', last)
+
+        page = self.get_query_argument('page', 0)
+        if page:
+            last = 20
 
         self._list(query=self.set_query(),
                    sort=[('start_date', -1)],

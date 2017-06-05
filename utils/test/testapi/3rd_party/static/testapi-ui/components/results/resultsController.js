@@ -38,7 +38,6 @@
         ctrl.associateMeta = associateMeta;
         ctrl.getVersionList = getVersionList;
         ctrl.getUserProducts = getUserProducts;
-        ctrl.getVendors = getVendors;
         ctrl.associateProductVersion = associateProductVersion;
         ctrl.getProductVersions = getProductVersions;
         ctrl.prepVersionEdit = prepVersionEdit;
@@ -100,8 +99,6 @@
             ctrl.update();
         }
 
-        ctrl.getVendors();
-
         /**
          * This will contact the TestAPI API to get a listing of test run
          * results.
@@ -126,9 +123,8 @@
             ctrl.resultsRequest =
                 $http.get(content_url).success(function (data) {
                     ctrl.data = data;
-                    ctrl.totalItems = ctrl.data.pagination.total_pages *
-                        ctrl.itemsPerPage;
-                    ctrl.currentPage = ctrl.data.pagination.current_page;
+                    ctrl.totalItems = 20 // ctrl.data.pagination.total_pages * ctrl.itemsPerPage;
+                    ctrl.currentPage = 1 // ctrl.data.pagination.current_page;
                 }).error(function (error) {
                     ctrl.data = null;
                     ctrl.totalItems = 0;
@@ -243,27 +239,6 @@
                     ctrl.showError = true;
                     ctrl.error =
                         'Error retrieving Products listing from server: ' +
-                        angular.toJson(error);
-                });
-        }
-
-        /**
-         * This will contact the TestAPI API to get a listing of
-         * vendors.
-         */
-        function getVendors() {
-            var contentUrl = testapiApiUrl + '/vendors';
-            ctrl.vendorsRequest =
-                $http.get(contentUrl).success(function (data) {
-                    ctrl.vendors = {};
-                    data.vendors.forEach(function(vendor) {
-                        ctrl.vendors[vendor.id] = vendor;
-                    });
-                }).error(function (error) {
-                    ctrl.vendors = null;
-                    ctrl.showError = true;
-                    ctrl.error =
-                        'Error retrieving vendor listing from server: ' +
                         angular.toJson(error);
                 });
         }
