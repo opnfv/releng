@@ -20,7 +20,7 @@ class TestCases(BaseHandler):
 
         url = '{}/projects/{}/cases'.format(conf.base_url, project)
         cases = requests.get(url).json().get('testcases', [])
-        data = [t['name'] for t in cases]
+        data = [{t['name']: t['catalog_description']} for t in cases]
         self.write(json_encode(data))
 
 

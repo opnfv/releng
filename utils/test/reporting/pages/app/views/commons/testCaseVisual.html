@@ -4,7 +4,7 @@
 <div class="row">
 
 
-    <div class="row  border-bottom white-bg dashboard-header" style="border-radius: 5px 5px 5px 5px ">
+    <div class="row  border-bottom white-bg dashboard-header" style="border-radius: 5px 5px 5px 5px;width:90%;margin-left:30px; ">
 
         <h3>OPNFV Test ecosystem
             <small> *mouse over display test case list</small>
@@ -70,7 +70,7 @@
     </div>
 
 
-    <div id="popup" class="popup" style="width: 20%;height: 35%" dw-loading="Key">
+    <div id="popup" class="popup" style="width: 40%;height: 35%" dw-loading="Key">
 
         <div ng-show="tableData.length==0">
             <center>
@@ -90,7 +90,8 @@
 
                 <tbody>
                     <tr dir-paginate="data in tableData | itemsPerPage: 8  track by $index ">
-                        <td><a ng-click="getDetail(data)"> {{data}}</a></td>
+                        <td ng-if="data.value!=null"><a ng-click="getDetail(data.key)"> {{data.value}}</a></td>
+                        <td ng-if="data.value==null"><a ng-click="getDetail(data.key)"> null</a></td>
                         <tr>
 
                 </tbody>
