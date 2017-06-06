@@ -11,11 +11,13 @@
         branch: '{stream}'
         gs-pathname: ''
         disabled: false
+        openstack-version: ocata
     danube: &danube
         stream: danube
         branch: 'stable/{stream}'
         gs-pathname: '/{stream}'
         disabled: false
+        openstack-version: newton
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
@@ -23,19 +25,19 @@
 #--------------------------------
     pod:
         - baremetal:
-            slave-label: compass-baremetal
+            slave-label: compass-baremetal-master
             os-version: 'xenial'
             <<: *master
         - virtual:
-            slave-label: compass-virtual
+            slave-label: compass-virtual-master
             os-version: 'xenial'
             <<: *master
         - baremetal:
-            slave-label: compass-baremetal
+            slave-label: compass-baremetal-branch
             os-version: 'xenial'
             <<: *danube
         - virtual:
-            slave-label: compass-virtual
+            slave-label: compass-virtual-branch
             os-version: 'xenial'
             <<: *danube
 #--------------------------------
@@ -133,6 +135,7 @@
               predefined-parameters: |
                 DEPLOY_SCENARIO={scenario}
                 COMPASS_OS_VERSION={os-version}
+                COMPASS_OPENSTACK_VERSION={openstack-version}
               same-node: true
               block: true
         - trigger-builds:
@@ -244,10 +247,6 @@
             name: GS_URL
             default: '$GS_BASE{gs-pathname}'
             description: "URL to Google Storage."
-        - choice:
-            name: COMPASS_OPENSTACK_VERSION
-            choices:
-                - 'newton'
 
 ########################
 # trigger macros
