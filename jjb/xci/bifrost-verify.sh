@@ -89,7 +89,7 @@ function cleanup_and_upload() {
 }
 
 # check distro to see if we support it
-if [[ ! "$DISTRO" =~ (trusty|centos7|suse) ]]; then
+if [[ ! "$DISTRO" =~ (xenial|centos7|suse) ]]; then
     echo "Distro $DISTRO is not supported!"
     exit 1
 fi
