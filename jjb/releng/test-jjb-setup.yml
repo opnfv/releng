@@ -1,0 +1,31 @@
+- project:
+    name: 'test-jjb-setup'
+
+    jobs:
+        - 'test-jjb'
+#--------------------------------
+# job template
+#--------------------------------
+- job-template:
+    name: 'test-jjb'
+
+    concurrent: false
+
+    scm:
+        - git:
+            url: 'https://gerrit.opnfv.org/gerrit/releng'
+            branches:
+                - 'origin/master'
+            timeout: 10
+            wipe-workspace: true
+
+    node: 'joid-baremetal'
+
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Hello World!"
+            uname -an
+            cd $WORKSPACE
+            ls -al
