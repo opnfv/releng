@@ -23,7 +23,7 @@ fi
 echo 1 > /proc/sys/vm/drop_caches
 
 export CONFDIR=$WORKSPACE/deploy/conf
-if [[ "$BRANCH" = 'danube' ]]; then
+if [[ "$BRANCH" = 'stable/danube' ]]; then
     export ISO_URL=file://$BUILD_DIRECTORY/compass.iso
 else
     export ISO_URL=file://$BUILD_DIRECTORY/compass.tar.gz

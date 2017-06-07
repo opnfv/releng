@@ -25,7 +25,7 @@ fi
 
 cd $WORKSPACE/
 
-if [[ "$BRANCH" == 'danube' ]]; then
+if [[ "$BRANCH" == 'stable/danube' ]]; then
     ./build.sh  --iso-dir $BUILD_DIRECTORY/ --iso-name compass.iso -c $CACHE_DIRECTORY
     OPNFV_ARTIFACT_SHA512SUM=$(sha512sum $BUILD_DIRECTORY/compass.iso | cut -d' ' -f1)
     OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso
