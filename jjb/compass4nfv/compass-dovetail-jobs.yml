@@ -55,6 +55,7 @@
     wrappers:
         - build-name:
             name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+        - fix-workspace-permissions
 
     triggers:
         - '{auto-trigger-name}'
@@ -137,6 +138,7 @@
         - timeout:
             timeout: 120
             abort: true
+        - fix-workspace-permissions
 
     parameters:
         - project-parameter:
@@ -150,11 +152,6 @@
 
     scm:
         - git-scm
-
-    wrappers:
-        - build-name:
-            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
-
 
     builders:
         - description-setter:
