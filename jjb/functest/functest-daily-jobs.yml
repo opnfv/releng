@@ -9,11 +9,6 @@
 #--------------------------------
 # BRANCH ANCHORS
 #--------------------------------
-    master: &master
-        stream: master
-        branch: '{stream}'
-        gs-pathname: ''
-        docker-tag: 'latest'
     danube: &danube
         stream: danube
         branch: 'stable/{stream}'
@@ -23,192 +18,16 @@
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
 #    Installers using labels
-#            CI PODs
+#            PODs
 # This section should only contain the installers
 # that have been switched using labels for slaves
 #--------------------------------
     pod:
-# fuel CI PODs
-        - baremetal:
-            slave-label: fuel-baremetal
-            installer: fuel
-            <<: *master
-        - virtual:
-            slave-label: fuel-virtual
-            installer: fuel
-            <<: *master
-        - baremetal:
-            slave-label: fuel-baremetal
-            installer: fuel
-            <<: *danube
-        - virtual:
-            slave-label: fuel-virtual
-            installer: fuel
-            <<: *danube
-# joid CI PODs
-        - baremetal:
-            slave-label: joid-baremetal
-            installer: joid
-            <<: *master
-        - virtual:
-            slave-label: joid-virtual
-            installer: joid
-            <<: *master
+# joid PODs
         - baremetal:
             slave-label: joid-baremetal
             installer: joid
             <<: *danube
-        - virtual:
-            slave-label: joid-virtual
-            installer: joid
-            <<: *danube
-# compass CI PODs
-        - baremetal:
-            slave-label: compass-baremetal
-            installer: compass
-            <<: *master
-        - virtual:
-            slave-label: compass-virtual
-            installer: compass
-            <<: *master
-        - baremetal:
-            slave-label: compass-baremetal
-            installer: compass
-            <<: *danube
-        - virtual:
-            slave-label: compass-virtual
-            installer: compass
-            <<: *danube
-# apex CI PODs
-        - virtual:
-            slave-label: apex-virtual-master
-            installer: apex
-            <<: *master
-        - baremetal:
-            slave-label: apex-baremetal-master
-            installer: apex
-            <<: *master
-        - virtual:
-            slave-label: apex-virtual-danube
-            installer: apex
-            <<: *danube
-        - baremetal:
-            slave-label: apex-baremetal-danube
-            installer: apex
-            <<: *danube
-# armband CI PODs
-        - armband-baremetal:
-            slave-label: armband-baremetal
-            installer: fuel
-            <<: *master
-        - armband-virtual:
-            slave-label: armband-virtual
-            installer: fuel
-            <<: *master
-        - armband-baremetal:
-            slave-label: armband-baremetal
-            installer: fuel
-            <<: *danube
-        - armband-virtual:
-            slave-label: armband-virtual
-            installer: fuel
-            <<: *danube
-# daisy CI PODs
-        - baremetal:
-            slave-label: daisy-baremetal
-            installer: daisy
-            <<: *master
-        - virtual:
-            slave-label: daisy-virtual
-            installer: daisy
-            <<: *master
-# netvirt 3rd party ci
-        - virtual:
-            slave-label: odl-netvirt-virtual
-            installer: netvirt
-            <<: *master
-#--------------------------------
-#        None-CI PODs
-#--------------------------------
-        - orange-pod1:
-            slave-label: '{pod}'
-            installer: joid
-            <<: *master
-        - orange-pod5:
-            slave-label: '{pod}'
-            installer: fuel
-            <<: *master
-        - orange-pod2:
-            slave-label: '{pod}'
-            installer: joid
-            <<: *master
-        - baremetal-centos:
-            slave-label: 'intel-pod8'
-            installer: compass
-            <<: *master
-        - nokia-pod1:
-            slave-label: '{pod}'
-            installer: apex
-            <<: *master
-        - arm-pod2:
-            slave-label: '{pod}'
-            installer: fuel
-            <<: *master
-        - arm-pod3:
-            slave-label: '{pod}'
-            installer: fuel
-            <<: *master
-        - arm-pod4:
-            slave-label: '{pod}'
-            installer: fuel
-            <<: *master
-        - arm-virtual1:
-            slave-label: '{pod}'
-            installer: fuel
-            <<: *master
-        - zte-pod1:
-            slave-label: '{pod}'
-            installer: fuel
-            <<: *master
-        - zte-pod1:
-            slave-label: '{pod}'
-            installer: fuel
-            <<: *danube
-        - zte-pod2:
-            slave-label: '{pod}'
-            installer: fuel
-            <<: *master
-        - zte-pod3:
-            slave-label: '{pod}'
-            installer: fuel
-            <<: *master
-        - zte-pod3:
-            slave-label: '{pod}'
-            installer: fuel
-            <<: *danube
-        - arm-pod2:
-            slave-label: '{pod}'
-            installer: fuel
-            <<: *danube
-        - arm-pod3:
-            slave-label: '{pod}'
-            installer: fuel
-            <<: *danube
-        - arm-pod4:
-            slave-label: '{pod}'
-            installer: fuel
-            <<: *danube
-        - arm-virtual1:
-            slave-label: '{pod}'
-            installer: fuel
-            <<: *danube
-# PODs for verify jobs triggered by each patch upload
-        - ool-virtual1:
-            slave-label: '{pod}'
-            installer: apex
-            <<: *master
-#--------------------------------
-
     testsuite:
         - 'suite':
             job-timeout: 60
@@ -227,7 +46,6 @@
     concurrent: true
 
     properties:
-        - logrotate-default
         - throttle:
             enabled: true
             max-per-node: 1
@@ -241,9 +59,6 @@
             abort: true
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
         - '{installer}-defaults'
         - '{slave-label}-defaults'
         - 'functest-{testsuite}-parameter'
@@ -262,7 +77,12 @@
             gs-pathname: '{gs-pathname}'
 
     scm:
-        - git-scm
+        - git:
+            url: 'https://gerrit.opnfv.org/gerrit/{project}'
+            branches:
+                - 'origin/{branch}'
+            timeout: 10
+            wipe-workspace: true
 
     builders:
         - description-setter:

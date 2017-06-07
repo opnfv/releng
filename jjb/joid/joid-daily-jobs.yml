@@ -12,11 +12,6 @@
 #--------------------------------
 # BRANCH ANCHORS
 #--------------------------------
-    master: &master
-        stream: master
-        branch: '{stream}'
-        disabled: false
-        gs-pathname: ''
     danube: &danube
         stream: danube
         branch: 'stable/{stream}'
@@ -25,60 +20,17 @@
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
-#        CI PODs
+#       PODs
 #--------------------------------
     pod:
         - baremetal:
             slave-label: joid-baremetal
-            <<: *master
-        - virtual:
-            slave-label: joid-virtual
-            <<: *master
-        - baremetal:
-            slave-label: joid-baremetal
             <<: *danube
-        - virtual:
-            slave-label: joid-virtual
-            <<: *danube
-#--------------------------------
-#        None-CI PODs
-#--------------------------------
-        - orange-pod1:
-            slave-label: orange-pod1
-            <<: *master
-        - cengn-pod1:
-            slave-label: cengn-pod1
-            <<: *master
 #--------------------------------
 # scenarios
 #--------------------------------
     scenario:
-        - 'os-nosdn-nofeature-noha':
-            auto-trigger-name: 'joid-{scenario}-{pod}-{stream}-trigger'
-        - 'os-nosdn-nofeature-ha':
-            auto-trigger-name: 'joid-{scenario}-{pod}-{stream}-trigger'
-        - 'os-nosdn-lxd-ha':
-            auto-trigger-name: 'joid-{scenario}-{pod}-{stream}-trigger'
-        - 'os-nosdn-lxd-noha':
-            auto-trigger-name: 'joid-{scenario}-{pod}-{stream}-trigger'
-        - 'os-odl_l2-nofeature-ha':
-            auto-trigger-name: 'joid-{scenario}-{pod}-{stream}-trigger'
-        - 'os-onos-nofeature-ha':
-            auto-trigger-name: 'daily-trigger-disabled'
-        - 'os-odl_l2-nofeature-noha':
-            auto-trigger-name: 'daily-trigger-disabled'
-        - 'os-onos-nofeature-noha':
-            auto-trigger-name: 'daily-trigger-disabled'
-        - 'os-onos-sfc-ha':
-            auto-trigger-name: 'daily-trigger-disabled'
-        - 'os-ocl-nofeature-ha':
-            auto-trigger-name: 'daily-trigger-disabled'
-        - 'os-ocl-nofeature-noha':
-            auto-trigger-name: 'daily-trigger-disabled'
-        - 'k8-nosdn-nofeature-noha':
-            auto-trigger-name: 'joid-{scenario}-{pod}-{stream}-trigger'
-        - 'k8-nosdn-lb-noha':
-            auto-trigger-name: 'joid-{scenario}-{pod}-{stream}-trigger'
+        - 'os-nosdn-nofeature-ha'
 
     jobs:
         - 'joid-{scenario}-{pod}-daily-{stream}'
@@ -92,10 +44,9 @@
 
     disabled: '{obj:disabled}'
 
-    concurrent: false
+    concurrent: true
 
     properties:
-        - logrotate-default
         - throttle:
             enabled: true
             max-total: 4
@@ -111,13 +62,7 @@
         - build-name:
             name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
 
-    triggers:
-        - '{auto-trigger-name}'
-
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
         - '{installer}-defaults'
         - '{slave-label}-defaults':
             installer: '{installer}'
@@ -157,23 +102,6 @@
                 build-step-failure-threshold: 'never'
                 failure-threshold: 'never'
                 unstable-threshold: 'FAILURE'
-        # 1.dovetail only master by now, not sync with A/B/C branches
-        # 2.here the stream means the SUT stream, dovetail stream is defined in its own job
-        # 3.only debug testsuite here(includes basic testcase,
-        #   i.e. one tempest smoke ipv6, two vping from functest)
-        # 4.not used for release criteria or compliance,
-        #   only to debug the dovetail tool bugs with joid
-        #- trigger-builds:
-        #    - project: 'dovetail-joid-{pod}-proposed_tests-{stream}'
-        #      current-parameters: false
-        #      predefined-parameters:
-        #        DEPLOY_SCENARIO={scenario}
-        #      block: true
-        #      same-node: true
-        #      block-thresholds:
-        #        build-step-failure-threshold: 'never'
-        #        failure-threshold: 'never'
-        #        unstable-threshold: 'FAILURE'
 
 - job-template:
     name: 'joid-deploy-{pod}-daily-{stream}'
@@ -183,7 +111,6 @@
     concurrent: true
 
     properties:
-        - logrotate-default
         - throttle:
             enabled: true
             max-total: 4
@@ -203,9 +130,6 @@
             fail: true
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
         - '{installer}-defaults'
         - '{slave-label}-defaults':
             installer: '{installer}'
@@ -214,7 +138,12 @@
             default: 'os-odl_l2-nofeature-ha'
 
     scm:
-        - git-scm
+        - git:
+            url: 'https://gerrit.opnfv.org/gerrit/{project}'
+            branches:
+                - 'origin/{branch}'
+            timeout: 10
+            wipe-workspace: true
 
     builders:
         - description-setter:
@@ -235,313 +164,3 @@
             ./clean.sh
         - shell:
             !include-raw: ./joid-deploy.sh
-
-########################
-# trigger macros
-########################
-# os-nosdn-nofeature-ha trigger - branch: master
-- trigger:
-    name: 'joid-os-nosdn-nofeature-ha-baremetal-master-trigger'
-    triggers:
-        - timed: '5 2 * * *'
-- trigger:
-    name: 'joid-os-nosdn-nofeature-ha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-nofeature-ha-orange-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-nofeature-ha-cengn-pod1-master-trigger'
-    triggers:
-        - timed: ''
-# os-nosdn-nofeature-ha trigger - branch: danube
-- trigger:
-    name: 'joid-os-nosdn-nofeature-ha-baremetal-danube-trigger'
-    triggers:
-        - timed: '0 2 * * *'
-- trigger:
-    name: 'joid-os-nosdn-nofeature-ha-virtual-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-nofeature-ha-orange-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-nofeature-ha-cengn-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-# os-odl_l2-nofeature-ha trigger - branch: master
-- trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-baremetal-master-trigger'
-    triggers:
-        - timed: '5 7 * * *'
-- trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-orange-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-cengn-pod1-master-trigger'
-    triggers:
-        - timed: ''
-# os-odl_l2-nofeature-ha trigger - branch: danube
-- trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-baremetal-danube-trigger'
-    triggers:
-        - timed: '0 7 * * *'
-- trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-virtual-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-orange-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-cengn-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-# os-onos-nofeature-ha trigger - branch: master
-- trigger:
-    name: 'joid-os-onos-nofeature-ha-baremetal-master-trigger'
-    triggers:
-        - timed: '5 12 * * *'
-- trigger:
-    name: 'joid-os-onos-nofeature-ha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-onos-nofeature-ha-orange-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-onos-nofeature-ha-cengn-pod1-master-trigger'
-    triggers:
-        - timed: ''
-# os-onos-nofeature-ha trigger - branch: danube
-- trigger:
-    name: 'joid-os-onos-nofeature-ha-baremetal-danube-trigger'
-    triggers:
-        - timed: '0 12 * * *'
-- trigger:
-    name: 'joid-os-onos-nofeature-ha-virtual-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-onos-nofeature-ha-orange-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-onos-nofeature-ha-cengn-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-# os-onos-sfc-ha trigger - branch: master
-- trigger:
-    name: 'joid-os-onos-sfc-ha-baremetal-master-trigger'
-    triggers:
-        - timed: '5 17 * * *'
-- trigger:
-    name: 'joid-os-onos-sfc-ha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-onos-sfc-ha-orange-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-onos-sfc-ha-cengn-pod1-master-trigger'
-    triggers:
-        - timed: ''
-# os-onos-sfc-ha trigger - branch: danube
-- trigger:
-    name: 'joid-os-onos-sfc-ha-baremetal-danube-trigger'
-    triggers:
-        - timed: '0 17 * * *'
-- trigger:
-    name: 'joid-os-onos-sfc-ha-virtual-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-onos-sfc-ha-orange-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-onos-sfc-ha-cengn-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-# os-nosdn-lxd-noha trigger - branch: master
-- trigger:
-    name: 'joid-os-nosdn-lxd-noha-baremetal-master-trigger'
-    triggers:
-        - timed: '5 22 * * *'
-- trigger:
-    name: 'joid-os-nosdn-lxd-noha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-lxd-noha-orange-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-lxd-noha-cengn-pod1-master-trigger'
-    triggers:
-        - timed: ''
-# os-nosdn-lxd-noha trigger - branch: danube
-- trigger:
-    name: 'joid-os-nosdn-lxd-noha-baremetal-danube-trigger'
-    triggers:
-        - timed: '0 22 * * *'
-- trigger:
-    name: 'joid-os-nosdn-lxd-noha-virtual-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-lxd-noha-orange-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-lxd-noha-cengn-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-# os-nosdn-lxd-ha trigger - branch: master
-- trigger:
-    name: 'joid-os-nosdn-lxd-ha-baremetal-master-trigger'
-    triggers:
-        - timed: '5 10 * * *'
-- trigger:
-    name: 'joid-os-nosdn-lxd-ha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-lxd-ha-orange-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-lxd-ha-cengn-pod1-master-trigger'
-    triggers:
-        - timed: ''
-# os-nosdn-lxd-ha trigger - branch: danube
-- trigger:
-    name: 'joid-os-nosdn-lxd-ha-baremetal-danube-trigger'
-    triggers:
-        - timed: '0 10 * * *'
-- trigger:
-    name: 'joid-os-nosdn-lxd-ha-virtual-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-lxd-ha-orange-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-lxd-ha-cengn-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-# os-nosdn-nofeature-noha trigger - branch: master
-- trigger:
-    name: 'joid-os-nosdn-nofeature-noha-baremetal-master-trigger'
-    triggers:
-        - timed: '5 4 * * *'
-- trigger:
-    name: 'joid-os-nosdn-nofeature-noha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-nofeature-noha-orange-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-nofeature-noha-cengn-pod1-master-trigger'
-    triggers:
-        - timed: ''
-# os-nosdn-nofeature-noha trigger - branch: danube
-- trigger:
-    name: 'joid-os-nosdn-nofeature-noha-baremetal-danube-trigger'
-    triggers:
-        - timed: '0 4 * * *'
-- trigger:
-    name: 'joid-os-nosdn-nofeature-noha-virtual-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-nofeature-noha-orange-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-os-nosdn-nofeature-noha-cengn-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-# k8-nosdn-nofeature-noha trigger - branch: master
-- trigger:
-    name: 'joid-k8-nosdn-nofeature-noha-baremetal-master-trigger'
-    triggers:
-        - timed: '5 15 * * *'
-- trigger:
-    name: 'joid-k8-nosdn-nofeature-noha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-k8-nosdn-nofeature-noha-orange-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-k8-nosdn-nofeature-noha-cengn-pod1-master-trigger'
-    triggers:
-        - timed: ''
-# k8-nosdn-nofeature-noha trigger - branch: danube
-- trigger:
-    name: 'joid-k8-nosdn-nofeature-noha-baremetal-danube-trigger'
-    triggers:
-        - timed: '0 15 * * *'
-- trigger:
-    name: 'joid-k8-nosdn-nofeature-noha-virtual-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-k8-nosdn-nofeature-noha-orange-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-k8-nosdn-nofeature-noha-cengn-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-# k8-nosdn-lb-noha trigger - branch: master
-- trigger:
-    name: 'joid-k8-nosdn-lb-noha-baremetal-master-trigger'
-    triggers:
-        - timed: '5 20 * * *'
-- trigger:
-    name: 'joid-k8-nosdn-lb-noha-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-k8-nosdn-lb-noha-orange-pod1-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-k8-nosdn-lb-noha-cengn-pod1-master-trigger'
-    triggers:
-        - timed: ''
-# k8-nosdn-lb-noha trigger - branch: danube
-- trigger:
-    name: 'joid-k8-nosdn-lb-noha-baremetal-danube-trigger'
-    triggers:
-        - timed: '0 20 * * *'
-- trigger:
-    name: 'joid-k8-nosdn-lb-noha-virtual-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-k8-nosdn-lb-noha-orange-pod1-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'joid-k8-nosdn-lb-noha-cengn-pod1-danube-trigger'
-    triggers:
-        - timed: ''

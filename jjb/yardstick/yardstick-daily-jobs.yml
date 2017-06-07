@@ -9,11 +9,6 @@
 #--------------------------------
 # BRANCH ANCHORS
 #--------------------------------
-    master: &master
-        stream: master
-        branch: '{stream}'
-        gs-pathname: ''
-        docker-tag: 'latest'
     danube: &danube
         stream: danube
         branch: 'stable/{stream}'
@@ -28,190 +23,11 @@
 # that have been switched using labels for slaves
 #--------------------------------
     pod:
-# fuel CI PODs
-        - baremetal:
-            slave-label: fuel-baremetal
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - virtual:
-            slave-label: fuel-virtual
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - baremetal:
-            slave-label: fuel-baremetal
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-        - virtual:
-            slave-label: fuel-virtual
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-# armband CI PODs
-        - armband-baremetal:
-            slave-label: armband-baremetal
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - armband-virtual:
-            slave-label: armband-virtual
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - armband-baremetal:
-            slave-label: armband-baremetal
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-        - armband-virtual:
-            slave-label: armband-virtual
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
 # joid CI PODs
         - baremetal:
             slave-label: joid-baremetal
             installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - virtual:
-            slave-label: joid-virtual
-            installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - baremetal:
-            slave-label: joid-baremetal
-            installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
             <<: *danube
-        - virtual:
-            slave-label: joid-virtual
-            installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-
-# compass CI PODs
-        - baremetal:
-            slave-label: compass-baremetal
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - virtual:
-            slave-label: compass-virtual
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - baremetal:
-            slave-label: compass-baremetal
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-        - virtual:
-            slave-label: compass-virtual
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-#--------------------------------
-#    Installers not using labels
-#            CI PODs
-# This section should only contain the installers
-# that have not been switched using labels for slaves
-#--------------------------------
-        - lf-pod1:
-            slave-label: '{pod}'
-            installer: apex
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - lf-pod1:
-            slave-label: '{pod}'
-            installer: apex
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-#--------------------------------
-#        None-CI PODs
-#--------------------------------
-        - orange-pod1:
-            slave-label: '{pod}'
-            installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - zte-pod1:
-            slave-label: '{pod}'
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - zte-pod1:
-            slave-label: '{pod}'
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-        - zte-pod2:
-            slave-label: '{pod}'
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - zte-pod3:
-            slave-label: '{pod}'
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - zte-pod3:
-            slave-label: '{pod}'
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-        - arm-pod2:
-            slave-label: '{pod}'
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - arm-pod2:
-            slave-label: '{pod}'
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-        - arm-pod3:
-            slave-label: '{pod}'
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - arm-pod3:
-            slave-label: '{pod}'
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-        - arm-virtual1:
-            slave-label: '{pod}'
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - arm-virtual1:
-            slave-label: '{pod}'
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-        - orange-pod2:
-            slave-label: '{pod}'
-            installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - huawei-pod3:
-            slave-label: '{pod}'
-            installer: compass
-            auto-trigger-name: 'yardstick-daily-huawei-pod3-trigger'
-            <<: *master
-        - huawei-pod4:
-            slave-label: '{pod}'
-            installer: compass
-            auto-trigger-name: 'yardstick-daily-huawei-pod4-trigger'
-            <<: *master
-        - baremetal-centos:
-            slave-label: 'intel-pod8'
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
 #--------------------------------
     testsuite:
         - 'daily'
@@ -230,7 +46,6 @@
     concurrent: true
 
     properties:
-        - logrotate-default
         - throttle:
             enabled: true
             max-per-node: 1
@@ -243,13 +58,7 @@
             timeout: 180
             abort: true
 
-    triggers:
-        - '{auto-trigger-name}'
-
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
         - '{installer}-defaults'
         - '{slave-label}-defaults'
         - 'yardstick-params-{slave-label}'
@@ -270,7 +79,12 @@
             description: "Show debut output information"
 
     scm:
-        - git-scm
+        - git:
+            url: 'https://gerrit.opnfv.org/gerrit/{project}'
+            branches:
+                - 'origin/{branch}'
+            timeout: 10
+            wipe-workspace: true
 
     builders:
         - description-setter:
@@ -278,11 +92,7 @@
         - 'yardstick-cleanup'
         #- 'yardstick-fetch-os-creds'
         - 'yardstick-{testsuite}'
-        - 'yardstick-store-results'
-
-    publishers:
-        - email:
-            recipients: jean.gaoliang@huawei.com limingjiang@huawei.com
+        #- 'yardstick-store-results'
 
 ########################
 # builder macros
