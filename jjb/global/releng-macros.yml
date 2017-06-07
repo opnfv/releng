@@ -260,7 +260,7 @@
                 sed -e "s|^$local_path|    http://$gs_path|" >> gerrit_comment.txt
 
 - builder:
-    name: report-docs-build-result-to-gerrit
+    name: report-build-result-to-gerrit
     builders:
         - shell: |
             #!/bin/bash
@@ -407,14 +407,14 @@
     builders:
         - build-html-and-pdf-docs-output
         - upload-under-review-docs-to-opnfv-artifacts
-        - report-docs-build-result-to-gerrit
+        - report-build-result-to-gerrit
 
 - builder:
     name: upload-merged-docs
     builders:
         - build-html-and-pdf-docs-output
         - upload-generated-docs-to-opnfv-artifacts
-        - report-docs-build-result-to-gerrit
+        - report-build-result-to-gerrit
         - remove-old-docs-from-opnfv-artifacts
 
 - builder:
