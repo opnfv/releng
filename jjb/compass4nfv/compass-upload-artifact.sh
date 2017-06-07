@@ -7,7 +7,7 @@ echo "Uploading the $INSTALLER_TYPE artifact. This could take some time..."
 echo "--------------------------------------------------------"
 echo
 
-if [[ "$BRANCH" == 'danube' ]]; then
+if [[ "$BRANCH" == 'stable/danube' ]]; then
     FILETYPE='iso'
 else
     FILETYPE='tar.gz'
