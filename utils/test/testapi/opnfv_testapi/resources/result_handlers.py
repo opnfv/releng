@@ -35,6 +35,8 @@ class GenericResultHandler(handlers.GenericApiHandler):
 
     def set_query(self):
         query = dict()
+        date_range = dict()
+
         for k in self.request.query_arguments.keys():
             v = self.get_query_argument(k)
             if k == 'project' or k == 'pod' or k == 'case':
@@ -47,8 +49,14 @@ class GenericResultHandler(handlers.GenericApiHandler):
                     query['start_date'] = obj
             elif k == 'trust_indicator':
                 query[k + '.current'] = float(v)
+            elif k == 'from':
+                date_range.update({'$gte': str(v)})
+            elif k == 'to':
+                date_range.update({'$lt': str(v)})
             elif k != 'last' and k != 'page':
                 query[k] = v
+            if date_range:
+                query['start_date'] = date_range
         return query
 
 
@@ -64,9 +72,11 @@ class ResultsCLHandler(GenericResultHandler):
                  - case : case name
                  - pod : pod name
                  - version : platform version (Arno-R1, ...)
-                 - installer (fuel, ...)
+                 - installer : fuel/apex/compass/joid/daisy
                  - build_tag : Jenkins build tag name
-                 - period : x (x last days)
+                 - period : x last days, incompatible with from/to
+                 - from : starting time in 2016-01-01 or 2016-01-01 00:01:23
+                 - to : ending time in 2016-01-01 or 2016-01-01 00:01:23
                  - scenario : the test scenario (previously version)
                  - criteria : the global criteria status passed or failed
                  - trust_indicator : evaluate the stability of the test case
@@ -113,6 +123,14 @@ class ResultsCLHandler(GenericResultHandler):
             @type period: L{string}
             @in period: query
             @required period: False
+            @param from: i.e. 2016-01-01 or 2016-01-01 00:01:23
+            @type from: L{string}
+            @in from: query
+            @required from: False
+            @param to: i.e. 2016-01-01 or 2016-01-01 00:01:23
+            @type to: L{string}
+            @in to: query
+            @required to: False
             @param last: last records stored until now
             @type last: L{string}
             @in last: query
