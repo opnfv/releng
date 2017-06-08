@@ -163,24 +163,26 @@
             choices:
                 - 'SSD'
                 - 'HDD'
+            default: 'HDD'
             description: 'The type of hard disk that Cinder uses'
         - string:
             name: AGENT_COUNT
             description: 'The number of slave agents to start. Defaults to the cinder node count'
         - string:
             name: VOLUME_SIZE
+            default: '4'
             description: 'Size of Cinder volume (in GB)'
         - string:
             name: WORKLOADS
-            default: 'ws,wr,rs,rr,rw'
+            default: 'wr,rr,rw'
             description: 'Workloads to run'
         - string:
             name: BLOCK_SIZES
-            default: 2048,8192,16384
+            default: '2048,16384'
             description: 'Block sizes for VM I/O operations'
         - string:
             name: QUEUE_DEPTHS
-            default: 1,2,4
+            default: '1,4'
             description: 'Number of simultaneous I/O operations to keep active'
         - string:
             name: STEADY_STATE_SAMPLES
@@ -199,7 +201,7 @@
         - git-scm
 
     triggers:
-        - timed: 'H H * * *'
+        - timed: '0 18 * * *'
 
     builders:
         - shell: |
