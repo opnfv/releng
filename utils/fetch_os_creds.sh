@@ -12,7 +12,7 @@ set -o nounset
 set -o pipefail
 
 usage() {
-    echo "usage: $0 [-v] -d <destination> -i <installer_type> -a <installer_ip>" >&2
+    echo "usage: $0 [-v] -d <destination> -i <installer_type> -a <installer_ip> -s <ssh_key>" >&2
     echo "[-v] Virtualized deployment" >&2
 }
 
@@ -58,6 +58,7 @@ while getopts ":d:i:a:h:v" optchar; do
         d) dest_path=${OPTARG} ;;
         i) installer_type=${OPTARG} ;;
         a) installer_ip=${OPTARG} ;;
+        s) ssh_key=${OPTARG} ;;
         v) DEPLOY_TYPE="virt" ;;
         *) echo "Non-option argument: '-${OPTARG}'" >&2
            usage
@@ -90,33 +91,24 @@ ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 # Start fetching the files
 if [ "$installer_type" == "fuel" ]; then
     #ip_fuel="10.20.0.2"
+    ssh_key=${ssh_key:-$SSH_KEY}
+    if [ -z $ssh_key ] || [ ! -f $ssh_key ]; then
+        error "Please provide path to existing ssh key for mcp deployment."
+        exit 2
+    ssh_options+=" -i ${ssh_key}"
     verify_connectivity $installer_ip
 
-    env=$(sshpass -p r00tme ssh 2>/dev/null $ssh_options root@${installer_ip} \
-        'fuel env'|grep operational|head -1|awk '{print $1}') &> /dev/null
-    if [ -z $env ]; then
-        error "No operational environment detected in Fuel"
-    fi
-    env_id="${FUEL_ENV:-$env}"
-
-    # Check if controller is alive (online='True')
-    controller_ip=$(sshpass -p r00tme ssh 2>/dev/null $ssh_options root@${installer_ip} \
-        "fuel node --env ${env_id} | grep controller | grep 'True\|  1' | awk -F\| '{print \$5}' | head -1" | \
+    # retrieving controller vip
+    controller_ip=$(ssh 2>/dev/null $ssh_options root@${installer_ip} \
+        "salt --out txt 'ctl01*' pillar.get _param:openstack_control_address | awk '{print \$2}'" | \
         sed 's/ //g') &> /dev/null
 
-    if [ -z $controller_ip ]; then
-        error "The controller $controller_ip is not up. Please check that the POD is correctly deployed."
-    fi
-
     info "Fetching rc file from controller $controller_ip..."
-    sshpass -p r00tme ssh 2>/dev/null $ssh_options root@${installer_ip} \
-        "scp $ssh_options ${controller_ip}:/root/openrc ." &> /dev/null
-    sshpass -p r00tme scp 2>/dev/null $ssh_options root@${installer_ip}:~/openrc $dest_path &> /dev/null
+    ssh $ssh_options ubuntu@${controller_ip} "sudo cat /root/keystonercv3" > $dest_path
 
     #This file contains the mgmt keystone API, we need the public one for our rc file
     admin_ip=$(cat $dest_path | grep "OS_AUTH_URL" | sed 's/^.*\=//' | sed "s/^\([\"']\)\(.*\)\1\$/\2/g" | sed s'/\/$//')
-    public_ip=$(sshpass -p r00tme ssh $ssh_options root@${installer_ip} \
-        "ssh ${controller_ip} 'source openrc; openstack endpoint list'" \
+    public_ip=$(ssh ubuntu@${controller_ip} 'source <(sudo cat /root/keystonercv3); openstack endpoint list' \
         | grep keystone | grep public | sed 's/ /\n/g' | grep ^http | head -1) &> /dev/null
         #| grep http | head -1 | cut -d '|' -f 4 | sed 's/v1\/.*/v1\//' | sed 's/ //g') &> /dev/null
     #NOTE: this is super ugly sed 's/v1\/.*/v1\//'OS_AUTH_URL
