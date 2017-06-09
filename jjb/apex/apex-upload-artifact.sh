@@ -126,13 +126,13 @@ elif [ "$ARTIFACT_TYPE" == 'rpm' ]; then
     RPM_INSTALL_PATH=$BUILD_DIRECTORY/noarch
     RPM_LIST=$RPM_INSTALL_PATH/$(basename $OPNFV_RPM_URL)
     VERSION_EXTENSION=$(echo $(basename $OPNFV_RPM_URL) | sed 's/opnfv-apex-//')
-    for pkg in common undercloud; do # removed onos for danube
+    for pkg in common undercloud onos; do
       RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
     done
     SRPM_INSTALL_PATH=$BUILD_DIRECTORY
     SRPM_LIST=$SRPM_INSTALL_PATH/$(basename $OPNFV_SRPM_URL)
     VERSION_EXTENSION=$(echo $(basename $OPNFV_SRPM_URL) | sed 's/opnfv-apex-//')
-    for pkg in common undercloud; do # removed onos for danube
+    for pkg in common undercloud onos; do
       SRPM_LIST+=" ${SRPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}"
     done
 

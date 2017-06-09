@@ -3,7 +3,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-APEX_PKGS="common undercloud" # removed onos for danube
+APEX_PKGS="common undercloud onos"
 
 # log info to console
 echo "Downloading the Apex artifact. This could take some time..."
