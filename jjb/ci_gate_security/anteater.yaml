@@ -1,0 +1,48 @@
+- project:
+    name: releng-anteater
+    jobs:
+        - 'anteater-{stream}'
+
+    stream:
+        - master:
+            branch: 'master'
+        - danube:
+            branch: 'stable/{stream}'
+
+    project: 'releng-anteater'
+
+- job-template:
+    name: 'anteater-{stream}'
+
+    project-type: freestyle
+
+    parameters:
+        - label:
+            name: SLAVE_LABEL
+            default: 'lf-build2'
+            description: 'Slave label on Jenkins'
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+    scm:
+        - git-scm-gerrit:
+            branch: '{branch}'
+
+    triggers:
+        - gerrit-trigger-patchset-created:
+            server: 'gerrit.opnfv.org'
+            project: 'releng' #we will make this ** later
+            branch: '{branch}'
+            files: '**'
+        - timed: 'H H * * *'
+
+    builders:
+        - shell: |
+		#do docker stuff
+		git clone https://gerrit.opnfv.org/$GERRIT_PROJECT
+		cd $GERRIT_PROJECT
+                git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
+        - shell: |
+		#do docker stuff
+		#do ant eater stuff
+		echo foo
