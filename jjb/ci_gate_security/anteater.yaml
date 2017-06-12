@@ -1,0 +1,69 @@
+- project:
+    name: releng-anteater
+    jobs:
+        - 'anteater-{stream}'
+
+    stream:
+        - master:
+            branch: 'master'
+        - danube:
+            branch: 'stable/{stream}'
+
+    project: 'releng-anteater'
+
+- job-template:
+    name: 'anteater-{stream}'
+
+    project-type: freestyle
+
+    parameters:
+        - label:
+            name: SLAVE_LABEL
+            default: 'lf-build2'
+            description: 'Slave label on Jenkins'
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+    scm:
+        - git-scm-gerrit:
+            branch: '{branch}'
+
+- trigger:
+    name: 'anteater-verify'
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'sandbox'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: '**'
+            skip-vote:
+                successful: true
+                failed: true
+                unstable: true
+                notbuilt: true
+
+    builders:
+        - shell: |
+                  git clone https://gerrit.opnfv.org/$GERRIT_PROJECT
+                  cd $GERRIT_PROJECT
+                  git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
+        - shell: |
+                  #do docker stuff
+                  sudo docker pull opnfv/releng-anteater:latest
+                  sudo docker run -v $GERRIT_PROJECT:/tmp/$GERRIT_PROJECT -t releng-anteater /usr/bin/anteater --project $GERRIT_PROJECT --path /tmp/$GERRIT_PROJECT 
+                  #do ant eater stuff
+                  ls -la $GERRIT_PROJECT
