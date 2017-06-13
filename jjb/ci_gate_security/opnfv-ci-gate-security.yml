@@ -53,7 +53,7 @@
                     branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: ANT
-                    pattern: '**/*.py'
+                    pattern: '**'
           skip-vote:
             successful: true
             failed: true
@@ -61,23 +61,17 @@
             notbuilt: true
 
     builders:
-        - security-audit-python-code
-        - report-security-audit-result-to-gerrit
+        - anteater-security-audit
+#        - report-security-audit-result-to-gerrit
 ########################
 # builder macros
 ########################
 - builder:
-    name: security-audit-python-code
+    name: anteater-security-audit
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
-            set -o xtrace
-            export PATH=$PATH:/usr/local/bin/
+        - shell:
+            !include-raw: ./anteater-security-audit.sh
 
-            # this is where the security/license audit script will be executed
-            echo "Hello World!"
 - builder:
     name: report-security-audit-result-to-gerrit
     builders:
