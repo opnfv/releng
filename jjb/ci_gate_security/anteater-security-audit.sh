@@ -17,7 +17,7 @@ echo "--------------------------------------------------------"
 docker pull opnfv/releng-anteater
 echo "--------------------------------------------------------"
 
-cmd="docker run --user $JENKINS_USER -id $envs $vols --rm opnfv/releng-anteater /bin/bash"
+cmd="sudo docker run --privileged=true -id $envs $vols opnfv/releng-anteater /bin/bash"
 echo "Running docker command $cmd"
 container_id=$($cmd)
 echo "Container ID is $container_id"
