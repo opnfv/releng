@@ -1,5 +1,5 @@
 #!/bin/bash
-set -o errexit
+# SPDX-license-identifier: Apache-2.0
 set -o pipefail
 export PATH=$PATH:/usr/local/bin/
 EXITSTATUS=0
