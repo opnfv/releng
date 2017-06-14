@@ -1,24 +1,26 @@
 #!/bin/bash
+# SPDX-license-identifier: Apache-2.0
 set -o errexit
 set -o pipefail
 export PATH=$PATH:/usr/local/bin/
 EXITSTATUS=0
 
-# If no violations were found, no lint log will exist.
+# This Log should always exist
 if [[ -e securityaudit.log ]] ; then
     echo -e "\nposting security audit report to gerrit...\n"
 
-if grep ERROR securityaudit.log; then 
-EXITSTATUS=1
-fi
-
-    cat securityaudit.log  | awk -F"ERROR -\ " '{print $2}' > shortlog
-
+    #check if log has errors
+    if grep ERROR securityaudit.log; then
+        EXITSTATUS=1
+    fi
+    
+    cat securityaudit.log  | awk -F"ERROR - " '{print $2}' > shortlog
+    
     ssh -p 29418 gerrit.opnfv.org \
         "gerrit review -p $GERRIT_PROJECT \
-         -m \"$(cat shortlog)\" \
-         $GERRIT_PATCHSET_REVISION \
-         --notify NONE"
-
+        -m \"$(cat shortlog)\" \
+        $GERRIT_PATCHSET_REVISION \
+        --notify NONE"
+    
     exit $EXITSTATUS
 fi
