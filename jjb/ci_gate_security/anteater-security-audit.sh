@@ -28,4 +28,5 @@ exit_code=$?
 echo "--------------------------------------------------------"
 echo "Stopping docker container with ID $container_id"
 docker stop $container_id
+cat securityaudit.log
 exit 0
