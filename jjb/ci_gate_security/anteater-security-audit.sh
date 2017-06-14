@@ -30,4 +30,6 @@ exit_code=$?
 echo "--------------------------------------------------------"
 echo "Stopping docker container with ID $container_id"
 docker stop $container_id
-exit $exit_code
+exit 0
+#exit $exit_code
+
