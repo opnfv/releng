@@ -9,6 +9,7 @@
 
     jobs:
         - 'opnfv-security-audit-verify-{stream}'
+        - 'opnfv-security-audit-weekly-{stream}'
 
     stream:
         - master:
@@ -19,6 +20,33 @@
 ########################
 # job templates
 ########################
+- job-template:
+    name: 'opnfv-security-audit-weekly-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - label:
+            name: SLAVE_LABEL
+            default: 'ericsson-build3'
+            description: 'Slave label on Jenkins'
+        - project-parameter:
+            project: releng
+            branch: '{branch}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+
+    scm:
+        - git-scm
+
+    triggers:
+        - timed: '0 H/6 * * *'
+
+    builders:
+        - anteater-security-audit-weekly
+
 - job-template:
     name: 'opnfv-security-audit-verify-{stream}'
 
@@ -85,3 +113,9 @@
     builders:
         - shell:
             !include-raw: ./anteater-report-to-gerrit.sh
+
+- builder:
+    name: anteater-security-audit-weekly
+    builders:
+        - shell:
+            !include-raw: anteater-security-audit-weekly.sh
