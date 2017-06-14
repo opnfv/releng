@@ -1,6 +1,4 @@
 #!/bin/bash
-set -o pipefail
-
 cd $WORKSPACE
 echo "Generating patchset file to list changed files"
 git diff HEAD^1 --name-only | sed "s#^#/home/opnfv/anteater/$PROJECT/#" > $WORKSPACE/patchset
@@ -31,4 +29,3 @@ echo "--------------------------------------------------------"
 echo "Stopping docker container with ID $container_id"
 docker stop $container_id
 exit 0
-#exit $exit_code
