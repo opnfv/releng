@@ -25,11 +25,10 @@ cmd="anteater --project $PROJECT --patchset /home/opnfv/anteater/$PROJECT/patchs
 echo "Executing command inside container"
 echo "$cmd"
 echo "--------------------------------------------------------"
-docker exec $container_id $cmd | tee securityaudit.log
+docker exec $container_id $cmd > $WORKSPACE/securityaudit.log 2>&1
 exit_code=$?
 echo "--------------------------------------------------------"
 echo "Stopping docker container with ID $container_id"
 docker stop $container_id
 exit 0
 #exit $exit_code
-
