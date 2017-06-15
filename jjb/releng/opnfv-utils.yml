@@ -4,6 +4,8 @@
 
     jobs:
         - 'prune-docker-images'
+        - 'archive-repositories'
+
 ########################
 # job templates
 ########################
@@ -37,3 +39,30 @@
 
     triggers:
         - timed: '@midnight'
+
+- job-template:
+    name: 'archive-repositories'
+
+    disabled: false
+
+    concurrent: true
+
+    parameters:
+        - string:
+            name: GS_URL
+            default: 'opnfv-archive'
+            description: "Directory where the archive will be located upon the completion of the build."
+        - node:
+            name: SLAVE_NAME
+            description: Where to create the archive
+            default-slaves:
+                - master
+            allowed-multiselect: false
+            ignore-offline-nodes: true
+
+    triggers:
+        - timed: '@monthly'
+
+    builders:
+        - shell:
+            !include-raw-escape: opnfv-repo-archiver.sh
