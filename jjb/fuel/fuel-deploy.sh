@@ -12,11 +12,13 @@ set -o pipefail
 
 export TERM="vt220"
 
-# source the file so we get OPNFV vars
-source latest.properties
+if [[ "$BRANCH" != 'master' ]]; then
+    # source the file so we get OPNFV vars
+    source latest.properties
 
-# echo the info about artifact that is used during the deployment
-echo "Using ${OPNFV_ARTIFACT_URL/*\/} for deployment"
+    # echo the info about artifact that is used during the deployment
+    echo "Using ${OPNFV_ARTIFACT_URL/*\/} for deployment"
+fi
 
 if [[ "$JOB_NAME" =~ "merge" ]]; then
     # set simplest scenario for virtual deploys to run for merges
@@ -75,7 +77,7 @@ echo "--------------------------------------------------------"
 echo "Scenario: $DEPLOY_SCENARIO"
 echo "Lab: $LAB_NAME"
 echo "POD: $POD_NAME"
-echo "ISO: ${OPNFV_ARTIFACT_URL/*\/}"
+[[ "$BRANCH" != 'master' ]] && echo "ISO: ${OPNFV_ARTIFACT_URL/*\/}"
 echo
 echo "Starting the deployment using $INSTALLER_TYPE. This could take some time..."
 echo "--------------------------------------------------------"
