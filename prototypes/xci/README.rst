@@ -185,6 +185,23 @@ continuously chasing the HEAD of corresponding branches.
 Once a working version is identified, the versions of the upstream components
 are then bumped in releng repo.
 
+==================
+XCI developer tips
+==================
+
+It is possible to run XCI in development mode, in order to test the
+latest changes. When deploying on this mode, the script will use the working
+directories for releng/bifrost/OSA, instead of cloning the whole repositories
+on each run.
+To enable it, you need to export the different DEV_PATH vars:
+
+- export OPNFV_RELENG_DEV_PATH=/opt/releng/
+- export OPENSTACK_BIFROST_DEV_PATH=/opt/bifrost
+- export OPENSTACK_OSA_DEV_PATH=/opt/openstack-ansible
+
+This will cause the deployment to pick the development copies stored at the
+specified directories, and use them instead of cloning those on every run.
+
 ===========================================
 Limitations, Known Issues, and Improvements
 ===========================================
