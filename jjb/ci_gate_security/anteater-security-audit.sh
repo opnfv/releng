@@ -15,18 +15,14 @@ echo "--------------------------------------------------------"
 docker pull opnfv/releng-anteater
 echo "--------------------------------------------------------"
 
-cmd="sudo docker run --privileged=true -id $envs $vols opnfv/releng-anteater /bin/bash"
-echo "Running docker command $cmd"
-container_id=$($cmd)
-echo "Container ID is $container_id"
-cmd="anteater --project $PROJECT --patchset /home/opnfv/anteater/$PROJECT/patchset"
-echo "Executing command inside container"
+cmd="docker run --user nobody -i $envs $vols --rm opnfv/releng-anteater \
+anteater --project $PROJECT --patchset /home/opnfv/anteater/$PROJECT/patchset"
+echo "Running docker container"
 echo "$cmd"
-echo "--------------------------------------------------------"
-docker exec $container_id $cmd > $WORKSPACE/securityaudit.log 2>&1
+$cmd > $WORKSPACE/securityaudit.log 2>&1
 exit_code=$?
 echo "--------------------------------------------------------"
-echo "Stopping docker container with ID $container_id"
-docker stop $container_id
+echo "Docker container exited with code: $exit_code"
+echo "--------------------------------------------------------"
 cat securityaudit.log
 exit 0
