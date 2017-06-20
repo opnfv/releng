@@ -17,6 +17,7 @@ class Config(object):
     def __init__(self):
         self.file = self.CONFIG if self.CONFIG else self._default_config()
         self._parse()
+        self._parse_per_page()
         self.static_path = os.path.join(
             os.path.dirname(os.path.normpath(__file__)),
             os.pardir,
@@ -36,6 +37,10 @@ class Config(object):
     def _parse_item(self, config, section):
         [setattr(self, '{}_{}'.format(section, k), self._parse_value(v))
          for k, v in config.items(section)]
+
+    def _parse_per_page(self):
+        if not hasattr(self, 'api_results_per_page'):
+            self.api_results_per_page = 20
 
     @staticmethod
     def _parse_value(value):

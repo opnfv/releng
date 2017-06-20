@@ -123,8 +123,8 @@
             ctrl.resultsRequest =
                 $http.get(content_url).success(function (data) {
                     ctrl.data = data;
-                    ctrl.totalItems = 20 // ctrl.data.pagination.total_pages * ctrl.itemsPerPage;
-                    ctrl.currentPage = 1 // ctrl.data.pagination.current_page;
+                    ctrl.totalItems = ctrl.data.pagination.total_pages * ctrl.itemsPerPage;
+                    ctrl.currentPage = ctrl.data.pagination.current_page;
                 }).error(function (error) {
                     ctrl.data = null;
                     ctrl.totalItems = 0;

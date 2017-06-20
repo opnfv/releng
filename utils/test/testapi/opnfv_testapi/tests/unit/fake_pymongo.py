@@ -20,18 +20,18 @@ def thread_execute(method, *args, **kwargs):
 class MemCursor(object):
     def __init__(self, collection):
         self.collection = collection
-        self.count = len(self.collection)
+        self.length = len(self.collection)
         self.sorted = []
 
     def _is_next_exist(self):
-        return self.count != 0
+        return self.length != 0
 
     @property
     def fetch_next(self):
         return thread_execute(self._is_next_exist)
 
     def next_object(self):
-        self.count -= 1
+        self.length -= 1
         return self.collection.pop()
 
     def sort(self, key_or_list):
@@ -48,9 +48,24 @@ class MemCursor(object):
 
     def limit(self, limit):
         if limit != 0 and limit < len(self.collection):
-            self.collection = self.collection[0:limit]
-            self.count = limit
+            self.collection = self.collection[0: limit]
+            self.length = limit
         return self
+
+    def skip(self, skip):
+        if skip < self.length and (skip > 0):
+            self.collection = self.collection[self.length - skip: -1]
+            self.length -= skip
+        elif skip >= self.length:
+            self.collection = []
+            self.length = 0
+        return self
+
+    def _count(self):
+        return self.length
+    
+    def count(self):
+        return thread_execute(self._count)
 
 
 class MemDb(object):

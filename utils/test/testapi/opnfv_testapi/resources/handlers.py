@@ -104,18 +104,49 @@ class GenericApiHandler(web.RequestHandler):
         if query is None:
             query = {}
         data = []
+        sort = kwargs.get('sort')
+        page = kwargs.get('page')
+        last = kwargs.get('last')
+        per_page = kwargs.get('per_page')
+
         cursor = self._eval_db(self.table, 'find', query)
-        if 'sort' in kwargs:
-            cursor = cursor.sort(kwargs.get('sort'))
-        if 'last' in kwargs:
-            cursor = cursor.limit(kwargs.get('last'))
+        if sort:
+            cursor = cursor.sort(sort)
+        if last and last != 0:
+            cursor = cursor.limit(last)
+        if page:
+            records_count = yield cursor.count()
+            total_pages, remainder = divmod(records_count, per_page)
+            if remainder > 0:
+                total_pages += 1
+            cursor = cursor.skip((page - 1) * per_page).limit(per_page)
         while (yield cursor.fetch_next):
             data.append(self.format_data(cursor.next_object()))
         if res_op is None:
             res = {self.table: data}
         else:
             res = res_op(data, *args)
+        if page:
+            res.update({
+                'pagination': {
+                    'current_page': page,
+                    'total_pages': total_pages
+                }
+            })
         self.finish_request(res)
+
+    @staticmethod
+    def _calculate_pages_number(per_page, records_count):
+        """Return pages number.
+
+        :param per_page: (int) results number fot one page.
+        :param records_count: (int) total records count.
+        """
+        quotient, remainder = divmod(records_count, per_page)
+        if remainder > 0:
+            return quotient + 1
+        print('quotient: {}'.format(quotient))
+        return quotient
 
     @web.asynchronous
     @gen.coroutine
