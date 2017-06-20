@@ -7,7 +7,7 @@ echo "Pulling releng-anteater docker image"
 echo "--------------------------------------------------------"
 docker pull opnfv/releng-anteater
 echo "--------------------------------------------------------"
-cmd="docker run --user nobody -id $vols opnfv/releng-anteater /bin/bash"
+cmd="docker run -id $vols opnfv/releng-anteater /bin/bash"
 echo "Running docker command $cmd"
 container_id=$($cmd)
 echo "Container ID is $container_id"
