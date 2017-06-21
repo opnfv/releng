@@ -31,6 +31,12 @@ gsutil -m setmeta \
     -h "Cache-Control:private, max-age=0, no-transform" \
     gs://$OPNFV_ARTIFACT_URL/*.rpm > /dev/null 2>&1
 
+gsutil -m setmeta \
+    -h "Content-Type:text/html" \
+    -h "Cache-Control:private, max-age=0, no-transform" \
+    gs://$GS_URL/latest.properties \
+    gs://$OPNFV_ARTIFACT_URL/opnfv.properties > /dev/null 2>&1
+
 echo
 echo "--------------------------------------------------------"
 echo "Done!"
