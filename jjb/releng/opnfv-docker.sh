@@ -73,6 +73,8 @@ fi
 # Get tag version
 echo "Current branch: $BRANCH"
 
+BUILD_BRANCH=$BRANCH
+
 if [[ "$BRANCH" == "master" ]]; then
     DOCKER_TAG="latest"
 elif [[ -n "${RELEASE_VERSION-}" ]]; then
@@ -82,19 +84,17 @@ else
     DOCKER_TAG="stable"
 fi
 
+if [[ -n "${COMMIT_ID-}" && -n "${RELEASE_VERSION-}" ]]; then
+    DOCKER_TAG=$RELEASE_VERSION
+    BUILD_BRANCH=$COMMIT_ID
+fi
+
 # Start the build
 echo "Building docker image: $DOCKER_REPO_NAME:$DOCKER_TAG"
 echo "--------------------------------------------------------"
 echo
-if [[ $DOCKER_REPO_NAME == *"dovetail"* ]]; then
-    if [[ -n "${RELEASE_VERSION-}" ]]; then
-        DOCKER_TAG=${RELEASE_VERSION}
-    fi
-    cmd="docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG -f $DOCKERFILE ."
-else
-    cmd="docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG --build-arg BRANCH=$BRANCH
-        -f $DOCKERFILE ."
-fi
+cmd="docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG --build-arg BRANCH=$BUILD_BRANCH
+    -f $DOCKERFILE ."
 
 echo ${cmd}
 ${cmd}
