@@ -60,6 +60,7 @@
 
     builders:
         - functest-unit-tests-and-docs-build
+        - functest-upload-doc-artifact
 
     publishers:
         - junit:
@@ -89,3 +90,9 @@
     builders:
         - shell: |
             cd $WORKSPACE && tox
+
+- builder:
+    name: functest-upload-doc-artifact
+    builders:
+        - shell: |
+            bash ./utils/test/upload-artifact.sh "api/_build"
