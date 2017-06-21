@@ -1,4 +1,15 @@
+#!/usr/bin/env python
+
+# Copyright (c) 2017 Orange and others.
+#
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+# SPDX-license-identifier: Apache-2.0
+
 from urllib2 import Request, urlopen, URLError
+from datetime import datetime
 import json
 import jinja2
 import os
@@ -97,7 +108,13 @@ for version in rp_utils.get_config('general.versions'):
                     crit_rate = True
 
                 # Expect that the suite duration is inferior to 30m
-                if result['details']['duration'] < criteria_duration:
+                stop_date = datetime.strptime(result['stop_date'],
+                                              '%Y-%m-%d %H:%M:%S')
+                start_date = datetime.strptime(result['start_date'],
+                                               '%Y-%m-%d %H:%M:%S')
+
+                delta = stop_date - start_date
+                if (delta.total_seconds() < criteria_duration):
                     crit_time = True
 
                 result['criteria'] = {'tests': crit_tests,
