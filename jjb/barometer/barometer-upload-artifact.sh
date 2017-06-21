@@ -29,6 +29,8 @@ fi
 
 gsutil -m setmeta \
     -h "Cache-Control:private, max-age=0, no-transform" \
+    gs://$GS_URL/latest.properties \
+    gs://$OPNFV_ARTIFACT_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties \
     gs://$OPNFV_ARTIFACT_URL/*.rpm > /dev/null 2>&1
 
 echo
