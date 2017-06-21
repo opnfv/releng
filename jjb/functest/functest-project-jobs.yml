@@ -9,6 +9,7 @@
 
     jobs:
         - 'functest-verify-{stream}'
+        - 'functest-docs-upload-{stream}'
 
     stream:
         - master:
@@ -80,6 +81,41 @@
                     unhealthy: 40
                     failing: 30
 
+- job-template:
+    name: 'functest-docs-upload-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - git-scm
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                disable-strict-forbidden-file-verification: 'true'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'docs/**|.gitignore'
+
+    builders:
+        - functest-upload-doc-artifact
+
 ################################
 # job builders
 ################################
@@ -89,3 +125,9 @@
     builders:
         - shell: |
             cd $WORKSPACE && tox
+
+- builder:
+    name: functest-upload-doc-artifact
+    builders:
+        - shell: |
+            bash $WORKSPACE/functest/utils/upload-artifact.sh "api/_build"
