@@ -37,30 +37,30 @@
         $stateProvider.
             state('home', {
                 url: '/',
-                templateUrl: '/testapi-ui/components/home/home.html'
+                templateUrl: 'testapi-ui/components/home/home.html'
             }).
             state('about', {
                 url: '/about',
-                templateUrl: '/testapi-ui/components/about/about.html'
+                templateUrl: 'testapi-ui/components/about/about.html'
             }).
             state('guidelines', {
                 url: '/guidelines',
-                templateUrl: '/testapi-ui/components/guidelines/guidelines.html',
+                templateUrl: 'testapi-ui/components/guidelines/guidelines.html',
                 controller: 'GuidelinesController as ctrl'
             }).
             state('communityResults', {
                 url: '/community_results',
-                templateUrl: '/testapi-ui/components/results/results.html',
+                templateUrl: 'testapi-ui/components/results/results.html',
                 controller: 'ResultsController as ctrl'
             }).
             state('userResults', {
-                url: '/user_results',
+                url: 'user_results',
                 templateUrl: '/testapi-ui/components/results/results.html',
                 controller: 'ResultsController as ctrl'
             }).
             state('resultsDetail', {
                 url: '/results/:testID',
-                templateUrl: '/testapi-ui/components/results-report' +
+                templateUrl: 'testapi-ui/components/results-report' +
                              '/resultsReport.html',
                 controller: 'ResultsReportController as ctrl'
             }).
@@ -71,12 +71,12 @@
             }).
             state('authFailure', {
                 url: '/auth_failure',
-                templateUrl: '/testapi-ui/components/home/home.html',
+                templateUrl: 'testapi-ui/components/home/home.html',
                 controller: 'AuthFailureController as ctrl'
             }).
             state('logout', {
                 url: '/logout',
-                templateUrl: '/testapi-ui/components/logout/logout.html',
+                templateUrl: 'testapi-ui/components/logout/logout.html',
                 controller: 'LogoutController as ctrl'
             }).
             state('userVendors', {
