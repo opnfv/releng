@@ -11,11 +11,14 @@ from datetime import timedelta
 
 from bson import objectid
 
+from opnfv_testapi.common import config
 from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
 from opnfv_testapi.resources import handlers
 from opnfv_testapi.resources import result_models
 from opnfv_testapi.tornado_swagger import swagger
+
+CONF = config.Config()
 
 
 class GenericResultHandler(handlers.GenericApiHandler):
@@ -135,22 +138,28 @@ class ResultsCLHandler(GenericResultHandler):
             @type last: L{string}
             @in last: query
             @required last: False
+            @param page: which page to list
+            @type page: L{int}
+            @in page: query
+            @required page: False
             @param trust_indicator: must be float
             @type trust_indicator: L{float}
             @in trust_indicator: query
             @required trust_indicator: False
         """
+        limitations = {'sort': [('start_date', -1)]}
         last = self.get_query_argument('last', 0)
         if last is not None:
             last = self.get_int('last', last)
+            limitations.update({'last': last})
 
-        page = self.get_query_argument('page', 0)
-        if page:
-            last = 20
+        page = self.get_query_argument('page', 1)
+        if page is not None:
+            page = self.get_int('page', page)
+            limitations.update({'page': page,
+                                'per_page': CONF.api_results_per_page})
 
-        self._list(query=self.set_query(),
-                   sort=[('start_date', -1)],
-                   last=last)
+        self._list(query=self.set_query(), **limitations)
 
     @swagger.operation(nickname="createTestResult")
     def post(self):
