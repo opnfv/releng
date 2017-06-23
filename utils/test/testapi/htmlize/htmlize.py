@@ -40,13 +40,13 @@ if __name__ == '__main__':
                         type=str,
                         required=False,
                         default=('http://testresults.opnfv.org'
-                                 '/test/swagger/spec.json'),
+                                 '/test/swagger/resources.json'),
                         help='Resource Listing Spec File')
     parser.add_argument('-au', '--api-declaration-url',
                         type=str,
                         required=False,
                         default=('http://testresults.opnfv.org'
-                                 '/test/swagger/spec'),
+                                 '/test/swagger/APIs'),
                         help='API Declaration Spec File')
     parser.add_argument('-o', '--output-directory',
                         required=True,

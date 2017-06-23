@@ -4,7 +4,7 @@ function check() {
 
     # Verify hosted
     sleep 5
-    cmd=`curl -s --head  --request GET http://testresults.opnfv.org/test/swagger/spec | grep '200 OK' > /dev/null`
+    cmd=`curl -s --head  --request GET http://testresults.opnfv.org/test/swagger/APIs | grep '200 OK' > /dev/null`
     rc=$?
     echo $rc
 
