@@ -47,7 +47,7 @@ releng_repo=${WORKSPACE}/releng
 git clone https://gerrit.opnfv.org/gerrit/releng ${releng_repo} >/dev/null
 
 if [[ ${INSTALLER_TYPE} != 'joid' ]]; then
-    sudo /bin/bash ${releng_repo}/utils/fetch_os_creds.sh -d ${OPENRC} -i ${INSTALLER_TYPE} -a ${INSTALLER_IP} >${redirect}
+    ${releng_repo}/utils/fetch_os_creds.sh -d ${OPENRC} -i ${INSTALLER_TYPE} -a ${INSTALLER_IP} >${redirect}
 fi
 
 if [[ -f $OPENRC ]]; then
