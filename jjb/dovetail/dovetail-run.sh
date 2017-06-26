@@ -7,14 +7,12 @@ set -e
 [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 
 DOVETAIL_HOME=${WORKSPACE}/cvp
-if [ -d ${DOVETAIL_HOME} ]; then
-    sudo rm -rf ${DOVETAIL_HOME}/*
-else
-    sudo mkdir -p ${DOVETAIL_HOME}
-fi
+[ -d ${DOVETAIL_HOME} ] && sudo rm -rf ${DOVETAIL_HOME}
+
+mkdir -p ${DOVETAIL_HOME}
 
 DOVETAIL_CONFIG=${DOVETAIL_HOME}/pre_config
-sudo mkdir -p ${DOVETAIL_CONFIG}
+mkdir -p ${DOVETAIL_CONFIG}
 
 sshkey=""
 # The path of openrc.sh is defined in fetch_os_creds.sh
@@ -102,7 +100,8 @@ if [ "$INSTALLER_TYPE" == "fuel" ]; then
 fi
 
 # sdnvpn test case needs to download this image first before running
-sudo wget -nc http://artifacts.opnfv.org/sdnvpn/ubuntu-16.04-server-cloudimg-amd64-disk1.img -P ${DOVETAIL_CONFIG}
+echo "Download image ubuntu-16.04-server-cloudimg-amd64-disk1.img ..."
+wget -q -nc http://artifacts.opnfv.org/sdnvpn/ubuntu-16.04-server-cloudimg-amd64-disk1.img -P ${DOVETAIL_CONFIG}
 
 opts="--privileged=true -id"
 
