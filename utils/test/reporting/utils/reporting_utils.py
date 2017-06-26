@@ -117,19 +117,29 @@ def getScenarios(case, installer, version):
     url = ("http://" + url_base + "?case=" + case +
            "&period=" + str(period) + "&installer=" + installer +
            "&version=" + version)
-    request = Request(url)
 
     try:
+        request = Request(url)
         response = urlopen(request)
         k = response.read()
         results = json.loads(k)
         test_results = results['results']
-    except URLError as e:
-        print('Got an error code:', e)
+
+        page = results['pagination']['total_pages']
+        if page > 1:
+            test_results = []
+            for i in range(1, page + 1):
+                url_page = url + "&page=" + str(i)
+                request = Request(url_page)
+                response = urlopen(request)
+                k = response.read()
+                results = json.loads(k)
+                test_results += results['results']
+    except URLError as err:
+        print('Got an error code:', err)
 
     if test_results is not None:
         test_results.reverse()
-
         scenario_results = {}
 
         for r in test_results:
@@ -157,7 +167,6 @@ def getScenarioStats(scenario_results):
     return scenario_stats
 
 
-# TODO convergence with above function getScenarios
 def getScenarioStatus(installer, version):
     period = get_config('general.period')
     url_base = get_config('testapi.url')
@@ -213,8 +222,8 @@ def getQtipResults(version, installer):
         k = response.read()
         response.close()
         results = json.loads(k)['results']
-    except URLError as e:
-        print('Got an error code:', e)
+    except URLError as err:
+        print('Got an error code:', err)
 
     result_dict = {}
     if results:
@@ -427,9 +436,9 @@ def export_csv(scenario_file_name, installer, version):
                                     "/functest/scenario_history_" +
                                     installer + ".csv")
     scenario_installer_file = open(scenario_installer_file_name, "a")
-    with open(scenario_file_name, "r") as f:
+    with open(scenario_file_name, "r") as scenario_file:
         scenario_installer_file.write("date,scenario,installer,detail,score\n")
-        for line in f:
+        for line in scenario_file:
             if installer in line:
                 scenario_installer_file.write(line)
         scenario_installer_file.close
