@@ -165,12 +165,45 @@
         # here the stream means the SUT stream, dovetail stream is defined in its own job
         # only run on os-(nosdn|odl_l2)-(nofeature|bgpvpn)-ha scenario
         - conditional-step:
-            condition-kind: regex-match
-            regex: os-(nosdn|odl_l2)-(nofeature|bgpvpn)-ha
-            label: '{scenario}'
+            condition-kind: and
+            condition-operands:
+                - condition-kind: regex-match
+                  regex: os-(nosdn|odl_l2|onos|odl_l3)-nofeature-ha
+                  label: '{scenario}'
+                - condition-kind: day-of-week
+                  day-selector: select-days
+                  days:
+                      MON: true
+                      WED: true
+                      FRI: true
+                      SUN: true
             steps:
                 - trigger-builds:
-                    - project: 'dovetail-compass-{pod}-proposed_tests-{stream}'
+                    - project: 'dovetail-compass-{pod}-proposed_tests-master'
+                      current-parameters: false
+                      predefined-parameters:
+                        DEPLOY_SCENARIO={scenario}
+                      block: true
+                      same-node: true
+                      block-thresholds:
+                        build-step-failure-threshold: 'never'
+                        failure-threshold: 'never'
+                        unstable-threshold: 'FAILURE'
+        - conditional-step:
+            condition-kind: and
+            condition-operands:
+                - condition-kind: regex-match
+                  regex: os-(nosdn|odl_l2|onos|odl_l3)-nofeature-ha
+                  label: '{scenario}'
+                - condition-kind: day-of-week
+                  day-selector: select-days
+                  days:
+                      TUE: true
+                      THU: true
+                      SAT: true
+            steps:
+                - trigger-builds:
+                    - project: 'dovetail-compass-{pod}-proposed_tests-danube'
                       current-parameters: false
                       predefined-parameters:
                         DEPLOY_SCENARIO={scenario}
