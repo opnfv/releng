@@ -10,11 +10,11 @@ DOVETAIL_HOME=${WORKSPACE}/cvp
 if [ -d ${DOVETAIL_HOME} ]; then
     sudo rm -rf ${DOVETAIL_HOME}/*
 else
-    sudo mkdir -p ${DOVETAIL_HOME}
+    mkdir -p ${DOVETAIL_HOME}
 fi
 
 DOVETAIL_CONFIG=${DOVETAIL_HOME}/pre_config
-sudo mkdir -p ${DOVETAIL_CONFIG}
+mkdir -p ${DOVETAIL_CONFIG}
 
 sshkey=""
 # The path of openrc.sh is defined in fetch_os_creds.sh
