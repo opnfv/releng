@@ -1,0 +1,66 @@
+# Pod name, corresponding to pods.yaml config file
+pod_name: pod1
+pod: "{{ pods[pod_name] }}"
+
+# IPMI config
+ipmi_username: "AZERTYUIOP"
+ipmi_password: "toto1234"
+
+# Bifrost git params
+bifrost_url: https://github.com/openstack/bifrost.git
+bifrost_path: "/opt/bifrost"
+bifrost_branch: "stable/ocata"
+
+# OSA git params
+osa_url: https://git.openstack.org/openstack/openstack-ansible
+osa_path: /opt/openstack-ansible
+osa_branch: "stable/ocata"
+
+# OSA config
+osa_etc_path: /etc/openstack_deploy
+
+# Ironic drivers list
+ironic_drivers_list: agent_ipmitool,agent_ucs,pxe_ipmitool
+
+# Management bridge name for jumphost
+network_interface: brMgmt
+
+# Ironic DB password
+ironic_db_password: aSecretPassword473z
+
+# network profiles
+network_profiles:
+    controller:
+        - br-mgmt
+    storage:
+        - br-mgmt
+        - br-storage
+    network:
+        - br-mgmt
+        - br-vxlan
+        - br-vlan
+    compute:
+        - br-mgmt
+        - br-vxlan
+        - br-vlan
+
+# Cinder
+cinder_physical_device: sdb
+
+# Openstack config
+openstack:
+  domain: pod1.opnfv.fr
+  rsyslog: 10.1.0.6
+  glance:
+    nfs:
+      server: 10.0.2.6
+      path: /images
+  cinder:
+    nfs:
+      server: 10.0.2.6
+      path: /vol/cinder
+
+
+# IP shift from network address to set ip
+# first used ip address of will be network + ip_shif + node_id
+ip_shift: 10

@@ -1,0 +1,80 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "vars/pods.yaml"
+    - "vars/servers.yaml"
+    - "vars/defaults.yaml"
+  tasks:
+    ##
+    # Clean and get Bifrost sources
+    ##
+    - name: Clean old bifrost
+      file:
+        path: "{{ bifrost_path }}"
+        state: absent
+    - name: clone bifrost
+      git:
+        repo: "{{ bifrost_url }}"
+        dest: "{{ bifrost_path }}"
+        version: "{{ bifrost_branch }}"
+    - name: Clean fucking keystone file 1 that fails - Temp
+      file:
+          path: "{{ bifrost_path }}/playbooks/roles/bifrost-ironic-install/tasks/keystone_setup.yml"
+          state: absent
+    - name: Clean fucking keystone file 2 that fails - Temp
+      file:
+          path: "{{ bifrost_path }}/playbooks/roles/bifrost-ironic-install/tasks/keystone_setup_inspector.yml"
+          state: absent
+    ##
+    # Clean dnsmasq.leases
+    ##
+    - name: Remove pre-existing leases file
+      file: path=/var/lib/misc/dnsmasq.leases state=absent
+    ##
+    # Prepare inventory and config files
+    ##
+    - name: copy bifrost target vars
+      template:
+        dest: "{{ bifrost_path }}/playbooks/inventory/group_vars/target"
+        src: "templates/target.j2"
+    - name: copy bifrost baremetal vars
+      template:
+        dest: "{{ bifrost_path }}/playbooks/inventory/group_vars/baremetal"
+        src: "templates/baremetal.j2"
+    ##
+    # Install Bifrost
+    ##
+    - name: Install bifrost requirements
+      pip:
+        requirements: "{{ bifrost_path }}/requirements.txt"
+    - name: Install bifrost
+      shell: ansible-playbook -vvvv -i inventory/target install.yaml -e staging_drivers_include=true
+      args:
+        chdir: "{{ bifrost_path }}/playbooks/"
+    - name: correct bifrost config - drivers list
+      lineinfile:
+        path: /etc/ironic/ironic.conf
+        regexp: '^enabled_drivers ='
+        line: "enabled_drivers = {{ ironic_drivers_list }}"
+    - service:
+        name: ironic-conductor
+        state: restarted
+    ##
+    # Correct DNSmasq config for default gateway
+    ##
+    - name: correct dnsmasq config - default gateway
+      lineinfile:
+        path: /etc/dnsmasq.conf
+        regexp: '^dhcp-option=3'
+        line: "dhcp-option=3,{{ pod.net_config['br-mgmt'].gateway }}"
+    - service:
+        name: dnsmasq
+        state: restarted
+    ##
+    # Set various files
+    ##
+    - name: set bifrost_env-vars
+      copy:
+        src: "files/bifrost_env-vars"
+        dest: "{{ ansible_env.HOME }}/bifrost_env-vars"

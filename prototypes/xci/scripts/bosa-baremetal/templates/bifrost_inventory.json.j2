@@ -1,0 +1,30 @@
+{
+{% for server_name in pod.nodes | sort  %}
+{% if item is not defined or item == server_name %}
+{% set srv = servers[server_name] %}
+    "{{ server_name }}": {
+        "name": "{{ server_name }}",
+        "uuid": "00000000-0000-0000-0000-0000000000{{ server_name|replace('server','') }}",
+        "driver_info": {
+        "power": {
+            "ipmi_username": "{{ ipmi_username }}",
+            "ipmi_address": "{{ srv.ipmi }}",
+            "ipmi_password": "{{ ipmi_password }}"
+            }
+        },
+        "nics": [
+        {% for intf in srv.interfaces or []  %}
+            { "mac": "{{ intf.mac }}" }{{ "," if not loop.last else '' }}
+        {% endfor %} ],
+        "driver": "agent_ipmitool",
+        "ipv4_address": "{{ pod.net_config['br-mgmt'].network | ipadd( ip_shift + loop.index ) }}",
+        "properties": {
+            "cpu_arch": "x86_64",
+            "ram": "{{ (srv.details.ram or '0') | sizeConv }}",
+            "disk_size": "{{ (srv.details.storage or []) | sizeSum(target_unit='Go') }}",
+            "cpus": "{{ srv.details.cores }}"
+        }
+    }{{ "," if not loop.last else '' }}
+{% endif %}
+{% endfor %}
+}
