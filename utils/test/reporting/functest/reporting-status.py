@@ -107,7 +107,6 @@ for version in versions:
         scenario_results = rp_utils.getScenarios(healthcheck,
                                                  installer,
                                                  version)
-
         # get nb of supported architecture (x86, aarch64)
         architectures = rp_utils.getArchitectures(scenario_results)
         logger.info("Supported architectures: {}".format(architectures))
