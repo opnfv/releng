@@ -862,15 +862,13 @@
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: 'Git URL to use on this Jenkins Slave'
 - parameter:
-    name: 'ool-defaults'
+    name: 'doctor-defaults'
     parameters:
         - node:
             name: SLAVE_NAME
             description: 'Slave name on Jenkins'
             allowed-slaves:
-                - ool-virtual1
-                - ool-virtual2
-                - ool-virtual3
+                - '{default-slave}'
             default-slaves:
                 - '{default-slave}'
         - string:
@@ -882,20 +880,20 @@
             default: /root/.ssh/id_rsa
             description: 'SSH key to be used'
 - parameter:
-    name: 'ool-virtual1-defaults'
+    name: 'doctor-apex-verify-defaults'
     parameters:
-        - 'ool-defaults':
-            default-slave: 'ool-virtual1'
+        - 'doctor-defaults':
+            default-slave: 'doctor-apex-verify'
 - parameter:
-    name: 'ool-virtual2-defaults'
+    name: 'doctor-fuel-verify-defaults'
     parameters:
-        - 'ool-defaults':
-            default-slave: 'ool-virtual2'
+        - 'doctor-defaults':
+            default-slave: 'doctor-fuel-verify'
 - parameter:
-    name: 'ool-virtual3-defaults'
+    name: 'doctor-joid-verify-defaults'
     parameters:
-        - 'ool-defaults':
-            default-slave: 'ool-virtual3'
+        - 'doctor-defaults':
+            default-slave: 'doctor-joid-verify'
 - parameter:
     name: 'multisite-virtual-defaults'
     parameters:
