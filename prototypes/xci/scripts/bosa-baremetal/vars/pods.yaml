@@ -1,0 +1,63 @@
+pods:
+    pod1:
+      description: OPNFV économe
+      nodes:
+        server02: [ compute, storage ]
+        server03: [ compute, storage ]
+        server04: [ controller, storage ]
+        server09: [ controller, storage ]
+        server11: [ controller, storage ]
+      net_config:
+        br-mgmt:
+          interface: 0
+          vlan: 0
+          network: 10.1.0.0
+          mask: 24
+          gateway: 10.1.0.1
+          dns: 10.1.0.1
+        br-storage:
+          interface: 1
+          vlan: 2051
+          network: 10.1.1.0
+          mask: 24
+        br-vlan:
+          interface: 1
+          vlan: 2052
+          network: 10.1.2.0
+          mask: 24
+        br-vxlan:
+          interface: 2
+          vlan: 0
+          network: 10.1.3.0
+          mask: 24
+    pod2:
+      description: OPNFV performance
+      nodes:
+        server05: [ controller ]
+        server06: [ compute ]
+        server07: [ compute ]
+        server08: [ controller ]
+        server21: [ controller ]
+      net_config:
+        br-mgmt:
+          interface: 0
+          vlan: 0
+          network: 10.2.0.0
+          mask: 24
+          gateway: 10.2.0.1
+          dns: 10.2.0.1
+        br-storage:
+          interface: 1
+          vlan: 2056
+          network: 10.2.1.0
+          mask: 24
+        br-vlan:
+          interface: 1
+          vlan: 2057
+          network: 10.2.2.0
+          mask: 24
+        br-vxlan:
+          interface: 2
+          vlan: 0
+          network: 10.2.3.0
+          mask: 24

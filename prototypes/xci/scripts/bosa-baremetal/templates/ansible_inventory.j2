@@ -1,0 +1,21 @@
+{% set controller_count = [1] %}
+[controllers]
+{% for server_name in pod.nodes | sort  %}
+{% if 'controller' in pod.nodes[server_name] %}
+infra{{ controller_count[0] }} node_id={{ loop.index }}
+{% if controller_count.append(controller_count.pop() + 1) %}{% endif %}
+{% endif %}
+{% endfor %}
+
+{% set compute_count = [1] %}
+[computes]
+{% for server_name in pod.nodes | sort  %}
+{% if 'compute' in pod.nodes[server_name] %}
+compute{{ compute_count[0] }} node_id={{ loop.index }}
+{% if compute_count.append(compute_count.pop() + 1) %}{% endif %}
+{% endif %}
+{% endfor %}
+
+[nodes:children]
+controllers
+computes

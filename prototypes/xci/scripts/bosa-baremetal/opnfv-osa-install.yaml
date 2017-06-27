@@ -1,0 +1,30 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "vars/pods.yaml"
+    - "vars/defaults.yaml"
+  tasks:
+    ##
+    # install osa
+    ##
+    - name: remove openstack-ansible directories
+      file:
+        path: "{{ osa_path }}"
+        state: absent
+    - name: remove openstack-ansible config directories
+      file:
+        path: "{{ osa_etc_path }}"
+        state: absent
+    - name: clone openstack-ansible
+      git:
+        repo: "{{ osa_url }}"
+        dest: "{{ osa_path }}"
+        version: "{{ osa_branch }}"
+    ##
+    # Bootstra OSA
+    ##
+    # - name: Bootstrap OSA
+    #   shell: ./bootstrap-ansible.sh
+    #   args:
+    #     chdir: "{{ osa_path }}/scripts/"

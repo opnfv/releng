@@ -1,0 +1,36 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "vars/pods.yaml"
+    - "vars/defaults.yaml"
+  tasks:
+    ##
+    # Prepare config
+    ##
+    - name: Copy etc/openstack_deploy
+      shell: "cp -rf openstack_deploy {{ osa_etc_path }}"
+      args:
+        chdir: "{{ osa_path }}/etc/"
+    - name: Generate pw-tokens
+      shell: "python pw-token-gen.py --file {{ osa_etc_path }}/user_secrets.yml"
+      args:
+        chdir: "{{ osa_path }}/scripts/"
+    - name: get nodes ips
+      set_fact:
+        nodes_ip: "{{ pod | node_ips (pod.net_config['br-mgmt'].network, ip_shift) }}"
+    - name: get job nodes
+      set_fact:
+        job2nodes: "{{ pod | job2nodes() }}"
+    - name: set openstack_user_config.yml
+      template:
+        src: "templates/openstack_user_config.yml.prod.j2"
+        dest: "{{ osa_etc_path }}/openstack_user_config.yml"
+
+    ##
+    # Check syntax
+    ##
+    - name: Check syntax
+      shell: "openstack-ansible setup-infrastructure.yml --syntax-check"
+      args:
+        chdir: "{{ osa_path }}/playbooks/"
