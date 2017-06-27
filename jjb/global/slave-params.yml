@@ -670,6 +670,30 @@
             default: 'br0'
             description: 'pxe bridge for booting of Fuel master'
 - parameter:
+    name: 'zte-virtual-defaults'
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            allowed-slaves:
+                - '{default-slave}'
+            default-slaves:
+                - '{default-slave}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+- parameter:
+    name: 'zte-virtual3-defaults'
+    parameters:
+        - 'zte-virtual-defaults':
+            default-slave: 'doctor-apex-verify'
+- parameter:
+    name: 'zte-virtual4-defaults'
+    parameters:
+        - 'zte-virtual-defaults':
+            default-slave: 'doctor-fuel-verify'
+- parameter:
     name: 'juniper-pod1-defaults'
     parameters:
         - node:
@@ -868,9 +892,7 @@
             name: SLAVE_NAME
             description: 'Slave name on Jenkins'
             allowed-slaves:
-                - ool-virtual1
-                - ool-virtual2
-                - ool-virtual3
+                - '{default-slave}'
             default-slaves:
                 - '{default-slave}'
         - string:
@@ -885,12 +907,12 @@
     name: 'ool-virtual1-defaults'
     parameters:
         - 'ool-defaults':
-            default-slave: 'ool-virtual1'
+            default-slave: 'doctor-apex-verify'
 - parameter:
     name: 'ool-virtual2-defaults'
     parameters:
         - 'ool-defaults':
-            default-slave: 'ool-virtual2'
+            default-slave: 'doctor-fuel-verify'
 - parameter:
     name: 'ool-virtual3-defaults'
     parameters:
