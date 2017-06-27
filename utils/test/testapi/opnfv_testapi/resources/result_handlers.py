@@ -147,13 +147,13 @@ class ResultsCLHandler(GenericResultHandler):
             @in trust_indicator: query
             @required trust_indicator: False
         """
-        limitations = {'sort': [('start_date', -1)]}
+        limitations = {'sort': {'start_date': -1}}
         last = self.get_query_argument('last', 0)
         if last is not None:
             last = self.get_int('last', last)
             limitations.update({'last': last})
 
-        page = self.get_query_argument('page', 1)
+        page = self.get_query_argument('page', None)
         if page is not None:
             page = self.get_int('page', page)
             limitations.update({'page': page,
