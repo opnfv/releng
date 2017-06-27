@@ -1,0 +1,289 @@
+### POD descriptor file ###
+
+details:
+  pod owner: Orange
+  contact: david.blaisonneau@orange.com
+  lab: Orange Lab Lannion
+  location: Lannion, Bretagne, France
+  type: development
+  link: http://wiki.opnfv.org/
+
+jumphost:
+  name: pod1-jump
+  node:
+    type: virtual                           # can be virtual or baremetal
+    vendor: libvirt
+    model: qemu
+    arch: x86_64
+    cpus: 1
+    cpu_cflags: hasewell                    # add values based on CFLAGS in GCC
+    cores: 8                                # physical cores, not including hyper-threads
+    memory: 8G
+  disks:                                    # disk list
+    - name: 'disk1'                         # second disk
+      disk_capacity: 17.20G
+      disk_type: ssd
+      disk_interface: virtio
+      disk_rotation: 15000
+  os: ubuntu-16.04                          #operation system installed
+  remote_para: &remoteparas
+    type:
+        - ipmi:
+            - 2.0
+    user: Administrator
+    pass: opnfv2017
+  remote_mangement:
+    <<: *remoteparas
+    address: 10.0.1.15/24
+    mac_address: "94:57:a5:52:c1:54"
+  interfaces:                               # physical interface list
+    - nic: ens3                             # first interface
+      address: 10.1.0.4/24                  # ip address of nic
+      mac_address: "52:54:00:d0:4a:d0"
+      vlan: native                 # vlan tag, may have multiple tags
+nodes:
+  - name: pod1-node1
+    node: &nodeparas                        # for nodes in the same pod may have the same configuration
+      type: baremetal
+      vendor: hp
+      model: dl360g9
+      arch: x86_64
+      cpus: 2
+      cpu_cflags: hasewell
+      cores: 14
+      memory: 128G
+    disks: &disks                           # for nodes in the same pod may have the same configuration
+      - name: 'disk1'
+        disk_capacity: 200G
+        disk_type: ssd
+        disk_interface: ssd
+        disk_rotation: 15000
+      - name: 'disk2'
+        disk_capacity: 1200G
+        disk_type: ssd
+        disk_interface: ssd
+        disk_rotation: 15000
+    remote_mangement:
+      <<: *remoteparas
+      address: 10.0.0.12/24
+      mac_address: "94:57:a5:62:f4:c7"
+    interfaces:
+      - name: 'mgmt'
+        speed: 1gb
+        features: ''
+        address: 10.1.0.11/24
+        mac_address: "94:57:a5:52:f1:80"
+        vlan: native
+      - name: 'storage'
+        speed: 1gb
+        features: ''
+        address: 10.1.1.11/24
+        mac_address: "94:57:a5:52:f1:81"
+        vlan: 2051
+      - name: 'vlan'
+        speed: 1gb
+        features: ''
+        mac_address: "94:57:a5:52:f1:81"
+        vlan: 2052
+      - name: 'vxlan'
+        speed: 1gb
+        features: ''
+        address: 10.1.3.11/24
+        mac_address: "94:57:a5:52:f1:83"
+        vlan: native
+  - name: pod1-node2
+    node: &nodeparas                        # for nodes in the same pod may have the same configuration
+      type: baremetal
+      vendor: hp
+      model: dl360g9
+      arch: x86_64
+      cpus: 2
+      cpu_cflags: hasewell
+      cores: 14
+      memory: 128G
+    disks: &disks                           # for nodes in the same pod may have the same configuration
+      - name: 'disk1'
+        disk_capacity: 200G
+        disk_type: ssd
+        disk_interface: ssd
+        disk_rotation: 15000
+      - name: 'disk2'
+        disk_capacity: 1200G
+        disk_type: ssd
+        disk_interface: ssd
+        disk_rotation: 15000
+    remote_mangement:
+      <<: *remoteparas
+      address: 10.0.0.13/24
+      mac_address: "e0:07:1b:f8:7e:5f"
+    interfaces:
+      - name: 'mgmt'
+        speed: 1gb
+        features: ''
+        address: 10.1.0.12/24
+        mac_address: "1c:98:ec:16:ae:38"
+        vlan: native
+      - name: 'storage'
+        speed: 1gb
+        features: ''
+        address: 10.1.1.12/24
+        mac_address: "1c:98:ec:16:ae:39"
+        vlan: 2051
+      - name: 'vlan'
+        speed: 1gb
+        features: ''
+        mac_address: "1c:98:ec:16:ae:39"
+        vlan: 2052
+      - name: 'vxlan'
+        speed: 1gb
+        features: ''
+        address: 10.1.3.12/24
+        mac_address: "1c:98:ec:16:ae:3a"
+        vlan: native
+  - name: pod1-node3
+    node: &nodeparas                        # for nodes in the same pod may have the same configuration
+      type: baremetal
+      vendor: hp
+      model: dl360g9
+      arch: x86_64
+      cpus: 2
+      cpu_cflags: hasewell
+      cores: 14
+      memory: 32G
+    disks: &disks                           # for nodes in the same pod may have the same configuration
+      - name: 'disk1'
+        disk_capacity: 300G
+        disk_type: ssd
+        disk_interface: ssd
+        disk_rotation: 15000
+      - name: 'disk2'
+        disk_capacity: 300G
+        disk_type: ssd
+        disk_interface: ssd
+        disk_rotation: 15000
+    remote_mangement:
+      <<: *remoteparas
+      address: 10.0.0.14/24
+      mac_address: "94:57:a5:62:73:c3"
+    interfaces:
+      - name: 'mgmt'
+        speed: 1gb
+        features: ''
+        address: 10.1.0.13/24
+        mac_address: "94:57:a5:52:c9:48"
+        vlan: native
+      - name: 'storage'
+        speed: 1gb
+        features: ''
+        address: 10.1.1.13/24
+        mac_address: "94:57:a5:52:c9:49"
+        vlan: 2051
+      - name: 'vlan'
+        speed: 1gb
+        features: ''
+        mac_address: "94:57:a5:52:c9:49"
+        vlan: 2052
+      - name: 'vxlan'
+        speed: 1gb
+        features: ''
+        address: 10.1.3.13/24
+        mac_address: "94:57:a5:52:c9:4a"
+        vlan: native
+  - name: pod1-node4
+    node: &nodeparas                        # for nodes in the same pod may have the same configuration
+      type: baremetal
+      vendor: hp
+      model: dl360g9
+      arch: x86_64
+      cpus: 1
+      cpu_cflags: hasewell
+      cores: 14
+      memory: 32G
+    disks: &disks                           # for nodes in the same pod may have the same configuration
+      - name: 'disk1'
+        disk_capacity: 300G
+        disk_type: ssd
+        disk_interface: ssd
+        disk_rotation: 15000
+      - name: 'disk2'
+        disk_capacity: 300G
+        disk_type: ssd
+        disk_interface: ssd
+        disk_rotation: 15000
+    remote_mangement:
+      <<: *remoteparas
+      address: 10.0.0.19/24
+      mac_address: "94:57:a5:62:72:b9"
+    interfaces:
+      - name: 'mgmt'
+        speed: 1gb
+        features: ''
+        address: 10.1.0.14/24
+        mac_address: "94:57:a5:52:53:7c"
+        vlan: native
+      - name: 'storage'
+        speed: 1gb
+        features: ''
+        address: 10.1.1.14/24
+        mac_address: "94:57:a5:52:53:7d"
+        vlan: 2051
+      - name: 'vlan'
+        speed: 1gb
+        features: ''
+        mac_address: "94:57:a5:52:53:7d"
+        vlan: 2052
+      - name: 'vxlan'
+        speed: 1gb
+        features: ''
+        address: 10.1.3.14/24
+        mac_address: "94:57:a5:52:53:7e"
+        vlan: native
+  - name: pod1-node5
+    node: &nodeparas                        # for nodes in the same pod may have the same configuration
+      type: baremetal
+      vendor: hp
+      model: dl360g9
+      arch: x86_64
+      cpus: 1
+      cpu_cflags: hasewell
+      cores: 14
+      memory: 32G
+    disks: &disks                           # for nodes in the same pod may have the same configuration
+      - name: 'disk1'
+        disk_capacity: 300G
+        disk_type: ssd
+        disk_interface: ssd
+        disk_rotation: 15000
+      - name: 'disk2'
+        disk_capacity: 300G
+        disk_type: ssd
+        disk_interface: ssd
+        disk_rotation: 15000
+    remote_mangement:
+      <<: *remoteparas
+      address: 10.0.0.19/24
+      mac_address: "94:57:a5:62:f4:a7"
+    interfaces:
+      - name: 'mgmt'
+        speed: 1gb
+        features: ''
+        address: 10.1.0.14/24
+        mac_address: "94:57:a5:52:c1:d8"
+        vlan: native
+      - name: 'storage'
+        speed: 1gb
+        features: ''
+        address: 10.1.1.14/24
+        mac_address: "94:57:a5:52:c1:d9"
+        vlan: 2051
+      - name: 'vlan'
+        speed: 1gb
+        features: ''
+        mac_address: "94:57:a5:52:c1:d9"
+        vlan: 2052
+      - name: 'vxlan'
+        speed: 1gb
+        features: ''
+        address: 10.1.3.14/24
+        mac_address: "94:57:a5:52:c1:da"
+        vlan: native

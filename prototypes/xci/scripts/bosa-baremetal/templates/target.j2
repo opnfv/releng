@@ -1,0 +1,33 @@
+---
+network_interface: "{{ network_interface }}"
+ironic_db_password: {{ ironic_db_password }}
+mysql_username: root
+mysql_password:
+
+ssh_public_key_path: "/root/.ssh/id_rsa.pub"
+
+create_image_via_dib: true
+
+transform_boot_image: false
+
+create_ipa_image: false
+download_ipa: true
+
+dnsmasq_router: {{ pod.net_config['br-mgmt'].network | ipadd( 1 ) }}
+
+dnsmasq_dns_servers: {{ pod.net_config['br-mgmt'].network | ipadd( 1 ) }}
+dhcp_pool_start: {{ pod.net_config['br-mgmt'].network | ipadd( 150 ) }}
+dhcp_pool_end: {{ pod.net_config['br-mgmt'].network | ipadd( 250 ) }}
+dhcp_lease_time: 12h
+dhcp_static_mask: 24
+inventory_dns: true
+inventory_dhcp: false
+inspect_nodes: false
+
+dib_os_release: xenial
+dib_os_element: ubuntu-minimal
+dib_packages: "vlan,vim,less,bridge-utils,language-pack-en,iputils-ping,rsyslog,curl,byobu"
+extra_dib_elements: baremetal devuser growroot openssh-server
+dib_init_element: simple-init
+dib_dev_user_username: {{ dib_dev_user_username }}
+dib_dev_user_password: {{ dib_dev_user_password }}

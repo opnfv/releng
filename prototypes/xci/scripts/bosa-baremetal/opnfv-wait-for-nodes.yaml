@@ -1,0 +1,17 @@
+---
+- hosts: nodes
+  vars_files:
+    - "vars/pods.yaml"
+    - "vars/servers.yaml"
+    - "vars/defaults.yaml"
+  gather_facts: no
+  tasks:
+    ##
+    # wait for nodes to be reachable after bifrost deploy reboot
+    ##
+    - name: wait for nodes to be reachable
+      local_action: shell ansible -i {{ bosa_config }}/ansible_inventory -m ping {{ inventory_hostname }}
+      register: result
+      until: result.rc == 0
+      retries: 60
+      delay: 10

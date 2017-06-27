@@ -1,0 +1,27 @@
+# default inventory source
+export BIFROST_INVENTORY_SOURCE=/etc/bosa/bifrost_inventory.json
+
+# functions
+bifrost_check_ssh_server(){
+	ip=$1
+	ssh -q -o 'StrictHostKeyChecking=no' root@$ip 'echo -n 2>&1' && echo -e "$ip \e[32mSSH_OK\e[39m" || echo -e "$ip \e[31mSSH_NOK\e[39m"
+}
+bifrost_del_server(){
+	ironic node-set-maintenance $1 true
+    ironic node-delete $1
+}
+bifrost_reboot_server(){
+    ironic node-set-power-state $1 off
+    sleep 30
+    ironic node-set-power-state $1 on
+}
+ping_check(){
+    ping -c1 $1 | egrep "packet|ping"
+}
+
+# aliases
+alias bifrost_check_ssh='for ip in $(jq -r ".[].ipv4_address" $BIFROST_INVENTORY_SOURCE ); do bifrost_check_ssh_server $ip; done'
+alias bifrost_check_dhcp='for ip in $(cat /var/lib/misc/dnsmasq.leases | cut -d\  -f3); do ping_check $ip; done'
+alias bifrost_check_ipmi='for ip in $(jq -r ".[].driver_info.power.ipmi_address" $BIFROST_INVENTORY_SOURCE); do ping_check $ip; done'
+alias bifrost_check_ping='for ip in $(jq -r ".[].ipv4_address" $BIFROST_INVENTORY_SOURCE ); do ping_check $ip; done'
+alias bifrost_clean='for srv in $(jq -r ".[].name" $BIFROST_INVENTORY_SOURCE); do bifrost_del_server $srv; done'
