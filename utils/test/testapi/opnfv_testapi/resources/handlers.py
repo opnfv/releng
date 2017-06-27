@@ -105,21 +105,36 @@ class GenericApiHandler(web.RequestHandler):
             query = {}
         data = []
         sort = kwargs.get('sort')
-        page = kwargs.get('page')
-        last = kwargs.get('last')
-        per_page = kwargs.get('per_page')
+        page = kwargs.get('page', 0)
+        last = kwargs.get('last', 0)
+        per_page = kwargs.get('per_page', 0)
 
         cursor = self._eval_db(self.table, 'find', query)
+        records_count = yield cursor.count()
+        records_nr = records_count
+        if (records_count > last) and (last > 0):
+            records_nr = last
+
+        pipelines = list()
+        if query:
+            pipelines.append({'$match': query})
         if sort:
-            cursor = cursor.sort(sort)
-        if last and last != 0:
-            cursor = cursor.limit(last)
-        if page:
-            records_count = yield cursor.count()
-            total_pages, remainder = divmod(records_count, per_page)
+            pipelines.append({'$sort': sort})
+
+        if page > 0:
+            total_pages, remainder = divmod(records_nr, per_page)
             if remainder > 0:
                 total_pages += 1
-            cursor = cursor.skip((page - 1) * per_page).limit(per_page)
+            pipelines.append({'$skip': (page - 1) * per_page})
+            pipelines.append({'$limit': per_page})
+        else:
+            pipelines.append({'$limit': records_nr})
+
+        cursor = self._eval_db(self.table,
+                               'aggregate',
+                               pipelines,
+                               allowDiskUse=True)
+
         while (yield cursor.fetch_next):
             data.append(self.format_data(cursor.next_object()))
         if res_op is None:

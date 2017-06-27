@@ -35,15 +35,14 @@ class MemCursor(object):
         return self.collection.pop()
 
     def sort(self, key_or_list):
-        key = key_or_list[0][0]
-        if key_or_list[0][1] == -1:
-            reverse = True
-        else:
-            reverse = False
+        for k, v in key_or_list.iteritems():
+            if v == -1:
+                reverse = True
+            else:
+                reverse = False
 
-        if key_or_list is not None:
             self.collection = sorted(self.collection,
-                                     key=itemgetter(key), reverse=reverse)
+                                     key=itemgetter(k), reverse=reverse)
         return self
 
     def limit(self, limit):
@@ -201,6 +200,27 @@ class MemDb(object):
 
     def find(self, *args):
         return MemCursor(self._find(*args))
+
+    def _aggregate(self, *args, **kwargs):
+        res = self.contents
+        print args
+        for arg in args[0]:
+            for k, v in arg.iteritems():
+                if k == '$match':
+                    res = self._find(v)
+        cursor = MemCursor(res)
+        for arg in args[0]:
+            for k, v in arg.iteritems():
+                if k == '$sort':
+                    cursor = cursor.sort(v)
+                elif k == '$skip':
+                    cursor = cursor.skip(v)
+                elif k == '$limit':
+                    cursor = cursor.limit(v)
+        return cursor
+
+    def aggregate(self, *args, **kwargs):
+        return self._aggregate(*args, **kwargs)
 
     def _update(self, spec, document, check_keys=True):
         updated = False
