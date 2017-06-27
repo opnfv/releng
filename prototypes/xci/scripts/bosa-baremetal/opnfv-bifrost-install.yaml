@@ -1,0 +1,112 @@
+---
+- hosts: jumphost
+  become: true
+  vars_files:
+    - "vars/pods.yaml"
+    - "vars/servers.yaml"
+    - "vars/defaults.yaml"
+  tasks:
+    ##
+    # Gen SSH keys if not exists
+    ##
+    - name: Generate SSH keys
+      shell: ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
+      args:
+        creates: /root/.ssh/id_rsa
+    ##
+    # Clean and get Bifrost sources
+    ##
+    - name: Update list of packages
+      apt:
+        name: 'python-pip'
+        update_cache: yes
+        state: installed
+    - name: Install list of packages
+      apt:
+        name: "{{item}}"
+        state: installed
+      with_items:
+           - python-pip
+           - python-dev
+           - libssl-dev
+           - virtualenv
+           - git
+           - jq
+    - name: Clean old bifrost
+      file:
+        path: "{{ bifrost_path }}"
+        state: absent
+    - name: "clone bifrost {{bifrost_branch}}"
+      git:
+        repo: "{{ bifrost_url }}"
+        dest: "{{ bifrost_path }}"
+        version: "{{ bifrost_branch }}"
+    ##
+    # Clean dnsmasq.leases
+    ##
+    - name: Remove pre-existing leases file
+      file: path=/var/lib/misc/dnsmasq.leases state=absent
+    ##
+    # Prepare inventory and config files
+    ##
+    - name: copy bifrost target vars
+      template:
+        dest: "{{ bifrost_path }}/playbooks/inventory/group_vars/target"
+        src: "templates/target.j2"
+    - name: copy bifrost baremetal vars
+      template:
+        dest: "{{ bifrost_path }}/playbooks/inventory/group_vars/baremetal"
+        src: "templates/baremetal.j2"
+    ##
+    # Update pip and install ansible
+    ##
+    - name: Install ansible
+      pip:
+        name: "ansible"
+    ##
+    # Correct image gen and remove old images
+    ##
+    - name: correct bifrost image generation
+      lineinfile:
+        path: "{{ bifrost_path }}/playbooks/install.yaml"
+        regexp: '^(.*) serial-console(.*)$'
+        line: '\1 enable-serial-console\2'
+        backrefs: yes
+    - name: Remove old image
+      file:
+        path: "/httpboot/deployment_image*"
+        state: absent
+    ##
+    # Install Bifrost
+    ##
+    - name: Install bifrost requirements
+      pip:
+        requirements: "{{ bifrost_path }}/requirements.txt"
+        # virtualenv: "{{ bifrost_venv }}"
+    - name: Install bifrost
+      shell: "ansible-playbook -i inventory/target install.yaml -e staging_drivers_include=true;"
+      args:
+        chdir: "{{ bifrost_path }}/playbooks/"
+    ##
+    # Correct DNSmasq config for default gateway
+    ##
+    - name: correct dnsmasq config - default gateway
+      lineinfile:
+        path: /etc/dnsmasq.conf
+        regexp: '^dhcp-option=3'
+        line: "dhcp-option=3,{{ pod.net_config['br-mgmt'].gateway }}"
+    - service:
+        name: dnsmasq
+        state: restarted
+    ##
+    # Set various files
+    ##
+
+    - name: clean bifrost detailled inventory folder
+      file:
+        path: "{{ bosa_config }}/bifrost_inventory/"
+        state: absent
+    - name: set bifrost detailled inventory folder
+      file:
+        path: "{{ bosa_config }}/bifrost_inventory/"
+        state: directory

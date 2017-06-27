@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "vars/pods.yaml"
+    - "vars/defaults.yaml"
+  tasks:
+    ##
+    # Check syntax
+    ##
+    - name: Setup hosts
+      shell: "openstack-ansible setup-hosts.yml"
+      args:
+        chdir: "{{ osa_path }}/playbooks/"

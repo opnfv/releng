@@ -1,0 +1,224 @@
+---
+cidr_networks:
+  container: {{ pod.net_config['br-mgmt'].network }}/{{ pod.net_config['br-mgmt'].mask }}
+  tunnel: {{ pod.net_config['br-vxlan'].network }}/{{ pod.net_config['br-vxlan'].mask }}
+  storage: {{ pod.net_config['br-storage'].network }}/{{ pod.net_config['br-storage'].mask }}
+
+used_ips:
+  - "{{ pod.net_config['br-mgmt'].network | ipadd( 1 ) }},{{ pod.net_config['br-mgmt'].network | ipadd( 50 ) }}"
+  - "{{ pod.net_config['br-vxlan'].network | ipadd( 1 ) }},{{ pod.net_config['br-vxlan'].network | ipadd( 50 ) }}"
+  - "{{ pod.net_config['br-storage'].network | ipadd( 1 ) }},{{ pod.net_config['br-storage'].network | ipadd( 50 ) }}"
+
+global_overrides:
+  internal_lb_vip_address: {{ pod.net_config['br-mgmt'].network | ipadd( 9 ) }}
+  #
+  # The below domain name must resolve to an IP address
+  # in the CIDR specified in haproxy_keepalived_external_vip_cidr.
+  # If using different protocols (https/http) for the public/internal
+  # endpoints the two addresses must be different.
+  #
+  external_lb_vip_address: {{ openstack.public_fqdn }}
+  tunnel_bridge: "br-vxlan"
+  management_bridge: "br-mgmt"
+  provider_networks:
+    - network:
+        container_bridge: "br-mgmt"
+        container_type: "veth"
+        container_interface: "eth1"
+        ip_from_q: "container"
+        type: "raw"
+        group_binds:
+          - all_containers
+          - hosts
+        is_container_address: true
+        is_ssh_address: true
+    - network:
+        container_bridge: "br-vxlan"
+        container_type: "veth"
+        container_interface: "eth10"
+        ip_from_q: "tunnel"
+        type: "vxlan"
+        range: "1:1000"
+        net_name: "vxlan"
+        group_binds:
+          - neutron_linuxbridge_agent
+    - network:
+        container_bridge: "br-vlan"
+        container_type: "veth"
+        container_interface: "eth12"
+        host_bind_override: "eth12"
+        type: "flat"
+        net_name: "flat"
+        group_binds:
+          - neutron_linuxbridge_agent
+    - network:
+        container_bridge: "br-vlan"
+        container_type: "veth"
+        container_interface: "eth11"
+        type: "vlan"
+        range: "1:1"
+        net_name: "vlan"
+        group_binds:
+          - neutron_linuxbridge_agent
+    - network:
+        container_bridge: "br-storage"
+        container_type: "veth"
+        container_interface: "eth2"
+        ip_from_q: "storage"
+        type: "raw"
+        group_binds:
+          - glance_api
+          - cinder_api
+          - cinder_volume
+          - nova_compute
+
+###
+### Infrastructure
+###
+
+# galera, memcache, rabbitmq, utility
+shared-infra_hosts:
+{% for node in job2nodes['controller'] %}
+  infra{{ loop.index }}:
+    ip: {{ nodes_ip[node]['ip'] }}
+{% endfor %}
+
+# repository (apt cache, python packages, etc)
+repo-infra_hosts:
+{% for node in job2nodes['controller'] %}
+  infra{{ loop.index }}:
+    ip: {{ nodes_ip[node]['ip'] }}
+{% endfor %}
+
+# load balancer
+# Ideally the load balancer should not use the Infrastructure hosts.
+# Dedicated hardware is best for improved performance and security.
+haproxy_hosts:
+{% for node in job2nodes['controller'] %}
+  infra{{ loop.index }}:
+    ip: {{ nodes_ip[node]['ip'] }}
+{% endfor %}
+
+# rsyslog server
+log_hosts:
+  log1:
+    ip: {{ openstack.rsyslog }}
+
+###
+### OpenStack
+###
+
+# keystone
+identity_hosts:
+{% for node in job2nodes['controller'] %}
+  infra{{ loop.index }}:
+    ip: {{ nodes_ip[node]['ip'] }}
+{% endfor %}
+
+# cinder api services
+storage-infra_hosts:
+{% for node in job2nodes['controller'] %}
+  infra{{ loop.index }}:
+    ip: {{ nodes_ip[node]['ip'] }}
+{% endfor %}
+
+# glance
+# The settings here are repeated for each infra host.
+# They could instead be applied as global settings in
+# user_variables, but are left here to illustrate that
+# each container could have different storage targets.
+image_hosts:
+{% for node in job2nodes['controller'] %}
+  infra{{ loop.index }}:
+    ip: {{ nodes_ip[node]['ip'] }}
+    container_vars:
+      limit_container_types: glance
+      glance_nfs_client:
+        - server: "{{ openstack.glance.nfs.server }}"
+          remote_path: "{{ openstack.glance.nfs.path }}"
+          local_path: "/var/lib/glance/images"
+          type: "nfs"
+          options: "_netdev,auto"
+{% endfor %}
+
+# nova api, conductor, etc services
+compute-infra_hosts:
+{% for node in job2nodes['controller'] %}
+  infra{{ loop.index }}:
+    ip: {{ nodes_ip[node]['ip'] }}
+{% endfor %}
+
+# heat
+orchestration_hosts:
+{% for node in job2nodes['controller'] %}
+  infra{{ loop.index }}:
+    ip: {{ nodes_ip[node]['ip'] }}
+{% endfor %}
+
+# horizon
+dashboard_hosts:
+{% for node in job2nodes['controller'] %}
+  infra{{ loop.index }}:
+    ip: {{ nodes_ip[node]['ip'] }}
+{% endfor %}
+
+# neutron server, agents (L3, etc)
+network_hosts:
+{% for node in job2nodes['controller'] %}
+  infra{{ loop.index }}:
+    ip: {{ nodes_ip[node]['ip'] }}
+{% endfor %}
+
+# ceilometer (telemetry API)
+metering-infra_hosts:
+{% for node in job2nodes['controller'] %}
+  infra{{ loop.index }}:
+    ip: {{ nodes_ip[node]['ip'] }}
+{% endfor %}
+
+# aodh (telemetry alarm service)
+metering-alarm_hosts:
+{% for node in job2nodes['controller'] %}
+  infra{{ loop.index }}:
+    ip: {{ nodes_ip[node]['ip'] }}
+{% endfor %}
+
+# gnocchi (telemetry metrics storage)
+metrics_hosts:
+{% for node in job2nodes['controller'] %}
+  infra{{ loop.index }}:
+    ip: {{ nodes_ip[node]['ip'] }}
+{% endfor %}
+
+# nova hypervisors
+compute_hosts:
+{% for node in job2nodes['compute'] %}
+  compute{{ loop.index }}:
+    ip: {{ nodes_ip[node]['ip'] }}
+{% endfor %}
+
+# ceilometer compute agent (telemetry)
+metering-compute_hosts:
+{% for node in job2nodes['compute'] %}
+  compute{{ loop.index }}:
+    ip: {{ nodes_ip[node]['ip'] }}
+{% endfor %}
+
+# cinder volume hosts (NFS-backed)
+# The settings here are repeated for each infra host.
+# They could instead be applied as global settings in
+# user_variables, but are left here to illustrate that
+# each container could have different storage targets.
+storage_hosts:
+{% for node in job2nodes['controller'] %}
+  infra{{ loop.index }}:
+    ip: {{ nodes_ip[node]['ip'] }}
+    container_vars:
+      cinder_backends:
+        limit_container_types: cinder_volume
+        lvm:
+          volume_group: cinder-volumes
+          volume_driver: cinder.volume.drivers.lvm.LVMVolumeDriver
+          volume_backend_name: LVM_iSCSI
+          iscsi_ip_address: "{{ pod.net_config['br-storage'].network | ipadd(nodes_ip[node]['shift']) }}"
+{% endfor %}

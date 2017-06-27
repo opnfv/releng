@@ -1,0 +1,107 @@
+---
+- hosts: nodes
+  vars_files:
+    - "vars/pods.yaml"
+    - "vars/servers.yaml"
+    - "vars/defaults.yaml"
+  gather_facts: no
+  tasks:
+    ##
+    # wait for nodes to be reachable after bifrost deploy reboot
+    ##
+    - name: wait for nodes to be reachable
+      local_action: shell ansible -i {{ bosa_config }}/ansible_inventory -m ping {{ inventory_hostname }}
+      register: result
+      until: result.rc == 0
+      retries: 30
+      delay: 10
+
+    ##
+    # set correct gateway
+    ##
+    - name: ensure the gateway is correct
+      shell: "ip r d default && ip r a default via {{ pod.net_config['br-mgmt'].gateway }}"
+
+    ##
+    # set correct resolv.conf
+    ##
+    - name: ensure the resolv.conf is correct
+      shell: "echo nameserver {{ pod.net_config['br-mgmt'].dns }} > /etc/resolv.conf"
+      
+    ##
+    # install basic packages
+    ##
+    - name: Install list of packages
+      apt: name={{item}} state=installed
+      with_items:
+           - bridge-utils
+           - debootstrap
+           - ifenslave
+           - ifenslave-2.6
+           - lsof
+           - lvm2
+           - ntp
+           - ntpdate
+           - sudo
+           - tcpdump
+           - vlan
+    ##
+    # Prepare and clean node
+    ##
+    - name: configure modules
+      lineinfile:
+        dest: /etc/modules
+        state: present
+        create: yes
+        line: "8021q"
+    - name: add modules
+      modprobe:
+        name: 8021q
+        state: present
+    - name: ensure glean rules are removed
+      file:
+        path: "/etc/udev/rules.d/99-glean.rules"
+        state: absent
+    ##
+    # Get mac2intf list1
+    ##
+
+    - name: get bridges to configure
+      set_fact:
+        bridges: "{{ inventory_hostname | get_bridges(hostvars, network_profiles, pod) }}"
+    - name: get srv_macs
+      set_fact:
+        srv_macs: "{{ inventory_hostname | target_interfaces(hostvars, servers) }}"
+    - name: get mac2intf
+      set_fact:
+        macs: "{{ inventory_hostname | mac2intf(hostvars, servers) }}"
+    - name: get mgmt interface
+      set_fact:
+        mgmt_intf: "{{ macs[srv_macs[pod.net_config['br-mgmt'].interface]] }}"
+    - name: get mgmt network prefix
+      set_fact:
+        mgmt_net_p: "{{ pod.net_config['br-mgmt'].network.split('.')[0:-1]|join('.') }}"
+
+    ##
+    # Prepare network
+    ##
+    - name: ensure interfaces.d folder is empty
+      shell: "/bin/rm -rf /etc/network/interfaces.d/*"
+    - name: ensure interfaces file is updated
+      template:
+        src: "templates/interfaces.j2"
+        dest: "/etc/network/interfaces"
+    - name: restart mgmt interface
+      shell: "ip a d {{ mgmt_net_p }}.1{{ node_id }}/{{ pod.net_config['br-mgmt'].mask }} dev {{ mgmt_intf }} && ip l set dev {{ mgmt_intf }} down && ifup br-mgmt"
+      when: hostvars[inventory_hostname]["ansible_"+mgmt_intf].ipv4 is defined
+    - name: restart all interfaces
+      shell: "ifdown --exclude=lo -a && ifup --exclude=lo -a && sleep 5"
+
+    ##
+    # Restart services
+    ##
+    - systemd:
+        name: ntp
+        state: restarted
+        daemon_reload: yes
+        no_block: true

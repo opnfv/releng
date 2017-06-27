@@ -1,0 +1,35 @@
+auto lo
+iface lo inet loopback
+{% for bridge in bridges %}
+
+##
+# OSA Bridge {{ bridge }}
+##
+{% set intf = macs[srv_macs[pod.net_config[bridge].interface]] %}
+{% if pod.net_config[bridge].vlan > 0 %}
+auto {{ intf }}.{{ pod.net_config[bridge].vlan }}
+iface {{ intf }}.{{ pod.net_config[bridge].vlan }} inet manual
+    vlan-raw-device {{ intf }}
+{% else %}
+auto {{ intf }}
+iface {{ intf }} inet manual
+{% endif %}
+
+auto {{ bridge }}
+iface {{ bridge }} inet {{ 'static' if bridge != 'br-vlan' else 'manual' }}
+    bridge_stp off
+    bridge_waitport 0
+    bridge_fd 0
+    bridge_ports {{ intf }}{% if pod.net_config[bridge].vlan > 0 %}.{{ pod.net_config[bridge].vlan }}{% endif %}
+
+{% if bridge != 'br-vlan' %}
+    address {{ pod.net_config[bridge].network | ipadd( ip_shift + node_id ) }}
+    netmask {{ pod.net_config[bridge].mask }}
+{% if pod.net_config[bridge].gateway is defined %}
+    gateway {{ pod.net_config[bridge].gateway }}
+{% endif %}
+{% if pod.net_config[bridge].dns is defined %}
+    dns-nameservers {{ pod.net_config[bridge].dns }}
+{% endif %}
+{% endif %}
+{% endfor %}
