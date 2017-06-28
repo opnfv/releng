@@ -103,18 +103,43 @@ class GenericApiHandler(web.RequestHandler):
     def _list(self, query=None, res_op=None, *args, **kwargs):
         if query is None:
             query = {}
-        data = []
+        page = kwargs.get('page', 0)
+        cursor = self._eval_db(self.table, 'find', query)
+        records_count = yield cursor.count()
+        (total_pages, pipelines) = self._set_pipelines(query,
+                                                       records_count,
+                                                       **kwargs)
+        cursor = self._eval_db(self.table,
+                               'aggregate',
+                               pipelines,
+                               allowDiskUse=True)
+        data = list()
+        while (yield cursor.fetch_next):
+            data.append(self.format_data(cursor.next_object()))
+        if res_op is None:
+            res = {self.table: data}
+        else:
+            res = res_op(data, *args)
+        if page > 0:
+            res.update({
+                'pagination': {
+                    'current_page': page,
+                    'total_pages': total_pages
+                }
+            })
+        self.finish_request(res)
+
+    def _set_pipelines(self, query, records_count, **kwargs):
         sort = kwargs.get('sort')
         page = kwargs.get('page', 0)
         last = kwargs.get('last', 0)
         per_page = kwargs.get('per_page', 0)
 
-        cursor = self._eval_db(self.table, 'find', query)
-        records_count = yield cursor.count()
         records_nr = records_count
         if (records_count > last) and (last > 0):
             records_nr = last
 
+        total_pages = 0
         pipelines = list()
         if query:
             pipelines.append({'$match': query})
@@ -127,28 +152,10 @@ class GenericApiHandler(web.RequestHandler):
                 total_pages += 1
             pipelines.append({'$skip': (page - 1) * per_page})
             pipelines.append({'$limit': per_page})
-        else:
-            pipelines.append({'$limit': records_nr})
+        elif last > 0:
+            pipelines.append({'$limit': last})
 
-        cursor = self._eval_db(self.table,
-                               'aggregate',
-                               pipelines,
-                               allowDiskUse=True)
-
-        while (yield cursor.fetch_next):
-            data.append(self.format_data(cursor.next_object()))
-        if res_op is None:
-            res = {self.table: data}
-        else:
-            res = res_op(data, *args)
-        if page:
-            res.update({
-                'pagination': {
-                    'current_page': page,
-                    'total_pages': total_pages
-                }
-            })
-        self.finish_request(res)
+        return (total_pages, pipelines)
 
     @web.asynchronous
     @gen.coroutine
