@@ -127,8 +127,8 @@ class GenericApiHandler(web.RequestHandler):
                 total_pages += 1
             pipelines.append({'$skip': (page - 1) * per_page})
             pipelines.append({'$limit': per_page})
-        else:
-            pipelines.append({'$limit': records_nr})
+        elif last > 0:
+            pipelines.append({'$limit': last})
 
         cursor = self._eval_db(self.table,
                                'aggregate',
