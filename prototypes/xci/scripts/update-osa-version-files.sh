@@ -9,7 +9,8 @@
 ##############################################################################
 
 # This script is used to pin the SHAs for the various roles in the
-# ansible-role-requirements file
+# ansible-role-requirements file. It will also update the SHAs for
+# OSA and bifrost.
 
 set -e
 
@@ -18,7 +19,7 @@ releng_xci_base="$(dirname $(readlink -f $0))/.."
 
 usage() {
     echo """
-    ${0} <openstack-ansible commit SHA>
+    ${0} <openstack-ansible commit SHA> [<bifrost commit SHA>]
     """
     exit 0
 }
@@ -32,7 +33,7 @@ printme() {
 }
 
 # Only need a single argument
-[[ $# -ne 1 ]] && echo "Invalid number of arguments!" && usage
+[[ $# -lt 1 || $# -gt 2 ]] && echo "Invalid number of arguments!" && usage
 
 tempdir="$(mktemp -d)"
 
@@ -71,6 +72,10 @@ cat $tempdir/openstack-ansible/ansible-role-requirements.yml >> $releng_xci_base
 
 # Update the pinned OSA version
 sed -i "/^export OPENSTACK_OSA_VERSION/s@:-\"[a-z0-9]*@:-\"${1}@" $releng_xci_base/config/pinned-versions
+
+# Update the pinned bifrost version
+[[ -n ${2:-} ]] && \
+    sed -i "/^export OPENSTACK_BIFROST_VERSION/s@:-\"[a-z0-9]*@:-\"${2}@" $releng_xci_base/config/pinned-versions
 
 popd &> /dev/null
 
