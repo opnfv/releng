@@ -1,9 +1,12 @@
 - project:
-    name: testapi-automate
+    name: utils-automate
     stream:
         - master:
             branch: '{stream}'
-            gs-pathname: ''
+
+    module:
+        - 'testapi'
+        - 'reporting'
 
     phase:
         - 'docker-update'
@@ -14,7 +17,7 @@
     jobs:
         - 'testapi-automate-{stream}'
         - 'testapi-automate-{phase}-{stream}'
-        - 'testapi-verify-{stream}'
+        - '{module}-verify-{stream}'
 
     project: 'releng'
 
@@ -44,7 +47,7 @@
         - mongodb-backup
 
 - job-template:
-    name: 'testapi-verify-{stream}'
+    name: '{module}-verify-{stream}'
 
     parameters:
         - project-parameter:
@@ -76,10 +79,11 @@
                     branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: 'ANT'
-                    pattern: 'utils/test/testapi/**'
+                    pattern: 'utils/test/{module}/**'
 
     builders:
-        - run-unit-tests
+        - shell: |
+            bash ./utils/test/{module}/run_unit_tests.sh
 
     publishers:
         - junit:
@@ -227,14 +231,13 @@
 - builder:
     name: 'run-unit-tests'
     builders:
-        - shell: |
-            bash ./utils/test/testapi/run_test.sh
+
 
 - builder:
     name: 'testapi-automate-docker-update-macro'
     builders:
         - shell: |
-            bash ./jjb/releng/testapi-docker-update.sh
+            bash ./jjb/releng/docker-update.sh testapi
 
 - builder:
     name: 'testapi-automate-generate-doc-macro'
