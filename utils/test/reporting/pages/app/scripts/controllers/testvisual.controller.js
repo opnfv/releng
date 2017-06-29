@@ -16,7 +16,7 @@ angular.module('opnfvApp')
             $scope.vsperf = "542,185,640,414";
             $scope.stor = "658,187,750,410";
             $scope.qtip = "769,190,852,416";
-            $scope.bootleneck = "870,192,983,419";
+            $scope.bottlenecks = "870,192,983,419";
             $scope.noPopArea1 = "26,8,1190,180";
             $scope.noPopArea2 = "1018,193,1190,590";
             $scope.noPopArea3 = "37,455,1003,584";
