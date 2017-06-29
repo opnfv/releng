@@ -2,42 +2,43 @@
 set -o errexit
 set -o pipefail
 
-# ******************************
-# prepare the env for the tests
-# ******************************
-# Either Workspace is set (CI)
-if [ -z $WORKSPACE ]
-then
-    WORKSPACE="."
+
+# Get script directory
+SCRIPTDIR=`dirname $0`
+
+# Creating virtual environment
+if [ ! -z $VIRTUAL_ENV ]; then
+    venv=$VIRTUAL_ENV
+else
+    venv=$SCRIPTDIR/.venv
+    virtualenv $venv
 fi
 
-export CONFIG_REPORTING_YAML=./reporting.yaml
+source $venv/bin/activate
+
+export CONFIG_REPORTING_YAML=$SCRIPTDIR/reporting.yaml
 
 # ***************
 # Run unit tests
 # ***************
 echo "Running unit tests..."
 
-# start vitual env
-virtualenv $WORKSPACE/reporting_venv
-source $WORKSPACE/reporting_venv/bin/activate
-
 # install python packages
 easy_install -U setuptools
 easy_install -U pip
-pip install -r $WORKSPACE/docker/requirements.pip
-pip install -e $WORKSPACE
+pip install -r $SCRIPTDIR/docker/requirements.pip
+pip install -e $SCRIPTDIR
 
-python $WORKSPACE/setup.py develop
+python $SCRIPTDIR/setup.py develop
 
 # unit tests
 # TODO: remove cover-erase
 # To be deleted when all functest packages will be listed
 nosetests --with-xunit \
-         --cover-package=utils \
+         --cover-package=$SCRIPTDIR/utils \
          --with-coverage \
          --cover-xml \
-         tests/unit
+         $SCRIPTDIR/tests/unit
 rc=$?
 
 deactivate
