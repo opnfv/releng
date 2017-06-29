@@ -1,50 +1,23 @@
 - project:
-    name: testapi-automate
+    name: reporting-automate
     stream:
         - master:
             branch: '{stream}'
-            gs-pathname: ''
 
     phase:
         - 'docker-update'
         - 'docker-deploy':
             slave-label: 'testresults'
-        - 'generate-doc'
 
     jobs:
-        - 'testapi-automate-{stream}'
-        - 'testapi-automate-{phase}-{stream}'
-        - 'testapi-verify-{stream}'
+        - 'reporting-automate-{stream}'
+        - 'reporting-automate-{phase}-{stream}'
+        - 'reporting-verify-{stream}'
 
     project: 'releng'
 
-- job:
-    name: 'testapi-mongodb-backup'
-
-    parameters:
-        - label:
-            name: SLAVE_LABEL
-            default: 'testresults'
-            description: 'Slave label on Jenkins'
-        - project-parameter:
-            project: 'releng'
-            branch: 'master'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/releng
-            description: 'Git URL to use on this Jenkins Slave'
-
-    scm:
-        - git-scm
-
-    triggers:
-        - timed: '@weekly'
-
-    builders:
-        - mongodb-backup
-
 - job-template:
-    name: 'testapi-verify-{stream}'
+    name: 'reporting-verify-{stream}'
 
     parameters:
         - project-parameter:
@@ -76,7 +49,7 @@
                     branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: 'ANT'
-                    pattern: 'utils/test/testapi/**'
+                    pattern: 'utils/test/reporting/**'
 
     builders:
         - run-unit-tests
@@ -101,7 +74,7 @@
                     failing: 30
 
 - job-template:
-    name: 'testapi-automate-{stream}'
+    name: 'reporting-automate-{stream}'
 
     project-type: multijob
 
@@ -146,7 +119,7 @@
                     branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: 'ANT'
-                    pattern: 'utils/test/testapi/**'
+                    pattern: 'utils/test/reporting/**'
 
     builders:
         - description-setter:
@@ -155,7 +128,7 @@
             name: docker-update
             condition: SUCCESSFUL
             projects:
-                - name: 'testapi-automate-docker-update-{stream}'
+                - name: 'reporting-automate-docker-update-{stream}'
                   current-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
@@ -163,7 +136,7 @@
             name: docker-deploy
             condition: SUCCESSFUL
             projects:
-                - name: 'testapi-automate-docker-deploy-{stream}'
+                - name: 'reporting-automate-docker-deploy-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     GIT_BASE=$GIT_BASE
@@ -171,20 +144,12 @@
                   node-label: testresults
                   kill-phase-on: FAILURE
                   abort-all-job: true
-        - multijob:
-            name: generate-doc
-            condition: SUCCESSFUL
-            projects:
-                - name: 'testapi-automate-generate-doc-{stream}'
-                  current-parameters: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
 
     publishers:
         - 'email-publisher'
 
 - job-template:
-    name: 'testapi-automate-{phase}-{stream}'
+    name: 'reporting-automate-{phase}-{stream}'
 
     properties:
         - throttle:
@@ -199,7 +164,7 @@
         - string:
             name: DOCKER_TAG
             default: "latest"
-            description: "Tag name for testapi docker image"
+            description: "Tag name for reporting docker image"
 
     wrappers:
         - ssh-agent-wrapper
@@ -213,52 +178,28 @@
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
-        - 'testapi-automate-{phase}-macro'
+        - 'reporting-automate-{phase}-macro'
 
 ################################
 # job builders
 ################################
 - builder:
-    name: mongodb-backup
-    builders:
-        - shell: |
-            bash ./jjb/releng/testapi-backup-mongodb.sh
-
-- builder:
     name: 'run-unit-tests'
     builders:
         - shell: |
-            bash ./utils/test/testapi/run_test.sh
+            bash ./utils/test/reporting/run-unit-tests.sh
 
 - builder:
-    name: 'testapi-automate-docker-update-macro'
+    name: 'reporting-automate-docker-update-macro'
     builders:
         - shell: |
-            bash ./jjb/releng/docker-update.sh testapi
+            bash ./jjb/releng/docker-update.sh reporting
 
 - builder:
-    name: 'testapi-automate-generate-doc-macro'
-    builders:
-        - 'testapi-doc-build'
-        - 'upload-doc-artifact'
-
-- builder:
-    name: 'testapi-doc-build'
+    name: 'reporting-automate-docker-deploy-macro'
     builders:
         - shell: |
-            bash ./utils/test/testapi/htmlize/doc-build.sh
-
-- builder:
-    name: 'upload-doc-artifact'
-    builders:
-        - shell: |
-            bash ./utils/test/testapi/htmlize/push-doc-artifact.sh
-
-- builder:
-    name: 'testapi-automate-docker-deploy-macro'
-    builders:
-        - shell: |
-            bash ./jjb/releng/testapi-docker-deploy.sh
+            bash ./jjb/releng/reporting-docker-deploy.sh
 
 ################################
 # job publishers
@@ -268,6 +209,6 @@
     name: 'email-publisher'
     publishers:
         - email:
-            recipients: rohitsakala@gmail.com feng.xiaowei@zte.com.cn
+            recipients: rohitsakala@gmail.com feng.xiaowei@zte.com.cn morgan.richomme@orange.com
             notify-every-unstable-build: false
             send-to-individuals: true
