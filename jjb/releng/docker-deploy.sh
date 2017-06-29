@@ -1,10 +1,14 @@
 #!/bin/bash
 
+# Assigning Variables
+command=$1
+url=$2
+
 function check() {
 
     # Verify hosted
     sleep 5
-    cmd=`curl -s --head  --request GET http://testresults.opnfv.org/test/swagger/APIs | grep '200 OK' > /dev/null`
+    cmd=`curl -s --head  --request GET ${url} | grep '200 OK' > /dev/null`
     rc=$?
     echo $rc
 
@@ -24,10 +28,10 @@ echo "Pulling the latest image"
 sudo docker pull opnfv/testapi:latest
 
 echo "Deleting old containers of opnfv/testapi:old"
-sudo docker ps -a | grep "opnfv/testapi" | grep "old" | awk '{print $1}' | xargs -r sudo docker rm -f
+sudo docker ps -a | grep "opnfv/testapi" | grep "old" | awk '{print $1}' | xargs sudo docker rm -f
 
 echo "Deleting old images of opnfv/testapi:latest"
-sudo docker images | grep "opnfv/testapi" | grep "old" | awk '{print $3}' | xargs -r sudo docker rmi -f
+sudo docker images | grep "opnfv/testapi" | grep "old" | awk '{print $3}' | xargs sudo docker rmi -f
 
 
 if [[ -z "$contId" ]]
@@ -35,7 +39,7 @@ then
     echo "No running testapi container"
 
     echo "Removing stopped testapi containers in the previous iterations"
-    sudo docker ps -f status=exited | grep "opnfv_testapi" | awk '{print $1}' | xargs -r sudo docker rm -f
+    sudo docker ps -f status=exited | grep "opnfv_testapi" | awk '{print $1}' | xargs sudo docker rm -f
 else
     echo $contId
 
@@ -53,7 +57,7 @@ else
     sudo docker tag "$currImgId" opnfv/testapi:old
 
     echo "Removing stopped testapi containers in the previous iteration"
-    sudo docker ps -f status=exited | grep "opnfv_testapi" | awk '{print $1}' | xargs -r sudo docker rm -f
+    sudo docker ps -f status=exited | grep "opnfv_testapi" | awk '{print $1}' | xargs sudo docker rm -f
 
     echo "Renaming the running container name to opnfv_testapi as to identify it."
     sudo docker rename $contId opnfv_testapi
@@ -63,7 +67,7 @@ else
 fi
 
 echo "Running a container with the new image"
-sudo docker run -dti -p "8082:8000" -e "mongodb_url=mongodb://172.17.0.1:27017" -e "swagger_url=http://testresults.opnfv.org/test" opnfv/testapi:latest
+$1:latest
 
 if check; then
     echo "TestResults Hosted."
@@ -71,7 +75,7 @@ else
     echo "TestResults Hosting Failed"
     if [[ $(sudo docker images | grep "opnfv/testapi" | grep "old" | awk '{print $3}') ]]; then
         echo "Running old Image"
-        sudo docker run -dti -p "8082:8000" -e "mongodb_url=mongodb://172.17.0.1:27017" -e "swagger_url=http://testresults.opnfv.org/test" opnfv/testapi:old
+        $1:old
         exit 1
     fi
 fi
