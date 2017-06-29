@@ -1,0 +1,284 @@
+- project:
+    name: utils-automate
+    stream:
+        - master:
+            branch: '{stream}'
+
+    module:
+        - 'testapi'
+        - 'reporting'
+
+    phase:
+        - 'docker-update'
+        - 'docker-deploy':
+            slave-label: 'testresults'
+        - 'generate-doc'
+
+    jobs:
+        - 'testapi-automate-{stream}'
+        - 'testapi-automate-{phase}-{stream}'
+        - '{module}-verify-{stream}'
+
+    project: 'releng'
+
+- project:
+    name: reporting-automate
+    stream:
+        - master:
+            branch: '{stream}'
+
+    phase:
+        - '{module}-verify-{stream}'
+- job:
+    name: 'testapi-mongodb-backup'
+
+    parameters:
+        - label:
+            name: SLAVE_LABEL
+            default: 'testresults'
+            description: 'Slave label on Jenkins'
+        - project-parameter:
+            project: 'releng'
+            branch: 'master'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/releng
+            description: 'Git URL to use on this Jenkins Slave'
+
+    scm:
+        - git-scm
+
+    triggers:
+        - timed: '@weekly'
+
+    builders:
+        - mongodb-backup
+
+- job-template:
+    name: '{module}-verify-{stream}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: 'ANT'
+                    pattern: 'utils/test/{module}/**'
+
+    builders:
+        - shell: |
+            bash ./utils/test/{module}/run_test.sh
+
+    publishers:
+        - junit:
+            results: nosetests.xml
+        - cobertura:
+            report-file: "coverage.xml"
+            only-stable: "true"
+            health-auto-update: "false"
+            stability-auto-update: "false"
+            zoom-coverage-chart: "true"
+            targets:
+                - files:
+                    healthy: 10
+                    unhealthy: 20
+                    failing: 30
+                - method:
+                    healthy: 50
+                    unhealthy: 40
+                    failing: 30
+
+- job-template:
+    name: 'testapi-automate-{stream}'
+
+    project-type: multijob
+
+    properties:
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+            option: 'project'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - string:
+            name: DOCKER_TAG
+            default: "latest"
+            description: "Tag name for testapi docker image"
+        - 'opnfv-build-defaults'
+
+    scm:
+        - git-scm
+
+    wrappers:
+        - ssh-agent-wrapper
+        - timeout:
+            timeout: 360
+            fail: true
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: 'ANT'
+                    pattern: 'utils/test/testapi/**'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: docker-update
+            condition: SUCCESSFUL
+            projects:
+                - name: 'testapi-automate-docker-update-{stream}'
+                  current-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: docker-deploy
+            condition: SUCCESSFUL
+            projects:
+                - name: 'testapi-automate-docker-deploy-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GIT_BASE=$GIT_BASE
+                  node-label-name: SLAVE_LABEL
+                  node-label: testresults
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: generate-doc
+            condition: SUCCESSFUL
+            projects:
+                - name: 'testapi-automate-generate-doc-{stream}'
+                  current-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+
+    publishers:
+        - 'email-publisher'
+
+- job-template:
+    name: 'testapi-automate-{phase}-{stream}'
+
+    properties:
+        - throttle:
+            enabled: true
+            max-per-node: 1
+            option: 'project'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - string:
+            name: DOCKER_TAG
+            default: "latest"
+            description: "Tag name for testapi docker image"
+
+    wrappers:
+        - ssh-agent-wrapper
+        - timeout:
+            timeout: 120
+            fail: true
+
+    scm:
+        - git-scm
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - 'testapi-automate-{phase}-macro'
+
+################################
+# job builders
+################################
+- builder:
+    name: mongodb-backup
+    builders:
+        - shell: |
+            bash ./jjb/releng/testapi-backup-mongodb.sh
+
+- builder:
+    name: 'run-unit-tests'
+    builders:
+
+
+- builder:
+    name: 'testapi-automate-docker-update-macro'
+    builders:
+        - shell: |
+            bash ./jjb/releng/docker-update.sh testapi
+
+- builder:
+    name: 'testapi-automate-generate-doc-macro'
+    builders:
+        - 'testapi-doc-build'
+        - 'upload-doc-artifact'
+
+- builder:
+    name: 'testapi-doc-build'
+    builders:
+        - shell: |
+            bash ./utils/test/testapi/htmlize/doc-build.sh
+
+- builder:
+    name: 'upload-doc-artifact'
+    builders:
+        - shell: |
+            bash ./utils/test/testapi/htmlize/push-doc-artifact.sh
+
+- builder:
+    name: 'testapi-automate-docker-deploy-macro'
+    builders:
+        - shell: |
+            bash ./jjb/releng/testapi-docker-deploy.sh
+
+################################
+# job publishers
+################################
+
+- publisher:
+    name: 'email-publisher'
+    publishers:
+        - email:
+            recipients: rohitsakala@gmail.com feng.xiaowei@zte.com.cn
+            notify-every-unstable-build: false
+            send-to-individuals: true
