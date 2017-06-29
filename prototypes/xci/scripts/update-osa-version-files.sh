@@ -52,7 +52,7 @@ popd &> /dev/null
 pushd $tempdir/openstack-ansible &> /dev/null
 source scripts/sources-branch-updater-lib.sh
 printme "Synchronize roles and packages"
-update_ansible_role_requirements "master" "false" "true"
+update_ansible_role_requirements "master" "true" "true"
 
 # Construct the ansible-role-requirements-file
 echo """---
@@ -65,8 +65,7 @@ echo """---
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 # these versions are extracted based on the osa commit ${1} on $(git --no-pager log -1 --format=%cI $1)
-# https://review.openstack.org/gitweb?p=openstack/openstack-ansible.git;a=commit;h=$1
-""" > $releng_xci_base/file/ansible-role-requirements.yml
+# https://review.openstack.org/gitweb?p=openstack/openstack-ansible.git;a=commit;h=$1""" > $releng_xci_base/file/ansible-role-requirements.yml
 cat $tempdir/openstack-ansible/ansible-role-requirements.yml >> $releng_xci_base/file/ansible-role-requirements.yml
 
 # Update the pinned OSA version
