@@ -1,20 +1,22 @@
 - project:
-    name: testapi-automate
+    name: utils-automate
     stream:
         - master:
             branch: '{stream}'
-            gs-pathname: ''
+
+    module:
+        - 'testapi'
+        - 'reporting'
 
     phase:
-        - 'docker-update'
         - 'docker-deploy':
             slave-label: 'testresults'
         - 'generate-doc'
 
     jobs:
-        - 'testapi-automate-{stream}'
-        - 'testapi-automate-{phase}-{stream}'
-        - 'testapi-verify-{stream}'
+        - '{module}-automate-{stream}'
+        - '{module}-automate-{phase}-{stream}'
+        - '{module}-verify-{stream}'
 
     project: 'releng'
 
@@ -44,7 +46,7 @@
         - mongodb-backup
 
 - job-template:
-    name: 'testapi-verify-{stream}'
+    name: '{module}-verify-{stream}'
 
     parameters:
         - project-parameter:
@@ -76,10 +78,11 @@
                     branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: 'ANT'
-                    pattern: 'utils/test/testapi/**'
+                    pattern: 'utils/test/{module}/**'
 
     builders:
-        - run-unit-tests
+        - shell: |
+            bash ./utils/test/{module}/run_unit_tests.sh
 
     publishers:
         - junit:
@@ -101,7 +104,7 @@
                     failing: 30
 
 - job-template:
-    name: 'testapi-automate-{stream}'
+    name: '{module}-automate-{stream}'
 
     project-type: multijob
 
@@ -118,8 +121,12 @@
             branch: '{branch}'
         - string:
             name: DOCKER_TAG
-            default: "latest"
-            description: "Tag name for testapi docker image"
+            default: 'latest'
+            description: 'Tag name for {module} docker image'
+        - string:
+            name: MODULE_NAME
+            default: '{module}'
+            description: "Name of the module"
         - 'opnfv-build-defaults'
 
     scm:
@@ -146,24 +153,17 @@
                     branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: 'ANT'
-                    pattern: 'utils/test/testapi/**'
+                    pattern: 'utils/test/{module}/**'
 
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
-        - multijob:
-            name: docker-update
-            condition: SUCCESSFUL
-            projects:
-                - name: 'testapi-automate-docker-update-{stream}'
-                  current-parameters: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
+        - docker-update
         - multijob:
             name: docker-deploy
             condition: SUCCESSFUL
             projects:
-                - name: 'testapi-automate-docker-deploy-{stream}'
+                - name: '{module}-automate-docker-deploy-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     GIT_BASE=$GIT_BASE
@@ -175,7 +175,7 @@
             name: generate-doc
             condition: SUCCESSFUL
             projects:
-                - name: 'testapi-automate-generate-doc-{stream}'
+                - name: '{module}-automate-generate-doc-{stream}'
                   current-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
@@ -184,7 +184,7 @@
         - 'email-publisher'
 
 - job-template:
-    name: 'testapi-automate-{phase}-{stream}'
+    name: '{module}-automate-{phase}-{stream}'
 
     properties:
         - throttle:
@@ -196,10 +196,6 @@
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
-        - string:
-            name: DOCKER_TAG
-            default: "latest"
-            description: "Tag name for testapi docker image"
 
     wrappers:
         - ssh-agent-wrapper
@@ -213,28 +209,16 @@
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
-        - 'testapi-automate-{phase}-macro'
+        - '{module}-automate-{phase}-macro'
 
 ################################
 # job builders
 ################################
 - builder:
-    name: mongodb-backup
+    name: 'docker-update'
     builders:
-        - shell: |
-            bash ./jjb/releng/testapi-backup-mongodb.sh
-
-- builder:
-    name: 'run-unit-tests'
-    builders:
-        - shell: |
-            bash ./utils/test/testapi/run_test.sh
-
-- builder:
-    name: 'testapi-automate-docker-update-macro'
-    builders:
-        - shell: |
-            bash ./jjb/releng/testapi-docker-update.sh
+        - shell:
+            !include-raw: ./docker-update.sh
 
 - builder:
     name: 'testapi-automate-generate-doc-macro'
@@ -255,10 +239,26 @@
             bash ./utils/test/testapi/htmlize/push-doc-artifact.sh
 
 - builder:
+    name: 'reporting-automate-generate-doc-macro'
+    builders:
+        - shell: echo "To Be Done"
+
+- builder:
     name: 'testapi-automate-docker-deploy-macro'
     builders:
         - shell: |
-            bash ./jjb/releng/testapi-docker-deploy.sh
+            bash ./jjb/releng/docker-deploy.sh 'sudo docker run -dti -p 8082:8000 -e mongodb_url=mongodb://172.17.0.1:27017 -e swagger_url=http://testresults.opnfv.org/test opnfv/testapi' "http://testresults.opnfv.org/test/swagger/APIs"
+- builder:
+    name: 'reporting-automate-docker-deploy-macro'
+    builders:
+        - shell: |
+            bash ./jjb/releng/docker-deploy.sh 'sudo docker run -itd -p 8084:8000 -e SERVER_URL=http://testresults.opnfv.org/reporting2:8084 opnfv/reporting' "http://testresults.opnfv.org/reporting2/reporting/index.html"
+
+- builder:
+    name: mongodb-backup
+    builders:
+        - shell: |
+            bash ./jjb/releng/testapi-backup-mongodb.sh
 
 ################################
 # job publishers
@@ -268,6 +268,6 @@
     name: 'email-publisher'
     publishers:
         - email:
-            recipients: rohitsakala@gmail.com feng.xiaowei@zte.com.cn
+            recipients: rohitsakala@gmail.com feng.xiaowei@zte.com.cn morgan.richomme@orange.com
             notify-every-unstable-build: false
             send-to-individuals: true
