@@ -90,7 +90,7 @@ if [ $(docker ps | grep "${FUNCTEST_IMAGE}:${DOCKER_TAG}" | wc -l) == 0 ]; then
     exit 1
 fi
 
-cmd="python ${FUNCTEST_REPO_DIR}/functest/ci/prepare_env.py start"
+cmd="prepare_env start"
 
 echo "Executing command inside the docker: ${cmd}"
 docker exec ${container_id} ${cmd}
