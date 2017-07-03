@@ -17,12 +17,12 @@ echo "Uploading the barometer RPMs to artifacts.opnfv.org"
 echo "---------------------------------------------------"
 echo
 
-gsutil -m cp -r $RPM_DIR/* $OPNFV_ARTIFACT_URL > $WORKSPACE/gsutil.log 2>&1
+gsutil -m cp -r $RPM_DIR/* gs://$OPNFV_ARTIFACT_URL > $WORKSPACE/gsutil.log 2>&1
 
 # Check if the RPMs were pushed
-gsutil ls $OPNFV_ARTIFACT_URL > /dev/null 2>&1
+gsutil ls gs://$OPNFV_ARTIFACT_URL > /dev/null 2>&1
 if [[ $? -ne 0 ]]; then
-  echo "Problem while uploading barometer RPMs to $OPNFV_ARTIFACT_URL!"
+  echo "Problem while uploading barometer RPMs to gs://$OPNFV_ARTIFACT_URL!"
   echo "Check log $WORKSPACE/gsutil.log on the appropriate build server"
   exit 1
 fi
