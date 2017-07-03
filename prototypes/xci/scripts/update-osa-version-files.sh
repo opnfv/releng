@@ -70,11 +70,13 @@ echo """---
 cat $tempdir/openstack-ansible/ansible-role-requirements.yml >> $releng_xci_base/file/ansible-role-requirements.yml
 
 # Update the pinned OSA version
-sed -i "/^export OPENSTACK_OSA_VERSION/s@:-\"[a-z0-9]*@:-\"${1}@" $releng_xci_base/config/pinned-versions
+sed -i -e "/^export OPENSTACK_OSA_VERSION/s@:-\"[a-z0-9]*@:-\"${1}@" \
+    -e "s/\(^# HEAD of osa.*of \).*/\1$(date +%d\.%m\.%Y)/" $releng_xci_base/config/pinned-versions
 
 # Update the pinned bifrost version
 [[ -n ${2:-} ]] && \
-    sed -i "/^export OPENSTACK_BIFROST_VERSION/s@:-\"[a-z0-9]*@:-\"${2}@" $releng_xci_base/config/pinned-versions
+    sed -i -e "/^export OPENSTACK_BIFROST_VERSION/s@:-\"[a-z0-9]*@:-\"${2}@" \
+    -e "s/\(^# HEAD of bifrost.*of \).*/\1$(date +%d\.%m\.%Y)/" $releng_xci_base/config/pinned-versions
 
 popd &> /dev/null
 
