@@ -196,8 +196,10 @@ on each run.
 To enable it, you need to export the different DEV_PATH vars:
 
 - export OPNFV_RELENG_DEV_PATH=/opt/releng/
-- export OPENSTACK_BIFROST_DEV_PATH=/opt/bifrost
-- export OPENSTACK_OSA_DEV_PATH=/opt/openstack-ansible
+- export OPENSTACK_BIFROST_DEV_PATH=/opt/bifrost/
+- export OPENSTACK_OSA_DEV_PATH=/opt/openstack-ansible/
+
+Please note the trailing slahses.
 
 This will cause the deployment to pick the development copies stored at the
 specified directories, and use them instead of cloning those on every run.
