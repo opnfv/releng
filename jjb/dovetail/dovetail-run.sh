@@ -52,7 +52,12 @@ releng_repo=${WORKSPACE}/releng
 git clone https://gerrit.opnfv.org/gerrit/releng ${releng_repo} >/dev/null
 
 if [[ ${INSTALLER_TYPE} != 'joid' ]]; then
+    echo "SUT branch is $SUT_BRANCH"
+    echo "dovetail branch is $BRANCH"
+    BRANCH_BACKUP=$BRANCH
+    export BRANCH=$SUT_BRANCH
     ${releng_repo}/utils/fetch_os_creds.sh -d ${OPENRC} -i ${INSTALLER_TYPE} -a ${INSTALLER_IP} >${redirect}
+    export BRANCH=$BRANCH_BACKUP
 fi
 
 if [[ -f $OPENRC ]]; then
