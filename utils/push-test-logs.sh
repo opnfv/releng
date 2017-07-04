@@ -30,7 +30,8 @@ node_list=(\
 'arm-pod1' 'arm-pod3' \
 'huawei-pod1' 'huawei-pod2' 'huawei-pod3' 'huawei-pod4' 'huawei-pod5' \
 'huawei-pod6' 'huawei-pod7' 'huawei-pod12' \
-'huawei-virtual1' 'huawei-virtual2' 'huawei-virtual3' 'huawei-virtual4')
+'huawei-virtual1' 'huawei-virtual2' 'huawei-virtual3' 'huawei-virtual4'\
+'zte-virtual1')
 
 
 if [[ ! " ${node_list[@]} " =~ " ${testbed} " ]]; then
