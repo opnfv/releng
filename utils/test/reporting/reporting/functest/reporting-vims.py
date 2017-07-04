@@ -104,7 +104,7 @@ for version in versions:
                                  % result['details']['sig_test']['duration'])
                     logger.debug("Signaling testing results: %s"
                                  % format_result)
-                except:
+                except Exception:
                     logger.error("Data badly formatted")
                 logger.debug("----------------------------------------")
 
@@ -112,7 +112,7 @@ for version in versions:
         templateEnv = jinja2.Environment(loader=templateLoader,
                                          autoescape=True)
 
-        TEMPLATE_FILE = "./functest/template/index-vims-tmpl.html"
+        TEMPLATE_FILE = "./reporting/functest/template/index-vims-tmpl.html"
         template = templateEnv.get_template(TEMPLATE_FILE)
 
         outputText = template.render(scenario_results=scenario_results,
