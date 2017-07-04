@@ -18,6 +18,8 @@ import scenarioResult as sr
 # manage conf
 import utils.reporting_utils as rp_utils
 
+"""Functest reporting status"""
+
 # Logger
 logger = rp_utils.getLogger("Functest-Status")
 
@@ -272,7 +274,8 @@ for version in versions:
             templateEnv = jinja2.Environment(
                 loader=templateLoader, autoescape=True)
 
-            TEMPLATE_FILE = "./functest/template/index-status-tmpl.html"
+            TEMPLATE_FILE = ("./reporting/functest/template"
+                             "/index-status-tmpl.html")
             template = templateEnv.get_template(TEMPLATE_FILE)
 
             outputText = template.render(
