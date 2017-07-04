@@ -95,7 +95,7 @@ def getApiResults(case, installer, scenario, version):
         k = response.read()
         results = json.loads(k)
     except URLError as e:
-        print('No kittez. Got an error code:', e)
+        print 'No kittez. Got an error code:'.format(e)
 
     return results
 
@@ -124,19 +124,21 @@ def getScenarios(case, installer, version):
         k = response.read()
         results = json.loads(k)
         test_results = results['results']
-
-        page = results['pagination']['total_pages']
-        if page > 1:
-            test_results = []
-            for i in range(1, page + 1):
-                url_page = url + "&page=" + str(i)
-                request = Request(url_page)
-                response = urlopen(request)
-                k = response.read()
-                results = json.loads(k)
-                test_results += results['results']
+        try:
+            page = results['pagination']['total_pages']
+            if page > 1:
+                test_results = []
+                for i in range(1, page + 1):
+                    url_page = url + "&page=" + str(i)
+                    request = Request(url_page)
+                    response = urlopen(request)
+                    k = response.read()
+                    results = json.loads(k)
+                    test_results += results['results']
+        except KeyError:
+            print ('No pagination detected')
     except URLError as err:
-        print('Got an error code:', err)
+        print 'Got an error code: {}'.format(err)
 
     if test_results is not None:
         test_results.reverse()
@@ -152,7 +154,7 @@ def getScenarios(case, installer, version):
             exclude_noha = get_config('functest.exclude_noha')
             if ((exclude_virtual_pod and "virtual" in r['pod_name']) or
                     (exclude_noha and "noha" in r['scenario'])):
-                print("exclude virtual pod results...")
+                print "exclude virtual pod results..."
             else:
                 scenario_results[r['scenario']].append(r)
 
@@ -183,7 +185,7 @@ def getScenarioStatus(installer, version):
         results = json.loads(k)
         test_results = results['results']
     except URLError as e:
-        print('Got an error code:', e)
+        print 'Got an error code: {}'.format(e)
 
     scenario_results = {}
     result_dict = {}
@@ -223,7 +225,7 @@ def getQtipResults(version, installer):
         response.close()
         results = json.loads(k)['results']
     except URLError as err:
-        print('Got an error code:', err)
+        print 'Got an error code: {}'.format(err)
 
     result_dict = {}
     if results:
@@ -245,7 +247,7 @@ def getNbtestOk(results):
                 if "PASS" in v:
                     nb_test_ok += 1
             except:
-                print("Cannot retrieve test status")
+                print "Cannot retrieve test status"
     return nb_test_ok
 
 
@@ -320,7 +322,7 @@ def getJenkinsUrl(build_tag):
                   "/" + str(build_id[0]))
         jenkins_url = url_base + url_id + "/console"
     except:
-        print('Impossible to get jenkins url:')
+        print 'Impossible to get jenkins url:'
 
     if "jenkins-" not in build_tag:
         jenkins_url = None
@@ -333,7 +335,7 @@ def getScenarioPercent(scenario_score, scenario_criteria):
     try:
         score = float(scenario_score) / float(scenario_criteria) * 100
     except:
-        print('Impossible to calculate the percentage score')
+        print 'Impossible to calculate the percentage score'
     return score
 
 
@@ -419,7 +421,7 @@ def get_percent(four_list, ten_list):
 
 def _test():
     status = getScenarioStatus("compass", "master")
-    print("status:++++++++++++++++++++++++")
+    print "status:++++++++++++++++++++++++"
     print(json.dumps(status, indent=4))
 
 
@@ -456,6 +458,6 @@ def export_pdf(pdf_path, pdf_doc_name):
     try:
         pdfkit.from_file(pdf_path, pdf_doc_name)
     except IOError:
-        print("Error but pdf generated anyway...")
+        print "Error but pdf generated anyway..."
     except:
-        print("impossible to generate PDF")
+        print "impossible to generate PDF"
