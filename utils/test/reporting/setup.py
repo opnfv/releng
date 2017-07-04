@@ -1,22 +1,24 @@
-##############################################################################
+#!/usr/bin/env python
+
+# Copyright (c) 2017 Orange and others.
+#
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Apache License, Version 2.0
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
-##############################################################################
 
-from setuptools import setup, find_packages
+# pylint: disable=missing-docstring
 
+import setuptools
 
-setup(
-    name="reporting",
-    version="master",
-    packages=find_packages(),
-    include_package_data=True,
-    package_data={
-    },
-    url="https://www.opnfv.org",
-    install_requires=["coverage==4.1",
-                      "mock==1.3.0",
-                      "nose==1.3.7"],
-)
+# In python < 2.7.4, a lazy loading of package `pbr` will break
+# setuptools if some other modules registered functions in `atexit`.
+# solution from: http://bugs.python.org/issue15881#msg170215
+try:
+    import multiprocessing  # noqa
+except ImportError:
+    pass
+
+setuptools.setup(
+    setup_requires=['pbr>=1.8'],
+    pbr=True)
