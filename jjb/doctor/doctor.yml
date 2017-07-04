@@ -34,9 +34,15 @@
         - verify:
             profiler: 'none'
             auto-trigger-name: 'doctor-verify'
+            is-python: false
         - profiling:
             profiler: 'poc'
             auto-trigger-name: 'experimental'
+            is-python: false
+        - python-verify:
+            profiler: 'none'
+            auto-trigger-name: 'doctor-verify'
+            is-python: true
 
     pod:
         - arm-pod2:
@@ -148,7 +154,7 @@
             default: 'doctor-notification'
         - string:
             name: TESTCASE_OPTIONS
-            default: '-e INSPECTOR_TYPE={inspector} -e PROFILER_TYPE={profiler} -v $WORKSPACE:/home/opnfv/repos/doctor'
+            default: '-e INSPECTOR_TYPE={inspector} -e PROFILER_TYPE={profiler} -e PYTHON_ENABLE={is-python} -v $WORKSPACE:/home/opnfv/repos/doctor'
             description: 'Addtional parameters specific to test case(s)'
         # functest-parameter
         - string:
