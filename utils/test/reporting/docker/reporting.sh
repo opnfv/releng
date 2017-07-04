@@ -1,10 +1,10 @@
 #!/bin/bash
 
-export PYTHONPATH="${PYTHONPATH}:."
-export CONFIG_REPORTING_YAML=./reporting.yaml
+export PYTHONPATH="${PYTHONPATH}:./reporting"
+export CONFIG_REPORTING_YAML=./reporting/reporting.yaml
 
 declare -a versions=(danube master)
-declare -a projects=(functest storperf yardstick)
+declare -a projects=(functest storperf yardstick qtip)
 
 project=$1
 reporting_type=$2
@@ -29,8 +29,9 @@ cp -Rf js display
 #  projet   |        option
 #   $1      |          $2
 # functest  | status, vims, tempest
-# yardstick |
-# storperf  |
+# yardstick | status
+# storperf  | status
+# qtip      | status
 
 function report_project()
 {
@@ -40,7 +41,7 @@ function report_project()
   echo "********************************"
   echo " $project reporting "
   echo "********************************"
-  python ./$dir/reporting-$type.py
+  python ./reporting/$dir/reporting-$type.py
   if [ $? ]; then
     echo "$project reporting $type...OK"
   else
@@ -50,51 +51,28 @@ function report_project()
 
 if [ -z "$1" ]; then
   echo "********************************"
-  echo " Functest reporting "
+  echo " * Static status reporting     *"
   echo "********************************"
-  echo "reporting vIMS..."
-  python ./functest/reporting-vims.py
-  echo "reporting vIMS...OK"
-  sleep 10
-  echo "reporting Tempest..."
-  python ./functest/reporting-tempest.py
-  echo "reporting Tempest...OK"
-  sleep 10
-  echo "reporting status..."
-  python ./functest/reporting-status.py
-  echo "Functest reporting status...OK"
-
-  echo "********************************"
-  echo " Yardstick reporting "
-  echo "********************************"
-  python ./yardstick/reporting-status.py
-  echo "Yardstick reporting status...OK"
-
-  echo "********************************"
-  echo " Storperf reporting "
-  echo "********************************"
-  python ./storperf/reporting-status.py
-  echo "Storperf reporting status...OK"
-
+  for i in "${projects[@]}"
+  do
+    report_project $i $i "status"
+    sleep 5
+  done
   report_project "QTIP" "qtip" "status"
+
+
+  echo "Functest reporting vIMS..."
+  report_project "functest" "functest" "vims"
+  echo "reporting vIMS...OK"
+  sleep 5
+  echo "Functest reporting Tempest..."
+  report_project "functest" "functest" "tempest"
+  echo "reporting Tempest...OK"
+  sleep 5
 
 else
   if [ -z "$2" ]; then
     reporting_type="status"
   fi
-  echo "********************************"
-  echo " $project/$reporting_type reporting "
-  echo "********************************"
-  python ./$project/reporting-$reporting_type.py
+  report_project $project $project $reporting_type
 fi
-cp -r display /usr/share/nginx/html
-
-
-# nginx config
-cp /home/opnfv/utils/test/reporting/docker/nginx.conf /etc/nginx/conf.d/
-echo "daemon off;" >> /etc/nginx/nginx.conf
-
-# supervisor config
-cp /home/opnfv/utils/test/reporting/docker/supervisor.conf /etc/supervisor/conf.d/
-
-ln -s /usr/bin/nodejs /usr/bin/node
