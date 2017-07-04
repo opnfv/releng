@@ -23,7 +23,7 @@ reportingDate = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
 logger.info("*******************************************")
 logger.info("*   Generating reporting scenario status  *")
-logger.info("*   Data retention = %s days              *" % PERIOD)
+logger.info("*   Data retention = {} days              *".format(PERIOD))
 logger.info("*                                         *")
 logger.info("*******************************************")
 
@@ -33,7 +33,8 @@ def prepare_profile_file(version):
     if not os.path.exists(profile_dir):
         os.makedirs(profile_dir)
 
-    profile_file = '{}/scenario_history.txt'.format(profile_dir, version)
+    profile_file = "{}/{}/scenario_history.txt".format(profile_dir,
+                                                       version)
     if not os.path.exists(profile_file):
         with open(profile_file, 'w') as f:
             info = 'date,scenario,installer,details,score\n'
@@ -77,7 +78,7 @@ def render_html(prof_results, installer, version):
     template_env = jinja2.Environment(loader=template_loader,
                                       autoescape=True)
 
-    template_file = "./qtip/template/index-status-tmpl.html"
+    template_file = "./reporting/qtip/template/index-status-tmpl.html"
     template = template_env.get_template(template_file)
 
     render_outcome = template.render(prof_results=prof_results,
@@ -105,6 +106,7 @@ def render_reporter():
         logger.info("Manage export CSV")
         rp_utils.generate_csv(profile_file)
         logger.info("CSV generated...")
+
 
 if __name__ == '__main__':
     render_reporter()
