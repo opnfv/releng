@@ -45,6 +45,12 @@
         # NOHA scenarios
         - 'os-nosdn-nofeature-noha':
             auto-trigger-name: 'daisy-{scenario}-{pod}-daily-{stream}-trigger'
+        # ODL_L3 scenarios
+        - 'os-odl_l3-nofeature-noha':
+            auto-trigger-name: 'daisy-{scenario}-{pod}-daily-{stream}-trigger'
+        # ODL_L2 scenarios
+        - 'os-odl_l2-nofeature-noha':
+            auto-trigger-name: 'daisy-{scenario}-{pod}-daily-{stream}-trigger'
 
     jobs:
         - '{project}-{scenario}-{pod}-daily-{stream}'
@@ -144,7 +150,7 @@
             installer: '{installer}'
         - string:
             name: DEPLOY_SCENARIO
-            default: 'os-nosdn-nofeature-ha'
+            default: 'os-nosdn-nofeature-noha'
         - 'daisy-project-parameter':
             gs-pathname: '{gs-pathname}'
         - string:
@@ -183,6 +189,16 @@
 - trigger:
     name: 'daisy-os-nosdn-nofeature-noha-baremetal-daily-master-trigger'
     triggers:
+        - timed: 'H 12 * * *'
+# ODL_L3 Scenarios
+- trigger:
+    name: 'daisy-os-odl_l3-nofeature-noha-baremetal-daily-master-trigger'
+    triggers:
+        - timed: 'H 16 * * *'
+# ODL_L2 Scenarios
+- trigger:
+    name: 'daisy-os-odl_l2-nofeature-noha-baremetal-daily-master-trigger'
+    triggers:
         - timed: ''
 #-----------------------------------------------
 # Triggers for job running on daisy-virtual against master branch
@@ -195,5 +211,15 @@
 - trigger:
     name: 'daisy-os-nosdn-nofeature-noha-virtual-daily-master-trigger'
     triggers:
-        - timed: 'H 8,22 * * *'
+        - timed: 'H 12 * * *'
+# ODL_L3 Scenarios
+- trigger:
+    name: 'daisy-os-odl_l3-nofeature-noha-virtual-daily-master-trigger'
+    triggers:
+        - timed: 'H 16 * * *'
+# ODL_L3 Scenarios
+- trigger:
+    name: 'daisy-os-odl_l2-nofeature-noha-virtual-daily-master-trigger'
+    triggers:
+        - timed: ''
 
