@@ -9,7 +9,7 @@
 #
 # Execution:
 #    $ docker run -dti -p 8001:8000 \
-#      -e "swagger_url=http://10.63.243.17:8001" \
+#      -e "base_url=http://10.63.243.17:8001" \
 #      -e "mongodb_url=mongodb://10.63.243.17:27017/" \
 #      opnfv/testapi:tag
 #
