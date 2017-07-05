@@ -42,7 +42,7 @@ source $XCI_PATH/config/env-vars
 #-------------------------------------------------------------------------------
 user_local_dev_vars=(OPNFV_RELENG_DEV_PATH OPNFV_OSA_DEV_PATH OPNFV_BIFROST_DEV_PATH)
 for local_user_var in ${user_local_dev_vars[@]}; do
-    [[ -n ${!local_user_var} ]] && export $local_user_var=${!local_user_var%/}/
+    [[ -n ${!local_user_var:-} ]] && export $local_user_var=${!local_user_var%/}/
 done
 unset user_local_dev_vars local_user_var
 
