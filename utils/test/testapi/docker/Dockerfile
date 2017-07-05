@@ -9,7 +9,7 @@
 #
 # Execution:
 #    $ docker run -dti -p 8001:8000 \
-#      -e "swagger_url=http://10.63.243.17:8001" \
+#      -e "base_url=http://10.63.243.17:8001" \
 #      -e "mongodb_url=mongodb://10.63.243.17:27017/" \
 #      opnfv/testapi:tag
 #
@@ -43,7 +43,8 @@ crudini \
 RUN pip install --upgrade pip
 
 RUN git config --global http.sslVerify false
-RUN git clone https://gerrit.opnfv.org/gerrit/releng /home/releng
+#RUN git clone https://gerrit.opnfv.org/gerrit/releng /home/releng
+COPY  ../../../../../releng /home/releng
 
 WORKDIR /home/releng/utils/test/testapi/
 RUN pip install -r requirements.txt
