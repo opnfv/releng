@@ -41,25 +41,18 @@ angular.module('opnfvApp')
                 $scope.tableData = null;
                 $scope.modalName = name;
 
-                var url = PROJECT_URL + '/projects/' + name + '/cases';
-
-                var config = {
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
-                    }
-                }
-                $http.get(url, config).then(function(response) {
+                TableFactory.getProjectTestCases(name).then(function(response) {
                     if (response.status == 200) {
                         $scope.tableData = response.data;
 
                         $scope.tableData = constructObjectArray($scope.tableData);
                         console.log($scope.tableData);
                         $loading.finish('Key');
-
-
-
                     }
+                }, function(error) {
+
                 })
+
             }
 
             //construct key value for tableData
