@@ -8,10 +8,10 @@ docker_compose_yml = './docker-compose.yml'
 docker_compose_template = './docker-compose.yml.template'
 
 
-def render_docker_compose(port, swagger_url):
+def render_docker_compose(port, base_url):
     vars = {
         "expose_port": port,
-        "swagger_url": swagger_url,
+        "base_url": base_url,
     }
     template = env.get_template(docker_compose_template)
     yml = template.render(vars=vars)
@@ -22,7 +22,7 @@ def render_docker_compose(port, swagger_url):
 
 
 def main(args):
-    render_docker_compose(args.expose_port, args.swagger_url)
+    render_docker_compose(args.expose_port, args.base_url)
     os.system('docker-compose -f {} up -d'.format(docker_compose_yml))
 
 
@@ -33,8 +33,8 @@ if __name__ == '__main__':
                         required=False,
                         default=8000,
                         help='testapi exposed port')
-    parser.add_argument('-su', '--swagger-url',
+    parser.add_argument('-l', '--base-url',
                         type=str,
                         required=True,
-                        help='testapi exposed swagger-url')
+                        help='testapi exposed base-url')
     main(parser.parse_args())
