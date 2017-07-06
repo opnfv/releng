@@ -98,3 +98,5 @@ echo "daemon off;" >> /etc/nginx/nginx.conf
 cp /home/opnfv/utils/test/reporting/docker/supervisor.conf /etc/supervisor/conf.d/
 
 ln -s /usr/bin/nodejs /usr/bin/node
+
+cd pages && /bin/bash angular.sh
