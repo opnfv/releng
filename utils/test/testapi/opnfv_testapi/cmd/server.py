@@ -35,6 +35,8 @@ import sys
 import motor
 import tornado.ioloop
 
+from tornado.options import options
+
 from opnfv_testapi.common import config
 from opnfv_testapi.router import url_mappings
 from opnfv_testapi.tornado_swagger import swagger
@@ -44,6 +46,7 @@ CONF = None
 
 def parse_config(argv=[]):
     global CONF
+    options.parse_command_line()
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config-file", dest='config_file',
                         help="Config file location")
