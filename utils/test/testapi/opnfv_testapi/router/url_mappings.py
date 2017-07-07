@@ -48,6 +48,7 @@ mappings = [
     # Push results with mandatory request payload parameters
     # (project, case, and pod)
     (r"/api/v1/results", result_handlers.ResultsCLHandler),
+    (r'/api/v1/results/upload', result_handlers.ResultsUploadHandler),
     (r"/api/v1/results/([^/]+)", result_handlers.ResultsGURHandler),
 
     # scenarios
@@ -64,4 +65,5 @@ mappings = [
     (r'/api/v1/auth/signin_return', sign.SigninReturnHandler),
     (r'/api/v1/auth/signout', sign.SignoutHandler),
     (r'/api/v1/profile', user.ProfileHandler),
+
 ]
