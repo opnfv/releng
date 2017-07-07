@@ -6,8 +6,10 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+import logging
 from datetime import datetime
 from datetime import timedelta
+import json
 
 from bson import objectid
 
@@ -17,6 +19,7 @@ from opnfv_testapi.common import raises
 from opnfv_testapi.resources import handlers
 from opnfv_testapi.resources import result_models
 from opnfv_testapi.tornado_swagger import swagger
+from opnfv_testapi.ui.auth import constants as auth_const
 
 CONF = config.Config()
 
@@ -40,6 +43,8 @@ class GenericResultHandler(handlers.GenericApiHandler):
         query = dict()
         date_range = dict()
 
+        query['public'] = {'$not': {'$eq': 'false'}}
+        # query['public'] = None
         for k in self.request.query_arguments.keys():
             v = self.get_query_argument(k)
             if k == 'project' or k == 'pod' or k == 'case':
@@ -56,6 +61,14 @@ class GenericResultHandler(handlers.GenericApiHandler):
                 date_range.update({'$gte': str(v)})
             elif k == 'to':
                 date_range.update({'$lt': str(v)})
+            elif k == 'signed':
+                openid = self.get_secure_cookie(auth_const.OPENID)
+                role = self.get_secure_cookie(auth_const.ROLE)
+                logging.info('role:%s', role)
+                if role:
+                    del query['public']
+                    if role != "reviewer":
+                        query['user'] = openid
             elif k != 'last' and k != 'page':
                 query[k] = v
             if date_range:
@@ -84,9 +97,10 @@ class ResultsCLHandler(GenericResultHandler):
                  - criteria : the global criteria status passed or failed
                  - trust_indicator : evaluate the stability of the test case
                    to avoid running systematically long and stable test case
+                 - signed : get logined user result
 
                 GET /results/project=functest&case=vPing&version=Arno-R1 \
-                &pod=pod_name&period=15
+                &pod=pod_name&period=15&signed
             @return 200: all test results consist with query,
                          empty list if no result is found
             @rtype: L{TestResults}
@@ -146,6 +160,10 @@ class ResultsCLHandler(GenericResultHandler):
             @type trust_indicator: L{float}
             @in trust_indicator: query
             @required trust_indicator: False
+            @param signed: user results or all results
+            @type signed: L{string}
+            @in signed: query
+            @required signed: False
         """
         limitations = {'sort': {'start_date': -1}}
         last = self.get_query_argument('last', 0)
@@ -187,7 +205,34 @@ class ResultsCLHandler(GenericResultHandler):
         carriers = [('pods', pod_query),
                     ('projects', project_query),
                     ('testcases', testcase_query)]
+        openid = self.get_secure_cookie(auth_const.OPENID)
+        if openid:
+            self.json_args['user'] = openid
         self._create(miss_fields=miss_fields, carriers=carriers)
+
+
+class ResultsUploadHandler(ResultsCLHandler):
+    @swagger.operation(nickname="uploadTestResult")
+    def post(self):
+        """
+            @description: upload and create a test result
+            @param body: result to be created
+            @type body: L{ResultCreateRequest}
+            @in body: body
+            @rtype: L{CreateResponse}
+            @return 200: result is created.
+            @raise 404: pod/project/testcase not exist
+            @raise 400: body/pod_name/project_name/case_name not provided
+        """
+        logging.info('file upload')
+        fileinfo = self.request.files['file'][0]
+        is_public = self.get_body_argument('public')
+        logging.warning('public:%s', is_public)
+        logging.info('results is :%s', fileinfo['filename'])
+        logging.info('results is :%s', fileinfo['body'])
+        self.json_args = json.loads(fileinfo['body']).copy()
+        self.json_args['public'] = is_public
+        super(ResultsUploadHandler, self).post()
 
 
 class ResultsGURHandler(GenericResultHandler):
