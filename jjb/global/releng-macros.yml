@@ -1,3 +1,4 @@
+---
 # Releng macros
 #
 # NOTE: make sure macros are listed in execution ordered.
@@ -14,155 +15,155 @@
 - parameter:
     name: project-parameter
     parameters:
-        - string:
-            name: PROJECT
-            default: '{project}'
-            description: "JJB configured PROJECT parameter to identify an opnfv Gerrit project"
-        - string:
-            name: GS_BASE
-            default: artifacts.opnfv.org/$PROJECT
-            description: "URL to Google Storage."
-        - string:
-            name: GS_BASE_PROXY
-            default: build.opnfv.org/artifacts.opnfv.org/$PROJECT
-            description: "URL to Google Storage proxy"
-        - string:
-            name: BRANCH
-            default: '{branch}'
-            description: "JJB configured BRANCH parameter (e.g. master, stable/danube)"
-        - string:
-            name: GERRIT_BRANCH
-            default: '{branch}'
-            description: "JJB configured GERRIT_BRANCH parameter (deprecated)"
+      - string:
+          name: PROJECT
+          default: '{project}'
+          description: "JJB configured PROJECT parameter to identify an opnfv Gerrit project"
+      - string:
+          name: GS_BASE
+          default: artifacts.opnfv.org/$PROJECT
+          description: "URL to Google Storage."
+      - string:
+          name: GS_BASE_PROXY
+          default: build.opnfv.org/artifacts.opnfv.org/$PROJECT
+          description: "URL to Google Storage proxy"
+      - string:
+          name: BRANCH
+          default: '{branch}'
+          description: "JJB configured BRANCH parameter (e.g. master, stable/danube)"
+      - string:
+          name: GERRIT_BRANCH
+          default: '{branch}'
+          description: "JJB configured GERRIT_BRANCH parameter (deprecated)"
 
 - property:
     name: logrotate-default
     properties:
-        - build-discarder:
-            days-to-keep: 60
-            num-to-keep: 200
-            artifact-days-to-keep: 60
-            artifact-num-to-keep: 200
+      - build-discarder:
+          days-to-keep: 60
+          num-to-keep: 200
+          artifact-days-to-keep: 60
+          artifact-num-to-keep: 200
 
 - scm:
     name: git-scm
     scm:
-        - git: &git-scm-defaults
-            credentials-id: '$SSH_CREDENTIAL_ID'
-            url: '$GIT_BASE'
-            branches:
-                - 'origin/$BRANCH'
-            timeout: 15
+      - git: &git-scm-defaults
+          credentials-id: '$SSH_CREDENTIAL_ID'
+          url: '$GIT_BASE'
+          branches:
+            - 'origin/$BRANCH'
+          timeout: 15
 
 - scm:
     name: git-scm-gerrit
     scm:
-        - git:
-            choosing-strategy: 'gerrit'
-            refspec: '$GERRIT_REFSPEC'
-            <<: *git-scm-defaults
+      - git:
+          choosing-strategy: 'gerrit'
+          refspec: '$GERRIT_REFSPEC'
+          <<: *git-scm-defaults
 - scm:
     name: git-scm-with-submodules
     scm:
-        - git:
-            credentials-id: '$SSH_CREDENTIAL_ID'
-            url: '$GIT_BASE'
-            refspec: ''
-            branches:
-                - 'refs/heads/{branch}'
-            skip-tag: true
-            wipe-workspace: true
-            submodule:
-                recursive: true
-                timeout: 20
+      - git:
+          credentials-id: '$SSH_CREDENTIAL_ID'
+          url: '$GIT_BASE'
+          refspec: ''
+          branches:
+            - 'refs/heads/{branch}'
+          skip-tag: true
+          wipe-workspace: true
+          submodule:
+            recursive: true
+            timeout: 20
 - trigger:
     name: 'daily-trigger-disabled'
     triggers:
-        - timed: ''
+      - timed: ''
 
 - trigger:
     name: 'weekly-trigger-disabled'
     triggers:
-        - timed: ''
+      - timed: ''
 
 - trigger:
     name: gerrit-trigger-patchset-created
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: 'ANT'
-                    pattern: '{files}'
-            skip-vote:
-                successful: false
-                failed: false
-                unstable: false
-                notbuilt: false
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: 'ANT'
+                  pattern: '{files}'
+          skip-vote:
+            successful: false
+            failed: false
+            unstable: false
+            notbuilt: false
 
 - trigger:
     name: gerrit-trigger-change-merged
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: 'ANT'
-                    pattern: '{files}'
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'remerge'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: 'ANT'
+                  pattern: '{files}'
 
 - trigger:
     name: 'experimental'
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - comment-added-contains-event:
-                    comment-contains-value: 'check-experimental'
-            projects:
-                - project-compare-type: 'ANT'
-                  project-pattern: '{project}'
-                  branches:
-                      - branch-compare-type: 'ANT'
-                        branch-pattern: '**/{branch}'
-                  file-paths:
-                      - compare-type: 'ANT'
-                        pattern: '{files}'
-            skip-vote:
-                successful: true
-                failed: true
-                unstable: true
-                notbuilt: true
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - comment-added-contains-event:
+                comment-contains-value: 'check-experimental'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: 'ANT'
+                  pattern: '{files}'
+          skip-vote:
+            successful: true
+            failed: true
+            unstable: true
+            notbuilt: true
 
 - wrapper:
     name: ssh-agent-wrapper
     wrappers:
-        - ssh-agent-credentials:
-            users:
-                - 'd42411ac011ad6f3dd2e1fa34eaa5d87f910eb2e'
+      - ssh-agent-credentials:
+          users:
+            - 'd42411ac011ad6f3dd2e1fa34eaa5d87f910eb2e'
 
 - wrapper:
     name: build-timeout
@@ -175,97 +176,97 @@
 - wrapper:
     name: fix-workspace-permissions
     wrappers:
-        - pre-scm-buildstep:
+      - pre-scm-buildstep:
           - shell: |
-                #!/bin/bash
-                sudo chown -R $USER:$USER $WORKSPACE || exit 1
+             #!/bin/bash
+             sudo chown -R $USER:$USER $WORKSPACE || exit 1
 
 - builder:
     name: build-html-and-pdf-docs-output
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o xtrace
-            export PATH=$PATH:/usr/local/bin/
-            git clone ssh://gerrit.opnfv.org:29418/opnfvdocs docs_build/_opnfvdocs
-            GERRIT_COMMENT=gerrit_comment.txt ./docs_build/_opnfvdocs/scripts/docs-build.sh
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o xtrace
+          export PATH=$PATH:/usr/local/bin/
+          git clone ssh://gerrit.opnfv.org:29418/opnfvdocs docs_build/_opnfvdocs
+          GERRIT_COMMENT=gerrit_comment.txt ./docs_build/_opnfvdocs/scripts/docs-build.sh
 
 - builder:
     name: upload-under-review-docs-to-opnfv-artifacts
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
-            set -o xtrace
-            export PATH=$PATH:/usr/local/bin/
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+          set -o xtrace
+          export PATH=$PATH:/usr/local/bin/
 
-            [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
-            [[ -d docs_output ]] || exit 0
+          [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
+          [[ -d docs_output ]] || exit 0
 
-            echo
-            echo "###########################"
-            echo "UPLOADING DOCS UNDER REVIEW"
-            echo "###########################"
-            echo
+          echo
+          echo "###########################"
+          echo "UPLOADING DOCS UNDER REVIEW"
+          echo "###########################"
+          echo
 
-            gs_base="artifacts.opnfv.org/$PROJECT/review"
-            gs_path="$gs_base/$GERRIT_CHANGE_NUMBER"
-            local_path="upload/$GERRIT_CHANGE_NUMBER"
+          gs_base="artifacts.opnfv.org/$PROJECT/review"
+          gs_path="$gs_base/$GERRIT_CHANGE_NUMBER"
+          local_path="upload/$GERRIT_CHANGE_NUMBER"
 
-            mkdir -p upload
-            mv docs_output "$local_path"
-            gsutil -m cp -r "$local_path" "gs://$gs_base"
+          mkdir -p upload
+          mv docs_output "$local_path"
+          gsutil -m cp -r "$local_path" "gs://$gs_base"
 
-            gsutil -m setmeta \
-                -h "Content-Type:text/html" \
-                -h "Cache-Control:private, max-age=0, no-transform" \
-                "gs://$gs_path"/**.html > /dev/null 2>&1
+          gsutil -m setmeta \
+              -h "Content-Type:text/html" \
+              -h "Cache-Control:private, max-age=0, no-transform" \
+              "gs://$gs_path"/**.html > /dev/null 2>&1
 
-            echo "Document link(s):" >> gerrit_comment.txt
-            find "$local_path" | grep -e 'index.html$' -e 'pdf$' | \
-                sed -e "s|^$local_path|    http://$gs_path|" >> gerrit_comment.txt
+          echo "Document link(s):" >> gerrit_comment.txt
+          find "$local_path" | grep -e 'index.html$' -e 'pdf$' | \
+              sed -e "s|^$local_path|    http://$gs_path|" >> gerrit_comment.txt
 
 - builder:
     name: upload-generated-docs-to-opnfv-artifacts
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
-            set -o xtrace
-            export PATH=$PATH:/usr/local/bin/
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+          set -o xtrace
+          export PATH=$PATH:/usr/local/bin/
 
-            [[ -d docs_output ]] || exit 0
+          [[ -d docs_output ]] || exit 0
 
-            echo
-            echo "########################"
-            echo "UPLOADING GENERATED DOCS"
-            echo "########################"
-            echo
+          echo
+          echo "########################"
+          echo "UPLOADING GENERATED DOCS"
+          echo "########################"
+          echo
 
-            echo "gs_path="$GS_URL/docs""
-            echo "local_path="upload/docs""
+          echo "gs_path="$GS_URL/docs""
+          echo "local_path="upload/docs""
 
-            gs_path="$GS_URL/docs"
-            local_path="upload/docs"
+          gs_path="$GS_URL/docs"
+          local_path="upload/docs"
 
-            mkdir -p upload
-            mv docs_output "$local_path"
-            ls "$local_path"
+          mkdir -p upload
+          mv docs_output "$local_path"
+          ls "$local_path"
 
-            echo "gsutil -m cp -r "$local_path"/* "gs://$gs_path""
-            gsutil -m cp -r "$local_path"/* "gs://$gs_path"
+          echo "gsutil -m cp -r "$local_path"/* "gs://$gs_path""
+          gsutil -m cp -r "$local_path"/* "gs://$gs_path"
 
-            gsutil -m setmeta \
-                -h "Content-Type:text/html" \
-                -h "Cache-Control:private, max-age=0, no-transform" \
-                "gs://$gs_path"/**.html > /dev/null 2>&1
+          gsutil -m setmeta \
+              -h "Content-Type:text/html" \
+              -h "Cache-Control:private, max-age=0, no-transform" \
+              "gs://$gs_path"/**.html > /dev/null 2>&1
 
-            echo "Document link(s):" >> gerrit_comment.txt
-            find "$local_path" | grep -e 'index.html$' -e 'pdf$' | \
-                sed -e "s|^$local_path|    http://$gs_path|" >> gerrit_comment.txt
+          echo "Document link(s):" >> gerrit_comment.txt
+          find "$local_path" | grep -e 'index.html$' -e 'pdf$' | \
+              sed -e "s|^$local_path|    http://$gs_path|" >> gerrit_comment.txt
 
 # To take advantage of this macro, have your build write
 # out the file 'gerrit_comment.txt' with information to post
@@ -273,213 +274,213 @@
 - builder:
     name: report-build-result-to-gerrit
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
-            set -o xtrace
-            export PATH=$PATH:/usr/local/bin/
-            if [[ -e gerrit_comment.txt ]] ; then
-                echo
-                echo "posting review comment to gerrit..."
-                echo
-                cat gerrit_comment.txt
-                echo
-                ssh -p 29418 gerrit.opnfv.org \
-                    "gerrit review -p $GERRIT_PROJECT \
-                     -m '$(cat gerrit_comment.txt)' \
-                     $GERRIT_PATCHSET_REVISION \
-                     --notify NONE"
-            fi
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+          set -o xtrace
+          export PATH=$PATH:/usr/local/bin/
+          if [[ -e gerrit_comment.txt ]] ; then
+              echo
+              echo "posting review comment to gerrit..."
+              echo
+              cat gerrit_comment.txt
+              echo
+              ssh -p 29418 gerrit.opnfv.org \
+                  "gerrit review -p $GERRIT_PROJECT \
+                   -m '$(cat gerrit_comment.txt)' \
+                   $GERRIT_PATCHSET_REVISION \
+                   --notify NONE"
+          fi
 
 - builder:
     name: remove-old-docs-from-opnfv-artifacts
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
-            set -o xtrace
-            export PATH=$PATH:/usr/local/bin/
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+          set -o xtrace
+          export PATH=$PATH:/usr/local/bin/
 
-            [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
+          [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
 
-            gs_path="artifacts.opnfv.org/$PROJECT/review/$GERRIT_CHANGE_NUMBER"
+          gs_path="artifacts.opnfv.org/$PROJECT/review/$GERRIT_CHANGE_NUMBER"
 
-            if gsutil ls "gs://$gs_path" > /dev/null 2>&1 ; then
-                echo
-                echo "Deleting Out-of-dated Documents..."
-                gsutil -m rm -r "gs://$gs_path"
-            fi
-            gs_path="artifacts.opnfv.org/review/$GERRIT_CHANGE_NUMBER"
+          if gsutil ls "gs://$gs_path" > /dev/null 2>&1 ; then
+              echo
+              echo "Deleting Out-of-dated Documents..."
+              gsutil -m rm -r "gs://$gs_path"
+          fi
+          gs_path="artifacts.opnfv.org/review/$GERRIT_CHANGE_NUMBER"
 
-            if gsutil ls "gs://$gs_path" > /dev/null 2>&1 ; then
-                echo
-                echo "Deleting Out-of-dated Documents..."
-                gsutil -m rm -r "gs://$gs_path"
-            fi
+          if gsutil ls "gs://$gs_path" > /dev/null 2>&1 ; then
+              echo
+              echo "Deleting Out-of-dated Documents..."
+              gsutil -m rm -r "gs://$gs_path"
+          fi
 
 - builder:
     name: build-and-upload-artifacts-json-api
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
-            export PATH=$PATH:/usr/local/bin/
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+          export PATH=$PATH:/usr/local/bin/
 
-            virtualenv -p python2.7 $WORKSPACE/releng_artifacts
-            source $WORKSPACE/releng_artifacts/bin/activate
+          virtualenv -p python2.7 $WORKSPACE/releng_artifacts
+          source $WORKSPACE/releng_artifacts/bin/activate
 
-            # install python packages
-            pip install google-api-python-client
+          # install python packages
+          pip install google-api-python-client
 
-            # generate and upload index file
-            echo "Generating Artifacts API ..."
-            python $WORKSPACE/utils/opnfv-artifacts.py > index.json
-            gsutil cp index.json gs://artifacts.opnfv.org/index.json
+          # generate and upload index file
+          echo "Generating Artifacts API ..."
+          python $WORKSPACE/utils/opnfv-artifacts.py > index.json
+          gsutil cp index.json gs://artifacts.opnfv.org/index.json
 
             deactivate
 
 - builder:
     name: lint-python-code
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
-            set -o xtrace
-            export PATH=$PATH:/usr/local/bin/
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+          set -o xtrace
+          export PATH=$PATH:/usr/local/bin/
 
-            virtualenv -p python2.7 $WORKSPACE/releng_flake8
-            source $WORKSPACE/releng_flake8/bin/activate
+          virtualenv -p python2.7 $WORKSPACE/releng_flake8
+          source $WORKSPACE/releng_flake8/bin/activate
 
-            # install python packages
-            pip install "flake8==2.6.2"
+          # install python packages
+          pip install "flake8==2.6.2"
 
-            # generate and upload lint log
-            echo "Running flake8 code on $PROJECT ..."
+          # generate and upload lint log
+          echo "Running flake8 code on $PROJECT ..."
 
-            # Get number of flake8 violations. If none, this will be an
-            # empty string: ""
-            FLAKE_COUNT="$(find . \
+          # Get number of flake8 violations. If none, this will be an
+          # empty string: ""
+          FLAKE_COUNT="$(find . \
+              -path './releng_flake8' -prune -o \
+              -path './.tox' -prune -o \
+              -type f -name "*.py" -print | \
+              xargs flake8 --exit-zero -qq --count 2>&1)"
+
+          # Ensure we start with a clean environment
+          rm -f lint.log
+
+          if [ ! -z $FLAKE_COUNT ]; then
+            echo "Flake8 Violations: $FLAKE_COUNT" > lint.log
+            find . \
                 -path './releng_flake8' -prune -o \
                 -path './.tox' -prune -o \
                 -type f -name "*.py" -print | \
-                xargs flake8 --exit-zero -qq --count 2>&1)"
+                xargs flake8 --exit-zero --first >> violation.log
+            SHOWN=$(wc -l violation.log | cut -d' ' -f1)
+            echo -e "First $SHOWN shown\n---" >> lint.log
+            cat violation.log >> lint.log
+            sed -r -i '4,$s/^/ /g' lint.log
+            rm violation.log
+          fi
 
-            # Ensure we start with a clean environment
-            rm -f lint.log
-
-            if [ ! -z $FLAKE_COUNT ]; then
-              echo "Flake8 Violations: $FLAKE_COUNT" > lint.log
-              find . \
-                  -path './releng_flake8' -prune -o \
-                  -path './.tox' -prune -o \
-                  -type f -name "*.py" -print | \
-                  xargs flake8 --exit-zero --first >> violation.log
-              SHOWN=$(wc -l violation.log | cut -d' ' -f1)
-              echo -e "First $SHOWN shown\n---" >> lint.log
-              cat violation.log >> lint.log
-              sed -r -i '4,$s/^/ /g' lint.log
-              rm violation.log
-            fi
-
-            deactivate
+          deactivate
 
 - builder:
     name: report-lint-result-to-gerrit
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
-            set -o xtrace
-            export PATH=$PATH:/usr/local/bin/
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+          set -o xtrace
+          export PATH=$PATH:/usr/local/bin/
 
-            # If no violations were found, no lint log will exist.
-            if [[ -e lint.log ]] ; then
-                echo -e "\nposting linting report to gerrit...\n"
+          # If no violations were found, no lint log will exist.
+          if [[ -e lint.log ]] ; then
+              echo -e "\nposting linting report to gerrit...\n"
 
-                cat lint.log
-                echo
+              cat lint.log
+              echo
 
-                ssh -p 29418 gerrit.opnfv.org \
-                    "gerrit review -p $GERRIT_PROJECT \
-                     -m \"$(cat lint.log)\" \
-                     $GERRIT_PATCHSET_REVISION \
-                     --notify NONE"
+              ssh -p 29418 gerrit.opnfv.org \
+                  "gerrit review -p $GERRIT_PROJECT \
+                   -m \"$(cat lint.log)\" \
+                   $GERRIT_PATCHSET_REVISION \
+                   --notify NONE"
 
-                exit 1
-            fi
+              exit 1
+          fi
 
 - builder:
     name: upload-review-docs
     builders:
-        - build-html-and-pdf-docs-output
-        - upload-under-review-docs-to-opnfv-artifacts
-        - report-build-result-to-gerrit
+      - build-html-and-pdf-docs-output
+      - upload-under-review-docs-to-opnfv-artifacts
+      - report-build-result-to-gerrit
 
 - builder:
     name: upload-merged-docs
     builders:
-        - build-html-and-pdf-docs-output
-        - upload-generated-docs-to-opnfv-artifacts
-        - report-build-result-to-gerrit
-        - remove-old-docs-from-opnfv-artifacts
+      - build-html-and-pdf-docs-output
+      - upload-generated-docs-to-opnfv-artifacts
+      - report-build-result-to-gerrit
+      - remove-old-docs-from-opnfv-artifacts
 
 - builder:
     name: check-bash-syntax
     builders:
-        - shell: "find . -name '*.sh' | xargs bash -n"
+      - shell: "find . -name '*.sh' | xargs bash -n"
 
 - builder:
     name: lint-yaml-code
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
-            set -o xtrace
-            export PATH=$PATH:/usr/local/bin/
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+          set -o xtrace
+          export PATH=$PATH:/usr/local/bin/
 
-            # install python packages
-            pip install "yamllint==1.6.0"
+          # install python packages
+          pip install "yamllint==1.6.0"
 
-            # generate and upload lint log
-            echo "Running yaml code on $PROJECT ..."
+          # generate and upload lint log
+          echo "Running yaml code on $PROJECT ..."
 
-            # Ensure we start with a clean environment
-            rm -f yaml-violation.log lint.log
+          # Ensure we start with a clean environment
+          rm -f yaml-violation.log lint.log
 
-            # Get number of yaml violations. If none, this will be an
-            # empty string: ""
-            find . \
-                -type f -name "*.yml" -print \
-                -o -name "*.yaml" -print | \
-                xargs yamllint > yaml-violation.log || true
+          # Get number of yaml violations. If none, this will be an
+          # empty string: ""
+          find . \
+              -type f -name "*.yml" -print \
+              -o -name "*.yaml" -print | \
+              xargs yamllint > yaml-violation.log || true
 
-            if [ -s "yaml-violation.log" ]; then
-              SHOWN=$(cat yaml-violation.log| grep -v "^$" |wc -l)
-              echo -e "First $SHOWN shown\n---" > lint.log
-              cat yaml-violation.log >> lint.log
-              sed -r -i '4,$s/^/ /g' lint.log
-            fi
+          if [ -s "yaml-violation.log" ]; then
+            SHOWN=$(cat yaml-violation.log| grep -v "^$" |wc -l)
+            echo -e "First $SHOWN shown\n---" > lint.log
+            cat yaml-violation.log >> lint.log
+            sed -r -i '4,$s/^/ /g' lint.log
+          fi
 
 - builder:
     name: clean-workspace-log
     builders:
-        - shell: |
-            find $WORKSPACE -type f -name '*.log' | xargs rm -f
+      - shell: |
+          find $WORKSPACE -type f -name '*.log' | xargs rm -f
 
 - publisher:
     name: archive-artifacts
     publishers:
-        - archive:
-            artifacts: '{artifacts}'
-            allow-empty: true
-            fingerprint: true
-            latest-only: true
+      - archive:
+          artifacts: '{artifacts}'
+          allow-empty: true
+          fingerprint: true
+          latest-only: true
 
 - publisher:
     name: publish-coverage
