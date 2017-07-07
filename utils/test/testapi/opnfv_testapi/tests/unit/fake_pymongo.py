@@ -185,7 +185,9 @@ class MemDb(object):
                 elif k == 'trust_indicator.current':
                     if content.get('trust_indicator').get('current') != v:
                         return False
-                elif content.get(k, None) != v:
+                elif v is None and content.get(k, None) != "true":
+                    return False
+                elif v is not None and content.get(k, None) != v:
                     return False
 
         return True

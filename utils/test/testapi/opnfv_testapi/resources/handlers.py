@@ -83,6 +83,11 @@ class GenericApiHandler(web.RequestHandler):
         :param miss_checks: [miss1, miss2]
         :param db_checks: [(table, exist, query, error)]
         """
+        if 'public' not in self.json_args:
+            self.json_args['public'] = 'true'
+        if 'user' not in self.json_args:
+            self.json_args['user'] = 'default'
+
         data = self.table_cls.from_dict(self.json_args)
         for k, v in kwargs.iteritems():
             if k != 'query':
