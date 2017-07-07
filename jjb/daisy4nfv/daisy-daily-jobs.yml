@@ -110,6 +110,18 @@
               same-node: true
               block: true
         - trigger-builds:
+            - project: 'functest-daisy-{pod}-suite-{stream}'
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO={scenario}
+                FUNCTEST_SUITE_NAME=healthcheck
+              same-node: true
+              block: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
+        - trigger-builds:
             - project: 'functest-daisy-{pod}-daily-{stream}'
               current-parameters: false
               predefined-parameters:
