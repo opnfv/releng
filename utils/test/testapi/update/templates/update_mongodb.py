@@ -85,5 +85,6 @@ def update(args):
     rename_fields(fields_old2New)
     rename_collections(collections_old2New)
 
+
 if __name__ == '__main__':
     main(update, parser)

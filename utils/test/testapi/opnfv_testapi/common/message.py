@@ -10,6 +10,10 @@ not_found_base = 'Could Not Found'
 exist_base = 'Already Exists'
 
 
+def key_error(key):
+    return "KeyError: '{}'".format(key)
+
+
 def no_body():
     return 'No Body'
 

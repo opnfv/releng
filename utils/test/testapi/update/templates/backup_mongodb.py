@@ -40,5 +40,6 @@ def backup(args):
     cmd = ['mongodump', '-o', '%s' % out]
     execute(cmd, args)
 
+
 if __name__ == '__main__':
     main(backup, parser)
