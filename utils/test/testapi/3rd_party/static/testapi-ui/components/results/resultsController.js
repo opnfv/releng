@@ -19,6 +19,24 @@
         .module('testapiApp')
         .controller('ResultsController', ResultsController);
 
+    angular
+        .module('testapiApp')
+        .directive('fileModel', ['$parse', function ($parse) {
+            return {
+               restrict: 'A',
+               link: function(scope, element, attrs) {
+                  var model = $parse(attrs.fileModel);
+                  var modelSetter = model.assign;
+
+                  element.bind('change', function(){
+                     scope.$apply(function(){
+                        modelSetter(scope, element[0].files[0]);
+                     });
+                  });
+               }
+            };
+         }]);
+
     ResultsController.$inject = [
         '$scope', '$http', '$filter', '$state', 'testapiApiUrl','raiseAlert'
     ];
@@ -32,6 +50,7 @@
         raiseAlert) {
         var ctrl = this;
 
+        ctrl.uploadFile=uploadFile;
         ctrl.update = update;
         ctrl.open = open;
         ctrl.clearFilters = clearFilters;
@@ -76,6 +95,8 @@
         ctrl.format = 'yyyy-MM-dd';
 
         /** Check to see if this page should display user-specific results. */
+        // ctrl.isUserResults = $state.current.name === 'userResults';
+        // need auth to browse
         ctrl.isUserResults = $state.current.name === 'userResults';
 
         // Should only be on user-results-page if authenticated.
@@ -91,13 +112,48 @@
             'The most recently uploaded community test results are listed ' +
             'here.';
 
+        ctrl.uploadState = '';
+
+        ctrl.isPublic = false;
+
         if (ctrl.isUserResults) {
             ctrl.authRequest = $scope.auth.doSignCheck()
                 .then(ctrl.update);
-            ctrl.getUserProducts();
+            // ctrl.getUserProducts();
         } else {
             ctrl.update();
         }
+
+
+        function uploadFileToUrl(file, uploadUrl){
+           var fd = new FormData();
+           fd.append('file', file);
+           fd.append('public', ctrl.isPublic)
+
+           $http.post(uploadUrl, fd, {
+              transformRequest: angular.identity,
+              headers: {'Content-Type': undefined}
+           })
+
+           .success(function(data){
+              var id = data.href.substr(data.href.lastIndexOf('/')+1);
+              ctrl.uploadState = "Upload succeed. Result id is " + id;
+              ctrl.update();
+           })
+
+           .error(function(data, status){
+              ctrl.uploadState = "Upload failed. Error code is " + status;
+           });
+        }
+
+        function uploadFile(){
+           var file = $scope.resultFile;
+           console.log('file is ' );
+           console.dir(file);
+
+           var uploadUrl = testapiApiUrl + "/results/upload";
+           uploadFileToUrl(file, uploadUrl);
+        };
 
         /**
          * This will contact the TestAPI API to get a listing of test run

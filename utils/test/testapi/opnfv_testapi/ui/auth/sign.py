@@ -1,4 +1,7 @@
 from six.moves.urllib import parse
+from tornado import gen
+from tornado import web
+import logging
 
 from opnfv_testapi.common import config
 from opnfv_testapi.ui.auth import base
@@ -31,20 +34,31 @@ class SigninHandler(base.BaseHandler):
 
 
 class SigninReturnHandler(base.BaseHandler):
+    @web.asynchronous
+    @gen.coroutine
     def get(self):
         if self.get_query_argument(const.OPENID_MODE) == 'cancel':
             self._auth_failure('Authentication canceled.')
 
         openid = self.get_query_argument(const.OPENID_CLAIMED_ID)
-        user_info = {
+        role = const.DEFAULT_ROLE
+        new_user_info = {
             'openid': openid,
             'email': self.get_query_argument(const.OPENID_NS_SREG_EMAIL),
-            'fullname': self.get_query_argument(const.OPENID_NS_SREG_FULLNAME)
+            'fullname': self.get_query_argument(const.OPENID_NS_SREG_FULLNAME),
+            const.ROLE: role
         }
+        user = yield self.db_find_one({'openid': openid})
+        if not user:
+            self.db_save(self.table, new_user_info)
+            logging.info('save to db:%s', new_user_info)
+        else:
+            role = user.get(const.ROLE)
 
-        self.db_save(self.table, user_info)
-        if not self.get_secure_cookie('openid'):
-            self.set_secure_cookie('openid', openid)
+        self.clear_cookie(const.OPENID)
+        self.clear_cookie(const.ROLE)
+        self.set_secure_cookie(const.OPENID, openid)
+        self.set_secure_cookie(const.ROLE, role)
         self.redirect(url=CONF.ui_url)
 
     def _auth_failure(self, message):
@@ -57,9 +71,8 @@ class SigninReturnHandler(base.BaseHandler):
 class SignoutHandler(base.BaseHandler):
     def get(self):
         """Handle signout request."""
-        openid = self.get_secure_cookie(const.OPENID)
-        if openid:
-            self.clear_cookie(const.OPENID)
+        self.clear_cookie(const.OPENID)
+        self.clear_cookie(const.ROLE)
         params = {'openid_logout': CONF.osid_openid_logout_endpoint}
         url = parse.urljoin(CONF.ui_url,
                             '/#/logout?' + parse.urlencode(params))

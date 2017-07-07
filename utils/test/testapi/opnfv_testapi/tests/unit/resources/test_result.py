@@ -10,6 +10,7 @@ import copy
 import httplib
 import unittest
 from datetime import datetime, timedelta
+import json
 
 from opnfv_testapi.common import message
 from opnfv_testapi.resources import pod_models
@@ -130,6 +131,22 @@ class TestResultBase(base.TestBase):
     def _create_d(self):
         _, res = self.create_d()
         return res.href.split('/')[-1]
+
+    def upload(self, req):
+        if req and not isinstance(req, str) and hasattr(req, 'format'):
+            req = req.format()
+        res = self.fetch(self.basePath + '/upload',
+                         method='POST',
+                         body=json.dumps(req),
+                         headers=self.headers)
+
+        return self._get_return(res, self.create_res)
+
+
+class TestResultUpload(TestResultBase):
+    @executor.upload(httplib.BAD_REQUEST, message.key_error('file'))
+    def test_filenotfind(self):
+        return None
 
 
 class TestResultCreate(TestResultBase):
