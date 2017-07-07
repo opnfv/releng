@@ -153,36 +153,39 @@ elif [ "$installer_type" == "apex" ]; then
     sudo scp $ssh_options root@$installer_ip:/home/stack/overcloudrc.v3 $dest_path
 
 elif [ "$installer_type" == "compass" ]; then
-    verify_connectivity $installer_ip
-    controller_ip=$(sshpass -p'root' ssh 2>/dev/null $ssh_options root@${installer_ip} \
-        'mysql -ucompass -pcompass -Dcompass -e"select *  from cluster;"' \
-        | awk -F"," '{for(i=1;i<NF;i++)if($i~/\"127.0.0.1\"/) {print $(i+2);break;}}'  \
-        | grep -oP "\d+.\d+.\d+.\d+")
-
-    if [ -z $controller_ip ]; then
-        error "The controller $controller_ip is not up. Please check that the POD is correctly deployed."
-    fi
-
-    info "Fetching rc file from controller $controller_ip..."
-    sshpass -p root ssh 2>/dev/null $ssh_options root@${installer_ip} \
-        "scp $ssh_options ${controller_ip}:/opt/admin-openrc.sh ." &> /dev/null
-    sshpass -p root scp 2>/dev/null $ssh_options root@${installer_ip}:~/admin-openrc.sh $dest_path &> /dev/null
-
-    info "This file contains the mgmt keystone API, we need the public one for our rc file"
-
-    if grep "OS_AUTH_URL.*v2" $dest_path > /dev/null 2>&1 ; then
-        public_ip=$(sshpass -p root ssh $ssh_options root@${installer_ip} \
-            "ssh ${controller_ip} 'source /opt/admin-openrc.sh; openstack endpoint show identity '" \
-            | grep publicurl | awk '{print $4}')
+    if [ "${BRANCH}" == "master" ]; then
+        sudo docker cp compass-tasks:/opt/openrc $dest_path &> /dev/null
     else
-        public_ip=$(sshpass -p root ssh $ssh_options root@${installer_ip} \
-            "ssh ${controller_ip} 'source /opt/admin-openrc.sh; \
-                 openstack endpoint list --interface public --service identity '" \
-            | grep identity | awk '{print $14}')
-    fi
-    info "public_ip: $public_ip"
-    swap_to_public $public_ip
+        verify_connectivity $installer_ip
+        controller_ip=$(sshpass -p'root' ssh 2>/dev/null $ssh_options root@${installer_ip} \
+            'mysql -ucompass -pcompass -Dcompass -e"select *  from cluster;"' \
+            | awk -F"," '{for(i=1;i<NF;i++)if($i~/\"127.0.0.1\"/) {print $(i+2);break;}}'  \
+            | grep -oP "\d+.\d+.\d+.\d+")
 
+        if [ -z $controller_ip ]; then
+            error "The controller $controller_ip is not up. Please check that the POD is correctly deployed."
+        fi
+
+        info "Fetching rc file from controller $controller_ip..."
+        sshpass -p root ssh 2>/dev/null $ssh_options root@${installer_ip} \
+            "scp $ssh_options ${controller_ip}:/opt/admin-openrc.sh ." &> /dev/null
+        sshpass -p root scp 2>/dev/null $ssh_options root@${installer_ip}:~/admin-openrc.sh $dest_path &> /dev/null
+
+        info "This file contains the mgmt keystone API, we need the public one for our rc file"
+
+        if grep "OS_AUTH_URL.*v2" $dest_path > /dev/null 2>&1 ; then
+            public_ip=$(sshpass -p root ssh $ssh_options root@${installer_ip} \
+                "ssh ${controller_ip} 'source /opt/admin-openrc.sh; openstack endpoint show identity '" \
+                | grep publicurl | awk '{print $4}')
+        else
+            public_ip=$(sshpass -p root ssh $ssh_options root@${installer_ip} \
+                "ssh ${controller_ip} 'source /opt/admin-openrc.sh; \
+                     openstack endpoint list --interface public --service identity '" \
+                | grep identity | awk '{print $14}')
+        fi
+        info "public_ip: $public_ip"
+        swap_to_public $public_ip
+    fi
 
 elif [ "$installer_type" == "joid" ]; then
     # do nothing...for the moment
