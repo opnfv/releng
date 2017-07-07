@@ -17,7 +17,7 @@ class ProfileHandler(base.BaseHandler):
                     "openid": user.get('openid'),
                     "email": user.get('email'),
                     "fullname": user.get('fullname'),
-                    "is_admin": False
+                    "role": user.get('role', 'user')
                 })
             except Exception:
                 pass

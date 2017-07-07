@@ -54,6 +54,8 @@ class ResultCreateRequest(models.ModelBase):
                  build_tag=None,
                  scenario=None,
                  criteria=None,
+                 user=None,
+                 public=None,
                  trust_indicator=None):
         self.pod_name = pod_name
         self.project_name = project_name
@@ -66,6 +68,8 @@ class ResultCreateRequest(models.ModelBase):
         self.build_tag = build_tag
         self.scenario = scenario
         self.criteria = criteria
+        self.user = user
+        self.public = public
         self.trust_indicator = trust_indicator if trust_indicator else TI(0)
 
 
@@ -89,7 +93,7 @@ class TestResult(models.ModelBase):
                  pod_name=None, installer=None, version=None,
                  start_date=None, stop_date=None, details=None,
                  build_tag=None, scenario=None, criteria=None,
-                 trust_indicator=None):
+                 user=None, public=None, trust_indicator=None):
         self._id = _id
         self.case_name = case_name
         self.project_name = project_name
@@ -102,6 +106,8 @@ class TestResult(models.ModelBase):
         self.build_tag = build_tag
         self.scenario = scenario
         self.criteria = criteria
+        self.user = user
+        self.public = public
         self.trust_indicator = trust_indicator
 
     @staticmethod

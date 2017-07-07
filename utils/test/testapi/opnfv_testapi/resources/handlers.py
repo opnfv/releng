@@ -83,6 +83,11 @@ class GenericApiHandler(web.RequestHandler):
         :param miss_checks: [miss1, miss2]
         :param db_checks: [(table, exist, query, error)]
         """
+        if 'public' not in self.json_args:
+            self.json_args['public'] = 'true'
+        if 'user' not in self.json_args:
+            self.json_args['user'] = 'default'
+
         data = self.table_cls.from_dict(self.json_args)
         for k, v in kwargs.iteritems():
             if k != 'query':
@@ -125,13 +130,13 @@ class GenericApiHandler(web.RequestHandler):
             res = {self.table: data}
         else:
             res = res_op(data, *args)
-        if total_pages > 0:
-            res.update({
-                'pagination': {
-                    'current_page': kwargs.get('page'),
-                    'total_pages': total_pages
-                }
-            })
+
+        res.update({
+            'pagination': {
+                'current_page': kwargs.get('page'),
+                'total_pages': total_pages
+            }
+        })
         self.finish_request(res)
 
     @staticmethod
@@ -145,7 +150,7 @@ class GenericApiHandler(web.RequestHandler):
             total_pages, remainder = divmod(records_nr, per_page)
             if remainder > 0:
                 total_pages += 1
-        if page > total_pages:
+        if total_pages != 0 and page > total_pages:
             raises.BadRequest(
                 'Request page > total_pages [{}]'.format(total_pages))
         return total_pages

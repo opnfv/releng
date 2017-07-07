@@ -10,6 +10,7 @@ import copy
 import httplib
 import unittest
 from datetime import datetime, timedelta
+import json
 
 from opnfv_testapi.common import message
 from opnfv_testapi.resources import pod_models
@@ -130,6 +131,22 @@ class TestResultBase(base.TestBase):
     def _create_d(self):
         _, res = self.create_d()
         return res.href.split('/')[-1]
+
+    def upload(self, req):
+        if req and not isinstance(req, str) and hasattr(req, 'format'):
+            req = req.format()
+        res = self.fetch(self.basePath + '/upload',
+                         method='POST',
+                         body=json.dumps(req),
+                         headers=self.headers)
+
+        return self._get_return(res, self.create_res)
+
+
+class TestResultUpload(TestResultBase):
+    @executor.upload(httplib.BAD_REQUEST, message.key_error('file'))
+    def test_filenotfind(self):
+        return None
 
 
 class TestResultCreate(TestResultBase):
@@ -268,6 +285,16 @@ class TestResultGet(TestResultBase):
     def test_queryLast(self):
         return self._set_query('last=1')
 
+    @executor.query(httplib.OK, '_query_success', 4)
+    def test_queryPublic(self):
+        self._create_public_data()
+        return self._set_query('')
+
+    @executor.query(httplib.OK, '_query_success', 1)
+    def test_queryPrivate(self):
+        self._create_private_data()
+        return self._set_query('public=false')
+
     @executor.query(httplib.OK, '_query_last_one', 1)
     def test_combination(self):
         return self._set_query('pod',
@@ -309,16 +336,29 @@ class TestResultGet(TestResultBase):
         self.create(req)
         return req
 
+    def _create_public_data(self, **kwargs):
+        req = copy.deepcopy(self.req_d)
+        req.public = 'true'
+        self.create(req)
+        return req
+
+    def _create_private_data(self, **kwargs):
+        req = copy.deepcopy(self.req_d)
+        req.public = 'false'
+        self.create(req)
+        return req
+
     def _set_query(self, *args):
         def get_value(arg):
             return self.__getattribute__(arg) \
                 if arg != 'trust_indicator' else self.trust_indicator.current
         uri = ''
         for arg in args:
-            if '=' in arg:
-                uri += arg + '&'
-            else:
-                uri += '{}={}&'.format(arg, get_value(arg))
+            if arg:
+                if '=' in arg:
+                    uri += arg + '&'
+                else:
+                    uri += '{}={}&'.format(arg, get_value(arg))
         return uri[0: -1]
 
 
