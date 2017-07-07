@@ -189,9 +189,8 @@ class MemDb(object):
                 elif k == 'trust_indicator.current':
                     if content.get('trust_indicator').get('current') != v:
                         return False
-                elif content.get(k, None) != v:
+                elif not isinstance(v, dict) and content.get(k, None) != v:
                     return False
-
         return True
 
     def _find(self, *args):
