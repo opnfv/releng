@@ -31,9 +31,11 @@ TODOs :
 
 import argparse
 import sys
+import logging
 
 import motor
 import tornado.ioloop
+
 
 from opnfv_testapi.common import config
 from opnfv_testapi.router import url_mappings
@@ -72,6 +74,7 @@ def make_app():
 def main():
     parse_config(sys.argv[1:])
     application = make_app()
+    logging.info('Server started...')
     application.listen(CONF.api_port)
     tornado.ioloop.IOLoop.current().start()
 
