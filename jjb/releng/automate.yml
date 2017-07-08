@@ -249,12 +249,17 @@
     name: 'testapi-automate-docker-deploy-macro'
     builders:
         - shell: |
-            bash ./jjb/releng/docker-deploy.sh 'sudo docker run -dti -p 8082:8000 -e mongodb_url=mongodb://172.17.0.1:27017 -e base_url=http://testresults.opnfv.org/test opnfv/testapi' "http://testresults.opnfv.org/test/swagger/APIs"
+            bash ./jjb/releng/docker-deploy.sh "sudo docker run -dti -p 8082:8000
+            -e mongodb_url=mongodb://172.17.0.1:27017
+            -e base_url=http://testresults.opnfv.org/test opnfv/testapi" \
+            "http://testresults.opnfv.org/test/swagger/APIs" "testapi"
+
 - builder:
     name: 'reporting-automate-docker-deploy-macro'
     builders:
         - shell: |
-            bash ./jjb/releng/docker-deploy.sh 'sudo docker run -itd -p 8084:8000 opnfv/reporting' "http://testresults.opnfv.org/reporting2/reporting/index.html"
+            bash ./jjb/releng/docker-deploy.sh "sudo docker run -itd -p 8084:8000 opnfv/reporting" \
+            "http://testresults.opnfv.org/reporting2/reporting/index.html" "reporting"
 
 - builder:
     name: mongodb-backup
