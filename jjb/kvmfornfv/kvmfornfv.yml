@@ -1,42 +1,44 @@
+---
 - project:
     name: kvmfornfv
 
     project: '{name}'
 
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            disabled: false
-        - danube:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
-            disabled: true
-#####################################
-# patch verification phases
-#####################################
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
+      - danube:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: true
+    #####################################
+    # patch verification phases
+    #####################################
     phase:
-        - 'build':
-            slave-label: 'opnfv-build-ubuntu'
-        - 'test':
-            slave-label: 'intel-pod10'
-#####################################
-# patch verification phases
-#####################################
+      - 'build':
+          slave-label: 'opnfv-build-ubuntu'
+      - 'test':
+          slave-label: 'intel-pod10'
+    #####################################
+    # patch verification phases
+    #####################################
     testname:
-        - 'cyclictest'
-        - 'packet_forward'
-        - 'livemigration'
-#####################################
-# patch verification phases
-#####################################
+      - 'cyclictest'
+      - 'packet_forward'
+      - 'livemigration'
+    #####################################
+    # patch verification phases
+    #####################################
     jobs:
-        - 'kvmfornfv-verify-{stream}'
-        - 'kvmfornfv-verify-{phase}-{stream}'
-        - 'kvmfornfv-merge-{stream}'
-        - 'kvmfornfv-daily-{stream}'
-        - 'kvmfornfv-daily-build-{stream}'
-        - 'kvmfornfv-{testname}-daily-test-{stream}'
+      - 'kvmfornfv-verify-{stream}'
+      - 'kvmfornfv-verify-{phase}-{stream}'
+      - 'kvmfornfv-merge-{stream}'
+      - 'kvmfornfv-daily-{stream}'
+      - 'kvmfornfv-daily-build-{stream}'
+      - 'kvmfornfv-{testname}-daily-test-{stream}'
+
 #####################################
 # job templates
 #####################################
@@ -50,71 +52,72 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 3
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 3
+          option: 'project'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                disable-strict-forbidden-file-verification: 'true'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**'
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              disable-strict-forbidden-file-verification: 'true'
+              forbidden-file-paths:
+                - compare-type: ANT
+                  pattern: 'docs/**'
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - multijob:
-            name: build
-            condition: SUCCESSFUL
-            projects:
-                - name: 'kvmfornfv-verify-build-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: test
-            condition: SUCCESSFUL
-            projects:
-                - name: 'kvmfornfv-verify-test-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - multijob:
+          name: build
+          condition: SUCCESSFUL
+          projects:
+            - name: 'kvmfornfv-verify-build-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
+          name: test
+          condition: SUCCESSFUL
+          projects:
+            - name: 'kvmfornfv-verify-test-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: true
+
 - job-template:
     name: 'kvmfornfv-verify-{phase}-{stream}'
 
@@ -123,29 +126,30 @@
     concurrent: true
 
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 360
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 360
+          fail: true
+
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - '{slave-label}-defaults'
-        - 'kvmfornfv-defaults':
-            gs-pathname: '{gs-pathname}'
-        - string:
-            name: PHASE
-            default: '{phase}'
-            description: "Execution of kvmfornfv daily '{phase}' job ."
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{slave-label}-defaults'
+      - 'kvmfornfv-defaults':
+          gs-pathname: '{gs-pathname}'
+      - string:
+          name: PHASE
+          default: '{phase}'
+          description: "Execution of kvmfornfv daily '{phase}' job ."
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - '{project}-verify-{phase}-macro'
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - '{project}-verify-{phase}-macro'
 
 - job-template:
     name: 'kvmfornfv-merge-{stream}'
@@ -153,33 +157,33 @@
     disabled: '{obj:disabled}'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
-        - 'kvmfornfv-defaults':
-            gs-pathname: '{gs-pathname}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
+      - 'kvmfornfv-defaults':
+          gs-pathname: '{gs-pathname}'
 
     scm:
-        - git-scm
+      - git-scm
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/{branch}'
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'remerge'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
 
     builders:
-        - shell:
-            !include-raw: ./kvmfornfv-build.sh
+      - shell:
+          !include-raw: ./kvmfornfv-build.sh
 
 - job-template:
     name: 'kvmfornfv-daily-{stream}'
@@ -191,63 +195,62 @@
     concurrent: false
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
-        - 'kvmfornfv-defaults':
-            gs-pathname: '{gs-pathname}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
+      - 'kvmfornfv-defaults':
+          gs-pathname: '{gs-pathname}'
 
     scm:
-        - git-scm
+      - git-scm
 
     triggers:
-        - timed: '@midnight'
+      - timed: '@midnight'
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - multijob:
-            name: cyclictest-build
-            condition: SUCCESSFUL
-            projects:
-                - name: 'kvmfornfv-daily-build-{stream}'
-                  current-parameters: false
-                  node-parameters: false
-                  git-revision: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: cyclictest-test
-            condition: SUCCESSFUL
-            projects:
-                - name: 'kvmfornfv-cyclictest-daily-test-{stream}'
-                  current-parameters: false
-                  node-parameters: false
-                  git-revision: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: packetforward-test
-            condition: SUCCESSFUL
-            projects:
-                - name: 'kvmfornfv-packet_forward-daily-test-{stream}'
-                  current-parameters: false
-                  node-parameters: false
-                  git-revision: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: livemigration-test
-            condition: SUCCESSFUL
-            projects:
-                - name: 'kvmfornfv-livemigration-daily-test-{stream}'
-                  current-parameters: false
-                  node-parameters: false
-                  git-revision: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - multijob:
+          name: cyclictest-build
+          condition: SUCCESSFUL
+          projects:
+            - name: 'kvmfornfv-daily-build-{stream}'
+              current-parameters: false
+              node-parameters: false
+              git-revision: true
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
+          name: cyclictest-test
+          condition: SUCCESSFUL
+          projects:
+            - name: 'kvmfornfv-cyclictest-daily-test-{stream}'
+              current-parameters: false
+              node-parameters: false
+              git-revision: true
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
+          name: packetforward-test
+          condition: SUCCESSFUL
+          projects:
+            - name: 'kvmfornfv-packet_forward-daily-test-{stream}'
+              current-parameters: false
+              node-parameters: false
+              git-revision: true
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
+          name: livemigration-test
+          condition: SUCCESSFUL
+          projects:
+            - name: 'kvmfornfv-livemigration-daily-test-{stream}'
+              current-parameters: false
+              node-parameters: false
+              git-revision: true
+              kill-phase-on: FAILURE
+              abort-all-job: true
 
 - job-template:
     name: 'kvmfornfv-daily-build-{stream}'
@@ -257,29 +260,29 @@
     concurrent: false
 
     scm:
-        - git-scm
+      - git-scm
 
     wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 360
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 360
+          fail: true
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
-        - 'kvmfornfv-defaults':
-            gs-pathname: '{gs-pathname}'
-        - string:
-            name: PHASE
-            default: 'build'
-            description: "Execution of kvmfornfv daily 'build' job ."
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
+      - 'kvmfornfv-defaults':
+          gs-pathname: '{gs-pathname}'
+      - string:
+          name: PHASE
+          default: 'build'
+          description: "Execution of kvmfornfv daily 'build' job ."
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - '{project}-daily-build-macro'
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - '{project}-daily-build-macro'
 
 - job-template:
     name: 'kvmfornfv-{testname}-daily-test-{stream}'
@@ -289,80 +292,87 @@
     concurrent: false
 
     scm:
-        - git-scm
+      - git-scm
 
     wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 360
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 360
+          fail: true
+
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'intel-pod10-defaults'
-        - 'kvmfornfv-defaults':
-            gs-pathname: '{gs-pathname}'
-        - string:
-            name: TEST_NAME
-            default: '{testname}'
-            description: "Daily job to execute kvmfornfv '{testname}' testcase."
-        - string:
-            name: PHASE
-            default: 'test'
-            description: "Execution of kvmfornfv daily 'test' job ."
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'intel-pod10-defaults'
+      - 'kvmfornfv-defaults':
+          gs-pathname: '{gs-pathname}'
+      - string:
+          name: TEST_NAME
+          default: '{testname}'
+          description: "Daily job to execute kvmfornfv '{testname}' testcase."
+      - string:
+          name: PHASE
+          default: 'test'
+          description: "Execution of kvmfornfv daily 'test' job ."
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - '{project}-{testname}-daily-test-macro'
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - '{project}-{testname}-daily-test-macro'
+
 #####################################
 # builder macros
 #####################################
 - builder:
     name: 'kvmfornfv-verify-build-macro'
     builders:
-        - shell:
-            !include-raw: ./kvmfornfv-build.sh
-        - shell:
-            !include-raw: ./kvmfornfv-upload-artifact.sh
+      - shell:
+          !include-raw: ./kvmfornfv-build.sh
+      - shell:
+          !include-raw: ./kvmfornfv-upload-artifact.sh
+
 - builder:
     name: 'kvmfornfv-verify-test-macro'
     builders:
-        - shell:
-            !include-raw: ./kvmfornfv-download-artifact.sh
-        - shell:
-            !include-raw: ./kvmfornfv-test.sh
+      - shell:
+          !include-raw: ./kvmfornfv-download-artifact.sh
+      - shell:
+          !include-raw: ./kvmfornfv-test.sh
+
 - builder:
     name: 'kvmfornfv-daily-build-macro'
     builders:
-        - shell:
-            !include-raw: ./kvmfornfv-build.sh
-        - shell:
-            !include-raw: ./kvmfornfv-upload-artifact.sh
+      - shell:
+          !include-raw: ./kvmfornfv-build.sh
+      - shell:
+          !include-raw: ./kvmfornfv-upload-artifact.sh
+
 - builder:
     name: 'kvmfornfv-cyclictest-daily-test-macro'
     builders:
-        - shell:
-            !include-raw: ./kvmfornfv-download-artifact.sh
-        - shell:
-            !include-raw: ./kvmfornfv-test.sh
-        - shell:
-            !include-raw: ./kvmfornfv-upload-artifact.sh
+      - shell:
+          !include-raw: ./kvmfornfv-download-artifact.sh
+      - shell:
+          !include-raw: ./kvmfornfv-test.sh
+      - shell:
+          !include-raw: ./kvmfornfv-upload-artifact.sh
+
 - builder:
     name: 'kvmfornfv-packet_forward-daily-test-macro'
     builders:
-        - shell:
-            !include-raw: ./kvmfornfv-download-artifact.sh
-        - shell:
-            !include-raw: ./kvmfornfv-test.sh
+      - shell:
+          !include-raw: ./kvmfornfv-download-artifact.sh
+      - shell:
+          !include-raw: ./kvmfornfv-test.sh
+
 - builder:
     name: 'kvmfornfv-livemigration-daily-test-macro'
     builders:
-        - shell:
-            !include-raw: ./kvmfornfv-download-artifact.sh
-        - shell:
-            !include-raw: ./kvmfornfv-test.sh
+      - shell:
+          !include-raw: ./kvmfornfv-download-artifact.sh
+      - shell:
+          !include-raw: ./kvmfornfv-test.sh
 
 #####################################
 # parameter macros
@@ -370,7 +380,7 @@
 - parameter:
     name: 'kvmfornfv-defaults'
     parameters:
-        - string:
-            name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
-            description: "URL to Google Storage."
+      - string:
+          name: GS_URL
+          default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+          description: "URL to Google Storage."
