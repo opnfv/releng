@@ -1,3 +1,4 @@
+---
 ######################
 # verify before MERGE
 ######################
@@ -6,18 +7,18 @@
     name: qtip-verify-jobs
     project: qtip
     jobs:
-        - 'qtip-verify-{stream}'
-        - 'qtip-review-notebook-{stream}'
-        - 'qtip-merge-{stream}'
+      - 'qtip-verify-{stream}'
+      - 'qtip-review-notebook-{stream}'
+      - 'qtip-merge-{stream}'
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            disabled: false
-        - danube:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
-            disabled: false
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
+      - danube:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
 
 ################################
 ## job templates
@@ -28,43 +29,43 @@
     disabled: '{obj:disabled}'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
 
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                disable-strict-forbidden-file-verification: 'true'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**|.gitignore'
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              disable-strict-forbidden-file-verification: 'true'
+              forbidden-file-paths:
+                - compare-type: ANT
+                  pattern: 'docs/**|.gitignore'
 
     builders:
-        - qtip-unit-tests-and-docs-build
+      - qtip-unit-tests-and-docs-build
     publishers:
-        - publish-coverage
-        - email-jenkins-admins-on-failure
+      - publish-coverage
+      - email-jenkins-admins-on-failure
 
 # upload juypter notebook to artifacts for review
 - job-template:
@@ -73,40 +74,41 @@
     disabled: '{obj:disabled}'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
 
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                disable-strict-forbidden-file-verification: 'true'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'examples/**'
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              disable-strict-forbidden-file-verification: 'true'
+              file-paths:
+                - compare-type: ANT
+                  pattern: 'examples/**'
+
     builders:
-        - upload-under-review-notebooks-to-opnfv-artifacts
-        - report-build-result-to-gerrit
+      - upload-under-review-notebooks-to-opnfv-artifacts
+      - report-build-result-to-gerrit
 
 - job-template:
     name: 'qtip-merge-{stream}'
@@ -114,40 +116,40 @@
     disabled: '{obj:disabled}'
 
     parameters:
-        - project-parameter:
-            project: $GERRIT_PROJECT
-            branch: '{branch}'
-        - string:
-            name: GS_URL
-            default: '$GS_BASE{gs-pathname}'
-            description: "Directory where the build artifact will be located upon the completion of the build."
-        - string:
-            name: GERRIT_REFSPEC
-            default: 'refs/heads/{branch}'
-            description: "JJB configured GERRIT_REFSPEC parameter"
+      - project-parameter:
+          project: $GERRIT_PROJECT
+          branch: '{branch}'
+      - string:
+          name: GS_URL
+          default: '$GS_BASE{gs-pathname}'
+          description: "Directory where the build artifact will be located upon the completion of the build."
+      - string:
+          name: GERRIT_REFSPEC
+          default: 'refs/heads/{branch}'
+          description: "JJB configured GERRIT_REFSPEC parameter"
 
     scm:
-        - git-scm
+      - git-scm
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-                - project-compare-type: 'ANT'
-                  project-pattern: '*'
-                  branches:
-                      - branch-compare-type: 'ANT'
-                        branch-pattern: '**/{branch}'
-                  file-paths:
-                      - compare-type: ANT
-                        pattern: examples/**
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'remerge'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '*'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: ANT
+                  pattern: examples/**
 
     builders:
-        - remove-old-docs-from-opnfv-artifacts
+      - remove-old-docs-from-opnfv-artifacts
 
 ################################
 ## job builders
@@ -155,42 +157,43 @@
 - builder:
     name: qtip-unit-tests-and-docs-build
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
-            set -o xtrace
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+          set -o xtrace
 
-            tox
+          tox
 
-# modified from upload-under-review-docs-to-opnfv-artifacts in global/releng-macro.yml
+# modified from upload-under-review-docs-to-opnfv-artifacts
+# in global/releng-macro.yml
 - builder:
     name: upload-under-review-notebooks-to-opnfv-artifacts
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
-            set -o xtrace
-            export PATH=$PATH:/usr/local/bin/
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+          set -o xtrace
+          export PATH=$PATH:/usr/local/bin/
 
-            [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
-            [[ -d examples ]] || exit 0
+          [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
+          [[ -d examples ]] || exit 0
 
-            echo
-            echo "###########################"
-            echo "UPLOADING DOCS UNDER REVIEW"
-            echo "###########################"
-            echo
+          echo
+          echo "###########################"
+          echo "UPLOADING DOCS UNDER REVIEW"
+          echo "###########################"
+          echo
 
-            gs_base="artifacts.opnfv.org/$PROJECT/review"
-            gs_path="$gs_base/$GERRIT_CHANGE_NUMBER"
-            local_path="upload/$GERRIT_CHANGE_NUMBER"
+          gs_base="artifacts.opnfv.org/$PROJECT/review"
+          gs_path="$gs_base/$GERRIT_CHANGE_NUMBER"
+          local_path="upload/$GERRIT_CHANGE_NUMBER"
 
-            mkdir -p upload
-            cp -r examples "$local_path"
-            gsutil -m cp -r "$local_path" "gs://$gs_base/"
+          mkdir -p upload
+          cp -r examples "$local_path"
+          gsutil -m cp -r "$local_path" "gs://$gs_base/"
 
-            echo "Document link(s):" >> gerrit_comment.txt
-            find "$local_path" | grep -e 'ipynb$' | \
-                sed -e "s|^$local_path|    https://nbviewer.jupyter.org/url/$gs_path|" >> gerrit_comment.txt
+          echo "Document link(s):" >> gerrit_comment.txt
+          find "$local_path" | grep -e 'ipynb$' | \
+              sed -e "s|^$local_path|    https://nbviewer.jupyter.org/url/$gs_path|" >> gerrit_comment.txt

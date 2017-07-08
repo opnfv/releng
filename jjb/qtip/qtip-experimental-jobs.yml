@@ -1,3 +1,4 @@
+---
 ###########################################
 # Experimental jobs for development purpose
 ###########################################
@@ -6,12 +7,12 @@
     name: qtip-experimental-jobs
     project: qtip
     jobs:
-        - 'qtip-experimental-{stream}'
+      - 'qtip-experimental-{stream}'
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            disabled: false
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
 
 ################################
 ## job templates
@@ -23,22 +24,22 @@
     disabled: '{obj:disabled}'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        # Pin the tests on zte-pod4 with apex deployment
-        - apex-defaults
-        - zte-pod4-defaults
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      # Pin the tests on zte-pod4 with apex deployment
+      - apex-defaults
+      - zte-pod4-defaults
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     triggers:
-        - experimental:
-            project: '{project}'
-            branch: '{branch}'
-            files: '**'
+      - experimental:
+          project: '{project}'
+          branch: '{branch}'
+          files: '**'
 
     builders:
-        - shell: |
-             #!/bin/bash
-                source tests/ci/experimental.sh
+      - shell: |
+           #!/bin/bash
+              source tests/ci/experimental.sh
