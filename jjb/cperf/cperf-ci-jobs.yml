@@ -1,3 +1,4 @@
+---
 ###################################
 # job configuration for cperf
 ###################################
@@ -5,40 +6,39 @@
     name: cperf-ci-jobs
     project: cperf
 
-#--------------------------------
-# BRANCH ANCHORS
-#--------------------------------
+    # -------------------------------
+    # BRANCH ANCHORS
+    # -------------------------------
     master: &master
-        stream: master
-        branch: '{stream}'
-        gs-pathname: ''
-        docker-tag: 'latest'
+      stream: master
+      branch: '{stream}'
+      gs-pathname: ''
+      docker-tag: 'latest'
     danube: &danube
-        stream: danube
-        branch: 'stable/{stream}'
-        gs-pathname: '/{stream}'
-        docker-tag: 'stable'
+      stream: danube
+      branch: 'stable/{stream}'
+      gs-pathname: '/{stream}'
+      docker-tag: 'stable'
 
-#--------------------------------
-# POD, INSTALLER, AND BRANCH MAPPING
-#--------------------------------
+    # -------------------------------
+    # POD, INSTALLER, AND BRANCH MAPPING
+    # -------------------------------
     pod:
-#--------------------------------
-#        master
-#--------------------------------
-        - intel-pod2:
-            installer: apex
-            <<: *master
-        - intel-pod2:
-            installer: apex
-            <<: *danube
-#--------------------------------
+      # -------------------------------
+      #        master
+      # -------------------------------
+      - intel-pod2:
+          installer: apex
+          <<: *master
+      - intel-pod2:
+          installer: apex
+          <<: *danube
 
     testsuite:
-        - 'daily'
+      - 'daily'
 
     jobs:
-        - 'cperf-{installer}-{pod}-{testsuite}-{stream}'
+      - 'cperf-{installer}-{pod}-{testsuite}-{stream}'
 
 ################################
 # job template
@@ -49,35 +49,35 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-per-node: 1
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-per-node: 1
+          option: 'project'
 
     wrappers:
-        - build-name:
-            name: '$BUILD_NUMBER Suite: $CPERF_SUITE_NAME Scenario: $DEPLOY_SCENARIO'
-        - timeout:
-            timeout: 400
-            abort: true
+      - build-name:
+          name: '$BUILD_NUMBER Suite: $CPERF_SUITE_NAME Scenario: $DEPLOY_SCENARIO'
+      - timeout:
+          timeout: 400
+          abort: true
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - '{pod}-defaults'
-        - '{installer}-defaults'
-        - cperf-parameter:
-            testsuite: '{testsuite}'
-            gs-pathname: '{gs-pathname}'
-            docker-tag: '{docker-tag}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{pod}-defaults'
+      - '{installer}-defaults'
+      - cperf-parameter:
+          testsuite: '{testsuite}'
+          gs-pathname: '{gs-pathname}'
+          docker-tag: '{docker-tag}'
 
     scm:
-        - git-scm
+      - git-scm
 
     builders:
-        - 'cperf-{testsuite}-builder'
+      - 'cperf-{testsuite}-builder'
 
 ########################
 # parameter macros
@@ -85,22 +85,22 @@
 - parameter:
     name: cperf-parameter
     parameters:
-        - string:
-            name: CPERF_SUITE_NAME
-            default: '{testsuite}'
-            description: "Suite name to run"
-        - string:
-            name: GS_PATHNAME
-            default: '{gs-pathname}'
-            description: "Version directory where the opnfv documents will be stored in gs repository"
-        - string:
-            name: CI_DEBUG
-            default: 'false'
-            description: "Show debug output information"
-        - string:
-            name: DOCKER_TAG
-            default: '{docker-tag}'
-            description: 'Tag to pull docker image'
+      - string:
+          name: CPERF_SUITE_NAME
+          default: '{testsuite}'
+          description: "Suite name to run"
+      - string:
+          name: GS_PATHNAME
+          default: '{gs-pathname}'
+          description: "Version directory where the opnfv documents will be stored in gs repository"
+      - string:
+          name: CI_DEBUG
+          default: 'false'
+          description: "Show debug output information"
+      - string:
+          name: DOCKER_TAG
+          default: '{docker-tag}'
+          description: 'Tag to pull docker image'
 
 ########################
 # trigger macros
@@ -112,79 +112,79 @@
 - builder:
     name: cperf-daily-builder
     builders:
-        - 'cperf-cleanup'
-        - 'cperf-robot-cbench'
+      - 'cperf-cleanup'
+      - 'cperf-robot-cbench'
 
 - builder:
     name: cperf-robot-cbench
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-            undercloud_mac=$(sudo virsh domiflist undercloud | grep default | \
-                              grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
-            INSTALLER_IP=$(/usr/sbin/arp -e | grep ${undercloud_mac} | awk {'print $1'})
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          undercloud_mac=$(sudo virsh domiflist undercloud | grep default | \
+                            grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
+          INSTALLER_IP=$(/usr/sbin/arp -e | grep ${undercloud_mac} | awk {'print $1'})
 
-            sudo scp -o StrictHostKeyChecking=no root@$INSTALLER_IP:/home/stack/overcloudrc /tmp/overcloudrc
-            sudo chmod 755 /tmp/overcloudrc
-            source /tmp/overcloudrc
+          sudo scp -o StrictHostKeyChecking=no root@$INSTALLER_IP:/home/stack/overcloudrc /tmp/overcloudrc
+          sudo chmod 755 /tmp/overcloudrc
+          source /tmp/overcloudrc
 
-            # robot suites need the ssh key to log in to controller nodes, so throwing it
-            # in tmp, and mounting /tmp as $HOME as far as robot is concerned
-            sudo rm -rf /tmp/.ssh
-            sudo mkdir /tmp/.ssh
-            sudo chmod 0700 /tmp/.ssh
-            sudo scp -o StrictHostKeyChecking=no root@$INSTALLER_IP:/home/stack/.ssh/id_rsa /tmp/.ssh/
-            sudo chown -R jenkins-ci:jenkins-ci /tmp/.ssh
-            # done with sudo. jenkins-ci is the user from this point
-            chmod 0600 /tmp/.ssh/id_rsa
+          # robot suites need the ssh key to log in to controller nodes, so throwing it
+          # in tmp, and mounting /tmp as $HOME as far as robot is concerned
+          sudo rm -rf /tmp/.ssh
+          sudo mkdir /tmp/.ssh
+          sudo chmod 0700 /tmp/.ssh
+          sudo scp -o StrictHostKeyChecking=no root@$INSTALLER_IP:/home/stack/.ssh/id_rsa /tmp/.ssh/
+          sudo chown -R jenkins-ci:jenkins-ci /tmp/.ssh
+          # done with sudo. jenkins-ci is the user from this point
+          chmod 0600 /tmp/.ssh/id_rsa
 
-            # cbench requires the openflow drop test feature to be installed.
-            sshpass -p karaf ssh -o StrictHostKeyChecking=no \
-                                 -o UserKnownHostsFile=/dev/null \
-                                 -o LogLevel=error \
-                                 -p 8101 karaf@$SDN_CONTROLLER_IP \
-                                  feature:install odl-openflowplugin-flow-services-ui odl-openflowplugin-drop-test
+          # cbench requires the openflow drop test feature to be installed.
+          sshpass -p karaf ssh -o StrictHostKeyChecking=no \
+                               -o UserKnownHostsFile=/dev/null \
+                               -o LogLevel=error \
+                               -p 8101 karaf@$SDN_CONTROLLER_IP \
+                                feature:install odl-openflowplugin-flow-services-ui odl-openflowplugin-drop-test
 
-            docker pull opnfv/cperf:$DOCKER_TAG
+          docker pull opnfv/cperf:$DOCKER_TAG
 
-            robot_cmd="pybot -e exclude -L TRACE -d /tmp \
-                        -v ODL_SYSTEM_1_IP:${SDN_CONTROLLER_IP} \
-                        -v ODL_SYSTEM_IP:${SDN_CONTROLLER_IP} \
-                        -v BUNDLEFOLDER:/opt/opendaylight \
-                        -v RESTCONFPORT:8081 \
-                        -v USER_HOME:/tmp \
-                        -v USER:heat-admin \
-                        -v ODL_SYSTEM_USER:heat-admin \
-                        -v TOOLS_SYSTEM_IP:localhost \
-                        -v of_port:6653"
-            robot_suite="/home/opnfv/repos/odl_test/csit/suites/openflowplugin/Performance/010_Cbench.robot"
+          robot_cmd="pybot -e exclude -L TRACE -d /tmp \
+                      -v ODL_SYSTEM_1_IP:${SDN_CONTROLLER_IP} \
+                      -v ODL_SYSTEM_IP:${SDN_CONTROLLER_IP} \
+                      -v BUNDLEFOLDER:/opt/opendaylight \
+                      -v RESTCONFPORT:8081 \
+                      -v USER_HOME:/tmp \
+                      -v USER:heat-admin \
+                      -v ODL_SYSTEM_USER:heat-admin \
+                      -v TOOLS_SYSTEM_IP:localhost \
+                      -v of_port:6653"
+          robot_suite="/home/opnfv/repos/odl_test/csit/suites/openflowplugin/Performance/010_Cbench.robot"
 
-            docker run -i -v /tmp:/tmp opnfv/cperf:$DOCKER_TAG ${robot_cmd} ${robot_suite}
+          docker run -i -v /tmp:/tmp opnfv/cperf:$DOCKER_TAG ${robot_cmd} ${robot_suite}
 
 - builder:
     name: cperf-cleanup
     builders:
-        - shell: |
-            #!/bin/bash
-            [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
+      - shell: |
+          #!/bin/bash
+          [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 
-            echo "Cleaning up docker containers/images..."
-            # Remove previous running containers if exist
-            if [[ ! -z $(docker ps -a | grep opnfv/cperf) ]]; then
-                echo "Removing existing opnfv/cperf containers..."
-                docker ps -a | grep opnfv/cperf | awk '{print $1}' | xargs docker rm -f >${redirect}
-            fi
+          echo "Cleaning up docker containers/images..."
+          # Remove previous running containers if exist
+          if [[ ! -z $(docker ps -a | grep opnfv/cperf) ]]; then
+              echo "Removing existing opnfv/cperf containers..."
+              docker ps -a | grep opnfv/cperf | awk '{print $1}' | xargs docker rm -f >${redirect}
+          fi
 
-            # Remove existing images if exist
-            if [[ ! -z $(docker images | grep opnfv/cperf) ]]; then
-                echo "Docker images to remove:"
-                docker images | head -1 && docker images | grep opnfv/cperf >${redirect}
-                image_tags=($(docker images | grep opnfv/cperf | awk '{print $2}'))
-                for tag in "${image_tags[@]}"; do
-                    echo "Removing docker image opnfv/cperf:$tag..."
-                    docker rmi opnfv/cperf:$tag >/dev/null
-                done
-            fi
+          # Remove existing images if exist
+          if [[ ! -z $(docker images | grep opnfv/cperf) ]]; then
+              echo "Docker images to remove:"
+              docker images | head -1 && docker images | grep opnfv/cperf >${redirect}
+              image_tags=($(docker images | grep opnfv/cperf | awk '{print $2}'))
+              for tag in "${image_tags[@]}"; do
+                  echo "Removing docker image opnfv/cperf:$tag..."
+                  docker rmi opnfv/cperf:$tag >/dev/null
+              done
+          fi
