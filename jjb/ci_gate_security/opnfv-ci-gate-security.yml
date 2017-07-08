@@ -1,3 +1,4 @@
+---
 # SPDX-license-identifier: Apache-2.0
 ########################
 # Job configuration for opnfv-anteater (security audit)
@@ -9,14 +10,14 @@
     project: anteaterfw
 
     jobs:
-        - 'opnfv-security-audit-verify-{stream}'
-        - 'opnfv-security-audit-weekly-{stream}'
+      - 'opnfv-security-audit-verify-{stream}'
+      - 'opnfv-security-audit-weekly-{stream}'
 
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            disabled: false
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
 
 ########################
 # job templates
@@ -27,19 +28,19 @@
     disabled: '{obj:disabled}'
 
     parameters:
-        - label:
-            name: SLAVE_LABEL
-            default: 'ericsson-build3'
-            description: 'Slave label on Jenkins'
-        - project-parameter:
-            project: releng
-            branch: '{branch}'
+      - label:
+          name: SLAVE_LABEL
+          default: 'ericsson-build3'
+          description: 'Slave label on Jenkins'
+      - project-parameter:
+          project: releng
+          branch: '{branch}'
 
     triggers:
-        - timed: '@weekly'
+      - timed: '@weekly'
 
     builders:
-        - anteater-security-audit-weekly
+      - anteater-security-audit-weekly
 
 - job-template:
     name: 'opnfv-security-audit-verify-{stream}'
@@ -47,52 +48,56 @@
     disabled: '{obj:disabled}'
 
     parameters:
-        - label:
-            name: SLAVE_LABEL
-            default: 'ericsson-build3'
-            description: 'Slave label on Jenkins'
-        - project-parameter:
-            project: $GERRIT_PROJECT
-            branch: '{branch}'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+      - label:
+          name: SLAVE_LABEL
+          default: 'ericsson-build3'
+          description: 'Slave label on Jenkins'
+      - project-parameter:
+          project: $GERRIT_PROJECT
+          branch: '{branch}'
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          # yamllint disable rule:line-length
+          description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+          # yamllint enable rule:line-length
 
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
+    # yamllint disable rule:line-length
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'REG_EXP'
-                project-pattern: 'apex|armband|bamboo|barometer|bottlenecks|calipso|compass4nfv|conductor|cooper|cperf|daisy|doctor|dovetail|dpacc|enfv|escalator|fds|fuel|functest|octopus|pharos|releng|sandbox|yardstick'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: '**'
-            skip-vote:
-                successful: true
-                failed: true
-                unstable: true
-                notbuilt: true
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'REG_EXP'
+              project-pattern: 'apex|armband|bamboo|barometer|bottlenecks|calipso|compass4nfv|conductor|cooper|cperf|daisy|doctor|dovetail|dpacc|enfv|escalator|fds|fuel|functest|octopus|pharos|releng|sandbox|yardstick'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: ANT
+                  pattern: '**'
+          skip-vote:
+            successful: true
+            failed: true
+            unstable: true
+            notbuilt: true
+    # yamllint enable rule:line-length
 
     builders:
-        - anteater-security-audit
-        - report-security-audit-result-to-gerrit
+      - anteater-security-audit
+      - report-security-audit-result-to-gerrit
     publishers:
       - archive-artifacts:
           artifacts: ".reports/*"
@@ -103,20 +108,21 @@
 - builder:
     name: anteater-security-audit
     builders:
-        - shell:
-            !include-raw: ./anteater-security-audit.sh
+      - shell:
+          !include-raw: ./anteater-security-audit.sh
 
 - builder:
     name: report-security-audit-result-to-gerrit
     builders:
-        - shell:
-            !include-raw: ./anteater-report-to-gerrit.sh
+      - shell:
+          !include-raw: ./anteater-report-to-gerrit.sh
 
+# yamllint disable rule:indentation
 - builder:
     name: anteater-security-audit-weekly
     builders:
-        - shell:
-            !include-raw:
-                - ./anteater-clone-all-repos.sh
-                - ./anteater-security-audit-weekly.sh
-
+      - shell:
+          !include-raw:
+              - ./anteater-clone-all-repos.sh
+              - ./anteater-security-audit-weekly.sh
+# yamllint enable rule:indentation
