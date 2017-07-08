@@ -1,14 +1,15 @@
+---
 - project:
     name: docs-rtd
     jobs:
-        - 'docs-merge-rtd-{stream}'
-        - 'docs-verify-rtd-{stream}'
+      - 'docs-merge-rtd-{stream}'
+      - 'docs-verify-rtd-{stream}'
 
     stream:
-        - master:
-            branch: 'master'
-        - danube:
-            branch: 'stable/{stream}'
+      - master:
+          branch: 'master'
+      - danube:
+          branch: 'stable/{stream}'
 
     project: 'opnfvdocs'
     rtdproject: 'opnfv'
@@ -20,28 +21,28 @@
     project-type: freestyle
 
     parameters:
-        - label:
-            name: SLAVE_LABEL
-            default: 'lf-build1'
-            description: 'Slave label on Jenkins'
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
+      - label:
+          name: SLAVE_LABEL
+          default: 'lf-build1'
+          description: 'Slave label on Jenkins'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
 
     triggers:
-        - gerrit-trigger-change-merged:
-            project: '**'
-            branch: '{branch}'
-            files: 'docs/**/*.*'
+      - gerrit-trigger-change-merged:
+          project: '**'
+          branch: '{branch}'
+          files: 'docs/**/*.*'
 
     builders:
-        - shell: |
-            if [ $GERRIT_BRANCH == "master" ]; then
-              RTD_BUILD_VERSION=latest
-            else
-              RTD_BUILD_VERSION=${{GERRIT_BRANCH/\//-}}
-            fi
-            curl -X POST --data "version_slug=$RTD_BUILD_VERSION" https://readthedocs.org/build/opnfvdocsdemo
+      - shell: |
+          if [ $GERRIT_BRANCH == "master" ]; then
+            RTD_BUILD_VERSION=latest
+          else
+            RTD_BUILD_VERSION=${{GERRIT_BRANCH/\//-}}
+          fi
+          curl -X POST --data "version_slug=$RTD_BUILD_VERSION" https://readthedocs.org/build/opnfvdocsdemo
 
 
 - job-template:
@@ -50,42 +51,43 @@
     project-type: freestyle
 
     parameters:
-        - label:
-            name: SLAVE_LABEL
-            default: 'lf-build2'
-            description: 'Slave label on Jenkins'
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/opnfvdocs
-            description: 'Git URL to use on this Jenkins Slave'
+      - label:
+          name: SLAVE_LABEL
+          default: 'lf-build2'
+          description: 'Slave label on Jenkins'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/opnfvdocs
+          description: 'Git URL to use on this Jenkins Slave'
+
     scm:
-        - git-scm-with-submodules:
-            branch: '{branch}'
+      - git-scm-with-submodules:
+          branch: '{branch}'
 
     triggers:
-        - gerrit-trigger-patchset-created:
-            server: 'gerrit.opnfv.org'
-            project: '**'
-            branch: '{branch}'
-            files: 'docs/**/*.*'
-        - timed: 'H H * * *'
+      - gerrit-trigger-patchset-created:
+          server: 'gerrit.opnfv.org'
+          project: '**'
+          branch: '{branch}'
+          files: 'docs/**/*.*'
+      - timed: 'H H * * *'
 
     builders:
-        - shell: |
-            if [ "$GERRIT_PROJECT" != "opnfvdocs" ]; then
-                cd docs/submodules/$GERRIT_PROJECT
-                git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
-            else
-                git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
-            fi
-        - shell: |
-            sudo pip install virtualenv 
-            virtualenv $WORKSPACE/venv
-            . $WORKSPACE/venv/bin/activate
-            pip install --upgrade pip
-            pip freeze
-            pip install tox
-            tox -edocs
+      - shell: |
+          if [ "$GERRIT_PROJECT" != "opnfvdocs" ]; then
+              cd docs/submodules/$GERRIT_PROJECT
+              git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
+          else
+              git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
+          fi
+      - shell: |
+          sudo pip install virtualenv
+          virtualenv $WORKSPACE/venv
+          . $WORKSPACE/venv/bin/activate
+          pip install --upgrade pip
+          pip freeze
+          pip install tox
+          tox -edocs
