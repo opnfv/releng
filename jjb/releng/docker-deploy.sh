@@ -19,6 +19,7 @@
 # Assigning Variables
 command=$1
 url=$2
+module=$3
 
 function check() {
 
@@ -38,24 +39,26 @@ function check() {
 }
 
 echo "Getting contianer Id of the currently running one"
-contId=$(sudo docker ps | grep "opnfv/testapi:latest" | awk '{print $1}')
+contId=$(sudo docker ps | grep "opnfv/${module}:latest" | awk '{print $1}')
+
+echo $contId
 
 echo "Pulling the latest image"
-sudo docker pull opnfv/testapi:latest
+sudo docker pull opnfv/${module}:latest
 
-echo "Deleting old containers of opnfv/testapi:old"
-sudo docker ps -a | grep "opnfv/testapi" | grep "old" | awk '{print $1}' | xargs -r sudo docker rm -f
+echo "Deleting old containers of opnfv/${module}:old"
+sudo docker ps -a | grep "opnfv/${module}" | grep "old" | awk '{print $1}' | xargs -r sudo docker rm -f
 
-echo "Deleting old images of opnfv/testapi:latest"
-sudo docker images | grep "opnfv/testapi" | grep "old" | awk '{print $3}' | xargs -r sudo docker rmi -f
+echo "Deleting old images of opnfv/${module}:latest"
+sudo docker images | grep "opnfv/${module}" | grep "old" | awk '{print $3}' | xargs -r sudo docker rmi -f
 
 
 if [[ -z "$contId" ]]
 then
-    echo "No running testapi container"
+    echo "No running ${module} container"
 
-    echo "Removing stopped testapi containers in the previous iterations"
-    sudo docker ps -f status=exited | grep "opnfv_testapi" | awk '{print $1}' | xargs -r sudo docker rm -f
+    echo "Removing stopped ${module} containers in the previous iterations"
+    sudo docker ps -f status=exited | grep "opnfv_${module}" | awk '{print $1}' | xargs -r sudo docker rm -f
 else
     echo $contId
 
@@ -70,13 +73,13 @@ else
     fi
 
     echo "Changing current image tag to old"
-    sudo docker tag "$currImgId" opnfv/testapi:old
+    sudo docker tag "$currImgId" opnfv/${module}:old
 
-    echo "Removing stopped testapi containers in the previous iteration"
-    sudo docker ps -f status=exited | grep "opnfv_testapi" | awk '{print $1}' | xargs -r sudo docker rm -f
+    echo "Removing stopped ${module} containers in the previous iteration"
+    sudo docker ps -f status=exited | grep "opnfv_${module}" | awk '{print $1}' | xargs -r sudo docker rm -f
 
-    echo "Renaming the running container name to opnfv_testapi as to identify it."
-    sudo docker rename $contId opnfv_testapi
+    echo "Renaming the running container name to opnfv_${module} as to identify it."
+    sudo docker rename $contId opnfv_${module}
 
     echo "Stop the currently running container"
     sudo docker stop $contId
@@ -86,10 +89,10 @@ echo "Running a container with the new image"
 $command:latest
 
 if check; then
-    echo "TestResults Hosted."
+    echo "TestResults Module Hosted."
 else
-    echo "TestResults Hosting Failed"
-    if [[ $(sudo docker images | grep "opnfv/testapi" | grep "old" | awk '{print $3}') ]]; then
+    echo "TestResults Module Failed"
+    if [[ $(sudo docker images | grep "opnfv/${module}" | grep "old" | awk '{print $3}') ]]; then
         echo "Running old Image"
         $command:old
         exit 1
