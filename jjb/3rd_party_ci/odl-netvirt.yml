@@ -1,37 +1,39 @@
+---
 - project:
     name: 'netvirt'
 
     project: 'netvirt'
 
     installer: 'netvirt'
-#####################################
-# branch definitions
-#####################################
+    #####################################
+    # branch definitions
+    #####################################
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            disabled: false
-        - carbon:
-            branch: 'stable/carbon'
-            gs-pathname: ''
-            disabled: false
-#####################################
-# patch verification phases
-#####################################
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
+      - carbon:
+          branch: 'stable/carbon'
+          gs-pathname: ''
+          disabled: false
+    #####################################
+    # patch verification phases
+    #####################################
     phase:
-        - 'create-apex-vms':
-            slave-label: 'odl-netvirt-virtual-intel'
-        - 'install-netvirt':
-            slave-label: 'odl-netvirt-virtual-intel'
-        - 'postprocess':
-            slave-label: 'odl-netvirt-virtual-intel'
-#####################################
-# jobs
-#####################################
+      - 'create-apex-vms':
+          slave-label: 'odl-netvirt-virtual-intel'
+      - 'install-netvirt':
+          slave-label: 'odl-netvirt-virtual-intel'
+      - 'postprocess':
+          slave-label: 'odl-netvirt-virtual-intel'
+    #####################################
+    # jobs
+    #####################################
     jobs:
-        - 'odl-netvirt-verify-virtual-{stream}'
-        - 'odl-netvirt-verify-virtual-{phase}-{stream}'
+      - 'odl-netvirt-verify-virtual-{stream}'
+      - 'odl-netvirt-verify-virtual-{phase}-{stream}'
+
 #####################################
 # job templates
 #####################################
@@ -45,116 +47,118 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 5
-            max-per-node: 1
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 5
+          max-per-node: 1
+          option: 'project'
 
     scm:
-        - git:
-            url: https://gerrit.opnfv.org/gerrit/apex
-            branches:
-                - 'origin/master'
-            timeout: 15
-            wipe-workspace: true
+      - git:
+          url: https://gerrit.opnfv.org/gerrit/apex
+          branches:
+            - 'origin/master'
+          timeout: 15
+          wipe-workspace: true
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - string:
-            name: NETVIRT_ARTIFACT
-            default: distribution-karaf.tar.gz
-        - 'odl-netvirt-virtual-intel-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - string:
+          name: NETVIRT_ARTIFACT
+          default: distribution-karaf.tar.gz
+      - 'odl-netvirt-virtual-intel-defaults'
 
     triggers:
-        - gerrit:
-            server-name: 'git.opendaylight.org'
-            trigger-on:
- #               - comment-added-contains-event:
- #                   comment-contains-value: 'https://jenkins.opendaylight.org/releng/job/netvirt-patch-test-current-carbon/.*?/ : SUCCESS'
- #               - comment-added-contains-event:
- #                   comment-contains-value: 'https://jenkins.opendaylight.org/releng/job/netvirt-patch-test-current-carbon/.*?/ : UNSTABLE'
-                - comment-added-contains-event:
-                    comment-contains-value: 'opnfv-test'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-            readable-message: true
+      - gerrit:
+          server-name: 'git.opendaylight.org'
+          trigger-on:
+            # yamllint disable rule:line-length
+            # - comment-added-contains-event:
+            #     comment-contains-value: 'https://jenkins.opendaylight.org/releng/job/netvirt-patch-test-current-carbon/.*?/ : SUCCESS'
+            # - comment-added-contains-event:
+            #     comment-contains-value: 'https://jenkins.opendaylight.org/releng/job/netvirt-patch-test-current-carbon/.*?/ : UNSTABLE'
+            # yamllint enable rule:line-length
+            - comment-added-contains-event:
+                comment-contains-value: 'opnfv-test'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+          readable-message: true
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - multijob:
-            name: create-apex-vms
-            condition: SUCCESSFUL
-            projects:
-                - name: 'odl-netvirt-verify-virtual-create-apex-vms-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_ID=$GERRIT_CHANGE_ID
-                    GERRIT_PATCHSET_NUMBER=$GERRIT_PATCHSET_NUMBER
-                    GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION
-                    NETVIRT_ARTIFACT=$NETVIRT_ARTIFACT
-                    APEX_ENV_NUMBER=$APEX_ENV_NUMBER
-                  node-parameters: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: install-netvirt
-            condition: SUCCESSFUL
-            projects:
-                - name: 'odl-netvirt-verify-virtual-install-netvirt-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    ODL_BRANCH={branch}
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_ID=$GERRIT_CHANGE_ID
-                    GERRIT_PATCHSET_NUMBER=$GERRIT_PATCHSET_NUMBER
-                    GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION
-                    NETVIRT_ARTIFACT=$NETVIRT_ARTIFACT
-                  node-parameters: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: functest
-            condition: SUCCESSFUL
-            projects:
-                - name: 'functest-netvirt-virtual-suite-master'
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
-                    FUNCTEST_SUITE_NAME=odl_netvirt
-                    RC_FILE_PATH=$HOME/cloner-info/overcloudrc
-                  node-parameters: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: false
-        - multijob:
-            name: postprocess
-            condition: ALWAYS
-            projects:
-                - name: 'odl-netvirt-verify-virtual-postprocess-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_ID=$GERRIT_CHANGE_ID
-                    GERRIT_PATCHSET_NUMBER=$GERRIT_PATCHSET_NUMBER
-                    GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION
-                    NETVIRT_ARTIFACT=$NETVIRT_ARTIFACT
-                  node-parameters: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: false
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - multijob:
+          name: create-apex-vms
+          condition: SUCCESSFUL
+          projects:
+            - name: 'odl-netvirt-verify-virtual-create-apex-vms-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_ID=$GERRIT_CHANGE_ID
+                GERRIT_PATCHSET_NUMBER=$GERRIT_PATCHSET_NUMBER
+                GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION
+                NETVIRT_ARTIFACT=$NETVIRT_ARTIFACT
+                APEX_ENV_NUMBER=$APEX_ENV_NUMBER
+              node-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
+          name: install-netvirt
+          condition: SUCCESSFUL
+          projects:
+            - name: 'odl-netvirt-verify-virtual-install-netvirt-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                ODL_BRANCH={branch}
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_ID=$GERRIT_CHANGE_ID
+                GERRIT_PATCHSET_NUMBER=$GERRIT_PATCHSET_NUMBER
+                GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION
+                NETVIRT_ARTIFACT=$NETVIRT_ARTIFACT
+              node-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
+          name: functest
+          condition: SUCCESSFUL
+          projects:
+            - name: 'functest-netvirt-virtual-suite-master'
+              predefined-parameters: |
+                DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
+                FUNCTEST_SUITE_NAME=odl_netvirt
+                RC_FILE_PATH=$HOME/cloner-info/overcloudrc
+              node-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: false
+      - multijob:
+          name: postprocess
+          condition: ALWAYS
+          projects:
+            - name: 'odl-netvirt-verify-virtual-postprocess-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_ID=$GERRIT_CHANGE_ID
+                GERRIT_PATCHSET_NUMBER=$GERRIT_PATCHSET_NUMBER
+                GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION
+                NETVIRT_ARTIFACT=$NETVIRT_ARTIFACT
+              node-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: false
 
 - job-template:
     name: 'odl-netvirt-verify-virtual-{phase}-{stream}'
@@ -164,71 +168,71 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 5
-            max-per-node: 1
-            option: 'project'
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'odl-netvirt-verify-virtual-create-apex-vms-.*'
-                - 'odl-netvirt-verify-virtual-install-netvirt-.*'
-                - 'functest-netvirt-virtual-suite-.*'
-                - 'odl-netvirt-verify-virtual-postprocess-.*'
-            block-level: 'NODE'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 5
+          max-per-node: 1
+          option: 'project'
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - 'odl-netvirt-verify-virtual-create-apex-vms-.*'
+            - 'odl-netvirt-verify-virtual-install-netvirt-.*'
+            - 'functest-netvirt-virtual-suite-.*'
+            - 'odl-netvirt-verify-virtual-postprocess-.*'
+          block-level: 'NODE'
 
     wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 360
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 360
+          fail: true
 
     scm:
-        - git:
-            url: https://gerrit.opnfv.org/gerrit/apex
-            branches:
-                - 'origin/master'
-            timeout: 15
-            wipe-workspace: true
+      - git:
+          url: https://gerrit.opnfv.org/gerrit/apex
+          branches:
+            - 'origin/master'
+          timeout: 15
+          wipe-workspace: true
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - '{slave-label}-defaults'
-        - '{installer}-defaults'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'os-odl_l2-bgpvpn-noha'
-            description: 'Scenario to deploy and test'
-        - string:
-            name: GS_URL
-            default: artifacts.opnfv.org/apex
-            description: "URL to Google Storage with snapshot artifacts."
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{slave-label}-defaults'
+      - '{installer}-defaults'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-odl_l2-bgpvpn-noha'
+          description: 'Scenario to deploy and test'
+      - string:
+          name: GS_URL
+          default: artifacts.opnfv.org/apex
+          description: "URL to Google Storage with snapshot artifacts."
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - '{project}-verify-{phase}-builder'
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - '{project}-verify-{phase}-builder'
 #####################################
 # builder macros
 #####################################
 - builder:
     name: 'netvirt-verify-create-apex-vms-builder'
     builders:
-        - shell:
-            !include-raw: ../apex/apex-snapshot-deploy.sh
+      - shell:
+          !include-raw: ../apex/apex-snapshot-deploy.sh
 - builder:
     name: 'netvirt-verify-install-netvirt-builder'
     builders:
-        - shell:
-            !include-raw: ./download-netvirt-artifact.sh
-        - shell:
-            !include-raw: ./install-netvirt.sh
+      - shell:
+          !include-raw: ./download-netvirt-artifact.sh
+      - shell:
+          !include-raw: ./install-netvirt.sh
 - builder:
     name: 'netvirt-verify-postprocess-builder'
     builders:
-        - shell:
-            !include-raw: ./postprocess-netvirt.sh
+      - shell:
+          !include-raw: ./postprocess-netvirt.sh
