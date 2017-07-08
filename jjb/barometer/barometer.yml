@@ -1,3 +1,4 @@
+---
 ###################################################
 # All the jobs except verify have been removed!
 # They will only be enabled on request by projects!
@@ -8,19 +9,19 @@
     project: '{name}'
 
     jobs:
-        - 'barometer-verify-{stream}'
-        - 'barometer-merge-{stream}'
-        - 'barometer-daily-{stream}'
+      - 'barometer-verify-{stream}'
+      - 'barometer-merge-{stream}'
+      - 'barometer-daily-{stream}'
 
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            disabled: false
-        - danube:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
-            disabled: false
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
+      - danube:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
 
 - job-template:
     name: 'barometer-verify-{stream}'
@@ -28,44 +29,44 @@
     disabled: '{obj:disabled}'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
 
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                disable-strict-forbidden-file-verification: 'true'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**|.gitignore'
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              disable-strict-forbidden-file-verification: 'true'
+              forbidden-file-paths:
+                - compare-type: ANT
+                  pattern: 'docs/**|.gitignore'
 
     builders:
-        - shell: |
-            pwd
-            cd src
-            make clobber
-            make
+      - shell: |
+          pwd
+          cd src
+          make clobber
+          make
 
 - job-template:
     name: 'barometer-merge-{stream}'
@@ -77,46 +78,46 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 3
-            max-per-node: 2
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 3
+          max-per-node: 2
+          option: 'project'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
 
     scm:
-        - git-scm
+      - git-scm
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/{branch}'
-                disable-strict-forbidden-file-verification: 'true'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**'
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'remerge'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              disable-strict-forbidden-file-verification: 'true'
+              forbidden-file-paths:
+                - compare-type: ANT
+                  pattern: 'docs/**'
 
     builders:
-        - shell: |
-            pwd
-            cd src
-            make clobber
-            make
+      - shell: |
+          pwd
+          cd src
+          make clobber
+          make
 
 - job-template:
     name: 'barometer-daily-{stream}'
@@ -128,27 +129,27 @@
     concurrent: false
 
     properties:
-        - logrotate-default
+      - logrotate-default
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - barometer-project-parameter:
-            gs-pathname: '{gs-pathname}'
-        - 'opnfv-build-centos-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - barometer-project-parameter:
+          gs-pathname: '{gs-pathname}'
+      - 'opnfv-build-centos-defaults'
 
     scm:
-        - git-scm
+      - git-scm
 
     triggers:
-         - timed: '@midnight'
+      - timed: '@midnight'
 
     builders:
-        - shell:
-            !include-raw-escape: ./barometer-build.sh
-        - shell:
-            !include-raw-escape: ./barometer-upload-artifact.sh
+      - shell:
+          !include-raw-escape: ./barometer-build.sh
+      - shell:
+          !include-raw-escape: ./barometer-upload-artifact.sh
 
 ########################
 # parameter macros
@@ -156,7 +157,7 @@
 - parameter:
     name: barometer-project-parameter
     parameters:
-        - string:
-            name: GS_URL
-            default: '$GS_BASE{gs-pathname}'
-            description: "URL to Google Storage."
+      - string:
+          name: GS_URL
+          default: '$GS_BASE{gs-pathname}'
+          description: "URL to Google Storage."
