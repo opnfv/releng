@@ -69,6 +69,8 @@ else
     exit 1
 fi
 
+set +e
+
 sudo pip install virtualenv
 
 cd ${releng_repo}/modules
@@ -92,6 +94,8 @@ echo ${cmd}
 ${cmd}
 
 deactivate
+
+set -e
 
 cd ${WORKSPACE}
 
