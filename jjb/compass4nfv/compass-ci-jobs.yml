@@ -185,9 +185,10 @@
                   use-build-time: true
             steps:
                 - trigger-builds:
-                    - project: 'dovetail-compass-{pod}-proposed_tests-master'
+                    - project: 'dovetail-compass-{pod}-proposed_tests-{stream}'
                       current-parameters: false
-                      predefined-parameters:
+                      predefined-parameters: |
+                        DOCKER_TAG=latest
                         DEPLOY_SCENARIO={scenario}
                       block: true
                       same-node: true
@@ -213,7 +214,7 @@
                   use-build-time: true
             steps:
                 - trigger-builds:
-                    - project: 'dovetail-compass-{pod}-proposed_tests-danube'
+                    - project: 'dovetail-compass-{pod}-proposed_tests-{stream}'
                       current-parameters: false
                       predefined-parameters:
                         DEPLOY_SCENARIO={scenario}
@@ -234,7 +235,7 @@
                   label: '{stream}'
             steps:
                 - trigger-builds:
-                    - project: 'dovetail-compass-{pod}-proposed_tests-master'
+                    - project: 'dovetail-compass-{pod}-proposed_tests-{stream}'
 
 - job-template:
     name: 'compass-deploy-{pod}-daily-{stream}'
