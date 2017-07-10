@@ -10,10 +10,12 @@
         stream: master
         branch: '{stream}'
         disabled: false
+        dockerfile: Dockerfile
     danube: &danube
         stream: danube
         branch: 'stable/{stream}'
         disabled: false
+        dockerfile: Dockerfile
     functest-receivers: &functest-receivers
         receivers: >
             jose.lausuch@ericsson.com morgan.richomme@orange.com
@@ -43,9 +45,18 @@
         - 'qtip':
             <<: *master
             <<: *other-receivers
-        - 'storperf':
+        - 'storperf-master':
             <<: *master
             <<: *other-receivers
+            dockerfile: Dockerfile-master
+        - 'storperf-httpfrontend':
+            <<: *master
+            <<: *other-receivers
+            dockerfile: Dockerfile-httpfrontend
+        - 'storperf-reporting':
+            <<: *master
+            <<: *other-receivers
+            dockerfile: Dockerfile-reporting
         - 'yardstick':
             <<: *master
             <<: *other-receivers
@@ -115,7 +126,7 @@
             description: "Release version, e.g. 1.0, 2.0, 3.0"
         - string:
             name: DOCKERFILE
-            default: "Dockerfile"
+            default: '{dockerfile}'
             description: "Dockerfile to use for creating the image."
 
     scm:
