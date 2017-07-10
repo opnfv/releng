@@ -492,3 +492,17 @@
                 unhealthy: 40
                 failing: 30
 
+# The majority of the email-ext plugin options are set to the default
+# for this macro so they can be managed through Jenkins' global
+# settings.
+- publisher:
+    name: email-jenkins-admins-on-failure
+    publishers:
+      - email-ext:
+          content-type: text
+          attach-build-log: true
+          compress-log: true
+          always: false
+          failure: true
+          send-to:
+            - recipients
