@@ -2,7 +2,7 @@
 # SPDX-license-identifier: Apache-2.0
 ##############################################################################
 # Copyright (c) 2016 Ericsson AB and others.
-#           (c) 2016 Enea Software AB
+#           (c) 2017 Enea Software AB
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Apache License, Version 2.0
 # which accompanies this distribution, and is available at
@@ -13,16 +13,18 @@ set -o pipefail
 
 export TERM="vt220"
 
-# source the file so we get OPNFV vars
-source latest.properties
+if [[ "$BRANCH" != 'master' ]]; then
+    # source the file so we get OPNFV vars
+    source latest.properties
 
-# echo the info about artifact that is used during the deployment
-echo "Using ${OPNFV_ARTIFACT_URL/*\/} for deployment"
+    # echo the info about artifact that is used during the deployment
+    echo "Using ${OPNFV_ARTIFACT_URL/*\/} for deployment"
+fi
 
 if [[ "$JOB_NAME" =~ "merge" ]]; then
     # set simplest scenario for virtual deploys to run for merges
     DEPLOY_SCENARIO="os-nosdn-nofeature-ha"
-else
+elif [[ "$BRANCH" != 'master' ]]; then
     # for none-merge deployments
     # checkout the commit that was used for building the downloaded artifact
     # to make sure the ISO and deployment mechanism uses same versions
@@ -102,7 +104,7 @@ echo "--------------------------------------------------------"
 echo "Scenario: $DEPLOY_SCENARIO"
 echo "Lab: $LAB_NAME"
 echo "POD: $POD_NAME"
-echo "ISO: ${OPNFV_ARTIFACT_URL/*\/}"
+[[ "$BRANCH" != 'master' ]] && echo "ISO: ${OPNFV_ARTIFACT_URL/*\/}"
 echo
 echo "Starting the deployment using $INSTALLER_TYPE. This could take some time..."
 echo "--------------------------------------------------------"

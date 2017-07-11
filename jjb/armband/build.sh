@@ -2,12 +2,21 @@
 # SPDX-license-identifier: Apache-2.0
 ##############################################################################
 # Copyright (c) 2016 Ericsson AB and others.
-# Copyright (c) 2016 Enea AB.
+# Copyright (c) 2017 Enea AB.
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Apache License, Version 2.0
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+
+# disable Armband iso build for master branch
+if [[ "$BRANCH" == 'master' ]]; then
+    touch $WORKSPACE/.noupload
+    echo "--------------------------------------------------------"
+    echo "Done!"
+    exit 0
+fi
+
 set -o errexit
 set -o nounset
 set -o pipefail
