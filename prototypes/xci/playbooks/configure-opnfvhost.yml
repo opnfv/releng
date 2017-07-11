@@ -87,6 +87,20 @@
       command: "/bin/bash ./scripts/bootstrap-ansible.sh"
       args:
         chdir: "{{OPENSTACK_OSA_PATH}}"
+    - name: install python-crypto package
+      package:
+        name: python-crypto
+      when:
+        ansible_os_family in ["Debian", "RedHat"]
+    - name: install python-pycrypto package
+      package:
+        name: python-pycrypto
+      when:
+        ansible_os_family == "Suse"
+    - name: install PyYAML
+      pip:
+        name: pyyaml
+        state: present
     - name: generate password token
       command: "python pw-token-gen.py --file {{OPENSTACK_OSA_ETC_PATH}}/user_secrets.yml"
       args:
