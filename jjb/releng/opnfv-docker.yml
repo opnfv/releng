@@ -23,62 +23,83 @@
     other-receivers: &other-receivers
         receivers: ''
 
-    project:
+    dockerfile: "Dockerfile"
+    dockerdir: "docker"
+
+    dockerrepo:
         # projects with jobs for master
         - 'releng-anteater':
+            project: 'releng-anteater'
             <<: *master
             <<: *other-receivers
         - 'bottlenecks':
+            project: 'bottlenecks'
             <<: *master
             <<: *other-receivers
         - 'cperf':
+            project: 'cperf'
             <<: *master
             <<: *other-receivers
         - 'dovetail':
+            project: 'dovetail'
             <<: *master
             <<: *other-receivers
         - 'functest':
+            project: 'functest'
             <<: *master
             <<: *functest-receivers
         - 'qtip':
+            project: 'qtip'
             <<: *master
             <<: *other-receivers
         - 'storperf':
+            project: 'storperf'
             <<: *master
             <<: *other-receivers
         - 'yardstick':
+            project: 'yardstick'
             <<: *master
             <<: *other-receivers
         # projects with jobs for stable
         - 'bottlenecks':
+            project: 'bottlenecks'
             <<: *danube
             <<: *other-receivers
         - 'functest':
+            project: 'functest'
             <<: *danube
             <<: *functest-receivers
         - 'qtip':
+            project: 'qtip'
             <<: *danube
             <<: *other-receivers
         - 'storperf':
+            project: 'storperf'
             <<: *danube
             <<: *other-receivers
         - 'yardstick':
+            project: 'yardstick'
             <<: *danube
             <<: *other-receivers
 
     jobs:
-        - '{project}-docker-build-push-{stream}'
+        - "{dockerrepo}-docker-build-push-{stream}"
 
 
 - project:
 
     name: opnfv-monitor-docker        # projects which only monitor dedicated file or path
 
+    dockerfile: "Dockerfile"
+    dockerdir: "docker"
+
     project:
         # projects with jobs for master
         - 'daisy':
+            dockerrepo: 'daisy'
             <<: *master
         - 'escalator':
+            dockerrepo: 'escalator'
             <<: *master
 
     jobs:
@@ -88,7 +109,7 @@
 # job templates
 ########################
 - job-template:
-    name: '{project}-docker-build-push-{stream}'
+    name: '{dockerrepo}-docker-build-push-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -103,8 +124,12 @@
             description: "To enable/disable pushing the image to Dockerhub."
         - string:
             name: DOCKER_REPO_NAME
-            default: "opnfv/{project}"
+            default: "opnfv/{dockerrepo}"
             description: "Dockerhub repo to be pushed to."
+        - string:
+            name: DOCKER_DIR
+            default: "{dockerdir}"
+            description: "Directory containing files needed by the Dockerfile"
         - string:
             name: COMMIT_ID
             default: ""
@@ -115,7 +140,7 @@
             description: "Release version, e.g. 1.0, 2.0, 3.0"
         - string:
             name: DOCKERFILE
-            default: "Dockerfile"
+            default: "{dockerfile}"
             description: "Dockerfile to use for creating the image."
 
     scm:
