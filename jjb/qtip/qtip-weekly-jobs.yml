@@ -1,18 +1,18 @@
-#######################
-# validate after MERGE
-#######################
+#################
+# QTIP weekly job
+#################
 - project:
-    name: qtip
+    name: qtip-weekly
     project: qtip
 
 #--------------------------------
 # BRANCH ANCHORS
 #--------------------------------
-    master: &master
-        stream: master
-        branch: '{stream}'
-        gs-pathname: ''
-        docker-tag: latest
+    danube: &danube
+        stream: danube
+        branch: 'stable/{stream}'
+        gs-pathname: '/{stream}'
+        docker-tag: 'stable'
 
 #--------------------------------
 # JOB VARIABLES
@@ -21,23 +21,27 @@
         - zte-pod1:
             installer: fuel
             scenario: os-odl_l2-nofeature-ha
-            <<: *master
+            <<: *danube
+        - zte-pod3:
+            installer: fuel
+            scenario: os-nosdn-nofeature-ha
+            <<: *danube
         - zte-pod3:
             installer: fuel
             scenario: os-nosdn-kvm-ha
-            <<: *master
+            <<: *danube
 
 #--------------------------------
 # JOB LIST
 #--------------------------------
     jobs:
-        - 'qtip-{scenario}-{pod}-daily-{stream}'
+        - 'qtip-{scenario}-{pod}-weekly-{stream}'
 
 ################################
 # job templates
 ################################
 - job-template:
-    name: 'qtip-{scenario}-{pod}-daily-{stream}'
+    name: 'qtip-{scenario}-{pod}-weekly-{stream}'
     disabled: false
     parameters:
         - project-parameter:
@@ -59,13 +63,14 @@
     scm:
         - git-scm
     triggers:
-        - 'qtip-{scenario}-{pod}-daily-{stream}-trigger'
+        - 'qtip-{scenario}-{pod}-weekly-{stream}-trigger'
     builders:
         - description-setter:
             description: "POD: $NODE_NAME"
-        - qtip-validate-deploy
+        - qtip-validate-deploy-weekly
     publishers:
-        - qtip-common-publishers
+        - email:
+            recipients: wu.zhihui1@zte.com.cn, zhang.yujunz@zte.com.cn
 
 ################
 # MARCOS
@@ -75,38 +80,28 @@
 # builder
 #---------
 - builder:
-    name: qtip-validate-deploy
+    name: qtip-validate-deploy-weekly
     builders:
         - shell:
             !include-raw: ./helpers/cleanup-deploy.sh
         - shell:
             !include-raw: ./helpers/validate-deploy.sh
 
-
-#-----------
-# parameter
-#-----------
-
-#-----------
-# publisher
-#-----------
-
-- publisher:
-    name: qtip-common-publishers
-    publishers:
-        - email:
-            recipients: wu.zhihui1@zte.com.cn, zhang.yujunz@zte.com.cn
-
 #---------
 # trigger
 #---------
 
 - trigger:
-    name: 'qtip-os-odl_l2-nofeature-ha-zte-pod1-daily-master-trigger'
+    name: 'qtip-os-odl_l2-nofeature-ha-zte-pod1-daily-danube-trigger'
     triggers:
-        - timed: '0 15 * * *'
+        - timed: '0 7 * * 0'
 
 - trigger:
-    name: 'qtip-os-nosdn-kvm-ha-zte-pod3-daily-master-trigger'
+    name: 'qtip-os-nosdn-kvm-ha-zte-pod3-daily-danube-trigger'
     triggers:
-        - timed: '0 15 * * *'
+        - timed: '0 7 * * 0'
+
+- trigger:
+    name: 'qtip-os-nosdn-nofeature-ha-zte-pod3-daily-danube-trigger'
+    triggers:
+        - timed: '30 0 * * 0'
