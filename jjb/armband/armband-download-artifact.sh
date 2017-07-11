@@ -2,6 +2,7 @@
 # SPDX-license-identifier: Apache-2.0
 ##############################################################################
 # Copyright (c) 2016 Ericsson AB and others.
+#           (c) 2017 Enea AB
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Apache License, Version 2.0
 # which accompanies this distribution, and is available at
@@ -9,6 +10,9 @@
 ##############################################################################
 set -o errexit
 set -o pipefail
+
+# disable Fuel ISO download for master branch
+[[ "$BRANCH" == 'master' ]] && exit 0
 
 echo "Host info: $(hostname) $(hostname -I)"
 
