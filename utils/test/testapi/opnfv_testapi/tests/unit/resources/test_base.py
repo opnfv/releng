@@ -17,7 +17,7 @@ from opnfv_testapi.resources import models
 from opnfv_testapi.tests.unit import fake_pymongo
 
 config.Config.CONFIG = path.join(path.dirname(__file__),
-                                 '../../../etc/config.ini')
+                                 '../../../../etc/config.ini')
 
 
 class TestBase(testing.AsyncHTTPTestCase):
@@ -42,7 +42,7 @@ class TestBase(testing.AsyncHTTPTestCase):
         from opnfv_testapi.cmd import server
         server.parse_config([
             '--config-file',
-            path.join(path.dirname(__file__), 'common/normal.ini')
+            path.join(path.dirname(__file__), path.pardir, 'common/normal.ini')
         ])
         self.db_patcher = mock.patch('opnfv_testapi.cmd.server.get_db',
                                      self._fake_pymongo)

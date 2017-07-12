@@ -7,17 +7,17 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 import copy
-from datetime import datetime, timedelta
 import httplib
 import unittest
+from datetime import datetime, timedelta
 
 from opnfv_testapi.common import message
 from opnfv_testapi.resources import pod_models
 from opnfv_testapi.resources import project_models
 from opnfv_testapi.resources import result_models
 from opnfv_testapi.resources import testcase_models
-from opnfv_testapi.tests.unit import test_base as base
 from opnfv_testapi.tests.unit import executor
+from opnfv_testapi.tests.unit.resources import test_base as base
 
 
 class Details(object):
