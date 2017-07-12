@@ -60,8 +60,50 @@
 
     builders:
         - qtip-unit-tests-and-docs-build
+        - upload-under-review-notebooks-to-opnfv-artifacts
     publishers:
         - publish-coverage
+
+- job-template:
+    name: 'qtip-merge-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: $GERRIT_PROJECT
+            branch: '{branch}'
+        - string:
+            name: GS_URL
+            default: '$GS_BASE{gs-pathname}'
+            description: "Directory where the build artifact will be located upon the completion of the build."
+        - string:
+            name: GERRIT_REFSPEC
+            default: 'refs/heads/{branch}'
+            description: "JJB configured GERRIT_REFSPEC parameter"
+
+    scm:
+        - git-scm
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'remerge'
+            projects:
+                - project-compare-type: 'ANT'
+                  project-pattern: '*'
+                  branches:
+                      - branch-compare-type: 'ANT'
+                        branch-pattern: '**/{branch}'
+                  file-paths:
+                      - compare-type: ANT
+                        pattern: examples/**
+
+    builders:
+        - remove-old-docs-from-opnfv-artifacts
 
 ################################
 ## job builders
@@ -76,3 +118,35 @@
             set -o xtrace
 
             tox
+
+# modified from upload-under-review-docs-to-opnfv-artifacts in global/releng-macro.yml
+- builder:
+    name: upload-under-review-notebooks-to-opnfv-artifacts
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o pipefail
+            set -o xtrace
+            export PATH=$PATH:/usr/local/bin/
+
+            [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
+            [[ -d docs_output ]] || exit 0
+
+            echo
+            echo "###########################"
+            echo "UPLOADING DOCS UNDER REVIEW"
+            echo "###########################"
+            echo
+
+            gs_base="artifacts.opnfv.org/$PROJECT/review"
+            gs_path="$gs_base/$GERRIT_CHANGE_NUMBER"
+            local_path="upload/$GERRIT_CHANGE_NUMBER"
+
+            mkdir -p upload
+            cp -r examples "$local_path"
+            gsutil -m cp -r "$local_path" "gs://$gs_base"
+
+            echo "Document link(s):" >> gerrit_comment.txt
+            find "$local_path" | grep -e 'index.html$' -e 'pdf$' | \
+                sed -e "s|^$local_path|    https://nbviewer.jupyter.org/urls/$gs_path|" >> gerrit_comment.txt
