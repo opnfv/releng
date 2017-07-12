@@ -211,6 +211,30 @@
                         build-step-failure-threshold: 'never'
                         failure-threshold: 'never'
                         unstable-threshold: 'FAILURE'
+        # ZTE pod1 weekly(Sunday), os-odl_l2-nofeature-ha, run against master and danube
+        - conditional-step:
+            condition-kind: and
+            condition-operands:
+                - condition-kind: regex-match
+                  regex: os-odl_l2-nofeature-ha
+                  label: '{scenario}'
+                - condition-kind: day-of-week
+                  day-selector: select-days
+                  days:
+                      SUN: true
+                  use-build-time: true
+            steps:
+                - trigger-builds:
+                    - project: 'dovetail-fuel-{pod}-proposed_tests-{stream}'
+                      current-parameters: false
+                      predefined-parameters:
+                        DEPLOY_SCENARIO={scenario}
+                      block: true
+                      same-node: true
+                      block-thresholds:
+                        build-step-failure-threshold: 'never'
+                        failure-threshold: 'never'
+                        unstable-threshold: 'FAILURE'
 
     publishers:
         - email:
