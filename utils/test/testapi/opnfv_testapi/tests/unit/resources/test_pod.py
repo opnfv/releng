@@ -12,7 +12,7 @@ import unittest
 from opnfv_testapi.common import message
 from opnfv_testapi.resources import pod_models
 from opnfv_testapi.tests.unit import executor
-from opnfv_testapi.tests.unit import test_base as base
+from opnfv_testapi.tests.unit.resources import test_base as base
 
 
 class TestPodBase(base.TestBase):

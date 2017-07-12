@@ -1,13 +1,13 @@
-from copy import deepcopy
-from datetime import datetime
 import functools
 import httplib
 import json
 import os
+from copy import deepcopy
+from datetime import datetime
 
-from opnfv_testapi.common import message
 import opnfv_testapi.resources.scenario_models as models
-from opnfv_testapi.tests.unit import test_base as base
+from opnfv_testapi.common import message
+from opnfv_testapi.tests.unit.resources import test_base as base
 
 
 class TestScenarioBase(base.TestBase):
