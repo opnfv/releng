@@ -87,6 +87,13 @@
       command: "/bin/bash ./scripts/bootstrap-ansible.sh"
       args:
         chdir: "{{OPENSTACK_OSA_PATH}}"
+    - name: install python Crypto module
+      package:
+        name: "{{ python_crypto_package_name }}"
+    - name: install PyYAML
+      pip:
+        name: pyyaml
+        state: present
     - name: generate password token
       command: "python pw-token-gen.py --file {{OPENSTACK_OSA_ETC_PATH}}/user_secrets.yml"
       args:
