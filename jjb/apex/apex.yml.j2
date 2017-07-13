@@ -528,6 +528,7 @@
                 - 'apex-deploy.*'
                 - 'functest.*'
                 - 'yardstick.*'
+                - 'dovetail.*'
         - throttle:
             max-per-node: 1
             max-total: 10
@@ -671,6 +672,19 @@
                   predefined-parameters:
                     DEPLOY_SCENARIO=$DEPLOY_SCENARIO
                   kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+        - multijob:
+            name: Dovetail
+            condition: ALWAYS
+            projects:
+                - name: 'dovetail-apex-baremetal-proposed_tests-{scenario_stream}'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                  kill-phase-on: NEVER
+                  enable-condition: "DEPLOY_SCENARIO =~ /os-(nosdn-nofeature|nosdn-kvm|odl_l3-fdio)-ha/"
                   abort-all-job: false
                   git-revision: false
         - conditional-step:
