@@ -4,26 +4,20 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 
 import httplib
+from os import path
 import unittest
 
-from tornado import web
+import mock
 
 from opnfv_testapi.common import message
 from opnfv_testapi.resources import project_models
-from opnfv_testapi.router import url_mappings
 from opnfv_testapi.tests.unit import executor
 from opnfv_testapi.tests.unit import fake_pymongo
 from opnfv_testapi.tests.unit.resources import test_base as base
 
 
 class TestToken(base.TestBase):
-    def get_app(self):
-        return web.Application(
-            url_mappings.mappings,
-            db=fake_pymongo,
-            debug=True,
-            auth=True
-        )
+    CONFIG = 'token.ini'
 
 
 class TestTokenCreateProject(TestToken):
@@ -108,6 +102,7 @@ class TestTokenUpdateProject(TestToken):
 
     def _update_success(self, request, body):
         self.assertIn(request.name, body)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,16 +1,8 @@
-import os
-
-from opnfv_testapi.common import config
-
-
-def test_config_success():
-    config_file = os.path.join(os.path.dirname(__file__),
-                               '../../../../etc/config.ini')
-    config.Config.CONFIG = config_file
-    conf = config.Config()
-    assert conf.mongo_url == 'mongodb://127.0.0.1:27017/'
-    assert conf.mongo_dbname == 'test_results_collection'
-    assert conf.api_port == 8000
-    assert conf.api_debug is True
-    assert conf.api_authenticate is False
-    assert conf.swagger_base_url == 'http://localhost:8000'
+def test_config_normal(conf_normal):
+    from opnfv_testapi.common.config import CONF
+    assert CONF.mongo_url == 'mongodb://127.0.0.1:27017/'
+    assert CONF.mongo_dbname == 'test_results_collection'
+    assert CONF.api_port == 8000
+    assert CONF.api_debug is True
+    assert CONF.api_authenticate is False
+    assert CONF.swagger_base_url == 'http://localhost:8000'
