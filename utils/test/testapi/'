@@ -8,9 +8,9 @@
 # feng.xiaowei@zte.com.cn remove prepare_put_request            5-30-2016
 ##############################################################################
 import ConfigParser
-import argparse
 import os
 import sys
+import argparse
 
 
 class Config(object):
@@ -60,11 +60,13 @@ class Config(object):
             self._set_default_config_file()
 
     def _set_sys_config_file(self):
+        print 'fxw', sys.argv
         parser = argparse.ArgumentParser()
         parser.add_argument("-c", "--config-file", dest='config_file',
-                            help="Config file location", metavar="FILE")
-        args,_ = parser.parse_known_args(sys.argv)
+                            help="Config file location")
+        args = parser.parse_known_args(sys.argv)
         try:
+            print 'fxw2', args.config_file
             self.config_file = args.config_file
         finally:
             return self.config_file is not None
