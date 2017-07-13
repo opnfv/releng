@@ -12,12 +12,8 @@ from os import path
 import mock
 from tornado import testing
 
-from opnfv_testapi.common import config
 from opnfv_testapi.resources import models
 from opnfv_testapi.tests.unit import fake_pymongo
-
-config.Config.CONFIG = path.join(path.dirname(__file__),
-                                 '../../../../etc/config.ini')
 
 
 class TestBase(testing.AsyncHTTPTestCase):
@@ -37,16 +33,21 @@ class TestBase(testing.AsyncHTTPTestCase):
 
     def tearDown(self):
         self.db_patcher.stop()
+        self.config_patcher.stop()
 
     def _patch_server(self):
-        from opnfv_testapi.cmd import server
-        server.parse_config([
-            '--config-file',
-            path.join(path.dirname(__file__), path.pardir, 'common/normal.ini')
-        ])
+        import argparse
+        config = path.join(path.dirname(__file__), '../common/normal.ini')
+        self.config_patcher = mock.patch(
+            'argparse.ArgumentParser.parse_known_args',
+            return_value=(argparse.Namespace(config_file=config), None))
         self.db_patcher = mock.patch('opnfv_testapi.cmd.server.get_db',
                                      self._fake_pymongo)
+        self.config_patcher.start()
         self.db_patcher.start()
+
+    def set_config_file(self):
+        self.config_file = 'normal.ini'
 
     @staticmethod
     def _fake_pymongo():
