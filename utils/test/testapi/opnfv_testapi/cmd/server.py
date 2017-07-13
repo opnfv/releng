@@ -29,28 +29,12 @@ TODOs :
 
 """
 
-import argparse
-import sys
-
 import motor
 import tornado.ioloop
 
-from opnfv_testapi.common import config
+from opnfv_testapi.common.config import CONF
 from opnfv_testapi.router import url_mappings
 from opnfv_testapi.tornado_swagger import swagger
-
-CONF = None
-
-
-def parse_config(argv=[]):
-    global CONF
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config-file", dest='config_file',
-                        help="Config file location")
-    args = parser.parse_args(argv)
-    if args.config_file:
-        config.Config.CONFIG = args.config_file
-    CONF = config.Config()
 
 
 def get_db():
@@ -70,7 +54,6 @@ def make_app():
 
 
 def main():
-    parse_config(sys.argv[1:])
     application = make_app()
     application.listen(CONF.api_port)
     tornado.ioloop.IOLoop.current().start()
@@ -78,3 +61,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
