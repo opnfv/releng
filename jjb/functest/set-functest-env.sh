@@ -21,6 +21,7 @@ fi
 
 DEPLOY_TYPE=baremetal
 [[ $BUILD_TAG =~ "virtual" ]] && DEPLOY_TYPE=virt
+HOST_ARCH=$(uname -m)
 
 echo "Functest: Start Docker and prepare environment"
 
@@ -28,7 +29,7 @@ if [ "$BRANCH" != 'stable/danube' ]; then
   echo "Functest: Download images that will be used by test cases"
   images_dir="${HOME}/opnfv/functest/images"
   chmod +x ${WORKSPACE}/functest/ci/download_images.sh
-  ${WORKSPACE}/functest/ci/download_images.sh ${images_dir} 2> ${redirect}
+  ${WORKSPACE}/functest/ci/download_images.sh ${images_dir} ${DEPLOY_SCENARIO} ${HOST_ARCH} 2> ${redirect}
   images_vol="-v ${images_dir}:/home/opnfv/functest/images"
 fi
 
@@ -59,7 +60,6 @@ else
   volumes="${results_vol} ${sshkey_vol} ${stackrc_vol} ${rc_file_vol}"
 fi
 
-HOST_ARCH=$(uname -m)
 FUNCTEST_IMAGE="opnfv/functest"
 if [ "$HOST_ARCH" = "aarch64" ]; then
     FUNCTEST_IMAGE="${FUNCTEST_IMAGE}_${HOST_ARCH}"
