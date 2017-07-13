@@ -88,15 +88,21 @@
 # that have not been switched using labels for slaves
 #--------------------------------
 #apex PODs
-        - lf-pod1:
-            slave-label: '{pod}'
+        - virtual:
+            slave-label: apex-virtual-master
             SUT: apex
-            auto-trigger-name: 'daily-trigger-disabled'
             <<: *master
-        - lf-pod1:
-            slave-label: '{pod}'
+        - baremetal:
+            slave-label: apex-baremetal-master
             SUT: apex
-            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
+        - virtual:
+            slave-label: apex-virtual-danube
+            SUT: apex
+            <<: *danube
+        - baremetal:
+            slave-label: apex-baremetal-danube
+            SUT: apex
             <<: *danube
 #armband CI PODs
         - armband-baremetal:
@@ -169,7 +175,6 @@
             <<: *danube
 #--------------------------------
     testsuite:
-        - 'debug'
         - 'compliance_set'
         - 'proposed_tests'
 
