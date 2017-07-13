@@ -1,10 +1,10 @@
 from opnfv_testapi.resources.handlers import GenericApiHandler
-from opnfv_testapi.common import config
+from opnfv_testapi.common.config import CONF
 
 
 class RootHandler(GenericApiHandler):
     def get_template_path(self):
-        return config.Config().static_path
+        return CONF.static_path
 
     def get(self):
         self.render('testapi-ui/index.html')
