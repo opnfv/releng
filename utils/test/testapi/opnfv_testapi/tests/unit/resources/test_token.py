@@ -10,7 +10,6 @@ from tornado import web
 
 from opnfv_testapi.common import message
 from opnfv_testapi.resources import project_models
-from opnfv_testapi.router import url_mappings
 from opnfv_testapi.tests.unit import executor
 from opnfv_testapi.tests.unit import fake_pymongo
 from opnfv_testapi.tests.unit.resources import test_base as base
@@ -18,6 +17,7 @@ from opnfv_testapi.tests.unit.resources import test_base as base
 
 class TestToken(base.TestBase):
     def get_app(self):
+        from opnfv_testapi.router import url_mappings
         return web.Application(
             url_mappings.mappings,
             db=fake_pymongo,
