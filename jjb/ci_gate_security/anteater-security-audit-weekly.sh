@@ -15,7 +15,7 @@ source $WORKSPACE/opnfv-projects.sh
 for project in "${PROJECT_LIST[@]}"
 
 do
-  cmd="anteater --project testproj --path /home/opnfv/anteater/allrepos/$project"
+  cmd="/home/opnfv/venv/bin/anteater --project testproj --path /home/opnfv/anteater/allrepos/$project"
   echo "Executing command inside container"
   echo "$cmd"
   echo "--------------------------------------------------------"
