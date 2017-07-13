@@ -8,7 +8,7 @@
 ##############################################################################
 import tornado.web
 
-from opnfv_testapi.common import config
+from opnfv_testapi.common.config import CONF
 from opnfv_testapi.resources import handlers
 from opnfv_testapi.resources import pod_handlers
 from opnfv_testapi.resources import project_handlers
@@ -58,7 +58,7 @@ mappings = [
     # static path
     (r'/(.*\.(css|png|gif|js|html|json|map|woff2|woff|ttf))',
      tornado.web.StaticFileHandler,
-     {'path': config.Config().static_path}),
+     {'path': CONF.static_path}),
 
     (r'/', root.RootHandler),
     (r'/api/v1/auth/signin', sign.SigninHandler),
