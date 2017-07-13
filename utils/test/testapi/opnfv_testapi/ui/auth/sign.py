@@ -3,11 +3,11 @@ from tornado import gen
 from tornado import web
 import logging
 
-from opnfv_testapi.common import config
+from opnfv_testapi.common.config import CONF
 from opnfv_testapi.ui.auth import base
 from opnfv_testapi.ui.auth import constants as const
 
-CONF = config.Config()
+# CONF = config.Config()
 
 
 class SigninHandler(base.BaseHandler):
