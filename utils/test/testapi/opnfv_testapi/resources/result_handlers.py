@@ -13,15 +13,13 @@ import json
 
 from bson import objectid
 
-from opnfv_testapi.common import config
+from opnfv_testapi.common.config import CONF
 from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
 from opnfv_testapi.resources import handlers
 from opnfv_testapi.resources import result_models
 from opnfv_testapi.tornado_swagger import swagger
 from opnfv_testapi.ui.auth import constants as auth_const
-
-CONF = config.Config()
 
 
 class GenericResultHandler(handlers.GenericApiHandler):
