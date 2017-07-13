@@ -83,27 +83,11 @@
     builders:
         - shell: |
             cd ./utils/test/{module}/
-            bash run_test.sh
+            tox
             cp *.xml $WORKSPACE
 
     publishers:
-        - junit:
-            results: nosetests.xml
-        - cobertura:
-            report-file: "coverage.xml"
-            only-stable: "true"
-            health-auto-update: "false"
-            stability-auto-update: "false"
-            zoom-coverage-chart: "true"
-            targets:
-                - files:
-                    healthy: 10
-                    unhealthy: 20
-                    failing: 30
-                - method:
-                    healthy: 50
-                    unhealthy: 40
-                    failing: 30
+        - publish-coverage
 
 - job-template:
     name: '{module}-automate-{stream}'
