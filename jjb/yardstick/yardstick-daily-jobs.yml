@@ -28,6 +28,27 @@
 # that have been switched using labels for slaves
 #--------------------------------
     pod:
+# apex CI PODs
+        - virtual:
+            slave-label: apex-virtual-master
+            installer: apex
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
+        - baremetal:
+            slave-label: apex-baremetal-master
+            installer: apex
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
+        - virtual:
+            slave-label: apex-virtual-danube
+            installer: apex
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *danube
+        - baremetal:
+            slave-label: apex-baremetal-danube
+            installer: apex
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *danube
 # fuel CI PODs
         - baremetal:
             slave-label: fuel-baremetal
@@ -91,7 +112,6 @@
             installer: joid
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *danube
-
 # compass CI PODs
         - baremetal:
             slave-label: compass-baremetal
@@ -111,22 +131,6 @@
         - virtual:
             slave-label: compass-virtual
             installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-#--------------------------------
-#    Installers not using labels
-#            CI PODs
-# This section should only contain the installers
-# that have not been switched using labels for slaves
-#--------------------------------
-        - lf-pod1:
-            slave-label: '{pod}'
-            installer: apex
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - lf-pod1:
-            slave-label: '{pod}'
-            installer: apex
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *danube
 #--------------------------------
@@ -320,6 +324,20 @@
 # parameter macros
 ########################
 - parameter:
+    name: 'yardstick-params-apex-baremetal'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: '-i 104.197.68.199:8086'
+            description: 'Arguments to use in order to choose the backend DB'
+- parameter:
+    name: 'yardstick-params-apex-virtual'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: '-i 104.197.68.199:8086'
+            description: 'Arguments to use in order to choose the backend DB'
+- parameter:
     name: 'yardstick-params-fuel-baremetal'
     parameters:
         - string:
@@ -375,22 +393,6 @@
             name: YARDSTICK_DB_BACKEND
             default: '-i 104.197.68.199:8086'
             description: 'Arguments to use in order to choose the backend DB'
-- parameter:
-    name: 'yardstick-params-lf-pod1'
-    parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
-
-- parameter:
-    name: 'yardstick-params-lf-pod2'
-    parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
-
 - parameter:
     name: 'yardstick-params-compass-baremetal'
     parameters:
