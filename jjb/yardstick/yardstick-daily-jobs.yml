@@ -28,6 +28,23 @@
 # that have been switched using labels for slaves
 #--------------------------------
     pod:
+# apex CI PODs
+        - virtual:
+            slave-label: apex-virtual-master
+            installer: apex
+            <<: *master
+        - baremetal:
+            slave-label: apex-baremetal-master
+            installer: apex
+            <<: *master
+        - virtual:
+            slave-label: apex-virtual-danube
+            installer: apex
+            <<: *danube
+        - baremetal:
+            slave-label: apex-baremetal-danube
+            installer: apex
+            <<: *danube
 # fuel CI PODs
         - baremetal:
             slave-label: fuel-baremetal
@@ -91,7 +108,6 @@
             installer: joid
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *danube
-
 # compass CI PODs
         - baremetal:
             slave-label: compass-baremetal
@@ -111,22 +127,6 @@
         - virtual:
             slave-label: compass-virtual
             installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-#--------------------------------
-#    Installers not using labels
-#            CI PODs
-# This section should only contain the installers
-# that have not been switched using labels for slaves
-#--------------------------------
-        - lf-pod1:
-            slave-label: '{pod}'
-            installer: apex
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - lf-pod1:
-            slave-label: '{pod}'
-            installer: apex
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *danube
 #--------------------------------
