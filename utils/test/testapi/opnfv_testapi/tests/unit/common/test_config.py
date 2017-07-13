@@ -1,12 +1,7 @@
-import os
-
 from opnfv_testapi.common import config
 
 
-def test_config_success():
-    config_file = os.path.join(os.path.dirname(__file__),
-                               '../../../../etc/config.ini')
-    config.Config.CONFIG = config_file
+def test_config_success(mocker_config_file):
     conf = config.Config()
     assert conf.mongo_url == 'mongodb://127.0.0.1:27017/'
     assert conf.mongo_dbname == 'test_results_collection'
