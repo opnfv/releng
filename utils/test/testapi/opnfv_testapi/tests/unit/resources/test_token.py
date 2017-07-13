@@ -25,7 +25,6 @@ class TestToken(base.TestBase):
             auth=True
         )
 
-
 class TestTokenCreateProject(TestToken):
     def setUp(self):
         super(TestTokenCreateProject, self).setUp()
