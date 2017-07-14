@@ -20,8 +20,8 @@
 # feng.xiaowei@zte.com.cn remove DashboardHandler            5-30-2016
 ##############################################################################
 
-from datetime import datetime
 import json
+from datetime import datetime
 
 from tornado import gen
 from tornado import web
@@ -29,6 +29,7 @@ from tornado import web
 from opnfv_testapi.common import check
 from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
+from opnfv_testapi.db import api as dbapi
 from opnfv_testapi.resources import models
 from opnfv_testapi.tornado_swagger import swagger
 
@@ -38,7 +39,6 @@ DEFAULT_REPRESENTATION = "application/json"
 class GenericApiHandler(web.RequestHandler):
     def __init__(self, application, request, **kwargs):
         super(GenericApiHandler, self).__init__(application, request, **kwargs)
-        self.db = self.settings["db"]
         self.json_args = None
         self.table = None
         self.table_cls = None
@@ -90,8 +90,7 @@ class GenericApiHandler(web.RequestHandler):
 
         if self.table != 'results':
             data.creation_date = datetime.now()
-        _id = yield self._eval_db(self.table, 'insert', data.format(),
-                                  check_keys=False)
+        _id = yield dbapi.db_save(self.table, data.format())
         if 'name' in self.json_args:
             resource = data.name
         else:
@@ -107,17 +106,14 @@ class GenericApiHandler(web.RequestHandler):
         per_page = kwargs.get('per_page', 0)
         if query is None:
             query = {}
-        cursor = self._eval_db(self.table, 'find', query)
+        cursor = dbapi.db_list(self.table, query)
         records_count = yield cursor.count()
         total_pages = self._calc_total_pages(records_count,
                                              last,
                                              page,
                                              per_page)
         pipelines = self._set_pipelines(query, sort, last, page, per_page)
-        cursor = self._eval_db(self.table,
-                               'aggregate',
-                               pipelines,
-                               allowDiskUse=True)
+        cursor = dbapi.db_aggregate(self.table, pipelines)
         data = list()
         while (yield cursor.fetch_next):
             data.append(self.format_data(cursor.next_object()))
@@ -175,7 +171,7 @@ class GenericApiHandler(web.RequestHandler):
     @check.authenticate
     @check.not_exist
     def _delete(self, data, query=None):
-        yield self._eval_db(self.table, 'remove', query)
+        yield dbapi.db_delete(self.table, query)
         self.finish_request()
 
     @check.authenticate
@@ -185,8 +181,7 @@ class GenericApiHandler(web.RequestHandler):
     def _update(self, data, query=None, **kwargs):
         data = self.table_cls.from_dict(data)
         update_req = self._update_requests(data)
-        yield self._eval_db(self.table, 'update', query, update_req,
-                            check_keys=False)
+        yield dbapi.db_update(self.table, query, update_req)
         update_req['_id'] = str(data._id)
         self.finish_request(update_req)
 
@@ -228,23 +223,6 @@ class GenericApiHandler(web.RequestHandler):
                 equal = False
             query[key] = new
         return query if not equal else dict()
-
-    def _eval_db(self, table, method, *args, **kwargs):
-        exec_collection = self.db.__getattr__(table)
-        return exec_collection.__getattribute__(method)(*args, **kwargs)
-
-    def _eval_db_find_one(self, query, table=None):
-        if table is None:
-            table = self.table
-        return self._eval_db(table, 'find_one', query)
-
-    def db_save(self, collection, data):
-        self._eval_db(collection, 'insert', data, check_keys=False)
-
-    def db_find_one(self, query, collection=None):
-        if not collection:
-            collection = self.table
-        return self._eval_db(collection, 'find_one', query)
 
 
 class VersionHandler(GenericApiHandler):

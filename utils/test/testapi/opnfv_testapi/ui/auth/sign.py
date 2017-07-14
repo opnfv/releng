@@ -1,10 +1,9 @@
 from six.moves.urllib import parse
 
 from opnfv_testapi.common.config import CONF
+from opnfv_testapi.db import api as dbapi
 from opnfv_testapi.ui.auth import base
 from opnfv_testapi.ui.auth import constants as const
-
-# CONF = config.Config()
 
 
 class SigninHandler(base.BaseHandler):
@@ -42,7 +41,7 @@ class SigninReturnHandler(base.BaseHandler):
             'fullname': self.get_query_argument(const.OPENID_NS_SREG_FULLNAME)
         }
 
-        self.db_save(self.table, user_info)
+        dbapi.db_save(self.table, user_info)
         if not self.get_secure_cookie('openid'):
             self.set_secure_cookie('openid', openid)
         self.redirect(url=CONF.ui_url)
