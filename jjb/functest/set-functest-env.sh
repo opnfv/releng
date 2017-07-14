@@ -9,6 +9,10 @@ set +o pipefail
 # Prepare OpenStack credentials volume
 if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     rc_file_vol="-v $LAB_CONFIG/admin-openrc:/home/opnfv/functest/conf/openstack.creds"
+elif [[ ${INSTALLER_TYPE} == 'compass' && ${BRANCH} == 'master' ]]; then
+    cacert_file_vol="-v ${HOME}/os_cacert:/home/opnfv/functest/conf/os_cacert"
+    echo "export OS_CACERT=/home/opnfv/functest/conf/os_cacert" >> ${HOME}/opnfv-openrc.sh
+    rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/home/opnfv/functest/conf/openstack.creds"
 else
     rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/home/opnfv/functest/conf/openstack.creds"
 fi
@@ -54,7 +58,7 @@ if [[ ${INSTALLER_TYPE} == 'compass' && ${DEPLOY_SCENARIO} == *'os-nosdn-openo-h
 fi
 
 if [ "$BRANCH" != 'stable/danube' ]; then
-  volumes="${images_vol} ${results_vol} ${sshkey_vol} ${stackrc_vol} ${rc_file_vol}"
+  volumes="${images_vol} ${results_vol} ${sshkey_vol} ${stackrc_vol} ${rc_file_vol} ${cacert_file_vol}"
 else
   volumes="${results_vol} ${sshkey_vol} ${stackrc_vol} ${rc_file_vol}"
 fi
