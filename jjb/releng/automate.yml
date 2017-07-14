@@ -84,7 +84,9 @@
         - shell: |
             cd ./utils/test/{module}/
             tox
-            cp *.xml $WORKSPACE
+            if [ -e *.xml ];then
+                cp *.xml $WORKSPACE
+            fi
 
     publishers:
         - publish-coverage
