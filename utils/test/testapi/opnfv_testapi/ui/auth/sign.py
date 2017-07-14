@@ -1,13 +1,11 @@
 from six.moves.urllib import parse
 from tornado import gen
 from tornado import web
-import logging
 
 from opnfv_testapi.common.config import CONF
+from opnfv_testapi.db import api as dbapi
 from opnfv_testapi.ui.auth import base
 from opnfv_testapi.ui.auth import constants as const
-
-# CONF = config.Config()
 
 
 class SigninHandler(base.BaseHandler):
@@ -48,10 +46,9 @@ class SigninReturnHandler(base.BaseHandler):
             'fullname': self.get_query_argument(const.OPENID_NS_SREG_FULLNAME),
             const.ROLE: role
         }
-        user = yield self.db_find_one({'openid': openid})
+        user = yield dbapi.db_find_one(self.table, {'openid': openid})
         if not user:
-            self.db_save(self.table, new_user_info)
-            logging.info('save to db:%s', new_user_info)
+            dbapi.db_save(self.table, new_user_info)
         else:
             role = user.get(const.ROLE)
 
