@@ -13,6 +13,7 @@ from tornado import web
 
 from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
+from opnfv_testapi.db import api as dbapi
 
 
 def authenticate(method):
@@ -26,7 +27,7 @@ def authenticate(method):
             except KeyError:
                 raises.Unauthorized(message.unauthorized())
             query = {'access_token': token}
-            check = yield self._eval_db_find_one(query, 'tokens')
+            check = yield dbapi.db_find_one('tokens', query)
             if not check:
                 raises.Forbidden(message.invalid_token())
         ret = yield gen.coroutine(method)(self, *args, **kwargs)
@@ -38,7 +39,7 @@ def not_exist(xstep):
     @functools.wraps(xstep)
     def wrap(self, *args, **kwargs):
         query = kwargs.get('query')
-        data = yield self._eval_db_find_one(query)
+        data = yield dbapi.db_find_one(self.table, query)
         if not data:
             raises.NotFound(message.not_found(self.table, query))
         ret = yield gen.coroutine(xstep)(self, data, *args, **kwargs)
@@ -78,7 +79,7 @@ def carriers_exist(xstep):
         carriers = kwargs.pop('carriers', {})
         if carriers:
             for table, query in carriers:
-                exist = yield self._eval_db_find_one(query(), table)
+                exist = yield dbapi.db_find_one(table, query())
                 if not exist:
                     raises.Forbidden(message.not_found(table, query()))
         ret = yield gen.coroutine(xstep)(self, *args, **kwargs)
@@ -91,7 +92,7 @@ def new_not_exists(xstep):
     def wrap(self, *args, **kwargs):
         query = kwargs.get('query')
         if query:
-            to_data = yield self._eval_db_find_one(query())
+            to_data = yield dbapi.db_find_one(self.table, query())
             if to_data:
                 raises.Forbidden(message.exist(self.table, query()))
         ret = yield gen.coroutine(xstep)(self, *args, **kwargs)
@@ -105,7 +106,7 @@ def updated_one_not_exist(xstep):
         db_keys = kwargs.pop('db_keys', [])
         query = self._update_query(db_keys, data)
         if query:
-            to_data = yield self._eval_db_find_one(query)
+            to_data = yield dbapi.db_find_one(self.table, query)
             if to_data:
                 raises.Forbidden(message.exist(self.table, query))
         ret = yield gen.coroutine(xstep)(self, data, *args, **kwargs)

@@ -29,7 +29,6 @@ TODOs :
 
 """
 
-import motor
 import tornado.ioloop
 
 from opnfv_testapi.common.config import CONF
@@ -37,16 +36,11 @@ from opnfv_testapi.router import url_mappings
 from opnfv_testapi.tornado_swagger import swagger
 
 
-def get_db():
-    return motor.MotorClient(CONF.mongo_url)[CONF.mongo_dbname]
-
-
 def make_app():
     swagger.docs(base_url=CONF.swagger_base_url,
                  static_path=CONF.static_path)
     return swagger.Application(
         url_mappings.mappings,
-        db=get_db(),
         debug=CONF.api_debug,
         auth=CONF.api_authenticate,
         cookie_secret='opnfv-testapi',

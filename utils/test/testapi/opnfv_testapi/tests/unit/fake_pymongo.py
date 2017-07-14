@@ -6,9 +6,10 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+from operator import itemgetter
+
 from bson.objectid import ObjectId
 from concurrent.futures import ThreadPoolExecutor
-from operator import itemgetter
 
 
 def thread_execute(method, *args, **kwargs):

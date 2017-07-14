@@ -41,17 +41,13 @@ class TestBase(testing.AsyncHTTPTestCase):
         self.config_patcher = mock.patch(
             'argparse.ArgumentParser.parse_known_args',
             return_value=(argparse.Namespace(config_file=config), None))
-        self.db_patcher = mock.patch('opnfv_testapi.cmd.server.get_db',
-                                     self._fake_pymongo)
+        self.db_patcher = mock.patch('opnfv_testapi.db.api.DB',
+                                     fake_pymongo)
         self.config_patcher.start()
         self.db_patcher.start()
 
     def set_config_file(self):
         self.config_file = 'normal.ini'
-
-    @staticmethod
-    def _fake_pymongo():
-        return fake_pymongo
 
     def get_app(self):
         from opnfv_testapi.cmd import server
