@@ -109,5 +109,6 @@ class TestTokenUpdateProject(TestToken):
     def _update_success(self, request, body):
         self.assertIn(request.name, body)
 
+
 if __name__ == '__main__':
     unittest.main()
