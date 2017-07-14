@@ -12,7 +12,7 @@ set -o nounset
 set -o pipefail
 
 usage() {
-    echo "usage: $0 [-v] -d <destination> -i <installer_type> -a <installer_ip> [-s <ssh_key>]" >&2
+    echo "usage: $0 [-v] -d <destination> -i <installer_type> -a <installer_ip> [-o <os_cacert>] [-s <ssh_key>]" >&2
     echo "[-v] Virtualized deployment" >&2
     echo "[-s <ssh_key>] Path to ssh key. For MCP deployments only" >&2
 }
@@ -54,12 +54,13 @@ swap_to_public() {
 : ${DEPLOY_TYPE:=''}
 
 #Get options
-while getopts ":d:i:a:h:s:v" optchar; do
+while getopts ":d:i:a:h:s:o:v" optchar; do
     case "${optchar}" in
         d) dest_path=${OPTARG} ;;
         i) installer_type=${OPTARG} ;;
         a) installer_ip=${OPTARG} ;;
         s) ssh_key=${OPTARG} ;;
+        o) os_cacert=${OPTARG} ;;
         v) DEPLOY_TYPE="virt" ;;
         *) echo "Non-option argument: '-${OPTARG}'" >&2
            usage
@@ -70,6 +71,7 @@ done
 
 # set vars from env if not provided by user as options
 dest_path=${dest_path:-$HOME/opnfv-openrc.sh}
+os_cacert=${os_cacert:-$HOME/os_cacert}
 installer_type=${installer_type:-$INSTALLER_TYPE}
 installer_ip=${installer_ip:-$INSTALLER_IP}
 if [ "${installer_type}" == "fuel" ] && [ "${BRANCH}" == "master" ]; then
@@ -155,6 +157,7 @@ elif [ "$installer_type" == "apex" ]; then
 elif [ "$installer_type" == "compass" ]; then
     if [ "${BRANCH}" == "master" ]; then
         sudo docker cp compass-tasks:/opt/openrc $dest_path &> /dev/null
+        sudo docker cp compass-tasks:/opt/os_cacert $os_cacert &> /dev/null
         sudo chown $(whoami):$(whoami) $dest_path
     else
         verify_connectivity $installer_ip
