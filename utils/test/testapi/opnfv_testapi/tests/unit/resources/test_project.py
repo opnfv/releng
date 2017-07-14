@@ -132,5 +132,6 @@ class TestProjectDelete(TestProjectBase):
         code, body = self.get(self.req_d.name)
         self.assertEqual(code, httplib.NOT_FOUND)
 
+
 if __name__ == '__main__':
     unittest.main()
