@@ -33,6 +33,7 @@ def main(args):
     else:
         exit(1)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Create \
                                       Swagger Spec documentation')
