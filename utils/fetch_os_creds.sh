@@ -157,8 +157,8 @@ elif [ "$installer_type" == "apex" ]; then
 elif [ "$installer_type" == "compass" ]; then
     if [ "${BRANCH}" == "master" ]; then
         sudo docker cp compass-tasks:/opt/openrc $dest_path &> /dev/null
-        sudo docker cp compass-tasks:/opt/os_cacert $os_cacert &> /dev/null
         sudo chown $(whoami):$(whoami) $dest_path
+        sudo docker cp compass-tasks:/opt/os_cacert $os_cacert &> /dev/null
     else
         verify_connectivity $installer_ip
         controller_ip=$(sshpass -p'root' ssh 2>/dev/null $ssh_options root@${installer_ip} \
