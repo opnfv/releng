@@ -12,14 +12,14 @@ if [[ -e securityaudit.log ]] ; then
     if grep ERROR securityaudit.log; then
         EXITSTATUS=1
     fi
-    
-    cat securityaudit.log  | awk -F"ERROR - " '{print $2}' > shortlog
-    
+
+    cat securityaudit.log  | awk -F"ERROR - " '{print $2}' | sed -e "s/\"/\\\\\"/g;s/\'/\\\\\'/g"> shortlog
+
     ssh -p 29418 gerrit.opnfv.org \
         "gerrit review -p $GERRIT_PROJECT \
         -m \"$(cat shortlog)\" \
         $GERRIT_PATCHSET_REVISION \
         --notify NONE"
-    
+
     exit $EXITSTATUS
 fi
