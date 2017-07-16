@@ -1,5 +1,7 @@
 #!/bin/bash
 cd $WORKSPACE
+REPORTDIR='.reports'
+mkdir -p $REPORTDIR
 echo "Generating patchset file to list changed files"
 git diff HEAD^1 --name-only | sed "s#^#/home/opnfv/anteater/$PROJECT/#" > $WORKSPACE/patchset
 echo "Changed files are"
@@ -7,7 +9,7 @@ echo "--------------------------------------------------------"
 cat $WORKSPACE/patchset
 echo "--------------------------------------------------------"
 
-vols="-v $WORKSPACE:/home/opnfv/anteater/$PROJECT"
+vols="-v $WORKSPACE:/home/opnfv/anteater/$PROJECT -v $WORKSPACE/$REPORTDIR:/home/opnfv/anteater/$REPORTDIR"
 envs="-e PROJECT=$PROJECT"
 
 echo "Pulling releng-anteater docker image"
