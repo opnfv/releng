@@ -30,6 +30,7 @@ if [ -x '/usr/bin/zypper' ]; then
         [python-devel]=python-devel
         [venv]=python-virtualenv
         [wget]=wget
+        [openssl]=openssl
     )
     EXTRA_PKG_DEPS=( python-xml )
     # NOTE (cinerama): we can't install python without removing this package
@@ -50,6 +51,7 @@ elif [ -x '/usr/bin/apt-get' ]; then
               [python-devel]=libpython-dev
               [venv]=python-virtualenv
               [wget]=wget
+              [openssl]=openssl
             )
     EXTRA_PKG_DEPS=()
 elif [ -x '/usr/bin/dnf' ] || [ -x '/usr/bin/yum' ]; then
@@ -67,6 +69,7 @@ elif [ -x '/usr/bin/dnf' ] || [ -x '/usr/bin/yum' ]; then
         [python-devel]=python-devel
         [venv]=python-virtualenv
         [wget]=wget
+        [openssl]=openssl
     )
     EXTRA_PKG_DEPS=()
 else
