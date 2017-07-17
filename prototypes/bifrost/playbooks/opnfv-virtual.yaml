@@ -57,6 +57,7 @@
       extra_dib_elements: "{{ lookup('env', 'EXTRA_DIB_ELEMENTS') | default('') }}"
       dib_elements: "vm enable-serial-console simple-init devuser growroot {{ extra_dib_elements }}"
       dib_packages: "{{ lookup('env', 'DIB_OS_PACKAGES') }}"
+      dib_notmpfs: true
       when: create_image_via_dib | bool == true and transform_boot_image | bool == false
     - role: bifrost-keystone-client-config
       user: "{{ ansible_env.SUDO_USER }}"
