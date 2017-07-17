@@ -98,6 +98,25 @@
       command: "python pw-token-gen.py --file {{OPENSTACK_OSA_ETC_PATH}}/user_secrets.yml"
       args:
         chdir: "{{OPENSTACK_OSA_PATH}}/scripts"
+    - name: create certificate directory {{XCI_SSL_CERT_PATH}}
+      file:
+        path: "{{ XCI_SSL_CERT_PATH }}"
+        state: directory
+    - name: create key directory {{XCI_SSL_KEY_PATH}}
+      file:
+        path: "{{ XCI_SSL_KEY_PATH }}"
+        state: directory
+    - name: copy certificate to {{XCI_SSL_CERT_PATH}}
+      copy:
+        src: "{{ XCI_SSL_ORIGIN_CERT_PATH }}/xci.crt"
+        dest: "{{ XCI_SSL_CERT_PATH }}/"
+      become: true
+    - name: copy key to {{XCI_SSL_KEY_PATH}}
+      copy:
+        src: "{{ XCI_SSL_ORIGIN_CERT_PATH }}/xci.key"
+        dest: "{{ XCI_SSL_KEY_PATH }}/"
+      become: true
+
 - hosts: localhost
   remote_user: root
   vars_files:
