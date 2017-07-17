@@ -48,6 +48,7 @@
       dib_os_element: "{{ ipa_dib_os_element|default('debian') }}"
       dib_os_release: "jessie"
       dib_elements: "ironic-agent {{ ipa_extra_dib_elements | default('') }}"
+      dib_notmpfs: true
       when: create_ipa_image | bool == true
     - role: bifrost-create-dib-image
       dib_imagetype: "qcow2"
@@ -57,6 +58,7 @@
       extra_dib_elements: "{{ lookup('env', 'EXTRA_DIB_ELEMENTS') | default('') }}"
       dib_elements: "vm enable-serial-console simple-init devuser growroot {{ extra_dib_elements }}"
       dib_packages: "{{ lookup('env', 'DIB_OS_PACKAGES') }}"
+      dib_notmpfs: true
       when: create_image_via_dib | bool == true and transform_boot_image | bool == false
     - role: bifrost-keystone-client-config
       user: "{{ ansible_env.SUDO_USER }}"
