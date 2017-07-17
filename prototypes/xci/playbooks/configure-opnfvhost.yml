@@ -98,6 +98,25 @@
       command: "python pw-token-gen.py --file {{OPENSTACK_OSA_ETC_PATH}}/user_secrets.yml"
       args:
         chdir: "{{OPENSTACK_OSA_PATH}}/scripts"
+    - name: create certificate directory {{XCI_SSL_CERT_PATH}}
+      file:
+        path: "{{ XCI_SSL_CERT_PATH }}"
+        state: directory
+    - name: create key directory {{XCI_SSL_KEY_PATH}}
+      file:
+        path: "{{ XCI_SSL_KEY_PATH }}"
+        state: directory
+    - name: copy certificate to {{XCI_SSL_CERT_PATH}}
+      copy:
+        src: "{{ XCI_SSL_ORIGIN_CERT_PATH }}/xci.crt"
+        dest: "{{ XCI_SSL_CERT_PATH }}/"
+      become: true
+    - name: copy key to {{XCI_SSL_KEY_PATH}}
+      copy:
+        src: "{{ XCI_SSL_ORIGIN_CERT_PATH }}/xci.key"
+        dest: "{{ XCI_SSL_KEY_PATH }}/"
+      become: true
+
 - hosts: localhost
   remote_user: root
   vars_files:
@@ -107,3 +126,20 @@
       shell: "/bin/cat {{ OPNFV_SSH_HOST_KEYS_PATH }}/opnfv/root/.ssh/id_rsa.pub >> ../file/authorized_keys"
     - name: Append public keys to authorized_keys
       shell: "/bin/cat {{ ansible_env.HOME }}/.ssh/id_rsa.pub >> ../file/authorized_keys"
+
+- hosts: opnfv
+  gather_facts: no
+  remote_user: root
+  vars_files:
+    - ../var/{{ ansible_os_family }}.yml
+    - ../var/flavor-vars.yml
+    - ../var/opnfv.yml
+    - "{{ XCI_FLAVOR_ANSIBLE_FILE_PATH }}/user_variables.yml"
+  roles:
+    - role: "openstack-ansible-openstack_openrc"
+  tasks:
+    - name: fetch generated openrc
+      fetch:
+        src: "{{ ansible_env.HOME }}/openrc"
+        dest: "{{ XCI_DEVEL_ROOT }}/"
+        flat: true
