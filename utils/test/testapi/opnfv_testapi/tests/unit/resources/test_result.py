@@ -208,9 +208,9 @@ class TestResultCreate(TestResultBase):
 class TestResultGet(TestResultBase):
     def setUp(self):
         super(TestResultGet, self).setUp()
+        self.req_10d_before = self._create_changed_date(days=-10)
         self.req_d_id = self._create_d()
         self.req_10d_later = self._create_changed_date(days=10)
-        self.req_10d_before = self._create_changed_date(days=-10)
 
     @executor.get(httplib.OK, 'assert_res')
     def test_getOne(self):
