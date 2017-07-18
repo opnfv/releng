@@ -147,7 +147,7 @@ class ResultsCLHandler(GenericResultHandler):
             @in trust_indicator: query
             @required trust_indicator: False
         """
-        limitations = {'sort': {'start_date': -1}}
+        limitations = {'sort': {'_id': -1}}
         last = self.get_query_argument('last', 0)
         if last is not None:
             last = self.get_int('last', last)
