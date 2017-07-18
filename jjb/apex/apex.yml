@@ -13,7 +13,7 @@
         - 'apex-csit-promote-daily-{stream}'
         - 'apex-fdio-promote-daily-{stream}'
         - 'apex-verify-iso-{stream}'
-        - 'apex-run-deploy-test-baremetal-{stream}'
+        - 'apex-{scenario}-baremetal-{stream}'
         - 'apex-upload-snapshot'
         - 'apex-create-snapshot'
     # stream:    branch with - in place of / (eg. stable-arno)
@@ -27,6 +27,12 @@
             baremetal-slave: 'apex-baremetal-master'
             verify-scenario: 'os-odl-nofeature-ha'
             concurrent-builds: 3
+            scenario:
+              - os-nosdn-nofeature-noha
+              - os-nosdn-nofeature-ha
+              - os-odl-nofeature-ha
+              - os-odl-nofeature-noha
+              - os-odl-bgpvpn-ha
 
         - danube:
             branch: 'stable/danube'
@@ -36,7 +42,34 @@
             baremetal-slave: 'apex-baremetal-danube'
             verify-scenario: 'os-odl_l3-nofeature-ha'
             concurrent-builds: 1
-            disabled: false
+            scenario:
+              - os-nosdn-nofeature-noha
+              - os-nosdn-nofeature-ha
+              - os-nosdn-nofeature-ha-ipv6
+              - os-nosdn-ovs-noha
+              - os-nosdn-ovs-ha
+              - os-nosdn-fdio-noha
+              - os-nosdn-fdio-ha
+              - os-nosdn-kvm-ha
+              - os-nosdn-kvm-noha
+              - os-odl_l2-fdio-noha
+              - os-odl_l2-fdio-ha
+              - os-odl_netvirt-fdio-noha
+              - os-odl_l2-sfc-noha
+              - os-odl_l3-nofeature-noha
+              - os-odl_l3-nofeature-ha
+              - os-odl_l3-ovs-noha
+              - os-odl_l3-ovs-ha
+              - os-odl-bgpvpn-ha
+              - os-odl-gluon-noha
+              - os-odl_l3-fdio-noha
+              - os-odl_l3-fdio-ha
+              - os-odl_l3-fdio_dvr-noha
+              - os-odl_l3-fdio_dvr-ha
+              - os-odl_l3-csit-noha
+              - os-onos-nofeature-ha
+              - os-ovn-nofeature-noha
+            disabled: true
 
     platform:
          - 'baremetal'
@@ -478,11 +511,6 @@
 - job-template:
     name: 'apex-deploy-{platform}-{stream}'
 
-    # Job template for virtual deployment
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
     node: 'apex-{platform}-{stream}'
 
     concurrent: true
@@ -536,13 +564,8 @@
 
 # Baremetal Deploy and Test
 - job-template:
-    name: 'apex-run-deploy-test-baremetal-{stream}'
+    name: 'apex-{scenario}-baremetal-{stream}'
 
-    # Job template for daily build
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
     project-type: 'multijob'
 
     disabled: false
@@ -560,7 +583,7 @@
             gs-pathname: '{gs-pathname}'
         - string:
             name: DEPLOY_SCENARIO
-            default: '{verify-scenario}'
+            default: '{scenario}'
             description: "Scenario to deploy with."
     properties:
         - logrotate-default
@@ -592,7 +615,7 @@
                   git-revision: false
         - multijob:
             name: Functest
-            condition: ALWAYS
+            condition: SUCCESSFUL
             projects:
                 - name: 'functest-apex-baremetal-daily-{stream}'
                   node-parameters: true
@@ -686,261 +709,235 @@
             condition: SUCCESSFUL
             projects:
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-nosdn-nofeature-noha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-nosdn-nofeature-ha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-nosdn-nofeature-ha-ipv6-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha-ipv6
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-nosdn-ovs-noha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-ovs-noha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-nosdn-ovs-ha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-ovs-ha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-nosdn-fdio-noha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-fdio-noha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-nosdn-fdio-ha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-fdio-ha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-nosdn-kvm-ha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-kvm-ha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-nosdn-kvm-noha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-kvm-noha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-odl_l2-fdio-noha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l2-fdio-noha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-odl_l2-fdio-ha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l2-fdio-ha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-odl_netvirt-fdio-noha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_netvirt-fdio-noha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-odl_l2-sfc-noha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l2-sfc-noha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-odl_l3-nofeature-noha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-nofeature-noha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-odl_l3-nofeature-ha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-odl_l3-ovs-noha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-ovs-noha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-odl_l3-ovs-ha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-ovs-ha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-odl-bgpvpn-ha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl-bgpvpn-ha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-odl-gluon-noha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl-gluon-noha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-odl_l3-fdio-noha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-fdio-noha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-odl_l3-fdio-ha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-fdio-ha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-odl_l3-fdio_dvr-noha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-fdio_dvr-noha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-odl_l3-fdio_dvr-ha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-fdio_dvr-ha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-odl_l3-csit-noha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl_l3-csit-noha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-onos-nofeature-ha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-onos-nofeature-ha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-danube'
+                - name: 'apex-os-ovn-nofeature-noha-baremetal-danube'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-ovn-nofeature-noha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
@@ -1017,41 +1014,46 @@
             condition: SUCCESSFUL
             projects:
 
-                - name: 'apex-run-deploy-test-baremetal-master'
+                - name: 'apex-os-nosdn-nofeature-noha-baremetal-master'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-master'
+                - name: 'apex-os-nosdn-nofeature-ha-baremetal-master'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-master'
+                - name: 'apex-os-odl-nofeature-ha-baremetal-master'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl-nofeature-ha
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
                   git-revision: false
 
-                - name: 'apex-run-deploy-test-baremetal-master'
+                - name: 'apex-os-odl-nofeature-noha-baremetal-master'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-odl-nofeature-noha
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-bgpvpn-ha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
@@ -1385,8 +1387,8 @@
 - trigger:
     name: 'apex-master'
     triggers:
-        - timed: '0 3 1 1 7'
+        - timed: '0 12 * * *'
 - trigger:
     name: 'apex-danube'
     triggers:
-        - timed: '0 12 * * *'
+        - timed: '0 3 1 1 7'

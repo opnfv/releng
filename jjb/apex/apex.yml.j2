@@ -13,7 +13,7 @@
         - 'apex-csit-promote-daily-{stream}'
         - 'apex-fdio-promote-daily-{stream}'
         - 'apex-verify-iso-{stream}'
-        - 'apex-run-deploy-test-baremetal-{stream}'
+        - 'apex-{scenario}-baremetal-{stream}'
         - 'apex-upload-snapshot'
         - 'apex-create-snapshot'
     # stream:    branch with - in place of / (eg. stable-arno)
@@ -27,6 +27,10 @@
             baremetal-slave: 'apex-baremetal-master'
             verify-scenario: 'os-odl-nofeature-ha'
             concurrent-builds: 3
+            scenario:
+              {%- for scenario in scenarios['master'] %}
+              - {{scenario}}
+              {%- endfor %}
 
         - danube:
             branch: 'stable/danube'
@@ -36,7 +40,11 @@
             baremetal-slave: 'apex-baremetal-danube'
             verify-scenario: 'os-odl_l3-nofeature-ha'
             concurrent-builds: 1
-            disabled: false
+            scenario:
+              {%- for scenario in scenarios['danube'] %}
+              - {{scenario}}
+              {%- endfor %}
+            disabled: true
 
     platform:
          - 'baremetal'
@@ -478,11 +486,6 @@
 - job-template:
     name: 'apex-deploy-{platform}-{stream}'
 
-    # Job template for virtual deployment
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
     node: 'apex-{platform}-{stream}'
 
     concurrent: true
@@ -536,13 +539,8 @@
 
 # Baremetal Deploy and Test
 - job-template:
-    name: 'apex-run-deploy-test-baremetal-{stream}'
+    name: 'apex-{scenario}-baremetal-{stream}'
 
-    # Job template for daily build
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
     project-type: 'multijob'
 
     disabled: false
@@ -560,7 +558,7 @@
             gs-pathname: '{gs-pathname}'
         - string:
             name: DEPLOY_SCENARIO
-            default: '{verify-scenario}'
+            default: '{scenario}'
             description: "Scenario to deploy with."
     properties:
         - logrotate-default
@@ -592,7 +590,7 @@
                   git-revision: false
         - multijob:
             name: Functest
-            condition: ALWAYS
+            condition: SUCCESSFUL
             projects:
                 - name: 'functest-apex-baremetal-daily-{stream}'
                   node-parameters: true
@@ -686,11 +684,10 @@
             condition: SUCCESSFUL
             projects:
 {% for scenario in scenarios[stream] %}
-                - name: 'apex-run-deploy-test-baremetal-{{ stream }}'
+                - name: 'apex-{{ scenario }}-baremetal-{{ stream }}'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO={{scenario}}
                     OPNFV_CLEAN=yes
                   kill-phase-on: NEVER
                   abort-all-job: true
@@ -1024,9 +1021,9 @@
 - trigger:
     name: 'apex-master'
     triggers:
-        - timed: '0 3 1 1 7'
+        - timed: '0 12 * * *'
 - trigger:
     name: 'apex-danube'
     triggers:
-        - timed: '0 12 * * *'
+        - timed: '0 3 1 1 7'
 
