@@ -208,6 +208,10 @@
 #            installer: apex
 #            <<: *master
 #--------------------------------
+        - ericsson-virtual-pod1bl01:
+            slave-label: '{pod}'
+            installer: fuel
+            <<: *master
 
     testsuite:
         - 'suite':
@@ -221,6 +225,46 @@
 ################################
 # job template
 ################################
+- job-template:
+    name: 'functest-alpine-daily-master'
+
+    concurrent: true
+
+    properties:
+        - logrotate-default
+        - throttle:
+            enabled: true
+            max-per-node: 1
+            option: 'project'
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER Suite: $FUNCTEST_SUITE_NAME Scenario: $DEPLOY_SCENARIO'
+        - timeout:
+            timeout: '{job-timeout}'
+            abort: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - '{installer}-defaults'
+        - '{slave-label}-defaults'
+        - 'functest-{testsuite}-parameter'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-odl_l2-nofeature-ha'
+        - functest-parameter:
+            gs-pathname: '{gs-pathname}'
+
+    scm:
+        - git-scm
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - 'functest-alpine-builder'
+
 - job-template:
     name: 'functest-{installer}-{pod}-{testsuite}-{stream}'
 
@@ -358,6 +402,12 @@
         - 'functest-suite'
         - 'functest-store-results'
         - 'functest-exit'
+
+- builder:
+    name: functest-alpine-daily-builder
+    builders:
+        - shell:
+            !include-raw: ./functest-alpine.sh
 
 - builder:
     name: functest-daily
