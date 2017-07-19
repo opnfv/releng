@@ -60,6 +60,12 @@ class GenericResultHandler(handlers.GenericApiHandler):
                 query[k] = v
             if date_range:
                 query['start_date'] = date_range
+
+            # if $lt is not provided,
+            # empty/None/null/'' start_date will also be returned
+            if 'start_date' in query and '$lt' not in query['start_date']:
+                query['start_date'].update({'$lt': str(datetime.now())})
+
         return query
 
 
