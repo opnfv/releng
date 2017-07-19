@@ -107,12 +107,15 @@ class GenericApiHandler(web.RequestHandler):
         per_page = kwargs.get('per_page', 0)
         if query is None:
             query = {}
-        cursor = self._eval_db(self.table, 'find', query)
-        records_count = yield cursor.count()
-        total_pages = self._calc_total_pages(records_count,
-                                             last,
-                                             page,
-                                             per_page)
+
+        total_pages = 0
+        if page > 0:
+            cursor = self._eval_db(self.table, 'find', query)
+            records_count = yield cursor.count()
+            total_pages = self._calc_total_pages(records_count,
+                                                 last,
+                                                 page,
+                                                 per_page)
         pipelines = self._set_pipelines(query, sort, last, page, per_page)
         cursor = self._eval_db(self.table,
                                'aggregate',
@@ -125,7 +128,7 @@ class GenericApiHandler(web.RequestHandler):
             res = {self.table: data}
         else:
             res = res_op(data, *args)
-        if total_pages > 0:
+        if page > 0:
             res.update({
                 'pagination': {
                     'current_page': kwargs.get('page'),
@@ -140,12 +143,10 @@ class GenericApiHandler(web.RequestHandler):
         if (records_count > last) and (last > 0):
             records_nr = last
 
-        total_pages = 0
-        if page > 0:
-            total_pages, remainder = divmod(records_nr, per_page)
-            if remainder > 0:
-                total_pages += 1
-        if page > total_pages:
+        total_pages, remainder = divmod(records_nr, per_page)
+        if remainder > 0:
+            total_pages += 1
+        if page > 1 and page > total_pages:
             raises.BadRequest(
                 'Request page > total_pages [{}]'.format(total_pages))
         return total_pages
