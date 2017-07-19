@@ -410,7 +410,10 @@
     name: functest-alpine-daily-builder
     builders:
         - shell:
-            !include-raw: ./functest-alpine.sh
+            !include-raw:
+                - ./functest-env-presetup.sh
+                - ../../utils/fetch_os_creds.sh
+                - ./functest-alpine.sh
 
 - builder:
     name: functest-daily
