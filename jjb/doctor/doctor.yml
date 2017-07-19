@@ -189,6 +189,11 @@
             #       so this symbolic link should not be in 'tests/'. Otherwise,
             #       we'll have the same log twice in jenkins console log.
             ln -sfn $HOME/opnfv/functest/results/{stream} functest_results
+            # NOTE: Get functest script in $WORKSPACE. This functest script is
+            #       needed to perform VM image download in set-functest-env.sh
+            #       from E release cycle.
+            mkdir -p functest/ci
+            wget https://git.opnfv.org/functest/plain/functest/ci/download_images.sh -O functest/ci/download_images.sh
         - 'functest-suite-builder'
         - shell: |
             functest_log="$HOME/opnfv/functest/results/{stream}/{project}.log"
