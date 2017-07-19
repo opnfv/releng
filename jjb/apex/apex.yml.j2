@@ -597,8 +597,60 @@
                   abort-all-job: true
                   git-revision: false
         - multijob:
-            name: Functest
+            name: 'OPNFV Test Suite'
             condition: SUCCESSFUL
+            projects:
+                - name: 'apex-testsuite-{scenario}-baremetal-{scenario_stream}'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+
+# Baremetal test job
+- job-template:
+    name: 'apex-testsuite-{scenario}-baremetal-{scenario_stream}'
+
+    project-type: 'multijob'
+
+    disabled: false
+
+    parameters:
+        - '{project}-defaults'
+        - '{project}-baremetal-{scenario_stream}-defaults'
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: '{scenario}'
+            description: "Scenario to deploy with."
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-verify.*'
+                - 'apex-runner.*'
+                - 'apex-.*-promote.*'
+                - 'apex-run.*'
+                - 'apex-testsuite-.+-baremetal-.+'
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+    builders:
+        - description-setter:
+            description: "Testing on $NODE_NAME - Scenario: $DEPLOY_SCENARIO"
+        - multijob:
+            name: Functest
+            condition: ALWAYS
             projects:
                 - name: 'functest-apex-baremetal-daily-{scenario_stream}'
                   node-parameters: true
@@ -620,6 +672,13 @@
                   kill-phase-on: NEVER
                   abort-all-job: false
                   git-revision: false
+        - conditional-step:
+            condition-kind: current-status
+            condition-worst: SUCCESS
+            condtion-best: SUCCESS
+            on-evaluation-failure: mark-unstable
+            steps:
+                - shell: 'echo "Tests Passed"'
 
 {% for stream in scenarios %}
 # {{ stream }} Daily
