@@ -70,10 +70,6 @@ if [[ $LAB_CONFIG_URL =~ ^(git|ssh):// ]]; then
     fi
 fi
 
-if [[ "$NODE_NAME" =~ "virtual" ]]; then
-    POD_NAME="virtual_kvm"
-fi
-
 # releng wants us to use nothing else but opnfv.iso for now. We comply.
 ISO_FILE=$WORKSPACE/opnfv.iso
 
