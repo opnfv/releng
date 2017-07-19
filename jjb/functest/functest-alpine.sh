@@ -66,6 +66,7 @@ for tier in ${tiers[@]}; do
     FUNCTEST_IMAGE=opnfv/functest-${tier}
     echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
     docker pull ${FUNCTEST_IMAGE}>/dev/null
-    cmd="docker run ${volumes} ${FUNCTEST_IMAGE}"
+    cmd="docker run ${envs} ${volumes} ${FUNCTEST_IMAGE}"
     echo "Running Functest tier '${tier}'. CMD: ${cmd}"
+    ${cmd}
 done
