@@ -7,6 +7,7 @@
     project: qtip
     jobs:
         - 'qtip-verify-{stream}'
+        - 'qtip-review-notebook-{stream}'
         - 'qtip-merge-{stream}'
     stream:
         - master:
@@ -61,9 +62,50 @@
 
     builders:
         - qtip-unit-tests-and-docs-build
-        - upload-under-review-notebooks-to-opnfv-artifacts
     publishers:
         - publish-coverage
+
+# upload juypter notebook to artifacts for review
+- job-template:
+    name: 'qtip-review-notebook-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                disable-strict-forbidden-file-verification: 'true'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'examples/**'
+    builders:
+        - upload-under-review-notebooks-to-opnfv-artifacts
+        - report-build-result-to-gerrit
 
 - job-template:
     name: 'qtip-merge-{stream}'
@@ -146,7 +188,7 @@
 
             mkdir -p upload
             cp -r examples "$local_path"
-            gsutil -m cp -r "$local_path" "gs://$gs_base"
+            gsutil -m cp -r "$local_path" "gs://$gs_base/"
 
             echo "Document link(s):" >> gerrit_comment.txt
             find "$local_path" | grep -e 'ipynb$' | \
