@@ -33,8 +33,14 @@ echo "Functest: Start Docker and prepare environment"
 
 echo "Functest: Download images that will be used by test cases"
 images_dir="${HOME}/opnfv/functest/images"
-chmod +x ${WORKSPACE}/functest/ci/download_images.sh
-${WORKSPACE}/functest/ci/download_images.sh ${images_dir} ${DEPLOY_SCENARIO} ${HOST_ARCH} 2> ${redirect}
+download_script=${WORKSPACE}/functest/ci/download_images.sh
+if [[ ! -f ${download_script} ]]; then
+    # to support Danube as well
+    wget https://git.opnfv.org/functest/plain/functest/ci/download_images.sh -O ${download_script} 2> ${redirect}
+fi
+chmod +x ${download_script}
+${download_script} ${images_dir} ${DEPLOY_SCENARIO} ${HOST_ARCH} 2> ${redirect}
+
 images_vol="-v ${images_dir}:${FUNCTEST_DIR}/images"
 
 dir_result="${HOME}/opnfv/functest/results/${BRANCH##*/}"
