@@ -62,6 +62,7 @@
     builders:
         - qtip-unit-tests-and-docs-build
         - upload-under-review-notebooks-to-opnfv-artifacts
+        - report-build-result-to-gerrit
     publishers:
         - publish-coverage
 
@@ -146,7 +147,7 @@
 
             mkdir -p upload
             cp -r examples "$local_path"
-            gsutil -m cp -r "$local_path" "gs://$gs_base"
+            gsutil -m cp -r "$local_path" "gs://$gs_base/"
 
             echo "Document link(s):" >> gerrit_comment.txt
             find "$local_path" | grep -e 'ipynb$' | \
