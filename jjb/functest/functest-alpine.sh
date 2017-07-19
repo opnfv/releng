@@ -68,4 +68,5 @@ for tier in ${tiers[@]}; do
     docker pull ${FUNCTEST_IMAGE}>/dev/null
     cmd="docker run ${volumes} ${FUNCTEST_IMAGE}"
     echo "Running Functest tier '${tier}'. CMD: ${cmd}"
+    ${cmd}
 done
