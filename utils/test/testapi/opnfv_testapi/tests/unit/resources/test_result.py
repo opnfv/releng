@@ -256,9 +256,9 @@ class TestResultGet(TestResultBase):
     def test_queryPeriodNotInt(self):
         return self._set_query('period=a')
 
-    @executor.query(httplib.OK, '_query_last_one', 1)
+    @executor.query(httplib.OK, '_query_period_one', 1)
     def test_queryPeriodSuccess(self):
-        return self._set_query('period=1')
+        return self._set_query('period=11')
 
     @executor.query(httplib.BAD_REQUEST, message.must_int('last'))
     def test_queryLastNotInt(self):
@@ -268,7 +268,7 @@ class TestResultGet(TestResultBase):
     def test_queryLast(self):
         return self._set_query('last=1')
 
-    @executor.query(httplib.OK, '_query_last_one', 1)
+    @executor.query(httplib.OK, '_query_period_one', 1)
     def test_combination(self):
         return self._set_query('pod',
                                'project',
@@ -279,7 +279,7 @@ class TestResultGet(TestResultBase):
                                'scenario',
                                'trust_indicator',
                                'criteria',
-                               'period=1')
+                               'period=11')
 
     @executor.query(httplib.OK, '_query_success', 0)
     def test_notFound(self):
@@ -294,12 +294,30 @@ class TestResultGet(TestResultBase):
                                'criteria',
                                'period=1')
 
+    @executor.query(httplib.OK, '_query_success', 1)
+    def test_filterErrorStartdate(self):
+        self._create_error_start_date(None)
+        # self._create_error_start_date('None')
+        self._create_error_start_date('null')
+        self._create_error_start_date('')
+        return self._set_query('period=11')
+
     def _query_success(self, body, number):
         self.assertEqual(number, len(body.results))
 
     def _query_last_one(self, body, number):
         self.assertEqual(number, len(body.results))
         self.assert_res(body.results[0], self.req_10d_later)
+
+    def _query_period_one(self, body, number):
+        self.assertEqual(number, len(body.results))
+        self.assert_res(body.results[0], self.req_10d_before)
+
+    def _create_error_start_date(self, start_date):
+        req = copy.deepcopy(self.req_d)
+        req.start_date = start_date
+        self.create(req)
+        return req
 
     def _create_changed_date(self, **kwargs):
         req = copy.deepcopy(self.req_d)

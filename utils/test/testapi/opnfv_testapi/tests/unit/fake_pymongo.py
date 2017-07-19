@@ -119,10 +119,14 @@ class MemDb(object):
 
     @staticmethod
     def _compare_date(spec, value):
+        gte = True
+        lt = False
         for k, v in spec.iteritems():
-            if k == '$gte' and value >= v:
-                return True
-        return False
+            if k == '$gte' and value < v:
+                gte = False
+            elif k == '$lt' and value < v:
+                lt = True
+        return gte and lt
 
     def _in(self, content, *args):
         if self.name == 'scenarios':
