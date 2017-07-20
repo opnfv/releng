@@ -66,7 +66,7 @@ class GenericResultHandler(handlers.GenericApiHandler):
                     del query['public']
                     if role != "reviewer":
                         query['user'] = openid
-            elif k != 'last' and k != 'page':
+            elif k not in ['last', 'page', 'descend']:
                 query[k] = v
             if date_range:
                 query['start_date'] = date_range
@@ -167,18 +167,27 @@ class ResultsCLHandler(GenericResultHandler):
             @type signed: L{string}
             @in signed: query
             @required signed: False
+            @param descend: true, newest2oldest; false, oldest2newest
+            @type descend: L{string}
+            @in descend: query
+            @required descend: False
         """
-        limitations = {'sort': {'_id': -1}}
-        last = self.get_query_argument('last', 0)
-        if last is not None:
-            last = self.get_int('last', last)
-            limitations.update({'last': last})
+        def descend_limit():
+            descend = self.get_query_argument('descend', 'true')
+            return -1 if descend.lower() == 'true' else 1
 
-        page = self.get_query_argument('page', None)
-        if page is not None:
-            page = self.get_int('page', page)
-            limitations.update({'page': page,
-                                'per_page': CONF.api_results_per_page})
+        def last_limit():
+            return self.get_int('last', self.get_query_argument('last', 0))
+
+        def page_limit():
+            return self.get_int('page', self.get_query_argument('page', 0))
+
+        limitations = {
+            'sort': {'_id': descend_limit()},
+            'last': last_limit(),
+            'page': page_limit(),
+            'per_page': CONF.api_results_per_page
+        }
 
         self._list(query=self.set_query(), **limitations)
 
