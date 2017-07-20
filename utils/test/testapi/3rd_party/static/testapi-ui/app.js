@@ -54,8 +54,8 @@
                 controller: 'ResultsController as ctrl'
             }).
             state('userResults', {
-                url: 'user_results',
-                templateUrl: '/testapi-ui/components/results/results.html',
+                url: '/user_results',
+                templateUrl: 'testapi-ui/components/results/results.html',
                 controller: 'ResultsController as ctrl'
             }).
             state('resultsDetail', {
@@ -66,7 +66,7 @@
             }).
             state('profile', {
                 url: '/profile',
-                templateUrl: '/testapi-ui/components/profile/profile.html',
+                templateUrl: 'testapi-ui/components/profile/profile.html',
                 controller: 'ProfileController as ctrl'
             }).
             state('authFailure', {
