@@ -106,7 +106,7 @@ git clone https://gerrit.opnfv.org/gerrit/releng $WORKSPACE/releng
 
 # checkout the patch
 cd $CLONE_LOCATION
-git fetch $PROJECT_REPO $GERRIT_REFSPEC && sudo git checkout FETCH_HEAD
+git fetch $PROJECT_REPO ${GERRIT_REFSPEC:-${GERRIT_BRANCH}} && sudo git checkout FETCH_HEAD
 
 # combine opnfv and upstream scripts/playbooks
 /bin/cp -rf $WORKSPACE/releng/prototypes/bifrost/* $WORKSPACE/bifrost/
