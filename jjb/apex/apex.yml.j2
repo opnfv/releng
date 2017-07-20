@@ -694,6 +694,23 @@
             on-evaluation-failure: mark-unstable
             steps:
                 - shell: 'echo "Tests Passed"'
+# Build status is always success due conditional plugin prefetching
+# build status before multijob phases execute
+#        - conditional-step:
+#            condition-kind: current-status
+#            condition-worst: SUCCESS
+#            condtion-best: SUCCESS
+#            on-evaluation-failure: mark-unstable
+#            steps:
+#                - shell: 'echo "Tests Passed"'
+
+    publishers:
+        - groovy-postbuild:
+            script: |
+                import hudson.model.*
+                if (manager.build.@result == hudson.model.Result.FAILURE) {
+                  manager.build.@result = hudson.model.Result.UNSTABLE
+                }
 
 {% for stream in scenarios %}
 # {{ stream }} Daily
