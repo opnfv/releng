@@ -11,30 +11,14 @@
         branch: '{stream}'
         gs-pathname: ''
         disabled: false
-    danube: &danube
-        stream: danube
-        branch: 'stable/{stream}'
-        gs-pathname: '/{stream}'
-        disabled: false
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
 # CI POD's
 #--------------------------------
-#        danube
-#--------------------------------
-    pod:
-        - armband-baremetal:
-            slave-label: armband-baremetal
-            installer: fuel
-            <<: *danube
-        - armband-virtual:
-            slave-label: armband-virtual
-            installer: fuel
-            <<: *danube
-#--------------------------------
 #        master
 #--------------------------------
+    pod:
         - armband-baremetal:
             slave-label: armband-baremetal
             installer: fuel
@@ -45,25 +29,6 @@
             <<: *master
 #--------------------------------
 # NONE-CI POD's
-#--------------------------------
-#        danube
-#--------------------------------
-        - arm-pod2:
-            slave-label: arm-pod2
-            installer: fuel
-            <<: *danube
-        - arm-pod3:
-            slave-label: arm-pod3
-            installer: fuel
-            <<: *danube
-        - arm-pod4:
-            slave-label: arm-pod4
-            installer: fuel
-            <<: *danube
-        - arm-virtual1:
-            slave-label: arm-virtual1
-            installer: fuel
-            <<: *danube
 #--------------------------------
 #        master
 #--------------------------------
@@ -319,31 +284,31 @@
 - trigger:
     name: 'fuel-os-odl_l2-nofeature-ha-armband-baremetal-danube-trigger'
     triggers:
-        - timed: '0 0,16 * * 2,4'
+        - timed: ''
 - trigger:
     name: 'fuel-os-nosdn-nofeature-ha-armband-baremetal-danube-trigger'
     triggers:
-        - timed: '0 0 * * 1,5,7'
+        - timed: ''
 - trigger:
     name: 'fuel-os-odl_l2-bgpvpn-ha-armband-baremetal-danube-trigger'
     triggers:
-        - timed: '0 16 * * 1,5,7'
+        - timed: ''
 - trigger:
     name: 'fuel-os-odl_l3-nofeature-ha-armband-baremetal-danube-trigger'
     triggers:
-        - timed: '0 8 * * 2,4,6'
+        - timed: ''
 - trigger:
     name: 'fuel-os-odl_l2-nofeature-noha-armband-baremetal-danube-trigger'
     triggers:
-        - timed: '0 8 * * 1,3,5,7'
+        - timed: ''
 - trigger:
     name: 'fuel-os-odl_l2-sfc-ha-armband-baremetal-danube-trigger'
     triggers:
-        - timed: '0 0 * * 3,6'
+        - timed: ''
 - trigger:
     name: 'fuel-os-odl_l2-sfc-noha-armband-baremetal-danube-trigger'
     triggers:
-        - timed: '0 16 * * 3,6'
+        - timed: ''
 #---------------------------------------------------------------
 # Enea Armband CI Virtual Triggers running against master branch
 #---------------------------------------------------------------
