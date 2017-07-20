@@ -1,0 +1,98 @@
+###################################
+# job configuration for orchestra
+###################################
+- project:
+    name: 'orchestra-daily-jobs'
+
+    project: 'orchestra'
+
+#--------------------------------
+# BRANCH ANCHORS
+#--------------------------------
+    master: &master
+        stream: master
+        branch: '{stream}'
+        gs-pathname: ''
+        disabled: false
+
+#-------------------------------------------------------
+# POD, INSTALLER, AND BRANCH MAPPING
+#-------------------------------------------------------
+    pod:
+        - virtual:
+            slave-label: 'joid-virtual'
+            os-version: 'xenial'
+            <<: *master
+
+    jobs:
+        - 'orchestra-{pod}-daily-{stream}'
+
+################################
+# job template
+################################
+- job-template:
+    name: 'orchestra-{pod}-daily-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    properties:
+        - logrotate-default
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+            option: 'project'
+
+    scm:
+        - git-scm
+
+    wrappers:
+        - ssh-agent-wrapper
+
+        - timeout:
+            timeout: 240
+            fail: true
+
+    triggers:
+         - timed: '@midnight'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: os-nosdn-openbaton-ha
+        - '{slave-label}-defaults'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: deploy
+            condition: SUCCESSFUL
+            projects:
+                - name: 'joid-deploy-{pod}-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    DEPLOY_SCENARIO=os-nosdn-openbaton-ha
+                    COMPASS_OS_VERSION=xenial
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: functest
+            condition: SUCCESSFUL
+            projects:
+                - name: 'functest-joid-{pod}-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    DEPLOY_SCENARIO=os-nosdn-openbaton-ha
+                    FUNCTEST_SUITE_NAME=orchestra_ims
+                  node-parameters: true
+                  kill-phase-on: NEVER
+                  abort-all-job: true
