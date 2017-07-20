@@ -694,6 +694,20 @@
             on-evaluation-failure: mark-unstable
             steps:
                 - shell: 'echo "Tests Passed"'
+# Build status is always success due conditional plugin prefetching
+# build status before multijob phases execute
+#        - conditional-step:
+#            condition-kind: current-status
+#            condition-worst: SUCCESS
+#            condtion-best: SUCCESS
+#            on-evaluation-failure: mark-unstable
+#            steps:
+#                - shell: 'echo "Tests Passed"'
+
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw-escape: ./update-build-result.groovy
 
 {% for stream in scenarios %}
 # {{ stream }} Daily
