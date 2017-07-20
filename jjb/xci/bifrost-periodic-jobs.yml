@@ -1,103 +1,98 @@
+# IMPORTANT: This file is based on the bifrost-verify-jobs.yml one so try to keep it in sync if possible
 - project:
-    project: 'releng-xci'
-
-    name: 'bifrost-periodic'
+    name: 'openstack-bifrost-periodic'
 #--------------------------------
-# Branch Anchors
+# branches
 #--------------------------------
-# the versions stated here default to branches which then later
-# on used for checking out the branches, pulling in head of the branch.
-    master: &master
-        stream: master
-        openstack-bifrost-version: '{stream}'
-        opnfv-releng-version: 'master'
-        gs-pathname: ''
-    ocata: &ocata
-        stream: ocata
-        openstack-bifrost-version: 'stable/{stream}'
-        opnfv-releng-version: 'master'
-        gs-pathname: '/{stream}'
+    stream:
+        - master:
+            branch: '{stream}'
 #--------------------------------
-#        XCI PODs
+# projects
 #--------------------------------
-    pod:
-        - virtual:
-            <<: *master
-        - virtual:
-            <<: *ocata
+    project:
+        - 'openstack':
+            project-repo: 'https://git.openstack.org/openstack/bifrost'
+            clone-location: '$WORKSPACE/bifrost'
+        - 'opnfv':
+            project-repo: 'https://gerrit.opnfv.org/gerrit/releng-xci'
+            clone-location: '$WORKSPACE/releng-xci'
 #--------------------------------
-# XCI PODs
-#--------------------------------
-#--------------------------------
-# Supported Distros
+# distros
 #--------------------------------
     distro:
         - 'xenial':
             disabled: false
-            slave-label: xci-xenial-virtual
             dib-os-release: 'xenial'
             dib-os-element: 'ubuntu-minimal'
-            dib-os-packages: 'vlan,vim,less,bridge-utils,sudo,language-pack-en,iputils-ping,rsyslog,curl,python,debootstrap,ifenslave,ifenslave-2.6,lsof,lvm2,tcpdump,nfs-kernel-server,chrony,iptables'
+            dib-os-packages: 'vlan,vim,less,bridge-utils,language-pack-en,iputils-ping,rsyslog,curl'
             extra-dib-elements: 'openssh-server'
         - 'centos7':
-            disabled: true
-            slave-label: xci-centos7-virtual
+            disabled: false
             dib-os-release: '7'
-            dib-os-element: 'centos7'
+            dib-os-element: 'centos-minimal'
             dib-os-packages: 'vim,less,bridge-utils,iputils,rsyslog,curl'
             extra-dib-elements: 'openssh-server'
         - 'suse':
-            disabled: true
-            slave-label: xci-suse-virtual
+            disabled: false
             dib-os-release: '42.2'
             dib-os-element: 'opensuse-minimal'
             dib-os-packages: 'vim,less,bridge-utils,iputils,rsyslog,curl'
             extra-dib-elements: 'openssh-server'
-
+#--------------------------------
+# type
+#--------------------------------
+    type:
+        - virtual
 #--------------------------------
 # jobs
 #--------------------------------
     jobs:
-        - 'bifrost-provision-{pod}-{distro}-periodic-{stream}'
+        - '{project}-bifrost-periodic-{distro}-{type}-{stream}'
+
+#--------------------------------
+# VM defaults
+#--------------------------------
+- defaults:
+    name: periodic_vm_defaults
+    test-vm-num-nodes: '3'
+    test-vm-node-names: 'opnfv controller00 compute00'
+    vm-domain-type: 'kvm'
+    vm-cpu: '2'
+    vm-disk: '30'
+    vm-memory-size: '4096'
+    vm-disk-cache: 'unsafe'
 
 #--------------------------------
 # job templates
 #--------------------------------
 - job-template:
-    name: 'bifrost-provision-{pod}-{distro}-periodic-{stream}'
+    name: '{project}-bifrost-periodic-{distro}-{type}-{stream}'
 
     disabled: '{obj:disabled}'
+
+    defaults: periodic_vm_defaults
 
     concurrent: false
 
     properties:
+        - logrotate-default
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - '^xci-os.*'
-                - '^xci-deploy.*'
-                - '^xci-functest.*'
-                - '^bifrost-.*periodic.*'
-                - '^osa-.*periodic.*'
+                - '.*-bifrost-verify.*-{type}'
             block-level: 'NODE'
-        - logrotate-default
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{opnfv-releng-version}'
         - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            name: PROJECT
+            default: '{project}'
         - string:
-            name: XCI_FLAVOR
-            default: 'ha'
+            name: PROJECT_REPO
+            default: '{project-repo}'
         - string:
-            name: OPENSTACK_BIFROST_VERSION
-            default: '{openstack-bifrost-version}'
-        - string:
-            name: OPNFV_RELENG_VERSION
-            default: '{opnfv-releng-version}'
+            name: CLONE_LOCATION
+            default: '{clone-location}'
         - string:
             name: DISTRO
             default: '{distro}'
@@ -108,45 +103,145 @@
             name: DIB_OS_ELEMENT
             default: '{dib-os-element}'
         - string:
+            name: EXTRA_DIB_ELEMENTS
+            default: '{extra-dib-elements}'
+        - string:
             name: DIB_OS_PACKAGES
             default: '{dib-os-packages}'
         - string:
-            name: EXTRA_DIB_ELEMENTS
-            default: '{extra-dib-elements}'
+            name: TEST_VM_NUM_NODES
+            default: '{test-vm-num-nodes}'
+        - string:
+            name: TEST_VM_NODE_NAMES
+            default: '{test-vm-node-names}'
+        - string:
+            name: VM_DOMAIN_TYPE
+            default: '{vm-domain-type}'
+        - string:
+            name: VM_CPU
+            default: '{vm-cpu}'
+        - string:
+            name: VM_DISK
+            default: '{vm-disk}'
+        - string:
+            name: VM_MEMORY_SIZE
+            default: '{vm-memory-size}'
+        - string:
+            name: VM_DISK_CACHE
+            default: '{vm-disk-cache}'
         - string:
             name: CLEAN_DIB_IMAGES
             default: 'true'
         - label:
             name: SLAVE_LABEL
-            default: '{slave-label}'
+            default: 'infra-{type}-{distro}'
+        - string:
+            name: BIFROST_LOG_URL
+            default: 'http://artifacts.opnfv.org/cross-community-ci/openstack/bifrost/periodic/$JOB_NAME'
         - string:
             name: ANSIBLE_VERBOSITY
-            default: ''
+            default: '-vvvv'
         - string:
             name: XCI_LOOP
-            default: 'periodic'
+            default: 'verify'
+
+    scm:
+        - git:
+            url: '$PROJECT_REPO'
+            branches:
+                - 'origin/$BRANCH'
+            skip-tag: true
+            timeout: 10
+            wipe-workspace: true
+
+    triggers:
+        - '{project}-gerrit-trigger':
+            branch: '{branch}'
+
+    builders:
+        - bifrost-set-name
+        - bifrost-build
 
     wrappers:
         - fix-workspace-permissions
+        - build-timeout:
+            timeout: 90
 
-    scm:
-        - git-scm
-
-    # trigger is disabled until we know which jobs we will have
-    # and adjust stuff accordingly
+    publishers:
+        - email:
+            recipients: fatih.degirmenci@ericsson.com yroblamo@redhat.com mchandras@suse.de jack.morgan@intel.com julienjut@gmail.com
+        - email-jenkins-admins-on-failure
+#--------------------------------
+# trigger macros
+#--------------------------------
+- trigger:
+    name: 'openstack-gerrit-trigger'
     triggers:
-        - timed: ''  # '@midnight'
-
-    builders:
-        - description-setter:
-            description: "Built on $NODE_NAME - Flavor: $XCI_FLAVOR"
-        - 'bifrost-provision-builder'
+        - gerrit:
+            server-name: 'review.openstack.org'
+            escape-quotes: true
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+            custom-url: '* $JOB_NAME $BIFROST_LOG_URL/index.html'
+            silent-start: true
+            projects:
+              - project-compare-type: 'PLAIN'
+                project-pattern: 'openstack/bifrost'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                disable-strict-forbidden-file-verification: 'true'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'doc/**'
+                  - compare-type: ANT
+                    pattern: 'releasenotes/**'
+                disable-strict-forbidden-file-verification: 'true'
+            readable-message: true
+- trigger:
+    name: 'opnfv-gerrit-trigger'
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            custom-url: '* $JOB_NAME $BIFROST_LOG_URL/index.html'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'releng-xci'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'bifrost/**'
+            readable-message: true
+        - timed: "@midnight"
 
 #---------------------------
 # builder macros
 #---------------------------
 - builder:
-    name: bifrost-provision-builder
+    name: bifrost-set-name
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+
+- builder:
+    name: bifrost-build
     builders:
         - shell:
-            !include-raw: ./bifrost-provision.sh
+            !include-raw: ./bifrost-verify.sh
