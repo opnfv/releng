@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -24,6 +24,8 @@ function JOBS {
 
 # We expect job_output to exist prior to this being run and contain the
 # output from jenkins-jobs test
+
+source /opt/virtualenv/jenkins-job-builder/bin/activate
 
 echo "> Generating list of previous JJB jobs..."
 git checkout -q -b previous-commit HEAD^
