@@ -61,9 +61,9 @@ class TestResultBase(base.TestBase):
         self.scenario = 'odl-l2'
         self.criteria = 'passed'
         self.trust_indicator = result_models.TI(0.7)
-        self.start_date = "2016-05-23 07:16:09.477097"
-        self.stop_date = "2016-05-23 07:16:19.477097"
-        self.update_date = "2016-05-24 07:16:19.477097"
+        self.start_date = str(datetime.now())
+        self.stop_date = str(datetime.now() + timedelta(minutes=1))
+        self.update_date = str(datetime.now() + timedelta(days=1))
         self.update_step = -0.05
         super(TestResultBase, self).setUp()
         self.details = Details(timestart='0', duration='9s', status='OK')
@@ -275,7 +275,7 @@ class TestResultGet(TestResultBase):
 
     @executor.query(httplib.OK, '_query_period_one', 1)
     def test_queryPeriodSuccess(self):
-        return self._set_query('period=11')
+        return self._set_query('period=5')
 
     @executor.query(httplib.BAD_REQUEST, message.must_int('last'))
     def test_queryLastNotInt(self):
@@ -306,7 +306,7 @@ class TestResultGet(TestResultBase):
                                'scenario',
                                'trust_indicator',
                                'criteria',
-                               'period=11')
+                               'period=5')
 
     @executor.query(httplib.OK, '_query_success', 0)
     def test_notFound(self):
@@ -324,10 +324,10 @@ class TestResultGet(TestResultBase):
     @executor.query(httplib.OK, '_query_success', 1)
     def test_filterErrorStartdate(self):
         self._create_error_start_date(None)
-        # self._create_error_start_date('None')
+        self._create_error_start_date('None')
         self._create_error_start_date('null')
         self._create_error_start_date('')
-        return self._set_query('period=11')
+        return self._set_query('period=5')
 
     def _query_success(self, body, number):
         self.assertEqual(number, len(body.results))
@@ -338,7 +338,7 @@ class TestResultGet(TestResultBase):
 
     def _query_period_one(self, body, number):
         self.assertEqual(number, len(body.results))
-        self.assert_res(body.results[0], self.req_10d_before)
+        self.assert_res(body.results[0], self.req_d)
 
     def _create_error_start_date(self, start_date):
         req = copy.deepcopy(self.req_d)
