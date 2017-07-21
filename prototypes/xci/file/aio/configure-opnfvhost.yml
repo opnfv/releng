@@ -16,7 +16,6 @@
       command: "/bin/bash ./scripts/bootstrap-aio.sh"
       args:
         chdir: "{{OPENSTACK_OSA_PATH}}"
-    - name: install OpenStack on opnfv host - this command doesn't log anything to console
-      command: "/bin/bash ./scripts/run-playbooks.sh"
-      args:
-        chdir: "{{OPENSTACK_OSA_PATH}}"
+    - include "{{ OPENSTACK_OSA_PATH }}"/setup-hosts.yml
+    - include "{{ OPENSTACK_OSA_PATH }}"/setup-infrastructure.yml
+    - include "{{ OPENSTACK_OSA_PATH }}"/setup-openstack.yml
