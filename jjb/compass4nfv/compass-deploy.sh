@@ -6,24 +6,23 @@ echo "Starting the deployment on baremetal environment using $INSTALLER_TYPE. Th
 echo "--------------------------------------------------------"
 echo
 
-# source the properties file so we get OPNFV vars
-source $BUILD_DIRECTORY/latest.properties
-
-# echo the info about artifact that is used during the deployment
-echo "Using ${OPNFV_ARTIFACT_URL/*\/} for deployment"
-
-if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
-    # for none-merge deployments
-    # checkout the commit that was used for building the downloaded artifact
-    # to make sure the ISO and deployment mechanism uses same versions
-    echo "Checking out $OPNFV_GIT_SHA1"
-    git checkout $OPNFV_GIT_SHA1 --quiet
-fi
-
 echo 1 > /proc/sys/vm/drop_caches
 
 export CONFDIR=$WORKSPACE/deploy/conf
 if [[ "$BRANCH" = 'stable/danube' ]]; then
+    # source the properties file so we get OPNFV vars
+    source $BUILD_DIRECTORY/latest.properties
+    # echo the info about artifact that is used during the deployment
+    echo "Using ${OPNFV_ARTIFACT_URL/*\/} for deployment"
+
+    if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
+        # for none-merge deployments
+        # checkout the commit that was used for building the downloaded artifact
+        # to make sure the ISO and deployment mechanism uses same versions
+        echo "Checking out $OPNFV_GIT_SHA1"
+        git checkout $OPNFV_GIT_SHA1 --quiet
+    fi
+
     export ISO_URL=file://$BUILD_DIRECTORY/compass.iso
 else
     export ISO_URL=file://$BUILD_DIRECTORY/compass.tar.gz
