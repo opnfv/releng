@@ -1,0 +1,51 @@
+- project:
+    name: ovn4nfv
+
+    project: '{name}'
+
+
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+
+    jobs:
+        - 'ovn4nfv-build-{stream}'
+
+- job-template:
+    name: 'ovn4nfv-build-{stream}'
+
+    concurrent: true
+
+    disabled: '{obj:disabled}'
+
+    properties:
+        - logrotate-default
+        - throttle:
+            enabled: true
+            max-total: 1
+            max-per-node: 1
+            option: 'project'
+
+    parametert:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+
+    scm:
+        - git-scm
+
+    triggers:
+        - timed: 'H 23 * * *'
+
+    builders:
+        - 'ovn4nfv-build-macro'
+
+- builder:
+    name: 'ovn4nfv-build-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "hello world"
