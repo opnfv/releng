@@ -290,10 +290,28 @@
     builders:
         - description-setter:
             description: "POD: $NODE_NAME"
-        - shell:
-            !include-raw-escape: ./compass-download-artifact.sh
-        - shell:
-            !include-raw-escape: ./compass-deploy.sh
+        - conditional-step:
+            condition-kind: regex-match
+            regex: master
+            label: '{stream}'
+            steps:
+                - shell:
+                    !include-raw-escape: ./compass-build.sh
+                - shell:
+                    !include-raw-escape: ./compass-deploy.sh
+    builders:
+        - description-setter:
+            description: "POD: $NODE_NAME"
+        - conditional-step:
+            condition-kind: regex-match
+            regex: danube
+            label: '{stream}'
+            steps:
+                - shell:
+                    !include-raw-escape: ./compass-download-artifact.sh
+                - shell:
+                    !include-raw-escape: ./compass-deploy.sh
+
 
 ########################
 # parameter macros
