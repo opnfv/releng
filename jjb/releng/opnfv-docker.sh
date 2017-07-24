@@ -54,7 +54,7 @@ if [[ -n "$(docker images | grep $DOCKER_REPO_NAME)" ]]; then
     done
 fi
 
-cd $WORKSPACE/docker
+cd $WORKSPACE/$DOCKER_DIR
 HOST_ARCH=$(uname -m)
 if [ ! -f "${DOCKERFILE}" ]; then
     # If this is expected to be a Dockerfile for other arch than x86
