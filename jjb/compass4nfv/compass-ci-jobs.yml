@@ -10,12 +10,14 @@
         stream: master
         branch: '{stream}'
         gs-pathname: ''
+        ppa-pathname: '/{stream}'
         disabled: false
         openstack-version: ocata
     danube: &danube
         stream: danube
         branch: 'stable/{stream}'
         gs-pathname: '/{stream}'
+        ppa-pathname: '/{stream}'
         disabled: false
         openstack-version: newton
 #--------------------------------
@@ -118,6 +120,7 @@
         - compass-ci-parameter:
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
+            ppa-pathname: '{ppa-pathname}'
         - string:
             name: DEPLOY_SCENARIO
             default: '{scenario}'
@@ -281,6 +284,7 @@
         - compass-ci-parameter:
             installer: '{installer}'
             gs-pathname: '{gs-pathname}'
+            ppa-pathname: '{ppa-pathname}'
         - '{slave-label}-defaults'
         - '{installer}-defaults'
 
@@ -324,6 +328,16 @@
             name: GS_URL
             default: '$GS_BASE{gs-pathname}'
             description: "URL to Google Storage."
+        - string:
+            name: CACHE_DIRECTORY
+            default: "$HOME/opnfv/cache/$PROJECT{gs-pathname}"
+            description: "Directory where the cache to be used during the build is located."
+        - string:
+            name: PPA_REPO
+            default: "http://artifacts.opnfv.org/compass4nfv/package{ppa-pathname}"
+        - string:
+            name: PPA_CACHE
+            default: "$WORKSPACE/work/repo/"
 
 ########################
 # trigger macros
