@@ -63,6 +63,15 @@ echo "-------------------------------------------------------------------------"
 #-------------------------------------------------------------------------------
 source file/install-ansible.sh
 
+# There is no CentOS or openSUSE support at all
+if [[ $OS_FAMILY != Debian ]]; then
+    echo ""
+    echo "Error: Sorry, only Ubuntu hosts are supported for now!"
+    echo "Error: CentOS7 and openSUSE Leap support is still work in progress."
+    echo ""
+    exit 1
+fi
+
 # TODO: The xci playbooks can be put into a playbook which will be done later.
 
 #-------------------------------------------------------------------------------
