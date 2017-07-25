@@ -66,7 +66,7 @@
         - 'os-ocl-nofeature-ha':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
-        - 'os-onos-sfc-ha':
+        - 'os-odl-sfc-ha':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
         - 'os-odl_l2-moon-ha':
@@ -76,6 +76,12 @@
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
         - 'os-nosdn-openo-ha':
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
+        - 'os-nosdn-dpdk-ha':
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
+        - 'k8s-os-nosdn-nofeature-ha':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
 
@@ -404,9 +410,9 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-sfc-ha-baremetal-master-trigger'
+    name: 'compass-os-odl-sfc-ha-baremetal-master-trigger'
     triggers:
-        - timed: ''
+        - timed: '0 4 * * *'
 - trigger:
     name: 'compass-os-odl_l2-moon-ha-baremetal-master-trigger'
     triggers:
@@ -415,6 +421,15 @@
     name: 'compass-os-nosdn-kvm-ha-baremetal-master-trigger'
     triggers:
         - timed: '0 14 * * *'
+- trigger:
+    name: 'compass-os-nosdn-dpdk-ha-baremetal-master-trigger'
+    triggers:
+        - timed: '0 16 * * *'
+- trigger:
+    name: 'compass-k8s-os-nosdn-nofeature-ha-baremetal-master-trigger'
+    triggers:
+        - timed: '0 20 * * *'
+
 
 - trigger:
     name: 'compass-os-nosdn-nofeature-ha-baremetal-danube-trigger'
@@ -478,9 +493,9 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-onos-sfc-ha-virtual-master-trigger'
+    name: 'compass-os-odl-sfc-ha-virtual-master-trigger'
     triggers:
-        - timed: ''
+        - timed: '0 16 * * *'
 - trigger:
     name: 'compass-os-odl_l2-moon-ha-virtual-master-trigger'
     triggers:
@@ -489,6 +504,14 @@
     name: 'compass-os-nosdn-kvm-ha-virtual-master-trigger'
     triggers:
         - timed: '0 23 * * *'
+- trigger:
+    name: 'compass-os-nosdn-dpdk-ha-virtual-master-trigger'
+    triggers:
+        - timed: '0 17 * * *'
+- trigger:
+    name: 'compass-k8s-os-nosdn-nofeature-ha-virtual-master-trigger'
+    triggers:
+        - timed: '0 18 * * *'
 
 - trigger:
     name: 'compass-os-nosdn-nofeature-ha-virtual-danube-trigger'
