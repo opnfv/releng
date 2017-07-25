@@ -3,6 +3,7 @@ set -e
 [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 
 rc_file_vol=""
+cacert_file_vol=""
 sshkey=""
 
 if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
@@ -23,6 +24,10 @@ if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     rc_file_vol="-v $LAB_CONFIG/admin-openrc:/etc/yardstick/openstack.creds"
     # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
     # replace the default one by the customized one provided by jenkins config
+elif [[ ${INSTALLER_TYPE} == 'compass' && ${BRANCH} == 'master' ]]; then
+    cacert_file_vol="-v ${HOME}/os_cacert:/etc/yardstick/os_cacert"
+    echo "export OS_CACERT=/etc/yardstick/os_cacert" >> ${HOME}/opnfv-openrc.sh
+    rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/etc/yardstick/openstack.creds"
 else
     rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/etc/yardstick/openstack.creds"
 fi
@@ -50,7 +55,7 @@ sudo rm -rf ${dir_result}/*
 map_log_dir="-v ${dir_result}:/tmp/yardstick"
 
 # Run docker
-cmd="sudo docker run ${opts} ${envs} ${rc_file_vol} ${map_log_dir} ${sshkey} opnfv/yardstick:${DOCKER_TAG} \
+cmd="sudo docker run ${opts} ${envs} ${rc_file_vol} ${cacert_file_vol} ${map_log_dir} ${sshkey} opnfv/yardstick:${DOCKER_TAG} \
     exec_tests.sh ${YARDSTICK_DB_BACKEND} ${YARDSTICK_SCENARIO_SUITE_NAME}"
 echo "Yardstick: Running docker cmd: ${cmd}"
 ${cmd}
