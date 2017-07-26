@@ -1,0 +1,55 @@
+<h3>{{ctrl.pageHeader}}</h3>
+<p>{{ctrl.pageParagraph}}</p>
+<div class="row" style="margin-bottom:24px;"></div>
+<div class="pods-filters">
+    <h4>Filters</h4>
+    <div class="row">
+        <!--<div class="col-md-3">-->
+            <!--<label for="cpid">Name</label>-->
+            <!--<p class="input-group">-->
+                <!--<input type="text" ng-model="ctrl.name" is-open="ctrl.nameOpen" close-text="Close"/>-->
+            <!--</p>-->
+        <!--</div>-->
+        <div class="col-md-3" style="margin-top:24px;">
+            <button type="submit" class="btn btn-primary" ng-click="ctrl.update()">Filter</button>
+            <button type="submit" class="btn btn-primary btn-danger" ng-click="ctrl.clearFilters()">Clear</button>
+        </div>
+    </div>
+</div>
+
+<div cg-busy="{promise:ctrl.authRequest,message:'Loading'}"></div>
+<div cg-busy="{promise:ctrl.podsRequest,message:'Loading'}"></div>
+
+<div ng-show="ctrl.data" class="pods-table">
+    <table ng-data="ctrl.data.pods" ng-show="ctrl.data" class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Mode</th>
+                <th>Create Date</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr ng-repeat-start="(index, pod) in ctrl.data.pods">
+                <td>{{ pod._id }}</td>
+                <td>{{ pod.name }}</td>
+                <td>{{ pod.role }}</td>
+                <td>{{ pod.mode }}</td>
+                <td>{{ pod.creation_date }}</td>
+                <td>{{ pod.details }}</td>
+            </tr>
+            <tr ng-repeat-end=>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div ng-show="ctrl.showError" class="alert alert-danger" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Error:</span>
+    {{ctrl.error}}
+</div>
