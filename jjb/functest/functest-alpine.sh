@@ -64,7 +64,7 @@ if [[ ${INSTALLER_TYPE} == 'compass' && ${DEPLOY_SCENARIO} == *'os-nosdn-openo-h
     envs=${env}" -e OPENO_MSB_ENDPOINT=${openo_msb_endpoint}"
 fi
 
-volumes="${images_vol} ${results_vol} ${sshkey_vol} ${rc_file_vol}"
+volumes="${images_vol} ${results_vol} ${sshkey_vol} ${rc_file_vol} ${cacert_file_vol}"
 
 
 tiers=(healthcheck smoke)
