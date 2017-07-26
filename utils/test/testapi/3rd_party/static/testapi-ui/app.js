@@ -26,6 +26,22 @@
         .module('testapiApp')
         .config(configureRoutes);
 
+    angular
+        .module('testapiApp')
+        .directive('dynamicModel', ['$compile', '$parse', function ($compile, $parse) {
+            return {
+                restrict: 'A',
+                terminal: true,
+                priority: 100000,
+                link: function (scope, elem) {
+                    var name = $parse(elem.attr('dynamic-model'))(scope);
+                    elem.removeAttr('dynamic-model');
+                    elem.attr('ng-model', name);
+                    $compile(elem)(scope);
+                }
+            };
+        }]);
+
     configureRoutes.$inject = ['$stateProvider', '$urlRouterProvider'];
 
     /**
@@ -43,10 +59,10 @@
                 url: '/about',
                 templateUrl: 'testapi-ui/components/about/about.html'
             }).
-            state('guidelines', {
-                url: '/guidelines',
-                templateUrl: 'testapi-ui/components/guidelines/guidelines.html',
-                controller: 'GuidelinesController as ctrl'
+            state('pods', {
+                url: '/pods',
+                templateUrl: 'testapi-ui/components/pods/pods.html',
+                controller: 'PodsController as ctrl'
             }).
             state('communityResults', {
                 url: '/community_results',
