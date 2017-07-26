@@ -104,6 +104,8 @@
               <<: *master
         - 'os-odl-bgpvpn-ha':
               <<: *master
+        - 'os-ovn-nofeature-noha':
+              <<: *master
 
     platform:
          - 'baremetal'
@@ -1164,6 +1166,15 @@
                   git-revision: false
 
                 - name: 'apex-os-odl-bgpvpn-ha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-ovn-nofeature-noha-baremetal-master'
                   node-parameters: false
                   current-parameters: false
                   predefined-parameters: |
