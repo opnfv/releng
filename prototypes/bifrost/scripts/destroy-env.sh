@@ -25,6 +25,12 @@ for vm in $(vbmc list | awk '/[0-9]/{{ print $2 }}'); do
     virsh undefine $vm || true
     vbmc delete $vm
 done
+# Destroy all XCI VMs if the previous operation failed
+[[ -n ${XCI_FLAVOR} ]] && \
+    for vm in ${TEST_VM_NODE_NAMES}; do
+        virsh destroy $vm
+        virsh undefine $vm
+    done
 
 service ironic-conductor stop || true
 
