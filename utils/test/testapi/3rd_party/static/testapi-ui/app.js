@@ -43,10 +43,10 @@
                 url: '/about',
                 templateUrl: 'testapi-ui/components/about/about.html'
             }).
-            state('guidelines', {
-                url: '/guidelines',
-                templateUrl: 'testapi-ui/components/guidelines/guidelines.html',
-                controller: 'GuidelinesController as ctrl'
+            state('pods', {
+                url: '/pods',
+                templateUrl: 'testapi-ui/components/pods/pods.html',
+                controller: 'PodsController as ctrl'
             }).
             state('communityResults', {
                 url: '/community_results',
