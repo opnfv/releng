@@ -83,6 +83,8 @@ if [[ ${INSTALLER_TYPE} == compass ]]; then
     options="-u root -p root"
 elif [[ ${INSTALLER_TYPE} == fuel ]]; then
     options="-u root -p r00tme"
+elif [[ ${INSTALLER_TYPE} == apex ]]; then
+    options="-u stack -k /root/.ssh/id_rsa"
 else
     echo "Don't support to generate pod.yaml on ${INSTALLER_TYPE} currently."
     echo "HA test cases may not run properly."
