@@ -49,7 +49,7 @@ def get_with_passwd():
                                        args.user, installer_pwd=args.password)
 
 
-def create_file(handler):
+def create_file(handler, INSTALLER_TYPE):
     """
     Create the yaml file of nodes info.
     As Yardstick required, node name must be node1, node2, ... and node1 must
@@ -62,27 +62,30 @@ def create_file(handler):
     nodes = handler.nodes
     node_list = []
     index = 1
+    user = 'root'
+    if INSTALLER_TYPE == 'apex':
+        user = 'heat-admin'
     for node in nodes:
         try:
             if node.roles[0].lower() == "controller":
                 node_info = {'name': "node%s" % index, 'role': node.roles[0],
-                             'ip': node.ip, 'user': 'root'}
+                             'ip': node.ip, 'user': user}
                 node_list.append(node_info)
                 index += 1
         except Exception:
             node_info = {'name': node.name, 'role': 'unknown', 'ip': node.ip,
-                         'user': 'root'}
+                         'user': user}
             node_list.append(node_info)
     for node in nodes:
         try:
             if node.roles[0].lower() == "compute":
                 node_info = {'name': "node%s" % index, 'role': node.roles[0],
-                             'ip': node.ip, 'user': 'root'}
+                             'ip': node.ip, 'user': user}
                 node_list.append(node_info)
                 index += 1
         except Exception:
             node_info = {'name': node.name, 'role': 'unknown', 'ip': node.ip,
-                         'user': 'root'}
+                         'user': user}
             node_list.append(node_info)
     if args.INSTALLER_TYPE == 'compass':
         for item in node_list:
@@ -105,7 +108,7 @@ def main():
     if not handler:
         print("Error: failed to get the node's handler.")
         return 1
-    create_file(handler)
+    create_file(handler, args.INSTALLER_TYPE)
 
 
 if __name__ == '__main__':
