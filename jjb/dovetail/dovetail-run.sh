@@ -83,6 +83,8 @@ if [[ ${INSTALLER_TYPE} == compass ]]; then
     options="-u root -p root"
 elif [[ ${INSTALLER_TYPE} == fuel ]]; then
     options="-u root -p r00tme"
+elif [[ ${INSTALLER_TYPE} == apex ]]; then
+    options="-u stack -k /root/.ssh/id_rsa"
 else
     echo "Don't support to generate pod.yaml on ${INSTALLER_TYPE} currently."
     echo "HA test cases may not run properly."
@@ -113,6 +115,11 @@ ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 if [ "$INSTALLER_TYPE" == "fuel" ]; then
     echo "Fetching id_rsa file from jump_server $INSTALLER_IP..."
     sshpass -p r00tme sudo scp $ssh_options root@${INSTALLER_IP}:~/.ssh/id_rsa ${DOVETAIL_CONFIG}/id_rsa
+fi
+
+if [ "$INSTALLER_TYPE" == "apex" ]; then
+    echo "Fetching id_rsa file from jump_server $INSTALLER_IP..."
+    scp $ssh_options stack@${INSTALLER_IP}:~/.ssh/id_rsa ${DOVETAIL_CONFIG}/id_rsa
 fi
 
 # sdnvpn test case needs to download this image first before running
