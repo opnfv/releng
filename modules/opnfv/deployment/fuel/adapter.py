@@ -18,12 +18,12 @@ logger = logger.Logger(__name__).getLogger()
 
 class FuelAdapter(manager.DeploymentHandler):
 
-    def __init__(self, installer_ip, installer_user, installer_pwd):
+    def __init__(self, installer_ip, installer_user, installer_pwd, pkey_file):
         super(FuelAdapter, self).__init__(installer='fuel',
                                           installer_ip=installer_ip,
                                           installer_user=installer_user,
                                           installer_pwd=installer_pwd,
-                                          pkey_file=None)
+                                          pkey_file=pkey_file)
 
     def _get_clusters(self):
         environments = []
@@ -60,6 +60,14 @@ class FuelAdapter(manager.DeploymentHandler):
                 environments.append(dict)
 
         return environments
+
+    def get_architecture(self):
+        output=""
+        cmd = "sudo salt '*' grains.get cpuarch --out yaml | awk '/cmp/ {print $2; exit}'"
+        output=self.installer_node.run_cmd(cmd)
+        fields=output.split(': ')
+        arch=fields[1]
+        return arch
 
     def get_nodes(self, options=None):
 
