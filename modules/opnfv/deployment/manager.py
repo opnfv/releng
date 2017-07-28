@@ -331,7 +331,7 @@ class DeploymentHandler(object):
             raise Exception(
                 'Cannot establish connection to the installer node!')
 
-        self.nodes = self.get_nodes()
+        self.arch = self.get_architecture()
 
     @abstractmethod
     def get_openstack_version(self):
@@ -355,6 +355,13 @@ class DeploymentHandler(object):
         raise Exception(DeploymentHandler.FUNCTION_NOT_IMPLEMENTED)
 
     @abstractmethod
+    def get_architecture(self, options=None):
+        '''
+            Get architecture from mcp installer
+        '''
+        raise Exception(DeploymentHandler.FUNCTION_NOT_IMPLEMENTED)
+
+    @abstractmethod
     def get_nodes(self, options=None):
         '''
             Generates a list of all the nodes in the deployment
@@ -372,11 +379,15 @@ class DeploymentHandler(object):
             Returns the architecture of the first compute node found
         '''
         arch = None
+        '''
         for node in self.nodes:
             if node.is_compute():
                 arch = node.cpu_info.get('arch', None)
                 if arch:
                     break
+        '''
+        if self.arch:
+            arch=self.arch
         return arch
 
     def get_deployment_info(self):
