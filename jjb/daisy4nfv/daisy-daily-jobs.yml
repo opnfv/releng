@@ -46,10 +46,10 @@
         - 'os-nosdn-nofeature-noha':
             auto-trigger-name: 'daisy-{scenario}-{pod}-daily-{stream}-trigger'
         # ODL_L3 scenarios
-        - 'os-odl_l3-nofeature-noha':
+        - 'os-odl_l3-nofeature-ha':
             auto-trigger-name: 'daisy-{scenario}-{pod}-daily-{stream}-trigger'
         # ODL_L2 scenarios
-        - 'os-odl_l2-nofeature-noha':
+        - 'os-odl_l2-nofeature-ha':
             auto-trigger-name: 'daisy-{scenario}-{pod}-daily-{stream}-trigger'
 
     jobs:
@@ -150,7 +150,7 @@
             installer: '{installer}'
         - string:
             name: DEPLOY_SCENARIO
-            default: 'os-nosdn-nofeature-noha'
+            default: 'os-nosdn-nofeature-ha'
         - 'daisy-project-parameter':
             gs-pathname: '{gs-pathname}'
         - string:
@@ -184,20 +184,20 @@
 - trigger:
     name: 'daisy-os-nosdn-nofeature-ha-baremetal-daily-master-trigger'
     triggers:
-        - timed: ''
+        - timed: '0 12 * * *'
 # NOHA Scenarios
 - trigger:
     name: 'daisy-os-nosdn-nofeature-noha-baremetal-daily-master-trigger'
     triggers:
-        - timed: 'H 12 * * *'
+        - timed: ''
 # ODL_L3 Scenarios
 - trigger:
-    name: 'daisy-os-odl_l3-nofeature-noha-baremetal-daily-master-trigger'
+    name: 'daisy-os-odl_l3-nofeature-ha-baremetal-daily-master-trigger'
     triggers:
-        - timed: 'H 16 * * *'
+        - timed: '0 16 * * *'
 # ODL_L2 Scenarios
 - trigger:
-    name: 'daisy-os-odl_l2-nofeature-noha-baremetal-daily-master-trigger'
+    name: 'daisy-os-odl_l2-nofeature-ha-baremetal-daily-master-trigger'
     triggers:
         - timed: ''
 #-----------------------------------------------
@@ -206,20 +206,20 @@
 - trigger:
     name: 'daisy-os-nosdn-nofeature-ha-virtual-daily-master-trigger'
     triggers:
-        - timed: ''
+        - timed: '0 12 * * *'
 # NOHA Scenarios
 - trigger:
     name: 'daisy-os-nosdn-nofeature-noha-virtual-daily-master-trigger'
     triggers:
-        - timed: 'H 12 * * *'
+        - timed: ''
 # ODL_L3 Scenarios
 - trigger:
-    name: 'daisy-os-odl_l3-nofeature-noha-virtual-daily-master-trigger'
+    name: 'daisy-os-odl_l3-nofeature-ha-virtual-daily-master-trigger'
     triggers:
-        - timed: 'H 16 * * *'
+        - timed: '0 16 * * *'
 # ODL_L3 Scenarios
 - trigger:
-    name: 'daisy-os-odl_l2-nofeature-noha-virtual-daily-master-trigger'
+    name: 'daisy-os-odl_l2-nofeature-ha-virtual-daily-master-trigger'
     triggers:
         - timed: ''
 
