@@ -40,7 +40,8 @@ class Factory(object):
         elif installer.lower() == "fuel":
             return fuel_adapter.FuelAdapter(installer_ip=installer_ip,
                                             installer_user=installer_user,
-                                            installer_pwd=installer_pwd)
+                                            installer_pwd=installer_pwd,
+                                            pkey_file=pkey_file)
         elif installer.lower() == "compass":
             return compass_adapter.CompassAdapter(
                 installer_ip=installer_ip,
