@@ -97,6 +97,24 @@ class GenericApiHandler(web.RequestHandler):
             resource = _id
         self.finish_request(self._create_response(resource))
 
+    @check.authenticate
+    @check.no_body
+    @check.miss_fields
+    @check.carriers_exist
+    @check.new_not_exists
+    def _inner_create(self, **kwargs):
+        data = self.table_cls.from_dict(self.json_args)
+        for k, v in kwargs.iteritems():
+            if k != 'query':
+                data.__setattr__(k, v)
+
+        if self.table != 'results':
+            data.creation_date = datetime.now()
+        yield dbapi.db_save(self.table, data.format())
+
+    def _create_only(self, **kwargs):
+        self._inner_create(**kwargs)
+
     @web.asynchronous
     @gen.coroutine
     def _list(self, query=None, res_op=None, *args, **kwargs):
