@@ -69,13 +69,16 @@ Sandbox Prerequisites
 =====================
 
 In order to use this sandbox, the host must have certain packages installed.
-
-- libvirt
+- Ubuntu 16.04 (Centos and SUSE support are on their way.)
+- Install libvirt and kvm
+  Ensure that your user name is added into libvirtd and kvm groups [Example: sudo adduser `id -un` libvirtd]
+  For more details: https://help.ubuntu.com/community/KVM/Installation
 - python
-- pip
+- python-pip
 - git
 - <fix the list with all the dependencies>
 - passwordless sudo
+- A SSH key generated for your user (ie ~/.ssh/id_rsa)
 
 The host must also have enough CPU/RAM/Disk in order to host number of VM
 nodes that will be created based on the chosen flavor. See the details from
