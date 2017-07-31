@@ -67,7 +67,4 @@ if [[ $SUITE_NAME == *posca* ]]; then
         TEST_CASE=posca_factor_ping
         docker exec bottlenecks-load-master python ${POSCA_SCRIPT}/../run_testsuite.py testcase $TEST_CASE $REPORT
     fi
-
-    echo "Bottlenecks: cleaning up docker-compose images and dockers"
-    docker-compose -f $WORKSPACE/docker/bottleneck-compose/docker-compose.yml down --rmi all
 fi
