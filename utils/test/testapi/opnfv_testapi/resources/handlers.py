@@ -78,7 +78,7 @@ class GenericApiHandler(web.RequestHandler):
     @check.miss_fields
     @check.carriers_exist
     @check.new_not_exists
-    def _create(self, **kwargs):
+    def _inner_create(self, **kwargs):
         """
         :param miss_checks: [miss1, miss2]
         :param db_checks: [(table, exist, query, error)]
@@ -95,6 +95,14 @@ class GenericApiHandler(web.RequestHandler):
             resource = data.name
         else:
             resource = _id
+
+        raise gen.Return(resource)
+
+    def _create_only(self, **kwargs):
+        self._inner_create(**kwargs)
+
+    def _create(self, **kwargs):
+        resource = self._inner_create(**kwargs)
         self.finish_request(self._create_response(resource))
 
     @web.asynchronous
