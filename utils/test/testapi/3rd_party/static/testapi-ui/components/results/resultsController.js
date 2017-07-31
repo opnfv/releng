@@ -116,6 +116,8 @@
 
         ctrl.isPublic = false;
 
+        ctrl.isReview = false;
+
         if (ctrl.isUserResults) {
             ctrl.authRequest = $scope.auth.doSignCheck()
                 .then(ctrl.update);
@@ -129,6 +131,7 @@
            var fd = new FormData();
            fd.append('file', file);
            fd.append('public', ctrl.isPublic)
+           fd.append('review', ctrl.isReview)
 
            $http.post(uploadUrl, fd, {
               transformRequest: angular.identity,

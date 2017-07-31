@@ -78,11 +78,26 @@ class GenericApiHandler(web.RequestHandler):
     @check.miss_fields
     @check.carriers_exist
     @check.new_not_exists
+    def _inner_create(self, **kwargs):
+        data = self.table_cls.from_dict(self.json_args)
+        for k, v in kwargs.iteritems():
+            if k != 'query':
+                data.__setattr__(k, v)
+
+        if self.table != 'results':
+            data.creation_date = datetime.now()
+        yield dbapi.db_save(self.table, data.format())
+
+    def _create_only(self, **kwargs):
+        self._inner_create(**kwargs)
+
+    @check.authenticate
+    @check.no_body
+    @check.miss_fields
+    @check.carriers_exist
+    @check.new_not_exists
     def _create(self, **kwargs):
-        """
-        :param miss_checks: [miss1, miss2]
-        :param db_checks: [(table, exist, query, error)]
-        """
+        # resource = self._inner_create(**kwargs)
         data = self.table_cls.from_dict(self.json_args)
         for k, v in kwargs.iteritems():
             if k != 'query':
@@ -95,6 +110,7 @@ class GenericApiHandler(web.RequestHandler):
             resource = data.name
         else:
             resource = _id
+
         self.finish_request(self._create_response(resource))
 
     @web.asynchronous
