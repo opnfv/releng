@@ -10,6 +10,7 @@
 
 #clean up correlated dockers and their images
 bash $WORKSPACE/docker/docker_cleanup.sh -d bottlenecks --debug
+bash $WORKSPACE/docker/docker_cleanup.sh -d Bottlenecks --debug
 bash $WORKSPACE/docker/docker_cleanup.sh -d yardstick --debug
 bash $WORKSPACE/docker/docker_cleanup.sh -d kibana --debug
 bash $WORKSPACE/docker/docker_cleanup.sh -d elasticsearch --debug
