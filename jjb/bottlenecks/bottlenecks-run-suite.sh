@@ -47,6 +47,7 @@ if [[ $SUITE_NAME == *posca* ]]; then
     else
         echo "BOTTLENECKS ERROR: couldn't find openstack rc file: ${OPENRC}, please check if the it's been properly provided."
         exit 1
+    fi
 
     echo "INFO: pulling Bottlenecks docker ${DOCKER_TAG}"
     docker pull opnfv/bottlenecks:${DOCKER_TAG} >$redirect
