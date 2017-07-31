@@ -64,8 +64,10 @@ class GenericResultHandler(handlers.GenericApiHandler):
                 logging.info('role:%s', role)
                 if role:
                     del query['public']
-                    if role != "reviewer":
-                        query['user'] = openid
+                    query['user'] = openid
+                    if role == "reviewer":
+                        del query['user']
+                        query['review'] = 'true'
             elif k not in ['last', 'page', 'descend']:
                 query[k] = v
             if date_range:
@@ -237,20 +239,24 @@ class ResultsUploadHandler(ResultsCLHandler):
             @raise 404: pod/project/testcase not exist
             @raise 400: body/pod_name/project_name/case_name not provided
         """
-        logging.info('file upload')
         fileinfo = self.request.files['file'][0]
         is_public = self.get_body_argument('public')
-        logging.warning('public:%s', is_public)
+        is_review = self.get_body_argument('review')
         logging.info('results is :%s', fileinfo['filename'])
-        logging.info('results is :%s', fileinfo['body'])
-        self.json_args = json.loads(fileinfo['body']).copy()
-        self.json_args['public'] = is_public
+        results = fileinfo['body'].split('\n')
+        for result in results:
+            self.json_args = json.loads(result).copy()
+            self.json_args['public'] = is_public
+            self.json_args['review'] = is_review
+            self.json_args['upload_date'] = datetime.now()
+            build_tag = self.json_args['build_tag']
 
-        openid = self.get_secure_cookie(auth_const.OPENID)
-        if openid:
-            self.json_args['user'] = openid
+            openid = self.get_secure_cookie(auth_const.OPENID)
+            if openid:
+                self.json_args['user'] = openid
 
-        super(ResultsUploadHandler, self)._post()
+            self._create_only()
+        self.finish_request(self._create_response(build_tag))
 
 
 class ResultsGURHandler(GenericResultHandler):
