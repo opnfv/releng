@@ -16,10 +16,6 @@
         stream: master
         opnfv-releng-version: master
         gs-pathname: ''
-    ocata: &ocata
-        stream: ocata
-        opnfv-releng-version: master
-        gs-pathname: '/{stream}'
 #--------------------------------
 # Scenarios
 #--------------------------------
@@ -30,14 +26,18 @@
         - 'os-nosdn-nofeature-noha':
             auto-trigger-name: 'daily-trigger-disabled'
             xci-flavor: 'noha'
+        - 'os-odl-sfc-ha':
+            auto-trigger-name: 'daily-trigger-disabled'
+            xci-flavor: 'ha'
+        - 'os-odl-sfc-noha':
+            auto-trigger-name: 'daily-trigger-disabled'
+            xci-flavor: 'noha'
 #--------------------------------
 # XCI PODs
 #--------------------------------
     pod:
         - virtual:
             <<: *master
-        - virtual:
-            <<: *ocata
 #--------------------------------
 # Supported Distros
 #--------------------------------
