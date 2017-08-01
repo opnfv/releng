@@ -40,7 +40,14 @@
         delete: yes
       when:
         - OPENSTACK_OSA_DEV_PATH != ""
-
+    - name: Synchronize local development openstack-ansible-os_neutron repository to XCI paths
+      synchronize:
+        src: "{{ OPNFV_OSA_NEUTRON_DEV_PATH }}"
+        dest: "{{ OPNFV_OSA_NEUTRON_PATH }}" 
+        recursive: yes
+        delete: yes
+      when:
+        - OPNFV_OSA_NEUTRON_DEV_PATH != ""
 - hosts: opnfv
   remote_user: root
   vars_files:

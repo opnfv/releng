@@ -198,6 +198,7 @@ To enable it, you need to export the different DEV_PATH vars:
 - export OPNFV_RELENG_DEV_PATH=/opt/releng/
 - export OPENSTACK_BIFROST_DEV_PATH=/opt/bifrost/
 - export OPENSTACK_OSA_DEV_PATH=/opt/openstack-ansible/
+- export OPNFV_OSA_NEUTRON_DEV_PATH=/opt/openstack-ansible-os_neutron/
 
 Please note the trailing slahses.
 

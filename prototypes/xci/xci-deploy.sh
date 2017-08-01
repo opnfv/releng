@@ -40,7 +40,7 @@ source $XCI_PATH/config/env-vars
 #-------------------------------------------------------------------------------
 # Sanitize local development environment variables
 #-------------------------------------------------------------------------------
-user_local_dev_vars=(OPNFV_RELENG_DEV_PATH OPNFV_OSA_DEV_PATH OPNFV_BIFROST_DEV_PATH)
+user_local_dev_vars=(OPNFV_RELENG_DEV_PATH OPNFV_OSA_DEV_PATH OPNFV_BIFROST_DEV_PATH OPNFV_OSA_NEUTRON_DEV_PATH)
 for local_user_var in ${user_local_dev_vars[@]}; do
     [[ -n ${!local_user_var:-} ]] && export $local_user_var=${!local_user_var%/}/
 done
@@ -99,6 +99,13 @@ cd $XCI_PATH/playbooks
 ansible-playbook $ANSIBLE_VERBOSITY -i inventory configure-localhost.yml
 echo "-----------------------------------------------------------------------"
 echo "Info: Configured localhost host for openstack-ansible"
+
+#-------------------------------------------------------------------------------
+# Change the OPNFV_OSA_NEUTRON_PATH in case of development mode
+#-------------------------------------------------------------------------------
+if [[ -z "${OPNFV_OSA_NEUTRON_DEV_PATH}" ]]; then
+    export OPNFV_OSA_NEUTRON_PATH="${XCI_DEVEL_ROOT}/openstack-ansible-os_neutron"
+fi
 
 #-------------------------------------------------------------------------------
 # Configure openstack-ansible deployment host, opnfv
