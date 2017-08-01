@@ -33,7 +33,7 @@ fi
 
 # set deployment parameters
 export TMPDIR=$HOME/tmpdir
-BRIDGE=${BRIDGE:-pxebr}
+BRIDGE=${BRIDGE:-,,,}
 LAB_NAME=${NODE_NAME/-*}
 POD_NAME=${NODE_NAME/*-}
 

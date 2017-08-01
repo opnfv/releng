@@ -91,7 +91,7 @@ fi
 # construct the command
 DEPLOY_COMMAND="$WORKSPACE/ci/deploy.sh -b ${LAB_CONFIG_URL} \
     -l $LAB_NAME -p $POD_NAME -s $DEPLOY_SCENARIO -i file://${ISO_FILE} \
-    -H -B ${DEFAULT_BRIDGE:-pxebr} -S $TMPDIR -L $WORKSPACE/$FUEL_LOG_FILENAME \
+    -H -B ${DEFAULT_BRIDGE:-,,,} -S $TMPDIR -L $WORKSPACE/$FUEL_LOG_FILENAME \
     ${DEPLOY_CACHE}"
 
 # log info to console
