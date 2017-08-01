@@ -26,3 +26,18 @@ haproxy_keepalived_internal_vip_cidr: "172.29.236.11/32"
 haproxy_keepalived_external_interface: br-vlan
 haproxy_keepalived_internal_interface: br-mgmt
 gnocchi_db_sync_options: ""
+
+# Ensure the openvswitch kernel module is loaded
+openstack_host_specific_kernel_modules:
+  - name: "openvswitch"
+    pattern: "CONFIG_OPENVSWITCH"
+    group: "network_hosts"
+
+# Use OpenDaylight SDN Controller
+neutron_plugin_type: "ml2.opendaylight"
+neutron_opendaylight_conf_ini_overrides:
+  ml2_odl:
+    username: "admin"
+    password: "admin"
+    port_binding_controller: "pseudo-agentdb-binding"
+    url: "http://{{ hostvars[groups['neutron_server'][0]]['ansible_eth1']['ipv4']['address'] }}:8080/controller/nb/v2/neutron"
