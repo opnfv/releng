@@ -15,10 +15,10 @@
         branch: '{stream}'
         disabled: false
         gs-pathname: ''
-    danube: &danube
-        stream: danube
+    euphrates: &euphrates
+        stream: euphrates
         branch: 'stable/{stream}'
-        disabled: false
+        disabled: true
         gs-pathname: '/{stream}'
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
@@ -34,10 +34,10 @@
             <<: *master
         - baremetal:
             slave-label: fuel-baremetal
-            <<: *danube
+            <<: *euphrates
         - virtual:
             slave-label: fuel-virtual
-            <<: *danube
+            <<: *euphrates
 #--------------------------------
 #        None-CI PODs
 #--------------------------------
@@ -49,10 +49,10 @@
             <<: *master
         - zte-pod1:
             slave-label: zte-pod1
-            <<: *danube
+            <<: *euphrates
         - zte-pod3:
             slave-label: zte-pod3
-            <<: *danube
+            <<: *euphrates
 #--------------------------------
 #       scenarios
 #--------------------------------
@@ -208,7 +208,7 @@
                         build-step-failure-threshold: 'never'
                         failure-threshold: 'never'
                         unstable-threshold: 'FAILURE'
-        # ZTE pod1 weekly(Sunday), os-odl_l2-nofeature-ha, run against master and danube
+        # ZTE pod1 weekly(Sunday), os-odl_l2-nofeature-ha, run against master and euphrates
         - conditional-step:
             condition-kind: and
             condition-operands:
@@ -418,96 +418,96 @@
     triggers:
         - timed: ''
 #-----------------------------------------------
-# Triggers for job running on fuel-baremetal against danube branch
+# Triggers for job running on fuel-baremetal against euphrates branch
 #-----------------------------------------------
 # HA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-baremetal-daily-euphrates-trigger'
     triggers:
-        - timed: '0 20 * * *'
+        - timed: '' # '0 20 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-baremetal-daily-euphrates-trigger'
     triggers:
-        - timed: '0 23 * * *'
+        - timed: '' # '0 23 * * *'
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-baremetal-daily-euphrates-trigger'
     triggers:
-        - timed: '0 2 * * *'
+        - timed: '' # '0 2 * * *'
 - trigger:
-    name: 'fuel-os-onos-sfc-ha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-onos-sfc-ha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: '' # '0 5 * * *'
 - trigger:
-    name: 'fuel-os-onos-nofeature-ha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-onos-nofeature-ha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: '' # '0 8 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-sfc-ha-baremetal-daily-euphrates-trigger'
     triggers:
-        - timed: '0 11 * * *'
+        - timed: '' # '0 11 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-ha-baremetal-daily-euphrates-trigger'
     triggers:
-        - timed: '0 14 * * *'
+        - timed: '' # '0 14 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-kvm-ha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm-ha-baremetal-daily-euphrates-trigger'
     triggers:
-        - timed: '0 17 * * *'
+        - timed: '' # '0 17 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-baremetal-daily-euphrates-trigger'
     triggers:
-        - timed: '0 20 * * *'
+        - timed: '' # '0 20 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-kvm_ovs_dpdk-ha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm_ovs_dpdk-ha-baremetal-daily-euphrates-trigger'
     triggers:
-        - timed: '0 12 * * *'
+        - timed: '' # '0 12 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-ha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-ha-baremetal-daily-euphrates-trigger'
     triggers:
-        - timed: '0 8 * * *'
+        - timed: '' # '0 8 * * *'
 # NOHA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-nosdn-nofeature-noha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-nofeature-noha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-odl_l3-nofeature-noha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-sfc-noha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-onos-sfc-noha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-noha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-onos-nofeature-noha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-sfc-noha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-noha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-noha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm-noha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-noha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-nosdn-ovs-noha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm_ovs_dpdk-noha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm_ovs_dpdk-noha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-noha-baremetal-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-noha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: ''
 #-----------------------------------------------
@@ -603,97 +603,97 @@
     triggers:
         - timed: '' # '30 20 * * *'
 #-----------------------------------------------
-# Triggers for job running on fuel-virtual against danube branch
+# Triggers for job running on fuel-virtual against euphrates branch
 #-----------------------------------------------
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-virtual-daily-danube-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-virtual-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-virtual-daily-danube-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-sfc-ha-virtual-daily-danube-trigger'
+    name: 'fuel-os-onos-sfc-ha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-ha-virtual-daily-danube-trigger'
+    name: 'fuel-os-onos-nofeature-ha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-virtual-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-ha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-virtual-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-sfc-ha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-ha-virtual-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm-ha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-virtual-daily-danube-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm_ovs_dpdk-ha-virtual-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm_ovs_dpdk-ha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-ha-virtual-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-ha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: ''
 # NOHA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-virtual-daily-danube-trigger'
+    name: 'fuel-os-nosdn-nofeature-noha-virtual-daily-euphrates-trigger'
     triggers:
-        - timed: '0 13 * * *'
+        - timed: '' # '0 13 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-virtual-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-nofeature-noha-virtual-daily-euphrates-trigger'
     triggers:
-        - timed: '30 15 * * *'
+        - timed: '' # '30 15 * * *'
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-virtual-daily-danube-trigger'
+    name: 'fuel-os-odl_l3-nofeature-noha-virtual-daily-euphrates-trigger'
     triggers:
-        - timed: '0 18 * * *'
+        - timed: '' # '0 18 * * *'
 - trigger:
-    name: 'fuel-os-onos-sfc-noha-virtual-daily-danube-trigger'
+    name: 'fuel-os-onos-sfc-noha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: '' # '30 20 * * *'
 - trigger:
-    name: 'fuel-os-onos-nofeature-noha-virtual-daily-danube-trigger'
+    name: 'fuel-os-onos-nofeature-noha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: '' # '0 23 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-virtual-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-sfc-noha-virtual-daily-euphrates-trigger'
     triggers:
-        - timed: '30 1 * * *'
+        - timed: '' # '30 1 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-virtual-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-noha-virtual-daily-euphrates-trigger'
     triggers:
-        - timed: '0 4 * * *'
+        - timed: '' # '0 4 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-kvm-noha-virtual-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm-noha-virtual-daily-euphrates-trigger'
     triggers:
-        - timed: '30 6 * * *'
+        - timed: '' # '30 6 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-ovs-noha-virtual-daily-danube-trigger'
+    name: 'fuel-os-nosdn-ovs-noha-virtual-daily-euphrates-trigger'
     triggers:
-        - timed: '0 9 * * *'
+        - timed: '' # '0 9 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-kvm_ovs_dpdk-noha-virtual-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm_ovs_dpdk-noha-virtual-daily-euphrates-trigger'
     triggers:
-        - timed: '0 16 * * *'
+        - timed: '' # '0 16 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-noha-virtual-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-noha-virtual-daily-euphrates-trigger'
     triggers:
-        - timed: '0 20 * * *'
+        - timed: '' # '0 20 * * *'
 #-----------------------------------------------
 # ZTE POD1 Triggers running against master branch
 #-----------------------------------------------
@@ -879,186 +879,186 @@
     triggers:
         - timed: ''
 #-----------------------------------------------
-# ZTE POD1 Triggers running against danube branch
+# ZTE POD1 Triggers running against euphrates branch
 #-----------------------------------------------
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod1-daily-euphrates-trigger'
     triggers:
-        - timed: '0 2 * * *'
+        - timed: '' # '0 2 * * *'
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod1-daily-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-onos-sfc-ha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-ha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-onos-sfc-ha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-onos-nofeature-ha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-ha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-sfc-ha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm-ha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm_ovs_dpdk-ha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-ha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm_ovs_dpdk-ha-zte-pod1-daily-euphrates-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-ha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 # NOHA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-nosdn-nofeature-noha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-nofeature-noha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-odl_l3-nofeature-noha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-sfc-noha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-onos-sfc-noha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-noha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-onos-nofeature-noha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-sfc-noha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-noha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-noha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm-noha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-noha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-nosdn-ovs-noha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm_ovs_dpdk-noha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm_ovs_dpdk-noha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-noha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-noha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 #-----------------------------------------------
-# ZTE POD3 Triggers running against danube branch
+# ZTE POD3 Triggers running against euphrates branch
 #-----------------------------------------------
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-zte-pod3-daily-euphrates-trigger'
     triggers:
-        - timed: '0 18 * * *'
+        - timed: '' # '0 18 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod3-daily-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-sfc-ha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-ha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-onos-sfc-ha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-onos-nofeature-ha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-ha-zte-pod3-daily-danube-trigger'
-    triggers:
-        - timed: '0 2 * * *'
-- trigger:
-    name: 'fuel-os-nosdn-ovs-ha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-sfc-ha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm_ovs_dpdk-ha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm-ha-zte-pod3-daily-euphrates-trigger'
+    triggers:
+        - timed: '' # '0 2 * * *'
+- trigger:
+    name: 'fuel-os-nosdn-ovs-ha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-ha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm_ovs_dpdk-ha-zte-pod3-daily-euphrates-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-ha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 # NOHA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-nosdn-nofeature-noha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-nofeature-noha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-odl_l3-nofeature-noha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-sfc-noha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-onos-sfc-noha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-onos-nofeature-noha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-onos-nofeature-noha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-sfc-noha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-odl_l2-bgpvpn-noha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm-noha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm-noha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-noha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-nosdn-ovs-noha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm_ovs_dpdk-noha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm_ovs_dpdk-noha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-noha-zte-pod3-daily-danube-trigger'
+    name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-noha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
