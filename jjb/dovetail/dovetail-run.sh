@@ -119,7 +119,7 @@ fi
 
 if [ "$INSTALLER_TYPE" == "apex" ]; then
     echo "Fetching id_rsa file from jump_server $INSTALLER_IP..."
-    scp $ssh_options stack@${INSTALLER_IP}:~/.ssh/id_rsa ${DOVETAIL_CONFIG}/id_rsa
+    sudo scp $ssh_options stack@${INSTALLER_IP}:~/.ssh/id_rsa ${DOVETAIL_CONFIG}/id_rsa
 fi
 
 # sdnvpn test case needs to download this image first before running
