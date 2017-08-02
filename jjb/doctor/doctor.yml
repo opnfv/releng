@@ -114,6 +114,7 @@
         - '{auto-trigger-name}':
             project: '{project}'
             branch: '{branch}'
+            files: 'tests/**'
 
     builders:
         - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
@@ -179,6 +180,7 @@
         - '{auto-trigger-name}':
             project: '{project}'
             branch: '{branch}'
+            files: 'tests/**'
 
     builders:
         - 'clean-workspace-log'
@@ -234,7 +236,7 @@
                     branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: ANT
-                    pattern: 'tests/**'
+                    pattern: '{files}'
             skip-vote:
                 successful: true
                 failed: true

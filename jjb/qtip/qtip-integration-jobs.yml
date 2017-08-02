@@ -1,0 +1,68 @@
+######################
+# verify before MERGE
+######################
+
+- project:
+    name: qtip-integration-jobs
+    project: qtip
+    jobs:
+        - 'qtip-storage-{stream}'
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+
+################################
+## job templates
+#################################
+
+- job-template:
+    name: 'qtip-storage-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
+        - zte-pod4-params
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - experimental:
+            project: {project}
+            branch: {branch}
+            files: '**'
+
+    builders:
+        - shell: |
+             #!/bin/bash
+                set -o errexit
+                set -o pipefail
+                set -o xtrace
+
+                source integration/storperf/storperf.sh
+
+- parameter:
+    name: zte-pod4-params
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: 'Slave name on Jenkins'
+            # provisioned OPNFV pod required for running integration tests
+            allowed-slaves:
+                - zte-pod4
+            default-slaves:
+                - zte-pod4
+        - string:
+            name: INSTALLER_IP
+            default: '192.168.122.128'
+        - string:
+            name: INSTALLER_TYPE
+            default: apex
