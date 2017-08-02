@@ -1,0 +1,58 @@
+- project:
+    name: nfvbench
+
+    project: '{name}'
+
+    jobs:
+        - 'nfvbench-buildvm-{stream}'
+
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+            docker-tag: 'latest'
+
+- job-template:
+    name: 'nfvbench-buildvm-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    node: opnfv-build-ubuntu
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'true'
+                    exclude-no-code-change: 'true'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'buildvm'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+
+    builders:
+        - shell: |
+            cd $WORKSPACE/nfvbenchvm/dib
+            bash build-image.sh
+
+
