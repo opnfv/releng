@@ -53,9 +53,14 @@ if [[ $SUITE_NAME == *posca* ]]; then
     docker pull opnfv/bottlenecks:${DOCKER_TAG} >$redirect
 
     opts="--privileged=true -id"
+    envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
+          -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NET=${EXTERNAL_NETWORK} \
+          -e BRANCH=${BRANCH} -e GERRIT_REFSPEC_DEBUG=${GERRIT_REFSPEC_DEBUG} \
+          -e BOTTLENECKS_DB_TARGET=${BOTTLENECKS_DB_TARGET} -e PACKAGE_URL=${PACKAGE_URL} \
+          -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO}"
     docker_volume="-v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp"
 
-    cmd="docker run ${opts} --name bottlenecks-load-master ${docker_volume} opnfv/bottlenecks:${DOCKER_TAG} /bin/bash"
+    cmd="docker run ${opts} ${envs} --name bottlenecks-load-master ${docker_volume} opnfv/bottlenecks:${DOCKER_TAG} /bin/bash"
     echo "BOTTLENECKS INFO: running docker run commond: ${cmd}"
     ${cmd} >$redirect
     sleep 5
