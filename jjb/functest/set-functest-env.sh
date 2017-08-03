@@ -48,6 +48,12 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
     -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
     -e BUILD_TAG=${BUILD_TAG} -e CI_DEBUG=${CI_DEBUG} -e DEPLOY_TYPE=${DEPLOY_TYPE}"
 
+if [[ ${INSTALLER_TYPE} == 'fuel' && ! -z ${SALT_MASTER_IP} ]]; then
+  HOST_ARCH=$(ssh -l ubuntu ${SALT_MASTER_IP} -i ${SSH_KEY} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no \
+  "sudo salt 'cmp*' grains.get cpuarch --out yaml |awk '{print \$2; exit}'")
+  envs="${envs} -e POD_ARCH=${HOST_ARCH}"
+fi
+
 if [[ ${INSTALLER_TYPE} == 'compass' && ${DEPLOY_SCENARIO} == *'os-nosdn-openo-ha'* ]]; then
     ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
     openo_msb_port=${openo_msb_port:-80}
