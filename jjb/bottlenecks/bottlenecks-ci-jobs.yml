@@ -35,22 +35,22 @@
     pod:
 #compass CI PODs
         - baremetal:
-            slave-label: compass-baremetal
+            slave-label: compass-baremetal-master
             installer: compass
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *master
         - virtual:
-            slave-label: compass-virtual
+            slave-label: compass-virtual-master
             installer: compass
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *master
         - baremetal:
-            slave-label: compass-baremetal
+            slave-label: compass-baremetal-branch
             installer: compass
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *danube
         - virtual:
-            slave-label: compass-virtual
+            slave-label: compass-virtual-branch
             installer: compass
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *danube
@@ -150,25 +150,33 @@
 ####################
 
 - parameter:
-    name: 'bottlenecks-params-compass-baremetal'
+    name: 'bottlenecks-params-compass-baremetal-master'
     parameters:
         - string:
             name: BOTTLENECKS_DB_TARGET
-            default: 'testresults.opnfv.org/test/api/v1/results'
+            default: 'http://testresults.opnfv.org/test/api/v1/results'
             description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
-    name: 'bottlenecks-params-compass-virtual'
+    name: 'bottlenecks-params-compass-virtual-master'
     parameters:
         - string:
             name: BOTTLENECKS_DB_TARGET
-            default: 'testresults.opnfv.org/test/api/v1/results'
+            default: 'http://testresults.opnfv.org/test/api/v1/results'
             description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
-    name: 'bottlenecks-params-orange-pod2'
+    name: 'bottlenecks-params-compass-baremetal-branch'
     parameters:
         - string:
             name: BOTTLENECKS_DB_TARGET
-            default: 'testresults.opnfv.org/test/api/v1/results'
+            default: 'http://testresults.opnfv.org/test/api/v1/results'
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'bottlenecks-params-compass-virtual-branch'
+    parameters:
+        - string:
+            name: BOTTLENECKS_DB_TARGET
+            default: 'http://testresults.opnfv.org/test/api/v1/results'
             description: 'Arguments to use in order to choose the backend DB'
