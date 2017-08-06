@@ -1,0 +1,48 @@
+######################
+# verify before MERGE
+######################
+
+- project:
+    name: qtip-integration-jobs
+    project: qtip
+    jobs:
+        - 'qtip-storage-{stream}'
+    stream:
+        - master:
+            branch: '{stream}'
+            gs-pathname: ''
+            disabled: false
+
+################################
+## job templates
+#################################
+
+- job-template:
+    name: 'qtip-storage-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        # Pin the tests on zte-pod4 with apex deployment
+        - apex-defaults
+        - zte-pod4-defaults
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - experimental:
+            project: {project}
+            branch: {branch}
+            files: '**'
+
+    builders:
+        - shell: |
+             #!/bin/bash
+                set -o errexit
+                set -o pipefail
+                set -o xtrace
+
+                source integration/storperf/storperf.sh
