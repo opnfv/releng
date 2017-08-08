@@ -12,4 +12,4 @@ def test_config_normal(mocker, config_normal):
     assert CONF.api_port == 8000
     assert CONF.api_debug is True
     assert CONF.api_authenticate is False
-    assert CONF.swagger_base_url == 'http://localhost:8000'
+    assert CONF.ui_url == 'http://localhost:8000'
