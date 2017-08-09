@@ -170,5 +170,8 @@ sudo cp -r ${DOVETAIL_HOME}/results ./
 # PRIMARY_GROUP=$(id -gn $CURRENT_USER)
 # sudo chown -R ${CURRENT_USER}:${PRIMARY_GROUP} ${WORKSPACE}/results
 
+#remove useless workspace from yardstick to save disk space
+sudo rm -rf ./results/workspace
+
 echo "Dovetail: done!"
 
