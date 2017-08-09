@@ -26,6 +26,7 @@
     testname:
         - 'cyclictest'
         - 'packet_forward'
+        - 'livemigration'
 #####################################
 # patch verification phases
 #####################################
@@ -236,6 +237,17 @@
                   git-revision: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
+        - multijob:
+            name: livemigration-test
+            condition: SUCCESSFUL
+            projects:
+                - name: 'kvmfornfv-livemigration-daily-test-{stream}'
+                  current-parameters: false
+                  node-parameters: false
+                  git-revision: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+
 
 - job-template:
     name: 'kvmfornfv-daily-build-{stream}'
@@ -344,6 +356,14 @@
             !include-raw: ./kvmfornfv-download-artifact.sh
         - shell:
             !include-raw: ./kvmfornfv-test.sh
+- builder:
+    name: 'kvmfornfv-livemigration-daily-test-macro'
+    builders:
+        - shell:
+            !include-raw: ./kvmfornfv-download-artifact.sh
+        - shell:
+            !include-raw: ./kvmfornfv-test.sh
+
 #####################################
 # parameter macros
 #####################################
