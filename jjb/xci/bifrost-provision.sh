@@ -38,7 +38,7 @@ if [[ ! "$DISTRO" =~ (xenial|centos7|suse) ]]; then
 fi
 
 # remove previously cloned repos
-sudo /bin/rm -rf /opt/bifrost /opt/openstack-ansible /opt/releng /opt/functest
+sudo /bin/rm -rf /opt/bifrost /opt/openstack-ansible /opt/releng-xci /opt/functest
 
 # Fix up permissions
 fix_ownership
@@ -65,16 +65,16 @@ cd /opt/bifrost && sudo git checkout --quiet $OPENSTACK_BIFROST_VERSION
 echo "xci: using bifrost commit"
 git show --oneline -s --pretty=format:'%h - %s (%cr) <%an>'
 
-sudo git clone --quiet https://gerrit.opnfv.org/gerrit/releng /opt/releng
-cd /opt/releng && sudo git checkout --quiet $OPNFV_RELENG_VERSION
+sudo git clone --quiet https://gerrit.opnfv.org/gerrit/releng-xci /opt/releng-xci
+cd /opt/releng-xci && sudo git checkout --quiet $OPNFV_RELENG_VERSION
 echo "xci: using releng commit"
 git show --oneline -s --pretty=format:'%h - %s (%cr) <%an>'
 
 # source flavor vars
-source "$WORKSPACE/prototypes/xci/config/${XCI_FLAVOR}-vars"
+source "$WORKSPACE/xci/config/${XCI_FLAVOR}-vars"
 
 # combine opnfv and upstream scripts/playbooks
-sudo /bin/cp -rf /opt/releng/prototypes/bifrost/* /opt/bifrost/
+sudo /bin/cp -rf /opt/releng-xci/bifrost/* /opt/bifrost/
 
 # cleanup remnants of previous deployment
 cd /opt/bifrost

@@ -11,7 +11,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-cd $WORKSPACE/prototypes/xci
+cd $WORKSPACE/xci
 
 # for daily jobs, we want to use working versions
 # for periodic jobs, we will use whatever is set in the job, probably master
@@ -53,7 +53,7 @@ if [[ "$XCI_LOOP" == "periodic" && "$OPENSTACK_OSA_VERSION" == "master" ]]; then
 fi
 
 # proceed with the deployment
-cd $WORKSPACE/prototypes/xci
+cd $WORKSPACE/xci
 ./xci-deploy.sh
 
 if [[ "$JOB_NAME" =~ "periodic" && "$OPENSTACK_OSA_VERSION" == "master" ]]; then

@@ -95,21 +95,21 @@ if [[ ! "$DISTRO" =~ (xenial|centos7|suse) ]]; then
 fi
 
 # remove previously cloned repos
-/bin/rm -rf $WORKSPACE/bifrost $WORKSPACE/releng
+/bin/rm -rf $WORKSPACE/bifrost $WORKSPACE/releng-xci
 
 # Fix up permissions
 fix_ownership
 
 # clone all the repos first and checkout the patch afterwards
 git clone https://git.openstack.org/openstack/bifrost $WORKSPACE/bifrost
-git clone https://gerrit.opnfv.org/gerrit/releng $WORKSPACE/releng
+git clone https://gerrit.opnfv.org/gerrit/releng-xci $WORKSPACE/releng-xci
 
 # checkout the patch
 cd $CLONE_LOCATION
 git fetch $PROJECT_REPO $GERRIT_REFSPEC && sudo git checkout FETCH_HEAD
 
 # combine opnfv and upstream scripts/playbooks
-/bin/cp -rf $WORKSPACE/releng/prototypes/bifrost/* $WORKSPACE/bifrost/
+/bin/cp -rf $WORKSPACE/releng-xci/bifrost/* $WORKSPACE/bifrost/
 
 # cleanup remnants of previous deployment
 cd $WORKSPACE/bifrost
