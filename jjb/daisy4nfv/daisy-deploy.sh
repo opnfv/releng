@@ -28,7 +28,7 @@ git clone ssh://jenkins-zte@gerrit.opnfv.org:29418/securedlab --quiet \
 # daisy ci/deploy/deploy.sh use $BASE_DIR/labs dir
 cp -r securedlab/labs .
 
-DEPLOY_COMMAND="sudo ./ci/deploy/deploy.sh -b $BASE_DIR \
+DEPLOY_COMMAND="sudo -E ./ci/deploy/deploy.sh -b $BASE_DIR \
                 -l $LAB_NAME -p $POD_NAME -B $BRIDGE -s $DEPLOY_SCENARIO"
 
 # log info to console
