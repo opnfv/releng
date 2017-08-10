@@ -94,9 +94,6 @@ EXTRA=${DEPLOY_OPTIONS[4]}
 if [ "$SDN_CONTROLLER" == 'odl_l2' ] || [ "$SDN_CONTROLLER" == 'odl_l3' ]; then
     SDN_CONTROLLER='odl'
 fi
-if [ "$HA_MODE" == 'noha' ]; then
-    HA_MODE='nonha'
-fi
 
 # Add extra to features
 if [ "$EXTRA" != "" ];then
