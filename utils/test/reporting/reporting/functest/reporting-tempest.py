@@ -142,7 +142,7 @@ for version in rp_utils.get_config('general.versions'):
         templateEnv = jinja2.Environment(loader=templateLoader,
                                          autoescape=True)
 
-        TEMPLATE_FILE = "./functest/template/index-tempest-tmpl.html"
+        TEMPLATE_FILE = "./reporting/functest/template/index-tempest-tmpl.html"
         template = templateEnv.get_template(TEMPLATE_FILE)
 
         outputText = template.render(scenario_results=scenario_results,
