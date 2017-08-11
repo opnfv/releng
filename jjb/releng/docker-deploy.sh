@@ -16,89 +16,137 @@
 #  specific language governing permissions and limitations      *
 #  under the License.                                           *
 
-# Assigning Variables
+
 command=$1
 url=$2
 module=$3
 
-function check() {
+REPO="opnfv"
+latest_image=$REPO/$module:latest
+old_image=$REPO/$module:old
+latest_container_name=$module
+old_container_name=$module"_old"
+latest_container_id=
+old_container_id=
+new_start_container=
 
-    # Verify hosted
+function DEBUG() {
+  echo `date "+%Y-%m-%d %H:%M:%S.%N"` ": $1"
+}
+
+function check_connectivity() {
+    # check update status via test the connectivity of provide url
     sleep 5
     cmd=`curl -s --head  --request GET ${url} | grep '200 OK' > /dev/null`
     rc=$?
-    echo $rc
-
-    if [[ $rc == 0 ]]
-    then
+    DEBUG $rc
+    if [[ $rc == 0 ]]; then
         return 0
     else
         return 1
     fi
-
 }
 
-echo "Getting contianer Id of the currently running one"
-contId=$(sudo docker ps | grep "opnfv/${module}:latest" | awk '{print $1}')
 
-echo $contId
+function pull_latest_image() {
+    DEBUG "pull latest image $latest_image"
+    docker pull $latest_image
+}
 
-echo "Pulling the latest image"
-sudo docker pull opnfv/${module}:latest
+function get_latest_running_container() {
+    latest_container_id=`docker ps -q --filter name=^/$latest_container_name$`
+}
 
-echo "Deleting old containers of opnfv/${module}:old"
-sudo docker ps -a | grep "opnfv/${module}" | grep "old" | awk '{print $1}' | xargs -r sudo docker rm -f
+function get_old_running_container() {
+    old_container_id=`docker ps -q --filter name=^/$old_container_name$`
+}
 
-echo "Deleting old images of opnfv/${module}:latest"
-sudo docker images | grep "opnfv/${module}" | grep "old" | awk '{print $3}' | xargs -r sudo docker rmi -f
+function delete_old_image() {
+    DEBUG "delete old image: $old_image"
+    docker rmi -f $old_image
+}
 
+function delete_old_container() {
+    DEBUG "delete old container: $old_container_name"
+    docker ps -a -q --filter name=^/$old_container_name$ | xargs docker rm -f &>/dev/null
+}
 
-if [[ -z "$contId" ]]
-then
-    echo "No running ${module} container"
+function delete_latest_container() {
+    DEBUG "delete latest container: $module"
+    docker ps -a -q --filter name=^/$latest_container_name$ | xargs docker rm -f &>/dev/null
+}
 
-    echo "Removing stopped ${module} containers in the previous iterations"
-    sudo docker ps -f status=exited | grep "opnfv_${module}" | awk '{print $1}' | xargs -r sudo docker rm -f
+function delete_latest_image() {
+    DEBUG "delete latest image: $REPO/$module:latest"
+    docker rmi -f $latest_image
+}
+
+function change_image_tag_2_old() {
+    DEBUG "change image tag 2 old"
+    docker tag $latest_image $old_image
+    docker rmi -f $latest_image
+}
+
+function mark_latest_container_2_old() {
+    DEBUG "mark latest container to be old"
+    docker rename "$latest_container_name" "$old_container_name"
+}
+
+function stop_old_container() {
+    DEBUG "stop old container"
+    docker stop "$old_container_name"
+}
+
+function run_latest_image() {
+    new_start_container=`$command`
+    DEBUG "run latest image: $new_start_container"
+}
+
+get_latest_running_container
+get_old_running_container
+
+if [[ ! -z $latest_container_id ]]; then
+    DEBUG "latest container is running: $latest_container_id"
+    delete_old_container
+    delete_old_image
+    change_image_tag_2_old
+    pull_latest_image
+    mark_latest_container_2_old
+    stop_old_container
+    run_latest_image
+
+elif [[ ! -z $old_container_id ]]; then
+    DEBUG "old container is running: $old_container_id"
+    delete_latest_container
+    delete_latest_image
+    stop_old_container
+    pull_latest_image
+    run_latest_image
 else
-    echo $contId
-
-    echo "Get the image id of the currently running conatiner"
-    currImgId=$(sudo docker ps | grep "$contId" | awk '{print $2}')
-    echo $currImgId
-
-    if [[ -z "$currImgId" ]]
-    then
-        echo "No image id found for the container id"
-        exit 1
-    fi
-
-    echo "Changing current image tag to old"
-    sudo docker tag "$currImgId" opnfv/${module}:old
-
-    echo "Removing stopped ${module} containers in the previous iteration"
-    sudo docker ps -f status=exited | grep "opnfv_${module}" | awk '{print $1}' | xargs -r sudo docker rm -f
-
-    echo "Renaming the running container name to opnfv_${module} as to identify it."
-    sudo docker rename $contId opnfv_${module}
-
-    echo "Stop the currently running container"
-    sudo docker stop $contId
+    DEBUG "no container is running"
+    delete_old_container
+    delete_old_image
+    delete_latest_container
+    delete_latest_image
+    pull_latest_image
+    run_latest_image
 fi
 
-echo "Running a container with the new image"
-$command:latest
-
-if check; then
-    echo "TestResults Module Hosted."
+if check_connectivity; then
+    DEBUG "CONGRATS: $module update successfully"
 else
-    echo "TestResults Module Failed"
-    if [[ $(sudo docker images | grep "opnfv/${module}" | grep "old" | awk '{print $3}') ]]; then
-        echo "Running old Image"
-        $command:old
-        exit 1
+    DEBUG "ATTENTION: $module update failed"
+    id=`docker ps -a -q --filter name=^/$old_container_name$`
+    if [[ ! -z $id ]]; then
+        DEBUG "start old container instead"
+        docker stop $new_start_container
+        docker start $id
     fi
+    if ! check_connectivity; then
+        DEBUG "BIG ISSUE: no container is running"
+    fi
+    exit 1
 fi
 
-# Echo Images and Containers
-sudo docker images
-sudo docker ps -a
+docker images
+docker ps -a
