@@ -22,7 +22,7 @@ declare -A ports=( ["testapi"]="8082" ["reporting"]="8084")
 
 ## Urls to check if the modules are deployed or not ?
 declare -A urls=( ["testapi"]="http://testresults.opnfv.org/test/" \
-    ["reporting"]="http://testresults.opnfv.org/reporting2/reporting/index.html")
+    ["reporting"]="http://testresults.opnfv.org/reporting/index.html")
 
 ### Functions related to checking.
 
@@ -64,7 +64,7 @@ function check_modules() {
     failed_modules=()
     for module in "${modules[@]}"
     do
-        if is_deploying $module; then
+        if ! is_deploying $module; then
             continue
         fi
         if ! check_connectivity $module "${urls[$module]}"; then
