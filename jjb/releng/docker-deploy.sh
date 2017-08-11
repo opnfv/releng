@@ -56,9 +56,6 @@ sudo docker images | grep "opnfv/${module}" | grep "old" | awk '{print $3}' | xa
 if [[ -z "$contId" ]]
 then
     echo "No running ${module} container"
-
-    echo "Removing stopped ${module} containers in the previous iterations"
-    sudo docker ps -f status=exited | grep "opnfv_${module}" | awk '{print $1}' | xargs -r sudo docker rm -f
 else
     echo $contId
 
@@ -75,14 +72,8 @@ else
     echo "Changing current image tag to old"
     sudo docker tag "$currImgId" opnfv/${module}:old
 
-    echo "Removing stopped ${module} containers in the previous iteration"
-    sudo docker ps -f status=exited | grep "opnfv_${module}" | awk '{print $1}' | xargs -r sudo docker rm -f
-
-    echo "Renaming the running container name to opnfv_${module} as to identify it."
-    sudo docker rename $contId opnfv_${module}
-
     echo "Stop the currently running container"
-    sudo docker stop $contId
+    sudo docker rm -f $contId
 fi
 
 echo "Running a container with the new image"
