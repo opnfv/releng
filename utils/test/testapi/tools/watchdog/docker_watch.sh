@@ -22,7 +22,7 @@ declare -A ports=( ["testapi"]="8082" ["reporting"]="8084")
 
 ## Urls to check if the modules are deployed or not ?
 declare -A urls=( ["testapi"]="http://testresults.opnfv.org/test/" \
-    ["reporting"]="http://testresults.opnfv.org/reporting2/reporting/index.html")
+    ["reporting"]="http://testresults.opnfv.org/reporting/index.html")
 
 ### Functions related to checking.
 
@@ -31,9 +31,9 @@ function is_deploying() {
     building=$(grep -oPm1 "(?<=<building>)[^<]+" <<< "$xml")
     if [[ $building == "false" ]]
     then
-        return 0
+        false
     else
-        return 1
+        true
     fi
 }
 
@@ -42,9 +42,9 @@ function get_docker_status() {
     echo -e "Docker status: $status"
     if [ $status = "active" ]
     then
-        return 1
+        true
     else
-        return 0
+        false
     fi
 }
 
@@ -53,9 +53,9 @@ function check_connectivity() {
     cmd=`curl --head -m10 --request GET ${2} | grep '200 OK' > /dev/null`
     rc=$?
     if [[ $rc == 0 ]]; then
-        return 0
+        true
     else
-        return 1
+        false
     fi
 }
 
@@ -74,7 +74,7 @@ function check_modules() {
     done
     if [ ! -z "$failed_modules" ]; then
         echo -e "Failed Modules: $failed_modules"
-        return 1
+        false
     else
         echo -e "All modules working good"
         exit 0
@@ -135,7 +135,7 @@ echo -e
 
 ## If the problem is related to docker daemon
 
-if get_docker_status; then
+if ! get_docker_status; then
     restart_docker_fix
     if ! check_modules; then
         echo -e "Watchdog failed while restart_docker_fix"
