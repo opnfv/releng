@@ -1,13 +1,25 @@
+---
 # SPDX-license-identifier: Apache-2.0
 ##############################################################################
 # Copyright (c) 2017 Ericsson AB and others.
+# taseer94@gmail.com
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Apache License, Version 2.0
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-[opnfv]
-opnfv ansible_ssh_host=192.168.122.2
+- hosts: controller
+  remote_user: root
+  tasks:
+    - name: fetching utility controller name
+      shell: lxc-ls | grep "controller00_utility_container"
+      register: utility_contatiner
 
-[controller]
-192.168.122.3
+    - name: login to the container
+      shell: lxc-attach -n "{{ utility_contatiner.stdout_lines[0] }}"
+
+    - name: save openrc file
+      synchronize:
+        mode: pull
+        src: ./openrc
+        dest: ~/
