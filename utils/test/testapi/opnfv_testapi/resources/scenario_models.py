@@ -144,21 +144,6 @@ class ScenarioCreateRequest(models.ModelBase):
 
 
 @swagger.model()
-class ScenarioUpdateRequest(models.ModelBase):
-    """
-        @property field: update field
-        @property op: add/delete/update
-        @property locate: information used to locate the field
-        @property term: new value
-    """
-    def __init__(self, field=None, op=None, locate=None, term=None):
-        self.field = field
-        self.op = op
-        self.locate = dict_default(locate)
-        self.term = dict_default(term)
-
-
-@swagger.model()
 class Scenario(models.ModelBase):
     """
         @property installers:
