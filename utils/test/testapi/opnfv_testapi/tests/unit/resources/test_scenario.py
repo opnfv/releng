@@ -1,10 +1,17 @@
+import functools
 import httplib
 import json
 import os
+from copy import deepcopy
+from datetime import datetime
 
-import opnfv_testapi.resources.scenario_models as models
 from opnfv_testapi.common import message
+import opnfv_testapi.resources.scenario_models as models
 from opnfv_testapi.tests.unit.resources import test_base as base
+
+
+def _none_default(check, default):
+    return check if check else default
 
 
 class TestScenarioBase(base.TestBase):
@@ -147,5 +154,50 @@ class TestScenarioDelete(TestScenarioBase):
         self.assertEqual(code, httplib.NOT_FOUND)
 
 
-def _none_default(check, default):
-    return check if check else default
+class TestScenarioUpdate(TestScenarioBase):
+    def setUp(self):
+        super(TestScenarioUpdate, self).setUp()
+        self.scenario = self.create_return_name(self.req_d)
+        self.scenario_2 = self.create_return_name(self.req_2)
+        self.update_url = ''
+        self.scenario_url = '/api/v1/scenarios/{}'.format(self.scenario)
+        self.installer = self.req_d['installers'][0]['installer']
+        self.version = self.req_d['installers'][0]['versions'][0]['version']
+        self.locate_project = 'installer={}&version={}&project={}'.format(
+            self.installer,
+            self.version,
+            'functest')
+
+    def update_partial(operate, expected):
+        def _update(set_update):
+            @functools.wraps(set_update)
+            def wrap(self):
+                update, scenario = set_update(self, deepcopy(self.req_d))
+                code, body = getattr(self, operate)(update, self.scenario)
+                getattr(self, expected)(code, scenario)
+            return wrap
+        return _update
+
+    @update_partial('_add', '_success')
+    def test_addScore(self, scenario):
+        add = models.ScenarioScore(date=str(datetime.now()), score='11/12')
+        projects = scenario['installers'][0]['versions'][0]['projects']
+        functest = filter(lambda f: f['project'] == 'functest', projects)[0]
+        functest['scores'].append(add.format())
+        self.update_url = '{}/scores?{}'.format(self.scenario_url,
+                                                self.locate_project)
+
+        return add, scenario
+
+    def _add(self, update_req, new_scenario):
+        return self.post_direct_url(self.update_url, update_req)
+
+    def _success(self, status, new_scenario):
+        self.assertEqual(status, httplib.OK)
+        self._get_and_assert(new_scenario.get('name'), new_scenario)
+
+    def _forbidden(self, status, new_scenario):
+        self.assertEqual(status, httplib.FORBIDDEN)
+
+    def _bad_request(self, status, new_scenario):
+        self.assertEqual(status, httplib.BAD_REQUEST)

@@ -63,9 +63,12 @@ class TestBase(testing.AsyncHTTPTestCase):
         return self.create_help(self.basePath, req, *args)
 
     def create_help(self, uri, req, *args):
+        return self.post_direct_url(self._update_uri(uri, *args), req)
+
+    def post_direct_url(self, url, req):
         if req and not isinstance(req, str) and hasattr(req, 'format'):
             req = req.format()
-        res = self.fetch(self._update_uri(uri, *args),
+        res = self.fetch(url,
                          method='POST',
                          body=json.dumps(req),
                          headers=self.headers)
