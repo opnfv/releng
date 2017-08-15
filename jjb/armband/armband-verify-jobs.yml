@@ -63,34 +63,14 @@
             fail: true
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'ci/**'
-                  - compare-type: ANT
-                    pattern: 'patches/**'
-                disable-strict-forbidden-file-verification: 'true'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**'
-            readable-message: true
+        - gerrit-trigger-patchset-created-files-readable:
+            project: '{project}'
+            branch: '{branch}'
+            file-paths:
+                - compare-type: ANT
+                  pattern: 'ci/**'
+                - compare-type: ANT
+                  pattern: 'patches/**'
 
     parameters:
         - project-parameter:

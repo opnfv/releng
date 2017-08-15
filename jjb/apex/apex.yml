@@ -156,27 +156,12 @@
         - git-scm-gerrit
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'true'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'apex'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'tests/**'
+        - gerrit-trigger-patchset-created-files:
+            project: '{project}'
+            branch: '{branch}'
+            file_paths:
+                - compare-type: ANT
+                  pattern: 'tests/**'
     properties:
         - logrotate-default
         - throttle:
@@ -212,33 +197,18 @@
         - git-scm-gerrit
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'true'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'apex'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'ci/**'
-                  - compare-type: ANT
-                    pattern: 'build/**'
-                  - compare-type: ANT
-                    pattern: 'lib/**'
-                  - compare-type: ANT
-                    pattern: 'config/**'
+        - gerrit-trigger-patchset-created-files:
+            project: '{project}'
+            branch: '{branch}'
+            file_paths:
+                - compare-type: ANT
+                  pattern: 'build/**'
+                - compare-type: ANT
+                  pattern: 'ci/**'
+                - compare-type: ANT
+                  pattern: 'config/**'
+                - compare-type: ANT
+                  pattern: 'lib/**'
 
     properties:
         - logrotate-default
@@ -357,7 +327,7 @@
                 branches:
                   - branch-compare-type: 'ANT'
                     branch-pattern: '**/{branch}'
-                file-paths:
+                file_paths:
                   - compare-type: ANT
                     pattern: 'ci/**'
                   - compare-type: ANT
