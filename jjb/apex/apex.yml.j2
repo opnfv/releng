@@ -585,7 +585,7 @@
             description: "Deployed on $NODE_NAME - Scenario: $DEPLOY_SCENARIO"
         - multijob:
             name: 'Baremetal Deploy'
-            condition: ALWAYS
+            condition: SUCCESSFUL
             projects:
                 - name: 'apex-deploy-baremetal-{scenario_stream}'
                   node-parameters: true
@@ -600,7 +600,6 @@
                   git-revision: false
         - multijob:
             name: 'OPNFV Test Suite'
-            condition: SUCCESSFUL
             projects:
                 - name: 'apex-testsuite-{scenario}-baremetal-{scenario_stream}'
                   node-parameters: true
