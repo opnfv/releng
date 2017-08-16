@@ -27,6 +27,13 @@
             scenario: os-nosdn-kvm-ha
             <<: *master
 
+
+#--------------------------------
+# TEST SUITE
+#--------------------------------
+    testsuite:
+        - 'compute'
+
 #--------------------------------
 # JOB LIST
 #--------------------------------
@@ -56,6 +63,10 @@
             name: CI_DEBUG
             default: 'false'
             description: "Show debug output information"
+        - string:
+            name: TEST_SUITE
+            default: '{testsuite}'
+            description: "Test suite name"
     scm:
         - git-scm
     triggers:
@@ -78,11 +89,13 @@
 - builder:
     name: qtip-validate-deploy
     builders:
-        - shell:
-            !include-raw: ./helpers/cleanup-deploy.sh
-        - shell:
-            !include-raw: ./helpers/validate-deploy.sh
+        - shell: |
+             #!/bin/bash
+                set -o errexit
+                set -o pipefail
+                set -o xtrace
 
+                source tests/ci/periodic.sh
 
 #-----------
 # parameter
