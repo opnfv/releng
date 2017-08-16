@@ -126,7 +126,7 @@ for version in versions:
             # in case of more than 1 architecture supported
             # precise the architecture
             installer_display = installer
-            if (len(architectures) > 1):
+            if "fuel" in installer:
                 installer_display = installer + "@" + architecture
 
             # For all the scenarios get results
