@@ -106,16 +106,22 @@ class GenericApiHandler(web.RequestHandler):
         per_page = kwargs.get('per_page', 0)
         if query is None:
             query = {}
+        pipelines = list()
+        pipelines.append({'$match': query})
 
         total_pages = 0
         if page > 0:
             cursor = dbapi.db_list(self.table, query)
             records_count = yield cursor.count()
-            total_pages = self._calc_total_pages(records_count,
-                                                 last,
-                                                 page,
-                                                 per_page)
-        pipelines = self._set_pipelines(query, sort, last, page, per_page)
+            total_pages, return_nr = self._calc_total_pages(records_count,
+                                                            last,
+                                                            page,
+                                                            per_page)
+            pipelines = self._set_pipelines(pipelines,
+                                            sort,
+                                            return_nr,
+                                            page,
+                                            per_page)
         cursor = dbapi.db_aggregate(self.table, pipelines)
         data = list()
         while (yield cursor.fetch_next):
@@ -145,21 +151,17 @@ class GenericApiHandler(web.RequestHandler):
         if page > 1 and page > total_pages:
             raises.BadRequest(
                 'Request page > total_pages [{}]'.format(total_pages))
-        return total_pages
+        return total_pages, records_nr
 
     @staticmethod
-    def _set_pipelines(query, sort, last, page, per_page):
-        pipelines = list()
-        if query:
-            pipelines.append({'$match': query})
+    def _set_pipelines(pipelines, sort, return_nr, page, per_page):
         if sort:
             pipelines.append({'$sort': sort})
 
-        if page > 0:
-            pipelines.append({'$skip': (page - 1) * per_page})
-            pipelines.append({'$limit': per_page})
-        elif last > 0:
-            pipelines.append({'$limit': last})
+        over = (page - 1) * per_page
+        left = return_nr - over
+        pipelines.append({'$skip': over})
+        pipelines.append({'$limit': per_page if per_page < left else left})
 
         return pipelines
 
