@@ -33,7 +33,7 @@ from opnfv_testapi.db import api as dbapi
 from opnfv_testapi.resources import models
 from opnfv_testapi.tornado_swagger import swagger
 
-DEFAULT_REPRESENTATION = "application/json"
+CONTENT_TYPE = "application/json"
 
 
 class GenericApiHandler(web.RequestHandler):
@@ -50,10 +50,9 @@ class GenericApiHandler(web.RequestHandler):
         self.auth = self.settings["auth"]
 
     def prepare(self):
-        if self.request.method != "GET" and self.request.method != "DELETE":
+        if self.request.body:
             if self.request.headers.get("Content-Type") is not None:
-                if self.request.headers["Content-Type"].startswith(
-                        DEFAULT_REPRESENTATION):
+                if self.request.headers["Content-Type"].startswith(CONTENT_TYPE):
                     try:
                         self.json_args = json.loads(self.request.body)
                     except (ValueError, KeyError, TypeError) as error:
@@ -62,7 +61,7 @@ class GenericApiHandler(web.RequestHandler):
     def finish_request(self, json_object=None):
         if json_object:
             self.write(json.dumps(json_object))
-        self.set_header("Content-Type", DEFAULT_REPRESENTATION)
+        self.set_header("Content-Type", CONTENT_TYPE)
         self.finish()
 
     def _create_response(self, resource):
@@ -185,6 +184,15 @@ class GenericApiHandler(web.RequestHandler):
         yield dbapi.db_update(self.table, query, update_req)
         update_req['_id'] = str(data._id)
         self.finish_request(update_req)
+
+    @check.authenticate
+    @check.no_body
+    @check.not_exist
+    @check.updated_one_not_exist
+    def pure_update(self, data, query=None, **kwargs):
+        data = self.table_cls.from_dict(data)
+        update_req = self._update_requests(data)
+        yield dbapi.db_update(self.table, query, update_req)
 
     def _update_requests(self, data):
         request = dict()
