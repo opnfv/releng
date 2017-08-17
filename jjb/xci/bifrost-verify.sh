@@ -57,16 +57,17 @@ EOF
 </html>
 EOF
 
+    # Upload landing page
+    echo "Uploading the landing page"
+    gsutil -q cp ${WORKSPACE}/index.html ${BIFROST_GS_URL}/index.html
+    rm -f ${WORKSPACE}/index.html
+
     # Finally, download and upload the entire build log so we can retain
     # as much build information as possible
     echo "Uploading the final console output"
     curl -s -L ${BIFROST_CONSOLE_LOG} > ${WORKSPACE}/build_log.txt
     gsutil -q cp -Z ${WORKSPACE}/build_log.txt ${BIFROST_GS_URL}/build_log.txt
-    rm ${WORKSPACE}/build_log.txt
-
-    # Upload landing page
-    gsutil -q cp ${WORKSPACE}/index.html ${BIFROST_GS_URL}/index.html
-    rm ${WORKSPACE}/index.html
+    rm -f ${WORKSPACE}/build_log.txt
 }
 
 function fix_ownership() {
@@ -83,6 +84,9 @@ function fix_ownership() {
 
 function cleanup_and_upload() {
     original_exit=$?
+    echo "Job exit code: $original_exit"
+    # Turn off errexit
+    set +o errexit
     fix_ownership
     upload_logs
     exit $original_exit
