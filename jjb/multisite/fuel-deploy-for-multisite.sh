@@ -46,7 +46,7 @@ curl -L -s -o $WORKSPACE/opnfv.iso http://$OPNFV_ARTIFACT_URL > gsutil.iso.log 2
 # set deployment parameters
 DEPLOY_SCENARIO="os-nosdn-nofeature-noha"
 export TMPDIR=$HOME/tmpdir
-BRIDGE=${BRIDGE:-,,,}
+BRIDGE=${BRIDGE:-pxebr}
 LAB_NAME=${NODE_NAME/-*}
 POD_NAME=${NODE_NAME/*-}
 
