@@ -1,12 +1,12 @@
-######################
-# verify before MERGE
-######################
+###########################################
+# Experimental jobs for development purpose
+###########################################
 
 - project:
-    name: qtip-integration-jobs
+    name: qtip-experimental-jobs
     project: qtip
     jobs:
-        - 'qtip-storage-{stream}'
+        - 'qtip-experimental-{stream}'
     stream:
         - master:
             branch: '{stream}'
@@ -18,7 +18,7 @@
 #################################
 
 - job-template:
-    name: 'qtip-storage-{stream}'
+    name: 'qtip-experimental-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -41,8 +41,4 @@
     builders:
         - shell: |
              #!/bin/bash
-                set -o errexit
-                set -o pipefail
-                set -o xtrace
-
-                source integration/storperf/run_ci.sh
+                source tests/ci/experimental.sh
