@@ -33,7 +33,7 @@ fi
 
 # set deployment parameters
 export TMPDIR=$HOME/tmpdir
-BRIDGE=${BRIDGE:-,,,}
+BRIDGE=${BRIDGE:-pxebr}
 LAB_NAME=${NODE_NAME/-*}
 POD_NAME=${NODE_NAME/*-}
 
@@ -63,13 +63,20 @@ echo "Cloning securedlab repo $BRANCH"
 git clone ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab --quiet \
     --branch $BRANCH
 
+# Source local_env if present, which contains POD-specific config
+local_env="${WORKSPACE}/securedlab/labs/$LAB_NAME/$POD_NAME/fuel/config/local_env"
+if [ -e $local_env ]; then
+    echo "-- Sourcing local environment file"
+    source $local_env
+fi
+
 # log file name
 FUEL_LOG_FILENAME="${JOB_NAME}_${BUILD_NUMBER}.log.tar.gz"
 
 # construct the command
 DEPLOY_COMMAND="sudo $WORKSPACE/ci/deploy.sh -b file://$WORKSPACE/securedlab \
     -l $LAB_NAME -p $POD_NAME -s $DEPLOY_SCENARIO -i file://$WORKSPACE/opnfv.iso \
-    -B $BRIDGE -S $TMPDIR -L $WORKSPACE/$FUEL_LOG_FILENAME"
+    -B ${DEFAULT_BRIDGE:-${BRIDGE}} -S $TMPDIR -L $WORKSPACE/$FUEL_LOG_FILENAME"
 
 # log info to console
 echo "Deployment parameters"
