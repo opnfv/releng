@@ -138,6 +138,9 @@ class ScenarioUpdater(object):
         updates = {
             ('scores', 'post'): self._update_requests_add_score,
             ('trust_indicators', 'post'): self._update_requests_add_ti,
+            ('customs', 'post'): self._update_requests_add_customs,
+            ('customs', 'put'): self._update_requests_update_customs,
+            ('customs', 'delete'): self._update_requests_delete_customs,
         }
         updates[(item, action)](self.data)
 
@@ -178,6 +181,26 @@ class ScenarioUpdater(object):
         project.trust_indicators.append(
             models.ScenarioTI.from_dict(self.body))
 
+    @iter_installers
+    @iter_versions
+    @iter_projects
+    def _update_requests_add_customs(self, project):
+        project.customs = list(set(project.customs + self.body))
+
+    @iter_installers
+    @iter_versions
+    @iter_projects
+    def _update_requests_update_customs(self, project):
+        project.customs = list(set(self.body))
+
+    @iter_installers
+    @iter_versions
+    @iter_projects
+    def _update_requests_delete_customs(self, project):
+        project.customs = filter(
+            lambda f: f not in self.body,
+            project.customs)
+
     def _filter_installers(self, installers):
         return self._filter('installer', installers)
 
@@ -204,15 +227,16 @@ class GenericScenarioUpdateHandler(GenericScenarioHandler):
         self.item = None
         self.action = None
 
-    def do_post(self, scenario, item, action, locators):
+    def do_update(self, item, action, locators):
         self.item = item
         self.action = action
-        for k in locators.keys():
-            v = self.get_query_argument(k)
-            setattr(self, k, v)
-            locators[k] = v
-        db_keys = ['name']
-        self._update(query=self.set_query(locators=locators), db_keys=db_keys)
+        for k, v in locators.iteritems():
+            if not v:
+                v = self.get_query_argument(k)
+                setattr(self, k, v)
+                locators[k] = v
+        self.pure_update(query=self.set_query(locators=locators))
+        self.finish_request()
 
     def _update_requests(self, data):
         return ScenarioUpdater(data,
@@ -247,16 +271,15 @@ class ScenarioScoresHandler(GenericScenarioUpdateHandler):
         @type project: L{string}
         @in project: query
         @required project: True
-        @rtype: L{Scenario}
         @return 200: score is created.
         @raise 404:  scenario/installer/version/project not existed
         """
-        self.do_post(scenario,
-                     'scores',
-                     'post',
-                     locators={'installer': None,
-                               'version': None,
-                               'project': None})
+        self.do_update('scores',
+                       'post',
+                       locators={'scenario': scenario,
+                                 'installer': None,
+                                 'version': None,
+                                 'project': None})
 
 
 class ScenarioTIsHandler(GenericScenarioUpdateHandler):
@@ -284,13 +307,116 @@ class ScenarioTIsHandler(GenericScenarioUpdateHandler):
         @type project: L{string}
         @in project: query
         @required project: True
-        @rtype: L{Scenario}
         @return 200: trust indicator is added.
         @raise 404:  scenario/installer/version/project not existed
         """
-        self.do_post(scenario,
-                     'trust_indicators',
-                     'post',
-                     locators={'installer': None,
-                               'version': None,
-                               'project': None})
+        self.do_update('trust_indicators',
+                       'post',
+                       locators={'scenario': scenario,
+                                 'installer': None,
+                                 'version': None,
+                                 'project': None})
+
+
+class ScenarioCustomsHandler(GenericScenarioUpdateHandler):
+    @swagger.operation(nickname="addCustomizedTestCases")
+    def post(self, scenario):
+        """
+        @description: add customized test cases
+        @notes: add several test cases to a project
+            POST /api/v1/scenarios/<scenario_name>/customs? \
+                installer=<installer_name>& \
+                version=<version_name>& \
+                project=<project_name>
+        @param body: test cases to be added
+        @type body: C{list} of L{string}
+        @in body: body
+        @param installer: installer type
+        @type installer: L{string}
+        @in installer: query
+        @required installer: True
+        @param version: version
+        @type version: L{string}
+        @in version: query
+        @required version: True
+        @param project: project name
+        @type project: L{string}
+        @in project: query
+        @required project: True
+        @return 200: test cases are added.
+        @raise 404:  scenario/installer/version/project not existed
+        """
+        self.do_update('customs',
+                       'post',
+                       locators={'scenario': scenario,
+                                 'installer': None,
+                                 'version': None,
+                                 'project': None})
+
+    @swagger.operation(nickname="updateCustomizedTestCases")
+    def put(self, scenario):
+        """
+        @description: update customized test cases
+        @notes: substitute all the customized test cases
+            PUT /api/v1/scenarios/<scenario_name>/customs? \
+                installer=<installer_name>& \
+                version=<version_name>& \
+                project=<project_name>
+        @param body: new supported test cases
+        @type body: C{list} of L{string}
+        @in body: body
+        @param installer: installer type
+        @type installer: L{string}
+        @in installer: query
+        @required installer: True
+        @param version: version
+        @type version: L{string}
+        @in version: query
+        @required version: True
+        @param project: project name
+        @type project: L{string}
+        @in project: query
+        @required project: True
+        @return 200: substitute test cases success.
+        @raise 404:  scenario/installer/version/project not existed
+        """
+        self.do_update('customs',
+                       'put',
+                       locators={'scenario': scenario,
+                                 'installer': None,
+                                 'version': None,
+                                 'project': None})
+
+    @swagger.operation(nickname="deleteCustomizedTestCases")
+    def delete(self, scenario):
+        """
+        @description: delete one or several customized test cases
+        @notes: delete one or some customized test cases
+            DELETE /api/v1/scenarios/<scenario_name>/customs? \
+                installer=<installer_name>& \
+                version=<version_name>& \
+                project=<project_name>
+        @param body: test case(s) to be deleted
+        @type body: C{list} of L{string}
+        @in body: body
+        @param installer: installer type
+        @type installer: L{string}
+        @in installer: query
+        @required installer: True
+        @param version: version
+        @type version: L{string}
+        @in version: query
+        @required version: True
+        @param project: project name
+        @type project: L{string}
+        @in project: query
+        @required project: True
+        @return 200: delete test case(s) success.
+        @raise 404:  scenario/installer/version/project not existed
+        """
+        self.do_update('customs',
+                       'delete',
+                       locators={'scenario': scenario,
+                                 'installer': None,
+                                 'version': None,
+                                 'project': None})

@@ -58,6 +58,8 @@ mappings = [
      scenario_handlers.ScenarioScoresHandler),
     (r"/api/v1/scenarios/([^/]+)/trust_indicators",
      scenario_handlers.ScenarioTIsHandler),
+    (r"/api/v1/scenarios/([^/]+)/customs",
+     scenario_handlers.ScenarioCustomsHandler),
 
     # static path
     (r'/(.*\.(css|png|gif|js|html|json|map|woff2|woff|ttf))',

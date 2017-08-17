@@ -50,7 +50,7 @@ class GenericApiHandler(web.RequestHandler):
         self.auth = self.settings["auth"]
 
     def prepare(self):
-        if self.request.method != "GET" and self.request.method != "DELETE":
+        if self.request.body:
             if self.request.headers.get("Content-Type") is not None:
                 if self.request.headers["Content-Type"].startswith(
                         DEFAULT_REPRESENTATION):
@@ -185,6 +185,15 @@ class GenericApiHandler(web.RequestHandler):
         yield dbapi.db_update(self.table, query, update_req)
         update_req['_id'] = str(data._id)
         self.finish_request(update_req)
+
+    @check.authenticate
+    @check.no_body
+    @check.not_exist
+    @check.updated_one_not_exist
+    def pure_update(self, data, query=None, **kwargs):
+        data = self.table_cls.from_dict(data)
+        update_req = self._update_requests(data)
+        yield dbapi.db_update(self.table, query, update_req)
 
     def _update_requests(self, data):
         request = dict()
