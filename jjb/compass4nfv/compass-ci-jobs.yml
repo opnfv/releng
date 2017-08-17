@@ -87,6 +87,24 @@
         - 'k8-nosdn-nofeature-ha':
             disabled: false
             auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
+        - 'os-nosdn-nofeature-noha':
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
+        - 'os-odl_l3-nofeature-noha':
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
+        - 'os-odl_l2-moon-noha':
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
+        - 'os-nosdn-kvm-noha':
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
+        - 'os-odl-sfc-noha':
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
+        - 'os-nosdn-dpdk-noha':
+            disabled: false
+            auto-trigger-name: 'compass-{scenario}-{pod}-{stream}-trigger'
 
 
     jobs:
@@ -351,6 +369,10 @@
 ########################
 # trigger macros
 ########################
+
+#---------------------------
+# ha-baremetal-centos-master
+#---------------------------
 - trigger:
     name: 'compass-os-nosdn-nofeature-ha-baremetal-centos-master-trigger'
     triggers:
@@ -400,10 +422,41 @@
     triggers:
         - timed: ''
 
+#-----------------------------
+# noha-baremetal-centos-master
+#-----------------------------
+- trigger:
+    name: 'compass-os-nosdn-nofeature-noha-baremetal-centos-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l3-nofeature-noha-baremetal-centos-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l2-moon-noha-baremetal-centos-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-nosdn-kvm-noha-baremetal-centos-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl-sfc-noha-baremetal-centos-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-nosdn-dpdk-noha-baremetal-centos-master-trigger'
+    triggers:
+        - timed: ''
+
+#--------------------
+# ha-baremetal-master
+#--------------------
 - trigger:
     name: 'compass-os-nosdn-nofeature-ha-baremetal-master-trigger'
     triggers:
-        - timed: '0 2 * * *'
+        - timed: '0 20 * * *'
 - trigger:
     name: 'compass-os-nosdn-openo-ha-baremetal-master-trigger'
     triggers:
@@ -447,9 +500,39 @@
 - trigger:
     name: 'compass-os-odl-sfc-ha-baremetal-master-trigger'
     triggers:
-        - timed: '0 4 * * *'
+        - timed: '0 10 * * *'
 
+#----------------------
+# noha-baremetal-master
+#----------------------
+- trigger:
+    name: 'compass-os-nosdn-kvm-noha-baremetal-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-nosdn-nofeature-noha-baremetal-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l3-nofeature-noha-baremetal-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l2-moon-noha-baremetal-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl-sfc-noha-baremetal-master-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-nosdn-dpdk-noha-baremetal-master-trigger'
+    triggers:
+        - timed: ''
 
+#--------------------
+# ha-baremetal-danube
+#--------------------
 - trigger:
     name: 'compass-os-nosdn-nofeature-ha-baremetal-danube-trigger'
     triggers:
@@ -499,7 +582,37 @@
     triggers:
         - timed: ''
 
+#----------------------
+# noha-baremetal-danube
+#----------------------
+- trigger:
+    name: 'compass-os-nosdn-kvm-noha-baremetal-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-nosdn-nofeature-noha-baremetal-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l3-nofeature-noha-baremetal-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l2-moon-noha-baremetal-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl-sfc-noha-baremetal-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-nosdn-dpdk-noha-baremetal-danube-trigger'
+    triggers:
+        - timed: ''
 
+#------------------
+# ha-virtual-master
+#------------------
 - trigger:
     name: 'compass-os-nosdn-nofeature-ha-virtual-master-trigger'
     triggers:
@@ -531,11 +644,11 @@
 - trigger:
     name: 'compass-os-odl_l2-moon-ha-virtual-master-trigger'
     triggers:
-        - timed: '0 22 * * *'
+        - timed: '0 12 * * *'
 - trigger:
     name: 'compass-os-nosdn-kvm-ha-virtual-master-trigger'
     triggers:
-        - timed: '0 23 * * *'
+        - timed: '0 13 * * *'
 - trigger:
     name: 'compass-os-nosdn-dpdk-ha-virtual-master-trigger'
     triggers:
@@ -549,6 +662,37 @@
     triggers:
         - timed: '0 16 * * *'
 
+#--------------------
+# noha-virtual-master
+#--------------------
+- trigger:
+    name: 'compass-os-nosdn-kvm-noha-virtual-master-trigger'
+    triggers:
+        - timed: '0 13 * * *'
+- trigger:
+    name: 'compass-os-nosdn-nofeature-noha-virtual-master-trigger'
+    triggers:
+        - timed: '0 14 * * *'
+- trigger:
+    name: 'compass-os-odl_l3-nofeature-noha-virtual-master-trigger'
+    triggers:
+        - timed: '0 15 * * *'
+- trigger:
+    name: 'compass-os-odl_l2-moon-noha-virtual-master-trigger'
+    triggers:
+        - timed: '0 18 * * *'
+- trigger:
+    name: 'compass-os-odl-sfc-noha-virtual-master-trigger'
+    triggers:
+        - timed: '0 20 * * *'
+- trigger:
+    name: 'compass-os-nosdn-dpdk-noha-virtual-master-trigger'
+    triggers:
+        - timed: '0 11 * * *'
+
+#------------------
+# ha-virtual-danube
+#------------------
 - trigger:
     name: 'compass-os-nosdn-nofeature-ha-virtual-danube-trigger'
     triggers:
@@ -595,5 +739,33 @@
         - timed: ''
 - trigger:
     name: 'compass-k8-nosdn-nofeature-ha-virtual-danube-trigger'
+    triggers:
+        - timed: ''
+
+#--------------------
+# noha-virtual-danube
+#--------------------
+- trigger:
+    name: 'compass-os-nosdn-kvm-noha-virtual-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-nosdn-nofeature-noha-virtual-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l3-nofeature-noha-virtual-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l2-moon-noha-virtual-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl-sfc-noha-virtual-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-nosdn-dpdk-noha-virtual-danube-trigger'
     triggers:
         - timed: ''
