@@ -1,0 +1,208 @@
+- project:
+    name: 'opnfv-xci-verify'
+
+    project: releng-xci
+#--------------------------------
+# branches
+#--------------------------------
+    stream:
+        - master:
+            branch: '{stream}'
+#--------------------------------
+# distros
+#--------------------------------
+    distro:
+        - 'xenial':
+            disabled: false
+        - 'centos7':
+            disabled: true
+        - 'suse':
+            disabled: true
+#--------------------------------
+# type
+#--------------------------------
+    type:
+        - virtual
+#--------------------------------
+# patch verification phases
+#--------------------------------
+    phase:
+        - 'deploy'
+        - 'healthcheck'
+#--------------------------------
+# jobs
+#--------------------------------
+    jobs:
+        - 'xci-verify-{distro}-{type}-{stream}'
+        - 'xci-verify-{phase}-{type}-{stream}'
+#--------------------------------
+# job templates
+#--------------------------------
+- job-template:
+    name: 'xci-verify-{distro}-{type}-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'xci-verify-.*'
+            block-level: 'NODE'
+
+    wrappers:
+        - ssh-agent-wrapper
+        - timeout:
+            timeout: 240
+            fail: true
+        - fix-workspace-permissions
+
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'xci/**'
+                disable-strict-forbidden-file-verification: 'true'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'bifrost/**'
+                  - compare-type: ANT
+                    pattern: 'openstack-ansible/**'
+                  - compare-type: ANT
+                    pattern: 'puppet-infracloud/**'
+                  - compare-type: ANT
+                    pattern: 'README.rst'
+            readable-message: true
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - label:
+            name: SLAVE_LABEL
+            default: 'xci-virtual-{distro}'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: deploy
+            condition: SUCCESSFUL
+            projects:
+                - name: 'xci-verify-deploy-{type}-{stream}'
+                  current-parameters: true
+                  predefined-parameters: |
+                    DISTRO={distro}
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: healthcheck
+            condition: SUCCESSFUL
+            projects:
+                - name: 'xci-verify-healthcheck-{type}-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    DISTRO={distro}
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                    FUNCTEST_SUITE_NAME=healthcheck
+                  node-parameters: true
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+
+- job-template:
+    name: 'xci-verify-{phase}-{type}-{stream}'
+
+    disabled: false
+
+    concurrent: true
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'xci-verify-deploy-.*'
+                - 'xci-verify-healthcheck-.*'
+            block-level: 'NODE'
+
+    parameters:
+        - string:
+            name: DISTRO
+            default: '{distro}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-nofeature-noha'
+        - string:
+            name: FUNCTEST_SUITE_NAME
+            default: 'healthcheck'
+        - string:
+            name: XCI_FLAVOR
+            default: 'mini'
+        - string:
+            name: XCI_DEVEL_ROOT
+            default: $WORKSPACE
+        - string:
+            name: ANSIBLE_VERBOSITY
+            default: '-vvvv'
+
+    wrappers:
+        - ssh-agent-wrapper
+        - timeout:
+            timeout: 240
+            fail: true
+        - fix-workspace-permissions
+
+    scm:
+        - git-scm-gerrit
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - 'xci-verify-{phase}-macro'
+
+#--------------------------------
+# builder macros
+#--------------------------------
+- builder:
+    name: 'xci-verify-deploy-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            cd $WORKSPACE
+            ./xci-deploy.sh
+
+- builder:
+    name: 'xci-verify-healthcheck-macro'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "Hello World!"
