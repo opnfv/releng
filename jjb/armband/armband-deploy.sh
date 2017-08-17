@@ -35,13 +35,6 @@ fi
 # set deployment parameters
 export TMPDIR=${WORKSPACE}/tmpdir
 
-# arm-pod4 is an aarch64 jenkins slave for the same POD as the
-# x86 jenkins slave arm-pod3; therefore we use the same pod name
-# to deploy the pod from both jenkins slaves
-if [[ "${NODE_NAME}" == "arm-pod4" ]]; then
-    NODE_NAME="arm-pod3"
-fi
-
 LAB_NAME=${NODE_NAME/-*}
 POD_NAME=${NODE_NAME/*-}
 
