@@ -92,20 +92,34 @@ class TestBase(testing.AsyncHTTPTestCase):
                          headers=self.headers)
         return self._get_return(res, self.list_res)
 
-    def update(self, new=None, *args):
-        if new:
+    def update_direct_url(self, url, new=None):
+        if new and hasattr(new, 'format'):
             new = new.format()
-        res = self.fetch(self._get_uri(*args),
+        res = self.fetch(url,
                          method='PUT',
                          body=json.dumps(new),
                          headers=self.headers)
         return self._get_return(res, self.update_res)
 
-    def delete(self, *args):
-        res = self.fetch(self._get_uri(*args),
-                         method='DELETE',
-                         headers=self.headers)
+    def update(self, new=None, *args):
+        return self.update_direct_url(self._get_uri(*args), new)
+
+    def delete_direct_url(self, url, body):
+        if body:
+            res = self.fetch(url,
+                             method='DELETE',
+                             body=json.dumps(body),
+                             headers=self.headers,
+                             allow_nonstandard_methods=True)
+        else:
+            res = self.fetch(url,
+                             method='DELETE',
+                             headers=self.headers)
+
         return res.code, res.body
+
+    def delete(self, *args):
+        return self.delete_direct_url(self._get_uri(*args), None)
 
     @staticmethod
     def _get_valid_args(*args):
@@ -132,7 +146,10 @@ class TestBase(testing.AsyncHTTPTestCase):
     def _get_return(self, res, cls):
         code = res.code
         body = res.body
-        return code, self._get_return_body(code, body, cls)
+        if body:
+            return code, self._get_return_body(code, body, cls)
+        else:
+            return code, None
 
     @staticmethod
     def _get_return_body(code, body, cls):
