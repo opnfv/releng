@@ -26,6 +26,10 @@ class Forbidden(Raiser):
     code = httplib.FORBIDDEN
 
 
+class Conflict(Raiser):
+    code = httplib.CONFLICT
+
+
 class NotFound(Raiser):
     code = httplib.NOT_FOUND
 
