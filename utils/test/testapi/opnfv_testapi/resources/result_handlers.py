@@ -155,7 +155,7 @@ class ResultsCLHandler(GenericResultHandler):
             @type last: L{string}
             @in last: query
             @required last: False
-            @param page: which page to list
+            @param page: which page to list, default to 1
             @type page: L{int}
             @in page: query
             @required page: False
@@ -180,7 +180,7 @@ class ResultsCLHandler(GenericResultHandler):
             return self.get_int('last', self.get_query_argument('last', 0))
 
         def page_limit():
-            return self.get_int('page', self.get_query_argument('page', 0))
+            return self.get_int('page', self.get_query_argument('page', 1))
 
         limitations = {
             'sort': {'_id': descend_limit()},
