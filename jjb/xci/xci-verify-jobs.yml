@@ -109,6 +109,10 @@
         - label:
             name: SLAVE_LABEL
             default: 'xci-virtual-{distro}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
 
     builders:
         - description-setter:
@@ -173,11 +177,15 @@
             name: XCI_FLAVOR
             default: 'mini'
         - string:
-            name: XCI_DEVEL_ROOT
-            default: $WORKSPACE
+            name: OPNFV_RELENG_DEV_PATH
+            default: $WORKSPACE/
         - string:
             name: ANSIBLE_VERBOSITY
             default: '-vvvv'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: 'Git URL to use on this Jenkins Slave'
 
     wrappers:
         - ssh-agent-wrapper
@@ -202,7 +210,11 @@
         - shell: |
             #!/bin/bash
 
-            cd $WORKSPACE
+            # for some reason, the PATH is not set correctly
+            # setting PATH for ansible stuff
+            export PATH=/home/jenkins/.local/bin:$PATH
+
+            cd $WORKSPACE/xci
             ./xci-deploy.sh
 
 - builder:
