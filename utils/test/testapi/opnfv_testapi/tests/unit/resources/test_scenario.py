@@ -168,15 +168,30 @@ class TestScenarioUpdate(TestScenarioBase):
             self.version,
             'functest')
 
+    def update_url_fixture(item):
+        def _update_url_fixture(xstep):
+            def wrapper(self, *args, **kwargs):
+                locator = None
+                if item == 'projects':
+                    locator = 'installer={}&version={}'.format(
+                        self.installer,
+                        self.version)
+                self.update_url = '{}/{}?{}'.format(self.scenario_url,
+                                                    item,
+                                                    locator)
+                xstep(self, *args, **kwargs)
+            return wrapper
+        return _update_url_fixture
+
     def update_partial(operate, expected):
-        def _update(set_update):
+        def _update_partial(set_update):
             @functools.wraps(set_update)
-            def wrap(self):
+            def wrapper(self):
                 update, scenario = set_update(self, deepcopy(self.req_d))
                 code, body = getattr(self, operate)(update, self.scenario)
                 getattr(self, expected)(code, scenario)
-            return wrap
-        return _update
+            return wrapper
+        return _update_partial
 
     @update_partial('_add', '_success')
     def test_addScore(self, scenario):
@@ -232,6 +247,53 @@ class TestScenarioUpdate(TestScenarioBase):
 
         return obsoletes, scenario
 
+    @update_url_fixture('projects')
+    @update_partial('_add', '_success')
+    def test_addProjects_succ(self, scenario):
+        add = models.ScenarioProject(project='qtip').format()
+        scenario['installers'][0]['versions'][0]['projects'].append(add)
+        return [add], scenario
+
+    @update_url_fixture('projects')
+    @update_partial('_add', '_conflict')
+    def test_addProjects_already_exist(self, scenario):
+        add = models.ScenarioProject(project='functest').format()
+        scenario['installers'][0]['versions'][0]['projects'].append(add)
+        return [add], scenario
+
+    @update_url_fixture('projects')
+    @update_partial('_add', '_bad_request')
+    def test_addProjects_bad_schema(self, scenario):
+        add = models.ScenarioProject(project='functest').format()
+        add['score'] = None
+        scenario['installers'][0]['versions'][0]['projects'].append(add)
+        return [add], scenario
+
+    @update_url_fixture('projects')
+    @update_partial('_update', '_success')
+    def test_updateProjects_succ(self, scenario):
+        update = models.ScenarioProject(project='qtip').format()
+        scenario['installers'][0]['versions'][0]['projects'] = [update]
+        return [update], scenario
+
+    @update_url_fixture('projects')
+    @update_partial('_update', '_bad_request')
+    def test_updateProjects_bad_schema(self, scenario):
+        update = models.ScenarioProject(project='functest').format()
+        update['score'] = None
+        scenario['installers'][0]['versions'][0]['projects'] = [update]
+        return [update], scenario
+
+    @update_url_fixture('projects')
+    @update_partial('_delete', '_success')
+    def test_deleteProjects(self, scenario):
+        deletes = ['functest']
+        projects = scenario['installers'][0]['versions'][0]['projects']
+        scenario['installers'][0]['versions'][0]['projects'] = filter(
+            lambda f: f['project'] != 'functest',
+            projects)
+        return deletes, scenario
+
     def _add(self, update_req, new_scenario):
         return self.post_direct_url(self.update_url, update_req)
 
@@ -250,3 +312,6 @@ class TestScenarioUpdate(TestScenarioBase):
 
     def _bad_request(self, status, new_scenario):
         self.assertEqual(status, httplib.BAD_REQUEST)
+
+    def _conflict(self, status, new_scenario):
+        self.assertEqual(status, httplib.CONFLICT)

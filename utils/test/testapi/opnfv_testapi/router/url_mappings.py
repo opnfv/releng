@@ -61,6 +61,9 @@ mappings = [
     (r"/api/v1/scenarios/([^/]+)/customs",
      scenario_handlers.ScenarioCustomsHandler),
 
+    (r"/api/v1/scenarios/([^/]+)/projects",
+     scenario_handlers.ScenarioProjectsHandler),
+
     # static path
     (r'/(.*\.(css|png|gif|js|html|json|map|woff2|woff|ttf))',
      tornado.web.StaticFileHandler,

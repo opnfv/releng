@@ -1,5 +1,7 @@
 import functools
 
+from opnfv_testapi.common import message
+from opnfv_testapi.common import raises
 from opnfv_testapi.resources import handlers
 import opnfv_testapi.resources.scenario_models as models
 from opnfv_testapi.tornado_swagger import swagger
@@ -141,6 +143,9 @@ class ScenarioUpdater(object):
             ('customs', 'post'): self._update_requests_add_customs,
             ('customs', 'put'): self._update_requests_update_customs,
             ('customs', 'delete'): self._update_requests_delete_customs,
+            ('projects', 'post'): self._update_requests_add_projects,
+            ('projects', 'put'): self._update_requests_update_projects,
+            ('projects', 'delete'): self._update_requests_delete_projects,
         }
         updates[(item, action)](self.data)
 
@@ -201,6 +206,51 @@ class ScenarioUpdater(object):
             lambda f: f not in self.body,
             project.customs)
 
+    @iter_installers
+    @iter_versions
+    def _update_requests_add_projects(self, version):
+        exists = list()
+        malformat = list()
+        for n in self.body:
+            try:
+                f_n = models.ScenarioProject.from_dict_with_raise(n)
+                if not any(o.project == f_n.project for o in version.projects):
+                    version.projects.append(f_n)
+                else:
+                    exists.append(n['project'])
+            except Exception as e:
+                malformat.append(e.message)
+        if malformat:
+            raises.BadRequest(message.bad_format(malformat))
+        elif exists:
+            raises.Conflict(message.exist('projects', exists))
+
+    @iter_installers
+    @iter_versions
+    def _update_requests_update_projects(self, version):
+        exists = list()
+        malformat = list()
+        projects = list()
+        for n in self.body:
+            try:
+                f_n = models.ScenarioProject.from_dict_with_raise(n)
+                if not any(o.project == f_n.project for o in projects):
+                    projects.append(models.ScenarioProject.from_dict(n))
+                else:
+                    exists.append(n['project'])
+            except:
+                malformat.append(n)
+        if malformat:
+            raises.BadRequest(message.bad_format(malformat))
+        elif exists:
+            raises.Forbidden(message.exist('projects', exists))
+        version.projects = projects
+
+    @iter_installers
+    @iter_versions
+    def _update_requests_delete_projects(self, version):
+        version.projects = self._remove_projects(version.projects)
+
     def _filter_installers(self, installers):
         return self._filter('installer', installers)
 
@@ -210,10 +260,18 @@ class ScenarioUpdater(object):
     def _filter_projects(self, projects):
         return self._filter('project', projects)
 
+    def _remove_projects(self, projects):
+        return self._remove('project', projects)
+
     def _filter(self, item, items):
         return filter(
             lambda f: getattr(f, item) == getattr(self, item),
             items)
+
+    def _remove(self, field, fields):
+        return filter(
+            lambda f: getattr(f, field) not in self.body,
+            fields)
 
 
 class GenericScenarioUpdateHandler(GenericScenarioHandler):
@@ -236,7 +294,6 @@ class GenericScenarioUpdateHandler(GenericScenarioHandler):
                 setattr(self, k, v)
                 locators[k] = v
         self.pure_update(query=self.set_query(locators=locators))
-        self.finish_request()
 
     def _update_requests(self, data):
         return ScenarioUpdater(data,
@@ -420,3 +477,92 @@ class ScenarioCustomsHandler(GenericScenarioUpdateHandler):
                                  'installer': None,
                                  'version': None,
                                  'project': None})
+
+
+class ScenarioProjectsHandler(GenericScenarioUpdateHandler):
+    @swagger.operation(nickname="addProjectsUnderScenario")
+    def post(self, scenario):
+        """
+        @description: add projects to scenario
+        @notes: add one or multiple projects
+            POST /api/v1/scenarios/<scenario_name>/projects? \
+                installer=<installer_name>& \
+                version=<version_name>
+        @param body: projects to be added
+        @type body: C{list} of L{ScenarioProject}
+        @in body: body
+        @param installer: installer type
+        @type installer: L{string}
+        @in installer: query
+        @required installer: True
+        @param version: version
+        @type version: L{string}
+        @in version: query
+        @required version: True
+        @return 200: projects are added.
+        @raise 400: bad schema
+        @raise 409: conflict, project already exists
+        @raise 404:  scenario/installer/version not existed
+        """
+        self.do_update('projects',
+                       'post',
+                       locators={'scenario': scenario,
+                                 'installer': None,
+                                 'version': None})
+
+    @swagger.operation(nickname="updateScenarioProjects")
+    def put(self, scenario):
+        """
+        @description: replace all projects
+        @notes: substitute all projects, delete existed ones with new provides
+            PUT /api/v1/scenarios/<scenario_name>/projects? \
+                installer=<installer_name>& \
+                version=<version_name>
+        @param body: new projects
+        @type body: C{list} of L{ScenarioProject}
+        @in body: body
+        @param installer: installer type
+        @type installer: L{string}
+        @in installer: query
+        @required installer: True
+        @param version: version
+        @type version: L{string}
+        @in version: query
+        @required version: True
+        @return 200: replace projects success.
+        @raise 400: bad schema
+        @raise 404:  scenario/installer/version not existed
+        """
+        self.do_update('projects',
+                       'put',
+                       locators={'scenario': scenario,
+                                 'installer': None,
+                                 'version': None})
+
+    @swagger.operation(nickname="deleteProjectsUnderScenario")
+    def delete(self, scenario):
+        """
+        @description: delete one or multiple projects
+        @notes: delete one or multiple projects
+            DELETE /api/v1/scenarios/<scenario_name>/projects? \
+                installer=<installer_name>& \
+                version=<version_name>
+        @param body: projects(names) to be deleted
+        @type body: C{list} of L{string}
+        @in body: body
+        @param installer: installer type
+        @type installer: L{string}
+        @in installer: query
+        @required installer: True
+        @param version: version
+        @type version: L{string}
+        @in version: query
+        @required version: True
+        @return 200: delete project(s) success.
+        @raise 404:  scenario/installer/version not existed
+        """
+        self.do_update('projects',
+                       'delete',
+                       locators={'scenario': scenario,
+                                 'installer': None,
+                                 'version': None})
