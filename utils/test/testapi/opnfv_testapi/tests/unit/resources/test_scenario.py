@@ -232,6 +232,38 @@ class TestScenarioUpdate(TestScenarioBase):
 
         return obsoletes, scenario
 
+    @update_partial('_add', '_success')
+    def test_addProjects(self, scenario):
+        add = ['odl', 'parser', 'vping_ssh']
+        projects = scenario['installers'][0]['versions'][0]['projects']
+        functest = filter(lambda f: f['project'] == 'functest', projects)[0]
+        functest['customs'] = list(set(functest['customs'] + add))
+        self.update_url = '{}/customs?{}'.format(self.scenario_url,
+                                                 self.locate_project)
+        return add, scenario
+
+    @update_partial('_update', '_success')
+    def test_updateProjects(self, scenario):
+        news = ['odl', 'parser', 'vping_ssh']
+        projects = scenario['installers'][0]['versions'][0]['projects']
+        functest = filter(lambda f: f['project'] == 'functest', projects)[0]
+        functest['customs'] = news
+        self.update_url = '{}/customs?{}'.format(self.scenario_url,
+                                                 self.locate_project)
+
+        return news, scenario
+
+    @update_partial('_delete', '_success')
+    def test_deleteProjects(self, scenario):
+        obsoletes = ['vping_ssh']
+        projects = scenario['installers'][0]['versions'][0]['projects']
+        functest = filter(lambda f: f['project'] == 'functest', projects)[0]
+        functest['customs'] = ['healthcheck']
+        self.update_url = '{}/customs?{}'.format(self.scenario_url,
+                                                 self.locate_project)
+
+        return obsoletes, scenario
+
     def _add(self, update_req, new_scenario):
         return self.post_direct_url(self.update_url, update_req)
 

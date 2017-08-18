@@ -48,3 +48,7 @@ def no_update():
 
 def must_int(name):
     return '{} must be int'.format(name)
+
+
+def not_member(cls, attr):
+    return '{} not a member of {}'.format(attr, cls.__name__)
