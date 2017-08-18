@@ -189,6 +189,17 @@ class TestScenarioUpdate(TestScenarioBase):
 
         return add, scenario
 
+    @update_partial('_add', '_success')
+    def test_addTrustIndicator(self, scenario):
+        add = models.ScenarioTI(date=str(datetime.now()), status='gold')
+        projects = scenario['installers'][0]['versions'][0]['projects']
+        functest = filter(lambda f: f['project'] == 'functest', projects)[0]
+        functest['trust_indicators'].append(add.format())
+        self.update_url = '{}/trust_indicators?{}'.format(self.scenario_url,
+                                                          self.locate_project)
+
+        return add, scenario
+
     def _add(self, update_req, new_scenario):
         return self.post_direct_url(self.update_url, update_req)
 

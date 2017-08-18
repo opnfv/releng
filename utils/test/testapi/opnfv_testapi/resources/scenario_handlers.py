@@ -13,10 +13,10 @@ class GenericScenarioHandler(handlers.GenericApiHandler):
         self.table = self.db_scenarios
         self.table_cls = models.Scenario
 
-    def set_query(self, filters):
+    def set_query(self, locators):
         query = dict()
         elem_query = dict()
-        for k, v in filters.iteritems():
+        for k, v in locators.iteritems():
             if k == 'scenario':
                 query['name'] = v
             elif k == 'installer':
@@ -134,11 +134,12 @@ class ScenarioUpdater(object):
         self.version = version
         self.project = project
 
-    def update(self, item, op):
+    def update(self, item, action):
         updates = {
-            ('score', 'add'): self._update_requests_add_score,
+            ('scores', 'post'): self._update_requests_add_score,
+            ('trust_indicators', 'post'): self._update_requests_add_ti,
         }
-        updates[(item, op)](self.data)
+        updates[(item, action)](self.data)
 
         return self.data.format()
 
@@ -170,6 +171,13 @@ class ScenarioUpdater(object):
         project.scores.append(
             models.ScenarioScore.from_dict(self.body))
 
+    @iter_installers
+    @iter_versions
+    @iter_projects
+    def _update_requests_add_ti(self, project):
+        project.trust_indicators.append(
+            models.ScenarioTI.from_dict(self.body))
+
     def _filter_installers(self, installers):
         return self._filter('installer', installers)
 
@@ -185,7 +193,36 @@ class ScenarioUpdater(object):
             items)
 
 
-class ScenarioScoresHandler(GenericScenarioHandler):
+class GenericScenarioUpdateHandler(GenericScenarioHandler):
+    def __init__(self, application, request, **kwargs):
+        super(GenericScenarioUpdateHandler, self).__init__(application,
+                                                           request,
+                                                           **kwargs)
+        self.installer = None
+        self.version = None
+        self.project = None
+        self.item = None
+        self.action = None
+
+    def do_post(self, scenario, item, action, locators):
+        self.item = item
+        self.action = action
+        for k in locators.keys():
+            v = self.get_query_argument(k)
+            setattr(self, k, v)
+            locators[k] = v
+        db_keys = ['name']
+        self._update(query=self.set_query(locators=locators), db_keys=db_keys)
+
+    def _update_requests(self, data):
+        return ScenarioUpdater(data,
+                               self.json_args,
+                               self.installer,
+                               self.version,
+                               self.project).update(self.item, self.action)
+
+
+class ScenarioScoresHandler(GenericScenarioUpdateHandler):
     @swagger.operation(nickname="addScoreRecord")
     def post(self, scenario):
         """
@@ -214,20 +251,46 @@ class ScenarioScoresHandler(GenericScenarioHandler):
         @return 200: score is created.
         @raise 404:  scenario/installer/version/project not existed
         """
-        self.installer = self.get_query_argument('installer')
-        self.version = self.get_query_argument('version')
-        self.project = self.get_query_argument('project')
+        self.do_post(scenario,
+                     'scores',
+                     'post',
+                     locators={'installer': None,
+                               'version': None,
+                               'project': None})
 
-        filters = {'scenario': scenario,
-                   'installer': self.installer,
-                   'version': self.version,
-                   'project': self.project}
-        db_keys = ['name']
-        self._update(query=self.set_query(filters=filters), db_keys=db_keys)
 
-    def _update_requests(self, data):
-        return ScenarioUpdater(data,
-                               self.json_args,
-                               self.installer,
-                               self.version,
-                               self.project).update('score', 'add')
+class ScenarioTIsHandler(GenericScenarioUpdateHandler):
+    @swagger.operation(nickname="addTrustIndicatorRecord")
+    def post(self, scenario):
+        """
+        @description: add a new trust indicator record
+        @notes: add a new trust indicator record to a project
+            POST /api/v1/scenarios/<scenario_name>/trust_indicators? \
+                installer=<installer_name>& \
+                version=<version_name>& \
+                project=<project_name>
+        @param body: trust indicator to be added
+        @type body: L{ScenarioTI}
+        @in body: body
+        @param installer: installer type
+        @type installer: L{string}
+        @in installer: query
+        @required installer: True
+        @param version: version
+        @type version: L{string}
+        @in version: query
+        @required version: True
+        @param project: project name
+        @type project: L{string}
+        @in project: query
+        @required project: True
+        @rtype: L{Scenario}
+        @return 200: trust indicator is added.
+        @raise 404:  scenario/installer/version/project not existed
+        """
+        self.do_post(scenario,
+                     'trust_indicators',
+                     'post',
+                     locators={'installer': None,
+                               'version': None,
+                               'project': None})
