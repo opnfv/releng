@@ -7,6 +7,7 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 import requests
+import time
 
 from tornado.escape import json_encode
 from tornado.escape import json_decode
@@ -24,7 +25,7 @@ class FiltersHandler(BaseHandler):
                 'status': ['success', 'warning', 'danger'],
                 'projects': ['functest', 'yardstick'],
                 'installers': ['apex', 'compass', 'fuel', 'joid'],
-                'version': ['colorado', 'master'],
+                'version': ['master', 'colorado', 'danube'],
                 'loops': ['daily', 'weekly', 'monthly'],
                 'time': ['10 days', '30 days']
             }
@@ -53,27 +54,27 @@ class ScenariosHandler(BaseHandler):
     def _get_scenario_result(self, scenario, data, args):
         result = {
             'status': data.get('status'),
-            'installers': self._get_installers_result(data['installers'], args)
+            'installers': self._get_installers_result(data, args)
         }
         return result
 
     def _get_installers_result(self, data, args):
         func = self._get_installer_result
-        return {k: func(k, data.get(k, {}), args) for k in args['installers']}
+        return {k: func(data.get(k, {}), args) for k in args['installers']}
 
-    def _get_installer_result(self, installer, data, args):
-        projects = data.get(args['version'], [])
-        return [self._get_project_data(projects, p) for p in args['projects']]
+    def _get_installer_result(self, data, args):
+        return self._get_version_data(data.get(args['version'], {}), args)
 
-    def _get_project_data(self, projects, project):
+    def _get_version_data(self, data, args):
+        return {k: self._get_project_data(data.get(k, {}))
+                for k in args['projects']}
+
+    def _get_project_data(self, data):
         atom = {
-            'project': project,
-            'score': None,
-            'status': None
+            'score': data.get('score', ''),
+            'status': data.get('status', '')
         }
-        for p in projects:
-            if p['project'] == project:
-                return p
+
         return atom
 
     def _get_scenarios(self):
@@ -88,41 +89,42 @@ class ScenariosHandler(BaseHandler):
                                                                     [])
                                                               ) for a in data}
         scenario = {
-            'status': self._get_status(),
-            'installers': installers
+            'status': self._get_status()
         }
+        scenario.update(installers)
+
         return scenario
 
     def _get_status(self):
         return 'success'
 
     def _get_installer(self, data):
-        return {a.get('version'): self._get_version(a) for a in data}
+        return {a.get('version'): self._get_version(a.get('projects'))
+                for a in data}
 
     def _get_version(self, data):
-        try:
-            scores = data.get('score', {}).get('projects')[0]
-            trusts = data.get('trust_indicator', {}).get('projects')[0]
-        except (TypeError, IndexError):
-            return []
-        else:
-            scores = {key: [dict(date=a.get('date')[:10],
-                                 score=a.get('score')
-                                 ) for a in scores[key]] for key in scores}
-            trusts = {key: [dict(date=a.get('date')[:10],
-                                 status=a.get('status')
-                                 ) for a in trusts[key]] for key in trusts}
-            atom = self._get_atom(scores, trusts)
-            return [dict(project=k,
-                         score=sorted(atom[k], reverse=True)[0].get('score'),
-                         status=sorted(atom[k], reverse=True)[0].get('status')
-                         ) for k in atom if atom[k]]
+        return {a.get('project'): self._get_project(a) for a in data}
 
-    def _get_atom(self, scores, trusts):
-        s = {k: {a['date']: a['score'] for a in scores[k]} for k in scores}
-        t = {k: {a['date']: a['status'] for a in trusts[k]} for k in trusts}
-        return {k: [dict(score=s[k][a], status=t[k][a], data=a
-                         ) for a in s[k] if a in t[k]] for k in s}
+    def _get_project(self, data):
+        scores = data.get('scores', [])
+        trusts = data.get('trust_indicators', [])
+
+        try:
+            date = sorted(scores, reverse=True)[0].get('date')
+        except IndexError:
+            data = time.time()
+
+        try:
+            score = sorted(scores, reverse=True)[0].get('score')
+        except IndexError:
+            score = None
+
+        try:
+            status = sorted(trusts, reverse=True)[0].get('status')
+        except IndexError:
+            status = None
+
+        return {'date': date, 'score': score, 'status': status}
 
     def _change_to_utf8(self, obj):
         if isinstance(obj, dict):
