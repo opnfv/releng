@@ -146,6 +146,7 @@ class ScenarioUpdater(object):
             ('projects', 'post'): self._update_requests_add_projects,
             ('projects', 'put'): self._update_requests_update_projects,
             ('projects', 'delete'): self._update_requests_delete_projects,
+            ('owner', 'put'): self._update_requests_change_owner,
         }
         updates[(item, action)](self.data)
 
@@ -250,6 +251,11 @@ class ScenarioUpdater(object):
     @iter_versions
     def _update_requests_delete_projects(self, version):
         version.projects = self._remove_projects(version.projects)
+
+    @iter_installers
+    @iter_versions
+    def _update_requests_change_owner(self, version):
+        version.owner = self.body
 
     def _filter_installers(self, installers):
         return self._filter('installer', installers)
@@ -563,6 +569,36 @@ class ScenarioProjectsHandler(GenericScenarioUpdateHandler):
         """
         self.do_update('projects',
                        'delete',
+                       locators={'scenario': scenario,
+                                 'installer': None,
+                                 'version': None})
+
+
+class ScenarioOwnerHandler(GenericScenarioUpdateHandler):
+    @swagger.operation(nickname="changeScenarioOwner")
+    def put(self, scenario):
+        """
+        @description: change scenario owner
+        @notes: substitute all projects, delete existed ones with new provides
+            PUT /api/v1/scenarios/<scenario_name>/owner? \
+                installer=<installer_name>& \
+                version=<version_name>
+        @param body: new owner
+        @type body: L{string}
+        @in body: body
+        @param installer: installer type
+        @type installer: L{string}
+        @in installer: query
+        @required installer: True
+        @param version: version
+        @type version: L{string}
+        @in version: query
+        @required version: True
+        @return 200: change owner success.
+        @raise 404:  scenario/installer/version not existed
+        """
+        self.do_update('owner',
+                       'put',
                        locators={'scenario': scenario,
                                  'installer': None,
                                  'version': None})
