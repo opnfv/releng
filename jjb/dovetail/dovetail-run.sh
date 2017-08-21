@@ -126,6 +126,10 @@ fi
 echo "Download image ubuntu-16.04-server-cloudimg-amd64-disk1.img ..."
 wget -q -nc http://artifacts.opnfv.org/sdnvpn/ubuntu-16.04-server-cloudimg-amd64-disk1.img -P ${DOVETAIL_CONFIG}
 
+# functest needs to download this image first before running
+echo "Download image cirros-0.3.5-x86_64-disk.img ..."
+wget -q -nc http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img -P ${DOVETAIL_CONFIG}
+
 opts="--privileged=true -id"
 
 docker_volume="-v /var/run/docker.sock:/var/run/docker.sock"
