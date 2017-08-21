@@ -60,9 +60,10 @@ mappings = [
      scenario_handlers.ScenarioTIsHandler),
     (r"/api/v1/scenarios/([^/]+)/customs",
      scenario_handlers.ScenarioCustomsHandler),
-
     (r"/api/v1/scenarios/([^/]+)/projects",
      scenario_handlers.ScenarioProjectsHandler),
+    (r"/api/v1/scenarios/([^/]+)/owner",
+     scenario_handlers.ScenarioOwnerHandler),
 
     # static path
     (r'/(.*\.(css|png|gif|js|html|json|map|woff2|woff|ttf))',

@@ -50,10 +50,10 @@ class ScenarioProject(models.ModelBase):
                 'trust_indicators': ScenarioTI}
 
     def __eq__(self, other):
-        return [self.project == other.project and
+        return (self.project == other.project and
                 self._customs_eq(other) and
                 self._scores_eq(other) and
-                self._ti_eq(other)]
+                self._ti_eq(other))
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -74,7 +74,8 @@ class ScenarioVersion(models.ModelBase):
         @property projects:
         @ptype projects: C{list} of L{ScenarioProject}
     """
-    def __init__(self, version=None, projects=None):
+    def __init__(self, owner=None, version=None, projects=None):
+        self.owner = owner
         self.version = version
         self.projects = list_default(projects)
 
@@ -83,7 +84,9 @@ class ScenarioVersion(models.ModelBase):
         return {'projects': ScenarioProject}
 
     def __eq__(self, other):
-        return [self.version == other.version and self._projects_eq(other)]
+        return (self.version == other.version and
+                self.owner == other.owner and
+                self._projects_eq(other))
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -113,7 +116,7 @@ class ScenarioInstaller(models.ModelBase):
         return {'versions': ScenarioVersion}
 
     def __eq__(self, other):
-        return [self.installer == other.installer and self._versions_eq(other)]
+        return (self.installer == other.installer and self._versions_eq(other))
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -163,7 +166,7 @@ class Scenario(models.ModelBase):
         return not self.__eq__(other)
 
     def __eq__(self, other):
-        return [self.name == other.name and self._installers_eq(other)]
+        return (self.name == other.name and self._installers_eq(other))
 
     def _installers_eq(self, other):
         for s_install in self.installers:
