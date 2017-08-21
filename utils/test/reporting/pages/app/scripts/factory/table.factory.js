@@ -28,7 +28,7 @@ angular.module('opnfvApp')
                     }
                 });
             },
-            getScenario: function() {
+            getScenario: function(data) {
 
                 var config = {
                     headers: {
@@ -36,7 +36,7 @@ angular.module('opnfvApp')
                     }
                 }
 
-                return $http.post(BASE_URL + '/landing-page/scenarios', {}, config);
+                return $http.post(BASE_URL + '/landing-page/scenarios', data, config);
             },
 
 
