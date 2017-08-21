@@ -172,7 +172,7 @@ class TestScenarioUpdate(TestScenarioBase):
         def _update_url_fixture(xstep):
             def wrapper(self, *args, **kwargs):
                 locator = None
-                if item == 'projects':
+                if item in ['projects', 'owner']:
                     locator = 'installer={}&version={}'.format(
                         self.installer,
                         self.version)
@@ -293,6 +293,13 @@ class TestScenarioUpdate(TestScenarioBase):
             lambda f: f['project'] != 'functest',
             projects)
         return deletes, scenario
+
+    @update_url_fixture('owner')
+    @update_partial('_update', '_success')
+    def test_changeOwner(self, scenario):
+        new_owner = 'new_owner'
+        scenario['installers'][0]['versions'][0]['owner'] = 'www'
+        return new_owner, scenario
 
     def _add(self, update_req, new_scenario):
         return self.post_direct_url(self.update_url, update_req)
