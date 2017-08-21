@@ -29,9 +29,9 @@
                     <div class=" col-md-12" data-toggle="buttons" aria-pressed="false">
 
                         <label> Status </label> &nbsp;&nbsp; &nbsp;
-                        <label class="btn btn-outline btn-success btn-sm" style="height:25px; margin-right: 5px;" ng-repeat="status in statusList" value={{status}} ng-checked="selection.indexOf(status)>-1" ng-click="toggleSelection(status)">
+                        <label class="btn btn-outline btn-success btn-sm" style="height:25px; margin-right: 5px;" ng-repeat="status in statusList" value={{status}} ng-checked="selectStatus.indexOf(status)>-1" ng-click="clickStatus(status)">
                               <input type="checkbox"  disabled="disabled" > {{status}}
-                            
+
                           </label>
                     </div>
 
@@ -39,7 +39,7 @@
 
                     <div class=" col-md-12" data-toggle="buttons">
                         <label> Projects </label> &nbsp;
-                        <label class="btn btn-outline btn-success btn-sm " style="height:25px;margin-right: 5px;" ng-repeat="project in projectList" value={{project}} ng-checked="selection.indexOf(project)>-1" ng-click="toggleSelection(project)">
+                        <label class="btn btn-outline btn-success btn-sm " style="height:25px;margin-right: 5px;" ng-repeat="project in projectList" value={{project}} ng-checked="selectProjects.indexOf(project)>-1" ng-click="clickProject(project)">
                             <input type="checkbox" disabled="disabled"> {{project}}
                         </label>
 
@@ -47,7 +47,7 @@
                     <hr class="myhr">
                     <div class=" col-md-12" data-toggle="buttons">
                         <label> Installers </label>
-                        <label class="btn btn-outline btn-success btn-sm" style="height:25px;margin-right: 5px;" ng-repeat="installer in installerList" value={{installer}} ng-checked="selection.indexOf(installer)>-1" ng-click="toggleSelection(installer)">
+                        <label class="btn btn-outline btn-success btn-sm" style="height:25px;margin-right: 5px;" ng-repeat="installer in installerList" value={{installer}} ng-checked="selectInstallers.indexOf(installer)>-1" ng-click="clickInstaller(installer)">
                             <input type="checkbox" disabled="disabled"> {{installer}}
                             </label>
                     </div>
@@ -56,17 +56,17 @@
 
 
                     <div class=" col-md-1" style="margin-top:5px;margin-right: 5px;">
-                        <selectize options="VersionOption" ng-model="VersionSelected" config="VersionConfig"></selectize>
+                        <selectize options="versionList" ng-model="selectVersion" config="VersionConfig"></selectize>
 
                     </div>
 
                     <div class=" col-md-1" style="margin-top:5px;margin-right: 5px;">
-                        <selectize options="LoopOption" ng-model="LoopCiSelected" config="LoopConfig"></selectize>
+                        <selectize options="loopList" ng-model="selectLoop" config="LoopConfig"></selectize>
 
                     </div>
 
                     <div class=" col-md-1" style="margin-top:5px;margin-right: 5px;">
-                        <selectize options="TimeOption" ng-model="TimeSelected" config="TimeConfig"></selectize>
+                        <selectize options="timeList" ng-model="selectTime" config="TimeConfig"></selectize>
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -75,25 +75,25 @@
                         <thead class="thead">
                             <tr>
                                 <th>Scenario </th>
-                                <th colspan={{colspan}} ng-show="selectInstallers.indexOf(key)!=-1" value={{key}} ng-repeat="key in tableDataAll.Installer"><a href="notfound.html">{{key}}</a> </th>
+                                <th colspan={{selectProjects.length}} ng-show="selectInstallers.indexOf(key)!=-1" value={{key}} ng-repeat="key in selectInstallers"><a href="notfound.html">{{key}}</a> </th>
                             </tr>
 
                             <tr>
 
                                 <td></td>
-                                <td ng-show="selectProjects.indexOf(project[0])!=-1 && selectInstallers.indexOf(project[1])!=-1" ng-repeat="project in tableDataAll.Projects track by $index" data={{project[1]}} value={{project[0]}}>{{project[0]}}</td>
+                                <td ng-show="selectProjects.indexOf(project.project)!=-1 && selectInstallers.indexOf(project.installer)!=-1" ng-repeat="project in project_row track by $index" data={{project.installer}} value={{project.project}}>{{ project.project }}</td>
 
                             </tr>
                         </thead>
                         <tbody class="tbody">
-                            <tr ng-repeat="scenario in tableDataAll.scenario" ng-show="selectStatus.indexOf(scenario.status)!=-1">
+                            <tr ng-repeat="scenario in scenario_rows" ng-show="selectStatus.indexOf(scenario.status)!=-1">
 
-                                <td nowrap="nowrap" data={{scenario.status}}><span class="fa fa-circle text-{{scenario.statusDisplay}}"></span> <a href="notfound.html">{{scenario.scenarioName}}</a> </td>
+                                <td nowrap="nowrap" data={{scenario.status}}><span class="fa fa-circle text-{{scenario.statusDisplay}}"></span> <a href="notfound.html">{{scenario.name}}</a> </td>
 
                                 <!--<td style="background-color:#e7eaec" align="justify" ng-if="data[0]=='Not Support'" ng-repeat="data in scenario.datadisplay track by $index" data={{data[1]}} value={{data[2]}}></td>-->
 
-                                <td nowrap="nowrap" ng-show="selectInstallers.indexOf(data[2])!=-1 && selectProjects.indexOf(data[1])!=-1" ng-repeat="data in scenario.datadisplay track by $index" data={{data[1]}} value={{data[2]}} class={{data[0]}}>
-                                    <span class="label label-{{data[3]}}">{{data[4]}}</a></span> {{data[0]}}</td>
+                                <td nowrap="nowrap" ng-show="selectInstallers.indexOf(data.installer)!=-1 && selectProjects.indexOf(data.project)!=-1" ng-repeat="data in scenario.datadisplay track by $index" data={{data.project}} value={{data.installer}} class={{data.value}}>
+                                    <span class="label label-{{data.label}}">{{data.label_value}}</a></span> {{data.value}}</td>
 
 
                             </tr>
