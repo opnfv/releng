@@ -74,7 +74,8 @@ class ScenarioVersion(models.ModelBase):
         @property projects:
         @ptype projects: C{list} of L{ScenarioProject}
     """
-    def __init__(self, version=None, projects=None):
+    def __init__(self, owner=None, version=None, projects=None):
+        self.owner = owner
         self.version = version
         self.projects = list_default(projects)
 
@@ -83,7 +84,9 @@ class ScenarioVersion(models.ModelBase):
         return {'projects': ScenarioProject}
 
     def __eq__(self, other):
-        return [self.version == other.version and self._projects_eq(other)]
+        return [self.version == other.version and
+                self.owner == other.owner and
+                self._projects_eq(other)]
 
     def __ne__(self, other):
         return not self.__eq__(other)
