@@ -196,6 +196,7 @@ class GenericApiHandler(web.RequestHandler):
         data = self.table_cls.from_dict(data)
         update_req = self._update_requests(data)
         yield dbapi.db_update(self.table, query, update_req)
+        self.finish_request()
 
     def _update_requests(self, data):
         request = dict()
