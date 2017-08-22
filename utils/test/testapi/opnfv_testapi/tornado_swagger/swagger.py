@@ -94,11 +94,18 @@ class DocParser(object):
 
     def _parse_type(self, **kwargs):
         arg = kwargs.get('arg', None)
-        body = self._get_body(**kwargs)
-        self.params.setdefault(arg, {}).update({
-            'name': arg,
-            'dataType': body
-        })
+        code = self._parse_epytext_para('code', **kwargs)
+        link = self._parse_epytext_para('link', **kwargs)
+        if code is None:
+            self.params.setdefault(arg, {}).update({
+                'name': arg,
+                'type': link
+            })
+        elif code == 'list':
+            self.params.setdefault(arg, {}).update({
+                'type': 'array',
+                'items': {'type': link}
+            })
 
     def _parse_in(self, **kwargs):
         arg = kwargs.get('arg', None)
