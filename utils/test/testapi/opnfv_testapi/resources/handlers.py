@@ -110,22 +110,23 @@ class GenericApiHandler(web.RequestHandler):
         pipelines.append({'$match': query})
 
         total_pages = 0
-        if page > 0:
-            cursor = dbapi.db_list(self.table, query)
-            records_count = yield cursor.count()
-            total_pages, return_nr = self._calc_total_pages(records_count,
-                                                            last,
-                                                            page,
-                                                            per_page)
-            pipelines = self._set_pipelines(pipelines,
-                                            sort,
-                                            return_nr,
-                                            page,
-                                            per_page)
-        cursor = dbapi.db_aggregate(self.table, pipelines)
         data = list()
-        while (yield cursor.fetch_next):
-            data.append(self.format_data(cursor.next_object()))
+        cursor = dbapi.db_list(self.table, query)
+        records_count = yield cursor.count()
+        if records_count > 0:
+            if page > 0:
+                total_pages, return_nr = self._calc_total_pages(records_count,
+                                                                last,
+                                                                page,
+                                                                per_page)
+                pipelines = self._set_pipelines(pipelines,
+                                                sort,
+                                                return_nr,
+                                                page,
+                                                per_page)
+            cursor = dbapi.db_aggregate(self.table, pipelines)
+            while (yield cursor.fetch_next):
+                data.append(self.format_data(cursor.next_object()))
         if res_op is None:
             res = {self.table: data}
         else:
