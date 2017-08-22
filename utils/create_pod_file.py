@@ -12,6 +12,8 @@ parser.add_argument("-u", "--user", help="Give username of this pod")
 parser.add_argument("-k", "--key", help="Give key file of the user")
 parser.add_argument("-p", "--password", help="Give password of the user")
 parser.add_argument("-f", "--filepath", help="Give dest path of output file")
+parser.add_argument("-s", "--sshkey", default="/root/.ssh/id_rsa",
+                    help="Give the path for ssh key")
 args = parser.parse_args()
 
 
@@ -92,7 +94,7 @@ def create_file(handler, INSTALLER_TYPE):
             item['password'] = 'root'
     else:
         for item in node_list:
-            item['key_filename'] = '/root/.ssh/id_rsa'
+            item['key_filename'] = args.sshkey
     data = {'nodes': node_list}
     with open(args.filepath, "w") as fw:
         yaml.dump(data, fw)
