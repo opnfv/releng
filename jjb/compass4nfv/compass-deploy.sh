@@ -52,6 +52,11 @@ fi
 if [[ "$NODE_NAME" =~ "-virtual" ]]; then
     export NETWORK_CONF=$CONFDIR/vm_environment/$NODE_NAME/${NETWORK_CONF_FILE}
     export DHA_CONF=$CONFDIR/vm_environment/${DEPLOY_SCENARIO}.yml
+    if [[ "${DEPLOY_SCENARIO}" =~ "-moon-noha" ]]; then
+        export VIRT_NUMBER=3
+    elif [[ "${DEPLOY_SCENARIO}" =~ "-noha" ]]; then
+        export VIRT_NUMBER=2
+    fi
 else
     export INSTALL_NIC=eth1
     export NETWORK_CONF=$CONFDIR/hardware_environment/$NODE_NAME/${NETWORK_CONF_FILE}
