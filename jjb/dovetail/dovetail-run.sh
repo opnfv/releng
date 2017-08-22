@@ -160,6 +160,37 @@ if [ $(docker ps | grep "opnfv/dovetail:${DOCKER_TAG}" | wc -l) == 0 ]; then
     exit 1
 fi
 
+# Modify tempest_conf.yaml file
+tempest_conf_file=${DOVETAIL_CONFIG}/tempest_conf.yaml
+if [ ${INSTALLER_TYPE} == 'compass' ]; then
+    volume_device='vdb'
+else
+    volume_device='vdc'
+fi
+
+cat << EOF >$tempest_conf_file
+
+compute:
+    min_compute_nodes: 2
+    volume_device_name: ${volume_device}
+    min_microversion: 2.0
+    max_microversion: latest
+
+compute-feature-enabled:
+    live_migration: True
+    block_migration_for_live_migration: True
+    block_migrate_cinder_iscsi: True
+    attach_encrypted_volume: True
+
+EOF
+
+echo "${tempest_conf_file}..."
+cat ${tempest_conf_file}
+
+cp_tempest_cmd="docker cp ${DOVETAIL_CONFIG}/tempest_conf.yaml $container_id:/home/opnfv/dovetail/dovetail/userconfig"
+echo "exec command: ${cp_tempest_cmd}"
+$cp_tempest_cmd
+
 list_cmd="dovetail list ${TESTSUITE}"
 run_cmd="dovetail run --testsuite ${TESTSUITE} -d"
 echo "Container exec command: ${list_cmd}"
