@@ -173,7 +173,7 @@ cat << EOF >$tempest_conf_file
 compute:
     min_compute_nodes: 2
     volume_device_name: ${volume_device}
-    min_microversion: 2.0
+    min_microversion: 2.2
     max_microversion: latest
 
 compute-feature-enabled:
