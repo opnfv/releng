@@ -66,6 +66,8 @@ mappings = [
      scenario_handlers.ScenarioOwnerHandler),
     (r"/api/v1/scenarios/([^/]+)/versions",
      scenario_handlers.ScenarioVersionsHandler),
+    (r"/api/v1/scenarios/([^/]+)/installers",
+     scenario_handlers.ScenarioInstallersHandler),
 
     # static path
     (r'/(.*\.(css|png|gif|js|html|json|map|woff2|woff|ttf))',
