@@ -1,3 +1,4 @@
+---
 - project:
 
     name: opera-project
@@ -5,12 +6,12 @@
     project: 'opera'
 
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
 
     jobs:
-        - 'opera-build-{stream}'
+      - 'opera-build-{stream}'
 
 ########################
 # job templates
@@ -21,27 +22,27 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 1
-            max-per-node: 1
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 1
+          max-per-node: 1
+          option: 'project'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
 
     scm:
-        - git-scm
+      - git-scm
 
     triggers:
-        - timed: 'H 23 * * *'
+      - timed: 'H 23 * * *'
 
     builders:
-        - 'opera-build-macro'
+      - 'opera-build-macro'
 
 #####################################
 # builder macros
@@ -49,9 +50,7 @@
 - builder:
     name: 'opera-build-macro'
     builders:
-        - shell: |
-            #!/bin/bash
+      - shell: |
+          #!/bin/bash
 
-            echo "Hello world!"
-
-
+          echo "Hello world!"
