@@ -114,8 +114,21 @@ class ScenarioGURHandler(GenericScenarioHandler):
         self._get_one(query={'name': name})
         pass
 
+    @swagger.operation(nickname="updateScenarioName")
     def put(self, name):
-        pass
+        """
+            @description: update scenario, only rename is supported currently
+            @param body: fields to be updated
+            @type body: L{ScenarioUpdateRequest}
+            @in body: body
+            @rtype: L{Scenario}
+            @return 200: update success
+            @raise 404: scenario not exist
+            @raise 403: nothing to update
+        """
+        query = {'name': name}
+        db_keys = ['name']
+        self._update(query=query, db_keys=db_keys)
 
     @swagger.operation(nickname="deleteScenarioByName")
     def delete(self, name):
