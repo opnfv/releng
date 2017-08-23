@@ -150,6 +150,9 @@ class ScenarioUpdater(object):
             ('versions', 'post'): self._update_requests_add_versions,
             ('versions', 'put'): self._update_requests_update_versions,
             ('versions', 'delete'): self._update_requests_delete_versions,
+            ('installers', 'post'): self._update_requests_add_installers,
+            ('installers', 'put'): self._update_requests_update_installers,
+            ('installers', 'delete'): self._update_requests_delete_installers,
         }
         updates[(item, action)](self.data)
 
@@ -250,6 +253,19 @@ class ScenarioUpdater(object):
     def _update_requests_delete_versions(self, installer):
         installer.versions = self._remove_versions(installer.versions)
 
+    def _update_requests_add_installers(self, scenario):
+        scenario.installers = self._update_with_body(models.ScenarioInstaller,
+                                                     'installer',
+                                                     scenario.installers)
+
+    def _update_requests_update_installers(self, scenario):
+        scenario.installers = self._update_with_body(models.ScenarioInstaller,
+                                                     'installer',
+                                                     list())
+
+    def _update_requests_delete_installers(self, scenario):
+        scenario.installers = self._remove_installers(scenario.installers)
+
     def _update_with_body(self, clazz, field, withs):
         exists = list()
         malformat = list()
@@ -271,6 +287,9 @@ class ScenarioUpdater(object):
 
     def _filter_installers(self, installers):
         return self._filter('installer', installers)
+
+    def _remove_installers(self, installers):
+        return self._remove('installer', installers)
 
     def _filter_versions(self, versions):
         return self._filter('version', versions)
@@ -688,3 +707,56 @@ class ScenarioVersionsHandler(GenericScenarioUpdateHandler):
                        'delete',
                        locators={'scenario': scenario,
                                  'installer': None})
+
+
+class ScenarioInstallersHandler(GenericScenarioUpdateHandler):
+    @swagger.operation(nickname="addInstallersUnderScenario")
+    def post(self, scenario):
+        """
+        @description: add installers to scenario
+        @notes: add one or multiple installers
+            POST /api/v1/scenarios/<scenario_name>/installers
+        @param body: installers to be added
+        @type body: C{list} of L{ScenarioInstaller}
+        @in body: body
+        @return 200: installers are added.
+        @raise 400: bad schema
+        @raise 409: conflict, installer already exists
+        @raise 404:  scenario not exist
+        """
+        self.do_update('installers',
+                       'post',
+                       locators={'scenario': scenario})
+
+    @swagger.operation(nickname="updateInstallersUnderScenario")
+    def put(self, scenario):
+        """
+        @description: replace all installers
+        @notes: substitute all installers as a totality
+            PUT /api/v1/scenarios/<scenario_name>/installers
+        @param body: new installers
+        @type body: C{list} of L{ScenarioInstaller}
+        @in body: body
+        @return 200: replace versions success.
+        @raise 400: bad schema
+        @raise 404:  scenario/installer not exist
+        """
+        self.do_update('installers',
+                       'put',
+                       locators={'scenario': scenario})
+
+    @swagger.operation(nickname="deleteInstallersUnderScenario")
+    def delete(self, scenario):
+        """
+        @description: delete one or multiple installers
+        @notes: delete one or multiple installers
+            DELETE /api/v1/scenarios/<scenario_name>/installers
+        @param body: installers(names) to be deleted
+        @type body: C{list} of L{string}
+        @in body: body
+        @return 200: delete versions success.
+        @raise 404:  scenario/installer not exist
+        """
+        self.do_update('installers',
+                       'delete',
+                       locators={'scenario': scenario})
