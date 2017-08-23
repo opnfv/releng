@@ -27,18 +27,27 @@ ENV CONFIG_REPORTING_YAML ${working_dir}/reporting.yaml
 WORKDIR ${HOME}
 # Packaged dependencies
 RUN apt-get update && apt-get install -y \
+build-essential \
 ssh \
+curl \
+gnupg \
 python-pip \
+python-dev \
+python-setuptools \
 git-core \
-nodejs \
-npm \
 supervisor \
 --no-install-recommends
 
-RUN pip install --upgrade pip
+RUN pip install --upgrade pip && easy_install -U setuptools==30.0.0
 
-RUN git clone --depth 1 https://gerrit.opnfv.org/gerrit/releng ${HOME}/releng
+RUN git clone --depth 1 https://gerrit.opnfv.org/gerrit/releng /home/opnfv/releng
 RUN pip install -r ${working_dir}/requirements.txt
+
+RUN sh -c 'curl -sL https://deb.nodesource.com/setup_8.x | bash -' \
+    && apt-get install -y nodejs \
+    && npm install -g bower \
+    && npm install -g grunt \
+    && npm install -g grunt-cli
 
 WORKDIR ${working_dir}
 RUN python setup.py install
