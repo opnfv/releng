@@ -175,6 +175,10 @@ class TestScenarioUpdate(TestScenarioBase):
                     locator = 'installer={}&version={}'.format(
                         self.installer,
                         self.version)
+                elif item in ['versions']:
+                    locator = 'installer={}'.format(
+                        self.installer)
+
                 self.update_url = '{}/{}?{}'.format(self.scenario_url,
                                                     item,
                                                     locator)
@@ -276,6 +280,15 @@ class TestScenarioUpdate(TestScenarioBase):
         return [update], scenario
 
     @update_url_fixture('projects')
+    @update_partial('_update', '_conflict')
+    def test_updateProjects_duplicated(self, scenario):
+        update1 = models.ScenarioProject(project='qtip').format()
+        update2 = models.ScenarioProject(project='qtip').format()
+        scenario['installers'][0]['versions'][0]['projects'] = [update1,
+                                                                update2]
+        return [update1, update2], scenario
+
+    @update_url_fixture('projects')
     @update_partial('_update', '_bad_request')
     def test_updateProjects_bad_schema(self, scenario):
         update = models.ScenarioProject(project='functest').format()
@@ -300,6 +313,61 @@ class TestScenarioUpdate(TestScenarioBase):
         update = models.ScenarioChangeOwnerRequest(new_owner).format()
         scenario['installers'][0]['versions'][0]['owner'] = new_owner
         return update, scenario
+
+    @update_url_fixture('versions')
+    @update_partial('_add', '_success')
+    def test_addVersions_succ(self, scenario):
+        add = models.ScenarioVersion(version='Euphrates').format()
+        scenario['installers'][0]['versions'].append(add)
+        return [add], scenario
+
+    @update_url_fixture('versions')
+    @update_partial('_add', '_conflict')
+    def test_addVersions_already_exist(self, scenario):
+        add = models.ScenarioVersion(version='master').format()
+        scenario['installers'][0]['versions'].append(add)
+        return [add], scenario
+
+    @update_url_fixture('versions')
+    @update_partial('_add', '_bad_request')
+    def test_addVersions_bad_schema(self, scenario):
+        add = models.ScenarioVersion(version='euphrates').format()
+        add['notexist'] = None
+        scenario['installers'][0]['versions'].append(add)
+        return [add], scenario
+
+    @update_url_fixture('versions')
+    @update_partial('_update', '_success')
+    def test_updateVersions_succ(self, scenario):
+        update = models.ScenarioVersion(version='euphrates').format()
+        scenario['installers'][0]['versions'] = [update]
+        return [update], scenario
+
+    @update_url_fixture('versions')
+    @update_partial('_update', '_conflict')
+    def test_updateVersions_duplicated(self, scenario):
+        update1 = models.ScenarioVersion(version='euphrates').format()
+        update2 = models.ScenarioVersion(version='euphrates').format()
+        scenario['installers'][0]['versions'] = [update1, update2]
+        return [update1, update2], scenario
+
+    @update_url_fixture('versions')
+    @update_partial('_update', '_bad_request')
+    def test_updateVersions_bad_schema(self, scenario):
+        update = models.ScenarioVersion(version='euphrates').format()
+        update['not_owner'] = 'Iam'
+        scenario['installers'][0]['versions'] = [update]
+        return [update], scenario
+
+    @update_url_fixture('versions')
+    @update_partial('_delete', '_success')
+    def test_deleteVersions(self, scenario):
+        deletes = ['master']
+        versions = scenario['installers'][0]['versions']
+        scenario['installers'][0]['versions'] = filter(
+            lambda f: f['version'] != 'master',
+            versions)
+        return deletes, scenario
 
     def _add(self, update_req, new_scenario):
         return self.post_direct_url(self.update_url, update_req)
