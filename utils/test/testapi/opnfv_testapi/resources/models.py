@@ -61,11 +61,11 @@ class ModelBase(object):
                     '{} has no attribute {}'.format(cls.__name__, k))
             value = v
             if isinstance(v, dict) and k in attr_parser:
-                value = attr_parser[k].from_dict(v)
+                value = attr_parser[k].from_dict_with_raise(v)
             elif isinstance(v, list) and k in attr_parser:
                 value = []
                 for item in v:
-                    value.append(attr_parser[k].from_dict(item))
+                    value.append(attr_parser[k].from_dict_with_raise(item))
 
             t.__setattr__(k, value)
 

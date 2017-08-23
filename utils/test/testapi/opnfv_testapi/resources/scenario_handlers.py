@@ -147,6 +147,9 @@ class ScenarioUpdater(object):
             ('projects', 'put'): self._update_requests_update_projects,
             ('projects', 'delete'): self._update_requests_delete_projects,
             ('owner', 'put'): self._update_requests_change_owner,
+            ('versions', 'post'): self._update_requests_add_versions,
+            ('versions', 'put'): self._update_requests_update_versions,
+            ('versions', 'delete'): self._update_requests_delete_versions,
         }
         updates[(item, action)](self.data)
 
@@ -210,42 +213,16 @@ class ScenarioUpdater(object):
     @iter_installers
     @iter_versions
     def _update_requests_add_projects(self, version):
-        exists = list()
-        malformat = list()
-        for n in self.body:
-            try:
-                f_n = models.ScenarioProject.from_dict_with_raise(n)
-                if not any(o.project == f_n.project for o in version.projects):
-                    version.projects.append(f_n)
-                else:
-                    exists.append(n['project'])
-            except Exception as e:
-                malformat.append(e.message)
-        if malformat:
-            raises.BadRequest(message.bad_format(malformat))
-        elif exists:
-            raises.Conflict(message.exist('projects', exists))
+        version.projects = self._update_with_body(models.ScenarioProject,
+                                                  'project',
+                                                  version.projects)
 
     @iter_installers
     @iter_versions
     def _update_requests_update_projects(self, version):
-        exists = list()
-        malformat = list()
-        projects = list()
-        for n in self.body:
-            try:
-                f_n = models.ScenarioProject.from_dict_with_raise(n)
-                if not any(o.project == f_n.project for o in projects):
-                    projects.append(models.ScenarioProject.from_dict(n))
-                else:
-                    exists.append(n['project'])
-            except:
-                malformat.append(n)
-        if malformat:
-            raises.BadRequest(message.bad_format(malformat))
-        elif exists:
-            raises.Forbidden(message.exist('projects', exists))
-        version.projects = projects
+        version.projects = self._update_with_body(models.ScenarioProject,
+                                                  'project',
+                                                  list())
 
     @iter_installers
     @iter_versions
@@ -257,11 +234,49 @@ class ScenarioUpdater(object):
     def _update_requests_change_owner(self, version):
         version.owner = self.body.get('owner')
 
+    @iter_installers
+    def _update_requests_add_versions(self, installer):
+        installer.versions = self._update_with_body(models.ScenarioVersion,
+                                                    'version',
+                                                    installer.versions)
+
+    @iter_installers
+    def _update_requests_update_versions(self, installer):
+        installer.versions = self._update_with_body(models.ScenarioVersion,
+                                                    'version',
+                                                    list())
+
+    @iter_installers
+    def _update_requests_delete_versions(self, installer):
+        installer.versions = self._remove_versions(installer.versions)
+
+    def _update_with_body(self, clazz, field, withs):
+        exists = list()
+        malformat = list()
+        for new in self.body:
+            try:
+                format_new = clazz.from_dict_with_raise(new)
+                new_name = getattr(format_new, field)
+                if not any(getattr(o, field) == new_name for o in withs):
+                    withs.append(format_new)
+                else:
+                    exists.append(new_name)
+            except Exception as error:
+                malformat.append(error.message)
+        if malformat:
+            raises.BadRequest(message.bad_format(malformat))
+        elif exists:
+            raises.Conflict(message.exist('{}s'.format(field), exists))
+        return withs
+
     def _filter_installers(self, installers):
         return self._filter('installer', installers)
 
     def _filter_versions(self, versions):
         return self._filter('version', versions)
+
+    def _remove_versions(self, versions):
+        return self._remove('version', versions)
 
     def _filter_projects(self, projects):
         return self._filter('project', projects)
@@ -602,3 +617,74 @@ class ScenarioOwnerHandler(GenericScenarioUpdateHandler):
                        locators={'scenario': scenario,
                                  'installer': None,
                                  'version': None})
+
+
+class ScenarioVersionsHandler(GenericScenarioUpdateHandler):
+    @swagger.operation(nickname="addVersionsUnderScenario")
+    def post(self, scenario):
+        """
+        @description: add versions to scenario
+        @notes: add one or multiple versions
+            POST /api/v1/scenarios/<scenario_name>/versions? \
+                installer=<installer_name>
+        @param body: versions to be added
+        @type body: C{list} of L{ScenarioVersion}
+        @in body: body
+        @param installer: installer type
+        @type installer: L{string}
+        @in installer: query
+        @required installer: True
+        @return 200: versions are added.
+        @raise 400: bad schema
+        @raise 409: conflict, version already exists
+        @raise 404:  scenario/installer not exist
+        """
+        self.do_update('versions',
+                       'post',
+                       locators={'scenario': scenario,
+                                 'installer': None})
+
+    @swagger.operation(nickname="updateVersionsUnderScenario")
+    def put(self, scenario):
+        """
+        @description: replace all versions
+        @notes: substitute all versions as a totality
+            PUT /api/v1/scenarios/<scenario_name>/versions? \
+                installer=<installer_name>
+        @param body: new versions
+        @type body: C{list} of L{ScenarioVersion}
+        @in body: body
+        @param installer: installer type
+        @type installer: L{string}
+        @in installer: query
+        @required installer: True
+        @return 200: replace versions success.
+        @raise 400: bad schema
+        @raise 404:  scenario/installer not exist
+        """
+        self.do_update('versions',
+                       'put',
+                       locators={'scenario': scenario,
+                                 'installer': None})
+
+    @swagger.operation(nickname="deleteVersionsUnderScenario")
+    def delete(self, scenario):
+        """
+        @description: delete one or multiple versions
+        @notes: delete one or multiple versions
+            DELETE /api/v1/scenarios/<scenario_name>/versions? \
+                installer=<installer_name>
+        @param body: versions(names) to be deleted
+        @type body: C{list} of L{string}
+        @in body: body
+        @param installer: installer type
+        @type installer: L{string}
+        @in installer: query
+        @required installer: True
+        @return 200: delete versions success.
+        @raise 404:  scenario/installer not exist
+        """
+        self.do_update('versions',
+                       'delete',
+                       locators={'scenario': scenario,
+                                 'installer': None})
