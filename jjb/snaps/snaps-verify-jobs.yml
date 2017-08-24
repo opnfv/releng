@@ -15,21 +15,27 @@
             branch: '{stream}'
             gs-pathname: ''
             disabled: false
-        - danube:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
-            disabled: false
 
 - job-template:
     name: 'snaps-verify-{stream}'
 
     disabled: '{obj:disabled}'
 
+    concurrent: false
+
     parameters:
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+        - string:
+            name: DEPLOYMENT_HOST_IP
+            default: 192.168.122.2
+            description: 'IP of the deployment node'
+        - string:
+            name: CONTROLLER_IP
+            default: 192.168.122.3
+            description: 'IP of the controller node'
+        - 'intel-virtual10-defaults'
 
     scm:
         - git-scm-gerrit
@@ -60,4 +66,7 @@
 
     builders:
         - shell: |
-            echo "Nothing to verify!"
+            #!/bin/bash
+
+            cd $WORKSPACE/ci
+            ./run_tests.sh $DEPLOYMENT_HOST_IP $CONTROLLER_IP
