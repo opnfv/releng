@@ -15,21 +15,19 @@
             branch: '{stream}'
             gs-pathname: ''
             disabled: false
-        - danube:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
-            disabled: false
 
 - job-template:
     name: 'snaps-verify-{stream}'
 
     disabled: '{obj:disabled}'
 
+    concurrent: false
+
     parameters:
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+        - 'intel-virtual10-defaults'
 
     scm:
         - git-scm-gerrit
@@ -60,4 +58,7 @@
 
     builders:
         - shell: |
-            echo "Nothing to verify!"
+            #!/bin/bash
+
+            cd $WORKSPACE/ci
+            ./run_tests.sh
