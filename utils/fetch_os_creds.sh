@@ -107,7 +107,7 @@ if [ "$installer_type" == "fuel" ]; then
 
         # retrieving controller vip
         controller_ip=$(ssh 2>/dev/null ${ssh_options} ubuntu@${installer_ip} \
-            "sudo salt --out txt 'ctl01*' pillar.get _param:openstack_control_address | awk '{print \$2}'" | \
+            "sudo salt --out txt 'ctl*' pillar.get _param:openstack_control_address | awk '{print \$2; exit}'" | \
             sed 's/ //g') &> /dev/null
 
         info "Fetching rc file from controller $controller_ip..."
