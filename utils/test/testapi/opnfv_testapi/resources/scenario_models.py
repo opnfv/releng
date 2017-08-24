@@ -16,12 +16,26 @@ class ScenarioTI(models.ModelBase):
         self.date = date
         self.status = status
 
+    def __eq__(self, other):
+        return (self.date == other.date and
+                self.status == other.status)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
 @swagger.model()
 class ScenarioScore(models.ModelBase):
     def __init__(self, date=None, score='0'):
         self.date = date
         self.score = score
+
+    def __eq__(self, other):
+        return (self.date == other.date and
+                self.score == other.score)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 
 @swagger.model()
@@ -50,10 +64,10 @@ class ScenarioProject(models.ModelBase):
                 'trust_indicators': ScenarioTI}
 
     def __eq__(self, other):
-        return [self.project == other.project and
+        return (self.project == other.project and
                 self._customs_eq(other) and
                 self._scores_eq(other) and
-                self._ti_eq(other)]
+                self._ti_eq(other))
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -62,10 +76,10 @@ class ScenarioProject(models.ModelBase):
         return set(self.customs) == set(other.customs)
 
     def _scores_eq(self, other):
-        return set(self.scores) == set(other.scores)
+        return self.scores == other.scores
 
     def _ti_eq(self, other):
-        return set(self.trust_indicators) == set(other.trust_indicators)
+        return self.trust_indicators == other.trust_indicators
 
 
 @swagger.model()
@@ -84,9 +98,9 @@ class ScenarioVersion(models.ModelBase):
         return {'projects': ScenarioProject}
 
     def __eq__(self, other):
-        return [self.version == other.version and
+        return (self.version == other.version and
                 self.owner == other.owner and
-                self._projects_eq(other)]
+                self._projects_eq(other))
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -116,7 +130,7 @@ class ScenarioInstaller(models.ModelBase):
         return {'versions': ScenarioVersion}
 
     def __eq__(self, other):
-        return [self.installer == other.installer and self._versions_eq(other)]
+        return (self.installer == other.installer and self._versions_eq(other))
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -166,7 +180,7 @@ class Scenario(models.ModelBase):
         return not self.__eq__(other)
 
     def __eq__(self, other):
-        return [self.name == other.name and self._installers_eq(other)]
+        return (self.name == other.name and self._installers_eq(other))
 
     def _installers_eq(self, other):
         for s_install in self.installers:

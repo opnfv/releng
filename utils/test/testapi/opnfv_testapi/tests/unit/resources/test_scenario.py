@@ -47,8 +47,7 @@ class TestScenarioBase(base.TestBase):
             req = self.req_d
         self.assertIsNotNone(scenario._id)
         self.assertIsNotNone(scenario.creation_date)
-
-        scenario == models.Scenario.from_dict(req)
+        self.assertEqual(scenario, models.Scenario.from_dict(req))
 
     @staticmethod
     def _set_query(*args):
@@ -298,7 +297,7 @@ class TestScenarioUpdate(TestScenarioBase):
     @update_partial('_update', '_success')
     def test_changeOwner(self, scenario):
         new_owner = 'new_owner'
-        scenario['installers'][0]['versions'][0]['owner'] = 'www'
+        scenario['installers'][0]['versions'][0]['owner'] = new_owner
         return new_owner, scenario
 
     def _add(self, update_req, new_scenario):
