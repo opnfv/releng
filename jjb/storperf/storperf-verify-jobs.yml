@@ -75,8 +75,8 @@
             # in phase jobs
             echo "Triggering phase jobs!"
         - multijob:
-            name: 'unit-test'
-            condition: SUCCESSFUL
+            name: 'storperf-build-and-unittest'
+            execution-type: PARALLEL
             projects:
                 - name: 'storperf-verify-unit-test-{stream}'
                   current-parameters: false
@@ -89,9 +89,6 @@
                   node-parameters: false
                   kill-phase-on: FAILURE
                   abort-all-job: false
-            name: 'build-x86_64'
-            condition: SUCCESSFUL
-            projects:
                 - name: 'storperf-verify-build-x86_64-{stream}'
                   current-parameters: false
                   predefined-parameters: |
@@ -104,9 +101,6 @@
                   node-parameters: false
                   kill-phase-on: FAILURE
                   abort-all-job: false
-            name: 'build-aarch64'
-            condition: SUCCESSFUL
-            projects:
                 - name: 'storperf-verify-build-aarch64-{stream}'
                   current-parameters: false
                   predefined-parameters: |
