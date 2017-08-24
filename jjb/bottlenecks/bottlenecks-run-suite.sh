@@ -19,9 +19,12 @@ git clone https://gerrit.opnfv.org/gerrit/releng ${RELENG_REPO} >${redirect}
 OPENRC=/tmp/admin_rc.sh
 OS_CACERT=/tmp/os_cacert
 
+BOTTLENECKS_CONFIG=/tmp
+
 if [[ $SUITE_NAME == *posca* ]]; then
     POSCA_SCRIPT=/home/opnfv/bottlenecks/testsuites/posca
 
+    # Preparing OpenStack RC and Cacert files
     echo "BOTTLENECKS INFO: fetching os credentials from $INSTALLER_TYPE"
     if [[ $INSTALLER_TYPE == 'compass' ]]; then
         if [[ ${BRANCH} == 'master' ]]; then
@@ -49,6 +52,60 @@ if [[ $SUITE_NAME == *posca* ]]; then
         exit 1
     fi
 
+    # Finding and crearting POD description files from different deployments
+    ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+
+    if [ "$INSTALLER_TYPE" == "fuel" ]; then
+        echo "Fetching id_rsa file from jump_server $INSTALLER_IP..."
+        sshpass -p r00tme sudo scp $ssh_options root@${INSTALLER_IP}:~/.ssh/id_rsa ${BOTTLENECKS_CONFIG}/id_rsa
+    fi
+
+    if [ "$INSTALLER_TYPE" == "apex" ]; then
+        echo "Fetching id_rsa file from jump_server $INSTALLER_IP..."
+        sudo scp $ssh_options stack@${INSTALLER_IP}:~/.ssh/id_rsa ${BOTTLENECKS_CONFIG}/id_rsa
+    fi
+
+    set +e
+
+    sudo pip install virtualenv
+
+    cd ${RELENG_REPO}/modules
+    sudo virtualenv venv
+    source venv/bin/activate
+    sudo pip install -e ./ >/dev/null
+    sudo pip install netaddr
+
+    if [[ ${INSTALLER_TYPE} == compass ]]; then
+        options="-u root -p root"
+    elif [[ ${INSTALLER_TYPE} == fuel ]]; then
+        options="-u root -p r00tme"
+    elif [[ ${INSTALLER_TYPE} == apex ]]; then
+        options="-u stack -k /root/.ssh/id_rsa"
+    else
+        echo "Don't support to generate pod.yaml on ${INSTALLER_TYPE} currently."
+    fi
+
+    cmd="sudo python ${RELENG_REPO}/utils/create_pod_file.py -t ${INSTALLER_TYPE} \
+         -i ${INSTALLER_IP} ${options} -f ${BOTTLENECKS_CONFIG}/pod.yaml \
+         -s ${BOTTLENECKS_CONFIG}/id_rsa"
+    echo ${cmd}
+    ${cmd}
+
+    deactivate
+
+    set -e
+
+    cd ${WORKSPACE}
+
+    if [ -f ${BOTTLENECKS_CONFIG}/pod.yaml ]; then
+        echo "FILE: ${BOTTLENECKS_CONFIG}/pod.yaml:"
+        cat ${BOTTLENECKS_CONFIG}/pod.yaml
+    else
+        echo "ERROR: cannot find file ${BOTTLENECKS_CONFIG}/pod.yaml. Please check if it is existing."
+        sudo ls -al ${BOTTLENECKS_CONFIG}
+    fi
+
+    # Pulling Bottlenecks docker and passing environment variables
     echo "INFO: pulling Bottlenecks docker ${DOCKER_TAG}"
     docker pull opnfv/bottlenecks:${DOCKER_TAG} >$redirect
 
@@ -65,6 +122,7 @@ if [[ $SUITE_NAME == *posca* ]]; then
     ${cmd} >$redirect
     sleep 5
 
+    # Running test cases through Bottlenecks docker
     if [[ $SUITE_NAME == posca_stress_traffic ]]; then
         TEST_CASE=posca_factor_system_bandwidth
         testcase_cmd="docker exec bottlenecks-load-master python ${POSCA_SCRIPT}/../run_testsuite.py testcase $TEST_CASE $REPORT"
