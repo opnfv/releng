@@ -33,8 +33,9 @@ if [ "$BRANCH" != 'stable/danube' ]; then
   echo "Functest: Download images that will be used by test cases"
   images_dir="${HOME}/opnfv/functest/images"
   chmod +x ${WORKSPACE}/functest/ci/download_images.sh
-  ${WORKSPACE}/functest/ci/download_images.sh ${images_dir} ${DEPLOY_SCENARIO} ${HOST_ARCH} 2> ${redirect}
+  ${WORKSPACE}/functest/ci/download_images.sh ${images_dir}
   images_vol="-v ${images_dir}:/home/opnfv/functest/images"
+  echo "Functest: Images successfully downloaded"
 fi
 
 dir_result="${HOME}/opnfv/functest/results/${BRANCH##*/}"
@@ -43,6 +44,7 @@ sudo rm -rf ${dir_result}/*
 results_vol="-v ${dir_result}:/home/opnfv/functest/results"
 custom_params=
 test -f ${HOME}/opnfv/functest/custom/params_${DOCKER_TAG} && custom_params=$(cat ${HOME}/opnfv/functest/custom/params_${DOCKER_TAG})
+echo "Functest: custom parameters successfully retrieved: ${custom_params}"
 
 envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
     -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
@@ -63,6 +65,8 @@ if [ "$BRANCH" != 'stable/danube' ]; then
 else
   volumes="${results_vol} ${sshkey_vol} ${stackrc_vol} ${rc_file_vol}"
 fi
+
+echo "Functest: volumes defined"
 
 FUNCTEST_IMAGE="opnfv/functest"
 if [ "$HOST_ARCH" = "aarch64" ]; then
