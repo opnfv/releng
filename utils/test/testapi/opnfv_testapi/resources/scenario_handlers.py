@@ -255,7 +255,7 @@ class ScenarioUpdater(object):
     @iter_installers
     @iter_versions
     def _update_requests_change_owner(self, version):
-        version.owner = self.body
+        version.owner = self.body.get('owner')
 
     def _filter_installers(self, installers):
         return self._filter('installer', installers)
@@ -587,7 +587,7 @@ class ScenarioOwnerHandler(GenericScenarioUpdateHandler):
         @type body: L{string}
         @in body: body
         @param installer: installer type
-        @type installer: L{string}
+        @type installer: L{ScenarioChangeOwnerRequest}
         @in installer: query
         @required installer: True
         @param version: version

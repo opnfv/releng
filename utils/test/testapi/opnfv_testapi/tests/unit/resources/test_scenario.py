@@ -297,8 +297,9 @@ class TestScenarioUpdate(TestScenarioBase):
     @update_partial('_update', '_success')
     def test_changeOwner(self, scenario):
         new_owner = 'new_owner'
+        update = models.ScenarioChangeOwnerRequest(new_owner).format()
         scenario['installers'][0]['versions'][0]['owner'] = new_owner
-        return new_owner, scenario
+        return update, scenario
 
     def _add(self, update_req, new_scenario):
         return self.post_direct_url(self.update_url, update_req)
