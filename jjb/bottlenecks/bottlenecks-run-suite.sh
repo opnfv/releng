@@ -89,7 +89,7 @@ if [[ $SUITE_NAME == *posca* ]]; then
         echo "Don't support to generate pod.yaml on ${INSTALLER_TYPE} currently."
     fi
 
-    if [[ ${INSTALLER_TYPE} != compass]]; then
+    if [[ ${INSTALLER_TYPE} != compass ]]; then
         cmd="sudo python ${RELENG_REPO}/utils/create_pod_file.py -t ${INSTALLER_TYPE} \
          -i ${INSTALLER_IP} ${options} -f ${BOTTLENECKS_CONFIG}/pod.yaml \
          -s ${BOTTLENECKS_CONFIG}/id_rsa"
