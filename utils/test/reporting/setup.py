@@ -8,7 +8,6 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 
 # pylint: disable=missing-docstring
-
 import setuptools
 
 # In python < 2.7.4, a lazy loading of package `pbr` will break
