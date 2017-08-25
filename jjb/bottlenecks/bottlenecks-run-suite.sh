@@ -16,6 +16,10 @@ RELENG_REPO=${WORKSPACE}/releng
 [ -d ${RELENG_REPO} ] && rm -rf ${RELENG_REPO}
 git clone https://gerrit.opnfv.org/gerrit/releng ${RELENG_REPO} >${redirect}
 
+YARDSTICK_REPO=${WORKSPACE}/yardstick
+[ -d ${YARDSTICK_REPO} ] && rm -rf ${YARDSTICK_REPO}
+git clone https://gerrit.opnfv.org/gerrit/yardstick ${YARDSTICK_REPO} >${redirect}
+
 OPENRC=/tmp/admin_rc.sh
 OS_CACERT=/tmp/os_cacert
 
@@ -85,11 +89,18 @@ if [[ $SUITE_NAME == *posca* ]]; then
         echo "Don't support to generate pod.yaml on ${INSTALLER_TYPE} currently."
     fi
 
-    cmd="sudo python ${RELENG_REPO}/utils/create_pod_file.py -t ${INSTALLER_TYPE} \
+    if [[ ${INSTALLER_TYPE} != compass]]; then
+        cmd="sudo python ${RELENG_REPO}/utils/create_pod_file.py -t ${INSTALLER_TYPE} \
          -i ${INSTALLER_IP} ${options} -f ${BOTTLENECKS_CONFIG}/pod.yaml \
          -s ${BOTTLENECKS_CONFIG}/id_rsa"
-    echo ${cmd}
-    ${cmd}
+        echo ${cmd}
+        ${cmd}
+    else
+        cmd="sudo cp ${YARDSTICK_REPO}/etc/yardstick/nodes/compass_sclab_physical/pod.yaml \
+        ${BOTTLENECKS_CONFIG}"
+        echo ${cmd}
+        ${cmd}
+    fi
 
     deactivate
 
