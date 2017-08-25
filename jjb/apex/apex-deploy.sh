@@ -3,7 +3,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-APEX_PKGS="common undercloud onos"
 IPV6_FLAG=False
 
 # log info to console

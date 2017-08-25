@@ -3,8 +3,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-APEX_PKGS="common undercloud onos"
-
 # log info to console
 echo "Downloading the Apex artifact. This could take some time..."
 echo "--------------------------------------------------------"
@@ -40,9 +38,8 @@ else
   # find version of RPM
   VERSION_EXTENSION=$(echo $(basename $RPM_LIST) | grep -Eo '[0-9]+\.[0-9]+-([0-9]{8}|[a-z]+-[0-9]\.[0-9]+)')
   # build RPM List which already includes base Apex RPM
-  for pkg in ${APEX_PKGS}; do
-    RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex-${pkg}-${VERSION_EXTENSION}.noarch.rpm"
-  done
+  RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex-undercloud-${VERSION_EXTENSION}.noarch.rpm"
+  RPM_LIST+=" ${RPM_INSTALL_PATH}/python34-opnfv-apex-${VERSION_EXTENSION}.noarch.rpm"
 
   # remove old / install new RPMs
   if rpm -q opnfv-apex > /dev/null; then
