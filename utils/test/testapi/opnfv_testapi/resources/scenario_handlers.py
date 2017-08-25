@@ -584,10 +584,10 @@ class ScenarioOwnerHandler(GenericScenarioUpdateHandler):
                 installer=<installer_name>& \
                 version=<version_name>
         @param body: new owner
-        @type body: L{string}
+        @type body: L{ScenarioChangeOwnerRequest}
         @in body: body
         @param installer: installer type
-        @type installer: L{ScenarioChangeOwnerRequest}
+        @type installer: L{string}
         @in installer: query
         @required installer: True
         @param version: version
