@@ -122,13 +122,26 @@ if [ "$INSTALLER_TYPE" == "apex" ]; then
     sudo scp $ssh_options stack@${INSTALLER_IP}:~/.ssh/id_rsa ${DOVETAIL_CONFIG}/id_rsa
 fi
 
+image_path=${HOME}/opnfv/dovetail/images
+if [[ ! -d ${image_path} ]]; then
+    mkdir -p ${image_path}
+fi
 # sdnvpn test case needs to download this image first before running
-echo "Download image ubuntu-16.04-server-cloudimg-amd64-disk1.img ..."
-wget -q -nc http://artifacts.opnfv.org/sdnvpn/ubuntu-16.04-server-cloudimg-amd64-disk1.img -P ${DOVETAIL_CONFIG}
+ubuntu_image=${image_path}/ubuntu-16.04-server-cloudimg-amd64-disk1.img
+if [[ ! -f ${ubuntu_image} ]]; then
+    echo "Download image ubuntu-16.04-server-cloudimg-amd64-disk1.img ..."
+    wget -q -nc http://artifacts.opnfv.org/sdnvpn/ubuntu-16.04-server-cloudimg-amd64-disk1.img -P ${image_path}
+fi
+sudo cp ${ubuntu_image} ${DOVETAIL_CONFIG}
 
 # functest needs to download this image first before running
-echo "Download image cirros-0.3.5-x86_64-disk.img ..."
-wget -q -nc http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img -P ${DOVETAIL_CONFIG}
+cirros_image=${image_path}/cirros-0.3.5-x86_64-disk.img
+if [[ ! -f ${cirros_image} ]]; then
+    echo "Download image cirros-0.3.5-x86_64-disk.img ..."
+    wget -q -nc http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img -P ${image_path}
+fi
+sudo cp ${cirros_image} ${DOVETAIL_CONFIG}
+
 
 opts="--privileged=true -id"
 
