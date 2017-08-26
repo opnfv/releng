@@ -66,6 +66,7 @@ fi
 
 volumes="${images_vol} ${results_vol} ${sshkey_vol} ${rc_file_vol} ${cacert_file_vol}"
 
+set +e
 
 tiers=(healthcheck smoke features vnf)
 for tier in ${tiers[@]}; do
