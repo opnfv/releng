@@ -56,7 +56,9 @@ else
   BASE=$CONFIG
   IMAGES=$RESOURCES
   LIB="/var/opt/opnfv/lib"
-
+  sudo mkdir -p /var/log/apex
+  chmod 777 /var/log/apex
+  cd /var/log/apex
 fi
 
 # Install Dependencies
