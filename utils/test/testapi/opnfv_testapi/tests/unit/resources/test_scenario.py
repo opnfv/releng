@@ -179,6 +179,8 @@ class TestScenarioUpdate(TestScenarioBase):
                 elif item in ['versions']:
                     locator = 'installer={}'.format(
                         self.installer)
+                elif item in ['rename']:
+                    self.update_url = self.scenario_url
 
                 if locator:
                     self.update_url = '{}?{}'.format(self.update_url, locator)
@@ -408,6 +410,21 @@ class TestScenarioUpdate(TestScenarioBase):
             lambda f: f['installer'] != 'apex',
             installers)
         return deletes
+
+    @update_url_fixture('rename')
+    @update_partial('_update', '_success')
+    def test_renameScenario(self):
+        new_name = 'new_scenario_name'
+        update = models.ScenarioUpdateRequest(name=new_name)
+        self.req_d['name'] = new_name
+        return update
+
+    @update_url_fixture('rename')
+    @update_partial('_update', '_forbidden')
+    def test_renameScenario_exist(self):
+        new_name = self.req_d['name']
+        update = models.ScenarioUpdateRequest(name=new_name)
+        return update
 
     def _add(self, update_req):
         return self.post_direct_url(self.update_url, update_req)

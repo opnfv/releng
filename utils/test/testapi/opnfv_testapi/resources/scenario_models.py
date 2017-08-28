@@ -167,6 +167,12 @@ class ScenarioChangeOwnerRequest(models.ModelBase):
 
 
 @swagger.model()
+class ScenarioUpdateRequest(models.ModelBase):
+    def __init__(self, name=None):
+        self.name = name
+
+
+@swagger.model()
 class Scenario(models.ModelBase):
     """
         @property installers:
