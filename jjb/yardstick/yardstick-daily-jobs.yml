@@ -206,11 +206,6 @@
             installer: compass
             auto-trigger-name: 'yardstick-daily-huawei-pod3-trigger'
             <<: *master
-        - huawei-pod4:
-            slave-label: '{pod}'
-            installer: compass
-            auto-trigger-name: 'yardstick-daily-huawei-pod4-trigger'
-            <<: *master
         - baremetal-centos:
             slave-label: 'intel-pod8'
             installer: compass
@@ -495,24 +490,11 @@
             default: '-i 104.197.68.199:8086'
             description: 'Arguments to use in order to choose the backend DB'
 
-- parameter:
-    name: 'yardstick-params-huawei-pod4'
-    parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
-
 #######################
 ## trigger macros
 #######################
 # trigger for PODs to only run yardstick test suites
 - trigger:
     name: 'yardstick-daily-huawei-pod3-trigger'
-    triggers:
-        - timed: '0 1 * * *'
-
-- trigger:
-    name: 'yardstick-daily-huawei-pod4-trigger'
     triggers:
         - timed: '0 1 * * *'
