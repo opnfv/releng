@@ -4,7 +4,7 @@ export PYTHONPATH="${PYTHONPATH}:./reporting"
 export CONFIG_REPORTING_YAML=./reporting/reporting.yaml
 
 declare -a versions=(danube master)
-declare -a projects=(functest storperf yardstick qtip)
+declare -a projects=(functest storperf yardstick qtip vsperf)
 
 project=$1
 reporting_type=$2
@@ -32,6 +32,7 @@ cp -Rf js display
 # yardstick | status
 # storperf  | status
 # qtip      | status
+# vsperf    | status
 
 function report_project()
 {

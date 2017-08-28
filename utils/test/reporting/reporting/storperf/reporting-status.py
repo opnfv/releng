@@ -7,13 +7,12 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 #
 import datetime
-import jinja2
 import os
 
-# manage conf
-import utils.reporting_utils as rp_utils
+import jinja2
 
-import utils.scenarioResult as sr
+import reporting.utils.reporting_utils as rp_utils
+import reporting.utils.scenarioResult as sr
 
 installers = rp_utils.get_config('general.installers')
 versions = rp_utils.get_config('general.versions')
@@ -39,7 +38,8 @@ for version in versions:
     for installer in installers:
         # get scenarios results data
         # for the moment we consider only 1 case snia_steady_state
-        scenario_results = rp_utils.getScenarios("snia_steady_state",
+        scenario_results = rp_utils.getScenarios("storperf",
+                                                 "snia_steady_state",
                                                  installer,
                                                  version)
         # logger.info("scenario_results: %s" % scenario_results)
