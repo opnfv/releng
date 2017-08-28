@@ -19,11 +19,15 @@ if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
 fi
 
 if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
-    # If production lab then creds may be retrieved dynamically
-    # creds are on the jumphost, always in the same folder
-    rc_file_vol="-v $LAB_CONFIG/admin-openrc:/etc/yardstick/openstack.creds"
-    # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
-    # replace the default one by the customized one provided by jenkins config
+    if [[ "${DEPLOY_SCENARIO:0:2}" == "k8" ]];then
+        rc_file_vol="-v $LAB_CONFIG/admin.conf:/etc/yardstick/admin.conf"
+    else
+        # If production lab then creds may be retrieved dynamically
+        # creds are on the jumphost, always in the same folder
+        rc_file_vol="-v $LAB_CONFIG/admin-openrc:/etc/yardstick/openstack.creds"
+        # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
+        # replace the default one by the customized one provided by jenkins config
+    fi
 elif [[ ${INSTALLER_TYPE} == 'compass' && ${BRANCH} == 'master' ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:/etc/yardstick/os_cacert"
     echo "export OS_CACERT=/etc/yardstick/os_cacert" >> ${HOME}/opnfv-openrc.sh
