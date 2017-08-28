@@ -7,18 +7,19 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 #
 import datetime
-import jinja2
 import os
 import sys
 import time
 
+import jinja2
+
 import testCase as tc
 import scenarioResult as sr
+import reporting.utils.reporting_utils as rp_utils
 
-# manage conf
-import utils.reporting_utils as rp_utils
-
-"""Functest reporting status"""
+"""
+Functest reporting status
+"""
 
 # Logger
 logger = rp_utils.getLogger("Functest-Status")
@@ -106,7 +107,8 @@ for version in versions:
     for installer in installers:
 
         # get scenarios
-        scenario_results = rp_utils.getScenarios(healthcheck,
+        scenario_results = rp_utils.getScenarios("functest",
+                                                 "connection_check",
                                                  installer,
                                                  version)
         # get nb of supported architecture (x86, aarch64)
@@ -219,7 +221,7 @@ for version in versions:
                                 logger.debug("No results found")
 
                         items[s] = testCases2BeDisplayed
-                except:
+                except Exception:
                     logger.error("Error: installer %s, version %s, scenario %s"
                                  % (installer, version, s))
                     logger.error("No data available: %s" % (sys.exc_info()[0]))
@@ -279,13 +281,13 @@ for version in versions:
             template = templateEnv.get_template(TEMPLATE_FILE)
 
             outputText = template.render(
-                            scenario_stats=scenario_stats,
-                            scenario_results=scenario_result_criteria,
-                            items=items,
-                            installer=installer_display,
-                            period=period,
-                            version=version,
-                            date=reportingDate)
+                scenario_stats=scenario_stats,
+                scenario_results=scenario_result_criteria,
+                items=items,
+                installer=installer_display,
+                period=period,
+                version=version,
+                date=reportingDate)
 
             with open("./display/" + version +
                       "/functest/status-" +
@@ -298,8 +300,6 @@ for version in versions:
 
             # Generate outputs for export
             # pdf
-            # TODO Change once web site updated...use the current one
-            # to test pdf production
             url_pdf = rp_utils.get_config('general.url')
             pdf_path = ("./display/" + version +
                         "/functest/status-" + installer_display + ".html")
