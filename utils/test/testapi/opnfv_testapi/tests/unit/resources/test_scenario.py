@@ -170,6 +170,7 @@ class TestScenarioUpdate(TestScenarioBase):
     def update_url_fixture(item):
         def _update_url_fixture(xstep):
             def wrapper(self, *args, **kwargs):
+                self.update_url = '{}/{}'.format(self.scenario_url, item)
                 locator = None
                 if item in ['projects', 'owner']:
                     locator = 'installer={}&version={}'.format(
@@ -179,9 +180,9 @@ class TestScenarioUpdate(TestScenarioBase):
                     locator = 'installer={}'.format(
                         self.installer)
 
-                self.update_url = '{}/{}?{}'.format(self.scenario_url,
-                                                    item,
-                                                    locator)
+                if locator:
+                    self.update_url = '{}?{}'.format(self.update_url, locator)
+
                 xstep(self, *args, **kwargs)
             return wrapper
         return _update_url_fixture
@@ -280,9 +281,8 @@ class TestScenarioUpdate(TestScenarioBase):
     @update_url_fixture('projects')
     @update_partial('_update', '_conflict')
     def test_updateProjects_duplicated(self):
-        update1 = models.ScenarioProject(project='qtip').format()
-        update2 = models.ScenarioProject(project='qtip').format()
-        return [update1, update2]
+        update = models.ScenarioProject(project='qtip').format()
+        return [update, update]
 
     @update_url_fixture('projects')
     @update_partial('_update', '_bad_request')
@@ -339,9 +339,8 @@ class TestScenarioUpdate(TestScenarioBase):
     @update_url_fixture('versions')
     @update_partial('_update', '_conflict')
     def test_updateVersions_duplicated(self):
-        update1 = models.ScenarioVersion(version='euphrates').format()
-        update2 = models.ScenarioVersion(version='euphrates').format()
-        return [update1, update2]
+        update = models.ScenarioVersion(version='euphrates').format()
+        return [update, update]
 
     @update_url_fixture('versions')
     @update_partial('_update', '_bad_request')
@@ -358,6 +357,56 @@ class TestScenarioUpdate(TestScenarioBase):
         self.req_d['installers'][0]['versions'] = filter(
             lambda f: f['version'] != 'master',
             versions)
+        return deletes
+
+    @update_url_fixture('installers')
+    @update_partial('_add', '_success')
+    def test_addInstallers_succ(self):
+        add = models.ScenarioInstaller(installer='daisy').format()
+        self.req_d['installers'].append(add)
+        return [add]
+
+    @update_url_fixture('installers')
+    @update_partial('_add', '_conflict')
+    def test_addInstallers_already_exist(self):
+        add = models.ScenarioInstaller(installer='apex').format()
+        return [add]
+
+    @update_url_fixture('installers')
+    @update_partial('_add', '_bad_request')
+    def test_addInstallers_bad_schema(self):
+        add = models.ScenarioInstaller(installer='daisy').format()
+        add['not_exist'] = 'not_exist'
+        return [add]
+
+    @update_url_fixture('installers')
+    @update_partial('_update', '_success')
+    def test_updateInstallers_succ(self):
+        update = models.ScenarioInstaller(installer='daisy').format()
+        self.req_d['installers'] = [update]
+        return [update]
+
+    @update_url_fixture('installers')
+    @update_partial('_update', '_conflict')
+    def test_updateInstallers_duplicated(self):
+        update = models.ScenarioInstaller(installer='daisy').format()
+        return [update, update]
+
+    @update_url_fixture('installers')
+    @update_partial('_update', '_bad_request')
+    def test_updateInstallers_bad_schema(self):
+        update = models.ScenarioInstaller(installer='daisy').format()
+        update['not_exist'] = 'not_exist'
+        return [update]
+
+    @update_url_fixture('installers')
+    @update_partial('_delete', '_success')
+    def test_deleteInstallers(self):
+        deletes = ['apex']
+        installers = self.req_d['installers']
+        self.req_d['installers'] = filter(
+            lambda f: f['installer'] != 'apex',
+            installers)
         return deletes
 
     def _add(self, update_req):
