@@ -33,8 +33,7 @@ def prepare_profile_file(version):
     if not os.path.exists(profile_dir):
         os.makedirs(profile_dir)
 
-    profile_file = "{}/{}/scenario_history.txt".format(profile_dir,
-                                                       version)
+    profile_file = "{}/scenario_history.txt".format(profile_dir)
     if not os.path.exists(profile_file):
         with open(profile_file, 'w') as f:
             info = 'date,scenario,installer,details,score\n'
