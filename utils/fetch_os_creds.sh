@@ -112,6 +112,10 @@ if [ "$installer_type" == "fuel" ]; then
 
         info "Fetching rc file from controller $controller_ip..."
         ssh ${ssh_options} ubuntu@${controller_ip} "sudo cat /root/keystonercv3" > $dest_path
+
+        if [[ $BUILD_TAG =~ "baremetal" ]]; then
+            ssh ${ssh_options} ubuntu@${installer_ip} "cat /etc/ssl/certs/os_cacert" > $os_cacert
+        fi
     else
         #ip_fuel="10.20.0.2"
         env=$(sshpass -p r00tme ssh 2>/dev/null ${ssh_options} root@${installer_ip} \
