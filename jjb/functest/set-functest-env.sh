@@ -7,14 +7,15 @@ set +o pipefail
 [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 
 # Prepare OpenStack credentials volume
+rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/home/opnfv/functest/conf/openstack.creds"
+
 if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     rc_file_vol="-v $LAB_CONFIG/admin-openrc:/home/opnfv/functest/conf/openstack.creds"
 elif [[ ${INSTALLER_TYPE} == 'compass' && ${BRANCH} == 'master' ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:/home/opnfv/functest/conf/os_cacert"
     echo "export OS_CACERT=/home/opnfv/functest/conf/os_cacert" >> ${HOME}/opnfv-openrc.sh
-    rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/home/opnfv/functest/conf/openstack.creds"
-else
-    rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/home/opnfv/functest/conf/openstack.creds"
+elif [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
+    cacert_file_vol="-v ${HOME}/os_cacert:/etc/ssl/certs/mcp_os_cacert"
 fi
 
 
