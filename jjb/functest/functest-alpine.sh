@@ -68,9 +68,14 @@ volumes="${images_vol} ${results_vol} ${sshkey_vol} ${rc_file_vol} ${cacert_file
 
 set +e
 
-tiers=(healthcheck smoke features vnf)
+if ${FUNCTEST_SUITE_NAME} == 'healthcheck'; then
+    tiers=(healthcheck)
+else
+    tiers=(healthcheck smoke features vnf)
+fi
+
 for tier in ${tiers[@]}; do
-    FUNCTEST_IMAGE=ollivier/functest-${tier}
+    FUNCTEST_IMAGE=opnfv/functest-${tier}
     echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
     docker pull ${FUNCTEST_IMAGE}>/dev/null
     cmd="docker run ${envs} ${volumes} ${FUNCTEST_IMAGE}"
