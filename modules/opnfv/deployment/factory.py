@@ -11,6 +11,7 @@
 from opnfv.deployment.apex import adapter as apex_adapter
 from opnfv.deployment.compass import adapter as compass_adapter
 from opnfv.deployment.fuel import adapter as fuel_adapter
+from opnfv.deployment.XCI import adapter as xci_adapter
 from opnfv.utils import opnfv_logger as logger
 
 logger = logger.Logger(__name__).getLogger()
@@ -18,7 +19,7 @@ logger = logger.Logger(__name__).getLogger()
 
 class Factory(object):
 
-    INSTALLERS = ["fuel", "apex", "compass", "joid", "daisy"]
+    INSTALLERS = ["fuel", "apex", "compass", "joid", "daisy", "XCI"]
 
     def __init__(self):
         pass
@@ -46,6 +47,9 @@ class Factory(object):
                 installer_ip=installer_ip,
                 installer_user=installer_user,
                 installer_pwd=installer_pwd)
+        elif installer.lower() == "xci":    
+            return xci_adapter.XCIAdapter(installer_ip=installer_ip,
+                                          installer_user=installer_user)
         else:
             raise Exception("Installer adapter is not implemented for "
                             "the given installer.")
