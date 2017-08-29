@@ -33,7 +33,7 @@ if [ "$BRANCH" != 'stable/danube' ]; then
   echo "Functest: Download images that will be used by test cases"
   images_dir="${HOME}/opnfv/functest/images"
   chmod +x ${WORKSPACE}/functest/ci/download_images.sh
-  ${WORKSPACE}/functest/ci/download_images.sh ${images_dir} > ${redirect} 2>&1
+  ${WORKSPACE}/functest/ci/download_images.sh ${images_dir} > ${redirect}
   images_vol="-v ${images_dir}:/home/opnfv/functest/images"
   echo "Functest: Images successfully downloaded"
 fi
