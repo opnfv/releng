@@ -144,6 +144,13 @@ if [ "$installer_type" == "fuel" ]; then
     echo $auth_url >> $dest_path
 
 elif [ "$installer_type" == "apex" ]; then
+    if ! ipcalc -c $installer_ip; then
+      installer_ip=$(virsh domifaddr undercloud | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
+      if [ -z "$installer_ip" ] || ! $(ipcalc -c $installer_ip); then
+        echo "Unable to find valid IP for Apex undercloud: ${installer_ip}"
+        exit 1
+      fi
+    fi
     verify_connectivity $installer_ip
 
     # The credentials file is located in the Instack VM (192.0.2.1)
