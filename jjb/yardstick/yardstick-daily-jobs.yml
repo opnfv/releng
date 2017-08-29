@@ -281,6 +281,7 @@
             description: "POD: $NODE_NAME"
         - 'yardstick-cleanup'
         - 'yardstick-fetch-os-creds'
+        - 'yardstick-fetch-k8s-conf'
         - 'yardstick-{testsuite}'
         - 'yardstick-store-results'
 
@@ -309,6 +310,12 @@
     builders:
         - shell:
             !include-raw: ../../utils/fetch_os_creds.sh
+
+- builder:
+    name: yardstick-fetch-k8s-conf
+    builders:
+        - shell:
+            !include-raw: ./yardstick-get-k8s-conf.sh
 
 - builder:
     name: yardstick-store-results
