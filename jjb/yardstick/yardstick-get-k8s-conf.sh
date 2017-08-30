@@ -1,3 +1,4 @@
+#!/bin/bash
 set -e
 
 dest_path="$HOME/admin.conf"
