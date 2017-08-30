@@ -6,20 +6,19 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-import logging
-from datetime import datetime
-from datetime import timedelta
 import json
+import logging
 
 from bson import objectid
+from datetime import datetime
+from datetime import timedelta
 
-from opnfv_testapi.common.config import CONF
-from opnfv_testapi.common import message
+from opnfv_testapi.common import constants as auth_const, message
 from opnfv_testapi.common import raises
+from opnfv_testapi.common.config import CONF
 from opnfv_testapi.resources import handlers
 from opnfv_testapi.resources import result_models
 from opnfv_testapi.tornado_swagger import swagger
-from opnfv_testapi.ui.auth import constants as auth_const
 
 
 class GenericResultHandler(handlers.GenericApiHandler):
