@@ -37,7 +37,8 @@ class TestBase(testing.AsyncHTTPTestCase):
 
     def _patch_server(self):
         import argparse
-        config = path.join(path.dirname(__file__), '../common/normal.ini')
+        config = path.join(path.dirname(__file__),
+                           '../../../../etc/config.ini')
         self.config_patcher = mock.patch(
             'argparse.ArgumentParser.parse_known_args',
             return_value=(argparse.Namespace(config_file=config), None))
@@ -45,9 +46,6 @@ class TestBase(testing.AsyncHTTPTestCase):
                                      fake_pymongo)
         self.config_patcher.start()
         self.db_patcher.start()
-
-    def set_config_file(self):
-        self.config_file = 'normal.ini'
 
     def get_app(self):
         from opnfv_testapi.cmd import server
