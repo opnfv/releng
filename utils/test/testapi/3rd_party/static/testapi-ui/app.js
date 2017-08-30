@@ -59,6 +59,11 @@
                 url: '/about',
                 templateUrl: 'testapi-ui/components/about/about.html'
             }).
+            state('login', {
+                url: '/login',
+                templateUrl: 'testapi-ui/components/login/login.html',
+                controller: 'LoginController as ctrl'
+            }).
             state('pods', {
                 url: '/pods',
                 templateUrl: 'testapi-ui/components/pods/pods.html',
