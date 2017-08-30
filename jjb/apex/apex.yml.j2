@@ -322,6 +322,10 @@
                   kill-phase-on: FAILURE
                   abort-all-job: true
                   git-revision: true
+        - shell: |
+            echo DEPLOY_SCENARIO=$(echo $GERRIT_EVENT_COMMENT_TEXT | grep start-gate-scenario | grep -Eo 'os-.*') > detected_scenario
+        - inject:
+           properties-file: detected_scenario
         - multijob:
             name: functest-smoke
             condition: SUCCESSFUL
@@ -329,7 +333,7 @@
               - name: 'functest-apex-virtual-suite-{stream}'
                 current-parameters: false
                 predefined-parameters: |
-                  DEPLOY_SCENARIO={verify-scenario}
+                  DEPLOY_SCENARIO=$DEPLOY_SCENARIO
                   FUNCTEST_SUITE_NAME=healthcheck
                   GERRIT_BRANCH=$GERRIT_BRANCH
                   GERRIT_REFSPEC=$GERRIT_REFSPEC
