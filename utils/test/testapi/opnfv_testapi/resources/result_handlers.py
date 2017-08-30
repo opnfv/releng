@@ -6,20 +6,20 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-import logging
-from datetime import datetime
-from datetime import timedelta
 import json
+import logging
 
 from bson import objectid
+from datetime import datetime
+from datetime import timedelta
 
-from opnfv_testapi.common.config import CONF
+from opnfv_testapi.common import constants
 from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
+from opnfv_testapi.common.config import CONF
 from opnfv_testapi.resources import handlers
 from opnfv_testapi.resources import result_models
 from opnfv_testapi.tornado_swagger import swagger
-from opnfv_testapi.ui.auth import constants as auth_const
 
 
 class GenericResultHandler(handlers.GenericApiHandler):
@@ -59,13 +59,12 @@ class GenericResultHandler(handlers.GenericApiHandler):
             elif k == 'to':
                 date_range.update({'$lt': str(v)})
             elif k == 'signed':
-                openid = self.get_secure_cookie(auth_const.OPENID)
-                role = self.get_secure_cookie(auth_const.ROLE)
-                logging.info('role:%s', role)
+                username = self.get_secure_cookie(constants.TESTAPI_ID)
+                role = self.get_secure_cookie(constants.ROLE)
                 if role:
                     del query['public']
                     if role != "reviewer":
-                        query['user'] = openid
+                        query['user'] = username
             elif k not in ['last', 'page', 'descend']:
                 query[k] = v
             if date_range:
@@ -246,7 +245,7 @@ class ResultsUploadHandler(ResultsCLHandler):
         self.json_args = json.loads(fileinfo['body']).copy()
         self.json_args['public'] = is_public
 
-        openid = self.get_secure_cookie(auth_const.OPENID)
+        openid = self.get_secure_cookie(constants.TESTAPI_ID)
         if openid:
             self.json_args['user'] = openid
 

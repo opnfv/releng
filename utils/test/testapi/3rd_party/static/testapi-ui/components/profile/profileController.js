@@ -26,7 +26,7 @@
      * This is a provider for the user's uploaded public keys.
      */
     function PubKeys($resource, testapiApiUrl) {
-        return $resource(testapiApiUrl + '/profile/pubkeys/:id', null, null);
+        return $resource(testapiApiUrl + '/user/pubkeys/:id', null, null);
     }
 
     angular

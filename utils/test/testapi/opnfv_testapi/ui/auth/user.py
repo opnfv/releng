@@ -1,25 +1,26 @@
-from tornado import gen
-from tornado import web
-
+from opnfv_testapi.common import constants
 from opnfv_testapi.common import raises
-from opnfv_testapi.db import api as dbapi
-from opnfv_testapi.ui.auth import base
+from opnfv_testapi.resources import handlers
+from opnfv_testapi.resources import models
 
 
-class ProfileHandler(base.BaseHandler):
-    @web.asynchronous
-    @gen.coroutine
+class User(models.ModelBase):
+    def __init__(self, user=None, email=None, fullname=None, groups=None):
+        self.user = user
+        self.email = email
+        self.fullname = fullname
+        self.groups = groups
+
+
+class UserHandler(handlers.GenericApiHandler):
+    def __init__(self, application, request, **kwargs):
+        super(UserHandler, self).__init__(application, request, **kwargs)
+        self.table = 'users'
+        self.table_cls = User
+
     def get(self):
-        openid = self.get_secure_cookie('openid')
-        if openid:
-            try:
-                user = yield dbapi.db_find_one(self.table, {'openid': openid})
-                self.finish_request({
-                    "openid": user.get('openid'),
-                    "email": user.get('email'),
-                    "fullname": user.get('fullname'),
-                    "role": user.get('role', 'user')
-                })
-            except Exception:
-                pass
-        raises.Unauthorized('Unauthorized')
+        username = self.get_secure_cookie(constants.TESTAPI_ID)
+        if username:
+            self._get_one(query={'user': username})
+        else:
+            raises.Unauthorized('Unauthorized')
