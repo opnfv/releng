@@ -22,6 +22,7 @@
     PodsController.$inject = [
         '$scope', '$http', '$filter', '$state', 'testapiApiUrl','raiseAlert'
     ];
+
     /**
      * TestAPI Pods Controller
      * This controller is for the '/pods' page where a user can browse
@@ -81,7 +82,7 @@
         function create() {
             ctrl.showError = false;
 
-            if(ctrl.name!=""){
+            if(ctrl.name != ""){
                 var pods_url = ctrl.url;
                 var body = {
                     name: ctrl.name,
