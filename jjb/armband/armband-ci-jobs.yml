@@ -48,16 +48,8 @@
 #--------------------------------
 #        euphrates
 #--------------------------------
-        - arm-pod2:
-            slave-label: arm-pod2
-            installer: fuel
-            <<: *euphrates
         - arm-pod5:
             slave-label: arm-pod5
-            installer: fuel
-            <<: *euphrates
-        - arm-pod4:
-            slave-label: arm-pod4
             installer: fuel
             <<: *euphrates
         - arm-virtual2:
@@ -66,17 +58,9 @@
             <<: *euphrates
 #--------------------------------
 #        master
-#--------------------------------
-        - arm-pod2:
-            slave-label: arm-pod2
-            installer: fuel
-            <<: *master
+#--------------------------------r
         - arm-pod5:
             slave-label: arm-pod5
-            installer: fuel
-            <<: *master
-        - arm-pod4:
-            slave-label: arm-pod4
             installer: fuel
             <<: *master
         - arm-virtual2:
@@ -90,19 +74,17 @@
         # HA scenarios
         - 'os-nosdn-nofeature-ha':
             auto-trigger-name: '{installer}-{scenario}-{pod}-{stream}-trigger'
-        - 'os-odl_l2-nofeature-ha':
+        - 'os-odl-nofeature-ha':
             auto-trigger-name: '{installer}-{scenario}-{pod}-{stream}-trigger'
-        - 'os-odl_l3-nofeature-ha':
+        - 'os-odl-bgpvpn-ha':
             auto-trigger-name: '{installer}-{scenario}-{pod}-{stream}-trigger'
-        - 'os-odl_l2-bgpvpn-ha':
-            auto-trigger-name: '{installer}-{scenario}-{pod}-{stream}-trigger'
-        - 'os-odl_l2-sfc-ha':
+        - 'os-odl-sfc-ha':
             auto-trigger-name: '{installer}-{scenario}-{pod}-{stream}-trigger'
 
         # NOHA scenarios
-        - 'os-odl_l2-nofeature-noha':
+        - 'os-odl-nofeature-noha':
             auto-trigger-name: '{installer}-{scenario}-{pod}-{stream}-trigger'
-        - 'os-odl_l2-sfc-noha':
+        - 'os-odl-sfc-noha':
             auto-trigger-name: '{installer}-{scenario}-{pod}-{stream}-trigger'
 
     jobs:
@@ -233,7 +215,7 @@
             installer: '{installer}'
         - string:
             name: DEPLOY_SCENARIO
-            default: 'os-odl_l2-nofeature-ha'
+            default: 'os-odl-nofeature-ha'
         - armband-ci-parameter:
             gs-pathname: '{gs-pathname}'
 
@@ -286,7 +268,7 @@
 # Enea Armband CI Baremetal Triggers running against master branch
 #-----------------------------------------------------------------
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-armband-baremetal-master-trigger'
+    name: 'fuel-os-odl-nofeature-ha-armband-baremetal-master-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -294,23 +276,19 @@
     triggers:
         - timed: '0 1 * * *'
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-armband-baremetal-master-trigger'
-    triggers:
-        - timed: '0 16 * * *'
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-armband-baremetal-master-trigger'
+    name: 'fuel-os-odl-bgpvpn-ha-armband-baremetal-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-armband-baremetal-master-trigger'
+    name: 'fuel-os-odl-nofeature-noha-armband-baremetal-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-armband-baremetal-master-trigger'
+    name: 'fuel-os-odl-sfc-ha-armband-baremetal-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-armband-baremetal-master-trigger'
+    name: 'fuel-os-odl-sfc-noha-armband-baremetal-master-trigger'
     triggers:
         - timed: ''
 
@@ -318,93 +296,81 @@
 # Enea Armband CI Baremetal Triggers running against euphrates branch
 #----------------------------------------------------------------------
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-armband-baremetal-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
     name: 'fuel-os-nosdn-nofeature-ha-armband-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-armband-baremetal-euphrates-trigger'
+    name: 'fuel-os-odl-bgpvpn-ha-armband-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-armband-baremetal-euphrates-trigger'
+    name: 'fuel-os-odl-nofeature-ha-armband-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-armband-baremetal-euphrates-trigger'
+    name: 'fuel-os-odl-nofeature-noha-armband-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-armband-baremetal-euphrates-trigger'
+    name: 'fuel-os-odl-sfc-ha-armband-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-armband-baremetal-euphrates-trigger'
+    name: 'fuel-os-odl-sfc-noha-armband-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 #---------------------------------------------------------------
 # Enea Armband CI Virtual Triggers running against master branch
 #---------------------------------------------------------------
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-armband-virtual-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
     name: 'fuel-os-nosdn-nofeature-ha-armband-virtual-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-armband-virtual-master-trigger'
+    name: 'fuel-os-odl-nofeature-ha-armband-virtual-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-armband-virtual-master-trigger'
+    name: 'fuel-os-odl-bgpvpn-ha-armband-virtual-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-armband-virtual-master-trigger'
+    name: 'fuel-os-odl-nofeature-noha-armband-virtual-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-armband-virtual-master-trigger'
+    name: 'fuel-os-odl-sfc-ha-armband-virtual-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-armband-virtual-master-trigger'
+    name: 'fuel-os-odl-sfc-noha-armband-virtual-master-trigger'
     triggers:
         - timed: ''
 #--------------------------------------------------------------------
 # Enea Armband CI Virtual Triggers running against euphrates branch
 #--------------------------------------------------------------------
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-armband-virtual-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
     name: 'fuel-os-nosdn-nofeature-ha-armband-virtual-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-armband-virtual-euphrates-trigger'
+    name: 'fuel-os-odl-nofeature-ha-armband-virtual-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-armband-virtual-euphrates-trigger'
+    name: 'fuel-os-odl-bgpvpn-ha-armband-virtual-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-armband-virtual-euphrates-trigger'
+    name: 'fuel-os-odl-nofeature-noha-armband-virtual-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-armband-virtual-euphrates-trigger'
+    name: 'fuel-os-odl-sfc-ha-armband-virtual-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-armband-virtual-euphrates-trigger'
+    name: 'fuel-os-odl-sfc-noha-armband-virtual-euphrates-trigger'
     triggers:
         - timed: ''
 
@@ -412,31 +378,27 @@
 # Enea Armband Non CI Virtual Triggers running against euphrates branch
 #--------------------------------------------------------------------
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-arm-virtual2-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
     name: 'fuel-os-nosdn-nofeature-ha-arm-virtual2-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-arm-virtual2-euphrates-trigger'
+    name: 'fuel-os-odl-nofeature-ha-arm-virtual2-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-arm-virtual2-euphrates-trigger'
+    name: 'fuel-os-odl-bgpvpn-ha-arm-virtual2-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-arm-virtual2-euphrates-trigger'
+    name: 'fuel-os-odl-nofeature-noha-arm-virtual2-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-arm-virtual2-euphrates-trigger'
+    name: 'fuel-os-odl-sfc-ha-arm-virtual2-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-arm-virtual2-euphrates-trigger'
+    name: 'fuel-os-odl-sfc-noha-arm-virtual2-euphrates-trigger'
     triggers:
         - timed: ''
 
@@ -444,94 +406,27 @@
 # Enea Armband Non CI Virtual Triggers running against master branch
 #--------------------------------------------------------------------
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-arm-virtual2-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
     name: 'fuel-os-nosdn-nofeature-ha-arm-virtual2-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-arm-virtual2-master-trigger'
+    name: 'fuel-os-odl-nofeature-ha-arm-virtual2-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-arm-virtual2-master-trigger'
+    name: 'fuel-os-odl-bgpvpn-ha-arm-virtual2-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-arm-virtual2-master-trigger'
+    name: 'fuel-os-odl-nofeature-noha-arm-virtual2-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-arm-virtual2-master-trigger'
+    name: 'fuel-os-odl-sfc-ha-arm-virtual2-master-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-arm-virtual2-master-trigger'
-    triggers:
-        - timed: ''
-
-#----------------------------------------------------------
-# Enea Armband POD 2 Triggers running against master branch
-#----------------------------------------------------------
-- trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-arm-pod2-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-arm-pod2-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-arm-pod2-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-arm-pod2-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-arm-pod2-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-arm-pod2-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-arm-pod2-master-trigger'
-    triggers:
-        - timed: ''
-#---------------------------------------------------------------
-# Enea Armband POD 2 Triggers running against euphrates branch
-#---------------------------------------------------------------
-- trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-arm-pod2-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-arm-pod2-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-arm-pod2-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-arm-pod2-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-arm-pod2-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-arm-pod2-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-arm-pod2-euphrates-trigger'
+    name: 'fuel-os-odl-sfc-noha-arm-virtual2-master-trigger'
     triggers:
         - timed: ''
 #----------------------------------------------------------
@@ -594,67 +489,5 @@
         - timed: ''
 - trigger:
     name: 'fuel-os-odl_l2-sfc-noha-arm-pod5-euphrates-trigger'
-    triggers:
-        - timed: ''
-#--------------------------------------------------------------------------
-# Enea Armband POD 3 Triggers running against master branch (aarch64 slave)
-#--------------------------------------------------------------------------
-- trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-arm-pod4-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-arm-pod4-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-arm-pod4-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-arm-pod4-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-arm-pod4-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-arm-pod4-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-arm-pod4-master-trigger'
-    triggers:
-        - timed: ''
-#--------------------------------------------------------------------------
-# Enea Armband POD 3 Triggers running against euphrates branch (aarch64 slave)
-#--------------------------------------------------------------------------
-- trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-arm-pod4-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-arm-pod4-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-arm-pod4-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-arm-pod4-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-arm-pod4-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-arm-pod4-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-arm-pod4-euphrates-trigger'
     triggers:
         - timed: ''
