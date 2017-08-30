@@ -186,6 +186,11 @@
             installer: compass
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *master
+        - flex-pod1:
+            slave-label: '{pod}'
+            installer: apex
+            auto-trigger-name: 'daily-trigger-disabled'
+            <<: *master
 #--------------------------------
     testsuite:
         - 'daily'
@@ -451,6 +456,14 @@
 
 - parameter:
     name: 'yardstick-params-huawei-pod4'
+    parameters:
+        - string:
+            name: YARDSTICK_DB_BACKEND
+            default: '-i 104.197.68.199:8086'
+            description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'yardstick-params-flex-pod1'
     parameters:
         - string:
             name: YARDSTICK_DB_BACKEND
