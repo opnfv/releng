@@ -76,8 +76,7 @@ mappings = [
 
     (r'/', root.RootHandler),
     (r'/api/v1/auth/signin', sign.SigninHandler),
-    (r'/api/v1/auth/signin_return', sign.SigninReturnHandler),
     (r'/api/v1/auth/signout', sign.SignoutHandler),
-    (r'/api/v1/profile', user.ProfileHandler),
+    (r'/api/v1/profile', user.UserHandler),
 
 ]
