@@ -20,7 +20,7 @@ fi
 
 if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     if [[ "${DEPLOY_SCENARIO:0:2}" == "k8" ]];then
-        rc_file_vol="-v $LAB_CONFIG/admin.conf:/etc/yardstick/admin.conf"
+        rc_file_vol="-v /home/ubuntu/config:/etc/yardstick/admin.conf"
     else
         # If production lab then creds may be retrieved dynamically
         # creds are on the jumphost, always in the same folder
@@ -59,8 +59,14 @@ sudo rm -rf ${dir_result}/*
 map_log_dir="-v ${dir_result}:/tmp/yardstick"
 
 # Run docker
-cmd="sudo docker run ${opts} ${envs} ${rc_file_vol} ${cacert_file_vol} ${map_log_dir} ${sshkey} opnfv/yardstick:${DOCKER_TAG} \
+if [[ ${INSTALLER_TYPE} == "joid" && "${DEPLOY_SCENARIO:0:2}" == "k8" ]];then
+    juju ssh kubernetes-master/0 sudo apt-get install docker.io
+    cmd="juju ssh kubernetes-master/0 sudo docker run ${opts} ${envs} ${rc_file_vol} ${cacert_file_vol} ${map_log_dir} ${sshkey} opnfv/yardstick:${DOCKER_TAG} exec_tests.sh ${YARDSTICK_DB_BACKEND} ${YARDSTICK_SCENARIO_SUITE_NAME}"
+else
+    cmd="sudo docker run ${opts} ${envs} ${rc_file_vol} ${cacert_file_vol} ${map_log_dir} ${sshkey} opnfv/yardstick:${DOCKER_TAG} \
     exec_tests.sh ${YARDSTICK_DB_BACKEND} ${YARDSTICK_SCENARIO_SUITE_NAME}"
+fi
+
 echo "Yardstick: Running docker cmd: ${cmd}"
 ${cmd}
 
