@@ -5,6 +5,7 @@
     jobs:
         - 'prune-docker-images'
         - 'archive-repositories'
+        - 'check-status-of-slaves'
 
 ########################
 # job templates
@@ -62,3 +63,27 @@
     builders:
         - shell:
             !include-raw-escape: opnfv-repo-archiver.sh
+
+- job-template:
+    name: 'check-status-of-slaves'
+
+    disabled: false
+
+    concurrent: true
+
+    parameters:
+        - node:
+            name: SLAVE_NAME
+            description: We don't want workspace wiped. so I just threw the script on the master
+            default-slaves:
+                - master
+            allowed-multiselect: false
+            ignore-offline-nodes: true
+
+    triggers:
+        - timed: '@midnight'
+
+    builders:
+        - shell: |
+            cd /opt/jenkins-ci/slavemonitor
+            bash slave-monitor-0.1.sh | sort
