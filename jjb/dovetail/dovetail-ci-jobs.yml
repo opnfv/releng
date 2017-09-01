@@ -162,6 +162,11 @@
             SUT: fuel
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *danube
+        - huawei-pod4:
+            slave-label: huawei-pod4
+            SUT: apex
+            auto-trigger-name: 'apex-huawei-pod4-danube-trigger'
+            <<: *danube
 #--------------------------------
     testsuite:
         - 'compliance_set'
@@ -258,3 +263,11 @@
     builders:
         - shell:
             !include-raw: ./dovetail-cleanup.sh
+
+#--------------------------
+# trigger macros
+#--------------------------
+- trigger:
+    name: 'apex-huawei-pod4-danube-trigger'
+    triggers:
+        - timed: '* 1 * * *'
