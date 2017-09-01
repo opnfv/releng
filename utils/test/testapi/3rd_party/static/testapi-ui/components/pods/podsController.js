@@ -31,7 +31,6 @@
     function PodsController($scope, $http, $filter, $state, testapiApiUrl,
         raiseAlert) {
         var ctrl = this;
-
         ctrl.url = testapiApiUrl + '/pods';
 
         ctrl.create = create;
@@ -82,21 +81,27 @@
          */
         function create() {
             ctrl.showError = false;
-            var pods_url = ctrl.url;
-            var body = {
-                name: ctrl.name,
-                mode: ctrl.mode,
-                role: ctrl.role,
-                details: ctrl.details
-            };
 
-            ctrl.podsRequest =
-                $http.post(pods_url, body).error(function (error) {
-                    ctrl.showError = true;
-                    ctrl.error =
-                        'Error creating the new pod from server: ' +
-                        angular.toJson(error);
-                });
+            if(ctrl.name != ""){
+                var pods_url = ctrl.url;
+                var body = {
+                    name: ctrl.name,
+                    mode: ctrl.mode,
+                    role: ctrl.role,
+                    details: ctrl.details
+                };
+                ctrl.podsRequest =
+                    $http.post(pods_url, body).error(function (error) {
+                        ctrl.showError = true;
+                        ctrl.error =
+                            'Error creating the new pod from server: ' +
+                            angular.toJson(error);
+                    });
+            }
+            else{
+                ctrl.showError = true;
+                        ctrl.error = 'Name is missing.'
+            }
         }
 
         /**
