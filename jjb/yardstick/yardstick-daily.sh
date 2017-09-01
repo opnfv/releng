@@ -60,7 +60,7 @@ map_log_dir="-v ${dir_result}:/tmp/yardstick"
 
 # Run docker
 if [[ ${INSTALLER_TYPE} == "joid" && "${DEPLOY_SCENARIO:0:2}" == "k8" ]];then
-    juju ssh kubernetes-master/0 sudo apt-get install docker.io
+    juju ssh kubernetes-master/0 sudo apt-get install -y docker.io
     cmd="juju ssh kubernetes-master/0 sudo docker run ${opts} ${envs} ${rc_file_vol} ${cacert_file_vol} ${map_log_dir} ${sshkey} opnfv/yardstick:${DOCKER_TAG} exec_tests.sh ${YARDSTICK_DB_BACKEND} ${YARDSTICK_SCENARIO_SUITE_NAME}"
 else
     cmd="sudo docker run ${opts} ${envs} ${rc_file_vol} ${cacert_file_vol} ${map_log_dir} ${sshkey} opnfv/yardstick:${DOCKER_TAG} \
