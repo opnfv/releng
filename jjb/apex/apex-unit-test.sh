@@ -9,7 +9,6 @@ echo
 
 
 pushd ci/ > /dev/null
-sudo BASE="${WORKSPACE}/build" LIB="${WORKSPACE}/lib" ./clean.sh
 ./test.sh
 popd
 
