@@ -149,7 +149,7 @@ if [ "$installer_type" == "fuel" ]; then
 
 elif [ "$installer_type" == "apex" ]; then
     if ! ipcalc -c $installer_ip; then
-      installer_ip=$(virsh domifaddr undercloud | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
+      installer_ip=$(sudo virsh domifaddr undercloud | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
       if [ -z "$installer_ip" ] || ! $(ipcalc -c $installer_ip); then
         echo "Unable to find valid IP for Apex undercloud: ${installer_ip}"
         exit 1
