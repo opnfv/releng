@@ -39,17 +39,28 @@ BRIDGE=${BRIDGE:-pxebr}
 LAB_NAME=${NODE_NAME/-*}
 # shellcheck disable=SC2153
 POD_NAME=${NODE_NAME/*-}
-# Fuel requires deploy script to be ran with sudo
+# Armband might override LAB_CONFIG_URL, all others use the default
+LAB_CONFIG_URL=${LAB_CONFIG_URL:-'ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab'}
+
+# Fuel requires deploy script to be ran with sudo, Armband does not
 SUDO=sudo
-
-if [[ "${NODE_NAME}" =~ "virtual" ]]; then
-    POD_NAME="virtual_kvm"
-fi
-
-# we currently support ericsson, intel, lf and zte labs
-if [[ ! "${LAB_NAME}" =~ (ericsson|intel|lf|zte) ]]; then
-    echo "Unsupported/unidentified lab ${LAB_NAME}. Cannot continue!"
-    exit 1
+if [ "${PROJECT}" = 'fuel' ]; then
+    # Fuel does not use any POD-specific configuration for virtual deploys
+    if [[ "${NODE_NAME}" =~ "virtual" ]]; then
+        POD_NAME="virtual_kvm"
+    fi
+    # Fuel currently supports ericsson, intel, lf and zte labs
+    if [[ ! "${LAB_NAME}" =~ (ericsson|intel|lf|zte) ]]; then
+        echo "Unsupported/unidentified lab ${LAB_NAME}. Cannot continue!"
+        exit 1
+    fi
+else
+    SUDO=
+    # Armband currently supports arm, enea labs
+    if [[ ! "${LAB_NAME}" =~ (arm|enea) ]]; then
+        echo "Unsupported/unidentified lab ${LAB_NAME}. Cannot continue!"
+        exit 1
+    fi
 fi
 
 echo "Using configuration for ${LAB_NAME}"
@@ -57,9 +68,6 @@ echo "Using configuration for ${LAB_NAME}"
 # create TMPDIR if it doesn't exist, change permissions
 mkdir -p "${TMPDIR}"
 chmod a+x "${HOME}" "${TMPDIR}"
-
-# TODO: move lab-config URL to Jenkins param
-LAB_CONFIG_URL='ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab'
 
 cd "${WORKSPACE}" || exit 1
 if [[ "${LAB_CONFIG_URL}" =~ ^(git|ssh):// ]]; then
