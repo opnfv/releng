@@ -21,7 +21,7 @@ if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
   tar -xvf apex-${OPNFV_ARTIFACT_VERSION}.tar.gz
   popd > /dev/null
 else
-  echo "Will download RPMs..."
+  echo "Will use RPMs..."
 
   # Must be RPMs/ISO
   echo "Downloading latest properties file"
@@ -33,13 +33,13 @@ else
   source $BUILD_DIRECTORY/opnfv.properties
 
   RPM_INSTALL_PATH=$(echo "http://"$OPNFV_RPM_URL | sed 's/\/'"$(basename $OPNFV_RPM_URL)"'//')
-  RPM_LIST=${RPM_INSTALL_PATH}/$(basename $OPNFV_RPM_URL)
+  RPM_LIST=$(basename $OPNFV_RPM_URL)
 
   # find version of RPM
   VERSION_EXTENSION=$(echo $(basename $RPM_LIST) | grep -Eo '[0-9]+\.[0-9]+-([0-9]{8}|[a-z]+-[0-9]\.[0-9]+)')
   # build RPM List which already includes base Apex RPM
-  RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex-undercloud-${VERSION_EXTENSION}.noarch.rpm"
-  RPM_LIST+=" ${RPM_INSTALL_PATH}/python34-opnfv-apex-${VERSION_EXTENSION}.noarch.rpm"
+  RPM_LIST+=" opnfv-apex-undercloud-${VERSION_EXTENSION}.noarch.rpm"
+  RPM_LIST+=" python34-opnfv-apex-${VERSION_EXTENSION}.noarch.rpm"
 
   # remove old / install new RPMs
   if rpm -q opnfv-apex > /dev/null; then
@@ -48,10 +48,20 @@ else
       sudo yum remove -y ${INSTALLED_RPMS}
     fi
   fi
+  # Create an rpms dir on slave
+  mkdir -p ~/apex_rpms
+  pushd ~/apex_rpms
+  # Remove older rpms which do not match this version
+  find . ! -name *${VERSION_EXTENSION}.noarch.rpm -type f -exec rm -f {} +
+  # Download RPM only if changed on server
+  for rpm in $RPM_LIST; do
+    wget -N ${RPM_INSTALL_PATH}/${rpm}
+  done
   if ! sudo yum install -y $RPM_LIST; then
     echo "Unable to install new RPMs: $RPM_LIST"
     exit 1
   fi
+  popd
 fi
 
 # TODO: Uncomment these lines to verify SHA512SUMs once the sums are
