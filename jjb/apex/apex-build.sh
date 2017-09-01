@@ -28,8 +28,10 @@ fi
 BUILD_DIRECTORY=${WORKSPACE}/build
 
 # start the build
-cd $WORKSPACE/ci
-./build.sh $BUILD_ARGS
+pushd ${BUILD_DIRECTORY}
+make clean
+popd
+python3 apex/build.py $BUILD_ARGS
 RPM_VERSION=$(grep Version: $WORKSPACE/build/rpm_specs/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '_-')
 # list the contents of BUILD_OUTPUT directory
 echo "Build Directory is ${BUILD_DIRECTORY}/../.build"
