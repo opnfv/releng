@@ -19,126 +19,12 @@
             disabled: true
 
     jobs:
-        - 'fuel-build-daily-{stream}'
-        - 'fuel-merge-build-{stream}'
         - 'fuel-merge-deploy-virtual-{stream}'
         - 'fuel-deploy-generic-daily-{stream}'
 
 ########################
 # job templates
 ########################
-- job-template:
-    name: 'fuel-build-daily-{stream}'
-
-    disabled: '{obj:disabled}'
-
-    concurrent: false
-
-    properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 1
-            max-per-node: 1
-            option: 'project'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
-        - '{installer}-defaults'
-        - choice:
-            name: FORCE_BUILD
-            choices:
-              - 'false'
-              - 'true'
-            description: "Force build even if there is no changes in fuel repo. Default false"
-        - fuel-project-parameter:
-            gs-pathname: '{gs-pathname}'
-
-    scm:
-        - git-scm
-
-    triggers:
-        - timed: '0 H/4 * * *'
-
-    wrappers:
-        - timeout:
-            timeout: 360
-            fail: true
-
-    builders:
-        - shell:
-            !include-raw-escape: ./fuel-build.sh
-        - shell:
-            !include-raw-escape: ./fuel-upload-artifact.sh
-        - shell:
-            !include-raw-escape: ./fuel-workspace-cleanup.sh
-
-    publishers:
-        - email:
-            recipients: fzhadaev@mirantis.com
-        - email-jenkins-admins-on-failure
-
-- job-template:
-    name: 'fuel-merge-build-{stream}'
-
-    disabled: '{obj:disabled}'
-
-    concurrent: true
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
-        - '{installer}-defaults'
-        - fuel-project-parameter:
-            gs-pathname: '{gs-pathname}'
-
-    scm:
-        - git-scm
-
-    wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 360
-            fail: true
-
-    triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'ci/**'
-                  - compare-type: ANT
-                    pattern: 'build/**'
-                  - compare-type: ANT
-                    pattern: 'deploy/**'
-                disable-strict-forbidden-file-verification: 'true'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**'
-
-    builders:
-        - shell:
-            !include-raw-escape: ./fuel-build.sh
-        - shell:
-            !include-raw-escape: ./fuel-upload-artifact.sh
-        - shell:
-            !include-raw-escape: ./fuel-workspace-cleanup.sh
-
 - job-template:
     name: 'fuel-merge-deploy-virtual-{stream}'
 
@@ -192,9 +78,7 @@
                   - compare-type: ANT
                     pattern: 'ci/**'
                   - compare-type: ANT
-                    pattern: 'build/**'
-                  - compare-type: ANT
-                    pattern: 'deploy/**'
+                    pattern: 'mcp/**'
                 disable-strict-forbidden-file-verification: 'true'
                 forbidden-file-paths:
                   - compare-type: ANT
@@ -277,14 +161,6 @@
 - parameter:
     name: fuel-project-parameter
     parameters:
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-            description: "Directory where the build artifact will be located upon the completion of the build."
-        - string:
-            name: CACHE_DIRECTORY
-            default: $HOME/opnfv/cache/$INSTALLER_TYPE
-            description: "Directory where the cache to be used during the build is located."
         - string:
             name: GS_URL
             default: artifacts.opnfv.org/$PROJECT{gs-pathname}
