@@ -52,7 +52,7 @@ else
   mkdir -p ~/apex_rpms
   pushd ~/apex_rpms
   # Remove older rpms which do not match this version
-  find . ! -name *${VERSION_EXTENSION}.noarch.rpm -type f -exec rm -f {} +
+  find . ! -name "*${VERSION_EXTENSION}.noarch.rpm" -type f -exec rm -f {} +
   # Download RPM only if changed on server
   for rpm in $RPM_LIST; do
     wget -N ${RPM_INSTALL_PATH}/${rpm}
