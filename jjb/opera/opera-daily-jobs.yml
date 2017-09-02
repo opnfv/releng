@@ -66,7 +66,8 @@
             branch: '{branch}'
         - string:
             name: DEPLOY_SCENARIO
-            default: os-nosdn-openo-ha
+#            default: os-nosdn-openo-ha
+            default: os-nosdn-nofeature-ha
         - '{slave-label}-defaults'
 
     builders:
@@ -79,7 +80,8 @@
                 - name: 'compass-deploy-{pod}-daily-{stream}'
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-openo-ha
+#                    DEPLOY_SCENARIO=os-nosdn-openo-ha
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha
                     COMPASS_OS_VERSION=xenial
                   node-parameters: true
                   kill-phase-on: FAILURE
@@ -91,8 +93,10 @@
                 - name: 'functest-compass-{pod}-suite-{stream}'
                   current-parameters: false
                   predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-openo-ha
-                    FUNCTEST_SUITE_NAME=opera_vims
+#                    DEPLOY_SCENARIO=os-nosdn-openo-ha
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-ha
+#                    FUNCTEST_SUITE_NAME=opera_vims
+                    FUNCTEST_SUITE_NAME=opera_clearwaterims
                   node-parameters: true
                   kill-phase-on: NEVER
                   abort-all-job: true
