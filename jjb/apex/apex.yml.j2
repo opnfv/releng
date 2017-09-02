@@ -709,18 +709,19 @@
                   enable-condition: "def m = '$DEPLOY_SCENARIO' ==~ /os-(nosdn-nofeature|nosdn-kvm|odl_l3-fdio)-ha/"
                   abort-all-job: false
                   git-revision: false
-#        - multijob:
-#            name: StorPerf
-#            condition: ALWAYS
-#            projects:
-#                - name: 'storperf-apex-baremetal-daily-{scenario_stream}'
-#                  node-parameters: true
-#                  current-parameters: false
-#                  predefined-parameters:
-#                    DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-#                  kill-phase-on: NEVER
-#                  abort-all-job: false
-#                  git-revision: false
+        - multijob:
+            name: StorPerf
+            condition: ALWAYS
+            projects:
+                - name: 'storperf-apex-baremetal-daily-{scenario_stream}'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                  enable-condition: "def m = '$DEPLOY_SCENARIO' ==~ /os-nosdn-nofeature-ha/"
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
 # Build status is always success due conditional plugin prefetching
 # build status before multijob phases execute
 #        - conditional-step:
