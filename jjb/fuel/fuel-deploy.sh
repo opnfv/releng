@@ -12,7 +12,7 @@ set -o pipefail
 
 export TERM="vt220"
 
-if [[ "$BRANCH" != 'master' ]]; then
+if [[ "$BRANCH" =~ 'danube' ]]; then
     # source the file so we get OPNFV vars
     source latest.properties
 
@@ -21,11 +21,11 @@ if [[ "$BRANCH" != 'master' ]]; then
 fi
 
 # shellcheck disable=SC2153
-if [[ "${JOB_NAME}" =~ "merge" ]]; then
-    # set simplest scenario for virtual deploys to run for merges
+if [[ "${JOB_NAME}" =~ 'verify' ]]; then
+    # set simplest scenario for virtual deploys to run for verify
     DEPLOY_SCENARIO="os-nosdn-nofeature-ha"
-elif [[ "${BRANCH}" != 'master' ]]; then
-    # for none-merge deployments
+elif [[ "${BRANCH}" =~ 'danube' ]]; then
+    # for Danube deployments (no artifact for current master or newer branches)
     # checkout the commit that was used for building the downloaded artifact
     # to make sure the ISO and deployment mechanism uses same versions
     echo "Checking out ${OPNFV_GIT_SHA1}"
