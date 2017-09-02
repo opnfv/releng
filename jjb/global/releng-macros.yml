@@ -468,6 +468,16 @@
           fi
 
 - builder:
+    name: clean-workspace
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          sudo /bin/rm -rf "$WORKSPACE"
+
+- builder:
     name: clean-workspace-log
     builders:
       - shell: |
