@@ -101,7 +101,7 @@
             branch: '{branch}'
         - 'armband-virtual-defaults':
             installer: '{installer}'
-        - 'armband-verify-defaults':
+        - '{installer}-defaults':
             gs-pathname: '{gs-pathname}'
 
     builders:
@@ -186,8 +186,7 @@
         - '{slave-label}-defaults'
         - 'armband-virtual-defaults':
             installer: '{installer}'
-        - '{installer}-defaults'
-        - 'armband-verify-defaults':
+        - '{installer}-defaults':
             gs-pathname: '{gs-pathname}'
 
     builders:
@@ -218,13 +217,3 @@
             #!/bin/bash
 
             echo "Not activated!"
-#####################################
-# parameter macros
-#####################################
-- parameter:
-    name: 'armband-verify-defaults'
-    parameters:
-        - string:
-            name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
-            description: "URL to Google Storage."

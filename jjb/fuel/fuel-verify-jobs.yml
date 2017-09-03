@@ -101,7 +101,7 @@
             branch: '{branch}'
         - 'fuel-virtual-defaults':
             installer: '{installer}'
-        - 'fuel-verify-defaults':
+        - '{installer}-defaults':
             gs-pathname: '{gs-pathname}'
 
     builders:
@@ -186,8 +186,7 @@
         - '{slave-label}-defaults'
         - 'fuel-virtual-defaults':
             installer: '{installer}'
-        - '{installer}-defaults'
-        - 'fuel-verify-defaults':
+        - '{installer}-defaults':
             gs-pathname: '{gs-pathname}'
 
     builders:
@@ -218,13 +217,3 @@
             #!/bin/bash
 
             echo "Not activated!"
-#####################################
-# parameter macros
-#####################################
-- parameter:
-    name: 'fuel-verify-defaults'
-    parameters:
-        - string:
-            name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
-            description: "URL to Google Storage."
