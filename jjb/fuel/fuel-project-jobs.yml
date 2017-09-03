@@ -48,7 +48,8 @@
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
-        - '{installer}-defaults'
+        - '{installer}-defaults':
+            gs-pathname: '{gs-pathname}'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -65,8 +66,6 @@
                 - ericsson-pod1
             default-slaves:
                 - ericsson-pod2
-        - fuel-project-parameter:
-            gs-pathname: '{gs-pathname}'
 
     scm:
         - git-scm
@@ -78,14 +77,3 @@
     builders:
         - shell:
             !include-raw-escape: ./fuel-deploy.sh
-
-########################
-# parameter macros
-########################
-- parameter:
-    name: fuel-project-parameter
-    parameters:
-        - string:
-            name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
-            description: "URL to Google Storage."
