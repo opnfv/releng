@@ -72,7 +72,7 @@ mappings = [
     # static path
     (r'/(.*\.(css|png|gif|js|html|json|map|woff2|woff|ttf))',
      tornado.web.StaticFileHandler,
-     {'path': CONF.static_path}),
+     {'path': CONF.ui_static_path}),
 
     (r'/', root.RootHandler),
     (r'/api/v1/auth/signin', sign.SigninHandler),

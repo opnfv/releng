@@ -38,7 +38,7 @@ from opnfv_testapi.tornado_swagger import swagger
 
 def make_app():
     swagger.docs(base_url=CONF.ui_url,
-                 static_path=CONF.static_path)
+                 static_path=CONF.ui_static_path)
     return swagger.Application(
         url_mappings.mappings,
         debug=CONF.api_debug,
