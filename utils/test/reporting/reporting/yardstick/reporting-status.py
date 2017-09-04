@@ -7,14 +7,13 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 #
 import datetime
-import jinja2
 import os
 
-import utils.scenarioResult as sr
-from scenarios import config as cf
+import jinja2
 
-# manage conf
-import utils.reporting_utils as rp_utils
+import reporting.utils.scenarioResult as sr
+import reporting.utils.reporting_utils as rp_utils
+from scenarios import config as cf
 
 installers = rp_utils.get_config('general.installers')
 versions = rp_utils.get_config('general.versions')
