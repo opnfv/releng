@@ -11,6 +11,8 @@ from operator import itemgetter
 from bson.objectid import ObjectId
 from concurrent.futures import ThreadPoolExecutor
 
+import re
+
 
 def thread_execute(method, *args, **kwargs):
         with ThreadPoolExecutor(max_workers=2) as executor:
@@ -76,11 +78,13 @@ class MemDb(object):
         pass
 
     def _find_one(self, spec_or_id=None, *args):
+        # print(spec_or_id)
         if spec_or_id is not None and not isinstance(spec_or_id, dict):
             spec_or_id = {"_id": spec_or_id}
         if '_id' in spec_or_id:
             spec_or_id['_id'] = str(spec_or_id['_id'])
         cursor = self._find(spec_or_id, *args)
+        # print(cursor)
         for result in cursor:
             return result
         return None
@@ -164,6 +168,8 @@ class MemDb(object):
     def _in_scenarios(self, content, *args):
         for arg in args:
             for k, v in arg.iteritems():
+                print(k)
+                print(v)
                 if k == 'installers':
                     for inner in v.values():
                         for i_k, i_v in inner.iteritems():
@@ -190,16 +196,21 @@ class MemDb(object):
                 elif k == 'trust_indicator.current':
                     if content.get('trust_indicator').get('current') != v:
                         return False
-                elif not isinstance(v, dict) and content.get(k, None) != v:
-                    return False
+                elif not isinstance(v, dict):
+                    if isinstance(v, re._pattern_type):
+                        if v.match(content.get(k, None)) is None:
+                            return False
+                    else:
+                        if content.get(k, None) != v:
+                            return False
         return True
 
     def _find(self, *args):
         res = []
         for content in self.contents:
+            print(self._in(content, *args))
             if self._in(content, *args):
                 res.append(content)
-
         return res
 
     def find(self, *args):
@@ -207,7 +218,6 @@ class MemDb(object):
 
     def _aggregate(self, *args, **kwargs):
         res = self.contents
-        print args
         for arg in args[0]:
             for k, v in arg.iteritems():
                 if k == '$match':
