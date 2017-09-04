@@ -20,10 +20,6 @@ class Config(object):
         self._set_config_file()
         self._parse()
         self._parse_per_page()
-        self.static_path = os.path.join(
-            os.path.dirname(os.path.normpath(__file__)),
-            os.pardir,
-            'static')
 
     def _parse(self):
         if not os.path.exists(self.config_file):
