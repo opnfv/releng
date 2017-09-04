@@ -22,8 +22,6 @@
     phase:
         - 'basic':
             slave-label: 'opnfv-build-enea'
-        - 'build':
-            slave-label: 'opnfv-build-enea'
         - 'deploy-virtual':
             slave-label: 'opnfv-build-enea'
         - 'smoke-test':
@@ -118,20 +116,6 @@
                   kill-phase-on: FAILURE
                   abort-all-job: true
         - multijob:
-            name: build
-            condition: SUCCESSFUL
-            projects:
-                - name: 'armband-verify-build-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
             name: deploy-virtual
             condition: SUCCESSFUL
             projects:
@@ -213,14 +197,6 @@
             echo "Not activated!"
 
 - builder:
-    name: 'armband-verify-build-macro'
-    builders:
-        - shell:
-            !include-raw: ./build.sh
-        - shell:
-            !include-raw: ./armband-workspace-cleanup.sh
-
-- builder:
     name: 'armband-verify-deploy-virtual-macro'
     builders:
         - shell: |
@@ -241,14 +217,6 @@
 - parameter:
     name: 'armband-verify-defaults'
     parameters:
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-            description: "Directory where the build artifact will be located upon the completion of the build."
-        - string:
-            name: CACHE_DIRECTORY
-            default: $HOME/opnfv/cache/$INSTALLER_TYPE
-            description: "Directory where the cache to be used during the build is located."
         - string:
             name: GS_URL
             default: artifacts.opnfv.org/$PROJECT{gs-pathname}

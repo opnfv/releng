@@ -11,9 +11,9 @@ set -o errexit
 set -o pipefail
 
 # disable Fuel ISO download for master branch
-[[ "$BRANCH" == 'master' ]] && exit 0
+[[ ! "$BRANCH" =~ (danube) ]] && exit 0
 
-# use proxy url to replace the nomral URL, for googleusercontent.com will be blocked randomly
+# use proxy url to replace the normal URL, or googleusercontent.com will be blocked randomly
 [[ "$NODE_NAME" =~ (zte) ]] && GS_URL=${GS_BASE_PROXY%%/*}/$GS_URL
 
 if [[ "$JOB_NAME" =~ "merge" ]]; then
