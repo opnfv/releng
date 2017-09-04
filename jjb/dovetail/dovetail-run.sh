@@ -175,7 +175,7 @@ fi
 
 # Modify tempest_conf.yaml file
 tempest_conf_file=${DOVETAIL_CONFIG}/tempest_conf.yaml
-if [ ${INSTALLER_TYPE} == 'compass' ]; then
+if [[ ${INSTALLER_TYPE} == 'compass' || ${INSTALLER_TYPE} == 'apex' ]]; then
     volume_device='vdb'
 else
     volume_device='vdc'
