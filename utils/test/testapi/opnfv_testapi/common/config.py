@@ -60,7 +60,7 @@ class Config(object):
         parser.add_argument("-c", "--config-file", dest='config_file',
                             help="Config file location", metavar="FILE")
         args, _ = parser.parse_known_args(sys.argv)
-        if hasattr(args, 'config_file'):
+        if hasattr(args, 'config_file') and args.config_file:
             self.config_file = args.config_file
 
 
