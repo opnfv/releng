@@ -20,7 +20,7 @@
         .controller('PodsController', PodsController);
 
     PodsController.$inject = [
-        '$scope', '$http', '$filter', '$state', 'testapiApiUrl','raiseAlert'
+        '$rootScope', '$scope', '$http', '$filter', '$state', 'testapiApiUrl','raiseAlert'
     ];
 
     /**
@@ -51,9 +51,6 @@
         ctrl.role = 'community-ci';
         ctrl.mode = 'metal';
         ctrl.details = '';
-
-        ctrl.pageHeader = 'Pods';
-        ctrl.pageParagraph = 'This page is used to create or query pods.';
 
         /**
          * This is called when the date filter calendar is opened. It
