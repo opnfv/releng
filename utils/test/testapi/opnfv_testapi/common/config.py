@@ -16,7 +16,7 @@ import sys
 class Config(object):
 
     def __init__(self):
-        self.config_file = None
+        self.config_file = '/etc/opnfv_testapi/config.ini'
         self._set_config_file()
         self._parse()
         self._parse_per_page()
@@ -56,23 +56,12 @@ class Config(object):
         return value
 
     def _set_config_file(self):
-        if not self._set_sys_config_file():
-            self._set_default_config_file()
-
-    def _set_sys_config_file(self):
         parser = argparse.ArgumentParser()
         parser.add_argument("-c", "--config-file", dest='config_file',
                             help="Config file location", metavar="FILE")
         args, _ = parser.parse_known_args(sys.argv)
-        try:
+        if hasattr(args, 'config_file'):
             self.config_file = args.config_file
-        finally:
-            return self.config_file is not None
-
-    def _set_default_config_file(self):
-        is_venv = os.getenv('VIRTUAL_ENV')
-        self.config_file = os.path.join('/' if not is_venv else is_venv,
-                                        'etc/opnfv_testapi/config.ini')
 
 
 CONF = Config()
