@@ -50,7 +50,7 @@
         # HA scenarios
         - 'os-nosdn-nofeature-ha':
             auto-trigger-name: '{installer}-{scenario}-{pod}-{stream}-trigger'
-        - 'os-odl_l3-nofeature-ha':
+        - 'os-odl-nofeature-ha':
             auto-trigger-name: '{installer}-{scenario}-{pod}-{stream}-trigger'
 
         # NOHA scenarios
@@ -139,10 +139,10 @@
         # 3.only proposed_tests testsuite here(refstack, ha, ipv6, bgpvpn)
         # 4.not used for release criteria or compliance,
         #   only to debug the dovetail tool bugs with arm pods
-        # 5.only run against scenario os-(nosdn|odl_l3)-(nofeature-bgpvpn)-ha
+        # 5.only run against scenario os-(nosdn|odl)-(nofeature-bgpvpn)-ha
         - conditional-step:
             condition-kind: regex-match
-            regex: os-(nosdn|odl|odl_l3)-(nofeature|bgpvpn)-ha
+            regex: os-(nosdn|odl)-(nofeature|bgpvpn)-ha
             label: '{scenario}'
             steps:
                 - trigger-builds:
@@ -186,7 +186,7 @@
             installer: '{installer}'
         - string:
             name: DEPLOY_SCENARIO
-            default: 'os-odl_l3-nofeature-ha'
+            default: 'os-odl-nofeature-ha'
 
     scm:
         - git-scm
@@ -220,7 +220,7 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-armband-baremetal-master-trigger'
+    name: 'fuel-os-odl-nofeature-ha-armband-baremetal-master-trigger'
     triggers:
         - timed: ''
 #----------------------------------------------------------------------
@@ -235,7 +235,7 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-armband-baremetal-euphrates-trigger'
+    name: 'fuel-os-odl-nofeature-ha-armband-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 #---------------------------------------------------------------
@@ -250,7 +250,7 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-armband-virtual-master-trigger'
+    name: 'fuel-os-odl-nofeature-ha-armband-virtual-master-trigger'
     triggers:
         - timed: ''
 #--------------------------------------------------------------------
@@ -265,6 +265,6 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-armband-virtual-euphrates-trigger'
+    name: 'fuel-os-odl-nofeature-ha-armband-virtual-euphrates-trigger'
     triggers:
         - timed: ''

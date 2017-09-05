@@ -68,17 +68,11 @@
         # HA scenarios
         - 'os-nosdn-nofeature-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
-        - 'os-odl_l2-nofeature-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
-        - 'os-odl_l3-nofeature-ha':
+        - 'os-odl-nofeature-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-onos-sfc-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-onos-nofeature-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
-        - 'os-odl_l2-sfc-ha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
-        - 'os-odl_l2-bgpvpn-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-nosdn-kvm-ha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
@@ -93,17 +87,11 @@
         # NOHA scenarios
         - 'os-nosdn-nofeature-noha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
-        - 'os-odl_l2-nofeature-noha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
-        - 'os-odl_l3-nofeature-noha':
+        - 'os-odl-nofeature-noha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-onos-sfc-noha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-onos-nofeature-noha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
-        - 'os-odl_l2-sfc-noha':
-            auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
-        - 'os-odl_l2-bgpvpn-noha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
         - 'os-nosdn-kvm-noha':
             auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
@@ -199,11 +187,11 @@
         # 3.only debug testsuite here(refstack, ha, ipv6, bgpvpn)
         # 4.not used for release criteria or compliance,
         #   only to debug the dovetail tool bugs with bgpvpn and nosdn-nofeature
-        # 5.only run against scenario os-odl_l2-bgpvpn-ha(regex used here, can extend to more scenarios future)
-        # 6.ZTE pod1, os-nosdn-nofeature-ha and os-odl_l2-bgpvpn-ha, run against danube
+        # 5.only run against scenario os-odl-bgpvpn-ha(regex used here, can extend to more scenarios future)
+        # 6.ZTE pod1, os-nosdn-nofeature-ha and os-odl-bgpvpn-ha, run against danube
         - conditional-step:
             condition-kind: regex-match
-            regex: os-(nosdn-nofeature|odl_l2-bgpvpn)-ha
+            regex: os-(nosdn-nofeature|odl-bgpvpn)-ha
             label: '{scenario}'
             steps:
                 - trigger-builds:
@@ -256,7 +244,7 @@
             installer: '{installer}'
         - string:
             name: DEPLOY_SCENARIO
-            default: 'os-odl_l2-nofeature-ha'
+            default: 'os-odl-nofeature-ha'
         - string:
             name: DEPLOY_TIMEOUT
             default: '150'
@@ -294,11 +282,7 @@
     triggers:
         - timed: '5 20 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-baremetal-daily-master-trigger'
-    triggers:
-        - timed: '' # '5 23 * * *'
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-baremetal-daily-master-trigger'
+    name: 'fuel-os-odl-nofeature-ha-baremetal-daily-master-trigger'
     triggers:
         - timed: '5 2 * * *'
 - trigger:
@@ -313,14 +297,6 @@
     name: 'fuel-os-onos-nofeature-ha-baremetal-daily-master-trigger'
     triggers:
         - timed: '' # '5 8 * * *'
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-baremetal-daily-master-trigger'
-    triggers:
-        - timed: '' # '5 11 * * *'
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-baremetal-daily-master-trigger'
-    triggers:
-        - timed: '' # '5 14 * * *'
 - trigger:
     name: 'fuel-os-nosdn-kvm-ha-baremetal-daily-master-trigger'
     triggers:
@@ -339,11 +315,7 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-baremetal-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-baremetal-daily-master-trigger'
+    name: 'fuel-os-odl-nofeature-noha-baremetal-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -352,14 +324,6 @@
         - timed: ''
 - trigger:
     name: 'fuel-os-onos-nofeature-noha-baremetal-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-baremetal-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-baremetal-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -387,11 +351,7 @@
     triggers:
         - timed: '' # '0 20 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-baremetal-daily-euphrates-trigger'
-    triggers:
-        - timed: '' # '0 23 * * *'
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-baremetal-daily-euphrates-trigger'
+    name: 'fuel-os-odl-nofeature-ha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: '' # '0 2 * * *'
 - trigger:
@@ -402,14 +362,6 @@
     name: 'fuel-os-onos-nofeature-ha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: '' # '0 8 * * *'
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-baremetal-daily-euphrates-trigger'
-    triggers:
-        - timed: '' # '0 11 * * *'
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-baremetal-daily-euphrates-trigger'
-    triggers:
-        - timed: '' # '0 14 * * *'
 - trigger:
     name: 'fuel-os-nosdn-kvm-ha-baremetal-daily-euphrates-trigger'
     triggers:
@@ -432,11 +384,7 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-baremetal-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-baremetal-daily-euphrates-trigger'
+    name: 'fuel-os-odl-nofeature-noha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -445,14 +393,6 @@
         - timed: ''
 - trigger:
     name: 'fuel-os-onos-nofeature-noha-baremetal-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-baremetal-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-baremetal-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -479,11 +419,7 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-virtual-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-virtual-daily-master-trigger'
+    name: 'fuel-os-odl-nofeature-ha-virtual-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -492,14 +428,6 @@
         - timed: ''
 - trigger:
     name: 'fuel-os-onos-nofeature-ha-virtual-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-virtual-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-virtual-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -524,11 +452,7 @@
     triggers:
         - timed: '5 13 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-virtual-daily-master-trigger'
-    triggers:
-        - timed: '35 15 * * *'
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-virtual-daily-master-trigger'
+    name: 'fuel-os-odl-nofeature-noha-virtual-daily-master-trigger'
     triggers:
         - timed: '5 18 * * *'
 - trigger:
@@ -539,14 +463,6 @@
     name: 'fuel-os-onos-nofeature-noha-virtual-daily-master-trigger'
     triggers:
         - timed: '' # '5 23 * * *'
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-virtual-daily-master-trigger'
-    triggers:
-        - timed: '' # '35 1 * * *'
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-virtual-daily-master-trigger'
-    triggers:
-        - timed: '' # '5 4 * * *'
 - trigger:
     name: 'fuel-os-nosdn-kvm-noha-virtual-daily-master-trigger'
     triggers:
@@ -571,11 +487,7 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-virtual-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-virtual-daily-euphrates-trigger'
+    name: 'fuel-os-odl-nofeature-ha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -584,14 +496,6 @@
         - timed: ''
 - trigger:
     name: 'fuel-os-onos-nofeature-ha-virtual-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-virtual-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -616,11 +520,7 @@
     triggers:
         - timed: '' # '0 13 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-virtual-daily-euphrates-trigger'
-    triggers:
-        - timed: '' # '30 15 * * *'
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-virtual-daily-euphrates-trigger'
+    name: 'fuel-os-odl-nofeature-noha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: '' # '0 18 * * *'
 - trigger:
@@ -631,14 +531,6 @@
     name: 'fuel-os-onos-nofeature-noha-virtual-daily-euphrates-trigger'
     triggers:
         - timed: '' # '0 23 * * *'
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-virtual-daily-euphrates-trigger'
-    triggers:
-        - timed: '' # '30 1 * * *'
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-virtual-daily-euphrates-trigger'
-    triggers:
-        - timed: '' # '0 4 * * *'
 - trigger:
     name: 'fuel-os-nosdn-kvm-noha-virtual-daily-euphrates-trigger'
     triggers:
@@ -663,11 +555,7 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod1-daily-master-trigger'
-    triggers:
-        - timed: '0 10 * * *'
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod1-daily-master-trigger'
+    name: 'fuel-os-odl-nofeature-ha-zte-pod1-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -676,14 +564,6 @@
         - timed: ''
 - trigger:
     name: 'fuel-os-onos-nofeature-ha-zte-pod1-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod1-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-zte-pod1-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -708,11 +588,7 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-zte-pod1-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-zte-pod1-daily-master-trigger'
+    name: 'fuel-os-odl-nofeature-noha-zte-pod1-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -721,14 +597,6 @@
         - timed: ''
 - trigger:
     name: 'fuel-os-onos-nofeature-noha-zte-pod1-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-zte-pod1-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-zte-pod1-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -755,11 +623,7 @@
     triggers:
         - timed: '0 10 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod3-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod3-daily-master-trigger'
+    name: 'fuel-os-odl-nofeature-ha-zte-pod3-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -768,14 +632,6 @@
         - timed: ''
 - trigger:
     name: 'fuel-os-onos-nofeature-ha-zte-pod3-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod3-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-zte-pod3-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -800,11 +656,7 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-zte-pod3-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-zte-pod3-daily-master-trigger'
+    name: 'fuel-os-odl-nofeature-noha-zte-pod3-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -813,14 +665,6 @@
         - timed: ''
 - trigger:
     name: 'fuel-os-onos-nofeature-noha-zte-pod3-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-zte-pod3-daily-master-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-zte-pod3-daily-master-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -847,11 +691,7 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod1-daily-euphrates-trigger'
-    triggers:
-        - timed: '' # '0 2 * * *'
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod1-daily-euphrates-trigger'
+    name: 'fuel-os-odl-nofeature-ha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -860,14 +700,6 @@
         - timed: ''
 - trigger:
     name: 'fuel-os-onos-nofeature-ha-zte-pod1-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod1-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -892,11 +724,7 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-zte-pod1-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-zte-pod1-daily-euphrates-trigger'
+    name: 'fuel-os-odl-nofeature-noha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -905,14 +733,6 @@
         - timed: ''
 - trigger:
     name: 'fuel-os-onos-nofeature-noha-zte-pod1-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-zte-pod1-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-zte-pod1-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -939,11 +759,7 @@
     triggers:
         - timed: '' # '0 18 * * *'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod3-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod3-daily-euphrates-trigger'
+    name: 'fuel-os-odl-nofeature-ha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -952,14 +768,6 @@
         - timed: ''
 - trigger:
     name: 'fuel-os-onos-nofeature-ha-zte-pod3-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod3-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -984,11 +792,7 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-zte-pod3-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-zte-pod3-daily-euphrates-trigger'
+    name: 'fuel-os-odl-nofeature-noha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -997,14 +801,6 @@
         - timed: ''
 - trigger:
     name: 'fuel-os-onos-nofeature-noha-zte-pod3-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-zte-pod3-daily-euphrates-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-zte-pod3-daily-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -1031,11 +827,7 @@
     triggers:
         - timed: '0 2 * * 6'
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-ha-zte-pod1-daily-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-ha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-odl-nofeature-ha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -1044,14 +836,6 @@
         - timed: ''
 - trigger:
     name: 'fuel-os-onos-nofeature-ha-zte-pod1-daily-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-ha-zte-pod1-daily-danube-trigger'
-    triggers:
-        - timed: '0 2 * * 1,3,5'
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-ha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -1076,11 +860,7 @@
     triggers:
         - timed: ''
 - trigger:
-    name: 'fuel-os-odl_l2-nofeature-noha-zte-pod1-daily-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l3-nofeature-noha-zte-pod1-daily-danube-trigger'
+    name: 'fuel-os-odl-nofeature-noha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
@@ -1089,14 +869,6 @@
         - timed: ''
 - trigger:
     name: 'fuel-os-onos-nofeature-noha-zte-pod1-daily-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-sfc-noha-zte-pod1-daily-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'fuel-os-odl_l2-bgpvpn-noha-zte-pod1-daily-danube-trigger'
     triggers:
         - timed: ''
 - trigger:
