@@ -37,7 +37,7 @@ if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
   # Settings for deploying from git workspace
   DEPLOY_SETTINGS_DIR="${WORKSPACE}/config/deploy"
   NETWORK_SETTINGS_DIR="${WORKSPACE}/config/network"
-  DEPLOY_CMD="opnfv-deploy"
+  DEPLOY_CMD="opnfv-deploy --image-dir ${WORKSPACE}/.build"
   CLEAN_CMD="${WORKSPACE}/ci/clean.sh"
   RESOURCES="${WORKSPACE}/.build/"
   CONFIG="${WORKSPACE}/build"
