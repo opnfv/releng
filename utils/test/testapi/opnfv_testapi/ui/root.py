@@ -5,7 +5,7 @@ from opnfv_testapi.resources import handlers
 
 class RootHandler(handlers.GenericApiHandler):
     def get_template_path(self):
-        return CONF.static_path
+        return CONF.ui_static_path
 
     @check.login
     def get(self):
