@@ -25,6 +25,12 @@
     #     slave-label: 'ool-virtual3'
     #     pod: 'ool-virtual3'
 
+    phase:
+      - 'build-x86_64':
+          slave-label: 'opnfv-build-ubuntu'
+      - 'build-aarch64':
+          slave-label: 'opnfv-build-ubuntu-arm'
+
     inspector:
       - 'sample'
       - 'congress'
@@ -37,21 +43,22 @@
           auto-trigger-name: 'doctor-verify'
           is-python: true
 
-    pod:
-      - armband-baremetal:
-          slave-label: '{pod}'
-      - armband-virtual:
-          slave-label: '{pod}'
+    exclude:
+      - installer: 'apex'
+        phase: 'build-aarch64'
 
     jobs:
+      - 'doctor-verify-unit-test-{stream}'
       - 'doctor-verify-{stream}'
-      - 'doctor-{task}-{installer}-{inspector}-{pod}-{stream}'
       - 'doctor-{task}-{installer}-{inspector}-{stream}'
+      - 'doctor-{task}-{installer}-{inspector}-{phase}-{stream}'
 
 - job-template:
     name: 'doctor-verify-{stream}'
 
     disabled: '{obj:disabled}'
+
+    project-type: 'multijob'
 
     parameters:
       - project-parameter:
@@ -86,37 +93,53 @@
                   pattern: 'doctor_tests/**'
 
     builders:
-      - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+      - shell: |
+         #!/bin/bash
+         # we do nothing here as the main stuff will be done
+         # in phase jobs
+         echo "Triggering phase jobs!"
+      - multijob:
+          name: 'doctor-build-and-unittest'
+          execution-type: PARALLEL
+          projects:
+            - name: 'doctor-verify-unit-test-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              git-revision: true
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: false
 
 - job-template:
-    name: 'doctor-{task}-{installer}-{inspector}-{pod}-{stream}'
-
-    node: '{slave-label}'
-
+    name: 'doctor-verify-unit-test-{stream}'
     disabled: '{obj:disabled}'
-
+    wrappers:
+      - ssh-agent-wrapper
+      - build-timeout:
+          timeout: 60
     parameters:
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
       - 'opnfv-build-ubuntu-defaults'
-
     scm:
       - git-scm-gerrit
-
-
-    triggers:
-      - '{auto-trigger-name}':
-          project: '{project}'
-          branch: '{branch}'
-          files: 'doctor_tests/**'
-
     builders:
-      - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+      - 'doctor-verify-unit-test-builders-macro'
+    publishers:
+      - 'doctor-verify-unit-test-publishers-macro'
 
 
 - job-template:
     name: 'doctor-{task}-{installer}-{inspector}-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    project-type: 'multijob'
 
     node: '{slave-label}'
 
@@ -151,13 +174,17 @@
           default: 'doctor-notification'
       - string:
           name: TESTCASE_OPTIONS
+          # yamllint disable rule:line-length
           default: '-e INSPECTOR_TYPE={inspector} -e PYTHON_ENABLE={is-python} -v $WORKSPACE:/home/opnfv/repos/doctor'
+          # yamllint enable rule:line-length
           description: 'Addtional parameters specific to test case(s)'
       # functest-parameter
       - string:
           name: GS_PATHNAME
           default: '{gs-pathname}'
+          # yamllint disable rule:line-length
           description: "Version directory where the opnfv documents will be stored in gs repository"
+          # yamllint enable rule:line-length
       - string:
           name: FUNCTEST_REPO_DIR
           default: "/home/opnfv/repos/functest"
@@ -181,7 +208,83 @@
           files: 'doctor_tests/**'
 
     builders:
+      - shell: |
+         #!/bin/bash
+         # we do nothing here as the main stuff will be done
+         # in phase jobs
+         echo "Triggering phase jobs!"
+      - multijob:
+          name: 'doctor-verify-installer-inspector'
+          execution-type: PARALLEL
+          projects:
+            - name: 'doctor-{task}-{installer}-{inspector}-build-x86_64-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                OS_CREDS=$OS_CREDS
+                DOCKER_TAG=$DOCKER_TAG
+                CLEAN_DOCKER_IMAGES=$CLEAN_DOCKER_IMAGES
+                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                FUNCTEST_MODE=$FUNCTEST_MODE
+                FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
+                TESTCASE_OPTIONS=$TESTCASE_OPTIONS
+                GS_PATHNAME=$GS_PATHNAME
+                FUNCTEST_REPO_DIR=$FUNCTEST_REPO_DIR
+                PUSH_RESULTS_TO_DB=$PUSH_RESULTS_TO_DB
+                CI_DEBUG=$CI_DEBUG
+              git-revision: true
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: false
+            - name: 'doctor-{task}-{installer}-{inspector}-build-aarch64-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                OS_CREDS=$OS_CREDS
+                DOCKER_TAG=$DOCKER_TAG
+                CLEAN_DOCKER_IMAGES=$CLEAN_DOCKER_IMAGES
+                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                FUNCTEST_MODE=$FUNCTEST_MODE
+                FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
+                TESTCASE_OPTIONS=$TESTCASE_OPTIONS
+                GS_PATHNAME=$GS_PATHNAME
+                FUNCTEST_REPO_DIR=$FUNCTEST_REPO_DIR
+                PUSH_RESULTS_TO_DB=$PUSH_RESULTS_TO_DB
+                CI_DEBUG=$CI_DEBUG
+              git-revision: true
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: false
+
+- job-template:
+    name: 'doctor-{task}-{installer}-{inspector}-{phase}-{stream}'
+    disabled: '{obj:disabled}'
+    wrappers:
+      - ssh-agent-wrapper
+      - build-timeout:
+          timeout: 30
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{slave-label}-defaults'
+    scm:
+      - git-scm-gerrit
+    builders:
+      - 'doctor-verify-installer-inspector-builders-macro'
+    publishers:
+      - 'doctor-verify-publishers-macro'
+# -------------------------------
+# builder macros
+# -------------------------------
+
+- builder:
+    name: 'doctor-verify-unit-test-builders-macro'
+    builders:
+      - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+- builder:
+    name: 'doctor-verify-installer-inspector-builders-macro'
+    builders:
       - 'clean-workspace-log'
+      # yamllint disable rule:line-length
       - shell: |
           # NOTE: Create symbolic link, so that we can archive file outside
           #       of $WORKSPACE .
@@ -199,15 +302,24 @@
           functest_log="$HOME/opnfv/functest/results/{stream}/$FUNCTEST_SUITE_NAME.log"
           # NOTE: checking the test result, as the previous job could return
           #       0 regardless the result of doctor test scenario.
-          grep -e 'doctor test successfully' $functest_log || exit 1
+          grep -e ' OK$' $functest_log || exit 1
+      # yamllint enable rule:line-length
 
+# -------------------------------
+# publisher macros
+# -------------------------------
+- publisher:
+    name: 'doctor-verify-publishers-macro'
     publishers:
       - archive:
-          artifacts: 'doctor_tests/*.log'
+          artifacts: 'tests/*.log'
       - archive:
           artifacts: 'functest_results/$FUNCTEST_SUITE_NAME.log'
       - email-jenkins-admins-on-failure
-
+- publisher:
+    name: 'doctor-verify-unit-test-publishers-macro'
+    publishers:
+      - email-jenkins-admins-on-failure
 
 #####################################
 # trigger macros
