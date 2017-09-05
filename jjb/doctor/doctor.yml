@@ -36,15 +36,15 @@
             auto-trigger-name: 'doctor-verify'
             is-python: true
 
-    pod:
-        - armband-baremetal:
-            slave-label: '{pod}'
-        - armband-virtual:
-            slave-label: '{pod}'
+    phase:
+        - 'build-x86_64':
+            slave-label: 'opnfv-build-ubuntu'
+        - 'build-aarch64':
+            slave-label: 'opnfv-build-ubuntu-arm'
 
     jobs:
         - 'doctor-verify-{stream}'
-        - 'doctor-{task}-{installer}-{inspector}-{pod}-{stream}'
+        - 'doctor-{task}-{installer}-{inspector}-{phase}-{stream}'
         - 'doctor-{task}-{installer}-{inspector}-{stream}'
 
 - job-template:
@@ -62,33 +62,12 @@
         - git-scm-gerrit
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'tests/**'
-
+        - 'doctor-verify-triggers-macro'
     builders:
-        - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+        - 'doctor-verify-builders-macro'
 
 - job-template:
-    name: 'doctor-{task}-{installer}-{inspector}-{pod}-{stream}'
+    name: 'doctor-{task}-{installer}-{inspector}-{phase}-{stream}'
 
     node: '{slave-label}'
 
@@ -98,20 +77,16 @@
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+        - 'opnfv-build-defaults'
 
     scm:
         - git-scm-gerrit
 
-
-    triggers:
-        - '{auto-trigger-name}':
-            project: '{project}'
-            branch: '{branch}'
-            files: 'tests/**'
-
     builders:
-        - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+        - shell: 'doctor-verify-{phase}-builders-macro'
+
+    publishers:
+        - shell: 'publisher-verify-{phase}-publishers-macro'
 
 
 - job-template:
@@ -171,45 +146,50 @@
         - git-scm-gerrit
 
     triggers:
-        - '{auto-trigger-name}':
+        - '{auto-trigger-name}-arch-triggers-macro':
             project: '{project}'
             branch: '{branch}'
             files: 'tests/**'
 
     builders:
-        - 'clean-workspace-log'
         - shell: |
-            # NOTE: Create symbolic link, so that we can archive file outside
-            #       of $WORKSPACE .
-            # NOTE: We are printing all logs under 'tests/' during test run,
-            #       so this symbolic link should not be in 'tests/'. Otherwise,
-            #       we'll have the same log twice in jenkins console log.
-            ln -sfn $HOME/opnfv/functest/results/{stream} functest_results
-            # NOTE: Get functest script in $WORKSPACE. This functest script is
-            #       needed to perform VM image download in set-functest-env.sh
-            #       from E release cycle.
-            mkdir -p functest/ci
-            wget https://git.opnfv.org/functest/plain/functest/ci/download_images.sh -O functest/ci/download_images.sh
-        - 'functest-suite-builder'
-        - shell: |
-            functest_log="$HOME/opnfv/functest/results/{stream}/$FUNCTEST_SUITE_NAME.log"
-            # NOTE: checking the test result, as the previous job could return
-            #       0 regardless the result of doctor test scenario.
-            grep -e ' OK$' $functest_log || exit 1
-
-    publishers:
-        - archive:
-            artifacts: 'tests/*.log'
-        - archive:
-            artifacts: 'functest_results/$FUNCTEST_SUITE_NAME.log'
-        - email-jenkins-admins-on-failure
-
-
+            #!/bin/bash
+            # we do nothing here as the main stuff will be done
+            # in phase jobs
+            echo "Triggering phase jobs!"
+        - multijob:
+            name: 'doctor-build'
+            execution-type: PARALLEL
+            projects:
+                - name: 'doctor-verify-build-x86_64-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                    ARCH=x86_64
+                  git-revision: true
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: false
+                - name: 'doctor-verify-build-aarch64-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                    ARCH=aarch64
+                  git-revision: true
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: false
 #####################################
 # trigger macros
 #####################################
 - trigger:
-    name: 'doctor-verify'
+    name: 'doctor-verify-triggers-macro'
     triggers:
         - gerrit:
             server-name: 'gerrit.opnfv.org'
@@ -237,3 +217,65 @@
                 failed: true
                 unstable: true
                 notbuilt: true
+
+- trigger:
+    name: 'doctor-verify-arch-triggers-macro'
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'false'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: '{project}'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'tests/**'
+#####################################
+# builder macros
+#####################################
+- builder:
+    name: 'doctor-verify-builders-macro'
+    builders:
+        - shell: |
+            "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+- builder:
+    name: 'doctor-verify-build-x86_64-builders-macro'
+    builders:
+        - shell: |
+            echo "Not active!"
+- builder:
+    name: 'doctor-verify-build-aarch64-builders-macro'
+    builders:
+        - shell: |
+            echo "Not active!"
+#####################################
+# publisher macros
+#####################################
+- publisher:
+    name: 'publisher-verify-publishers-macro'
+    publishers:
+        - archive:
+            artifacts: 'tests/*.log'
+        - archive:
+            artifacts: 'functest_results/$FUNCTEST_SUITE_NAME.log'
+        - email-jenkins-admins-on-failure
+- publisher:
+    name: 'publisher-verify-build-x86_64-publishers-macro'
+    publishers:
+        - email-jenkins-admins-on-failure
+- publisher:
+    name: 'publisher-verify-build-aarch64-publishers-macro'
+    publishers:
+        - email-jenkins-admins-on-failure
