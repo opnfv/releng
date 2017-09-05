@@ -6,13 +6,11 @@
         - 'apex-verify-gate-{stream}'
         - 'apex-verify-unit-tests-{stream}'
         - 'apex-runner-cperf-{stream}'
-        - 'apex-build-{stream}'
         - 'apex-deploy-{platform}-{stream}'
         - 'apex-daily-master'
         - 'apex-daily-danube'
         - 'apex-csit-promote-daily-{stream}'
         - 'apex-fdio-promote-daily-{stream}'
-        - 'apex-verify-iso-{stream}'
         - 'apex-{scenario}-baremetal-{scenario_stream}'
         - 'apex-testsuite-{scenario}-baremetal-{scenario_stream}'
         - 'apex-upload-snapshot'
@@ -27,7 +25,6 @@
             virtual-slave: 'apex-virtual-master'
             baremetal-slave: 'apex-baremetal-master'
             verify-scenario: 'os-odl-nofeature-ha'
-            concurrent-builds: 3
             scenario_stream: 'master'
 
         - danube: &danube
@@ -37,7 +34,6 @@
             virtual-slave: 'apex-virtual-danube'
             baremetal-slave: 'apex-baremetal-danube'
             verify-scenario: 'os-odl_l3-nofeature-ha'
-            concurrent-builds: 1
             scenario_stream: 'danube'
             disabled: true
 
@@ -411,97 +407,6 @@
                   kill-phase-on: NEVER
                   abort-all-job: false
                   git-revision: false
-
-# Build phase
-- job-template:
-    name: 'apex-build-{stream}'
-
-    # Job template for builds
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-    node: '{build-slave}'
-
-    disabled: false
-
-    concurrent: true
-
-    parameters:
-        - '{project}-defaults'
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - apex-parameter:
-            gs-pathname: '{gs-pathname}'
-
-    scm:
-        - git-scm-gerrit
-
-    wrappers:
-        - timeout:
-            timeout: 150
-            fail: true
-
-    properties:
-        - logrotate-default
-        - throttle:
-            max-per-node: {concurrent-builds}
-            max-total: 10
-            option: 'project'
-        - build-blocker:
-            use-build-blocker: true
-            block-level: 'NODE'
-            blocking-jobs:
-                - 'apex-verify-iso-{stream}'
-
-    builders:
-        - 'apex-build'
-        - inject:
-           properties-content: ARTIFACT_TYPE=rpm
-        - 'apex-upload-artifact'
-
-# ISO verify job
-- job-template:
-    name: 'apex-verify-iso-{stream}'
-
-    # Job template for builds
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-    node: '{virtual-slave}'
-
-    disabled: false
-
-    concurrent: true
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - apex-parameter:
-            gs-pathname: '{gs-pathname}'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Used for overriding the GIT URL coming from parameters macro."
-
-    scm:
-        - git-scm
-
-    properties:
-        - logrotate-default
-        - throttle:
-            max-per-node: 1
-            max-total: 10
-            option: 'project'
-
-    builders:
-        - 'apex-iso-verify'
-        - inject:
-           properties-content: ARTIFACT_TYPE=iso
-        - 'apex-upload-artifact'
 
 # Deploy job
 - job-template:
@@ -1098,22 +1003,10 @@
             !include-raw: ./apex-unit-test.sh
 
 - builder:
-    name: 'apex-build'
-    builders:
-        - shell:
-            !include-raw: ./apex-build.sh
-
-- builder:
     name: 'apex-workspace-cleanup'
     builders:
         - shell:
             !include-raw: ./apex-workspace-cleanup.sh
-
-- builder:
-    name: 'apex-iso-verify'
-    builders:
-        - shell:
-            !include-raw: ./apex-iso-verify.sh
 
 
 - builder:
