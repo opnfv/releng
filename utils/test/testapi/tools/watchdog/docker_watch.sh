@@ -21,33 +21,19 @@ modules=(testapi reporting)
 declare -A ports=( ["testapi"]="8082" ["reporting"]="8084")
 
 ## Urls to check if the modules are deployed or not ?
-#declare -A urls=( ["testapi"]="http://testresults.opnfv.org/test/" \
-#    ["reporting"]="http://testresults.opnfv.org/reporting2/reporting/index.html")
-
-declare -A urls=( ["testapi"]="http://localhost:8082/" \
+declare -A urls=( ["testapi"]="http://testresults.opnfv.org/test/" \
     ["reporting"]="http://testresults.opnfv.org/reporting2/reporting/index.html")
-
 
 ### Functions related to checking.
 
 function is_deploying() {
-    echo -e "Checking job statuses"
-    for module in "${modules[@]}"
-    do
-        if get_status $module; then
-            exit 0
-        fi
-    done
-}
-
-function get_status() {
     xml=$(curl -m10 "https://build.opnfv.org/ci/job/${1}-automate-master/lastBuild/api/xml?depth=1")
     building=$(grep -oPm1 "(?<=<building>)[^<]+" <<< "$xml")
     if [[ $building == "false" ]]
     then
-        return 1
-    else
         return 0
+    else
+        return 1
     fi
 }
 
@@ -78,6 +64,9 @@ function check_modules() {
     failed_modules=()
     for module in "${modules[@]}"
     do
+        if is_deploying $module; then
+            continue
+        fi
         if ! check_connectivity $module "${urls[$module]}"; then
             echo -e "$module failed"
             failed_modules+=($module)
@@ -110,27 +99,30 @@ function docker_proxy_fix() {
         echo $pid
         if [ ! -z "$pid" ]; then
             kill $pid
-            start_containers_fix $module
+            start_container_fix $module
         fi
     done
 }
 
 function start_containers_fix() {
-    echo "Runnning start_containers_fix"
     start_modules=("${@}")
     for module in "${start_modules[@]}"
     do
-        echo -e "Starting a container $module"
-        sudo docker stop $module
-        sudo docker start $module
-        sleep 5
-        if ! check_connectivity $module "${urls[$module]}"; then
-            echo -e "Starting an old container $module_old"
-            sudo docker stop $module
-            sudo docker start $module"_old"
-            sleep 5
-        fi
+        start_container_fix $module
     done
+}
+
+function start_container_fix() {
+    echo -e "Starting a container $module"
+    sudo docker stop $module
+    sudo docker start $module
+    sleep 5
+    if ! check_connectivity $module "${urls[$module]}"; then
+        echo -e "Starting an old container $module_old"
+        sudo docker stop $module
+        sudo docker start $module"_old"
+        sleep 5
+    fi
 }
 
 ### Main Flow
@@ -140,11 +132,6 @@ echo -e "WatchDog Started"
 echo -e
 echo -e `date "+%Y-%m-%d %H:%M:%S.%N"`
 echo -e
-
-if ! is_deploying; then
-    echo -e "Jenkins Jobs running"
-    exit
-fi
 
 ## If the problem is related to docker daemon
 
@@ -156,16 +143,16 @@ if get_docker_status; then
     exit
 fi
 
-## If the problem is related to docker containers
-
-if ! check_modules; then
-    start_containers_fix "${failed_modules[@]}"
-fi
-
 ## If the problem is related to docker proxy
 
 if ! check_modules; then
     docker_proxy_fix "${failed_modules[@]}"
+fi
+
+## If any other problem : restart docker
+
+if ! check_modules; then
+    restart_docker_fix
 fi
 
 ## If nothing works out
