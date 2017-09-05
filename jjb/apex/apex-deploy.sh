@@ -37,7 +37,7 @@ if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
   # Settings for deploying from git workspace
   DEPLOY_SETTINGS_DIR="${WORKSPACE}/config/deploy"
   NETWORK_SETTINGS_DIR="${WORKSPACE}/config/network"
-  DEPLOY_CMD="${WORKSPACE}/ci/deploy.sh"
+  DEPLOY_CMD="opnfv-deploy"
   CLEAN_CMD="${WORKSPACE}/ci/clean.sh"
   RESOURCES="${WORKSPACE}/.build/"
   CONFIG="${WORKSPACE}/build"
@@ -48,6 +48,11 @@ if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
   # Ensure artifacts were downloaded and extracted correctly
   # TODO(trozet) add verification here
 
+  # Install dev build
+  mkdir -p ~/tmp
+  mv -f .build ~/tmp/
+  sudo pip3 install --upgrade --force-reinstall .
+  mv -f ~/tmp/.build .
 else
   DEPLOY_SETTINGS_DIR="/etc/opnfv-apex/"
   NETWORK_SETTINGS_DIR="/etc/opnfv-apex/"
@@ -65,21 +70,13 @@ fi
 
 # Install Dependencies
 # Make sure python34 dependencies are installed
-for dep_pkg in epel-release python34 python34-PyYAML python34-setuptools; do
+dependencies="epel-release python34 python34-devel libvirt-devel python34-pip \
+ansible python34-PyYAML python34-jinja2 python34-setuptools python-tox ansible"
+
+for dep_pkg in $dependencies; do
   if ! rpm -q ${dep_pkg} > /dev/null; then
     if ! sudo yum install -y ${dep_pkg}; then
       echo "Failed to install ${dep_pkg}"
-      exit 1
-    fi
-  fi
-done
-
-# Make sure jinja2 is installed
-for python_pkg in jinja2; do
-  if ! python3.4 -c "import $python_pkg"; then
-    echo "$python_pkg package not found for python3.4, attempting to install..."
-    if ! sudo easy_install-3.4 $python_pkg; then
-      echo -e "Failed to install $python_pkg package for python3.4"
       exit 1
     fi
   fi
@@ -89,15 +86,7 @@ if [[ "$JOB_NAME" =~ "virtual" ]]; then
   # Make sure ipxe-roms-qemu package is updated to latest.
   # This package is needed for multi virtio nic PXE boot in virtual environment.
   sudo yum update -y ipxe-roms-qemu
-  if [ -z ${PYTHONPATH:-} ]; then
-    export PYTHONPATH=${WORKSPACE}/lib/python
-  else
-    export PYTHONPATH=$PYTHONPATH:${WORKSPACE}/lib/python
-  fi
 fi
-
-# set env vars to deploy cmd
-DEPLOY_CMD="BASE=${BASE} IMAGES=${IMAGES} LIB=${LIB} ${DEPLOY_CMD}"
 
 if [ "$OPNFV_CLEAN" == 'yes' ]; then
   if sudo test -e '/root/inventory/pod_settings.yaml'; then
@@ -106,7 +95,7 @@ if [ "$OPNFV_CLEAN" == 'yes' ]; then
     clean_opts=''
   fi
 
-  sudo BASE=${BASE} LIB=${LIB} ${CLEAN_CMD} ${clean_opts}
+  sudo ${CLEAN_CMD} ${clean_opts}
 fi
 
 if echo ${DEPLOY_SCENARIO} | grep ipv6; then
