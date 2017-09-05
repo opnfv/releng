@@ -36,15 +36,17 @@
             auto-trigger-name: 'doctor-verify'
             is-python: true
 
-    pod:
-        - armband-baremetal:
-            slave-label: '{pod}'
-        - armband-virtual:
-            slave-label: '{pod}'
+    phase:
+        - 'unit-tests':
+            slave-label: 'opnfv-build-ubuntu'
+        - 'build-x86_64':
+            slave-label: 'opnfv-build-ubuntu'
+        - 'build-aarch64':
+            slave-label: 'opnfv-build-ubuntu-arm'
 
     jobs:
         - 'doctor-verify-{stream}'
-        - 'doctor-{task}-{installer}-{inspector}-{pod}-{stream}'
+        - 'doctor-{task}-{installer}-{inspector}-{phase}-{stream}'
         - 'doctor-{task}-{installer}-{inspector}-{stream}'
 
 - job-template:
@@ -62,35 +64,12 @@
         - git-scm-gerrit
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'tests/**'
-
+        - 'doctor-verify-triggers-macro'
     builders:
-        - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+        - 'doctor-verify-builders-macro'
 
 - job-template:
-    name: 'doctor-{task}-{installer}-{inspector}-{pod}-{stream}'
-
-    node: '{slave-label}'
+    name: 'doctor-{task}-{installer}-{inspector}-{phase}-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -98,21 +77,16 @@
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+        - '{slave-label}-defaults'
 
     scm:
         - git-scm-gerrit
 
-
-    triggers:
-        - '{auto-trigger-name}':
-            project: '{project}'
-            branch: '{branch}'
-            files: 'tests/**'
-
     builders:
-        - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+        - 'doctor-verify-build-{phase}-builders-macro'
 
+    publishers:
+        - 'doctor-verify-{phase}-publishers-macro'
 
 - job-template:
     name: 'doctor-{task}-{installer}-{inspector}-{stream}'
@@ -171,10 +145,7 @@
         - git-scm-gerrit
 
     triggers:
-        - '{auto-trigger-name}':
-            project: '{project}'
-            branch: '{branch}'
-            files: 'tests/**'
+        - '{auto-trigger-name}-triggers-macro':
 
     builders:
         - 'clean-workspace-log'
@@ -196,20 +167,56 @@
             # NOTE: checking the test result, as the previous job could return
             #       0 regardless the result of doctor test scenario.
             grep -e ' OK$' $functest_log || exit 1
-
-    publishers:
-        - archive:
-            artifacts: 'tests/*.log'
-        - archive:
-            artifacts: 'functest_results/$FUNCTEST_SUITE_NAME.log'
-        - email-jenkins-admins-on-failure
-
+        - shell: |
+            #!/bin/bash
+            # we do nothing here as the main stuff will be done
+            # in phase jobs
+            echo "Triggering phase jobs!"
+        - multijob:
+            name: 'doctor-build-and-unittest'
+            execution-type: PARALLEL
+            projects:
+                - name: 'doctor-verify-unit-tests-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  git-revision: true
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: false
+                - name: 'doctor-verify-build-x86_64-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                    ARCH=x86_64
+                  git-revision: true
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: false
+                - name: 'doctor-verify-build-aarch64-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                    ARCH=aarch64
+                  git-revision: true
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: false
 
 #####################################
 # trigger macros
 #####################################
 - trigger:
-    name: 'doctor-verify'
+    name: 'doctor-verify-triggers-macro'
     triggers:
         - gerrit:
             server-name: 'gerrit.opnfv.org'
@@ -231,9 +238,46 @@
                     branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: ANT
-                    pattern: '{files}'
-            skip-vote:
-                successful: true
-                failed: true
-                unstable: true
-                notbuilt: true
+                    pattern: 'tests/**'
+#####################################
+# builder macros
+#####################################
+- builder:
+    name: 'doctor-verify-builders-macro'
+    builders:
+        - shell: |
+            "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+- builder:
+    name: 'doctor-verify-build-unit-tests-builders-macro'
+    builders:
+        - shell: |
+            "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
+- builder:
+    name: 'doctor-verify-build-x86_64-builders-macro'
+    builders:
+        - shell: |
+            echo "Not active!"
+- builder:
+    name: 'doctor-verify-build-aarch64-builders-macro'
+    builders:
+        - shell: |
+            echo "Not active!"
+#####################################
+# publisher macros
+#####################################
+- publisher:
+    name: 'doctor-verify-unit-tests-publishers-macro'
+    publishers:
+        - archive:
+            artifacts: 'tests/*.log'
+        - archive:
+            artifacts: 'functest_results/$FUNCTEST_SUITE_NAME.log'
+        - email-jenkins-admins-on-failure
+- publisher:
+    name: 'doctor-verify-build-x86_64-publishers-macro'
+    publishers:
+        - email-jenkins-admins-on-failure
+- publisher:
+    name: 'doctor-verify-build-aarch64-publishers-macro'
+    publishers:
+        - email-jenkins-admins-on-failure
