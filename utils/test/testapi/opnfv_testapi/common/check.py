@@ -8,47 +8,12 @@
 ##############################################################################
 import functools
 
-import cas
 from tornado import gen
 from tornado import web
 
-from opnfv_testapi.common import constants
 from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
-from opnfv_testapi.common.config import CONF
 from opnfv_testapi.db import api as dbapi
-
-
-def login(method):
-    @web.asynchronous
-    @gen.coroutine
-    @functools.wraps(method)
-    def wrapper(self, *args, **kwargs):
-        ticket = self.get_query_argument('ticket', default=None)
-        if ticket:
-            client = cas.CASClient(version='2',
-                                   server_url=CONF.lfid_cas_url,
-                                   service_url=CONF.ui_url)
-            (user, attrs, _) = client.verify_ticket(ticket=ticket)
-            print 'login user: {}'.format(user)
-            login_user = {
-                'user': user,
-                'email': attrs.get('mail'),
-                'fullname': attrs.get('field_lf_full_name'),
-                'groups': constants.TESTAPI_USERS + attrs.get('group', [])
-            }
-            q_user = {'user': user}
-            db_user = yield dbapi.db_find_one(constants.USER_TABLE, q_user)
-            if not db_user:
-                dbapi.db_save(constants.USER_TABLE, login_user)
-            else:
-                dbapi.db_update(constants.USER_TABLE, q_user, login_user)
-
-            self.clear_cookie(constants.TESTAPI_ID)
-            self.set_secure_cookie(constants.TESTAPI_ID, user)
-        ret = yield gen.coroutine(method)(self, *args, **kwargs)
-        raise gen.Return(ret)
-    return wrapper
 
 
 def authenticate(method):
