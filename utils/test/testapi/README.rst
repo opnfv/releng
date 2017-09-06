@@ -2,63 +2,92 @@
 opnfv-testapi
 =============
 
-Test Results Collector of OPNFV Test Projects
+**Test Results Collector of OPNFV Test Projects**:
+
+This project aims to provide a common way of gathering all the test results for OPNFV
+testing projects into a single place, and a unified way of getting those results for
+testing analysis projects, such as Reporting/Bitergia Dashboard/Qtip. It exposes
+Restful APIs for collecting results and pushing them into a MongoDB database.
+
+If you are interested in how TestAPI looks like, please visit OPNFV's official `TestAPI Server`__
+
+.. __: http://testresults.opnfv.org/test
+
+Pre-requsites
+=============
+
+TestAPI leverages MongoDB as the data warehouse, in order to let it work
+successfully, a MongoDB must be provided, the official MongoDB version in OPNFV
+TestAPI is 3.2.6. And the database is **test_results_collection**, the five
+collections are *users/pods/projects/testcases/scenarioes/results*. And thanks to
+MongoDB's very user-friendly property, they don't need to be created in advance.
+
+Running locally
+===============
+
+Requirements
+^^^^^^^^^^^^
+
+All requirements are listed in requirements.txt and should be
+installed by 'pip install':
+
+    *pip install -r requirements.txt*
+
+Installation
+^^^^^^^^^^^^
+
+    *python setup.py install*
+
+After installation, configuration file etc/config.ini will be put under
+/etc/opnfv_testapi/. And all the web relevant files under 3rd_party/static
+will be in /user/local/share/opnfv_testapi as a totality.
 
 Start Server
-==============
+^^^^^^^^^^^^
 
-Getting setup
-^^^^^^^^^^^^^
+    *opnfv-testapi [--config-file <config.ini>]*
 
-Requirements for opnfv-testapi:
+If --config-file is provided, the specified configuration file will be employed
+when starting the server, or else /etc/opnfv_testapi/config.ini will be utilized
+by default.
 
-* tornado
-* epydoc
+After executing the command successfully, a TestAPI server will be started on
+port 8000, to visit web portal, please access http://hostname:8000
 
-These requirements are expressed in the requirements.txt file and may be
-installed by running the following (from within a virtual environment)::
+Regarding swagger-ui website, please visit http://hostname:8000/swagger/spec.html
 
-    pip install -r requirements.txt
+Running with container
+======================
 
-How to install
-^^^^^^^^^^^^^^
+TestAPI has already containerized, the docker image is opnfv/testapi:latest.
 
-From within your environment, just run:
+**Running the container not behind nginx:**
 
-    ./install.sh
+.. code-block:: shell
 
-How to run
-^^^^^^^^^^
+    docker run -dti --name testapi -p expose_port:8000
+        -e "mongodb_url=mongodb://mongodb_ip:27017/"
+        -e "base_url=http://host_name:expose_port"
+        opnfv/testapi:latest
 
-From within your environment, just run:
+**Running the container behind nginx:**
 
-    opnfv-testapi
+.. code-block:: shell
 
-This will start a server on port 8000.  Just visit http://localhost:8000
+    docker run -dti --name testapi -p expose_port:8000
+        -e "mongodb_url=mongodb://mongodb_ip:27017/"
+        -e "base_url=http://nginx_url"
+        opnfv/testapi:latest
 
-For swagger website, just visit http://localhost:8000/swagger/spec.html
+Unittest & pep8
+===============
 
-Unittest
-=====================
+All requirements for unit tests are outlined in test-requirements.txt, and in TestAPI project, tox is leveraged to drive the executing of unit tests and pep8 check
 
-Getting setup
-^^^^^^^^^^^^^
+**Running unit tests**
 
-Requirements for unittest:
+    *tox -e py27*
 
-* testtools
-* discover
-* futures
+**Running pep8 check**
 
-These requirements are expressed in the test-requirements.txt file and may be
-installed by running the following (from within a virtual environment)::
-
-    pip install -r test-requirements.txt
-
-How to run
-^^^^^^^^^^
-
-From within your environment, just run::
-
-    bash run_test.sh
-
+    *tox -e pep8*
