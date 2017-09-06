@@ -19,83 +19,11 @@
             disabled: true
 
     jobs:
-        - 'fuel-merge-deploy-virtual-{stream}'
         - 'fuel-deploy-generic-daily-{stream}'
 
 ########################
 # job templates
 ########################
-- job-template:
-    name: 'fuel-merge-deploy-virtual-{stream}'
-
-    disabled: true
-
-    concurrent: true
-
-    properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 2
-            max-per-node: 1
-            option: 'project'
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'fuel-os-.*?-virtual-daily-.*'
-                - 'fuel-merge-deploy-virtual-.*'
-            block-level: 'NODE'
-
-    parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'fuel-virtual-defaults':
-            installer: '{installer}'
-        - '{installer}-defaults'
-        - fuel-project-parameter:
-            gs-pathname: '{gs-pathname}'
-    scm:
-        - git-scm
-
-    wrappers:
-        - ssh-agent-wrapper
-
-    triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'ci/**'
-                  - compare-type: ANT
-                    pattern: 'mcp/**'
-                disable-strict-forbidden-file-verification: 'true'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**'
-            dependency-jobs: 'fuel-merge-build-{stream}'
-
-    builders:
-        - shell:
-            !include-raw-escape: ./fuel-deploy.sh
-        - shell:
-            !include-raw-escape: ./fuel-workspace-cleanup.sh
-
-    publishers:
-        - email:
-            recipients: fzhadaev@mirantis.com
-        - email-jenkins-admins-on-failure
-
 - job-template:
     name: 'fuel-deploy-generic-daily-{stream}'
 
@@ -120,7 +48,8 @@
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
-        - '{installer}-defaults'
+        - '{installer}-defaults':
+            gs-pathname: '{gs-pathname}'
         - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -137,8 +66,6 @@
                 - ericsson-pod1
             default-slaves:
                 - ericsson-pod2
-        - fuel-project-parameter:
-            gs-pathname: '{gs-pathname}'
 
     scm:
         - git-scm
@@ -150,14 +77,3 @@
     builders:
         - shell:
             !include-raw-escape: ./fuel-deploy.sh
-
-########################
-# parameter macros
-########################
-- parameter:
-    name: fuel-project-parameter
-    parameters:
-        - string:
-            name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
-            description: "URL to Google Storage."

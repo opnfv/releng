@@ -21,11 +21,11 @@
 #####################################
     phase:
         - 'basic':
-            slave-label: 'opnfv-build-ubuntu'
+            slave-label: 'fuel-virtual'
         - 'deploy-virtual':
-            slave-label: 'opnfv-build-ubuntu'
+            slave-label: 'fuel-virtual'
         - 'smoke-test':
-            slave-label: 'opnfv-build-ubuntu'
+            slave-label: 'fuel-virtual'
 #####################################
 # jobs
 #####################################
@@ -50,6 +50,11 @@
             enabled: true
             max-total: 4
             option: 'project'
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - 'fuel-os-.*?-virtual-daily-.*'
+            block-level: 'NODE'
 
     scm:
         - git-scm-gerrit
@@ -94,8 +99,9 @@
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
-        - 'fuel-verify-defaults':
+        - 'fuel-virtual-defaults':
+            installer: '{installer}'
+        - '{installer}-defaults':
             gs-pathname: '{gs-pathname}'
 
     builders:
@@ -155,7 +161,8 @@
         - logrotate-default
         - throttle:
             enabled: true
-            max-total: 6
+            max-total: 2
+            max-per-node: 1
             option: 'project'
         - build-blocker:
             use-build-blocker: true
@@ -177,8 +184,9 @@
             project: '{project}'
             branch: '{branch}'
         - '{slave-label}-defaults'
-        - '{installer}-defaults'
-        - 'fuel-verify-defaults':
+        - 'fuel-virtual-defaults':
+            installer: '{installer}'
+        - '{installer}-defaults':
             gs-pathname: '{gs-pathname}'
 
     builders:
@@ -199,10 +207,8 @@
 - builder:
     name: 'fuel-verify-deploy-virtual-macro'
     builders:
-        - shell: |
-            #!/bin/bash
-
-            echo "Not activated!"
+        - shell:
+            !include-raw-escape: ./fuel-deploy.sh
 
 - builder:
     name: 'fuel-verify-smoke-test-macro'
@@ -211,13 +217,3 @@
             #!/bin/bash
 
             echo "Not activated!"
-#####################################
-# parameter macros
-#####################################
-- parameter:
-    name: 'fuel-verify-defaults'
-    parameters:
-        - string:
-            name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
-            description: "URL to Google Storage."
