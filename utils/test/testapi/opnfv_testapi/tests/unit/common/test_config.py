@@ -1,4 +1,5 @@
 import argparse
+import pytest
 
 
 def test_config_normal(mocker, config_normal):
@@ -13,3 +14,11 @@ def test_config_normal(mocker, config_normal):
     assert CONF.api_debug is True
     assert CONF.api_authenticate is False
     assert CONF.ui_url == 'http://localhost:8000'
+
+
+def test_config_file_does_not_exist(mocker, config_does_not_exist):
+    mocker.patch(
+        'argparse.ArgumentParser.parse_known_args',
+        return_value=(argparse.Namespace(config_file=config_does_not_exist), None))
+    with pytest.raises(Exception) as ex:
+        assert "config file not found" in str(ex.value)
