@@ -8,8 +8,8 @@
     project: 'functest'
 
     jobs:
-        - 'functest-verify-{stream}'
-        - 'functest-verify-{phase}-{stream}'
+        - 'functest-check-{stream}'
+        - 'functest-check-{phase}-{stream}'
         - 'functest-docs-upload-{stream}'
 
     stream:
@@ -31,7 +31,7 @@
             slave-label: 'opnfv-build-ubuntu-arm'
 
 - job-template:
-    name: 'functest-verify-{stream}'
+    name: 'functest-check-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -47,7 +47,7 @@
         - git-scm-gerrit
 
     triggers:
-        - 'functest-verify-triggers-macro':
+        - 'functest-check-triggers-macro':
             project: '{project}'
             branch: '{branch}'
 
@@ -61,7 +61,7 @@
             name: 'functest-build-and-unittest'
             execution-type: PARALLEL
             projects:
-                - name: 'functest-verify-unit-tests-and-docs-{stream}'
+                - name: 'functest-check-unit-tests-and-docs-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     GERRIT_BRANCH=$GERRIT_BRANCH
@@ -72,7 +72,7 @@
                   node-parameters: false
                   kill-phase-on: FAILURE
                   abort-all-job: false
-                - name: 'functest-verify-build-x86_64-{stream}'
+                - name: 'functest-check-build-x86_64-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     GERRIT_BRANCH=$GERRIT_BRANCH
@@ -84,7 +84,7 @@
                   node-parameters: false
                   kill-phase-on: FAILURE
                   abort-all-job: false
-                - name: 'functest-verify-build-aarch64-{stream}'
+                - name: 'functest-check-build-aarch64-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     GERRIT_BRANCH=$GERRIT_BRANCH
@@ -98,7 +98,7 @@
                   abort-all-job: false
 
 - job-template:
-    name: 'functest-verify-{phase}-{stream}'
+    name: 'functest-check-{phase}-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -117,10 +117,10 @@
         - git-scm-gerrit
 
     builders:
-        - 'functest-verify-{phase}-builders-macro'
+        - 'functest-check-{phase}-builders-macro'
 
     publishers:
-        - 'functest-verify-{phase}-publishers-macro'
+        - 'functest-check-{phase}-publishers-macro'
 
 - job-template:
     name: 'functest-docs-upload-{stream}'
@@ -148,7 +148,7 @@
 # job triggers
 ################################
 - trigger:
-    name: 'functest-verify-triggers-macro'
+    name: 'functest-check-triggers-macro'
     triggers:
         - gerrit:
             server-name: 'gerrit.opnfv.org'
@@ -196,17 +196,17 @@
 ################################
 
 - builder:
-    name: 'functest-verify-unit-tests-and-docs-builders-macro'
+    name: 'functest-check-unit-tests-and-docs-builders-macro'
     builders:
         - shell: |
             cd $WORKSPACE && tox
 - builder:
-    name: 'functest-verify-build-x86_64-builders-macro'
+    name: 'functest-check-build-x86_64-builders-macro'
     builders:
         - shell: |
             echo "Not activated!"
 - builder:
-    name: 'functest-verify-build-aarch64-builders-macro'
+    name: 'functest-check-build-aarch64-builders-macro'
     builders:
         - shell: |
             echo "Not activated!"
@@ -220,7 +220,7 @@
 # job publishers
 ################################
 - publisher:
-    name: 'functest-verify-unit-tests-and-docs-publishers-macro'
+    name: 'functest-check-unit-tests-and-docs-publishers-macro'
     publishers:
         - junit:
             results: nosetests.xml
@@ -241,10 +241,10 @@
                     failing: 30
         - email-jenkins-admins-on-failure
 - publisher:
-    name: 'functest-verify-build-x86_64-publishers-macro'
+    name: 'functest-check-build-x86_64-publishers-macro'
     publishers:
         - email-jenkins-admins-on-failure
 - publisher:
-    name: 'functest-verify-build-aarch64-publishers-macro'
+    name: 'functest-check-build-aarch64-publishers-macro'
     publishers:
         - email-jenkins-admins-on-failure
