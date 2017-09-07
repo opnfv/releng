@@ -1,0 +1,114 @@
+ <html>
+  <head>
+    <meta charset="utf-8">
+    <!-- Bootstrap core CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/default.css" rel="stylesheet">
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="http://d3js.org/d3.v2.min.js"></script>
+    <script type="text/javascript" src="../../js/gauge.js"></script>
+    <script type="text/javascript" src="../../js/trend.js"></script>
+    <script>
+        function onDocumentReady() {
+            // Gauge management
+            {% for scenario in scenario_results.keys() -%}
+            var gaugeScenario{{loop.index}} = gauge('#gaugeScenario{{loop.index}}');
+            {%- endfor %}
+            // assign success rate to the gauge
+            function updateReadings() {
+                {% for scenario in scenario_results.keys() -%}
+                 gaugeScenario{{loop.index}}.update({{scenario_results[scenario].getScorePercent()}});
+                 {%- endfor %}
+            }
+            updateReadings();
+        }
+
+        // trend line management
+        d3.csv("./scenario_history.txt", function(data) {
+            // ***************************************
+            // Create the trend line
+            {% for scenario in scenario_results.keys() -%}
+            // for scenario {{scenario}}
+            // Filter results
+                var trend{{loop.index}} = data.filter(function(row) {
+                    return row["scenario"]=="{{scenario}}" && row["installer"]=="{{installer}}";
+                })
+            // Parse the date
+            trend{{loop.index}}.forEach(function(d) {
+                d.date = parseDate(d.date);
+                d.score = +d.score
+            });
+            // Draw the trend line
+            var mytrend = trend("#trend_svg{{loop.index}}",trend{{loop.index}})
+            // ****************************************
+            {%- endfor %}
+        });
+        if ( !window.isLoaded ) {
+            window.addEventListener("load", function() {
+            onDocumentReady();
+            }, false);
+        } else {
+            onDocumentReady();
+        }
+    </script>
+    <script type="text/javascript">
+    $(document).ready(function (){
+        $(".btn-more").click(function() {
+            $(this).hide();
+            $(this).parent().find(".panel-default").show();
+        });
+    })
+    </script>
+  </head>
+    <body>
+    <div class="container">
+      <div class="masthead">
+          <h3 class="text-muted">Bottlenecks status page ({{version}}, {{date}})</h3>
+        <nav>
+          <ul class="nav nav-justified">
+            <li class="active"><a href="http://testresults.opnfv.org/reporting/index.html">Home</a></li>
+            <li><a href="status-apex.html">Apex</a></li>
+            <li><a href="status-compass.html">Compass</a></li>
+            <li><a href="status-fuel.html">Fuel</a></li>
+            <li><a href="status-joid.html">Joid</a></li>
+          </ul>
+        </nav>
+      </div>
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+        <div class="page-header">
+            <h2>{{installer}}</h2>
+        </div>
+        <div><h1>Reported values represent the percentage of completed
+
+          CI tests (posca_factor_ping) during the reporting period, where results
+
+          were communicated to the Test Database.</h1></div>
+        <div class="scenario-overview">
+            <div class="panel-heading"><h4><b>List of last scenarios ({{version}}) run over the last {{period}} days </b></h4></div>
+                <table class="table">
+                    <tr>
+                        <th width="40%">Scenario</th>
+                        <th width="20%">Status</th>
+                        <th width="20%">Trend</th>
+                        <th width="10%">Last 4 Iterations</th>
+                        <th width="10%">Last 10 Days</th>
+                    </tr>
+                        {% for scenario,result in scenario_results.iteritems() -%}
+                            <tr class="tr-ok">
+                                <td><a href="{{scenario_results[scenario].getLastUrl()}}">{{scenario}}</a></td>
+                                <td><div id="gaugeScenario{{loop.index}}"></div></td>
+                                <td><div id="trend_svg{{loop.index}}"></div></td>
+                                <td>{{scenario_results[scenario].getFourDaysScore()}}</td>
+                                <td>{{scenario_results[scenario].getTenDaysScore()}}</td>
+                            </tr>
+                        {%- endfor %}
+                </table>
+        </div>
+
+
+    </div>
+    <div class="col-md-1"></div>
+</div>
