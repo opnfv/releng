@@ -1,4 +1,5 @@
 import argparse
+import mock
 
 
 def test_config_normal(mocker, config_normal):
@@ -13,3 +14,9 @@ def test_config_normal(mocker, config_normal):
     assert CONF.api_debug is True
     assert CONF.api_authenticate is False
     assert CONF.ui_url == 'http://localhost:8000'
+
+
+def test_config_file_does_not_exist(mocker, config_does_not_exist):
+    with mock.patch('os.path.exists'):
+        assert "config file not found"
+        return False
