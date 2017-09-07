@@ -95,6 +95,7 @@ fi
 ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 # Start fetching the files
+info "Fetching rc file..."
 if [ "$installer_type" == "fuel" ]; then
     verify_connectivity $installer_ip
     if [ "${BRANCH}" == "master" ]; then
@@ -110,7 +111,7 @@ if [ "$installer_type" == "fuel" ]; then
             "sudo salt --out txt 'ctl*' pillar.get _param:openstack_control_address | awk '{print \$2; exit}'" | \
             sed 's/ //g') &> /dev/null
 
-        info "Fetching rc file from controller $controller_ip..."
+        info "... from controller $controller_ip..."
         ssh ${ssh_options} ubuntu@${controller_ip} "sudo cat /root/keystonercv3" > $dest_path
 
         if [[ $BUILD_TAG =~ "baremetal" ]]; then
@@ -134,7 +135,7 @@ if [ "$installer_type" == "fuel" ]; then
             error "The controller $controller_ip is not up. Please check that the POD is correctly deployed."
         fi
 
-        info "Fetching rc file from controller $controller_ip..."
+        info "... from controller $controller_ip..."
         sshpass -p r00tme ssh 2>/dev/null ${ssh_options} root@${installer_ip} \
             "scp ${ssh_options} ${controller_ip}:/root/openrc ." &> /dev/null
         sshpass -p r00tme scp 2>/dev/null ${ssh_options} root@${installer_ip}:~/openrc $dest_path &> /dev/null
@@ -159,7 +160,7 @@ elif [ "$installer_type" == "apex" ]; then
 
     # The credentials file is located in the Instack VM (192.0.2.1)
     # NOTE: This might change for bare metal deployments
-    info "Fetching rc file from Instack VM $installer_ip..."
+    info "... from Instack VM $installer_ip..."
     if [ -f /root/.ssh/id_rsa ]; then
         chmod 600 /root/.ssh/id_rsa
     fi
@@ -169,7 +170,7 @@ elif [ "$installer_type" == "compass" ]; then
     if [ "${BRANCH}" == "master" ]; then
         sudo docker cp compass-tasks:/opt/openrc $dest_path &> /dev/null
         sudo chown $(whoami):$(whoami) $dest_path
-        sudo docker cp compass-tasks:/opt/os_cacert $os_cacert &> /dev/null
+        sudo docker cp compass-tasks:/opt/os_cacert $os_cacert
     else
         verify_connectivity $installer_ip
         controller_ip=$(sshpass -p'root' ssh 2>/dev/null $ssh_options root@${installer_ip} \
@@ -181,7 +182,7 @@ elif [ "$installer_type" == "compass" ]; then
             error "The controller $controller_ip is not up. Please check that the POD is correctly deployed."
         fi
 
-        info "Fetching rc file from controller $controller_ip..."
+        info "... from controller $controller_ip..."
         sshpass -p root ssh 2>/dev/null $ssh_options root@${installer_ip} \
             "scp $ssh_options ${controller_ip}:/opt/admin-openrc.sh ." &> /dev/null
         sshpass -p root scp 2>/dev/null $ssh_options root@${installer_ip}:~/admin-openrc.sh $dest_path &> /dev/null
@@ -205,7 +206,7 @@ elif [ "$installer_type" == "compass" ]; then
 elif [ "$installer_type" == "joid" ]; then
     # do nothing...for the moment
     # we can either do a scp from the jumphost or use the -v option to transmit the param to the docker file
-    echo "Do nothing, creds will be provided through volume option at docker creation for joid"
+    info "Do nothing, creds will be provided through volume option at docker creation for joid"
 
 elif [ "$installer_type" == "foreman" ]; then
     #ip_foreman="172.30.10.73"
