@@ -28,6 +28,7 @@ class TestBase(testing.AsyncHTTPTestCase):
         self.update_res = None
         self.req_d = None
         self.req_e = None
+        self.req_f = None
         self.addCleanup(self._clear)
         super(TestBase, self).setUp()
 
@@ -56,6 +57,9 @@ class TestBase(testing.AsyncHTTPTestCase):
 
     def create_e(self, *args):
         return self.create(self.req_e, *args)
+
+    def create_f(self, *args):
+        return self.create(self.req_f, *args)
 
     def create(self, req=None, *args):
         return self.create_help(self.basePath, req, *args)

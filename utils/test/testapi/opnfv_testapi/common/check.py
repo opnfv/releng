@@ -7,6 +7,7 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 import functools
+import re
 
 from tornado import gen
 from tornado import web
@@ -92,7 +93,12 @@ def new_not_exists(xstep):
     def wrap(self, *args, **kwargs):
         query = kwargs.get('query')
         if query:
-            to_data = yield dbapi.db_find_one(self.table, query())
+            query_data = query()
+            if self.table == 'pods':
+                if query_data.get('name') is not None:
+                    query_data['name'] = re.compile(query_data.get('name'),
+                                                    re.IGNORECASE)
+            to_data = yield dbapi.db_find_one(self.table, query_data)
             if to_data:
                 raises.Forbidden(message.exist(self.table, query()))
         ret = yield gen.coroutine(xstep)(self, *args, **kwargs)
