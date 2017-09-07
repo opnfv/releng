@@ -15,6 +15,7 @@
         - 'apex-testsuite-{scenario}-baremetal-{scenario_stream}'
         - 'apex-upload-snapshot'
         - 'apex-create-snapshot'
+        - 'apex-flex-daily-os-nosdn-nofeature-ha-{scenario_stream}'
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
     stream:
@@ -954,7 +955,7 @@
 
 # Flex job
 - job-template:
-    name: 'apex-flexjob-os-nosdn-nofeature-ha-{scenario_stream}'
+    name: 'apex-flex-daily-os-nosdn-nofeature-ha-{scenario_stream}'
 
     project-type: 'multijob'
 
@@ -968,7 +969,6 @@
         - 'apex-{{ stream }}'
     parameters:
         - '{project}-defaults'
-        - '{project}-baremetal-{scenario_stream}-defaults'
         - project-parameter:
             project: '{project}'
             branch: '{branch}'
@@ -978,6 +978,14 @@
             name: DEPLOY_SCENARIO
             default: 'os-nosdn-nofeature-ha'
             description: "Scenario to deploy with."
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: 'Git URL to use on this Jenkins Slave'
+      - string:
+          name: SSH_KEY
+          default: /root/.ssh/id_rsa
+          description: 'SSH key to use for Apex'
     properties:
         - logrotate-default
         - build-blocker:
