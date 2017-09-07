@@ -9,19 +9,16 @@
 import functools
 
 from tornado import gen
-from tornado import web
 
 from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
 from opnfv_testapi.db import api as dbapi
 
 
-def authenticate(method):
-    @web.asynchronous
-    @gen.coroutine
+def valid_token(method):
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
-        if self.auth:
+        if self.auth and self.table == 'results':
             try:
                 token = self.request.headers['X-Auth-Token']
             except KeyError:
