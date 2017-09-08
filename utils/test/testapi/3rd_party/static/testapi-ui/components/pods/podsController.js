@@ -20,7 +20,7 @@
         .controller('PodsController', PodsController);
 
     PodsController.$inject = [
-        '$rootScope', '$scope', '$http', '$filter', '$state', 'testapiApiUrl','raiseAlert'
+        '$scope', '$http', '$filter', '$state', 'testapiApiUrl','raiseAlert'
     ];
 
     /**
@@ -97,7 +97,7 @@
             }
             else{
                 ctrl.showError = true;
-                        ctrl.error = 'Name is missing.'
+                ctrl.error = 'Name is missing.'
             }
         }
 
