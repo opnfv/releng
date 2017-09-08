@@ -165,7 +165,7 @@
         - huawei-pod4:
             slave-label: huawei-pod4
             SUT: apex
-            auto-trigger-name: 'apex-huawei-pod4-danube-trigger'
+            auto-trigger-name: 'apex-huawei-pod4-{testsuite}-danube-trigger'
             <<: *danube
 #--------------------------------
     testsuite:
@@ -196,7 +196,7 @@
         - build-name:
             name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
         - timeout:
-            timeout: 240
+            timeout: 300
             abort: true
         - fix-workspace-permissions
 
@@ -268,6 +268,10 @@
 # trigger macros
 #--------------------------
 - trigger:
-    name: 'apex-huawei-pod4-danube-trigger'
+    name: 'apex-huawei-pod4-proposed_tests-danube-trigger'
     triggers:
         - timed: '* 1 * * *'
+- trigger:
+    name: 'apex-huawei-pod4-compliance_set-danube-trigger'
+    triggers:
+        - timed: ''
