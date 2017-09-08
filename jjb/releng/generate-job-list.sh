@@ -9,7 +9,6 @@
 ##############################################################################
 
 set -o errexit
-set -o nounset
 set -o pipefail
 
 # Job Number Formatter
@@ -22,8 +21,11 @@ function JOBS {
     fi
 }
 
-# We expect job_output to exist prior to this being run and contain the
-# output from jenkins-jobs test
+# Activiate the virtualenv so we have access to 'jenkins-jobs'
+source /opt/virtualenv/jenkins-job-builder/bin/activate
+
+echo "> Generating list of current JJB jobs..."
+jenkins-jobs -l ERROR test -r jjb -o job_output
 
 echo "> Generating list of previous JJB jobs..."
 git checkout -q -b previous-commit HEAD^
