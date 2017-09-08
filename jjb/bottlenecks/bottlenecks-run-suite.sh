@@ -125,7 +125,7 @@ if [[ $SUITE_NAME == *posca* ]]; then
           -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NET=${EXTERNAL_NETWORK} \
           -e BRANCH=${BRANCH} -e GERRIT_REFSPEC_DEBUG=${GERRIT_REFSPEC_DEBUG} \
           -e BOTTLENECKS_DB_TARGET=${BOTTLENECKS_DB_TARGET} -e PACKAGE_URL=${PACKAGE_URL} \
-          -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO}"
+          -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} -e BUILD_TAG=${BUILD_TAG}"
     docker_volume="-v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp"
 
     cmd="docker run ${opts} ${envs} --name bottlenecks-load-master ${docker_volume} opnfv/bottlenecks:${DOCKER_TAG} /bin/bash"
