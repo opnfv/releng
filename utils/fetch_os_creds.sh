@@ -243,6 +243,10 @@ elif [ "$installer_type" == "daisy" ]; then
 
     sshpass -p r00tme scp 2>/dev/null $ssh_options root@${installer_ip}:/etc/kolla/admin-openrc.sh $dest_path &> /dev/null
 
+elif ["$installer_type" == "osa"]; then
+    # Get RC file from control server
+    filename=$(ssh -o StrictHostKeyChecking=no root@${controller_ip} find /var/lib/lxc/controller00_nova_api_placement_container-* -name openrc)
+    scp root@${controller_ip}:${filename} ${destpath}
 else
     error "Installer $installer is not supported by this script"
 fi
