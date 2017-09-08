@@ -28,7 +28,7 @@
      * This controller is for the '/pods' page where a user can browse
      * through pods declared in TestAPI.
      */
-    function PodsController($scope, $http, $filter, $state, testapiApiUrl,
+    function PodsController($rootScope, $scope, $http, $filter, $state, testapiApiUrl,
         raiseAlert) {
         var ctrl = this;
         ctrl.url = testapiApiUrl + '/pods';
