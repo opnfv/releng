@@ -1,25 +1,22 @@
-##############################################################################
+#!/usr/bin/env python
+
+# Copyright (c) 2017 Orange and others.
+#
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Apache License, Version 2.0
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
-##############################################################################
 
+import setuptools
 
-from setuptools import setup, find_packages
+# In python < 2.7.4, a lazy loading of package `pbr` will break
+# setuptools if some other modules registered functions in `atexit`.
+# solution from: http://bugs.python.org/issue15881#msg170215
+try:
+    import multiprocessing  # noqa
+except ImportError:
+    pass
 
-
-setup(
-    name="opnfv",
-    version="danube",
-    packages=find_packages(),
-    include_package_data=True,
-    package_data={
-    },
-    url="https://www.opnfv.org",
-    install_requires=["paramiko>=2.0",
-                      "mock>=2.0",
-                      "requests!=2.12.2,>=2.10.0"],
-    test_requires=["nose",
-                   "coverage>=4.0"]
-)
+setuptools.setup(
+    setup_requires=['pbr>=1.8'],
+    pbr=True)
