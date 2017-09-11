@@ -1,3 +1,4 @@
+---
 - project:
 
     name: orchestra-project
@@ -5,12 +6,12 @@
     project: 'orchestra'
 
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
 
     jobs:
-        - 'orchestra-build-{stream}'
+      - 'orchestra-build-{stream}'
 
 - job-template:
     name: 'orchestra-build-{stream}'
@@ -18,33 +19,31 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 1
-            max-per-node: 1
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 1
+          max-per-node: 1
+          option: 'project'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
 
     scm:
-        - git-scm
+      - git-scm
 
     triggers:
-        - timed: 'H 23 * * *'
+      - timed: 'H 23 * * *'
 
     builders:
-        - 'orchestra-build-macro'
+      - 'orchestra-build-macro'
 
 - builder:
     name: 'orchestra-build-macro'
     builders:
-        - shell: |
-            #!/bin/bash
+      - shell: |
+          #!/bin/bash
 
-            echo "Hello world!"
-
-
+          echo "Hello world!"
