@@ -215,6 +215,9 @@
             name: XCI_LOOP
             default: 'daily'
         - string:
+            name: INSTALLER_TYPE
+            default: 'osa'
+        - string:
             name: FUNCTEST_SUITE_NAME
             default: 'daily'
             description: "Daily suite name to run"
@@ -235,7 +238,16 @@
 - builder:
     name: xci-functest-builder
     builders:
-        - shell:
-            !include-raw:
-                - ../../utils/fetch_os_creds.sh
-                - ../functest/functest-alpine.sh
+        - shell: |
+            #!/bin/bash
+
+            echo "Hello World!"
+
+# this will be enabled once the xci is prepared
+#- builder:
+#    name: xci-functest-builder
+#    builders:
+#        - shell:
+#            !include-raw:
+#                - ../../utils/fetch_os_creds.sh
+#                - ../functest/functest-alpine.sh
