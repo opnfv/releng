@@ -214,7 +214,10 @@
         - string:
             name: XCI_LOOP
             default: 'daily'
-
+        - string:
+            name: FUNCTEST_SUITE_NAME
+            default: 'daily'
+            description: "Daily suite name to run"
     builders:
         - description-setter:
             description: "Built on $NODE_NAME - Scenario: $DEPLOY_SCENARIO"
@@ -233,4 +236,6 @@
     name: xci-functest-builder
     builders:
         - shell:
-            !include-raw: ./xci-functest.sh
+            !include-raw:
+                - ../../utils/fetch_os_creds.sh
+                - ../functest/functest-alpine.sh
