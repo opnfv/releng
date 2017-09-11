@@ -68,7 +68,7 @@ volumes="${images_vol} ${results_vol} ${sshkey_vol} ${rc_file_vol} ${cacert_file
 
 set +e
 
-if ${FUNCTEST_SUITE_NAME} == 'healthcheck'; then
+if [ ${FUNCTEST_SUITE_NAME} == 'healthcheck' ]; then
     tiers=(healthcheck)
 else
     tiers=(healthcheck smoke features vnf)
