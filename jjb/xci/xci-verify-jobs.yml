@@ -180,6 +180,9 @@
             name: ANSIBLE_VERBOSITY
             default: '-vvvv'
         - string:
+            name: INSTALLER_TYPE
+            default: 'osa'
+        - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: 'Git URL to use on this Jenkins Slave'
@@ -214,10 +217,20 @@
             cd $WORKSPACE/xci
             ./xci-deploy.sh
 
+
 - builder:
     name: 'xci-verify-healthcheck-macro'
     builders:
-        - shell:
-            !include-raw: ../../utils/fetch_os_creds.sh
-        - shell:
-            !include-raw: ../functest/functest-alpine.sh
+        - shell: |
+            #!/bin/bash
+
+            echo "Hello World!"
+
+# this will be enabled once the xci is prepared
+#- builder:
+#    name: 'xci-verify-healthcheck-macro'
+#    builders:
+#        - shell:
+#            !include-raw: ../../utils/fetch_os_creds.sh
+#        - shell:
+#            !include-raw: ../functest/functest-alpine.sh
