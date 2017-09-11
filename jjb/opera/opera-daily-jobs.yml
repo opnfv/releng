@@ -1,31 +1,32 @@
+---
 - project:
     name: 'opera-daily-jobs'
 
     project: 'opera'
 
-#####################################
-# branch definitions
-#####################################
+    #####################################
+    # branch definitions
+    #####################################
     master: &master
-        stream: master
-        branch: '{stream}'
-        gs-pathname: ''
-        disabled: false
+      stream: master
+      branch: '{stream}'
+      gs-pathname: ''
+      disabled: false
 
-#####################################
-# pod definitions
-#####################################
+    #####################################
+    # pod definitions
+    #####################################
     pod:
-        - virtual:
-            slave-label: 'huawei-virtual7'
-            os-version: 'xenial'
-            <<: *master
+      - virtual:
+          slave-label: 'huawei-virtual7'
+          os-version: 'xenial'
+          <<: *master
 
-#####################################
-# jobs
-#####################################
+    #####################################
+    # jobs
+    #####################################
     jobs:
-        - 'opera-{pod}-daily-{stream}'
+      - 'opera-{pod}-daily-{stream}'
 
 #####################################
 # job templates
@@ -40,59 +41,58 @@
     concurrent: false
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 1
-            max-per-node: 1
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 1
+          max-per-node: 1
+          option: 'project'
 
     scm:
-        - git-scm
+      - git-scm
 
     wrappers:
-        - ssh-agent-wrapper
-
-        - timeout:
-            timeout: 240
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 240
+          fail: true
 
     triggers:
-         - timed: '@midnight'
+      - timed: '@midnight'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: os-nosdn-openo-ha
-        - '{slave-label}-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: os-nosdn-openo-ha
+      - '{slave-label}-defaults'
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - multijob:
-            name: deploy
-            condition: SUCCESSFUL
-            projects:
-                - name: 'compass-deploy-{pod}-daily-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-openo-ha
-                    COMPASS_OS_VERSION=xenial
-                  node-parameters: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: functest
-            condition: SUCCESSFUL
-            projects:
-                - name: 'functest-compass-{pod}-suite-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO=os-nosdn-openo-ha
-                    FUNCTEST_SUITE_NAME=opera_vims
-                  node-parameters: true
-                  kill-phase-on: NEVER
-                  abort-all-job: true
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - multijob:
+          name: deploy
+          condition: SUCCESSFUL
+          projects:
+            - name: 'compass-deploy-{pod}-daily-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                DEPLOY_SCENARIO=os-nosdn-openo-ha
+                COMPASS_OS_VERSION=xenial
+              node-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
+          name: functest
+          condition: SUCCESSFUL
+          projects:
+            - name: 'functest-compass-{pod}-suite-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                DEPLOY_SCENARIO=os-nosdn-openo-ha
+                FUNCTEST_SUITE_NAME=opera_vims
+              node-parameters: true
+              kill-phase-on: NEVER
+              abort-all-job: true

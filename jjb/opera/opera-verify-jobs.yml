@@ -1,30 +1,31 @@
+---
 - project:
     name: 'opera-verify-jobs'
 
     project: 'opera'
 
-#####################################
-# branch definitions
-#####################################
+    #####################################
+    # branch definitions
+    #####################################
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            disabled: false
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
 
-#####################################
-# patch verification phases
-#####################################
+    #####################################
+    # patch verification phases
+    #####################################
     phase:
-        - 'basic'
-        - 'deploy'
+      - 'basic'
+      - 'deploy'
 
-#####################################
-# jobs
-#####################################
+    #####################################
+    # jobs
+    #####################################
     jobs:
-        - 'opera-verify-{stream}'
-        - 'opera-verify-{phase}-{stream}'
+      - 'opera-verify-{stream}'
+      - 'opera-verify-{phase}-{stream}'
 #####################################
 # job templates
 #####################################
@@ -38,77 +39,77 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 1
-            max-per-node: 1
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 1
+          max-per-node: 1
+          option: 'project'
 
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 120
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 120
+          fail: true
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: '**/*'
-                disable-strict-forbidden-file-verification: 'true'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**'
-            readable-message: true
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: ANT
+                  pattern: '**/*'
+              disable-strict-forbidden-file-verification: 'true'
+              forbidden-file-paths:
+                - compare-type: ANT
+                  pattern: 'docs/**'
+          readable-message: true
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'huawei-pod7-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'huawei-pod7-defaults'
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - multijob:
-            name: basic
-            condition: SUCCESSFUL
-            projects:
-                - name: 'opera-verify-basic-{stream}'
-                  current-parameters: true
-                  node-parameters: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: deploy
-            condition: SUCCESSFUL
-            projects:
-                - name: 'opera-verify-deploy-{stream}'
-                  current-parameters: true
-                  node-parameters: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - multijob:
+          name: basic
+          condition: SUCCESSFUL
+          projects:
+            - name: 'opera-verify-basic-{stream}'
+              current-parameters: true
+              node-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
+          name: deploy
+          condition: SUCCESSFUL
+          projects:
+            - name: 'opera-verify-deploy-{stream}'
+              current-parameters: true
+              node-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: true
 
 - job-template:
     name: 'opera-verify-{phase}-{stream}'
@@ -118,25 +119,25 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-per-node: 1
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-per-node: 1
+          option: 'project'
 
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 120
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 120
+          fail: true
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - '{project}-verify-{phase}-macro'
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - '{project}-verify-{phase}-macro'
 
 #####################################
 # builder macros
@@ -144,14 +145,13 @@
 - builder:
     name: 'opera-verify-basic-macro'
     builders:
-        - shell: |
-            #!/bin/bash
-            echo "Hello world!"
+      - shell: |
+          #!/bin/bash
+          echo "Hello world!"
 
 - builder:
     name: 'opera-verify-deploy-macro'
     builders:
-        - shell: |
-            #!/bin/bash
-            echo "Hello world!"
-
+      - shell: |
+          #!/bin/bash
+          echo "Hello world!"
