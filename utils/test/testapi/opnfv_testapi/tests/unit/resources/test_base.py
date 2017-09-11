@@ -6,13 +6,16 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+from datetime import datetime
 import json
 from os import path
 
+from bson.objectid import ObjectId
 import mock
 from tornado import testing
 
 from opnfv_testapi.resources import models
+from opnfv_testapi.resources import pod_models
 from opnfv_testapi.tests.unit import fake_pymongo
 
 
@@ -26,10 +29,32 @@ class TestBase(testing.AsyncHTTPTestCase):
         self.get_res = None
         self.list_res = None
         self.update_res = None
+        self.pod_d = pod_models.Pod(name='zte-pod1',
+                                    mode='virtual',
+                                    details='zte pod 1',
+                                    role='community-ci',
+                                    _id=str(ObjectId()),
+                                    owner='ValidUser',
+                                    create_date=str(datetime.now()))
+        self.pod_e = pod_models.Pod(name='zte-pod2',
+                                    mode='metal',
+                                    details='zte pod 2',
+                                    role='production-ci',
+                                    _id=str(ObjectId()),
+                                    owner='ValidUser',
+                                    create_date=str(datetime.now()))
         self.req_d = None
         self.req_e = None
         self.addCleanup(self._clear)
         super(TestBase, self).setUp()
+        fake_pymongo.users.insert({"user": "ValidUser",
+                                   'email': 'validuser@lf.com',
+                                   'fullname': 'Valid User',
+                                   'groups': [
+                                       'opnfv-testapi-users',
+                                       'opnfv-gerrit-functest-submitters',
+                                       'opnfv-gerrit-qtip-contributors']
+                                   })
 
     def tearDown(self):
         self.db_patcher.stop()
