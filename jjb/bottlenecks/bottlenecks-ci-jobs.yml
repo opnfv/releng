@@ -1,3 +1,4 @@
+---
 ####################################
 # job configuration for bottlenecks
 ####################################
@@ -6,75 +7,75 @@
 
     project: 'bottlenecks'
 
-#--------------------------------
-# BRANCH ANCHORS
-#--------------------------------
+    # -------------------------------
+    # BRANCH ANCHORS
+    # -------------------------------
     master: &master
-        stream: master
-        branch: '{stream}'
-        #This is used for common project file storage
-        gs-pathname: ''
-        #This is used for different test suite dependent packages storage
-        gs-packagepath: '/{suite}'
-        #docker tag used for version control
-        docker-tag: 'latest'
+      stream: master
+      branch: '{stream}'
+      # This is used for common project file storage
+      gs-pathname: ''
+      # This is used for different test suite dependent packages storage
+      gs-packagepath: '/{suite}'
+      # docker tag used for version control
+      docker-tag: 'latest'
     danube: &danube
-        stream: danube
-        branch: 'stable/{stream}'
-        gs-pathname: '/{stream}'
-        gs-packagepath: '/{stream}/{suite}'
-        docker-tag: 'stable'
-#--------------------------------
-# POD, INSTALLER, AND BRANCH MAPPING
-#--------------------------------
-#    Installers using labels
-#            CI PODs
-# This section should only contain the installers
-# that have been switched using labels for slaves
-#--------------------------------
+      stream: danube
+      branch: 'stable/{stream}'
+      gs-pathname: '/{stream}'
+      gs-packagepath: '/{stream}/{suite}'
+      docker-tag: 'stable'
+    # -------------------------------
+    # POD, INSTALLER, AND BRANCH MAPPING
+    # -------------------------------
+    #    Installers using labels
+    #            CI PODs
+    # This section should only contain the installers
+    # that have been switched using labels for slaves
+    # -------------------------------
     pod:
-#compass CI PODs
-        - baremetal:
-            slave-label: compass-baremetal-master
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - virtual:
-            slave-label: compass-virtual-master
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - baremetal:
-            slave-label: compass-baremetal-branch
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-        - virtual:
-            slave-label: compass-virtual-branch
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
+      # compass CI PODs
+      - baremetal:
+          slave-label: compass-baremetal-master
+          installer: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - virtual:
+          slave-label: compass-virtual-master
+          installer: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - baremetal:
+          slave-label: compass-baremetal-branch
+          installer: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *danube
+      - virtual:
+          slave-label: compass-virtual-branch
+          installer: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *danube
 
-#--------------------------------
-#        None-CI PODs
-#--------------------------------
-       # - orange-pod2:
-       #     slave-label: '{pod}'
-       #     installer: joid
-       #     auto-trigger-name: 'daily-trigger-disabled'
-       #     <<: *danube
-       # - orange-pod2:
-       #     slave-label: '{pod}'
-       #     installer: joid
-       #     auto-trigger-name: 'daily-trigger-disabled'
-       #     <<: *master
-#--------------------------------------------
+    # -------------------------------
+    #        None-CI PODs
+    # -------------------------------
+    # - orange-pod2:
+    #     slave-label: '{pod}'
+    #     installer: joid
+    #     auto-trigger-name: 'daily-trigger-disabled'
+    #     <<: *danube
+    # - orange-pod2:
+    #     slave-label: '{pod}'
+    #     installer: joid
+    #     auto-trigger-name: 'daily-trigger-disabled'
+    #     <<: *master
+    # -------------------------------------------
     suite:
-        - 'posca_stress_traffic'
-        - 'posca_stress_ping'
+      - 'posca_stress_traffic'
+      - 'posca_stress_ping'
 
     jobs:
-        - 'bottlenecks-{installer}-{suite}-{pod}-daily-{stream}'
+      - 'bottlenecks-{installer}-{suite}-{pod}-daily-{stream}'
 
 ################################
 # job templates
@@ -83,53 +84,53 @@
     name: 'bottlenecks-{installer}-{suite}-{pod}-daily-{stream}'
 
     wrappers:
-        - build-name:
-            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
-        - timeout:
-            timeout: 180
-            abort: true
+      - build-name:
+          name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+      - timeout:
+          timeout: 180
+          abort: true
 
     triggers:
-        - '{auto-trigger-name}'
+      - '{auto-trigger-name}'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - '{slave-label}-defaults'
-        - '{installer}-defaults'
-        - 'bottlenecks-params-{slave-label}'
-        - string:
-            name: REPO_DIR
-            default: "/home/opnfv/bottlenecks"
-            description: "Directory where the repository is cloned"
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'os-odl_l2-nofeature-ha'
-        - string:
-            name: GERRIT_REFSPEC_DEBUG
-            default: 'true'
-            description: "Gerrit refspec for debug."
-        - string:
-            name: SUITE_NAME
-            default: '{suite}'
-            description: "test suite name."
-        - string:
-            name: DOCKER_TAG
-            default: '{docker-tag}'
-            description: "docker image tag used for version control"
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{slave-label}-defaults'
+      - '{installer}-defaults'
+      - 'bottlenecks-params-{slave-label}'
+      - string:
+          name: REPO_DIR
+          default: "/home/opnfv/bottlenecks"
+          description: "Directory where the repository is cloned"
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-odl_l2-nofeature-ha'
+      - string:
+          name: GERRIT_REFSPEC_DEBUG
+          default: 'true'
+          description: "Gerrit refspec for debug."
+      - string:
+          name: SUITE_NAME
+          default: '{suite}'
+          description: "test suite name."
+      - string:
+          name: DOCKER_TAG
+          default: '{docker-tag}'
+          description: "docker image tag used for version control"
 
     scm:
-        - git-scm
+      - git-scm
 
     builders:
-        - 'bottlenecks-env-cleanup'
-        - 'bottlenecks-run-suite'
+      - 'bottlenecks-env-cleanup'
+      - 'bottlenecks-run-suite'
 
     publishers:
-        - email:
-            recipients: gabriel.yuyang@huawei.com, liyin11@huawei.com
-        - email-jenkins-admins-on-failure
+      - email:
+          recipients: gabriel.yuyang@huawei.com, liyin11@huawei.com
+      - email-jenkins-admins-on-failure
 
 ########################
 # builder macros
@@ -137,14 +138,14 @@
 - builder:
     name: bottlenecks-env-cleanup
     builders:
-        - shell:
-            !include-raw: ./bottlenecks-cleanup.sh
+      - shell:
+          !include-raw: ./bottlenecks-cleanup.sh
 
 - builder:
     name: bottlenecks-run-suite
     builders:
-        - shell:
-            !include-raw: ./bottlenecks-run-suite.sh
+      - shell:
+          !include-raw: ./bottlenecks-run-suite.sh
 
 ####################
 # parameter macros
@@ -153,31 +154,31 @@
 - parameter:
     name: 'bottlenecks-params-compass-baremetal-master'
     parameters:
-        - string:
-            name: BOTTLENECKS_DB_TARGET
-            default: 'http://testresults.opnfv.org/test/api/v1/results'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: BOTTLENECKS_DB_TARGET
+          default: 'http://testresults.opnfv.org/test/api/v1/results'
+          description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
     name: 'bottlenecks-params-compass-virtual-master'
     parameters:
-        - string:
-            name: BOTTLENECKS_DB_TARGET
-            default: 'http://testresults.opnfv.org/test/api/v1/results'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: BOTTLENECKS_DB_TARGET
+          default: 'http://testresults.opnfv.org/test/api/v1/results'
+          description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
     name: 'bottlenecks-params-compass-baremetal-branch'
     parameters:
-        - string:
-            name: BOTTLENECKS_DB_TARGET
-            default: 'http://testresults.opnfv.org/test/api/v1/results'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: BOTTLENECKS_DB_TARGET
+          default: 'http://testresults.opnfv.org/test/api/v1/results'
+          description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
     name: 'bottlenecks-params-compass-virtual-branch'
     parameters:
-        - string:
-            name: BOTTLENECKS_DB_TARGET
-            default: 'http://testresults.opnfv.org/test/api/v1/results'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: BOTTLENECKS_DB_TARGET
+          default: 'http://testresults.opnfv.org/test/api/v1/results'
+          description: 'Arguments to use in order to choose the backend DB'

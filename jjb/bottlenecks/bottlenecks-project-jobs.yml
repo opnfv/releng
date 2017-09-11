@@ -1,3 +1,4 @@
+---
 ###################################################
 # Non-ci jobs for Bottlenecks project
 # They will only be enabled on request by projects!
@@ -8,29 +9,29 @@
     project: 'bottlenecks'
 
     jobs:
-        - 'bottlenecks-verify-{stream}'
-        - 'bottlenecks-merge-{stream}'
-        - 'bottlenecks-{suite}-upload-artifacts-{stream}'
+      - 'bottlenecks-verify-{stream}'
+      - 'bottlenecks-merge-{stream}'
+      - 'bottlenecks-{suite}-upload-artifacts-{stream}'
 
     stream:
-        - master:
-            branch: '{stream}'
-            #This is used for common project file storage
-            gs-pathname: ''
-            #This is used for different test suite dependent packages storage
-            gs-packagepath: '/{suite}'
-            disabled: false
-        - danube:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
-            gs-packagepath: '/{stream}/{suite}'
-            disabled: false
+      - master:
+          branch: '{stream}'
+          # This is used for common project file storage
+          gs-pathname: ''
+          # This is used for different test suite dependent packages storage
+          gs-packagepath: '/{suite}'
+          disabled: false
+      - danube:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          gs-packagepath: '/{stream}/{suite}'
+          disabled: false
 
     suite:
-        - 'rubbos'
-        - 'vstf'
-        - 'posca_stress_traffic'
-        - 'posca_stress_ping'
+      - 'rubbos'
+      - 'vstf'
+      - 'posca_stress_traffic'
+      - 'posca_stress_ping'
 
 ################################
 # job templates
@@ -42,36 +43,37 @@
     disabled: '{obj:disabled}'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
 
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+
     builders:
-        #- bottlenecks-hello
-        - bottlenecks-unit-tests
+      # - bottlenecks-hello
+      - bottlenecks-unit-tests
 
 - job-template:
     name: 'bottlenecks-merge-{stream}'
@@ -79,31 +81,31 @@
     disabled: '{obj:disabled}'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
 
     scm:
-        - git-scm
+      - git-scm
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/{branch}'
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'remerge'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
 
     builders:
-        - bottlenecks-hello
-        #- bottlenecks-unit-tests
+      - bottlenecks-hello
+      # - bottlenecks-unit-tests
 
 - job-template:
     name: 'bottlenecks-{suite}-upload-artifacts-{stream}'
@@ -114,27 +116,27 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 1
-            max-per-node: 1
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 1
+          max-per-node: 1
+          option: 'project'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
-        - bottlenecks-parameter:
-            gs-packagepath: '{gs-packagepath}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
+      - bottlenecks-parameter:
+          gs-packagepath: '{gs-packagepath}'
 
     scm:
-        - git-scm
+      - git-scm
 
     builders:
-        - 'bottlenecks-builder-upload-artifact'
-        - 'bottlenecks-workspace-cleanup'
+      - 'bottlenecks-builder-upload-artifact'
+      - 'bottlenecks-workspace-cleanup'
 
 ####################
 # parameter macros
@@ -142,82 +144,82 @@
 - parameter:
     name: bottlenecks-parameter
     parameters:
-        - string:
-           name: CACHE_DIR
-           default: $WORKSPACE/cache{gs-packagepath}
-           description: "the cache to store packages downloaded from public IP"
-        - string:
-           name: SUITE_URL
-           default: gs://artifacts.opnfv.org/bottlenecks{gs-packagepath}
-           description: "LF artifacts url for storage of bottlenecks packages"
-        - string:
-           name: PACKAGE_URL
-           default: http://205.177.226.237:9999/bottlenecks{gs-packagepath}/
-           description: "the url where we store the packages used for bottlenecks rubbos"
+      - string:
+          name: CACHE_DIR
+          default: $WORKSPACE/cache{gs-packagepath}
+          description: "the cache to store packages downloaded from public IP"
+      - string:
+          name: SUITE_URL
+          default: gs://artifacts.opnfv.org/bottlenecks{gs-packagepath}
+          description: "LF artifacts url for storage of bottlenecks packages"
+      - string:
+          name: PACKAGE_URL
+          default: http://205.177.226.237:9999/bottlenecks{gs-packagepath}/
+          description: "the url where we store the packages used for bottlenecks rubbos"
 
 ####################################
-#builders for bottlenecks project
+# builders for bottlenecks project
 ####################################
 - builder:
     name: bottlenecks-builder-upload-artifact
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
+      - shell: |
+          #!/bin/bash
+          set -o errexit
 
-            echo "Bottlenecks: upload to artifacts from the public IP"
+          echo "Bottlenecks: upload to artifacts from the public IP"
 
-            [[ -d $CACHE_DIR ]] || mkdir -p $CACHE_DIR
+          [[ -d $CACHE_DIR ]] || mkdir -p $CACHE_DIR
 
-            for file in $(curl -s $PACKAGE_URL |
-                               grep href |
-                               sed 's/.*href="//' |
-                               sed 's/".*//' |
-                               grep '^[a-zA-Z].*'); do
-                 curl --connect-timeout 10 -o $CACHE_DIR/$file $PACKAGE_URL$file -v
-                 echo "bottlenecks: copy file $CACHE_DIR/$file to $SUITE_URL"
-                 gsutil cp $CACHE_DIR/$file $SUITE_URL
-            done
+          for file in $(curl -s $PACKAGE_URL |
+                             grep href |
+                             sed 's/.*href="//' |
+                             sed 's/".*//' |
+                             grep '^[a-zA-Z].*'); do
+               curl --connect-timeout 10 -o $CACHE_DIR/$file $PACKAGE_URL$file -v
+               echo "bottlenecks: copy file $CACHE_DIR/$file to $SUITE_URL"
+               gsutil cp $CACHE_DIR/$file $SUITE_URL
+          done
 
 - builder:
     name: bottlenecks-workspace-cleanup
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
+      - shell: |
+          #!/bin/bash
+          set -o errexit
 
-            echo "Bottlenecks: cleanup cache used for storage downloaded packages"
+          echo "Bottlenecks: cleanup cache used for storage downloaded packages"
 
-            /bin/rm -rf $CACHE_DIR
+          /bin/rm -rf $CACHE_DIR
 
 - builder:
     name: bottlenecks-unit-tests
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
 
-            echo "Running unit tests..."
-            cd $WORKSPACE
-            virtualenv $WORKSPACE/bottlenecks_venv
-            source $WORKSPACE/bottlenecks_venv/bin/activate
+          echo "Running unit tests..."
+          cd $WORKSPACE
+          virtualenv $WORKSPACE/bottlenecks_venv
+          source $WORKSPACE/bottlenecks_venv/bin/activate
 
-            # install python packages
-            easy_install -U setuptools
-            easy_install -U pip
-            pip install -r $WORKSPACE/requirements/verify.txt
+          # install python packages
+          easy_install -U setuptools
+          easy_install -U pip
+          pip install -r $WORKSPACE/requirements/verify.txt
 
-            # unit tests
-            /bin/bash $WORKSPACE/verify.sh
+          # unit tests
+          /bin/bash $WORKSPACE/verify.sh
 
-            deactivate
+          deactivate
 
 - builder:
     name: bottlenecks-hello
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
+      - shell: |
+          #!/bin/bash
+          set -o errexit
 
-            echo -e "Wellcome to Bottlenecks! \nMerge event is planning to support more functions! "
+          echo -e "Wellcome to Bottlenecks! \nMerge event is planning to support more functions! "
