@@ -610,7 +610,7 @@
                   predefined-parameters:
                     DEPLOY_SCENARIO=$DEPLOY_SCENARIO
                   kill-phase-on: NEVER
-                  enable-condition: "def m = '$DEPLOY_SCENARIO' ==~ /os-(nosdn-nofeature|nosdn-kvm|odl_l3-fdio)-ha/"
+                  enable-condition: "def m = '$DEPLOY_SCENARIO' ==~ /os-(nosdn-nofeature|nosdn-kvm|odl_l3-fdio)-ha/ && stream ==~ /master/"
                   abort-all-job: false
                   git-revision: false
         - multijob:
@@ -1029,6 +1029,59 @@
                   predefined-parameters:
                     DEPLOY_SCENARIO=$DEPLOY_SCENARIO
                   kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
+# Dovetail Danube test job
+- job-template:
+    name: 'apex-dovetail-daily-{scenario}-baremetal-{stream}'
+
+    project-type: 'multijob'
+
+    node: 'huawei-pod4'
+
+    disabled: false
+
+    parameters:
+        - '{project}-defaults'
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: '{scenario}'
+            description: "Scenario to deploy with."
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-verify.*'
+                - 'apex-runner.*'
+                - 'apex-.*-promote.*'
+                - 'apex-run.*'
+
+    triggers:
+        - timed: '0 12 * * *'
+
+    builders:
+        - description-setter:
+            description: "Testing on $NODE_NAME - Scenario: $DEPLOY_SCENARIO"
+        - multijob:
+            name: Dovetail
+            condition: ALWAYS
+            projects:
+                - name: 'dovetail-apex-baremetal-proposed_tests-{stream}'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                  kill-phase-on: NEVER
+                  enable-condition: "def m = '$DEPLOY_SCENARIO' ==~ /os-(nosdn-nofeature|nosdn-kvm|odl_l3-fdio)-ha/ && stream ==~ /danube/"
                   abort-all-job: false
                   git-revision: false
 
