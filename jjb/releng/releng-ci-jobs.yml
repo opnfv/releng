@@ -72,14 +72,6 @@
             files: 'jjb/**'
 
     builders:
-        - copyartifact:
-            project: releng-merge-jjb
-            filter: "job_output/*"
-            which-build: last-successful
-            stable: true
-            optional: false
-            flatten: false
-            do-not-fingerprint: true
         - shell:
             !include-raw-escape: generate-job-list.sh
         - report-build-result-to-gerrit
