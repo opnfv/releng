@@ -52,7 +52,7 @@ main () {
     fi
 
     if [[ $(whoami) != "root" ]]; then
-      if sudo -l | grep "requiretty"; then
+      if sudo -l | grep "requiretty  | grep -v "\!requiretty"; then
         echo "please comment out Defaults requiretty from /etc/sudoers"
         exit 1
       fi
