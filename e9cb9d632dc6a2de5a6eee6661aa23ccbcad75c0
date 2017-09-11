@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da33351e_e6050a7b",
+        "filename": "utils/test/testapi/opnfv_testapi/tests/unit/common/test_config.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 2651
+      },
+      "writtenOn": "2017-09-11T07:31:32Z",
+      "side": 1,
+      "message": "Basically, as a unit test should consist of three parts: \n1) mock/fake the third party interfaces, let them return the exact value or raise exact exception\n2) execute related source code(to be tested code)\n3) check the return value is rightful, or relevant exception is raised.\n\nPlease check which part(s) you are missing.\nRegarding how to test exception using pytest is listed in https://docs.pytest.org/en/latest/assert.html, which I already told you the link.\n\nAnd I think the correct implementation should be:\n\ndef test_config_file_not_exist(mocker):\n    # 1st part mock 3rd party interfaces\n    mocker.patch(\u0027os.path.exists\u0027, return_value\u003dFalse)\n    with pytest.raises(Exception) as m_exc:\n        # 2nd part execute the source code\n        from opnfv_testapi.common import config\n        config.Config()\n    # 3rd part assert the right exception is raised\n    assert \u0027not found\u0027 in str(m_exc.value)",
+      "revId": "e9cb9d632dc6a2de5a6eee6661aa23ccbcad75c0",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
