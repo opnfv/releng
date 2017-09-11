@@ -50,6 +50,7 @@ if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
 
   # Install dev build
   mkdir -p ~/tmp
+  rm -rf ~/tmp/.build
   mv -f .build ~/tmp/
   sudo pip3 install --upgrade --force-reinstall .
   mv -f ~/tmp/.build .
