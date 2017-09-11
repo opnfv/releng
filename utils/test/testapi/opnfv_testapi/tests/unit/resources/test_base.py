@@ -13,6 +13,7 @@ import mock
 from tornado import testing
 
 from opnfv_testapi.resources import models
+from opnfv_testapi.resources import pod_models
 from opnfv_testapi.tests.unit import fake_pymongo
 
 
@@ -26,10 +27,21 @@ class TestBase(testing.AsyncHTTPTestCase):
         self.get_res = None
         self.list_res = None
         self.update_res = None
+        self.pod_d = pod_models.PodCreateRequest('zte-pod1', 'virtual',
+                                                 'zte pod 1', 'ci-pod')
+        self.pod_e = pod_models.PodCreateRequest('zte-pod2', 'metal', 'zte pod 2')
         self.req_d = None
         self.req_e = None
         self.addCleanup(self._clear)
         super(TestBase, self).setUp()
+        fake_pymongo.users.insert({"user": "ValidUser",
+                                   'email': 'validuser@lf.com',
+                                   'fullname': 'Valid User',
+                                   'groups': [
+                                       'opnfv-testapi-users',
+                                       'opnfv-gerrit-functest-submitters',
+                                       'opnfv-gerrit-qtip-contributors']
+                                   })
 
     def tearDown(self):
         self.db_patcher.stop()
