@@ -7,17 +7,18 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 import copy
+from datetime import datetime
+from datetime import timedelta
 import httplib
-import unittest
-from datetime import datetime, timedelta
 import json
+import unittest
 
 from opnfv_testapi.common import message
-from opnfv_testapi.resources import pod_models
 from opnfv_testapi.resources import project_models
 from opnfv_testapi.resources import result_models
 from opnfv_testapi.resources import testcase_models
 from opnfv_testapi.tests.unit import executor
+from opnfv_testapi.tests.unit import fake_pymongo
 from opnfv_testapi.tests.unit.resources import test_base as base
 
 
@@ -52,7 +53,8 @@ class Details(object):
 
 class TestResultBase(base.TestBase):
     def setUp(self):
-        self.pod = 'zte-pod1'
+        super(TestResultBase, self).setUp()
+        self.pod = self.pod_d.name
         self.project = 'functest'
         self.case = 'vPing'
         self.installer = 'fuel'
@@ -65,7 +67,6 @@ class TestResultBase(base.TestBase):
         self.stop_date = str(datetime.now() + timedelta(minutes=1))
         self.update_date = str(datetime.now() + timedelta(days=1))
         self.update_step = -0.05
-        super(TestResultBase, self).setUp()
         self.details = Details(timestart='0', duration='9s', status='OK')
         self.req_d = result_models.ResultCreateRequest(
             pod_name=self.pod,
@@ -84,10 +85,6 @@ class TestResultBase(base.TestBase):
         self.list_res = result_models.TestResults
         self.update_res = result_models.TestResult
         self.basePath = '/api/v1/results'
-        self.req_pod = pod_models.PodCreateRequest(
-            self.pod,
-            'metal',
-            'zte pod 1')
         self.req_project = project_models.ProjectCreateRequest(
             self.project,
             'vping test')
@@ -95,7 +92,7 @@ class TestResultBase(base.TestBase):
             self.case,
             '/cases/vping',
             'vping-ssh test')
-        self.create_help('/api/v1/pods', self.req_pod)
+        fake_pymongo.pods.insert(self.pod_d.format())
         self.create_help('/api/v1/projects', self.req_project)
         self.create_help('/api/v1/projects/%s/cases',
                          self.req_testcase,

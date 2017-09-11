@@ -11,9 +11,26 @@ import re
 
 from tornado import gen
 
+from opnfv_testapi.common import constants
 from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
 from opnfv_testapi.db import api as dbapi
+
+
+def is_authorized(method):
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        if self.table in ['pods']:
+            testapi_id = self.get_secure_cookie(constants.TESTAPI_ID)
+            if not testapi_id:
+                raises.Unauthorized(message.not_login())
+            user_info = yield dbapi.db_find_one('users', {'user': testapi_id})
+            if not user_info:
+                raises.Unauthorized(message.not_lfid())
+            kwargs['owner'] = testapi_id
+        ret = yield gen.coroutine(method)(self, *args, **kwargs)
+        raise gen.Return(ret)
+    return wrapper
 
 
 def valid_token(method):

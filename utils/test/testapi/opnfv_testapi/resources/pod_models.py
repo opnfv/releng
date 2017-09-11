@@ -29,13 +29,14 @@ class PodCreateRequest(models.ModelBase):
 class Pod(models.ModelBase):
     def __init__(self,
                  name='', mode='', details='',
-                 role="", _id='', create_date=''):
+                 role="", _id='', create_date='', owner=''):
         self.name = name
         self.mode = mode
         self.details = details
         self.role = role
         self._id = _id
         self.creation_date = create_date
+        self.owner = owner
 
 
 @swagger.model()
