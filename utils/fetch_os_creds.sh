@@ -74,9 +74,6 @@ dest_path=${dest_path:-$HOME/opnfv-openrc.sh}
 os_cacert=${os_cacert:-$HOME/os_cacert}
 installer_type=${installer_type:-$INSTALLER_TYPE}
 installer_ip=${installer_ip:-$INSTALLER_IP}
-if [ "${installer_type}" == "fuel" ] && [ "${BRANCH}" == "master" ]; then
-    installer_ip=${SALT_MASTER_IP}
-fi
 
 if [ -z $dest_path ] || [ -z $installer_type ] || [ -z $installer_ip ]; then
     usage
@@ -97,28 +94,31 @@ ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 # Start fetching the files
 info "Fetching rc file..."
 if [ "$installer_type" == "fuel" ]; then
-    verify_connectivity $installer_ip
-    if [ "${BRANCH}" == "master" ]; then
-        ssh_key=${ssh_key:-$SSH_KEY}
-        if [ -z $ssh_key ] || [ ! -f $ssh_key ]; then
+    verify_connectivity "${installer_ip}"
+    # stable/danube uses old Fuel, requires user/pass; new Fuel uses keypair
+    if [[ ! "${BRANCH}" =~ "danube" ]]; then
+        ssh_user="ubuntu"
+        ssh_key="${ssh_key:-$SSH_KEY}"
+        if [ -z "$ssh_key" ] || [ ! -f "$ssh_key" ]; then
             error "Please provide path to existing ssh key for mcp deployment."
             exit 2
         fi
         ssh_options+=" -i ${ssh_key}"
 
         # retrieving controller vip
-        controller_ip=$(ssh 2>/dev/null ${ssh_options} ubuntu@${installer_ip} \
-            "sudo salt --out txt 'ctl*' pillar.get _param:openstack_control_address | awk '{print \$2; exit}'" | \
-            sed 's/ //g') &> /dev/null
+        controller_ip=$(ssh 2>/dev/null ${ssh_options} "${ssh_user}@${installer_ip}" \
+            "sudo salt --out yaml 'ctl*' pillar.get _param:openstack_control_address | \
+                awk '{print \$2; exit}'") &> /dev/null
 
-        info "... from controller $controller_ip..."
-        ssh ${ssh_options} ubuntu@${controller_ip} "sudo cat /root/keystonercv3" > $dest_path
+        info "... from controller ${controller_ip} ..."
+        ssh ${ssh_options} "${ssh_user}@${controller_ip}" \
+            "sudo cat /root/keystonercv3" > "${dest_path}"
 
-        if [[ $BUILD_TAG =~ "baremetal" ]]; then
-            ssh ${ssh_options} ubuntu@${installer_ip} "cat /etc/ssl/certs/os_cacert" > $os_cacert
+        if [[ "${BUILD_TAG}" =~ "baremetal" ]]; then
+            ssh ${ssh_options} "${ssh_user}@${installer_ip}" \
+                "cat /etc/ssl/certs/os_cacert" > "${os_cacert}"
         fi
     else
-        #ip_fuel="10.20.0.2"
         env=$(sshpass -p r00tme ssh 2>/dev/null ${ssh_options} root@${installer_ip} \
             'fuel env'|grep operational|head -1|awk '{print $1}') &> /dev/null
         if [ -z $env ]; then
