@@ -42,6 +42,14 @@ def invalid_token():
     return 'Invalid Token'
 
 
+def not_login():
+    return 'TestAPI id is not provided'
+
+
+def not_lfid():
+    return 'Not a valid Linux Foundation Account'
+
+
 def no_update():
     return 'Nothing to update'
 
