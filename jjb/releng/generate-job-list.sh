@@ -28,9 +28,9 @@ echo "> Generating list of current JJB jobs..."
 jenkins-jobs -l ERROR test -r jjb -o job_output
 
 echo "> Generating list of previous JJB jobs..."
-git checkout -q -b previous-commit HEAD^
+git checkout -b previous-commit HEAD^
 jenkins-jobs -l ERROR test -r jjb -o job_output_prev
-git checkout -q - && git branch -q -d previous-commit
+git checkout - && git branch -d previous-commit
 
 echo "> Finding job changes ..."
 diff -r -q job_output job_output_prev &> job_diff.txt || true
