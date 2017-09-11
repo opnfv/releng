@@ -9,6 +9,39 @@
 import functools
 import httplib
 
+from concurrent.futures import ThreadPoolExecutor
+import mock
+
+
+O_get_secure_cookie = (
+    'opnfv_testapi.resources.handlers.GenericApiHandler.get_secure_cookie')
+
+
+def thread_execute(method, *args, **kwargs):
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            result = executor.submit(method, *args, **kwargs)
+        return result
+
+
+def mock_invalid_lfid():
+    def _mock_invalid_lfid(xstep):
+        def wrap(self, *args, **kwargs):
+            with mock.patch(O_get_secure_cookie) as m_cookie:
+                m_cookie.return_value = 'InvalidUser'
+                return xstep(self, *args, **kwargs)
+        return wrap
+    return _mock_invalid_lfid
+
+
+def mock_valid_lfid():
+    def _mock_valid_lfid(xstep):
+        def wrap(self, *args, **kwargs):
+            with mock.patch(O_get_secure_cookie) as m_cookie:
+                m_cookie.return_value = 'ValidUser'
+                return xstep(self, *args, **kwargs)
+        return wrap
+    return _mock_valid_lfid
+
 
 def upload(excepted_status, excepted_response):
     def _upload(create_request):
