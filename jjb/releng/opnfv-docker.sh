@@ -89,11 +89,18 @@ if [[ -n "${COMMIT_ID-}" && -n "${RELEASE_VERSION-}" ]]; then
     BUILD_BRANCH=$COMMIT_ID
 fi
 
+ARCH_BUILD_ARG=""
+if [[ "${ARCH_TAG}" != "" ]]; then
+    DOCKER_TAG=${ARCH_TAG}-${DOCKER_TAG}
+    ARCH_BUILD_ARG="--build-arg ARCH=${ARCH_TAG}"
+fi
+
 # Start the build
 echo "Building docker image: $DOCKER_REPO_NAME:$DOCKER_TAG"
 echo "--------------------------------------------------------"
 echo
 cmd="docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG --build-arg BRANCH=$BUILD_BRANCH
+    $ARCH_BUILD_ARG
     -f $DOCKERFILE ."
 
 echo ${cmd}
