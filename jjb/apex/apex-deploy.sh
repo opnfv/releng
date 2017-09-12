@@ -49,11 +49,10 @@ if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
   # TODO(trozet) add verification here
 
   # Install dev build
-  mkdir -p ~/tmp
-  rm -rf ~/tmp/.build
-  mv -f .build ~/tmp/
+  sudo rm -rf /tmp/.build
+  mv -f .build /tmp/
   sudo pip3 install --upgrade --force-reinstall .
-  mv -f ~/tmp/.build .
+  mv -f /tmp/.build ${WORKSPACE}/
 else
   DEPLOY_SETTINGS_DIR="/etc/opnfv-apex/"
   NETWORK_SETTINGS_DIR="/etc/opnfv-apex/"
