@@ -74,11 +74,13 @@ else
     tiers=(healthcheck smoke features vnf)
 fi
 
+cmd_opt="prepare_env start && run_tests -r -t all"
+
 for tier in ${tiers[@]}; do
     FUNCTEST_IMAGE=opnfv/functest-${tier}
     echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
     docker pull ${FUNCTEST_IMAGE}>/dev/null
-    cmd="docker run ${envs} ${volumes} ${FUNCTEST_IMAGE}"
+    cmd="docker run -it ${envs} ${volumes} ${FUNCTEST_IMAGE} /bin/bash -c ${cmd_opt}"
     echo "Running Functest tier '${tier}'. CMD: ${cmd}"
     ${cmd}
 done
