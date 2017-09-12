@@ -20,6 +20,9 @@
             cedric.ollivier@orange.com feng.xiaowei@zte.com.cn
             yaohelan@huawei.com helanyao@gmail.com
             juha.kosonen@nokia.com
+    storperf-receivers: &storperf-receivers
+        receivers: >
+            mark.beierl@emc.com
     other-receivers: &other-receivers
         receivers: ''
 
@@ -62,28 +65,33 @@
         - 'storperf-master':
             project: 'storperf'
             dockerdir: 'docker/storperf-master'
+            arch_tag: 'x86_64'
             <<: *master
-            <<: *other-receivers
+            <<: *storperf-receivers
         - 'storperf-graphite':
             project: 'storperf'
             dockerdir: 'docker/storperf-graphite'
+            arch_tag: 'x86_64'
             <<: *master
-            <<: *other-receivers
+            <<: *storperf-receivers
         - 'storperf-httpfrontend':
             project: 'storperf'
             dockerdir: 'docker/storperf-httpfrontend'
+            arch_tag: 'x86_64'
             <<: *master
-            <<: *other-receivers
+            <<: *storperf-receivers
         - 'storperf-reporting':
             project: 'storperf'
             dockerdir: 'docker/storperf-reporting'
+            arch_tag: 'x86_64'
             <<: *master
-            <<: *other-receivers
+            <<: *storperf-receivers
         - 'storperf-swaggerui':
             project: 'storperf'
             dockerdir: 'docker/storperf-swaggerui'
+            arch_tag: 'x86_64'
             <<: *master
-            <<: *other-receivers
+            <<: *storperf-receivers
         - 'yardstick':
             project: 'yardstick'
             <<: *master
@@ -170,6 +178,10 @@
             name: DOCKERFILE
             default: "{dockerfile}"
             description: "Dockerfile to use for creating the image."
+        - string:
+            name: ARCH_TAG
+            default: ""
+            description: "Set if wanted in image tag instead of repo"
 
     scm:
         - git-scm
