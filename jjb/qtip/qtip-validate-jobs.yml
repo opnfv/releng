@@ -1,3 +1,4 @@
+---
 #######################
 # validate after MERGE
 #######################
@@ -5,33 +6,33 @@
     name: qtip
     project: qtip
 
-#--------------------------------
-# BRANCH ANCHORS
-#--------------------------------
+    # -------------------------------
+    # BRANCH ANCHORS
+    # -------------------------------
     master: &master
-        stream: master
-        branch: '{stream}'
-        gs-pathname: ''
-        docker-tag: latest
+      stream: master
+      branch: '{stream}'
+      gs-pathname: ''
+      docker-tag: latest
 
-#--------------------------------
-# JOB VARIABLES
-#--------------------------------
+    # -------------------------------
+    # JOB VARIABLES
+    # -------------------------------
     qpi:
-        - compute:
-            installer: apex
-            pod: zte-pod4
-            <<: *master
-        - storage:
-            installer: apex
-            pod: zte-pod4
-            <<: *master
+      - compute:
+          installer: apex
+          pod: zte-pod4
+          <<: *master
+      - storage:
+          installer: apex
+          pod: zte-pod4
+          <<: *master
 
-#--------------------------------
-# JOB LIST
-#--------------------------------
+    # -------------------------------
+    # JOB LIST
+    # -------------------------------
     jobs:
-        - 'qtip-{qpi}-{installer}-{stream}'
+      - 'qtip-{qpi}-{installer}-{stream}'
 
 ################################
 # job templates
@@ -40,66 +41,69 @@
     name: 'qtip-{qpi}-{installer}-{stream}'
     disabled: false
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - '{installer}-defaults'
-        - '{pod}-defaults'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: generic
-        - string:
-            name: DOCKER_TAG
-            default: '{docker-tag}'
-            description: 'Tag to pull docker image'
-        - string:
-            name: CI_DEBUG
-            default: 'false'
-            description: "Show debug output information"
-        - string:
-            name: TEST_SUITE
-            default: '{qpi}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - '{pod}-defaults'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: generic
+      - string:
+          name: DOCKER_TAG
+          default: '{docker-tag}'
+          description: 'Tag to pull docker image'
+      - string:
+          name: CI_DEBUG
+          default: 'false'
+          description: "Show debug output information"
+      - string:
+          name: TEST_SUITE
+          default: '{qpi}'
     scm:
-        - git-scm
+      - git-scm
+
     triggers:
-        - 'qtip-daily'
+      - 'qtip-daily'
+
     builders:
-        - description-setter:
-            description: "POD: $NODE_NAME"
-        - shell: |
-            #!/bin/bash
-            source tests/ci/periodic.sh
+      - description-setter:
+          description: "POD: $NODE_NAME"
+      - shell: |
+          #!/bin/bash
+          source tests/ci/periodic.sh
+
     publishers:
-        - qtip-common-publishers
-        - email-jenkins-admins-on-failure
+      - qtip-common-publishers
+      - email-jenkins-admins-on-failure
 
 ################
 # MARCOS
 ################
 
-#---------
+# --------
 # builder
-#---------
+# --------
 
-#-----------
+# ----------
 # parameter
-#-----------
+# ----------
 
-#-----------
+# ----------
 # publisher
-#-----------
+# ----------
 
 - publisher:
     name: qtip-common-publishers
     publishers:
-        - email:
-            recipients: wu.zhihui1@zte.com.cn, zhang.yujunz@zte.com.cn
+      - email:
+          recipients: wu.zhihui1@zte.com.cn, zhang.yujunz@zte.com.cn
 
-#---------
+# --------
 # trigger
-#---------
+# --------
 
 - trigger:
     name: 'qtip-daily'
     triggers:
-        - timed: '0 15 * * *'
+      - timed: '0 15 * * *'
