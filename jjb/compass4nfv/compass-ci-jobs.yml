@@ -13,6 +13,13 @@
         ppa-pathname: '/{stream}'
         disabled: false
         openstack-version: ocata
+    euphrates: &euphrates
+        stream: euphrates
+        branch: 'stable/{stream}'
+        disabled: true
+        gs-pathname: '/{stream}'
+        ppa-pathname: '/{stream}'
+        openstack-version: ocata
     danube: &danube
         stream: danube
         branch: 'stable/{stream}'
@@ -37,11 +44,11 @@
         - baremetal:
             slave-label: compass-baremetal-branch
             os-version: 'xenial'
-            <<: *danube
+            <<: *euphrates
         - virtual:
             slave-label: compass-virtual-branch
             os-version: 'xenial'
-            <<: *danube
+            <<: *euphrates
 #--------------------------------
 #        master
 #--------------------------------
@@ -49,6 +56,13 @@
             slave-label: 'intel-pod8'
             os-version: 'centos7'
             <<: *master
+#--------------------------------
+#       danube for dovetail
+#--------------------------------
+        - huawei-pod7:
+            slave-label: 'huawei-pod7'
+            os-version: 'xenial'
+            <<: *danube
 
     scenario:
         - 'os-nosdn-nofeature-ha':
@@ -333,7 +347,7 @@
                     !include-raw-escape: ./compass-deploy.sh
         - conditional-step:
             condition-kind: regex-match
-            regex: danube
+            regex: euphrates
             label: '{stream}'
             steps:
                 - shell:
@@ -451,6 +465,85 @@
     triggers:
         - timed: ''
 
+#---------------------------
+# ha-huawei-pod7-danube
+#---------------------------
+- trigger:
+    name: 'compass-os-nosdn-nofeature-ha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: '0 19 * * *'
+- trigger:
+    name: 'compass-os-nosdn-openo-ha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l2-nofeature-ha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l3-nofeature-ha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: '0 15 * * *'
+- trigger:
+    name: 'compass-os-onos-nofeature-ha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-ocl-nofeature-ha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-onos-sfc-ha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l2-moon-ha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-nosdn-kvm-ha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-nosdn-dpdk-ha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl-sfc-ha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-k8-nosdn-nofeature-ha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: ''
+
+#-----------------------------
+# noha-huawei-pod7-danube
+#-----------------------------
+- trigger:
+    name: 'compass-os-nosdn-nofeature-noha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l3-nofeature-noha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl_l2-moon-noha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-nosdn-kvm-noha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl-sfc-noha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-nosdn-dpdk-noha-huawei-pod7-danube-trigger'
+    triggers:
+        - timed: ''
 #--------------------
 # ha-baremetal-master
 #--------------------
@@ -532,82 +625,82 @@
         - timed: ''
 
 #--------------------
-# ha-baremetal-danube
+# ha-baremetal-euphrates
 #--------------------
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-baremetal-danube-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-baremetal-euphrates-trigger'
     triggers:
-        - timed: '0 9 * * *'
+        - timed: '' #'0 9 * * *'
 - trigger:
-    name: 'compass-os-nosdn-openo-ha-baremetal-danube-trigger'
+    name: 'compass-os-nosdn-openo-ha-baremetal-euphrates-trigger'
     triggers:
-        - timed: '0 13 * * *'
+        - timed: '' #'0 13 * * *'
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-baremetal-danube-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-baremetal-euphrates-trigger'
     triggers:
-        - timed: '0 17 * * *'
+        - timed: '' #'0 17 * * *'
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-baremetal-danube-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-baremetal-euphrates-trigger'
     triggers:
-        - timed: '0 21 * * *'
+        - timed: '' #'0 21 * * *'
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-baremetal-danube-trigger'
+    name: 'compass-os-onos-nofeature-ha-baremetal-euphrates-trigger'
     triggers:
-        - timed: '0 1 * * *'
+        - timed: '' #'0 1 * * *'
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-baremetal-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'compass-os-onos-sfc-ha-baremetal-danube-trigger'
-    triggers:
-        - timed: '0 5 * * *'
-- trigger:
-    name: 'compass-os-odl_l2-moon-ha-baremetal-danube-trigger'
+    name: 'compass-os-ocl-nofeature-ha-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-nosdn-kvm-ha-baremetal-danube-trigger'
+    name: 'compass-os-onos-sfc-ha-baremetal-euphrates-trigger'
+    triggers:
+        - timed: '' #'0 5 * * *'
+- trigger:
+    name: 'compass-os-odl_l2-moon-ha-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-nosdn-dpdk-ha-baremetal-danube-trigger'
+    name: 'compass-os-nosdn-kvm-ha-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-k8-nosdn-nofeature-ha-baremetal-danube-trigger'
+    name: 'compass-os-nosdn-dpdk-ha-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-odl-sfc-ha-baremetal-danube-trigger'
+    name: 'compass-k8-nosdn-nofeature-ha-baremetal-euphrates-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-os-odl-sfc-ha-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 
 #----------------------
-# noha-baremetal-danube
+# noha-baremetal-euphrates
 #----------------------
 - trigger:
-    name: 'compass-os-nosdn-kvm-noha-baremetal-danube-trigger'
+    name: 'compass-os-nosdn-kvm-noha-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-nosdn-nofeature-noha-baremetal-danube-trigger'
+    name: 'compass-os-nosdn-nofeature-noha-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-noha-baremetal-danube-trigger'
+    name: 'compass-os-odl_l3-nofeature-noha-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-odl_l2-moon-noha-baremetal-danube-trigger'
+    name: 'compass-os-odl_l2-moon-noha-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-odl-sfc-noha-baremetal-danube-trigger'
+    name: 'compass-os-odl-sfc-noha-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-nosdn-dpdk-noha-baremetal-danube-trigger'
+    name: 'compass-os-nosdn-dpdk-noha-baremetal-euphrates-trigger'
     triggers:
         - timed: ''
 
@@ -692,81 +785,81 @@
         - timed: '0 11 * * *'
 
 #------------------
-# ha-virtual-danube
+# ha-virtual-euphrates
 #------------------
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-virtual-danube-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-virtual-euphrates-trigger'
     triggers:
-        - timed: '0 21 * * *'
+        - timed: '' #'0 21 * * *'
 - trigger:
-    name: 'compass-os-nosdn-openo-ha-virtual-danube-trigger'
+    name: 'compass-os-nosdn-openo-ha-virtual-euphrates-trigger'
     triggers:
-        - timed: '0 22 * * *'
+        - timed: '' #'0 22 * * *'
 - trigger:
-    name: 'compass-os-odl_l2-nofeature-ha-virtual-danube-trigger'
+    name: 'compass-os-odl_l2-nofeature-ha-virtual-euphrates-trigger'
     triggers:
-        - timed: '0 20 * * *'
+        - timed: '' #'0 20 * * *'
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-virtual-danube-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-virtual-euphrates-trigger'
     triggers:
-        - timed: '0 19 * * *'
+        - timed: '' #'0 19 * * *'
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-virtual-danube-trigger'
+    name: 'compass-os-onos-nofeature-ha-virtual-euphrates-trigger'
     triggers:
-        - timed: '0 18 * * *'
+        - timed: '' #'0 18 * * *'
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-virtual-danube-trigger'
-    triggers:
-        - timed: ''
-- trigger:
-    name: 'compass-os-onos-sfc-ha-virtual-danube-trigger'
-    triggers:
-        - timed: '0 15 * * *'
-- trigger:
-    name: 'compass-os-odl_l2-moon-ha-virtual-danube-trigger'
-    triggers:
-        - timed: '0 14 * * *'
-- trigger:
-    name: 'compass-os-nosdn-kvm-ha-virtual-danube-trigger'
+    name: 'compass-os-ocl-nofeature-ha-virtual-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-nosdn-dpdk-ha-virtual-danube-trigger'
+    name: 'compass-os-onos-sfc-ha-virtual-euphrates-trigger'
+    triggers:
+        - timed: '' #'0 15 * * *'
+- trigger:
+    name: 'compass-os-odl_l2-moon-ha-virtual-euphrates-trigger'
+    triggers:
+        - timed: '' #'0 14 * * *'
+- trigger:
+    name: 'compass-os-nosdn-kvm-ha-virtual-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-odl-sfc-ha-virtual-danube-trigger'
+    name: 'compass-os-nosdn-dpdk-ha-virtual-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-k8-nosdn-nofeature-ha-virtual-danube-trigger'
+    name: 'compass-os-odl-sfc-ha-virtual-euphrates-trigger'
+    triggers:
+        - timed: ''
+- trigger:
+    name: 'compass-k8-nosdn-nofeature-ha-virtual-euphrates-trigger'
     triggers:
         - timed: ''
 
 #--------------------
-# noha-virtual-danube
+# noha-virtual-euphrates
 #--------------------
 - trigger:
-    name: 'compass-os-nosdn-kvm-noha-virtual-danube-trigger'
+    name: 'compass-os-nosdn-kvm-noha-virtual-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-nosdn-nofeature-noha-virtual-danube-trigger'
+    name: 'compass-os-nosdn-nofeature-noha-virtual-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-noha-virtual-danube-trigger'
+    name: 'compass-os-odl_l3-nofeature-noha-virtual-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-odl_l2-moon-noha-virtual-danube-trigger'
+    name: 'compass-os-odl_l2-moon-noha-virtual-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-odl-sfc-noha-virtual-danube-trigger'
+    name: 'compass-os-odl-sfc-noha-virtual-euphrates-trigger'
     triggers:
         - timed: ''
 - trigger:
-    name: 'compass-os-nosdn-dpdk-noha-virtual-danube-trigger'
+    name: 'compass-os-nosdn-dpdk-noha-virtual-euphrates-trigger'
     triggers:
         - timed: ''
