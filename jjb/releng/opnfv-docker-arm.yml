@@ -23,6 +23,11 @@
             cristina.pauna@enea.com
             alexandru.avadanii@enea.com
             alexandru.nemes@enea.com
+    storperf-arm-receivers: &storperf-arm-receivers
+        receivers: >
+            cristina.pauna@enea.com
+            alexandru.avadanii@enea.com
+            mark.beierl@emc.com
     yardstick-arm-receivers: &yardstick-arm-receivers
         receivers: >
             cristina.pauna@enea.com
@@ -32,7 +37,7 @@
     other-receivers: &other-receivers
         receivers: ''
 
-    project:
+    dockerrepo:
         # projects with jobs for master
         - 'functest':
             <<: *master
@@ -40,6 +45,46 @@
         - 'dovetail':
             <<: *master
             <<: *dovetail-arm-receivers
+        - 'storperf-master':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-master'
+            dockerfile: 'dockerfile'
+            docker_repo_name: 'opnfv/storperf-master'
+            arch_tag: 'aarch64'
+            <<: *master
+            <<: *storperf-arm-receivers
+        - 'storperf-graphite':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-graphite'
+            dockerfile: 'dockerfile'
+            docker_repo_name: 'opnfv/storperf-graphite'
+            arch_tag: 'aarch64'
+            <<: *master
+            <<: *storperf-arm-receivers
+        - 'storperf-httpfrontend':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-httpfrontend'
+            dockerfile: 'dockerfile'
+            docker_repo_name: 'opnfv/storperf-httpfrontend'
+            arch_tag: 'aarch64'
+            <<: *master
+            <<: *storperf-arm-receivers
+        - 'storperf-reporting':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-reporting'
+            dockerfile: 'dockerfile'
+            docker_repo_name: 'opnfv/storperf-reporting'
+            arch_tag: 'aarch64'
+            <<: *master
+            <<: *storperf-arm-receivers
+        - 'storperf-swaggerui':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-swaggerui'
+            dockerfile: 'dockerfile'
+            docker_repo_name: 'opnfv/storperf-swaggerui'
+            arch_tag: 'aarch64'
+            <<: *master
+            <<: *storperf-arm-receivers
         - 'yardstick':
             <<: *master
             <<: *yardstick-arm-receivers
@@ -52,7 +97,7 @@
 # job templates
 ########################
 - job-template:
-    name: '{project}-docker-build-arm-push-{stream}'
+    name: '{dockerrepo}-docker-build-arm-push-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -81,6 +126,10 @@
             name: DOCKERFILE
             default: "Dockerfile.aarch64"
             description: "Dockerfile to use for creating the image."
+        - string:
+            name: ARCH_TAG
+            default: ""
+            description: "Set if wanted in image tag instead of repo"
 
     scm:
         - git-scm
