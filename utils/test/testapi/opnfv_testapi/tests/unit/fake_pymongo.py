@@ -6,6 +6,8 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+import re
+
 from operator import itemgetter
 
 from bson.objectid import ObjectId
@@ -190,8 +192,13 @@ class MemDb(object):
                 elif k == 'trust_indicator.current':
                     if content.get('trust_indicator').get('current') != v:
                         return False
-                elif not isinstance(v, dict) and content.get(k, None) != v:
-                    return False
+                elif not isinstance(v, dict):
+                    if isinstance(v, re._pattern_type):
+                        if v.match(content.get(k, None)) is None:
+                            return False
+                    else:
+                        if content.get(k, None) != v:
+                            return False
         return True
 
     def _find(self, *args):
@@ -199,7 +206,6 @@ class MemDb(object):
         for content in self.contents:
             if self._in(content, *args):
                 res.append(content)
-
         return res
 
     def find(self, *args):

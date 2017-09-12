@@ -21,6 +21,8 @@ class TestPodBase(base.TestBase):
         self.req_d = pod_models.PodCreateRequest('zte-1', 'virtual',
                                                  'zte pod 1', 'ci-pod')
         self.req_e = pod_models.PodCreateRequest('zte-2', 'metal', 'zte pod 2')
+        self.req_f = pod_models.PodCreateRequest('Zte-1', 'virtual',
+                                                 'zte pod 1', 'ci-pod')
         self.get_res = pod_models.Pod
         self.list_res = pod_models.Pods
         self.basePath = '/api/v1/pods'
@@ -56,6 +58,11 @@ class TestPodCreate(TestPodBase):
     @executor.create(httplib.FORBIDDEN, message.exist_base)
     def test_alreadyExist(self):
         self.create_d()
+        return self.req_d
+
+    @executor.create(httplib.FORBIDDEN, message.exist_base)
+    def test_alreadyExistCaseInsensitive(self):
+        self.create(self.req_f)
         return self.req_d
 
 
