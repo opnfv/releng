@@ -126,6 +126,7 @@
     builders:
       - 'bottlenecks-env-cleanup'
       - 'bottlenecks-run-suite'
+      - 'bottlenecks-workspace-cleanup'
 
     publishers:
       - email:
@@ -146,6 +147,18 @@
     builders:
       - shell:
           !include-raw: ./bottlenecks-run-suite.sh
+
+- builder:
+    name: bottlenecks-workspace-cleanup
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -o errexit
+            set -o nounset
+            set -o pipefail
+
+            # delete everything that is in $WORKSPACE
+            /bin/rm -rf $WORKSPACE
 
 ####################
 # parameter macros
