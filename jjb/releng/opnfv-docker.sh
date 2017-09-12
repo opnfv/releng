@@ -54,21 +54,27 @@ if [[ -n "$(docker images | grep $DOCKER_REPO_NAME)" ]]; then
     done
 fi
 
-cd $WORKSPACE/$DOCKER_DIR
-HOST_ARCH=$(uname -m)
-if [ ! -f "${DOCKERFILE}" ]; then
-    # If this is expected to be a Dockerfile for other arch than x86
-    # and it does not exist, but there is a patch for the said arch,
-    # then apply the patch and create the Dockerfile.${HOST_ARCH} file
-    if [[ "${DOCKERFILE}" == *"${HOST_ARCH}" && \
-          -f "Dockerfile.${HOST_ARCH}.patch" ]]; then
-        patch -o Dockerfile."${HOST_ARCH}" Dockerfile \
-        Dockerfile."${HOST_ARCH}".patch
-    else
-        echo "ERROR: No Dockerfile or ${HOST_ARCH} patch found."
-        exit 1
+DOCKER_LOC=("$WORKSPACE/$DOCKER_DIR" "$WORKSPACE/$DOCKER_DIR/core" "$WORKSPACE/$DOCKER_DIR/features" \
+"$WORKSPACE/$DOCKER_DIR/components" "$WORKSPACE/$DOCKER_DIR/healthcheck" "$WORKSPACE/$DOCKER_DIR/smoke" \
+"$WORKSPACE/$DOCKER_DIR/vnf" "$WORKSPACE/$DOCKER_DIR/parser")
+HOST_ARCH="$(ssh -l ubuntu ${SALT_MASTER_IP} -i ${SSH_KEY} -o UserKnownHostsFile=/dev/null -o \
+    StrictHostKeyChecking=no "sudo salt 'cmp*' grains.get cpuarch --out yaml |awk '{print \$2; exit}'")"
+for path in "${DOCKER_LOC[@]}"; do
+        cd "$path"
+        if [ ! -f "${DOCKERFILE}" ]; then
+        # If this is expected to be a Dockerfile for other arch than x86
+        # and it does not exist, but there is a patch for the said arch,
+        # then apply the patch and create the Dockerfile.${HOST_ARCH} file
+        if [[ "${DOCKERFILE}" == *"${HOST_ARCH}" && \
+              -f "Dockerfile.${HOST_ARCH}.patch" ]]; then
+            patch -o Dockerfile."${HOST_ARCH}" Dockerfile \
+            Dockerfile."${HOST_ARCH}".patch
+        else
+            echo "ERROR: No Dockerfile or ${HOST_ARCH} patch found."
+            exit 1
+        fi
     fi
-fi
+done
 
 # Get tag version
 echo "Current branch: $BRANCH"
