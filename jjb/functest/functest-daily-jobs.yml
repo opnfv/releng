@@ -192,6 +192,8 @@
             job-timeout: 60
         - 'daily':
             job-timeout: 240
+        - 'arm-daily':
+            job-timeout: 240
 
     jobs:
         - 'functest-{installer}-{pod}-{testsuite}-{stream}'
@@ -299,12 +301,21 @@
             default: 'daily'
             description: "Daily suite name to run"
 - parameter:
+    name: functest-arm-daily-parameter
+    parameters:
+        - string:
+            name: FUNCTEST_SUITE_NAME
+            default: 'arm-daily'
+            description: "Daily suite name (Aarch64) to run"
+- parameter:
     name: functest-suite-parameter
     parameters:
         - choice:
             name: FUNCTEST_SUITE_NAME
             choices:
-                - 'healthcheck'
+                - 'connection_check'
+                - 'api_check'
+                - 'snaps_health_check'
                 - 'vping_userdata'
                 - 'vping_ssh'
                 - 'tempest_smoke_serial'
@@ -312,16 +323,19 @@
                 - 'odl'
                 - 'odl_netvirt'
                 - 'onos'
+                - 'snaps_smoke'
+                - 'refstack_defcore'
                 - 'promise'
                 - 'doctor'
                 - 'bgpvpn'
+                - 'parser'
                 - 'security_scan'
                 - 'tempest_full_parallel'
                 - 'rally_full'
-                - 'vims'
-                - 'multisite'
-                - 'parser'
-                - 'opera_vims'
+                - 'cloudify_ims'
+                - 'cloudify_vrouter'
+                - 'orchestra_openims'
+                - 'orchestra_clearwaterims'
         - string:
             name: TESTCASE_OPTIONS
             default: ''
@@ -369,6 +383,15 @@
         - 'functest-store-results'
 
 - builder:
+    name: functest-arm-daily-builder
+    builders:
+        - 'functest-cleanup'
+        - 'set-functest-env'
+        - 'functest-arm-daily'
+        - 'functest-store-results'
+        - 'functest-exit'
+
+- builder:
     name: functest-suite-builder
     builders:
         - 'functest-cleanup'
@@ -380,12 +403,10 @@
 - builder:
     name: functest-alpine-daily-builder
     builders:
-        - shell:
-            !include-raw:
-                - ./functest-env-presetup.sh
-                - ../../utils/fetch_os_creds.sh
-                - ./functest-alpine.sh
-                - ../../utils/push-test-logs.sh
+        - 'functest-cleanup'
+        - 'set-functest-env-alpine'
+        - 'functest-daily'
+        - 'functest-store-results'
 
 - builder:
     name: functest-daily
@@ -393,6 +414,11 @@
         - shell:
             !include-raw: ./functest-alpine.sh
 
+- builder:
+    name: functest-arm-daily
+    builders:
+        - shell:
+            !include-raw: ./functest-loop.sh
 
 - builder:
     name: functest-suite
