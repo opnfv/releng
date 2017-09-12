@@ -31,7 +31,7 @@ BUILD_DIRECTORY=${WORKSPACE}/build
 pushd ${BUILD_DIRECTORY}
 make clean
 popd
-export PYTHONPATH=${WORKSPACE}:${PYTHONPATH}
+export PYTHONPATH=${WORKSPACE}
 python3 apex/build.py $BUILD_ARGS
 RPM_VERSION=$(grep Version: $WORKSPACE/build/rpm_specs/opnfv-apex.spec | awk '{ print $2 }')-$(echo $OPNFV_ARTIFACT_VERSION | tr -d '_-')
 # list the contents of BUILD_OUTPUT directory
