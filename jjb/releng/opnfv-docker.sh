@@ -18,7 +18,7 @@ echo "--------------------------------------------------------"
 echo
 
 count=30 # docker build jobs might take up to ~30 min
-while [[ -n `ps -ef|grep 'docker build'|grep -v grep` ]]; do
+while [ -n `ps -ef|grep 'docker build'|grep -v grep` ]; do
     echo "Build in progress. Waiting..."
     sleep 60
     count=$(( $count - 1 ))
@@ -29,12 +29,12 @@ while [[ -n `ps -ef|grep 'docker build'|grep -v grep` ]]; do
 done
 
 # Remove previous running containers if exist
-if [[ -n "$(docker ps -a | grep $DOCKER_REPO_NAME)" ]]; then
+if [ -n "$(docker ps -a | grep $DOCKER_REPO_NAME)" ]; then
     echo "Removing existing $DOCKER_REPO_NAME containers..."
     docker ps -a | grep $DOCKER_REPO_NAME | awk '{print $1}' | xargs docker rm -f
     t=60
     # Wait max 60 sec for containers to be removed
-    while [[ $t -gt 0 ]] && [[ -n "$(docker ps| grep $DOCKER_REPO_NAME)" ]]; do
+    while [ $t -gt 0 ] && [ -n "$(docker ps| grep $DOCKER_REPO_NAME)" ]; do
         sleep 1
         let t=t-1
     done
@@ -42,12 +42,12 @@ fi
 
 
 # Remove existing images if exist
-if [[ -n "$(docker images | grep $DOCKER_REPO_NAME)" ]]; then
+if [ -n "$(docker images | grep $DOCKER_REPO_NAME)" ]; then
     echo "Docker images to remove:"
     docker images | head -1 && docker images | grep $DOCKER_REPO_NAME
     image_ids=($(docker images | grep $DOCKER_REPO_NAME | awk '{print $3}'))
     for id in "${image_ids[@]}"; do
-        if [[ -n "$(docker images|grep $DOCKER_REPO_NAME|grep $id)" ]]; then
+        if [ -n "$(docker images|grep $DOCKER_REPO_NAME|grep $id)" ]; then
             echo "Removing docker image $DOCKER_REPO_NAME:$id..."
             docker rmi -f $id
         fi
@@ -60,8 +60,8 @@ if [ ! -f "${DOCKERFILE}" ]; then
     # If this is expected to be a Dockerfile for other arch than x86
     # and it does not exist, but there is a patch for the said arch,
     # then apply the patch and create the Dockerfile.${HOST_ARCH} file
-    if [[ "${DOCKERFILE}" == *"${HOST_ARCH}" && \
-          -f "Dockerfile.${HOST_ARCH}.patch" ]]; then
+    if [ "${DOCKERFILE}" == *"${HOST_ARCH}" && \
+          -f "Dockerfile.${HOST_ARCH}.patch" ]; then
         patch -o Dockerfile."${HOST_ARCH}" Dockerfile \
         Dockerfile."${HOST_ARCH}".patch
     else
@@ -75,18 +75,24 @@ echo "Current branch: $BRANCH"
 
 BUILD_BRANCH=$BRANCH
 
-if [[ "$BRANCH" == "master" ]]; then
+if [ "$BRANCH" == "master" ]; then
     DOCKER_TAG="latest"
-elif [[ -n "${RELEASE_VERSION-}" ]]; then
+elif [ -n "${RELEASE_VERSION-}" ]; then
     DOCKER_TAG=${BRANCH##*/}.${RELEASE_VERSION}
     # e.g. danube.1.0, danube.2.0, danube.3.0
 else
     DOCKER_TAG="stable"
 fi
 
-if [[ -n "${COMMIT_ID-}" && -n "${RELEASE_VERSION-}" ]]; then
+if [ -n "${COMMIT_ID-}" && -n "${RELEASE_VERSION-}" ]; then
     DOCKER_TAG=$RELEASE_VERSION
     BUILD_BRANCH=$COMMIT_ID
+fi
+
+ARCH_BUILD_ARG=""
+if [ -n "${ARCH_TAG}" ]; then
+    DOCKER_TAG=${ARCH_TAG}-${DOCKER_TAG}
+    ARCH_BUILD_ARG="--build-arg ARCH=${ARCH_TAG}"
 fi
 
 # Start the build
@@ -94,6 +100,7 @@ echo "Building docker image: $DOCKER_REPO_NAME:$DOCKER_TAG"
 echo "--------------------------------------------------------"
 echo
 cmd="docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG --build-arg BRANCH=$BUILD_BRANCH
+    $ARCH_BUILD_ARG
     -f $DOCKERFILE ."
 
 echo ${cmd}
@@ -105,7 +112,7 @@ echo "Available images are:"
 docker images
 
 # Push image to Dockerhub
-if [[ "$PUSH_IMAGE" == "true" ]]; then
+if [ "$PUSH_IMAGE" == "true" ]; then
     echo "Pushing $DOCKER_REPO_NAME:$DOCKER_TAG to the docker registry..."
     echo "--------------------------------------------------------"
     echo
