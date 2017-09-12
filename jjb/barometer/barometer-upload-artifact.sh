@@ -15,7 +15,7 @@ echo "Checking if all the Barometer RPMs were created"
 echo "-----------------------------------------------"
 echo
 
-if [ -d $RPM_DIR]
+if [ -d $RPM_DIR ]
 then
     ls $RPM_DIR > list_of_gen_pack
 else
