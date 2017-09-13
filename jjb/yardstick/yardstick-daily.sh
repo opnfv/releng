@@ -48,8 +48,12 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
     -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO}"
 
 # Pull the image with correct tag
-echo "Yardstick: Pulling image opnfv/yardstick:${DOCKER_TAG}"
-docker pull opnfv/yardstick:$DOCKER_TAG >$redirect
+DOCKER_REPO='opnfv/yardstick'
+if [ "$(uname -m)" = 'aarch64' ]; then
+    DOCKER_REPO="${DOCKER_REPO}_$(uname -m)"
+fi
+echo "Yardstick: Pulling image ${DOCKER_REPO}:${DOCKER_TAG}"
+docker pull ${DOCKER_REPO}:$DOCKER_TAG >$redirect
 
 # map log directory
 branch=${BRANCH##*/}
@@ -61,9 +65,9 @@ map_log_dir="-v ${dir_result}:/tmp/yardstick"
 # Run docker
 if [[ ${INSTALLER_TYPE} == "joid" && "${DEPLOY_SCENARIO:0:2}" == "k8" ]];then
     juju ssh kubernetes-master/0 sudo apt-get install -y docker.io
-    cmd="juju ssh kubernetes-master/0 sudo docker run ${opts} ${envs} ${rc_file_vol} ${cacert_file_vol} ${map_log_dir} ${sshkey} opnfv/yardstick:${DOCKER_TAG} exec_tests.sh ${YARDSTICK_DB_BACKEND} ${YARDSTICK_SCENARIO_SUITE_NAME}"
+    cmd="juju ssh kubernetes-master/0 sudo docker run ${opts} ${envs} ${rc_file_vol} ${cacert_file_vol} ${map_log_dir} ${sshkey} ${DOCKER_REPO}:${DOCKER_TAG} exec_tests.sh ${YARDSTICK_DB_BACKEND} ${YARDSTICK_SCENARIO_SUITE_NAME}"
 else
-    cmd="sudo docker run ${opts} ${envs} ${rc_file_vol} ${cacert_file_vol} ${map_log_dir} ${sshkey} opnfv/yardstick:${DOCKER_TAG} \
+    cmd="sudo docker run ${opts} ${envs} ${rc_file_vol} ${cacert_file_vol} ${map_log_dir} ${sshkey} ${DOCKER_REPO}:${DOCKER_TAG} \
     exec_tests.sh ${YARDSTICK_DB_BACKEND} ${YARDSTICK_SCENARIO_SUITE_NAME}"
 fi
 
