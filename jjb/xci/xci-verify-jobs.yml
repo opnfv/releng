@@ -212,6 +212,12 @@
         - shell: |
             #!/bin/bash
 
+            # skip the deployment if the patch doesn't impact the deployment
+            if [[ "$GERRIT_TOPIC" =~ 'skip-verify' ]]; then
+                echo "Skipping the deployment!"
+                exit 0
+            fi
+
             # for some reason, the PATH is not set correctly
             # setting PATH for ansible stuff
             export PATH=/home/jenkins/.local/bin:$PATH
@@ -225,6 +231,12 @@
     builders:
         - shell: |
             #!/bin/bash
+
+            # skip the healthcheck if the patch doesn't impact the deployment
+            if [[ "$GERRIT_TOPIC" =~ 'skip-verify' ]]; then
+                echo "Skipping the healthcheck!"
+                exit 0
+            fi
 
             echo "Hello World!"
 
