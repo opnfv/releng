@@ -6,16 +6,20 @@ set +o pipefail
 
 [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 FUNCTEST_DIR=/home/opnfv/functest
+DEPLOY_TYPE=baremetal
+[[ $BUILD_TAG =~ "virtual" ]] && DEPLOY_TYPE=virt
+HOST_ARCH=$(uname -m)
 
 # Prepare OpenStack credentials volume
+rc_file=${HOME}/opnfv-openrc.sh
+
 if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     rc_file=$LAB_CONFIG/admin-openrc
 elif [[ ${INSTALLER_TYPE} == 'compass' && ${BRANCH} == 'master' ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:${FUNCTEST_DIR}/conf/os_cacert"
     echo "export OS_CACERT=${FUNCTEST_DIR}/conf/os_cacert" >> ${HOME}/opnfv-openrc.sh
-    rc_file=${HOME}/opnfv-openrc.sh
-else
-    rc_file=${HOME}/opnfv-openrc.sh
+elif [[ ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_TYPE} == 'baremetal' ]]; then
+    cacert_file_vol="-v ${HOME}/os_cacert:/etc/ssl/certs/mcp_os_cacert"
 fi
 rc_file_vol="-v ${rc_file}:${FUNCTEST_DIR}/conf/openstack.creds"
 
@@ -24,10 +28,6 @@ rc_file_vol="-v ${rc_file}:${FUNCTEST_DIR}/conf/openstack.creds"
 if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FORWARD | awk 'NR==3' | grep RETURN 2> ${redirect}; then
     sudo iptables -I FORWARD -j RETURN
 fi
-
-DEPLOY_TYPE=baremetal
-[[ $BUILD_TAG =~ "virtual" ]] && DEPLOY_TYPE=virt
-HOST_ARCH=$(uname -m)
 
 echo "Functest: Start Docker and prepare environment"
 
