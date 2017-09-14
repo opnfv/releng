@@ -104,6 +104,9 @@ if [[ $SUITE_NAME == *posca* ]]; then
 
     deactivate
 
+    sudo rm -rf ${RELENG_REPO}/modules/venv
+    sudo rm -rf ${RELENG_REPO}/modules/opnfv.egg-info
+
     set -e
 
     cd ${WORKSPACE}
