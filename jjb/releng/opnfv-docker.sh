@@ -90,6 +90,7 @@ if [[ -n "${COMMIT_ID-}" && -n "${RELEASE_VERSION-}" ]]; then
 fi
 
 ARCH_BUILD_ARG=""
+ARCH_TAG=${ARCH_TAG:-}
 if [[ -n "${ARCH_TAG}" ]]; then
     DOCKER_TAG=${ARCH_TAG}-${DOCKER_TAG}
     ARCH_BUILD_ARG="--build-arg ARCH=${ARCH_TAG}"
