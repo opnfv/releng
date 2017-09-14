@@ -80,7 +80,7 @@ for tier in ${tiers[@]}; do
     FUNCTEST_IMAGE=opnfv/functest-${tier}
     echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
     docker pull ${FUNCTEST_IMAGE}>/dev/null
-    cmd="docker run ${envs} ${volumes} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
+    cmd="docker run --privileged=true ${envs} ${volumes} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
     echo "Running Functest tier '${tier}'. CMD: ${cmd}"
     eval ${cmd}
 done
