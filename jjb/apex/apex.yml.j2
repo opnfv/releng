@@ -1084,6 +1084,73 @@
                   abort-all-job: false
                   git-revision: false
 
+# Dovetail Danube test job
+- job-template:
+    name: 'apex-dovetail-daily-os-nosdn-nofeature-ha-baremetal-danube'
+
+    project-type: 'multijob'
+
+    node: 'huawei-pod4'
+
+    disabled: false
+
+    parameters:
+        - '{project}-defaults'
+        - project-parameter:
+            project: '{project}'
+            branch: 'stable/danube'
+        - apex-parameter:
+            gs-pathname: '/danube'
+        - string:
+            name: DEPLOY_SCENARIO
+            default: 'os-nosdn-nofeature-ha'
+            description: "Scenario to deploy with."
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-verify.*'
+                - 'apex-runner.*'
+                - 'apex-.*-promote.*'
+                - 'apex-run.*'
+
+    triggers:
+        - timed: '0 12 * * *'
+
+    builders:
+        - description-setter:
+            description: "Testing on $NODE_NAME - Scenario: $DEPLOY_SCENARIO"
+        - multijob:
+            name: 'Baremetal Deploy'
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-deploy-baremetal-danube'
+                  node-parameters: true
+                  current-parameters: true
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=
+                    DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: false
+        - multijob:
+            name: Dovetail
+            condition: ALWAYS
+            projects:
+                - name: 'dovetail-apex-baremetal-proposed_tests-danube'
+                  node-parameters: true
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                  kill-phase-on: NEVER
+                  abort-all-job: false
+                  git-revision: false
+
 ########################
 # parameter macros
 ########################
