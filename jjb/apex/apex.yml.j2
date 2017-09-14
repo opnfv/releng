@@ -7,8 +7,7 @@
         - 'apex-verify-unit-tests-{stream}'
         - 'apex-runner-cperf-{stream}'
         - 'apex-deploy-{platform}-{stream}'
-        - 'apex-daily-master'
-        - 'apex-daily-danube'
+        - 'apex-daily-{stream}'
         - 'apex-csit-promote-daily-{stream}'
         - 'apex-fdio-promote-daily-{stream}'
         - 'apex-{scenario}-baremetal-{scenario_stream}'
@@ -689,10 +688,8 @@
 #            steps:
 #                - shell: 'echo "Tests Passed"'
 
-{% for stream in scenarios %}
-# {{ stream }} Daily
 - job-template:
-    name: 'apex-daily-{{ stream }}'
+    name: 'apex-daily-{stream}'
 
     # Job template for daily build
     #
@@ -701,7 +698,7 @@
     #     branch:    branch (eg. stable)
     project-type: 'multijob'
 
-    node: '{{ build_slave[stream] }}'
+    node: '{baremetal-slave}'
 
     disabled: false
 
@@ -710,25 +707,25 @@
 
     parameters:
         - '{project}-defaults'
-        - '{project}-baremetal-{{ stream }}-defaults'
+        - '{project}-baremetal-{stream}-defaults'
         - project-parameter:
             project: '{project}'
-            branch: '{{ branch[stream] }}'
+            branch: '{branch}'
         - apex-parameter:
-            gs-pathname: '{{ gspathname[stream] }}'
+            gs-pathname: '{gs-pathname}'
 
     properties:
         - logrotate-default
 
     triggers:
-        - 'apex-{{ stream }}'
+        - 'apex-{stream}'
 
     builders:
         - multijob:
             name: build
             condition: SUCCESSFUL
             projects:
-                - name: 'apex-build-{{ stream }}'
+                - name: 'apex-build-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     GERRIT_BRANCH=$GERRIT_BRANCH
@@ -743,10 +740,10 @@
             name: 'Verify and upload ISO'
             condition: SUCCESSFUL
             projects:
-                - name: 'apex-verify-iso-{{ stream }}'
+                - name: 'apex-verify-iso-{stream}'
                   current-parameters: false
                   predefined-parameters: |
-                    BUILD_DIRECTORY=$WORKSPACE/../apex-build-{{ stream }}/.build
+                    BUILD_DIRECTORY=$WORKSPACE/../apex-build-{stream}/.build
                     GERRIT_BRANCH=$GERRIT_BRANCH
                     GERRIT_REFSPEC=
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
@@ -755,21 +752,7 @@
                   kill-phase-on: FAILURE
                   abort-all-job: true
                   git-revision: true
-        - multijob:
-            name: Baremetal Deploy and Test Phase
-            condition: SUCCESSFUL
-            projects:
-{% for scenario in scenarios[stream] %}
-                - name: 'apex-{{ scenario }}-baremetal-{{ stream }}'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-{% endfor %}
-{% endfor %}
+        - apex-builder-{stream}
 
 # snapshot create
 - job-template:
@@ -1194,6 +1177,27 @@
 ########################
 # builder macros
 ########################
+{% for stream in scenarios %}
+# {{ stream }} Builder
+- builder:
+      name: apex-builder-{{ stream }}
+      builders:
+        - multijob:
+            name: Baremetal Deploy and Test Phase
+            condition: SUCCESSFUL
+            projects:
+{% for scenario in scenarios[stream] %}
+                - name: 'apex-{{ scenario }}-baremetal-{{ stream }}'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+{% endfor %}
+{% endfor %}
+
 - builder:
     name: 'apex-unit-test'
     builders:
