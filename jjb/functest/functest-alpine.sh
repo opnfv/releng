@@ -71,7 +71,7 @@ set +e
 if [ ${FUNCTEST_SUITE_NAME} == 'healthcheck' ]; then
     tiers=(healthcheck)
 else
-    tiers=(healthcheck smoke features vnf)
+    tiers=(healthcheck smoke features vnf parser)
 fi
 
 cmd_opt='prepare_env start && run_tests -r -t all'
