@@ -20,15 +20,14 @@ fi
 # clone the securedlab repo
 cd $WORKSPACE
 BASE_DIR=$(cd ./;pwd)
+SECURELAB_DIR=/var/tmp/opnfv-securedlab
 
-echo "Cloning securedlab repo $BRANCH"
+echo "Cloning securedlab repo $BRANCH to $SECURELAB_DIR"
+rm -rf $SECURELAB_DIR
 git clone ssh://jenkins-zte@gerrit.opnfv.org:29418/securedlab --quiet \
-    --branch $BRANCH
+    --branch $BRANCH $SECURELAB_DIR
 
-# daisy ci/deploy/deploy.sh use $BASE_DIR/labs dir
-cp -r securedlab/labs .
-
-DEPLOY_COMMAND="sudo -E ./ci/deploy/deploy.sh -b $BASE_DIR \
+DEPLOY_COMMAND="sudo -E ./ci/deploy/deploy.sh -b $BASE_DIR -L $SECURELAB_DIR \
                 -l $LAB_NAME -p $POD_NAME -B $BRIDGE -s $DEPLOY_SCENARIO"
 
 # log info to console
