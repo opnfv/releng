@@ -195,7 +195,8 @@
         # here the stream means the SUT stream, dovetail stream is defined in its own job
         # only run on os-(nosdn|odl_l2|onos|odl_l3)-nofeature-ha scenario
         # run against SUT master branch, dovetail docker image with latest tag
-        # run against SUT danube branch, dovetail docker image with latest tag(odd days)and cvp.X.X.X tag(even days)
+        # run against SUT danube branch, dovetail docker image with latest tag(Monday and Sunday)
+        # run against SUT danube branch, dovetail docker image with cvp.X.X.X tag(Tuesday, Thursday, Friday and Saturday)
         - conditional-step:
             condition-kind: and
             condition-operands:
@@ -203,14 +204,12 @@
                   regex: danube
                   label: '{stream}'
                 - condition-kind: regex-match
-                  regex: os-(nosdn|odl_l2|onos|odl_l3)-nofeature-ha
+                  regex: os-(nosdn|odl_l2|odl_l3)-nofeature-ha
                   label: '{scenario}'
                 - condition-kind: day-of-week
                   day-selector: select-days
                   days:
                       MON: true
-                      WED: true
-                      FRI: true
                       SUN: true
                   use-build-time: true
             steps:
@@ -233,13 +232,15 @@
                   regex: danube
                   label: '{stream}'
                 - condition-kind: regex-match
-                  regex: os-(nosdn|odl_l2|onos|odl_l3)-nofeature-ha
+                  regex: os-(nosdn|odl_l2|odl_l3)-nofeature-ha
                   label: '{scenario}'
                 - condition-kind: day-of-week
                   day-selector: select-days
                   days:
                       TUES: true
+                      WED: true
                       THURS: true
+                      FRI: true
                       SAT: true
                   use-build-time: true
             steps:
@@ -258,7 +259,7 @@
             condition-kind: and
             condition-operands:
                 - condition-kind: regex-match
-                  regex: os-(nosdn|odl_l2|onos|odl_l3)-nofeature-ha
+                  regex: os-(nosdn|odl_l2|odl_l3)-nofeature-ha
                   label: '{scenario}'
                 - condition-kind: regex-match
                   regex: master
