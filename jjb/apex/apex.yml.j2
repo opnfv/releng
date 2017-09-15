@@ -1072,6 +1072,37 @@
         - description-setter:
             description: "Testing on $NODE_NAME - Scenario: $DEPLOY_SCENARIO"
         - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-build-danube'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: true
+        - multijob:
+            name: 'Verify and upload ISO'
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-verify-iso-danube'
+                  current-parameters: false
+                  predefined-parameters: |
+                    BUILD_DIRECTORY=$WORKSPACE/../apex-build-danube/.build
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: true
+        - multijob:
             name: 'Baremetal Deploy'
             condition: SUCCESSFUL
             projects:
