@@ -82,7 +82,7 @@
                     branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: ANT
-                    pattern: 'tests/**'
+                    pattern: 'doctor_tests/**'
 
     builders:
         - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
@@ -108,7 +108,7 @@
         - '{auto-trigger-name}':
             project: '{project}'
             branch: '{branch}'
-            files: 'tests/**'
+            files: 'doctor_tests/**'
 
     builders:
         - shell: "[ -e tests/run.sh ] && bash -n ./tests/run.sh"
@@ -174,7 +174,7 @@
         - '{auto-trigger-name}':
             project: '{project}'
             branch: '{branch}'
-            files: 'tests/**'
+            files: 'doctor_tests/**'
 
     builders:
         - 'clean-workspace-log'
@@ -195,11 +195,11 @@
             functest_log="$HOME/opnfv/functest/results/{stream}/$FUNCTEST_SUITE_NAME.log"
             # NOTE: checking the test result, as the previous job could return
             #       0 regardless the result of doctor test scenario.
-            grep -e ' OK$' $functest_log || exit 1
+            grep -e 'doctor test successfully' $functest_log || exit 1
 
     publishers:
         - archive:
-            artifacts: 'tests/*.log'
+            artifacts: 'doctor_tests/*.log'
         - archive:
             artifacts: 'functest_results/$FUNCTEST_SUITE_NAME.log'
         - email-jenkins-admins-on-failure
