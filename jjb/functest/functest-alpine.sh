@@ -71,7 +71,11 @@ set +e
 if [ ${FUNCTEST_SUITE_NAME} == 'healthcheck' ]; then
     tiers=(healthcheck)
 else
-    tiers=(healthcheck smoke features vnf)
+    if [ ${DEPLOY_TYPE} == 'baremetal' ]; then
+        tiers=(healthcheck smoke features vnf)
+    else
+        tiers=(healthcheck smoke features)
+    fi
 fi
 
 cmd_opt='prepare_env start && run_tests -r -t all'
