@@ -30,7 +30,9 @@ if docker images | grep -q opnfv/yardstick; then
     image_ids=($(docker images | awk '/opnfv[/]yardstick/ {print $3}'))
     for id in "${image_ids[@]}"; do
         echo "Removing docker image id $id..."
-        docker rmi "${id}" >${redirect}
+        if ! docker rmi "${id}" >${redirect} ; then
+            echo "Some kind of docker remove failure, ignoring"
+        fi
     done
 fi
 
