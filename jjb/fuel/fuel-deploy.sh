@@ -72,11 +72,13 @@ chmod a+x "${HOME}" "${TMPDIR}"
 cd "${WORKSPACE}" || exit 1
 if [[ "${LAB_CONFIG_URL}" =~ ^(git|ssh):// ]]; then
     echo "Cloning securedlab repo ${BRANCH}"
-    git clone --quiet --branch "${BRANCH}" "${LAB_CONFIG_URL}" lab-config
-    LAB_CONFIG_URL=file://${WORKSPACE}/lab-config
+    LOCAL_CFG="${TMPDIR}/securedlab"
+    rm -rf "${LOCAL_CFG}"
+    git clone --quiet --branch "${BRANCH}" "${LAB_CONFIG_URL}" "${LOCAL_CFG}"
+    LAB_CONFIG_URL="file://${LOCAL_CFG}"
 
     # Source local_env if present, which contains POD-specific config
-    local_env="${WORKSPACE}/lab-config/labs/${LAB_NAME}/${POD_NAME}/fuel/config/local_env"
+    local_env="${LOCAL_CFG}/labs/${LAB_NAME}/${POD_NAME}/fuel/config/local_env"
     if [ -e "${local_env}" ]; then
         echo "-- Sourcing local environment file"
         source "${local_env}"
