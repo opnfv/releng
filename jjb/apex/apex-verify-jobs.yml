@@ -1,0 +1,371 @@
+- project:
+    name: 'apex-verify-jobs'
+    project: 'apex'
+    jobs:
+        - 'apex-verify-{stream}'
+        - 'apex-verify-gate-{stream}'
+        - 'apex-verify-unit-tests-{stream}'
+    # stream:    branch with - in place of / (eg. stable-arno)
+    # branch:    branch (eg. stable/arno)
+    stream:
+        - master: &master
+            branch: 'master'
+            gs-pathname: ''
+            verify-scenario: 'os-odl-nofeature-ha'
+
+        - danube: &danube
+            branch: 'stable/danube'
+            gs-pathname: '/danube'
+            verify-scenario: 'os-odl_l3-nofeature-ha'
+            disabled: true
+
+# Unit Test
+- job-template:
+    name: 'apex-verify-unit-tests-{stream}'
+
+    node: 'apex-build-{stream}'
+
+    concurrent: true
+
+    parameters:
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}'
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'true'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'apex'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                disable-strict-forbidden-file-verification: 'false'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'apex/tests/**'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: '*'
+                  - compare-type: ANT
+                    pattern: 'apex/*'
+                  - compare-type: ANT
+                    pattern: 'build/**'
+                  - compare-type: ANT
+                    pattern: 'lib/**'
+                  - compare-type: ANT
+                    pattern: 'config/**'
+                  - compare-type: ANT
+                    pattern: 'apex/build/**'
+                  - compare-type: ANT
+                    pattern: 'apex/common/**'
+                  - compare-type: ANT
+                    pattern: 'apex/inventory/**'
+                  - compare-type: ANT
+                    pattern: 'apex/network/**'
+                  - compare-type: ANT
+                    pattern: 'apex/overcloud/**'
+                  - compare-type: ANT
+                    pattern: 'apex/settings/**'
+                  - compare-type: ANT
+                    pattern: 'apex/undercloud/**'
+                  - compare-type: ANT
+                    pattern: 'apex/virtual/**'
+    properties:
+        - logrotate-default
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - 'apex-unit-test'
+
+# Verify
+- job-template:
+    name: 'apex-verify-{stream}'
+
+    node: 'apex-virtual-{stream}'
+
+    concurrent: true
+
+    project-type: 'multijob'
+
+    parameters:
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}/dev'
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - string:
+            name: ARTIFACT_VERSION
+            default: dev
+            description: "Used for overriding the ARTIFACT_VERSION"
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: 'false'
+                    exclude-trivial-rebase: 'false'
+                    exclude-no-code-change: 'true'
+                - draft-published-event
+                - comment-added-contains-event:
+                    comment-contains-value: 'recheck'
+                - comment-added-contains-event:
+                    comment-contains-value: 'reverify'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'apex'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                disable-strict-forbidden-file-verification: 'true'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: '*'
+                  - compare-type: ANT
+                    pattern: 'apex/*'
+                  - compare-type: ANT
+                    pattern: 'build/**'
+                  - compare-type: ANT
+                    pattern: 'lib/**'
+                  - compare-type: ANT
+                    pattern: 'config/**'
+                  - compare-type: ANT
+                    pattern: 'apex/build/**'
+                  - compare-type: ANT
+                    pattern: 'apex/common/**'
+                  - compare-type: ANT
+                    pattern: 'apex/inventory/**'
+                  - compare-type: ANT
+                    pattern: 'apex/network/**'
+                  - compare-type: ANT
+                    pattern: 'apex/overcloud/**'
+                  - compare-type: ANT
+                    pattern: 'apex/settings/**'
+                  - compare-type: ANT
+                    pattern: 'apex/undercloud/**'
+                  - compare-type: ANT
+                    pattern: 'apex/virtual/**'
+                forbidden-file-paths:
+                  - compare-type: ANT
+                    pattern: 'apex/tests/**'
+                  - compare-type: ANT
+                    pattern: 'docs/**'
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-verify.*'
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - multijob:
+            name: basic
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-verify-unit-tests-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: true
+        - multijob:
+            name: build
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-build-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    ARTIFACT_VERSION=$ARTIFACT_VERSION
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: false
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: true
+        - multijob:
+            name: deploy-virtual
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-deploy-virtual-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    ARTIFACT_VERSION=$ARTIFACT_VERSION
+                    DEPLOY_SCENARIO={verify-scenario}
+                    OPNFV_CLEAN=yes
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: true
+        - multijob:
+            name: functest-smoke
+            condition: SUCCESSFUL
+            projects:
+              - name: 'functest-apex-virtual-suite-{stream}'
+                current-parameters: false
+                predefined-parameters: |
+                  DEPLOY_SCENARIO={verify-scenario}
+                  FUNCTEST_SUITE_NAME=healthcheck
+                  GERRIT_BRANCH=$GERRIT_BRANCH
+                  GERRIT_REFSPEC=$GERRIT_REFSPEC
+                  GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                node-parameters: true
+                kill-phase-on: NEVER
+                abort-all-job: true
+                git-revision: false
+
+# Verify Scenario Gate
+- job-template:
+    name: 'apex-verify-gate-{stream}'
+
+    node: 'apex-virtual-{stream}'
+
+    concurrent: true
+
+    project-type: 'multijob'
+
+    parameters:
+        - apex-parameter:
+            gs-pathname: '{gs-pathname}/dev'
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - string:
+            name: GIT_BASE
+            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+            description: "Used for overriding the GIT URL coming from parameters macro."
+        - string:
+            name: ARTIFACT_VERSION
+            default: dev
+            description: "Used for overriding the ARTIFACT_VERSION"
+
+    scm:
+        - git-scm-gerrit
+
+    triggers:
+        - gerrit:
+            server-name: 'gerrit.opnfv.org'
+            trigger-on:
+                - comment-added-contains-event:
+                    comment-contains-value: '^Patch Set [0-9]+: Code-Review\+2.*start-gate-scenario:.*'
+            projects:
+              - project-compare-type: 'ANT'
+                project-pattern: 'apex'
+                branches:
+                  - branch-compare-type: 'ANT'
+                    branch-pattern: '**/{branch}'
+                file-paths:
+                  - compare-type: ANT
+                    pattern: 'ci/**'
+                  - compare-type: ANT
+                    pattern: 'build/**'
+                  - compare-type: ANT
+                    pattern: 'lib/**'
+                  - compare-type: ANT
+                    pattern: 'config/**'
+                  - compare-type: ANT
+                    pattern: 'apex/**'
+
+    properties:
+        - logrotate-default
+        - build-blocker:
+            use-build-blocker: true
+            block-level: 'NODE'
+            blocking-jobs:
+                - 'apex-verify.*'
+        - throttle:
+            max-per-node: 1
+            max-total: 10
+            option: 'project'
+
+    builders:
+        - multijob:
+            name: deploy-virtual
+            condition: SUCCESSFUL
+            projects:
+                - name: 'apex-deploy-virtual-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    ARTIFACT_VERSION=$ARTIFACT_VERSION
+                    DEPLOY_SCENARIO=gate
+                    OPNFV_CLEAN=yes
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                    GERRIT_EVENT_COMMENT_TEXT=$GERRIT_EVENT_COMMENT_TEXT
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+                  git-revision: true
+        - shell: |
+            echo DEPLOY_SCENARIO=$(echo $GERRIT_EVENT_COMMENT_TEXT | grep start-gate-scenario | grep -Eo 'os-.*') > detected_scenario
+        - inject:
+           properties-file: detected_scenario
+        - multijob:
+            name: functest-smoke
+            condition: SUCCESSFUL
+            projects:
+              - name: 'functest-apex-virtual-suite-{stream}'
+                current-parameters: false
+                predefined-parameters: |
+                  DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                  FUNCTEST_SUITE_NAME=healthcheck
+                  GERRIT_BRANCH=$GERRIT_BRANCH
+                  GERRIT_REFSPEC=$GERRIT_REFSPEC
+                  GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                  GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                node-parameters: true
+                kill-phase-on: NEVER
+                abort-all-job: true
+                git-revision: false
+
+########################
+# builder macros
+########################
+- builder:
+    name: 'apex-unit-test'
+    builders:
+        - shell:
+            !include-raw: ./apex-unit-test.sh
