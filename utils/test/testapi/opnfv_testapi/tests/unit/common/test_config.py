@@ -1,4 +1,5 @@
 import argparse
+import pytest
 
 
 def test_config_normal(mocker, config_normal):
@@ -13,3 +14,11 @@ def test_config_normal(mocker, config_normal):
     assert CONF.api_debug is True
     assert CONF.api_authenticate is False
     assert CONF.ui_url == 'http://localhost:8000'
+
+
+def test_config_file_not_exist(mocker):
+    mocker.patch('os.path.exists', return_value=False)
+    with pytest.raises(Exception) as m_exc:
+        from opnfv_testapi.common import config
+        config.Config()
+    assert 'not found' in str(m_exc.value)
