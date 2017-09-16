@@ -73,7 +73,9 @@ class GenericApiHandler(web.RequestHandler):
         cls_data = self.table_cls.from_dict(data)
         return cls_data.format_http()
 
-    @check.authenticate
+    @web.asynchronous
+    @gen.coroutine
+    @check.valid_token
     @check.no_body
     @check.miss_fields
     @check.carriers_exist
@@ -172,13 +174,15 @@ class GenericApiHandler(web.RequestHandler):
     def _get_one(self, data, query=None):
         self.finish_request(self.format_data(data))
 
-    @check.authenticate
+    @web.asynchronous
+    @gen.coroutine
     @check.not_exist
     def _delete(self, data, query=None):
         yield dbapi.db_delete(self.table, query)
         self.finish_request()
 
-    @check.authenticate
+    @web.asynchronous
+    @gen.coroutine
     @check.no_body
     @check.not_exist
     @check.updated_one_not_exist
@@ -189,7 +193,8 @@ class GenericApiHandler(web.RequestHandler):
         update_req['_id'] = str(data._id)
         self.finish_request(update_req)
 
-    @check.authenticate
+    @web.asynchronous
+    @gen.coroutine
     @check.no_body
     @check.not_exist
     @check.updated_one_not_exist
