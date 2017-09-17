@@ -11,6 +11,7 @@ from datetime import datetime
 from datetime import timedelta
 import httplib
 import json
+import urllib
 import unittest
 
 from opnfv_testapi.common import message
@@ -232,91 +233,91 @@ class TestResultGet(TestResultBase):
 
     @executor.query(httplib.OK, '_query_success', 3)
     def test_queryPod(self):
-        return self._set_query('pod')
+        return self._set_query(pod='')
 
     @executor.query(httplib.OK, '_query_success', 3)
     def test_queryProject(self):
-        return self._set_query('project')
+        return self._set_query(project='')
 
     @executor.query(httplib.OK, '_query_success', 3)
     def test_queryTestcase(self):
-        return self._set_query('case')
+        return self._set_query(case='')
 
     @executor.query(httplib.OK, '_query_success', 3)
     def test_queryVersion(self):
-        return self._set_query('version')
+        return self._set_query(version='')
 
     @executor.query(httplib.OK, '_query_success', 3)
     def test_queryInstaller(self):
-        return self._set_query('installer')
+        return self._set_query(installer='')
 
     @executor.query(httplib.OK, '_query_success', 3)
     def test_queryBuildTag(self):
-        return self._set_query('build_tag')
+        return self._set_query(build_tag='')
 
     @executor.query(httplib.OK, '_query_success', 3)
     def test_queryScenario(self):
-        return self._set_query('scenario')
+        return self._set_query(scenario='')
 
     @executor.query(httplib.OK, '_query_success', 3)
     def test_queryTrustIndicator(self):
-        return self._set_query('trust_indicator')
+        return self._set_query(trust_indicator='')
 
     @executor.query(httplib.OK, '_query_success', 3)
     def test_queryCriteria(self):
-        return self._set_query('criteria')
+        return self._set_query(criteria='')
 
     @executor.query(httplib.BAD_REQUEST, message.must_int('period'))
     def test_queryPeriodNotInt(self):
-        return self._set_query('period=a')
+        return self._set_query(period='a')
 
     @executor.query(httplib.OK, '_query_period_one', 1)
     def test_queryPeriodSuccess(self):
-        return self._set_query('period=5')
+        return self._set_query(period='5')
 
     @executor.query(httplib.BAD_REQUEST, message.must_int('last'))
     def test_queryLastNotInt(self):
-        return self._set_query('last=a')
+        return self._set_query(last='a')
 
     @executor.query(httplib.OK, '_query_last_one', 1)
     def test_queryLast(self):
-        return self._set_query('last=1')
+        return self._set_query(last='1')
 
     @executor.query(httplib.OK, '_query_success', 4)
     def test_queryPublic(self):
         self._create_public_data()
-        return self._set_query('')
+        return self._set_query()
 
     @executor.query(httplib.OK, '_query_success', 1)
     def test_queryPrivate(self):
         self._create_private_data()
-        return self._set_query('public=false')
+        return self._set_query(public='false')
 
     @executor.query(httplib.OK, '_query_period_one', 1)
     def test_combination(self):
-        return self._set_query('pod',
-                               'project',
-                               'case',
-                               'version',
-                               'installer',
-                               'build_tag',
-                               'scenario',
-                               'trust_indicator',
-                               'criteria',
-                               'period=5')
+        return self._set_query(pod='',
+                               project='',
+                               case='',
+                               version='',
+                               installer='',
+                               build_tag='',
+                               scenario='',
+                               trust_indicator='',
+                               criteria='',
+                               period='5')
 
     @executor.query(httplib.OK, '_query_success', 0)
     def test_notFound(self):
-        return self._set_query('pod=notExistPod',
-                               'project',
-                               'case',
-                               'version',
-                               'installer',
-                               'build_tag',
-                               'scenario',
-                               'trust_indicator',
-                               'criteria',
-                               'period=1')
+        return self._set_query(pod='notExistPod',
+                               project='',
+                               case='',
+                               version='',
+                               installer='',
+                               build_tag='',
+                               scenario='',
+                               trust_indicator='',
+                               criteria='',
+                               period='1')
 
     @executor.query(httplib.OK, '_query_success', 1)
     def test_filterErrorStartdate(self):
@@ -324,7 +325,7 @@ class TestResultGet(TestResultBase):
         self._create_error_start_date('None')
         self._create_error_start_date('null')
         self._create_error_start_date('')
-        return self._set_query('period=5')
+        return self._set_query(period='5')
 
     def _query_success(self, body, number):
         self.assertEqual(number, len(body.results))
@@ -363,18 +364,16 @@ class TestResultGet(TestResultBase):
         self.create(req)
         return req
 
-    def _set_query(self, *args):
+    def _set_query(self, **kwargs):
         def get_value(arg):
             return self.__getattribute__(arg) \
                 if arg != 'trust_indicator' else self.trust_indicator.current
-        uri = ''
-        for arg in args:
-            if arg:
-                if '=' in arg:
-                    uri += arg + '&'
-                else:
-                    uri += '{}={}&'.format(arg, get_value(arg))
-        return uri[0: -1]
+        query = []
+        for arg in kwargs:
+            if (kwargs[arg] == ''):
+                kwargs[arg] = get_value(arg)
+            query.append((arg, kwargs[arg]))
+        return urllib.urlencode(query)
 
 
 class TestResultUpdate(TestResultBase):
@@ -405,3 +404,4 @@ class TestResultUpdate(TestResultBase):
 
 if __name__ == '__main__':
     unittest.main()
+
