@@ -10,8 +10,6 @@ echo "Starting the Apex deployment."
 echo "--------------------------------------------------------"
 echo
 
-sudo rm -rf /tmp/tmp*
-
 if [ -z "$DEPLOY_SCENARIO" ]; then
   echo "Deploy scenario not set!"
   exit 1
