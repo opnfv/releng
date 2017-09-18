@@ -19,6 +19,12 @@
         branch: '{stream}'
         disabled: false
         gs-pathname: ''
+    euphrates: &euphrates
+        stream: euphrates
+        branch: 'stable/{stream}'
+        gs-pathname: '/{stream}'
+        disabled: false
+
 #--------------------------------
 # POD, INSTALLER, AND BRANCH MAPPING
 #--------------------------------
@@ -210,3 +216,30 @@
     name: 'daisy-os-odl-nofeature-ha-virtual-daily-master-trigger'
     triggers:
         - timed: '0 12 * * *'
+
+#-----------------------------------------------
+# Triggers for job running on daisy-baremetal against euphrates branch
+#-----------------------------------------------
+# Basic HA Scenarios
+- trigger:
+    name: 'daisy-os-nosdn-nofeature-ha-baremetal-daily-euphrates-trigger'
+    triggers:
+        - timed: '0 0 * * *'
+# ODL Scenarios
+- trigger:
+    name: 'daisy-os-odl-nofeature-ha-baremetal-daily-euphrates-trigger'
+    triggers:
+        - timed: '0 20 * * *'
+#-----------------------------------------------
+# Triggers for job running on daisy-virtual against euphrates branch
+#-----------------------------------------------
+# Basic HA Scenarios
+- trigger:
+    name: 'daisy-os-nosdn-nofeature-ha-virtual-daily-euphrates-trigger'
+    triggers:
+        - timed: '0 0 * * *'
+# ODL Scenarios
+- trigger:
+    name: 'daisy-os-odl-nofeature-ha-virtual-daily-euphrates-trigger'
+    triggers:
+        - timed: '0 20 * * *'
