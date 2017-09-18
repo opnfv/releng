@@ -39,8 +39,11 @@ else
   VERSION_EXTENSION=$(echo $(basename $RPM_LIST) | grep -Eo '[0-9]+\.[0-9]+-([0-9]{8}|[a-z]+-[0-9]\.[0-9]+)')
   # build RPM List which already includes base Apex RPM
   RPM_LIST+=" opnfv-apex-undercloud-${VERSION_EXTENSION}.noarch.rpm"
-  RPM_LIST+=" python34-opnfv-apex-${VERSION_EXTENSION}.noarch.rpm"
-
+  if [ "$BRANCH" == 'danube' ]; then
+    RPM_LIST+=" opnfv-apex-common-${VERSION_EXTENSION}.noarch.rpm"
+  else
+    RPM_LIST+=" python34-opnfv-apex-${VERSION_EXTENSION}.noarch.rpm"
+  fi
   # remove old / install new RPMs
   if rpm -q opnfv-apex > /dev/null; then
     INSTALLED_RPMS=$(rpm -qa | grep apex)
