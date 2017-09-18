@@ -27,7 +27,14 @@
             baremetal-slave: 'apex-baremetal-master'
             verify-scenario: 'os-odl-nofeature-ha'
             scenario_stream: 'master'
-
+        - euphrates: &euphrates
+            branch: 'stable/euphrates'
+            gs-pathname: ''
+            build-slave: 'apex-build-euphrates'
+            virtual-slave: 'apex-virtual-euphrates'
+            baremetal-slave: 'apex-baremetal-euphrates'
+            verify-scenario: 'os-odl-nofeature-ha'
+            scenario_stream: 'euphrates'
         - danube: &danube
             branch: 'stable/danube'
             gs-pathname: '/danube'
@@ -1227,6 +1234,10 @@
 ########################
 - trigger:
     name: 'apex-master'
+    triggers:
+        - timed: '0 3 1 1 7'
+- trigger:
+    name: 'apex-euphrates'
     triggers:
         - timed: '0 12 * * *'
 - trigger:

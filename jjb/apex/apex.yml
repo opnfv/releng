@@ -27,7 +27,14 @@
             baremetal-slave: 'apex-baremetal-master'
             verify-scenario: 'os-odl-nofeature-ha'
             scenario_stream: 'master'
-
+        - euphrates: &euphrates
+            branch: 'stable/euphrates'
+            gs-pathname: ''
+            build-slave: 'apex-build-euphrates'
+            virtual-slave: 'apex-virtual-euphrates'
+            baremetal-slave: 'apex-baremetal-euphrates'
+            verify-scenario: 'os-odl-nofeature-ha'
+            scenario_stream: 'euphrates'
         - danube: &danube
             branch: 'stable/danube'
             gs-pathname: '/danube'
@@ -133,6 +140,48 @@
               <<: *master
         - 'os-odl-fdio-dvr-ha':
               <<: *master
+        - 'os-nosdn-nofeature-noha':
+              <<: *euphrates
+        - 'os-nosdn-nofeature-ha':
+              <<: *euphrates
+        - 'os-odl-nofeature-ha':
+              <<: *euphrates
+        - 'os-odl-nofeature-noha':
+              <<: *euphrates
+        - 'os-odl-bgpvpn-ha':
+              <<: *euphrates
+        - 'os-ovn-nofeature-noha':
+              <<: *euphrates
+        - 'os-nosdn-fdio-noha':
+              <<: *euphrates
+        - 'os-nosdn-fdio-ha':
+              <<: *euphrates
+        - 'os-odl-fdio-noha':
+              <<: *euphrates
+        - 'os-odl-fdio-ha':
+              <<: *euphrates
+        - 'os-nosdn-bar-ha':
+              <<: *euphrates
+        - 'os-nosdn-bar-noha':
+              <<: *euphrates
+        - 'os-nosdn-nofeature-ha-ipv6':
+              <<: *euphrates
+        - 'os-nosdn-ovs_dpdk-noha':
+              <<: *euphrates
+        - 'os-nosdn-ovs_dpdk-ha':
+              <<: *euphrates
+        - 'os-nosdn-kvm_ovs_dpdk-noha':
+              <<: *euphrates
+        - 'os-nosdn-kvm_ovs_dpdk-ha':
+              <<: *euphrates
+        - 'os-odl-sfc-noha':
+              <<: *euphrates
+        - 'os-odl-sfc-ha':
+              <<: *euphrates
+        - 'os-odl-fdio-dvr-noha':
+              <<: *euphrates
+        - 'os-odl-fdio-dvr-ha':
+              <<: *euphrates
 
     platform:
          - 'baremetal'
@@ -1709,6 +1758,205 @@
                   git-revision: false
 
 
+# euphrates Builder
+- builder:
+      name: apex-builder-euphrates
+      builders:
+        - multijob:
+            name: Baremetal Deploy and Test Phase
+            condition: SUCCESSFUL
+            projects:
+
+                - name: 'apex-os-nosdn-nofeature-noha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-nofeature-ha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-nofeature-ha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-nofeature-noha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-bgpvpn-ha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-ovn-nofeature-noha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-fdio-noha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-fdio-ha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-fdio-noha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-fdio-ha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-bar-ha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-bar-noha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-nofeature-ha-ipv6-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-ovs_dpdk-noha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-ovs_dpdk-ha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-kvm_ovs_dpdk-noha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-kvm_ovs_dpdk-ha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-sfc-noha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-sfc-ha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-fdio-dvr-noha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-fdio-dvr-ha-baremetal-euphrates'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+
 
 - builder:
     name: 'apex-unit-test'
@@ -1739,6 +1987,10 @@
 ########################
 - trigger:
     name: 'apex-master'
+    triggers:
+        - timed: '0 3 1 1 7'
+- trigger:
+    name: 'apex-euphrates'
     triggers:
         - timed: '0 12 * * *'
 - trigger:
