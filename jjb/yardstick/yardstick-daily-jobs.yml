@@ -14,8 +14,8 @@
         branch: '{stream}'
         gs-pathname: ''
         docker-tag: 'latest'
-    danube: &danube
-        stream: danube
+    euphrates: &euphrates
+        stream: euphrates
         branch: 'stable/{stream}'
         gs-pathname: '{stream}'
         docker-tag: 'stable'
@@ -40,15 +40,15 @@
             auto-trigger-name: 'daily-trigger-disabled'
             <<: *master
         - virtual:
-            slave-label: apex-virtual-danube
+            slave-label: apex-virtual-euphrates
             installer: apex
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
+            <<: *euphrates
         - baremetal:
-            slave-label: apex-baremetal-danube
+            slave-label: apex-baremetal-euphrates
             installer: apex
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
+            <<: *euphrates
 # fuel CI PODs
         - baremetal:
             slave-label: fuel-baremetal
@@ -64,12 +64,12 @@
             slave-label: fuel-baremetal
             installer: fuel
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
+            <<: *euphrates
         - virtual:
             slave-label: fuel-virtual
             installer: fuel
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
+            <<: *euphrates
 # armband CI PODs
         - armband-baremetal:
             slave-label: armband-baremetal
@@ -85,12 +85,12 @@
             slave-label: armband-baremetal
             installer: fuel
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
+            <<: *euphrates
         - armband-virtual:
             slave-label: armband-virtual
             installer: fuel
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
+            <<: *euphrates
 # joid CI PODs
         - baremetal:
             slave-label: joid-baremetal
@@ -106,12 +106,12 @@
             slave-label: joid-baremetal
             installer: joid
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
+            <<: *euphrates
         - virtual:
             slave-label: joid-virtual
             installer: joid
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
+            <<: *euphrates
 # compass CI PODs
         - baremetal:
             slave-label: compass-baremetal
@@ -127,12 +127,12 @@
             slave-label: compass-baremetal
             installer: compass
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
+            <<: *euphrates
         - virtual:
             slave-label: compass-virtual
             installer: compass
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
+            <<: *euphrates
 #--------------------------------
 #        None-CI PODs
 #--------------------------------
@@ -150,7 +150,7 @@
             slave-label: '{pod}'
             installer: fuel
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
+            <<: *euphrates
         - zte-pod2:
             slave-label: '{pod}'
             installer: fuel
@@ -165,7 +165,7 @@
             slave-label: '{pod}'
             installer: fuel
             auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
+            <<: *euphrates
         - orange-pod2:
             slave-label: '{pod}'
             installer: joid
@@ -321,14 +321,14 @@
             default: '-i 104.197.68.199:8086'
             description: 'Arguments to use in order to choose the backend DB'
 - parameter:
-    name: 'yardstick-params-apex-virtual-danube'
+    name: 'yardstick-params-apex-virtual-euphrates'
     parameters:
         - string:
             name: YARDSTICK_DB_BACKEND
             default: '-i 104.197.68.199:8086'
             description: 'Arguments to use in order to choose the backend DB'
 - parameter:
-    name: 'yardstick-params-apex-baremetal-danube'
+    name: 'yardstick-params-apex-baremetal-euphrates'
     parameters:
         - string:
             name: YARDSTICK_DB_BACKEND
