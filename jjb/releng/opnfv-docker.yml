@@ -14,6 +14,10 @@
         stream: danube
         branch: 'stable/{stream}'
         disabled: false
+    euphrates: &euphrates
+        stream: euphrates
+        branch: 'stable/{stream}'
+        disabled: false
     functest-receivers: &functest-receivers
         receivers: >
             jose.lausuch@ericsson.com morgan.richomme@orange.com
@@ -97,7 +101,7 @@
             project: 'yardstick'
             <<: *master
             <<: *other-receivers
-        # projects with jobs for stable
+        # projects with jobs for Danube
         - 'bottlenecks':
             project: 'bottlenecks'
             <<: *danube
@@ -110,14 +114,41 @@
             project: 'qtip'
             <<: *danube
             <<: *other-receivers
-        - 'storperf':
-            project: 'storperf'
-            <<: *danube
-            <<: *other-receivers
         - 'yardstick':
             project: 'yardstick'
             <<: *danube
             <<: *other-receivers
+        # projects with jobs for euphrates
+        - 'storperf-master':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-master'
+            arch_tag: 'x86_64'
+            <<: *euphrates
+            <<: *storperf-receivers
+        - 'storperf-graphite':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-graphite'
+            arch_tag: 'x86_64'
+            <<: *euphrates
+            <<: *storperf-receivers
+        - 'storperf-httpfrontend':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-httpfrontend'
+            arch_tag: 'x86_64'
+            <<: *euphrates
+            <<: *storperf-receivers
+        - 'storperf-reporting':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-reporting'
+            arch_tag: 'x86_64'
+            <<: *euphrates
+            <<: *storperf-receivers
+        - 'storperf-swaggerui':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-swaggerui'
+            arch_tag: 'x86_64'
+            <<: *euphrates
+            <<: *storperf-receivers
 
     jobs:
         - "{dockerrepo}-docker-build-push-{stream}"
