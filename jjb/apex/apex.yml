@@ -7,8 +7,7 @@
         - 'apex-verify-unit-tests-{stream}'
         - 'apex-runner-cperf-{stream}'
         - 'apex-deploy-{platform}-{stream}'
-        - 'apex-daily-master'
-        - 'apex-daily-danube'
+        - 'apex-daily-{stream}'
         - 'apex-csit-promote-daily-{stream}'
         - 'apex-fdio-promote-daily-{stream}'
         - 'apex-{scenario}-baremetal-{scenario_stream}'
@@ -777,10 +776,8 @@
 #            steps:
 #                - shell: 'echo "Tests Passed"'
 
-
-# danube Daily
 - job-template:
-    name: 'apex-daily-danube'
+    name: 'apex-daily-{stream}'
 
     # Job template for daily build
     #
@@ -789,7 +786,7 @@
     #     branch:    branch (eg. stable)
     project-type: 'multijob'
 
-    node: 'apex-baremetal-danube'
+    node: '{baremetal-slave}'
 
     disabled: false
 
@@ -798,25 +795,25 @@
 
     parameters:
         - '{project}-defaults'
-        - '{project}-baremetal-danube-defaults'
+        - '{project}-baremetal-{stream}-defaults'
         - project-parameter:
             project: '{project}'
-            branch: 'stable/danube'
+            branch: '{branch}'
         - apex-parameter:
-            gs-pathname: '/danube'
+            gs-pathname: '{gs-pathname}'
 
     properties:
         - logrotate-default
 
     triggers:
-        - 'apex-danube'
+        - 'apex-{stream}'
 
     builders:
         - multijob:
             name: build
             condition: SUCCESSFUL
             projects:
-                - name: 'apex-build-danube'
+                - name: 'apex-build-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     GERRIT_BRANCH=$GERRIT_BRANCH
@@ -831,10 +828,10 @@
             name: 'Verify and upload ISO'
             condition: SUCCESSFUL
             projects:
-                - name: 'apex-verify-iso-danube'
+                - name: 'apex-verify-iso-{stream}'
                   current-parameters: false
                   predefined-parameters: |
-                    BUILD_DIRECTORY=$WORKSPACE/../apex-build-danube/.build
+                    BUILD_DIRECTORY=$WORKSPACE/../apex-build-{stream}/.build
                     GERRIT_BRANCH=$GERRIT_BRANCH
                     GERRIT_REFSPEC=
                     GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
@@ -843,506 +840,7 @@
                   kill-phase-on: FAILURE
                   abort-all-job: true
                   git-revision: true
-        - multijob:
-            name: Baremetal Deploy and Test Phase
-            condition: SUCCESSFUL
-            projects:
-
-                - name: 'apex-os-nosdn-nofeature-noha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-nofeature-ha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-nofeature-ha-ipv6-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-ovs-noha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-ovs-ha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-fdio-noha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-fdio-ha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-kvm-ha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-kvm-noha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl_l2-fdio-noha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl_l2-fdio-ha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl_netvirt-fdio-noha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl_l2-sfc-noha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl_l3-nofeature-noha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl_l3-nofeature-ha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl_l3-ovs-noha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl_l3-ovs-ha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl-bgpvpn-ha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl-gluon-noha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl_l3-fdio-noha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl_l3-fdio-ha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl_l3-fdio_dvr-noha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl_l3-fdio_dvr-ha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl_l3-csit-noha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-onos-nofeature-ha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-ovn-nofeature-noha-baremetal-danube'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-
-# master Daily
-- job-template:
-    name: 'apex-daily-master'
-
-    # Job template for daily build
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
-    project-type: 'multijob'
-
-    node: 'apex-baremetal-master'
-
-    disabled: false
-
-    scm:
-        - git-scm
-
-    parameters:
-        - '{project}-defaults'
-        - '{project}-baremetal-master-defaults'
-        - project-parameter:
-            project: '{project}'
-            branch: 'master'
-        - apex-parameter:
-            gs-pathname: ''
-
-    properties:
-        - logrotate-default
-
-    triggers:
-        - 'apex-master'
-
-    builders:
-        - multijob:
-            name: build
-            condition: SUCCESSFUL
-            projects:
-                - name: 'apex-build-master'
-                  current-parameters: false
-                  predefined-parameters: |
-                    GERRIT_BRANCH=$GERRIT_BRANCH
-                    GERRIT_REFSPEC=
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-                  git-revision: true
-        - multijob:
-            name: 'Verify and upload ISO'
-            condition: SUCCESSFUL
-            projects:
-                - name: 'apex-verify-iso-master'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BUILD_DIRECTORY=$WORKSPACE/../apex-build-master/.build
-                    GERRIT_BRANCH=$GERRIT_BRANCH
-                    GERRIT_REFSPEC=
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-                  git-revision: true
-        - multijob:
-            name: Baremetal Deploy and Test Phase
-            condition: SUCCESSFUL
-            projects:
-
-                - name: 'apex-os-nosdn-nofeature-noha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-nofeature-ha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl-nofeature-ha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl-nofeature-noha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl-bgpvpn-ha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-ovn-nofeature-noha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-fdio-noha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-fdio-ha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl-fdio-noha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl-fdio-ha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-bar-ha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-bar-noha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-nofeature-ha-ipv6-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-ovs_dpdk-noha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-ovs_dpdk-ha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-kvm_ovs_dpdk-noha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-nosdn-kvm_ovs_dpdk-ha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl-sfc-noha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl-sfc-ha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl-fdio-dvr-noha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-                - name: 'apex-os-odl-fdio-dvr-ha-baremetal-master'
-                  node-parameters: false
-                  current-parameters: false
-                  predefined-parameters: |
-                    OPNFV_CLEAN=yes
-                  kill-phase-on: NEVER
-                  abort-all-job: true
-                  git-revision: false
-
-
+        - apex-builder-{stream}
 
 # snapshot create
 - job-template:
@@ -1767,6 +1265,451 @@
 ########################
 # builder macros
 ########################
+
+# danube Builder
+- builder:
+      name: apex-builder-danube
+      builders:
+        - multijob:
+            name: Baremetal Deploy and Test Phase
+            condition: SUCCESSFUL
+            projects:
+
+                - name: 'apex-os-nosdn-nofeature-noha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-nofeature-ha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-nofeature-ha-ipv6-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-ovs-noha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-ovs-ha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-fdio-noha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-fdio-ha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-kvm-ha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-kvm-noha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl_l2-fdio-noha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl_l2-fdio-ha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl_netvirt-fdio-noha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl_l2-sfc-noha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl_l3-nofeature-noha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl_l3-nofeature-ha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl_l3-ovs-noha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl_l3-ovs-ha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-bgpvpn-ha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-gluon-noha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl_l3-fdio-noha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl_l3-fdio-ha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl_l3-fdio_dvr-noha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl_l3-fdio_dvr-ha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl_l3-csit-noha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-onos-nofeature-ha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-ovn-nofeature-noha-baremetal-danube'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+
+# master Builder
+- builder:
+      name: apex-builder-master
+      builders:
+        - multijob:
+            name: Baremetal Deploy and Test Phase
+            condition: SUCCESSFUL
+            projects:
+
+                - name: 'apex-os-nosdn-nofeature-noha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-nofeature-ha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-nofeature-ha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-nofeature-noha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-bgpvpn-ha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-ovn-nofeature-noha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-fdio-noha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-fdio-ha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-fdio-noha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-fdio-ha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-bar-ha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-bar-noha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-nofeature-ha-ipv6-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-ovs_dpdk-noha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-ovs_dpdk-ha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-kvm_ovs_dpdk-noha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-nosdn-kvm_ovs_dpdk-ha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-sfc-noha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-sfc-ha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-fdio-dvr-noha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+                - name: 'apex-os-odl-fdio-dvr-ha-baremetal-master'
+                  node-parameters: false
+                  current-parameters: false
+                  predefined-parameters: |
+                    OPNFV_CLEAN=yes
+                  kill-phase-on: NEVER
+                  abort-all-job: true
+                  git-revision: false
+
+
+
 - builder:
     name: 'apex-unit-test'
     builders:
