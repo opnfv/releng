@@ -14,8 +14,8 @@
         branch: '{stream}'
         gs-pathname: ''
         docker-tag: 'latest'
-    danube: &danube
-        stream: danube
+    euphrates: &euphrates
+        stream: euphrates
         branch: 'stable/{stream}'
         gs-pathname: '/{stream}'
         docker-tag: 'stable'
@@ -40,11 +40,11 @@
         - baremetal:
             slave-label: fuel-baremetal
             installer: fuel
-            <<: *danube
+            <<: *euphrates
         - virtual:
             slave-label: fuel-virtual
             installer: fuel
-            <<: *danube
+            <<: *euphrates
 # joid CI PODs
         - baremetal:
             slave-label: joid-baremetal
@@ -57,11 +57,11 @@
         - baremetal:
             slave-label: joid-baremetal
             installer: joid
-            <<: *danube
+            <<: *euphrates
         - virtual:
             slave-label: joid-virtual
             installer: joid
-            <<: *danube
+            <<: *euphrates
 # compass CI PODs
         - baremetal:
             slave-label: compass-baremetal
@@ -74,11 +74,11 @@
         - baremetal:
             slave-label: compass-baremetal
             installer: compass
-            <<: *danube
+            <<: *euphrates
         - virtual:
             slave-label: compass-virtual
             installer: compass
-            <<: *danube
+            <<: *euphrates
 # apex CI PODs
         - virtual:
             slave-label: apex-virtual-master
@@ -89,13 +89,13 @@
             installer: apex
             <<: *master
         - virtual:
-            slave-label: apex-virtual-danube
+            slave-label: apex-virtual-euphrates
             installer: apex
-            <<: *danube
+            <<: *euphrates
         - baremetal:
-            slave-label: apex-baremetal-danube
+            slave-label: apex-baremetal-euphrates
             installer: apex
-            <<: *danube
+            <<: *euphrates
 # armband CI PODs
         - armband-baremetal:
             slave-label: armband-baremetal
@@ -108,11 +108,11 @@
         - armband-baremetal:
             slave-label: armband-baremetal
             installer: fuel
-            <<: *danube
+            <<: *euphrates
         - armband-virtual:
             slave-label: armband-virtual
             installer: fuel
-            <<: *danube
+            <<: *euphrates
 # daisy CI PODs
         - baremetal:
             slave-label: daisy-baremetal
@@ -157,7 +157,7 @@
         - zte-pod1:
             slave-label: '{pod}'
             installer: fuel
-            <<: *danube
+            <<: *euphrates
         - zte-pod2:
             slave-label: '{pod}'
             installer: fuel
@@ -169,7 +169,7 @@
         - zte-pod3:
             slave-label: '{pod}'
             installer: fuel
-            <<: *danube
+            <<: *euphrates
 # PODs for verify jobs triggered by each patch upload
 #        - ool-virtual1:
 #            slave-label: '{pod}'
