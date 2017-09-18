@@ -1,5 +1,5 @@
 ########################
-# Job configuration to validate jninja2 files
+# Job configuration to validate jinja2 files
 ########################
 - project:
 
@@ -14,7 +14,7 @@
         - master:
             branch: '{stream}'
             disabled: false
-        - danube:
+        - euphrates:
             branch: 'stable/{stream}'
             disabled: false
 
@@ -65,10 +65,6 @@
                     branch-pattern: '**/{branch}'
                 file-paths:
                   - compare-type: ANT
-                    pattern: 'utils/generate_config.yml'
-                  - compare-type: ANT
-                    pattern: '**/*.jinja2'
-                  - compare-type: ANT
                     pattern: '**/*.yaml'
             skip-vote:
                 successful: true
@@ -82,5 +78,5 @@
 - builder:
     name: check-jinja
     builders:
-        - shell:
-            !include-raw-escape: ./check-jinja2.sh
+        - shell: |
+            $WORKSPACE/check-jinja2.sh
