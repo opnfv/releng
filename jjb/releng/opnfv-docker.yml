@@ -10,8 +10,8 @@
         stream: master
         branch: '{stream}'
         disabled: false
-    danube: &danube
-        stream: danube
+    euphrates: &euphrates
+        stream: euphrates
         branch: 'stable/{stream}'
         disabled: false
     functest-receivers: &functest-receivers
@@ -97,26 +97,68 @@
             project: 'yardstick'
             <<: *master
             <<: *other-receivers
-        # projects with jobs for stable
+        # projects with jobs for euphrates
+        - 'releng-anteater':
+            project: 'releng-anteater'
+            <<: *euphrates
+            <<: *other-receivers
         - 'bottlenecks':
             project: 'bottlenecks'
-            <<: *danube
+            <<: *euphrates
+            <<: *other-receivers
+        - 'cperf':
+            project: 'cperf'
+            <<: *euphrates
+            <<: *other-receivers
+        - 'dovetail':
+            project: 'dovetail'
+            <<: *euphrates
             <<: *other-receivers
         - 'functest':
             project: 'functest'
-            <<: *danube
+            <<: *euphrates
             <<: *functest-receivers
+        - 'nfvbench':
+            project: 'nfvbench'
+            <<: *euphrates
+            <<: *other-receivers
         - 'qtip':
             project: 'qtip'
-            <<: *danube
+            <<: *euphrates
             <<: *other-receivers
-        - 'storperf':
+        - 'storperf-master':
             project: 'storperf'
-            <<: *danube
-            <<: *other-receivers
+            dockerdir: 'docker/storperf-master'
+            arch_tag: 'x86_64'
+            <<: *euphrates
+            <<: *storperf-receivers
+        - 'storperf-graphite':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-graphite'
+            arch_tag: 'x86_64'
+            <<: *euphrates
+            <<: *storperf-receivers
+        - 'storperf-httpfrontend':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-httpfrontend'
+            arch_tag: 'x86_64'
+            <<: *euphrates
+            <<: *storperf-receivers
+        - 'storperf-reporting':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-reporting'
+            arch_tag: 'x86_64'
+            <<: *euphrates
+            <<: *storperf-receivers
+        - 'storperf-swaggerui':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-swaggerui'
+            arch_tag: 'x86_64'
+            <<: *euphrates
+            <<: *storperf-receivers
         - 'yardstick':
             project: 'yardstick'
-            <<: *danube
+            <<: *euphrates
             <<: *other-receivers
 
     jobs:
@@ -139,6 +181,13 @@
         - 'escalator':
             dockerrepo: 'escalator'
             <<: *master
+        # projects with jobs for euphrates
+        - 'daisy':
+            dockerrepo: 'daisy'
+            <<: *euphrates
+        - 'escalator':
+            dockerrepo: 'escalator'
+            <<: *euphrates
 
     jobs:
         - '{project}-docker-build-push-monitor-{stream}'
