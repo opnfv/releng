@@ -112,6 +112,9 @@
             name: SLAVE_LABEL
             default: 'xci-virtual-{distro}'
         - string:
+            name: CLEAN_DIB_IMAGES
+            default: 'true'
+        - string:
             name: GIT_BASE
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: 'Git URL to use on this Jenkins Slave'
@@ -128,6 +131,7 @@
                   predefined-parameters: |
                     DISTRO={distro}
                     DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                    CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
                   node-parameters: true
                   kill-phase-on: FAILURE
                   abort-all-job: true
@@ -140,6 +144,7 @@
                   predefined-parameters: |
                     DISTRO={distro}
                     DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                    CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
                     FUNCTEST_SUITE_NAME=healthcheck
                   node-parameters: true
                   kill-phase-on: NEVER
@@ -178,6 +183,9 @@
         - string:
             name: XCI_FLAVOR
             default: 'mini'
+        - string:
+            name: CLEAN_DIB_IMAGES
+            default: 'true'
         - string:
             name: OPNFV_RELENG_DEV_PATH
             default: $WORKSPACE/
