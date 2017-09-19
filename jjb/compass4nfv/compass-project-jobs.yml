@@ -1,3 +1,4 @@
+---
 - project:
 
     name: compass-project
@@ -9,20 +10,20 @@
     slave-label: 'compass-virtual'
 
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            ppa-pathname: '/{stream}'
-            disabled: false
-        - danube:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
-            ppa-pathname: '/{stream}'
-            disabled: false
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          ppa-pathname: '/{stream}'
+          disabled: false
+      - danube:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          ppa-pathname: '/{stream}'
+          disabled: false
 
     jobs:
-        - '{installer}-build-daily-{stream}'
-        - 'compass-build-ppa-{stream}'
+      - '{installer}-build-daily-{stream}'
+      - 'compass-build-ppa-{stream}'
 
 ########################
 # job templates
@@ -35,36 +36,36 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 1
-            max-per-node: 1
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 1
+          max-per-node: 1
+          option: 'project'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - compass-project-parameter:
-            installer: '{installer}'
-            gs-pathname: '{gs-pathname}'
-            ppa-pathname: '{ppa-pathname}'
-        - 'opnfv-build-ubuntu-defaults'
-        - '{installer}-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - compass-project-parameter:
+          installer: '{installer}'
+          gs-pathname: '{gs-pathname}'
+          ppa-pathname: '{ppa-pathname}'
+      - 'opnfv-build-ubuntu-defaults'
+      - '{installer}-defaults'
 
     scm:
-        - git-scm
+      - git-scm
 
     triggers:
-        - timed: 'H 8 * * *'
+      - timed: 'H 8 * * *'
 
     builders:
-        - shell:
-            !include-raw-escape: ./compass-build.sh
-        - shell:
-            !include-raw-escape: ./compass-upload-artifact.sh
-        - 'clean-workspace'
+      - shell:
+          !include-raw-escape: ./compass-build.sh
+      - shell:
+          !include-raw-escape: ./compass-upload-artifact.sh
+      - 'clean-workspace'
 
 - job-template:
     name: 'compass-build-ppa-{stream}'
@@ -78,30 +79,29 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 1
-            max-per-node: 1
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 1
+          max-per-node: 1
+          option: 'project'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - compass-project-parameter:
-            installer: '{installer}'
-            gs-pathname: '{gs-pathname}'
-            ppa-pathname: '{ppa-pathname}'
-        - '{node}-defaults'
-        - '{installer}-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - compass-project-parameter:
+          installer: '{installer}'
+          gs-pathname: '{gs-pathname}'
+          ppa-pathname: '{ppa-pathname}'
+      - '{node}-defaults'
+      - '{installer}-defaults'
     scm:
-        - git-scm
+      - git-scm
 
     builders:
-        - shell:
-            !include-raw-escape: ./compass-makeppa.sh
-
+      - shell:
+          !include-raw-escape: ./compass-makeppa.sh
 
 
 ########################
@@ -110,22 +110,21 @@
 - parameter:
     name: compass-project-parameter
     parameters:
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-            description: "Directory where the build artifact will be located upon the completion of the build."
-        - string:
-            name: CACHE_DIRECTORY
-            default: "$HOME/opnfv/cache/$PROJECT{gs-pathname}"
-            description: "Directory where the cache to be used during the build is located."
-        - string:
-            name: GS_URL
-            default: '$GS_BASE{gs-pathname}'
-            description: "URL to Google Storage."
-        - string:
-            name: PPA_REPO
-            default: "http://artifacts.opnfv.org/compass4nfv/package{ppa-pathname}"
-        - string:
-            name: PPA_CACHE
-            default: "$WORKSPACE/work/repo/"
-
+      - string:
+          name: BUILD_DIRECTORY
+          default: $WORKSPACE/build_output
+          description: "Directory where the build artifact will be located upon the completion of the build."
+      - string:
+          name: CACHE_DIRECTORY
+          default: "$HOME/opnfv/cache/$PROJECT{gs-pathname}"
+          description: "Directory where the cache to be used during the build is located."
+      - string:
+          name: GS_URL
+          default: '$GS_BASE{gs-pathname}'
+          description: "URL to Google Storage."
+      - string:
+          name: PPA_REPO
+          default: "http://artifacts.opnfv.org/compass4nfv/package{ppa-pathname}"
+      - string:
+          name: PPA_CACHE
+          default: "$WORKSPACE/work/repo/"
