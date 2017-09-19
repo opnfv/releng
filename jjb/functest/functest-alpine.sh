@@ -72,7 +72,7 @@ if [ ${FUNCTEST_SUITE_NAME} == 'healthcheck' ]; then
     tiers=(healthcheck)
 else
     if [ ${DEPLOY_TYPE} == 'baremetal' ]; then
-        tiers=(healthcheck smoke features vnf)
+        tiers=(healthcheck smoke features vnf parser)
     else
         tiers=(healthcheck smoke features)
     fi
