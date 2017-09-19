@@ -14,6 +14,10 @@
         stream: danube
         branch: 'stable/{stream}'
         disabled: false
+    euphrates: &euphrates
+        stream: euphrates
+        branch: 'stable/{stream}'
+        disabled: false
     functest-arm-receivers: &functest-arm-receivers
         receivers: >
             cristina.pauna@enea.com
@@ -96,7 +100,47 @@
             project: 'yardstick'
             <<: *master
             <<: *yardstick-arm-receivers
-        # projects with jobs for stable
+        # projects with jobs for stable/euphrates
+        - 'storperf-master':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-master'
+            dockerfile: 'Dockerfile'
+            docker_repo_name: 'opnfv/storperf-master'
+            arch_tag: 'aarch64'
+            <<: *euphrates
+            <<: *storperf-arm-receivers
+        - 'storperf-graphite':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-graphite'
+            dockerfile: 'Dockerfile'
+            docker_repo_name: 'opnfv/storperf-graphite'
+            arch_tag: 'aarch64'
+            <<: *euphrates
+            <<: *storperf-arm-receivers
+        - 'storperf-httpfrontend':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-httpfrontend'
+            dockerfile: 'Dockerfile'
+            docker_repo_name: 'opnfv/storperf-httpfrontend'
+            arch_tag: 'aarch64'
+            <<: *euphrates
+            <<: *storperf-arm-receivers
+        - 'storperf-reporting':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-reporting'
+            dockerfile: 'Dockerfile'
+            docker_repo_name: 'opnfv/storperf-reporting'
+            arch_tag: 'aarch64'
+            <<: *euphrates
+            <<: *storperf-arm-receivers
+        - 'storperf-swaggerui':
+            project: 'storperf'
+            dockerdir: 'docker/storperf-swaggerui'
+            dockerfile: 'Dockerfile'
+            docker_repo_name: 'opnfv/storperf-swaggerui'
+            arch_tag: 'aarch64'
+            <<: *euphrates
+            <<: *storperf-arm-receivers
 
     jobs:
         - '{dockerrepo}-docker-build-arm-push-{stream}'
