@@ -86,6 +86,8 @@ else
 fi
 
 cmd_opt='prepare_env start && run_tests -r -t all'
+ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
+echo 0 > ${ret_val_file}
 
 for tier in ${tiers[@]}; do
     FUNCTEST_IMAGE=opnfv/functest-${tier}
@@ -94,4 +96,8 @@ for tier in ${tiers[@]}; do
     cmd="docker run --privileged=true ${envs} ${volumes} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
     echo "Running Functest tier '${tier}'. CMD: ${cmd}"
     eval ${cmd}
+    ret_value=$?
+    if [ ${ret_value} != 0 ]; then
+      echo ${ret_value} > ${ret_val_file}
+    fi
 done
