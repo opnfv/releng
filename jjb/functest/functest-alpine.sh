@@ -54,21 +54,14 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
     -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
     -e BUILD_TAG=${BUILD_TAG} -e DEPLOY_TYPE=${DEPLOY_TYPE}"
 
-ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-
 if [[ ${INSTALLER_TYPE} == 'compass' && ${DEPLOY_SCENARIO} == *'os-nosdn-openo-ha'* ]]; then
+    ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
     openo_msb_port=${openo_msb_port:-80}
     openo_msb_endpoint="$(sshpass -p'root' ssh 2>/dev/null $ssh_options root@${installer_ip} \
     'mysql -ucompass -pcompass -Dcompass -e "select package_config from cluster;" \
     | sed s/,/\\n/g | grep openo_ip | cut -d \" -f 4'):$openo_msb_port"
 
     envs=${env}" -e OPENO_MSB_ENDPOINT=${openo_msb_endpoint}"
-fi
-
-if [ "${INSTALLER_TYPE}" == 'fuel' ] && [ "$BRANCH" != 'stable/danube' ]; then
-    COMPUTE_ARCH=$(ssh -l ubuntu ${INSTALLER_IP} -i ${SSH_KEY} ${ssh_options} \
-        "sudo salt 'cmp*' grains.get cpuarch --out yaml | awk '{print \$2; exit}'")
-    envs="${envs} -e POD_ARCH=${COMPUTE_ARCH}"
 fi
 
 volumes="${images_vol} ${results_vol} ${sshkey_vol} ${rc_file_vol} ${cacert_file_vol}"
@@ -79,13 +72,15 @@ if [ ${FUNCTEST_SUITE_NAME} == 'healthcheck' ]; then
     tiers=(healthcheck)
 else
     if [ ${DEPLOY_TYPE} == 'baremetal' ]; then
-        tiers=(healthcheck smoke features vnf parser)
+        tiers=(healthcheck smoke features vnf)
     else
         tiers=(healthcheck smoke features)
     fi
 fi
 
 cmd_opt='prepare_env start && run_tests -r -t all'
+ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
+echo 0 > ${ret_val_file}
 
 for tier in ${tiers[@]}; do
     FUNCTEST_IMAGE=opnfv/functest-${tier}
@@ -94,4 +89,8 @@ for tier in ${tiers[@]}; do
     cmd="docker run --privileged=true ${envs} ${volumes} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
     echo "Running Functest tier '${tier}'. CMD: ${cmd}"
     eval ${cmd}
+    ret_value=$?
+    if [ ${ret_value} != 0 ]; then
+      echo ${ret_value} > ${ret_val_file}
+    fi
 done
