@@ -20,10 +20,9 @@
         disabled: false
     functest-receivers: &functest-receivers
         receivers: >
-            jose.lausuch@ericsson.com morgan.richomme@orange.com
+            jalausuch@suse.com morgan.richomme@orange.com
             cedric.ollivier@orange.com feng.xiaowei@zte.com.cn
-            yaohelan@huawei.com helanyao@gmail.com
-            juha.kosonen@nokia.com
+            juha.kosonen@nokia.com wangwulin@huawei.com
     storperf-receivers: &storperf-receivers
         receivers: >
             mark.beierl@emc.com
@@ -106,10 +105,6 @@
             project: 'bottlenecks'
             <<: *danube
             <<: *other-receivers
-        - 'functest':
-            project: 'functest'
-            <<: *danube
-            <<: *functest-receivers
         - 'qtip':
             project: 'qtip'
             <<: *euphrates
@@ -119,6 +114,10 @@
             <<: *danube
             <<: *other-receivers
         # projects with jobs for euphrates
+        - 'functest':
+            project: 'functest'
+            <<: *euphrates
+            <<: *functest-receivers
         - 'storperf-master':
             project: 'storperf'
             dockerdir: 'docker/storperf-master'
