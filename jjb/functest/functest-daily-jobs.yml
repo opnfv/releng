@@ -14,7 +14,7 @@
         branch: '{stream}'
         gs-pathname: ''
         docker-tag: 'latest'
-    euphrates: &euphrates
+    danube: &euphrates
         stream: euphrates
         branch: 'stable/{stream}'
         gs-pathname: '/{stream}'
@@ -89,11 +89,11 @@
             installer: apex
             <<: *master
         - virtual:
-            slave-label: apex-virtual-euphrates
+            slave-label: apex-virtual-danube
             installer: apex
             <<: *euphrates
         - baremetal:
-            slave-label: apex-baremetal-euphrates
+            slave-label: apex-baremetal-danube
             installer: apex
             <<: *euphrates
 # armband CI PODs
@@ -380,6 +380,7 @@
         - 'functest-cleanup'
         - 'functest-daily'
         - 'functest-store-results'
+        - 'functest-exit'
 
 - builder:
     name: functest-arm-daily-builder
