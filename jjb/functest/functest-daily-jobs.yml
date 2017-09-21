@@ -297,19 +297,26 @@
     name: functest-daily-parameter
     parameters:
         - string:
-            name: FUNCTEST_SUITE_NAME
+            name: FUNCTEST_MODE
             default: 'daily'
             description: "Daily suite name to run"
 - parameter:
     name: functest-arm-daily-parameter
     parameters:
         - string:
-            name: FUNCTEST_SUITE_NAME
+            name: FUNCTEST_MODE
             default: 'arm-daily'
             description: "Daily suite name (Aarch64) to run"
 - parameter:
     name: functest-suite-parameter
     parameters:
+        - choice:
+            name: FUNCTEST_MODE
+            choices:
+                - 'tier'
+                - 'testcase'
+            default: 'tier'
+            description: "Test case or Tier to be run"
         - choice:
             name: FUNCTEST_SUITE_NAME
             choices:
@@ -336,6 +343,16 @@
                 - 'cloudify_vrouter'
                 - 'orchestra_openims'
                 - 'orchestra_clearwaterims'
+            default: 'connection_check'
+        - choice:
+            name: FUNCTEST_TIER
+            choices:
+                - 'healhcheck'
+                - 'smoke'
+                - 'features'
+                - 'components'
+                - 'vnf'
+            default: 'healhcheck'
         - string:
             name: TESTCASE_OPTIONS
             default: ''
