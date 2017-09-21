@@ -14,6 +14,11 @@
       branch: '{stream}'
       gs-pathname: ''
       docker-tag: latest
+    euphrates: &euphrates
+      stream: euphrates
+      branch: 'stable/{stream}'
+      gs-pathname: '{stream}'
+      docker-tag: 'stable'
 
     # -------------------------------
     # JOB VARIABLES
@@ -27,6 +32,14 @@
           installer: apex
           pod: zte-pod4
           <<: *master
+      - compute:
+          installer: apex
+          pod: zte-pod4
+          <<: *euphrates
+      - storage:
+          installer: apex
+          pod: zte-pod4
+          <<: *euphrates
 
     # -------------------------------
     # JOB LIST
