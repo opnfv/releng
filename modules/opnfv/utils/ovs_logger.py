@@ -27,11 +27,12 @@ class OVSLogger(object):
         if not os.path.exists(dirpath):
             os.makedirs(dirpath)
 
-    def __ssh_host(self, ssh_conn, host_prefix='10.20.0'):
+    def __ssh_host(self, ssh_conn):
         try:
-            _, stdout, _ = ssh_conn.exec_command('hostname -I')
-            hosts = stdout.readline().strip().split(' ')
-            found_host = [h for h in hosts if h.startswith(host_prefix)][0]
+            _, stdout, _ = ssh_conn.exec_command('hostname')
+            found_host = stdout.readline()
+            #hosts = stdout.readline().strip().split(' ')
+            #found_host = [h for h in hosts if h.startswith(host_prefix)][0]
             return found_host
         except Exception as e:
             logger.error(e)
@@ -96,12 +97,12 @@ class OVSLogger(object):
             logger.error('[vsctl_show(ssh_client)]: {0}'.format(e))
             return None
 
-    def dump_ovs_logs(self, controller_clients, compute_clients,
-                      related_error=None, timestamp=None):
+    def dump_ovs_logs(self, compute_clients, related_error=None,
+                      timestamp=None):
         if timestamp is None:
             timestamp = time.strftime("%Y%m%d-%H%M%S")
 
-        clients = controller_clients + compute_clients
+        clients = compute_clients
         for client in clients:
             self.ofctl_dump_flows(client, timestamp=timestamp)
             self.vsctl_show(client, timestamp=timestamp)
