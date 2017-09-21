@@ -27,12 +27,15 @@ class OVSLogger(object):
         if not os.path.exists(dirpath):
             os.makedirs(dirpath)
 
-    def __ssh_host(self, ssh_conn, host_prefix='10.20.0'):
+    def __ssh_host(self, ssh_conn, host_prefix=None):
         try:
-            _, stdout, _ = ssh_conn.exec_command('hostname -I')
-            hosts = stdout.readline().strip().split(' ')
-            found_host = [h for h in hosts if h.startswith(host_prefix)][0]
-            return found_host
+            if host_prefix is None:
+                raise Exception('The host prefix is not defined')
+            else:
+                _, stdout, _ = ssh_conn.exec_command('hostname -I')
+                hosts = stdout.readline().strip().split(' ')
+                found_host = [h for h in hosts if h.startswith(host_prefix)][0]
+                return found_host
         except Exception as e:
             logger.error(e)
 
@@ -45,12 +48,13 @@ class OVSLogger(object):
         with open(os.path.join(dumpdir, fname), 'w') as f:
             f.write(text)
 
-    def __remote_cmd(self, ssh_conn, cmd):
+    def __remote_cmd(self, ssh_conn, cmd, host_prefix=None):
         try:
             _, stdout, stderr = ssh_conn.exec_command(cmd)
             errors = stderr.readlines()
             if len(errors) > 0:
-                host = self.__ssh_host(ssh_conn)
+                host = self.__ssh_host(ssh_conn,
+                                       host_prefix=host_prefix)
                 logger.error(''.join(errors))
                 raise Exception('Could not execute {0} in {1}'
                                 .format(cmd, host))
@@ -69,14 +73,17 @@ class OVSLogger(object):
         shutil.copy2('{0}.zip'.format(self.ovs_dir), self.ft_resdir)
 
     def ofctl_dump_flows(self, ssh_conn, br='br-int',
-                         choose_table=None, timestamp=None):
+                         choose_table=None, timestamp=None,
+                         host_prefix=None):
         try:
             cmd = 'ovs-ofctl -OOpenFlow13 dump-flows {0}'.format(br)
             if choose_table is not None:
                 cmd = '{0} table={1}'.format(cmd, choose_table)
-            output = self.__remote_cmd(ssh_conn, cmd)
+            output = self.__remote_cmd(ssh_conn, cmd,
+                                       host_prefix=host_prefix)
             operation = 'ofctl_dump_flows'
-            host = self.__ssh_host(ssh_conn)
+            host = self.__ssh_host(ssh_conn,
+                                   host_prefix=host_prefix)
             self.__dump_to_file(operation, host, output, timestamp=timestamp)
             return output
         except Exception as e:
@@ -84,12 +91,15 @@ class OVSLogger(object):
                          .format(br, choose_table, e))
             return None
 
-    def vsctl_show(self, ssh_conn, timestamp=None):
+    def vsctl_show(self, ssh_conn, timestamp=None,
+                   host_prefix=None):
         try:
             cmd = 'ovs-vsctl show'
-            output = self.__remote_cmd(ssh_conn, cmd)
+            output = self.__remote_cmd(ssh_conn, cmd,
+                                       host_prefix=host_prefix)
             operation = 'vsctl_show'
-            host = self.__ssh_host(ssh_conn)
+            host = self.__ssh_host(ssh_conn,
+                                   host_prefix=host_prefix)
             self.__dump_to_file(operation, host, output, timestamp=timestamp)
             return output
         except Exception as e:
@@ -97,14 +107,17 @@ class OVSLogger(object):
             return None
 
     def dump_ovs_logs(self, controller_clients, compute_clients,
-                      related_error=None, timestamp=None):
+                      host_prefix=None, related_error=None,
+                      timestamp=None):
         if timestamp is None:
             timestamp = time.strftime("%Y%m%d-%H%M%S")
 
         clients = controller_clients + compute_clients
         for client in clients:
-            self.ofctl_dump_flows(client, timestamp=timestamp)
-            self.vsctl_show(client, timestamp=timestamp)
+            self.ofctl_dump_flows(client, timestamp=timestamp,
+                                  host_prefix=None)
+            self.vsctl_show(client, timestamp=timestamp,
+                            host_prefix=None)
 
         if related_error is not None:
             dumpdir = os.path.join(self.ovs_dir, timestamp)
