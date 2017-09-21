@@ -4,6 +4,60 @@ set -e
 set +u
 set +o pipefail
 
+run_tiers() {
+    cmd_opt='prepare_env start && run_tests -r -t all'
+    ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
+    echo 0 > ${ret_val_file}
+
+    for tier in ${tiers[@]}; do
+        FUNCTEST_IMAGE=opnfv/functest-${tier}
+        echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
+        docker pull ${FUNCTEST_IMAGE}>/dev/null
+        cmd="docker run --privileged=true ${envs} ${volumes} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
+        echo "Running Functest tier '${tier}'. CMD: ${cmd}"
+        eval ${cmd}
+        ret_value=$?
+        if [ ${ret_value} != 0 ]; then
+          echo ${ret_value} > ${ret_val_file}
+        fi
+    done
+}
+
+run_test() {
+    test_name=$1
+    cmd_opt='prepare_env start && run_tests -r -t $test_name'
+    ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
+    echo 0 > ${ret_val_file}
+    # Determine which Functest image should be used for the test case
+    case ${test_name} in
+        connection_check|api_check|snaps_health_check)
+            FUNCTEST_IMAGE=opnfv/functest-healthcheck
+        vping_ssh|vping_userdata|tempest_smoke_serial|rally_sanity|refstack_defcore|odl|odl_netvirt|fds|snaps_smoke)
+            FUNCTEST_IMAGE=opnfv/functest-smoke
+        tempest_full_parallel|tempest_custom|rally_full)
+            FUNCTEST_IMAGE=opnfv/functest-components
+        cloudify_ims|orchestra_openims|orchestra_clearwaterims|vyos_vrouter)
+            FUNCTEST_IMAGE=opnfv/functest-vnf
+        promise|doctor-notification|bgpvpn|functest-odl-sfc|domino-multinode|barometercollectd)
+            FUNCTEST_IMAGE=opnfv/functest-features
+        parser)
+            FUNCTEST_IMAGE=opnfv/functest-parser
+        *)
+            echo "Unkown test case $test_name"
+            exit 1
+    esac
+    echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
+    docker pull ${FUNCTEST_IMAGE}>/dev/null
+    cmd="docker run --privileged=true ${envs} ${volumes} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
+    echo "Running Functest test case '${test_name}'. CMD: ${cmd}"
+    eval ${cmd}
+    ret_value=$?
+    if [ ${ret_value} != 0 ]; then
+      echo ${ret_value} > ${ret_val_file}
+    fi
+}
+
+
 [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 FUNCTEST_DIR=/home/opnfv/functest
 DEPLOY_TYPE=baremetal
@@ -75,29 +129,17 @@ volumes="${images_vol} ${results_vol} ${sshkey_vol} ${rc_file_vol} ${cacert_file
 
 set +e
 
-if [ ${FUNCTEST_SUITE_NAME} == 'healthcheck' ]; then
-    tiers=(healthcheck)
+
+if [ ${FUNCTEST_MODE} == 'testcase' ]; then
+    run_test ${FUNCTEST_SUITE_NAME}
+elif [ ${FUNCTEST_MODE} == 'tier' ]; then
+    tiers= (${FUNCTEST_TIER})
+    run_tiers ${tiers}
 else
     if [ ${DEPLOY_TYPE} == 'baremetal' ]; then
         tiers=(healthcheck smoke features vnf parser)
     else
         tiers=(healthcheck smoke features)
     fi
+    run_tiers ${tiers}
 fi
-
-cmd_opt='prepare_env start && run_tests -r -t all'
-ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
-echo 0 > ${ret_val_file}
-
-for tier in ${tiers[@]}; do
-    FUNCTEST_IMAGE=opnfv/functest-${tier}
-    echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
-    docker pull ${FUNCTEST_IMAGE}>/dev/null
-    cmd="docker run --privileged=true ${envs} ${volumes} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
-    echo "Running Functest tier '${tier}'. CMD: ${cmd}"
-    eval ${cmd}
-    ret_value=$?
-    if [ ${ret_value} != 0 ]; then
-      echo ${ret_value} > ${ret_val_file}
-    fi
-done
