@@ -27,7 +27,7 @@ declare -A urls=( ["testapi"]="http://testresults.opnfv.org/test/" \
 ### Functions related to checking.
 
 function is_deploying() {
-    xml=$(curl -m10 "https://build.opnfv.org/ci/job/${1}-automate-master/lastBuild/api/xml?depth=1")
+    xml=$(curl -m10 "https://build.opnfv.org/ci/job/${1}-automate-docker-deploy-master/lastBuild/api/xml?depth=1")
     building=$(grep -oPm1 "(?<=<building>)[^<]+" <<< "$xml")
     if [[ $building == "false" ]]
     then
@@ -64,12 +64,11 @@ function check_modules() {
     failed_modules=()
     for module in "${modules[@]}"
     do
-        if is_deploying $module; then
-            continue
-        fi
         if ! check_connectivity $module "${urls[$module]}"; then
-            echo -e "$module failed"
-            failed_modules+=($module)
+            if ! is_deploying $module; then
+                echo -e "$module failed"
+                failed_modules+=($module)
+            fi
         fi
     done
     if [ ! -z "$failed_modules" ]; then
@@ -114,13 +113,11 @@ function start_containers_fix() {
 
 function start_container_fix() {
     echo -e "Starting a container $module"
-    sudo docker stop $module
-    sudo docker start $module
+    sudo docker restart $module
     sleep 5
     if ! check_connectivity $module "${urls[$module]}"; then
         echo -e "Starting an old container $module_old"
-        sudo docker stop $module
-        sudo docker start $module"_old"
+        sudo docker restart $module"_old"
         sleep 5
     fi
 }
