@@ -15,7 +15,7 @@ rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/home/opnfv/functest/conf/openstack.cred
 
 if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     rc_file_vol="-v $LAB_CONFIG/admin-openrc:/home/opnfv/functest/conf/openstack.creds"
-elif [[ ${INSTALLER_TYPE} == 'compass' && ${BRANCH} == 'master' ]]; then
+elif [[ ${INSTALLER_TYPE} == 'compass' ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:/home/opnfv/functest/conf/os_cacert"
     echo "export OS_CACERT=/home/opnfv/functest/conf/os_cacert" >> ${HOME}/opnfv-openrc.sh
 elif [[ ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_TYPE} == 'baremetal' ]]; then
@@ -30,14 +30,12 @@ fi
 
 echo "Functest: Start Docker and prepare environment"
 
-if [ "$BRANCH" != 'stable/danube' ]; then
-  echo "Functest: Download images that will be used by test cases"
-  images_dir="${HOME}/opnfv/functest/images"
-  chmod +x ${WORKSPACE}/functest/ci/download_images.sh
-  ${WORKSPACE}/functest/ci/download_images.sh ${images_dir} > ${redirect}
-  images_vol="-v ${images_dir}:/home/opnfv/functest/images"
-  echo "Functest: Images successfully downloaded"
-fi
+echo "Functest: Download images that will be used by test cases"
+images_dir="${HOME}/opnfv/functest/images"
+chmod +x ${WORKSPACE}/functest/ci/download_images.sh
+${WORKSPACE}/functest/ci/download_images.sh ${images_dir} > ${redirect}
+images_vol="-v ${images_dir}:/home/opnfv/functest/images"
+echo "Functest: Images successfully downloaded"
 
 dir_result="${HOME}/opnfv/functest/results/${BRANCH##*/}"
 mkdir -p ${dir_result}
@@ -53,26 +51,14 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
 
 ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
-if [ "${INSTALLER_TYPE}" == 'fuel' ] && [ "$BRANCH" != 'stable/danube' ]; then
+if [ "${INSTALLER_TYPE}" == 'fuel' ]; then
     COMPUTE_ARCH=$(ssh -l ubuntu ${INSTALLER_IP} -i ${SSH_KEY} ${ssh_options} \
         "sudo salt 'cmp*' grains.get cpuarch --out yaml | awk '{print \$2; exit}'")
     envs="${envs} -e POD_ARCH=${COMPUTE_ARCH}"
 fi
 
-if [[ ${INSTALLER_TYPE} == 'compass' && ${DEPLOY_SCENARIO} == *'os-nosdn-openo-ha'* ]]; then
-    openo_msb_port=${openo_msb_port:-80}
-    openo_msb_endpoint="$(sshpass -p'root' ssh 2>/dev/null $ssh_options root@${installer_ip} \
-    'mysql -ucompass -pcompass -Dcompass -e "select package_config from cluster;" \
-    | sed s/,/\\n/g | grep openo_ip | cut -d \" -f 4'):$openo_msb_port"
 
-    envs=${env}" -e OPENO_MSB_ENDPOINT=${openo_msb_endpoint}"
-fi
-
-if [ "$BRANCH" != 'stable/danube' ]; then
-  volumes="${images_vol} ${results_vol} ${sshkey_vol} ${stackrc_vol} ${rc_file_vol} ${cacert_file_vol}"
-else
-  volumes="${results_vol} ${sshkey_vol} ${stackrc_vol} ${rc_file_vol}"
-fi
+volumes="${images_vol} ${results_vol} ${sshkey_vol} ${stackrc_vol} ${rc_file_vol} ${cacert_file_vol}"
 
 echo "Functest: volumes defined"
 
@@ -106,12 +92,7 @@ if [ $(docker ps | grep "${FUNCTEST_IMAGE}:${DOCKER_TAG}" | wc -l) == 0 ]; then
     exit 1
 fi
 
-if [ "$BRANCH" == 'master' ]; then
-    cmd="prepare_env start"
-else
-    cmd="python ${FUNCTEST_REPO_DIR}/functest/ci/prepare_env.py start"
-fi
-
+cmd="prepare_env start"
 
 echo "Executing command inside the docker: ${cmd}"
 docker exec ${container_id} ${cmd}
