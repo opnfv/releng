@@ -103,7 +103,7 @@ echo "--------------------------------------------------------"
 echo "Scenario: ${DEPLOY_SCENARIO}"
 echo "Lab: ${LAB_NAME}"
 echo "POD: ${POD_NAME}"
-[[ "${BRANCH}" != 'master' ]] && echo "ISO: ${OPNFV_ARTIFACT_URL/*\/}"
+[[ "${BRANCH}" =~ 'danube' ]] && echo "ISO: ${OPNFV_ARTIFACT_URL/*\/}"
 echo
 echo "Starting the deployment using ${INSTALLER_TYPE}. This could take some time..."
 echo "--------------------------------------------------------"
