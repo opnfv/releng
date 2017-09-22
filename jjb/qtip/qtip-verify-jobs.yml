@@ -111,7 +111,7 @@
       - report-build-result-to-gerrit
 
 - job-template:
-    name: 'qtip-merge-{stream}'
+    name: 'qtip-merge-notebook-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -178,7 +178,6 @@
           export PATH=$PATH:/usr/local/bin/
 
           [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
-          [[ -d examples ]] || exit 0
 
           echo
           echo "###########################"
@@ -190,8 +189,9 @@
           gs_path="$gs_base/$GERRIT_CHANGE_NUMBER"
           local_path="upload/$GERRIT_CHANGE_NUMBER"
 
-          mkdir -p upload
-          cp -r examples "$local_path"
+          mkdir -p $local_path
+
+          git diff HEAD~1 --name-only | grep -E ".+\.ipynb$" | xargs -I '{}' cp '{}' $local_path
           gsutil -m cp -r "$local_path" "gs://$gs_base/"
 
           echo "Document link(s):" >> gerrit_comment.txt
