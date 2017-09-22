@@ -6,10 +6,12 @@
 - project:
     name: pharos
 
-    project: '{name}'
+    project:
+      - '{name}'
+      - '{name}-tools'
 
     jobs:
-      - 'pharos-verify-{stream}'
+      - '{project}-verify-{stream}'
 
     stream:
       - master:
@@ -22,7 +24,7 @@
           disabled: false
 
 - job-template:
-    name: 'pharos-verify-{stream}'
+    name: '{project}-verify-{stream}'
 
     disabled: '{obj:disabled}'
 
