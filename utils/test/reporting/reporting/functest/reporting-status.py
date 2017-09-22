@@ -22,7 +22,7 @@ Functest reporting status
 """
 
 # Logger
-logger = rp_utils.getLogger("Functest-Status")
+LOGGER = rp_utils.getLogger("Functest-Status")
 
 # Initialization
 testValid = []
@@ -46,16 +46,16 @@ exclude_virtual = rp_utils.get_config('functest.exclude_virtual')
 
 functest_yaml_config = rp_utils.getFunctestConfig()
 
-logger.info("*******************************************")
-logger.info("*                                         *")
-logger.info("*   Generating reporting scenario status  *")
-logger.info("*   Data retention: %s days               *" % period)
-logger.info("*   Log level: %s                         *" % log_level)
-logger.info("*                                         *")
-logger.info("*   Virtual PODs exluded: %s              *" % exclude_virtual)
-logger.info("*   NOHA scenarios excluded: %s           *" % exclude_noha)
-logger.info("*                                         *")
-logger.info("*******************************************")
+LOGGER.info("*******************************************")
+LOGGER.info("*                                         *")
+LOGGER.info("*   Generating reporting scenario status  *")
+LOGGER.info("*   Data retention: %s days               *", period)
+LOGGER.info("*   Log level: %s                         *", log_level)
+LOGGER.info("*                                         *")
+LOGGER.info("*   Virtual PODs exluded: %s              *", exclude_virtual)
+LOGGER.info("*   NOHA scenarios excluded: %s           *", exclude_noha)
+LOGGER.info("*                                         *")
+LOGGER.info("*******************************************")
 
 # Retrieve test cases of Tier 1 (smoke)
 config_tiers = functest_yaml_config.get("tiers")
@@ -75,9 +75,9 @@ for tier in config_tiers:
     elif tier['order'] == 2:
         for case in tier['testcases']:
             if case['case_name'] not in blacklist:
-                testValid.append(tc.TestCase(case['case_name'],
-                                             case['case_name'],
-                                             case['dependencies']))
+                otherTestCases.append(tc.TestCase(case['case_name'],
+                                                  case['case_name'],
+                                                  case['dependencies']))
     elif tier['order'] > 2:
         for case in tier['testcases']:
             if case['case_name'] not in blacklist:
@@ -85,7 +85,7 @@ for tier in config_tiers:
                                                   "functest",
                                                   case['dependencies']))
 
-logger.debug("Functest reporting start")
+LOGGER.debug("Functest reporting start")
 
 # For all the versions
 for version in versions:
@@ -101,7 +101,7 @@ for version in versions:
     # initiate scenario file if it does not exist
     if not os.path.isfile(scenario_file_name):
         with open(scenario_file_name, "a") as my_file:
-            logger.debug("Create scenario file: %s" % scenario_file_name)
+            LOGGER.debug("Create scenario file: %s", scenario_file_name)
             my_file.write("date,scenario,installer,detail,score\n")
 
     for installer in installers:
@@ -113,10 +113,10 @@ for version in versions:
                                                  version)
         # get nb of supported architecture (x86, aarch64)
         architectures = rp_utils.getArchitectures(scenario_results)
-        logger.info("Supported architectures: {}".format(architectures))
+        LOGGER.info("Supported architectures: %s", architectures)
 
         for architecture in architectures:
-            logger.info("architecture: {}".format(architecture))
+            LOGGER.info("Architecture: %s", architecture)
             # Consider only the results for the selected architecture
             # i.e drop x86 for aarch64 and vice versa
             filter_results = rp_utils.filterArchitecture(scenario_results,
@@ -133,10 +133,10 @@ for version in versions:
 
             # For all the scenarios get results
             for s, s_result in filter_results.items():
-                logger.info("---------------------------------")
-                logger.info("installer %s, version %s, scenario %s:" %
-                            (installer, version, s))
-                logger.debug("Scenario results: %s" % s_result)
+                LOGGER.info("---------------------------------")
+                LOGGER.info("installer %s, version %s, scenario %s:",
+                            installer, version, s)
+                LOGGER.debug("Scenario results: %s", s_result)
 
                 # Green or Red light for a given scenario
                 nb_test_runnable_for_this_scenario = 0
@@ -146,11 +146,11 @@ for version in versions:
                 s_url = ""
                 if len(s_result) > 0:
                     build_tag = s_result[len(s_result)-1]['build_tag']
-                    logger.debug("Build tag: %s" % build_tag)
+                    LOGGER.debug("Build tag: %s", build_tag)
                     s_url = rp_utils.getJenkinsUrl(build_tag)
                     if s_url is None:
                         s_url = "http://testresultS.opnfv.org/reporting"
-                    logger.info("last jenkins url: %s" % s_url)
+                    LOGGER.info("last jenkins url: %s", s_url)
                 testCases2BeDisplayed = []
                 # Check if test case is runnable / installer, scenario
                 # for the test case used for Scenario validation
@@ -160,24 +160,24 @@ for version in versions:
                     for test_case in testValid:
                         test_case.checkRunnable(installer, s,
                                                 test_case.getConstraints())
-                        logger.debug("testcase %s (%s) is %s" %
-                                     (test_case.getDisplayName(),
-                                      test_case.getName(),
-                                      test_case.isRunnable))
+                        LOGGER.debug("testcase %s (%s) is %s",
+                                     test_case.getDisplayName(),
+                                     test_case.getName(),
+                                     test_case.isRunnable)
                         time.sleep(1)
                         if test_case.isRunnable:
                             name = test_case.getName()
                             displayName = test_case.getDisplayName()
                             project = test_case.getProject()
                             nb_test_runnable_for_this_scenario += 1
-                            logger.info(" Searching results for case %s " %
-                                        (displayName))
+                            LOGGER.info(" Searching results for case %s ",
+                                        displayName)
                             result = rp_utils.getResult(name, installer,
                                                         s, version)
                             # if no result set the value to 0
                             if result < 0:
                                 result = 0
-                            logger.info(" >>>> Test score = " + str(result))
+                            LOGGER.info(" >>>> Test score = " + str(result))
                             test_case.setCriteria(result)
                             test_case.setIsRunnable(True)
                             testCases2BeDisplayed.append(tc.TestCase(name,
@@ -193,17 +193,17 @@ for version in versions:
                     for test_case in otherTestCases:
                         test_case.checkRunnable(installer, s,
                                                 test_case.getConstraints())
-                        logger.debug("testcase %s (%s) is %s" %
-                                     (test_case.getDisplayName(),
-                                      test_case.getName(),
-                                      test_case.isRunnable))
+                        LOGGER.debug("testcase %s (%s) is %s",
+                                     test_case.getDisplayName(),
+                                     test_case.getName(),
+                                     test_case.isRunnable)
                         time.sleep(1)
                         if test_case.isRunnable:
                             name = test_case.getName()
                             displayName = test_case.getDisplayName()
                             project = test_case.getProject()
-                            logger.info(" Searching results for case %s " %
-                                        (displayName))
+                            LOGGER.info(" Searching results for case %s ",
+                                        displayName)
                             result = rp_utils.getResult(name, installer,
                                                         s, version)
                             # at least 1 result for the test
@@ -218,13 +218,13 @@ for version in versions:
                                     True,
                                     4))
                             else:
-                                logger.debug("No results found")
+                                LOGGER.debug("No results found")
 
                         items[s] = testCases2BeDisplayed
                 except Exception:
-                    logger.error("Error: installer %s, version %s, scenario %s"
-                                 % (installer, version, s))
-                    logger.error("No data available: %s" % (sys.exc_info()[0]))
+                    LOGGER.error("Error installer %s, version %s, scenario %s",
+                                 installer, version, s)
+                    LOGGER.error("No data available: %s", sys.exc_info()[0])
 
                 # **********************************************
                 # Evaluate the results for scenario validation
@@ -243,11 +243,11 @@ for version in versions:
 
                 s_status = "KO"
                 if scenario_score < scenario_criteria:
-                    logger.info(">>>> scenario not OK, score = %s/%s" %
-                                (scenario_score, scenario_criteria))
+                    LOGGER.info(">>>> scenario not OK, score = %s/%s",
+                                scenario_score, scenario_criteria)
                     s_status = "KO"
                 else:
-                    logger.info(">>>>> scenario OK, save the information")
+                    LOGGER.info(">>>>> scenario OK, save the information")
                     s_status = "OK"
                     path_validation_file = ("./display/" + version +
                                             "/functest/" +
@@ -270,7 +270,7 @@ for version in versions:
                     s_score,
                     s_score_percent,
                     s_url)
-                logger.info("--------------------------")
+                LOGGER.info("--------------------------")
 
             templateLoader = jinja2.FileSystemLoader(".")
             templateEnv = jinja2.Environment(
@@ -294,9 +294,9 @@ for version in versions:
                       installer_display + ".html", "wb") as fh:
                 fh.write(outputText)
 
-            logger.info("Manage export CSV & PDF")
+            LOGGER.info("Manage export CSV & PDF")
             rp_utils.export_csv(scenario_file_name, installer_display, version)
-            logger.error("CSV generated...")
+            LOGGER.error("CSV generated...")
 
             # Generate outputs for export
             # pdf
@@ -306,4 +306,4 @@ for version in versions:
             pdf_doc_name = ("./display/" + version +
                             "/functest/status-" + installer_display + ".pdf")
             rp_utils.export_pdf(pdf_path, pdf_doc_name)
-            logger.info("PDF generated...")
+            LOGGER.info("PDF generated...")
