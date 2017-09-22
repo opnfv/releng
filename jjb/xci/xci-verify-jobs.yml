@@ -12,11 +12,11 @@
 # distros
 #--------------------------------
     distro:
-        - 'xenial':
+        - 'ubuntu':
             disabled: false
-        - 'centos7':
+        - 'centos':
             disabled: true
-        - 'suse':
+        - 'opensuse':
             disabled: true
 #--------------------------------
 # type
@@ -129,7 +129,6 @@
                 - name: 'xci-verify-deploy-{type}-{stream}'
                   current-parameters: true
                   predefined-parameters: |
-                    DISTRO={distro}
                     DEPLOY_SCENARIO=os-nosdn-nofeature-noha
                     CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
                   node-parameters: true
@@ -234,8 +233,8 @@
             # setting PATH for ansible stuff
             export PATH=/home/jenkins/.local/bin:$PATH
 
-            cd $WORKSPACE/xci
-            ./xci-deploy.sh
+            cd $WORKSPACE
+            ./xci/scripts/vm/start-new-vm.sh {distro}
 
 
 - builder:
