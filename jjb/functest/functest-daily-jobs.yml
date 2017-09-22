@@ -297,19 +297,26 @@
     name: functest-daily-parameter
     parameters:
         - string:
-            name: FUNCTEST_SUITE_NAME
+            name: FUNCTEST_MODE
             default: 'daily'
             description: "Daily suite name to run"
 - parameter:
     name: functest-arm-daily-parameter
     parameters:
         - string:
-            name: FUNCTEST_SUITE_NAME
+            name: FUNCTEST_MODE
             default: 'arm-daily'
             description: "Daily suite name (Aarch64) to run"
 - parameter:
     name: functest-suite-parameter
     parameters:
+        - choice:
+            name: FUNCTEST_MODE
+            choices:
+                - 'tier'
+                - 'testcase'
+            default: 'tier'
+            description: "Test case or Tier to be run"
         - choice:
             name: FUNCTEST_SUITE_NAME
             choices:
@@ -336,6 +343,16 @@
                 - 'cloudify_vrouter'
                 - 'orchestra_openims'
                 - 'orchestra_clearwaterims'
+            default: 'connection_check'
+        - choice:
+            name: FUNCTEST_TIER
+            choices:
+                - 'healthcheck'
+                - 'smoke'
+                - 'features'
+                - 'components'
+                - 'vnf'
+            default: 'healthcheck'
         - string:
             name: TESTCASE_OPTIONS
             default: ''
@@ -409,6 +426,14 @@
         - 'functest-store-results'
 
 - builder:
+    name: functest-alpine-suite-builder
+    builders:
+        - 'functest-cleanup'
+        - 'set-functest-env-alpine'
+        - 'functest-suite'
+        - 'functest-store-results'
+
+- builder:
     name: functest-daily
     builders:
         - shell:
@@ -427,7 +452,10 @@
     name: functest-suite
     builders:
         - shell:
-            !include-raw: ./functest-suite.sh
+            !include-raw:
+                - ./functest-env-presetup.sh
+                - ../../utils/fetch_os_creds.sh
+                - ./functest-alpine.sh
 
 - builder:
     name: set-functest-env
