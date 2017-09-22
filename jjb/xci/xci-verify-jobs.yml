@@ -12,11 +12,11 @@
 # distros
 #--------------------------------
     distro:
-        - 'xenial':
+        - 'ubuntu':
             disabled: false
-        - 'centos7':
+        - 'centos':
             disabled: true
-        - 'suse':
+        - 'opensuse':
             disabled: true
 #--------------------------------
 # type
@@ -52,11 +52,11 @@
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - 'xci-verify-.*'
-                - 'bifrost-verify-.*'
-                - 'bifrost-periodic-.*'
-                - 'osa-verify-.*'
-                - 'osa-periodic-.*'
+                - 'xci-verify-{distro}-.*'
+                - 'bifrost-verify-{distro}-.*'
+                - 'bifrost-periodic-{distro}-.*'
+                - 'osa-verify-{distro}-.*'
+                - 'osa-periodic-{distro}-.*'
             block-level: 'NODE'
 
     wrappers:
@@ -110,7 +110,7 @@
             branch: '{branch}'
         - label:
             name: SLAVE_LABEL
-            default: 'xci-virtual-{distro}'
+            default: 'xci-virtual'
         - string:
             name: CLEAN_DIB_IMAGES
             default: 'true'
@@ -174,7 +174,7 @@
     parameters:
         - string:
             name: DISTRO
-            default: 'xenial'
+            default: 'ubuntu'
         - string:
             name: DEPLOY_SCENARIO
             default: 'os-nosdn-nofeature-noha'
@@ -212,7 +212,7 @@
 
     builders:
         - description-setter:
-            description: "Built on $NODE_NAME"
+            description: "Built on $NODE_NAME for $DISTRO"
         - 'xci-verify-{phase}-macro'
 
 #--------------------------------
@@ -230,12 +230,18 @@
                 exit 0
             fi
 
-            # for some reason, the PATH is not set correctly
-            # setting PATH for ansible stuff
-            export PATH=/home/jenkins/.local/bin:$PATH
+            cd $WORKSPACE
+            ./xci/scripts/vm/start-new-vm.sh $DISTRO
+        - shell: |
+            #!/bin/bash
 
-            cd $WORKSPACE/xci
-            ./xci-deploy.sh
+            # skip the deployment if the patch doesn't impact the deployment
+            if [[ "$GERRIT_TOPIC" =~ 'skip-verify' ]]; then
+                echo "Skipping the deployment!"
+                exit 0
+            fi
+
+            ssh ${DISTRO}_xci_vm "cd releng-xci/xci && ./xci-deploy.sh"
 
 
 - builder:
@@ -251,6 +257,17 @@
             fi
 
             echo "Hello World!"
+        - shell: |
+            #!/bin/bash
+
+            # skip the deployment if the patch doesn't impact the deployment
+            if [[ "$GERRIT_TOPIC" =~ 'skip-verify' ]]; then
+                echo "Skipping the deployment!"
+                exit 0
+            fi
+
+            sudo virsh destroy $DISTRO
+            sudo virsh undefine $DISTRO
 
 # this will be enabled once the xci is prepared
 #- builder:
