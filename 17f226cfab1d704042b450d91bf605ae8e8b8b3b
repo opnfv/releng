@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da33351e_6be6bae9",
+        "filename": "jjb/xci/xci-verify-jobs.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 237,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-09-22T16:04:13Z",
+      "side": 1,
+      "message": "$DISTRO if we use the parameter.",
+      "range": {
+        "startLine": 237,
+        "startChar": 45,
+        "endLine": 237,
+        "endChar": 53
+      },
+      "revId": "17f226cfab1d704042b450d91bf605ae8e8b8b3b",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da33351e_ebc2ca32",
+        "filename": "jjb/xci/xci-verify-jobs.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 237,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2017-09-22T16:04:13Z",
+      "side": 1,
+      "message": "I should perhaps look at the details of start-new-vm.sh script but in general I prefer to do things separately meaning that we can start new vm in a new/earlier phase/job named like prepare-vm rather than in deploy job, mixing vm preparation with the deployment stuff. \n\nThis would be helpful to easily see what went wrong if vm preparation fails as it will be in its own job and not even attempting to deploy, helping developers to easily see it is not a deployment issue but rather an infra issue.\n\nso I expects something like below here\n\n    ssh ${DISTRO}_vm \"blah blah\"\n\nand we shouldn\u0027t destroy vm in this job or start-vm script as it will be needed for testing too. you can perhaps put destroy stuff to a separate phase after functest healthcheck.",
+      "range": {
+        "startLine": 237,
+        "startChar": 12,
+        "endLine": 237,
+        "endChar": 53
+      },
+      "revId": "17f226cfab1d704042b450d91bf605ae8e8b8b3b",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
