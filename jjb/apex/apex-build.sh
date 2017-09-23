@@ -46,6 +46,12 @@ echo "Cache Directory Contents:"
 echo "-------------------------"
 ls -al $CACHE_DIRECTORY
 
+if [[ "$BUILD_ARGS" =~ '--iso' ]]; then
+  mkdir -p /tmp/apex-iso/
+  rm -f /tmp/apex-iso/*.iso
+  cp -f $BUILD_DIRECTORY/../.build/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso /tmp/apex-iso/
+fi
+
 if ! echo $ARTIFACT_VERSION | grep "dev" 1> /dev/null; then
   echo "Writing opnfv.properties file"
   # save information regarding artifact into file

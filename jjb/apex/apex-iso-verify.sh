@@ -8,7 +8,14 @@ echo "Starting the Apex iso verify."
 echo "--------------------------------------------------------"
 echo
 
-source $BUILD_DIRECTORY/../opnfv.properties
+# Must be RPMs/ISO
+echo "Downloading latest properties file"
+
+# get the properties file in order to get info regarding artifacts
+curl --fail -s -o opnfv.properties http://$GS_URL/latest.properties
+
+# source the file so we get OPNFV vars
+source opnfv.properties
 
 if ! rpm -q virt-install > /dev/null; then
   sudo yum -y install virt-install
@@ -35,9 +42,9 @@ sudo rm -f /var/log/libvirt/qemu/apex-iso-verify-console.log
 sudo virt-install -n apex-iso-verify -r 4096 --vcpus 4 --os-variant=rhel7 \
  --accelerate -v --noautoconsole \
  --disk path=/var/lib/libvirt/images/apex-iso-verify.qcow2,size=30,format=qcow2 \
- -l $BUILD_DIRECTORY/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso \
+ -l /tmp/apex-iso/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso \
  --extra-args 'console=ttyS0 console=ttyS0,115200n8 serial inst.ks=file:/iso-verify.ks inst.stage2=hd:LABEL=OPNFV\x20CentOS\x207\x20x86_64:/' \
- --initrd-inject $BUILD_DIRECTORY/../ci/iso-verify.ks \
+ --initrd-inject ci/iso-verify.ks \
  --serial file,path=/var/log/libvirt/qemu/apex-iso-verify-console.log
 
 echo "Waiting for install to finish..."
