@@ -124,9 +124,11 @@ set +e
 
 if [[ ${DEPLOY_SCENARIO} =~ ^os-.* ]]; then
     if [ ${FUNCTEST_MODE} == 'testcase' ]; then
+        echo "FUNCTEST_MODE=testcase, FUNCTEST_SUITE_NAME=${FUNCTEST_SUITE_NAME}"
         run_test ${FUNCTEST_SUITE_NAME}
     elif [ ${FUNCTEST_MODE} == 'tier' ]; then
-        tiers= (${FUNCTEST_TIER})
+        echo "FUNCTEST_MODE=tier, FUNCTEST_TIER=${FUNCTEST_TIER}"
+        tiers=(${FUNCTEST_TIER})
         run_tiers ${tiers}
     else
         if [ ${DEPLOY_TYPE} == 'baremetal' ]; then
