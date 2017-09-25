@@ -8,7 +8,7 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 #test for non-ascii characters, these can pass the test and end up breaking things in production
-for x in $(find . -name *\.yml -or -name *\.yaml); do
+for x in $(find . -name *\.yml -or -name *\.yaml -or -name *\.sh); do
 
   if LC_ALL=C grep -q '[^[:print:][:space:]]' "$x"; then
     echo "file "$x" contains non-ascii characters"
