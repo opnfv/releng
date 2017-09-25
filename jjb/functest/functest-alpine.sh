@@ -69,7 +69,7 @@ rc_file=${HOME}/opnfv-openrc.sh
 
 if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     rc_file=$LAB_CONFIG/admin-openrc
-elif [[ ${INSTALLER_TYPE} == 'compass' && ${BRANCH} == 'master' ]]; then
+elif [[ ${INSTALLER_TYPE} == 'compass' ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:${FUNCTEST_DIR}/conf/os_cacert"
     echo "export OS_CACERT=${FUNCTEST_DIR}/conf/os_cacert" >> ${HOME}/opnfv-openrc.sh
 elif [[ ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_TYPE} == 'baremetal' ]]; then
@@ -110,16 +110,8 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
 
 ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
-if [[ ${INSTALLER_TYPE} == 'compass' && ${DEPLOY_SCENARIO} == *'os-nosdn-openo-ha'* ]]; then
-    openo_msb_port=${openo_msb_port:-80}
-    openo_msb_endpoint="$(sshpass -p'root' ssh 2>/dev/null $ssh_options root@${installer_ip} \
-    'mysql -ucompass -pcompass -Dcompass -e "select package_config from cluster;" \
-    | sed s/,/\\n/g | grep openo_ip | cut -d \" -f 4'):$openo_msb_port"
 
-    envs=${env}" -e OPENO_MSB_ENDPOINT=${openo_msb_endpoint}"
-fi
-
-if [ "${INSTALLER_TYPE}" == 'fuel' ] && [ "$BRANCH" != 'stable/danube' ]; then
+if [ "${INSTALLER_TYPE}" == 'fuel' ]; then
     COMPUTE_ARCH=$(ssh -l ubuntu ${INSTALLER_IP} -i ${SSH_KEY} ${ssh_options} \
         "sudo salt 'cmp*' grains.get cpuarch --out yaml | awk '{print \$2; exit}'")
     envs="${envs} -e POD_ARCH=${COMPUTE_ARCH}"
@@ -130,16 +122,20 @@ volumes="${images_vol} ${results_vol} ${sshkey_vol} ${rc_file_vol} ${cacert_file
 set +e
 
 
-if [ ${FUNCTEST_MODE} == 'testcase' ]; then
-    run_test ${FUNCTEST_SUITE_NAME}
-elif [ ${FUNCTEST_MODE} == 'tier' ]; then
-    tiers= (${FUNCTEST_TIER})
-    run_tiers ${tiers}
-else
-    if [ ${DEPLOY_TYPE} == 'baremetal' ]; then
-        tiers=(healthcheck smoke features vnf parser)
+if [[ ${DEPLOY_SCENARIO} =~ ^os-.* ]]; then
+    if [ ${FUNCTEST_MODE} == 'testcase' ]; then
+        run_test ${FUNCTEST_SUITE_NAME}
+    elif [ ${FUNCTEST_MODE} == 'tier' ]; then
+        tiers= (${FUNCTEST_TIER})
+        run_tiers ${tiers}
     else
-        tiers=(healthcheck smoke features)
+        if [ ${DEPLOY_TYPE} == 'baremetal' ]; then
+            tiers=(healthcheck smoke features vnf parser)
+        else
+            tiers=(healthcheck smoke features)
+        fi
+        run_tiers ${tiers}
     fi
-    run_tiers ${tiers}
+else
+    echo "k8 deployment has not been supported by functest yet"
 fi

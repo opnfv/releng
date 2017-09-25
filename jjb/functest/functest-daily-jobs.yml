@@ -248,7 +248,7 @@
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
-        - 'functest-{testsuite}-builder'
+        - 'functest-alpine-{testsuite}-builder'
 
 - job-template:
     name: 'functest-alpine-{installer}-{alpine-pod}-{testsuite}-{stream}'
@@ -412,7 +412,7 @@
     name: functest-suite-builder
     builders:
         - 'functest-cleanup'
-        - 'set-functest-env'
+        - 'set-functest-env-alpine'
         - 'functest-suite'
         - 'functest-store-results'
         - 'functest-exit'
@@ -432,6 +432,7 @@
         - 'set-functest-env-alpine'
         - 'functest-suite'
         - 'functest-store-results'
+        - 'functest-exit'
 
 - builder:
     name: functest-daily
@@ -453,8 +454,6 @@
     builders:
         - shell:
             !include-raw:
-                - ./functest-env-presetup.sh
-                - ../../utils/fetch_os_creds.sh
                 - ./functest-alpine.sh
 
 - builder:
