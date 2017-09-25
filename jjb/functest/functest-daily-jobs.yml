@@ -329,7 +329,6 @@
                 - 'rally_sanity'
                 - 'odl'
                 - 'odl_netvirt'
-                - 'onos'
                 - 'snaps_smoke'
                 - 'refstack_defcore'
                 - 'promise'
@@ -424,14 +423,7 @@
         - 'set-functest-env-alpine'
         - 'functest-daily'
         - 'functest-store-results'
-
-- builder:
-    name: functest-alpine-suite-builder
-    builders:
-        - 'functest-cleanup'
-        - 'set-functest-env-alpine'
-        - 'functest-suite'
-        - 'functest-store-results'
+        - 'functest-exit'
 
 - builder:
     name: functest-daily
@@ -453,8 +445,6 @@
     builders:
         - shell:
             !include-raw:
-                - ./functest-env-presetup.sh
-                - ../../utils/fetch_os_creds.sh
                 - ./functest-alpine.sh
 
 - builder:
