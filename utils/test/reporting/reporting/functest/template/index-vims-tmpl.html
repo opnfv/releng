@@ -22,11 +22,12 @@
         <nav>
           <ul class="nav nav-justified">
             <li class="active"><a href="../../index.html">Home</a></li>
-            <li><a href="vims-fuel.html">Fuel</a></li>
+            <li><a href="vims-apex.html">Apex</a></li>
             <li><a href="vims-compass.html">Compass</a></li>
             <li><a href="vims-daisy.html">Daisy</a></li>
-            <li><a href="vims-joid.html">JOID</a></li>
-            <li><a href="vims-apex.html">APEX</a></li>
+            <li><a href="vims-fuel@x86.html">Fuel@x86</a></li>
+            <li><a href="vims-fuel@aarch64.html">Fuel@aarch64</a></li>
+            <li><a href="vims-joid.html">Joid</a></li>
           </ul>
         </nav>
       </div>
@@ -58,17 +59,17 @@
                             <tr>
                                 <th width="20%">Step</th>
                                 <th width="10%">Status</th>
-                                <th width="10%">Duration</th>
+                                <th width="10%">Duration(s)</th>
                                 <th width="60%">Result</th>
                             </tr>
                             {% for step_od_name in step_order -%}
                                 {% if step_od_name in result.details.keys() -%}
                                     {% set step_result = result.details[step_od_name] -%}
-                                    {% if step_result.duration != 0 -%}
+                                    {% if step_result.status == "PASS" -%}
                                         <tr class="tr-ok">
                                             <td>{{step_od_name}}</td>
                                             <td><span class="glyphicon glyphicon-ok"></td>
-                                            <td><b>{{step_result.duration_display}}</b></td>
+                                            <td><b>{{step_result.duration}}</b></td>
                                             <td>{{step_result.result}}</td>
                                         </tr>
                                     {%- else -%}

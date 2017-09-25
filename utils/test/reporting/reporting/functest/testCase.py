@@ -50,9 +50,10 @@ class TestCase(object):
                                'gluon_vping': 'Netready',
                                'fds': 'FDS',
                                'cloudify_ims': 'vIMS (Cloudify)',
-                               'orchestra_ims': 'OpenIMS (OpenBaton)',
+                               'orchestra_openims': 'OpenIMS (OpenBaton)',
+                               'orchestra_clearwaterims': 'vIMS (OpenBaton)',
                                'opera_ims': 'vIMS (Open-O)',
-                               'vyos_vrouter': 'vyos',
+                               'vyos_vrouter': 'vyos (Cloudify)',
                                'barometercollectd': 'Barometer',
                                'odl_netvirt': 'Netvirt',
                                'security_scan': 'Security'}
