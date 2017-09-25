@@ -36,9 +36,6 @@
       - orange-pod1:
           slave-label: orange-pod1
           <<: *master
-      - cengn-pod1:
-          slave-label: cengn-pod1
-          <<: *master
     # -------------------------------
     # scenarios
     # -------------------------------
@@ -151,7 +148,7 @@
               build-step-failure-threshold: 'never'
               failure-threshold: 'never'
               unstable-threshold: 'FAILURE'
-# 1.dovetail only master by now, not sync with A/B/C branches
+# 1.dovetail only euphrates by now, not sync with A/B/C branches
 # 2.here the stream means the SUT stream, dovetail stream is defined in
 #   its own job
 # 3.only debug testsuite here(includes basic testcase,
@@ -234,191 +231,187 @@
 ########################
 # trigger macros
 ########################
-# os-nosdn-nofeature-ha trigger - branch: master
+# os-nosdn-nofeature-ha trigger - branch: euphrates
 - trigger:
-    name: 'joid-os-nosdn-nofeature-ha-baremetal-master-trigger'
+    name: 'joid-os-nosdn-nofeature-ha-baremetal-euphrates-trigger'
     triggers:
       - timed: '5 2 * * *'
 - trigger:
-    name: 'joid-os-nosdn-nofeature-ha-virtual-master-trigger'
+    name: 'joid-os-nosdn-nofeature-ha-virtual-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-os-nosdn-nofeature-ha-orange-pod1-master-trigger'
+    name: 'joid-os-nosdn-nofeature-ha-orange-pod1-euphrates-trigger'
     triggers:
       - timed: ''
+# os-odl_l2-nofeature-ha trigger - branch: euphrates
 - trigger:
-    name: 'joid-os-nosdn-nofeature-ha-cengn-pod1-master-trigger'
-    triggers:
-      - timed: ''
-# os-odl_l2-nofeature-ha trigger - branch: master
-- trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-baremetal-master-trigger'
+    name: 'joid-os-odl_l2-nofeature-ha-baremetal-euphrates-trigger'
     triggers:
       - timed: '5 7 * * *'
 - trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-virtual-master-trigger'
+    name: 'joid-os-odl_l2-nofeature-ha-virtual-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-orange-pod1-master-trigger'
+    name: 'joid-os-odl_l2-nofeature-ha-orange-pod1-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-os-odl_l2-nofeature-ha-cengn-pod1-master-trigger'
+    name: 'joid-os-odl_l2-nofeature-ha-cengn-pod1-euphrates-trigger'
     triggers:
       - timed: ''
-# os-onos-nofeature-ha trigger - branch: master
+# os-onos-nofeature-ha trigger - branch: euphrates
 - trigger:
-    name: 'joid-os-onos-nofeature-ha-baremetal-master-trigger'
+    name: 'joid-os-onos-nofeature-ha-baremetal-euphrates-trigger'
     triggers:
       - timed: '5 12 * * *'
 - trigger:
-    name: 'joid-os-onos-nofeature-ha-virtual-master-trigger'
+    name: 'joid-os-onos-nofeature-ha-virtual-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-os-onos-nofeature-ha-orange-pod1-master-trigger'
+    name: 'joid-os-onos-nofeature-ha-orange-pod1-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-os-onos-nofeature-ha-cengn-pod1-master-trigger'
+    name: 'joid-os-onos-nofeature-ha-cengn-pod1-euphrates-trigger'
     triggers:
       - timed: ''
-# os-onos-sfc-ha trigger - branch: master
+# os-onos-sfc-ha trigger - branch: euphrates
 - trigger:
-    name: 'joid-os-onos-sfc-ha-baremetal-master-trigger'
+    name: 'joid-os-onos-sfc-ha-baremetal-euphrates-trigger'
     triggers:
       - timed: '5 17 * * *'
 - trigger:
-    name: 'joid-os-onos-sfc-ha-virtual-master-trigger'
+    name: 'joid-os-onos-sfc-ha-virtual-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-os-onos-sfc-ha-orange-pod1-master-trigger'
+    name: 'joid-os-onos-sfc-ha-orange-pod1-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-os-onos-sfc-ha-cengn-pod1-master-trigger'
+    name: 'joid-os-onos-sfc-ha-cengn-pod1-euphrates-trigger'
     triggers:
       - timed: ''
-# os-nosdn-lxd-noha trigger - branch: master
+# os-nosdn-lxd-noha trigger - branch: euphrates
 - trigger:
-    name: 'joid-os-nosdn-lxd-noha-baremetal-master-trigger'
+    name: 'joid-os-nosdn-lxd-noha-baremetal-euphrates-trigger'
     triggers:
       - timed: '5 22 * * *'
 - trigger:
-    name: 'joid-os-nosdn-lxd-noha-virtual-master-trigger'
+    name: 'joid-os-nosdn-lxd-noha-virtual-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-os-nosdn-lxd-noha-orange-pod1-master-trigger'
+    name: 'joid-os-nosdn-lxd-noha-orange-pod1-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-os-nosdn-lxd-noha-cengn-pod1-master-trigger'
+    name: 'joid-os-nosdn-lxd-noha-cengn-pod1-euphrates-trigger'
     triggers:
       - timed: ''
-# os-nosdn-lxd-ha trigger - branch: master
+# os-nosdn-lxd-ha trigger - branch: euphrates
 - trigger:
-    name: 'joid-os-nosdn-lxd-ha-baremetal-master-trigger'
+    name: 'joid-os-nosdn-lxd-ha-baremetal-euphrates-trigger'
     triggers:
       - timed: '5 10 * * *'
 - trigger:
-    name: 'joid-os-nosdn-lxd-ha-virtual-master-trigger'
+    name: 'joid-os-nosdn-lxd-ha-virtual-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-os-nosdn-lxd-ha-orange-pod1-master-trigger'
+    name: 'joid-os-nosdn-lxd-ha-orange-pod1-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-os-nosdn-lxd-ha-cengn-pod1-master-trigger'
+    name: 'joid-os-nosdn-lxd-ha-cengn-pod1-euphrates-trigger'
     triggers:
       - timed: ''
-# os-nosdn-nofeature-noha trigger - branch: master
+# os-nosdn-nofeature-noha trigger - branch: euphrates
 - trigger:
-    name: 'joid-os-nosdn-nofeature-noha-baremetal-master-trigger'
+    name: 'joid-os-nosdn-nofeature-noha-baremetal-euphrates-trigger'
     triggers:
       - timed: '5 4 * * *'
 - trigger:
-    name: 'joid-os-nosdn-nofeature-noha-virtual-master-trigger'
+    name: 'joid-os-nosdn-nofeature-noha-virtual-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-os-nosdn-nofeature-noha-orange-pod1-master-trigger'
+    name: 'joid-os-nosdn-nofeature-noha-orange-pod1-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-os-nosdn-nofeature-noha-cengn-pod1-master-trigger'
+    name: 'joid-os-nosdn-nofeature-noha-cengn-pod1-euphrates-trigger'
     triggers:
       - timed: ''
-# k8-nosdn-nofeature-noha trigger - branch: master
+# k8-nosdn-nofeature-noha trigger - branch: euphrates
 - trigger:
-    name: 'joid-k8-nosdn-nofeature-noha-baremetal-master-trigger'
+    name: 'joid-k8-nosdn-nofeature-noha-baremetal-euphrates-trigger'
     triggers:
       - timed: '5 15 * * *'
 - trigger:
-    name: 'joid-k8-nosdn-nofeature-noha-virtual-master-trigger'
+    name: 'joid-k8-nosdn-nofeature-noha-virtual-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-k8-nosdn-nofeature-noha-orange-pod1-master-trigger'
+    name: 'joid-k8-nosdn-nofeature-noha-orange-pod1-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-k8-nosdn-nofeature-noha-cengn-pod1-master-trigger'
+    name: 'joid-k8-nosdn-nofeature-noha-cengn-pod1-euphrates-trigger'
     triggers:
       - timed: ''
-# k8-nosdn-lb-noha trigger - branch: master
+# k8-nosdn-lb-noha trigger - branch: euphrates
 - trigger:
-    name: 'joid-k8-nosdn-lb-noha-baremetal-master-trigger'
+    name: 'joid-k8-nosdn-lb-noha-baremetal-euphrates-trigger'
     triggers:
       - timed: '5 20 * * *'
 - trigger:
-    name: 'joid-k8-nosdn-lb-noha-virtual-master-trigger'
+    name: 'joid-k8-nosdn-lb-noha-virtual-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-k8-nosdn-lb-noha-orange-pod1-master-trigger'
+    name: 'joid-k8-nosdn-lb-noha-orange-pod1-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-k8-nosdn-lb-noha-cengn-pod1-master-trigger'
+    name: 'joid-k8-nosdn-lb-noha-cengn-pod1-euphrates-trigger'
     triggers:
       - timed: ''
-# k8-ovn-lb-noha trigger - branch: master
+# k8-ovn-lb-noha trigger - branch: euphrates
 - trigger:
-    name: 'joid-k8-ovn-lb-noha-baremetal-master-trigger'
+    name: 'joid-k8-ovn-lb-noha-baremetal-euphrates-trigger'
     triggers:
       - timed: '5 17 * * *'
 - trigger:
-    name: 'joid-k8-ovn-lb-noha-virtual-master-trigger'
+    name: 'joid-k8-ovn-lb-noha-virtual-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-k8-ovn-lb-noha-orange-pod1-master-trigger'
+    name: 'joid-k8-ovn-lb-noha-orange-pod1-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-k8-ovn-lb-noha-cengn-pod1-master-trigger'
+    name: 'joid-k8-ovn-lb-noha-cengn-pod1-euphrates-trigger'
     triggers:
       - timed: ''
 
-# os-nosdn-openbaton-ha trigger - branch: master
+# os-nosdn-openbaton-ha trigger - branch: euphrates
 - trigger:
-    name: 'joid-os-nosdn-openbaton-ha-baremetal-master-trigger'
+    name: 'joid-os-nosdn-openbaton-ha-baremetal-euphrates-trigger'
     triggers:
       - timed: '5 25 * * *'
 - trigger:
-    name: 'joid-os-nosdn-openbaton-ha-virtual-master-trigger'
+    name: 'joid-os-nosdn-openbaton-ha-virtual-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-os-nosdn-openbaton-ha-orange-pod1-master-trigger'
+    name: 'joid-os-nosdn-openbaton-ha-orange-pod1-euphrates-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'joid-os-nosdn-openbaton-ha-cengn-pod1-master-trigger'
+    name: 'joid-os-nosdn-openbaton-ha-cengn-pod1-euphrates-trigger'
     triggers:
       - timed: ''
