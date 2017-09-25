@@ -28,7 +28,7 @@ run_test() {
     cmd_opt='prepare_env start && run_tests -r -t $test_name'
     ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
     echo 0 > ${ret_val_file}
-    # Determine which Functest image should be used for the test case
+    # Determine which Functest image should be used for the test case
     case ${test_name} in
         connection_check|api_check|snaps_health_check)
             FUNCTEST_IMAGE=opnfv/functest-healthcheck
