@@ -126,7 +126,7 @@ if [[ ${DEPLOY_SCENARIO} =~ ^os-.* ]]; then
     if [ ${FUNCTEST_MODE} == 'testcase' ]; then
         run_test ${FUNCTEST_SUITE_NAME}
     elif [ ${FUNCTEST_MODE} == 'tier' ]; then
-        tiers= (${FUNCTEST_TIER})
+        tiers=(${FUNCTEST_TIER})
         run_tiers ${tiers}
     else
         if [ ${DEPLOY_TYPE} == 'baremetal' ]; then
