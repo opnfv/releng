@@ -412,7 +412,7 @@
     name: functest-suite-builder
     builders:
         - 'functest-cleanup'
-        - 'set-functest-env'
+        - 'set-functest-env-alpine'
         - 'functest-suite'
         - 'functest-store-results'
         - 'functest-exit'
@@ -423,14 +423,6 @@
         - 'functest-cleanup'
         - 'set-functest-env-alpine'
         - 'functest-daily'
-        - 'functest-store-results'
-
-- builder:
-    name: functest-alpine-suite-builder
-    builders:
-        - 'functest-cleanup'
-        - 'set-functest-env-alpine'
-        - 'functest-suite'
         - 'functest-store-results'
 
 - builder:
@@ -453,8 +445,6 @@
     builders:
         - shell:
             !include-raw:
-                - ./functest-env-presetup.sh
-                - ../../utils/fetch_os_creds.sh
                 - ./functest-alpine.sh
 
 - builder:
