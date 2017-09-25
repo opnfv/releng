@@ -122,6 +122,14 @@
             slave-label: daisy-virtual
             installer: daisy
             <<: *master
+        - baremetal:
+            slave-label: daisy-baremetal
+            installer: daisy
+            <<: *euphrates
+        - virtual:
+            slave-label: daisy-virtual
+            installer: daisy
+            <<: *euphrates
 # netvirt 3rd party ci
         - virtual:
             slave-label: odl-netvirt-virtual
@@ -160,15 +168,19 @@
             <<: *euphrates
         - zte-pod2:
             slave-label: '{pod}'
-            installer: fuel
+            installer: daisy
+            <<: *master
+        - zte-pod2:
+            slave-label: '{pod}'
+            installer: daisy
+            <<: *euphrates
+        - zte-pod3:
+            slave-label: '{pod}'
+            installer: daisy
             <<: *master
         - zte-pod3:
             slave-label: '{pod}'
-            installer: fuel
-            <<: *master
-        - zte-pod3:
-            slave-label: '{pod}'
-            installer: fuel
+            installer: daisy
             <<: *euphrates
 # PODs for verify jobs triggered by each patch upload
 #        - ool-virtual1:
