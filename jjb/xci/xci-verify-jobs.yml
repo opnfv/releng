@@ -244,14 +244,15 @@
             export FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
             export XCI_FLAVOR=$XCI_FLAVOR
             export CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
-            export OPNFV_RELENG_DEV_PATH=$OPNFV_RELENG_DEV_PATH
+            export OPNFV_RELENG_DEV_PATH=/home/devuser/releng-xci/
             export INSTALLER_TYPE=$INSTALLER_TYPE
             export GIT_BASE=$GIT_BASE
             export JENKINS_HOME=$JENKINS_HOME
 
-            cd releng-xci/xci
-            ./xci-deloy.sh
+            cd xci
+            ./xci-deploy.sh
             EOF
+            chmod a+x xci_test.sh
 
             ./xci/scripts/vm/start-new-vm.sh $DISTRO
         - shell: |
@@ -263,7 +264,7 @@
                 exit 0
             fi
 
-            ssh ${{DISTRO}}_xci_vm "cd releng-xci && ./xci_test.sh"
+            ssh ${DISTRO}_xci_vm "cd releng-xci && ./xci_test.sh"
 
 
 - builder:
@@ -288,8 +289,8 @@
                 exit 0
             fi
 
-            sudo virsh destroy ${{DISTRO}}_xci_vm
-            sudo virsh undefine ${{DISTRO}}_xci_vm
+            sudo virsh destroy ${DISTRO}_xci_vm
+            sudo virsh undefine ${DISTRO}_xci_vm
 
 # this will be enabled once the xci is prepared
 #- builder:
