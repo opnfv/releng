@@ -31,20 +31,21 @@ run_test() {
     # Determine which Functest image should be used for the test case
     case ${test_name} in
         connection_check|api_check|snaps_health_check)
-            FUNCTEST_IMAGE=opnfv/functest-healthcheck
+            FUNCTEST_IMAGE=opnfv/functest-healthcheck ;;
         vping_ssh|vping_userdata|tempest_smoke_serial|rally_sanity|refstack_defcore|odl|odl_netvirt|fds|snaps_smoke)
-            FUNCTEST_IMAGE=opnfv/functest-smoke
+            FUNCTEST_IMAGE=opnfv/functest-smoke ;;
         tempest_full_parallel|tempest_custom|rally_full)
-            FUNCTEST_IMAGE=opnfv/functest-components
+            FUNCTEST_IMAGE=opnfv/functest-components ;;
         cloudify_ims|orchestra_openims|orchestra_clearwaterims|vyos_vrouter)
-            FUNCTEST_IMAGE=opnfv/functest-vnf
+            FUNCTEST_IMAGE=opnfv/functest-vnf ;;
         promise|doctor-notification|bgpvpn|functest-odl-sfc|domino-multinode|barometercollectd)
-            FUNCTEST_IMAGE=opnfv/functest-features
+            FUNCTEST_IMAGE=opnfv/functest-features ;;
         parser)
-            FUNCTEST_IMAGE=opnfv/functest-parser
+            FUNCTEST_IMAGE=opnfv/functest-parser ;;
         *)
             echo "Unkown test case $test_name"
             exit 1
+            ;;
     esac
     echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
     docker pull ${FUNCTEST_IMAGE}>/dev/null
