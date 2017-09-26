@@ -231,6 +231,27 @@
             fi
 
             cd $WORKSPACE
+
+            # The start-new-vm.sh script will copy the entire releng-xci directory
+            # so lets prepare the test script now so it can be copied by the script.
+            # Please do not move it elsewhere or you would have to move it to the VM
+            # yourself.
+            cat > run_jenkins_test.sh<<EOF
+            #!/bin/bash
+            export DISTRO=${DISTRO}
+            export DEPLOY_SCENARIO=${DEPLOY_SCENARIO}
+            export FUNTES_MODE=${FUNCTEST_MODE}
+            export FUNCTEST_SUITE_NAME=${FUNTEST_SUITE_NAME}
+            export XCI_FLAVOR=${XCI_FLAVOR}
+            export CLEAN_DIB_IMAGES=${CLEAN_DIB_IMAGES}
+            export OPNFV_RELENG_DEV_PATH=${OPNFV_RELENG_DEV_PATH}
+            export INSTALLER_TYPE=${INSTALLER_TYPE}
+            export GIT_BASE=${GIT_BASE}
+
+            cd releng-xci/xci
+            ./xci-deloy.sh
+            EOF
+
             ./xci/scripts/vm/start-new-vm.sh $DISTRO
         - shell: |
             #!/bin/bash
@@ -241,7 +262,7 @@
                 exit 0
             fi
 
-            ssh ${DISTRO}_xci_vm "cd releng-xci/xci && ./xci-deploy.sh"
+            ssh ${DISTRO}_xci_vm "cd releng-xci && ./run_jenkins_test.sh"
 
 
 - builder:
