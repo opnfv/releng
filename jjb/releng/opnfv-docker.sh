@@ -17,17 +17,6 @@ echo "Starting opnfv-docker for $DOCKER_REPO_NAME ..."
 echo "--------------------------------------------------------"
 echo
 
-count=30 # docker build jobs might take up to ~30 min
-while [[ -n `ps -ef|grep 'docker build'|grep -v grep` ]]; do
-    echo "Build in progress. Waiting..."
-    sleep 60
-    count=$(( $count - 1 ))
-    if [ $count -eq 0 ]; then
-        echo "Timeout. Aborting..."
-        exit 1
-    fi
-done
-
 # Remove previous running containers if exist
 if [[ -n "$(docker ps -a | grep $DOCKER_REPO_NAME)" ]]; then
     echo "Removing existing $DOCKER_REPO_NAME containers..."
