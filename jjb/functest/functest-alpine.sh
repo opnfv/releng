@@ -6,6 +6,7 @@ set +o pipefail
 
 run_tiers() {
     cmd_opt='prepare_env start && run_tests -r -t all'
+    [[ $BUILD_TAG =~ "suite" ]] && cmd_opt='prepare_env start && run_tests -t all'
     ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
     echo 0 > ${ret_val_file}
 
@@ -26,6 +27,7 @@ run_tiers() {
 run_test() {
     test_name=$1
     cmd_opt='prepare_env start && run_tests -r -t $test_name'
+    [[ $BUILD_TAG =~ "suite" ]] && cmd_opt='prepare_env start && run_tests -t $test_name'
     ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
     echo 0 > ${ret_val_file}
     # Determine which Functest image should be used for the test case
