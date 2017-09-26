@@ -10,10 +10,6 @@
         stream: master
         branch: '{stream}'
         disabled: false
-    danube: &danube
-        stream: danube
-        branch: 'stable/{stream}'
-        disabled: false
     euphrates: &euphrates
         stream: euphrates
         branch: 'stable/{stream}'
@@ -101,6 +97,18 @@
             <<: *master
             <<: *yardstick-arm-receivers
         # projects with jobs for stable/euphrates
+        - 'functest':
+            project: 'functest'
+            <<: *euphrates
+            <<: *functest-arm-receivers
+        - 'dovetail':
+            project: 'dovetail'
+            <<: *euphrates
+            <<: *dovetail-arm-receivers
+        - 'yardstick':
+            project: 'yardstick'
+            <<: *euphrates
+            <<: *yardstick-arm-receivers
         - 'storperf-master':
             project: 'storperf'
             dockerdir: 'docker/storperf-master'
