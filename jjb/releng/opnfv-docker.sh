@@ -75,7 +75,7 @@ echo "Current branch: $BRANCH"
 
 BUILD_BRANCH=$BRANCH
 
-if [[ "$BRANCH" == "master" ]]; then
+if [[ "$BRANCH" == "master" ]] || [[ "$BRANCH" == "euphrates"]]; then
     DOCKER_TAG="latest"
 elif [[ -n "${RELEASE_VERSION-}" ]]; then
     DOCKER_TAG=${BRANCH##*/}.${RELEASE_VERSION}
