@@ -1,18 +1,20 @@
+---
 - project:
     name: calipso
 
     project: '{name}'
 
     jobs:
-        - 'calipso-verify-{stream}'
+      - 'calipso-install-{stream}'
+      - 'calipso-verify-{stream}'
 
     stream:
-        - master:
-            branch: '{stream}'
-            disabled: false
-        - euphrates:
-            branch: 'stable/{stream}'
-            disabled: false
+      - master:
+          branch: '{stream}'
+          disabled: false
+      - euphrates:
+          branch: 'stable/{stream}'
+          disabled: false
 
 - job-template:
     name: 'calipso-verify-{stream}'
@@ -20,45 +22,136 @@
     disabled: '{obj:disabled}'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-defaults'
 
 
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
 
     builders:
-        - verify-unit-tests
+      - verify-unit-tests
+
+- job-template:
+    name: 'calipso-install-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-defaults'
+
+
+    scm:
+      - git-scm-gerrit
+
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+
+    builders:
+      - install-calipso
+
+- builder:
+    name: install-calipso
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          mkdir -p /home/calipso/
+          cd $WORKSPACE
+          # install Python Docker library
+          sudo pip3 install docker
+          # Python Mongo lib needed for Calipso optional pre-populating of DB
+          sudo pip3 install pymongo
+          # run calipso apex configuration:
+          PYTHONPATH=$PWD/app sudo python3 \
+            app/install/configure/setup_apex_environment.py \
+            -i $WORKSPACE/app/install/db
+          # make sure older calipso containers are not running
+          cd $WORKSPACE/app/install
+          PYTHONPATH=$PWD/app sudo python3 ./calipso-installer.py \
+            --command stop-all
+          # run calipso installer
+          PYTHONPATH=$PWD/app sudo python3 ./calipso-installer.py \
+            --command start-all --copy c
+          cd $WORKSPACE
+          # run Calipso functional test
+          # wait to make sure all docker containers are up first
+          sleep 15
+          PYTHONPATH=$PWD/app python3 calipso/tests/functest/smoke_test.py
+          # run a scan using calipso API:
+          echo "Sending a scan request to calipso API"
+          SCANS_URL=http://172.17.0.1:8000/scans
+          POST_BODY="{"
+          POST_BODY="$POST_BODY \"status\": \"pending\", "
+          POST_BODY="$POST_BODY \"log_level\": \"warning\", "
+          POST_BODY="$POST_BODY \"clear\": true, "
+          POST_BODY="$POST_BODY \"environment\": \"Apex-Euphrates\"}"
+          POST_BODY="$POST_BODY }"
+          APP_JSON_HEADER="Content-Type:application/json"
+          AUTH_HEADER="Authorization:Basic a29yZW46a29ybGV2"
+          curl -X POST -d $POST_BODY $SCANS_URL \
+            --header "$APP_JSON_HEADER" \
+            --header "$AUTH_HEADER"
+          # fetch scan request status
+          # notice it will take more time for the request to be picked and
+          # start running, and even more time for the scan to complete
+          curl -X GET $SCANS_URL/?env_name=Apex-Euphrates \
+            --header "$APP_JSON_HEADER" \
+            --header "$AUTH_HEADER"
+
+
 
 - builder:
     name: verify-unit-tests
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o nounset
-            set -o pipefail
-            cd $WORKSPACE
-            PYTHONPATH=$PWD/app app/test/verify.sh
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          cd $WORKSPACE
+          PYTHONPATH=$PWD/app app/test/verify.sh
