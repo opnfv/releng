@@ -16,10 +16,10 @@
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
-      - danube:
+      - euphrates:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
-          disabled: false
+          disabled: true
 
 - job-template:
     name: 'container4nfv-verify-{stream}'
@@ -61,4 +61,9 @@
 
     builders:
       - shell: |
-          echo "Nothing to verify!"
+          #!/bin/bash
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          cd $WORKSPACE/ci
+          ./build.sh
