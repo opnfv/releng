@@ -10,16 +10,17 @@
 
     jobs:
       - 'container4nfv-verify-{stream}'
+      - 'container4nfv-daily-{stream}'
 
     stream:
       - master:
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
-      - danube:
+      - euphrates:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
-          disabled: false
+          disabled: true
 
 - job-template:
     name: 'container4nfv-verify-{stream}'
@@ -61,4 +62,41 @@
 
     builders:
       - shell: |
-          echo "Nothing to verify!"
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          cd $WORKSPACE/ci
+          ./build.sh
+
+- job-template:
+    name: 'container4nfv-daily-{stream}'
+
+    project-type: freestyle
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    properties:
+      - logrotate-default
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+      - git-scm
+
+    triggers:
+      - timed: '@midnight'
+
+    builders:
+      - shell:
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          cd $WORKSPACE/ci
+          ./build.sh
+          ./deploy.sh
