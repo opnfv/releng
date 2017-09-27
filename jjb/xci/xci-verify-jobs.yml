@@ -12,15 +12,24 @@
 # distros
 #--------------------------------
     distro:
-        - 'ubuntu':
+        - ubuntu:
             disabled: false
-            voting: true
-        - 'centos':
+            successful: false
+            failed: false
+            unstable: false
+            notbuilt: false
+        - centos:
             disabled: false
-            voting: false
-        - 'opensuse':
+            successful: true
+            failed: true
+            unstable: true
+            notbuilt: true
+        - opensuse:
             disabled: false
-            voting: false
+            successful: true
+            failed: true
+            unstable: true
+            notbuilt: true
 #--------------------------------
 # type
 #--------------------------------
@@ -112,11 +121,11 @@
                   - compare-type: ANT
                     pattern: 'docs/**'
             readable-message: true
-          skip-vote:
-            successful: '{obj:voting}'
-            failed: '{obj:voting}'
-            unstable: '{obj:voting}'
-            notbuilt: '{obj:voting}'
+            skip-vote:
+                successful: '{obj:successful}'
+                failed: '{obj:failed}'
+                unstable: '{obj:unstable}'
+                notbuilt: '{obj:notbuilt}'
 
     parameters:
         - project-parameter:
