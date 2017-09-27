@@ -46,14 +46,14 @@
 #--------------------------------
     jobs:
         - 'xci-verify-{distro}-{type}-{stream}'
-        - 'xci-verify-{phase}-{type}-{stream}'
+        - 'xci-verify-{distro}-{phase}-{type}-{stream}'
 #--------------------------------
 # job templates
 #--------------------------------
 - job-template:
     name: 'xci-verify-{distro}-{type}-{stream}'
 
-    project-type: freestyle
+    project-type: multijob
 
     disabled: '{obj:disabled}'
 
@@ -142,44 +142,48 @@
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: 'Git URL to use on this Jenkins Slave'
 
-
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
-        - trigger-builds:
-            - project: 'xci-verify-deploy-{type}-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                PROJECT=$PROJECT
-                DISTRO={distro}
-                DEPLOY_SCENARIO=os-nosdn-nofeature-noha
-                CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              same-node: true
-              block: true
-        - trigger-builds:
-            - project: 'xci-verify-healthcheck-{type}-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                PROJECT=$PROJECT
-                DISTRO={distro}
-                DEPLOY_SCENARIO=os-nosdn-nofeature-noha
-                CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
-                FUNCTEST_MODE=tier
-                FUNCTEST_TIER=healthcheck
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              same-node: true
-              block: true
-
+        - multijob:
+            name: deploy
+            condition: SUCCESSFUL
+            projects:
+                - name: 'xci-verify-{distro}-deploy-{type}-{stream}'
+                  current-parameters: true
+                  predefined-parameters: |
+                    DISTRO={distro}
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                    CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: true
+                  kill-phase-on: FAILURE
+                  abort-all-job: true
+        - multijob:
+            name: healthcheck
+            condition: SUCCESSFUL
+            projects:
+                - name: 'xci-verify-{distro}-healthcheck-{type}-{stream}'
+                  current-parameters: true
+                  predefined-parameters: |
+                    DISTRO={distro}
+                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                    CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
+                    FUNCTEST_MODE=tier
+                    FUNCTEST_TIER=healthcheck
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  node-parameters: true
+                  kill-phase-on: NEVER
+                  abort-all-job: true
 
 - job-template:
-    name: 'xci-verify-{phase}-{type}-{stream}'
+    name: 'xci-verify-{distro}-{phase}-{type}-{stream}'
 
     disabled: false
 
@@ -240,7 +244,7 @@
 
     builders:
         - description-setter:
-            description: "Built on $NODE_NAME for $DISTRO"
+            description: "Built on $NODE_NAME"
         - 'xci-verify-{phase}-macro'
 
 #--------------------------------
