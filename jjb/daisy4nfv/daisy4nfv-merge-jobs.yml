@@ -1,3 +1,4 @@
+---
 - project:
     name: 'daisy4nfv-merge-jobs'
 
@@ -5,37 +6,39 @@
 
     installer: 'daisy'
 
-###########################################################
-# use alias to keep the jobs'name existed already unchanged
-###########################################################
+    ###########################################################
+    # use alias to keep the jobs'name existed already unchanged
+    ###########################################################
     alias: 'daisy4nfv'
 
-#####################################
-# branch definitions
-#####################################
+    #####################################
+    # branch definitions
+    #####################################
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            disabled: false
-        - euphrates:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
-            disabled: false
-#####################################
-# patch merge phases
-#####################################
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
+      - euphrates:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
+    #####################################
+    # patch merge phases
+    #####################################
     phase:
-        - 'build':
-            slave-label: 'opnfv-build-centos'
-        - 'deploy-virtual':
-            slave-label: 'daisy-virtual'
-#####################################
-# jobs
-#####################################
+      - 'build':
+          slave-label: 'opnfv-build-centos'
+      - 'deploy-virtual':
+          slave-label: 'daisy-virtual'
+
+    #####################################
+    # jobs
+    #####################################
     jobs:
-        - '{alias}-merge-{stream}'
-        - '{alias}-merge-{phase}-{stream}'
+      - '{alias}-merge-{stream}'
+      - '{alias}-merge-{phase}-{stream}'
+
 #####################################
 # job templates
 #####################################
@@ -49,93 +52,93 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 4
-            option: 'project'
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - '{alias}-merge-(master|euphrates)'
-            block-level: 'NODE'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 4
+          option: 'project'
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - '{alias}-merge-(master|euphrates)'
+          block-level: 'NODE'
 
     scm:
-        - git-scm
+      - git-scm
 
     wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 360
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 360
+          fail: true
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-                - project-compare-type: 'ANT'
-                  project-pattern: '{project}'
-                  branches:
-                      - branch-compare-type: 'ANT'
-                        branch-pattern: '**/{branch}'
-                  file-paths:
-                      - compare-type: ANT
-                        pattern: 'ci/**'
-                      - compare-type: ANT
-                        pattern: 'code/**'
-                      - compare-type: ANT
-                        pattern: 'deploy/**'
-                  disable-strict-forbidden-file-verification: 'true'
-                  forbidden-file-paths:
-                      - compare-type: ANT
-                        pattern: 'docs/**'
-                      - compare-type: ANT
-                        pattern: '.gitignore'
-            readable-message: true
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'remerge'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: ANT
+                  pattern: 'ci/**'
+                - compare-type: ANT
+                  pattern: 'code/**'
+                - compare-type: ANT
+                  pattern: 'deploy/**'
+              disable-strict-forbidden-file-verification: 'true'
+              forbidden-file-paths:
+                - compare-type: ANT
+                  pattern: 'docs/**'
+                - compare-type: ANT
+                  pattern: '.gitignore'
+          readable-message: true
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-centos-defaults'
-        - '{alias}-merge-defaults':
-            gs-pathname: '{gs-pathname}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-centos-defaults'
+      - '{alias}-merge-defaults':
+          gs-pathname: '{gs-pathname}'
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - multijob:
-            name: build
-            condition: SUCCESSFUL
-            projects:
-                - name: '{alias}-merge-build-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: deploy-virtual
-            condition: SUCCESSFUL
-            projects:
-                - name: '{alias}-merge-deploy-virtual-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - multijob:
+          name: build
+          condition: SUCCESSFUL
+          projects:
+            - name: '{alias}-merge-build-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
+          name: deploy-virtual
+          condition: SUCCESSFUL
+          projects:
+            - name: '{alias}-merge-deploy-virtual-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: true
 
 - job-template:
     name: '{alias}-merge-{phase}-{stream}'
@@ -145,40 +148,40 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 4
-            option: 'project'
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - '{alias}-merge-{phase}-.*'
-                - '{installer}-daily-.*'
-            block-level: 'NODE'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 4
+          option: 'project'
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - '{alias}-merge-{phase}-.*'
+            - '{installer}-daily-.*'
+          block-level: 'NODE'
 
     scm:
-        - git-scm
+      - git-scm
 
     wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 360
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 360
+          fail: true
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - '{installer}-defaults'
-        - '{slave-label}-defaults'
-        - '{alias}-merge-defaults':
-            gs-pathname: '{gs-pathname}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - '{slave-label}-defaults'
+      - '{alias}-merge-defaults':
+          gs-pathname: '{gs-pathname}'
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - '{project}-merge-{phase}-macro'
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - '{project}-merge-{phase}-macro'
 
 #####################################
 # builder macros
@@ -186,22 +189,22 @@
 - builder:
     name: 'daisy-merge-build-macro'
     builders:
-        - shell:
-            !include-raw: ./daisy4nfv-basic.sh
-        - shell:
-            !include-raw: ./daisy4nfv-build.sh
-        - shell:
-            !include-raw: ./daisy4nfv-upload-artifact.sh
-        - 'clean-workspace'
+      - shell:
+          !include-raw: ./daisy4nfv-basic.sh
+      - shell:
+          !include-raw: ./daisy4nfv-build.sh
+      - shell:
+          !include-raw: ./daisy4nfv-upload-artifact.sh
+      - 'clean-workspace'
 
 - builder:
     name: 'daisy-merge-deploy-virtual-macro'
     builders:
-        - shell:
-            !include-raw: ./daisy4nfv-download-artifact.sh
-        - shell:
-            !include-raw: ./daisy-deploy.sh
-        - 'clean-workspace'
+      - shell:
+          !include-raw: ./daisy4nfv-download-artifact.sh
+      - shell:
+          !include-raw: ./daisy-deploy.sh
+      - 'clean-workspace'
 
 #####################################
 # parameter macros
@@ -209,15 +212,15 @@
 - parameter:
     name: 'daisy4nfv-merge-defaults'
     parameters:
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-            description: "Directory where the build artifact will be located upon the completion of the build."
-        - string:
-            name: CACHE_DIRECTORY
-            default: $HOME/opnfv/cache/$INSTALLER_TYPE
-            description: "Directory where the cache to be used during the build is located."
-        - string:
-            name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
-            description: "URL to Google Storage."
+      - string:
+          name: BUILD_DIRECTORY
+          default: $WORKSPACE/build_output
+          description: "Directory where the build artifact will be located upon the completion of the build."
+      - string:
+          name: CACHE_DIRECTORY
+          default: $HOME/opnfv/cache/$INSTALLER_TYPE
+          description: "Directory where the cache to be used during the build is located."
+      - string:
+          name: GS_URL
+          default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+          description: "URL to Google Storage."
