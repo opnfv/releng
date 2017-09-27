@@ -141,6 +141,7 @@
             - project: 'xci-verify-deploy-{type}-{stream}'
               current-parameters: false
               predefined-parameters: |
+                PROJECT=$PROJECT
                 DISTRO={distro}
                 DEPLOY_SCENARIO=os-nosdn-nofeature-noha
                 CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
@@ -154,6 +155,7 @@
             - project: 'xci-verify-healthcheck-{type}-{stream}'
               current-parameters: false
               predefined-parameters: |
+                PROJECT=$PROJECT
                 DISTRO={distro}
                 DEPLOY_SCENARIO=os-nosdn-nofeature-noha
                 CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
@@ -179,8 +181,6 @@
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
-                - 'xci-verify-deploy-.*'
-                - 'xci-verify-healthcheck-.*'
                 - 'bifrost-verify-.*'
                 - 'bifrost-periodic-.*'
                 - 'osa-verify-.*'
@@ -188,6 +188,9 @@
             block-level: 'NODE'
 
     parameters:
+        - string:
+            name: PROJECT
+            default: 'releng-xci'
         - string:
             name: DISTRO
             default: 'ubuntu'
