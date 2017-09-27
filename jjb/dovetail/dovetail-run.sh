@@ -186,14 +186,6 @@ cat << EOF >$tempest_conf_file
 compute:
     min_compute_nodes: 2
     volume_device_name: ${volume_device}
-    min_microversion: 2.2
-    max_microversion: latest
-
-compute-feature-enabled:
-    live_migration: True
-    block_migration_for_live_migration: True
-    block_migrate_cinder_iscsi: True
-    attach_encrypted_volume: True
 
 EOF
 
