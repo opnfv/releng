@@ -28,6 +28,7 @@
             baremetal-slave: 'apex-baremetal-master'
             verify-scenario: 'os-odl-nofeature-ha'
             scenario_stream: 'master'
+            disable_daily: true
         - euphrates: &euphrates
             branch: 'stable/euphrates'
             gs-pathname: '/euphrates'
@@ -36,6 +37,7 @@
             baremetal-slave: 'apex-baremetal-master'
             verify-scenario: 'os-odl-nofeature-ha'
             scenario_stream: 'euphrates'
+            disable_daily: false
         - danube: &danube
             branch: 'stable/danube'
             gs-pathname: '/danube'
@@ -45,6 +47,7 @@
             verify-scenario: 'os-odl_l3-nofeature-ha'
             scenario_stream: 'danube'
             disabled: true
+            disable_daily: true
 
     scenario:
         - 'os-nosdn-nofeature-noha':
@@ -899,7 +902,7 @@
 
     node: '{baremetal-slave}'
 
-    disabled: false
+    disabled: '{obj:disable_daily}'
 
     scm:
         - git-scm
