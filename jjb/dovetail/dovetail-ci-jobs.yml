@@ -1,3 +1,4 @@
+---
 ###################################
 # job configuration for dovetail
 ###################################
@@ -6,179 +7,179 @@
 
     project: '{name}'
 
-#---------------------------------------
-# BRANCH ANCHORS
-#---------------------------------------
-# 1)the stream/branch here represents the SUT(System Under Test) stream/branch
-# 2)docker-tag is the docker tag of dovetail(only master by now, then all latest used)
-#   the dovetail stream is one-to-one mapping with dovetail docker-tag
-#   the dovetail is not sync with A/B/C release
-#
+    # --------------------------------------
+    # BRANCH ANCHORS
+    # --------------------------------------
+    # 1)the stream/branch here represents the SUT(System Under Test) stream/branch
+    # 2)docker-tag is the docker tag of dovetail(only master by now, then all latest used)
+    #   the dovetail stream is one-to-one mapping with dovetail docker-tag
+    #   the dovetail is not sync with A/B/C release
     master: &master
-        stream: master
-        branch: '{stream}'
-        dovetail-branch: '{stream}'
-        gs-pathname: ''
-        docker-tag: 'latest'
+      stream: master
+      branch: '{stream}'
+      dovetail-branch: '{stream}'
+      gs-pathname: ''
+      docker-tag: 'latest'
     danube: &danube
-        stream: danube
-        branch: 'stable/{stream}'
-        dovetail-branch: master
-        gs-pathname: '/{stream}'
-        docker-tag: 'cvp.0.7.0'
+      stream: danube
+      branch: 'stable/{stream}'
+      dovetail-branch: master
+      gs-pathname: '/{stream}'
+      docker-tag: 'cvp.0.7.0'
 
-#-----------------------------------
-# POD, PLATFORM, AND BRANCH MAPPING
-#-----------------------------------
-#            CI PODs
-# This section should only contain the SUTs
-# that have been switched using labels for slaves
-#------------------------------------------------
-# the pods, SUTs listed here are just examples to
-# let the dovetail tool run, there can be more ways beside CI to
-# run the dovetail tool.
-# pods, SUTs will be added/adjusted when needed
+    # ----------------------------------
+    # POD, PLATFORM, AND BRANCH MAPPING
+    # ----------------------------------
+    #            CI PODs
+    # This section should only contain the SUTs
+    # that have been switched using labels for slaves
+    # -----------------------------------------------
+    # the pods, SUTs listed here are just examples to
+    # let the dovetail tool run, there can be more ways beside CI to
+    # run the dovetail tool.
+    # pods, SUTs will be added/adjusted when needed
     pod:
-# fuel CI PODs
-        - baremetal:
-            slave-label: fuel-baremetal
-            SUT: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - virtual:
-            slave-label: fuel-virtual
-            SUT: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - baremetal:
-            slave-label: fuel-baremetal
-            SUT: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-        - virtual:
-            slave-label: fuel-virtual
-            SUT: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-#compass CI PODs
-        - baremetal:
-            slave-label: compass-baremetal
-            SUT: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - virtual:
-            slave-label: compass-virtual
-            SUT: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - baremetal:
-            slave-label: compass-baremetal
-            SUT: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-        - virtual:
-            slave-label: compass-virtual
-            SUT: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-#--------------------------------
-#    Installers not using labels
-#            CI PODs
-# This section should only contain the installers
-# that have not been switched using labels for slaves
-#--------------------------------
-#apex PODs
-        - virtual:
-            slave-label: apex-virtual-master
-            SUT: apex
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - baremetal:
-            slave-label: apex-baremetal-master
-            SUT: apex
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - virtual:
-            slave-label: apex-virtual-danube
-            SUT: apex
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-        - baremetal:
-            slave-label: apex-baremetal-danube
-            SUT: apex
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-#armband CI PODs
-        - armband-baremetal:
-            slave-label: armband-baremetal
-            SUT: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - armband-virtual:
-            slave-label: armband-virtual
-            SUT: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - armband-baremetal:
-            slave-label: armband-baremetal
-            SUT: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-        - armband-virtual:
-            slave-label: armband-virtual
-            SUT: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-#--------------------------------
-#        None-CI PODs
-#--------------------------------
-        - baremetal-centos:
-            slave-label: 'intel-pod8'
-            SUT: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - zte-pod1:
-            slave-label: zte-pod1
-            SUT: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - zte-pod2:
-            slave-label: zte-pod2
-            SUT: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - zte-pod3:
-            slave-label: zte-pod3
-            SUT: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - zte-pod1:
-            slave-label: zte-pod1
-            SUT: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-        - zte-pod3:
-            slave-label: zte-pod3
-            SUT: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-        - huawei-pod4:
-            slave-label: huawei-pod4
-            SUT: apex
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-        - huawei-pod7:
-            slave-label: huawei-pod7
-            SUT: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *danube
-#--------------------------------
+      # fuel CI PODs
+      - baremetal:
+          slave-label: fuel-baremetal
+          SUT: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - virtual:
+          slave-label: fuel-virtual
+          SUT: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - baremetal:
+          slave-label: fuel-baremetal
+          SUT: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *danube
+      - virtual:
+          slave-label: fuel-virtual
+          SUT: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *danube
+      # compass CI PODs
+      - baremetal:
+          slave-label: compass-baremetal
+          SUT: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - virtual:
+          slave-label: compass-virtual
+          SUT: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - baremetal:
+          slave-label: compass-baremetal
+          SUT: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *danube
+      - virtual:
+          slave-label: compass-virtual
+          SUT: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *danube
+      # -------------------------------
+      #    Installers not using labels
+      #            CI PODs
+      # This section should only contain the installers
+      # that have not been switched using labels for slaves
+      # -------------------------------
+      # apex PODs
+      - virtual:
+          slave-label: apex-virtual-master
+          SUT: apex
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - baremetal:
+          slave-label: apex-baremetal-master
+          SUT: apex
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - virtual:
+          slave-label: apex-virtual-danube
+          SUT: apex
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *danube
+      - baremetal:
+          slave-label: apex-baremetal-danube
+          SUT: apex
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *danube
+      # armband CI PODs
+      - armband-baremetal:
+          slave-label: armband-baremetal
+          SUT: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - armband-virtual:
+          slave-label: armband-virtual
+          SUT: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - armband-baremetal:
+          slave-label: armband-baremetal
+          SUT: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *danube
+      - armband-virtual:
+          slave-label: armband-virtual
+          SUT: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *danube
+      # -------------------------------
+      #        None-CI PODs
+      # -------------------------------
+      - baremetal-centos:
+          slave-label: 'intel-pod8'
+          SUT: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - zte-pod1:
+          slave-label: zte-pod1
+          SUT: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - zte-pod2:
+          slave-label: zte-pod2
+          SUT: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - zte-pod3:
+          slave-label: zte-pod3
+          SUT: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - zte-pod1:
+          slave-label: zte-pod1
+          SUT: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *danube
+      - zte-pod3:
+          slave-label: zte-pod3
+          SUT: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *danube
+      - huawei-pod4:
+          slave-label: huawei-pod4
+          SUT: apex
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *danube
+      - huawei-pod7:
+          slave-label: huawei-pod7
+          SUT: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *danube
+
+    # -------------------------------
     testsuite:
-        - 'compliance_set'
-        - 'proposed_tests'
+      - 'compliance_set'
+      - 'proposed_tests'
 
     jobs:
-        - 'dovetail-{SUT}-{pod}-{testsuite}-{stream}'
+      - 'dovetail-{SUT}-{pod}-{testsuite}-{stream}'
 
 ################################
 # job templates
@@ -191,80 +192,80 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-per-node: 1
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-per-node: 1
+          option: 'project'
 
     wrappers:
-        - build-name:
-            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
-        - timeout:
-            timeout: 300
-            abort: true
-        - fix-workspace-permissions
+      - build-name:
+          name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+      - timeout:
+          timeout: 300
+          abort: true
+      - fix-workspace-permissions
 
     triggers:
-        - '{auto-trigger-name}'
+      - '{auto-trigger-name}'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{dovetail-branch}'
-        - '{SUT}-defaults'
-        - '{slave-label}-defaults'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'os-nosdn-nofeature-ha'
-        - string:
-            name: DOCKER_TAG
-            default: '{docker-tag}'
-            description: 'Tag to pull dovetail docker image'
-        - string:
-            name: CI_DEBUG
-            default: 'true'
-            description: "Show debug output information"
-        - string:
-            name: TESTSUITE
-            default: '{testsuite}'
-            description: "dovetail testsuite to run"
-        - string:
-            name: DOVETAIL_REPO_DIR
-            default: "/home/opnfv/dovetail"
-            description: "Directory where the dovetail repository is cloned"
-        - string:
-            name: SUT_BRANCH
-            default: '{branch}'
-            description: "SUT branch"
+      - project-parameter:
+          project: '{project}'
+          branch: '{dovetail-branch}'
+      - '{SUT}-defaults'
+      - '{slave-label}-defaults'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-nosdn-nofeature-ha'
+      - string:
+          name: DOCKER_TAG
+          default: '{docker-tag}'
+          description: 'Tag to pull dovetail docker image'
+      - string:
+          name: CI_DEBUG
+          default: 'true'
+          description: "Show debug output information"
+      - string:
+          name: TESTSUITE
+          default: '{testsuite}'
+          description: "dovetail testsuite to run"
+      - string:
+          name: DOVETAIL_REPO_DIR
+          default: "/home/opnfv/dovetail"
+          description: "Directory where the dovetail repository is cloned"
+      - string:
+          name: SUT_BRANCH
+          default: '{branch}'
+          description: "SUT branch"
 
     scm:
-        - git-scm
+      - git-scm
 
     builders:
-        - description-setter:
-            description: "POD: $NODE_NAME"
-        - 'dovetail-cleanup'
-        - 'dovetail-run'
+      - description-setter:
+          description: "POD: $NODE_NAME"
+      - 'dovetail-cleanup'
+      - 'dovetail-run'
 
     publishers:
-        - archive:
-            artifacts: 'results/**/*'
-            allow-empty: true
-            fingerprint: true
-        - email-jenkins-admins-on-failure
+      - archive:
+          artifacts: 'results/**/*'
+          allow-empty: true
+          fingerprint: true
+      - email-jenkins-admins-on-failure
 
-#--------------------------
+# -------------------------
 # builder macros
-#--------------------------
+# -------------------------
 - builder:
     name: dovetail-run
     builders:
-        - shell:
-            !include-raw: ./dovetail-run.sh
+      - shell:
+          !include-raw: ./dovetail-run.sh
 
 - builder:
     name: dovetail-cleanup
     builders:
-        - shell:
-            !include-raw: ./dovetail-cleanup.sh
+      - shell:
+          !include-raw: ./dovetail-cleanup.sh
