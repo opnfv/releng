@@ -61,6 +61,12 @@
                 - 'osa-verify-{distro}-.*'
                 - 'osa-periodic-{distro}-.*'
             block-level: 'NODE'
+        - throttle:
+            max-per-node: 2
+            max-total: 10
+            categories:
+                - xci-verify-virtual
+            option: category
 
     wrappers:
         - ssh-agent-wrapper
@@ -127,37 +133,39 @@
             default: https://gerrit.opnfv.org/gerrit/$PROJECT
             description: 'Git URL to use on this Jenkins Slave'
 
+
     builders:
         - description-setter:
             description: "Built on $NODE_NAME"
-        - multijob:
-            name: deploy
-            condition: SUCCESSFUL
-            projects:
-                - name: 'xci-verify-deploy-{type}-{stream}'
-                  current-parameters: true
-                  predefined-parameters: |
-                    DISTRO={distro}
-                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
-                    CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
-                  node-parameters: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: healthcheck
-            condition: SUCCESSFUL
-            projects:
-                - name: 'xci-verify-healthcheck-{type}-{stream}'
-                  current-parameters: true
-                  predefined-parameters: |
-                    DISTRO={distro}
-                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
-                    CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
-                    FUNCTEST_MODE=tier
-                    FUNCTEST_TIER=healthcheck
-                  node-parameters: true
-                  kill-phase-on: NEVER
-                  abort-all-job: true
+        - trigger-builds:
+            - project: 'xci-verify-deploy-{type}-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                DISTRO={distro}
+                DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              same-node: true
+              block: true
+        - trigger-builds:
+            - project: 'xci-verify-healthcheck-{type}-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                DISTRO={distro}
+                DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
+                FUNCTEST_MODE=tier
+                FUNCTEST_TIER=healthcheck
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              same-node: true
+              block: true
+
 
 - job-template:
     name: 'xci-verify-{phase}-{type}-{stream}'
