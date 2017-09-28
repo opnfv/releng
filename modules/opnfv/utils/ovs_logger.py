@@ -27,11 +27,10 @@ class OVSLogger(object):
         if not os.path.exists(dirpath):
             os.makedirs(dirpath)
 
-    def __ssh_host(self, ssh_conn, host_prefix='10.20.0'):
+    def __ssh_host(self, ssh_conn):
         try:
-            _, stdout, _ = ssh_conn.exec_command('hostname -I')
-            hosts = stdout.readline().strip().split(' ')
-            found_host = [h for h in hosts if h.startswith(host_prefix)][0]
+            _, stdout, _ = ssh_conn.exec_command('hostname')
+            found_host = stdout.readline()
             return found_host
         except Exception as e:
             logger.error(e)
@@ -98,10 +97,18 @@ class OVSLogger(object):
 
     def dump_ovs_logs(self, controller_clients, compute_clients,
                       related_error=None, timestamp=None):
+        """
+        delete controller_clients argument because
+        that was producing an error in XCI installer.
+
+        For more information see:
+        TODO: https://jira.opnfv.org/browse/RELENG-314
+        """
+        del controller_clients
         if timestamp is None:
             timestamp = time.strftime("%Y%m%d-%H%M%S")
-
-        clients = controller_clients + compute_clients
+        # clients = controller_clients + compute_clients
+        clients = compute_clients
         for client in clients:
             self.ofctl_dump_flows(client, timestamp=timestamp)
             self.vsctl_show(client, timestamp=timestamp)
