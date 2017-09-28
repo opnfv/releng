@@ -19,7 +19,9 @@ run_tiers() {
         eval ${cmd}
         ret_value=$?
         if [ ${ret_value} != 0 ]; then
-          echo ${ret_value} > ${ret_val_file}
+            echo ${ret_value} > ${ret_val_file}
+            if [ ${tier} == 'healthcheck' ]; then
+                exit 1
         fi
     done
 }
