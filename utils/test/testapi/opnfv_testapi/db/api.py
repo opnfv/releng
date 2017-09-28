@@ -1,8 +1,12 @@
 import motor
 
+from opnfv_testapi.common import raises
 from opnfv_testapi.common.config import CONF
 
-DB = motor.MotorClient(CONF.mongo_url)[CONF.mongo_dbname]
+try:
+    DB = motor.MotorClient(CONF.mongo_url)[CONF.mongo_dbname]
+except Exception:
+    raises.BadRequest('MongoDB cannot be connected')
 
 
 def db_update(collection, query, update_req):
