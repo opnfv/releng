@@ -114,8 +114,11 @@ class GenericApiHandler(web.RequestHandler):
 
         total_pages = 0
         data = list()
-        cursor = dbapi.db_list(self.table, query)
-        records_count = yield cursor.count()
+        try:
+            cursor = dbapi.db_list(self.table, query)
+            records_count = yield cursor.count()
+        except Exception:
+            raises.BadRequest('MongoDB cannot be connected')
         if records_count > 0:
             if page > 0:
                 total_pages, return_nr = self._calc_total_pages(records_count,
