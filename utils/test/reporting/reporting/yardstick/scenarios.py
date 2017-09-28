@@ -9,7 +9,7 @@
 import requests
 import yaml
 
-import utils.reporting_utils as rp_utils
+import reporting.utils.reporting_utils as rp_utils
 
 yardstick_conf = rp_utils.get_config('yardstick.test_conf')
 response = requests.get(yardstick_conf)

@@ -22,7 +22,7 @@ ARG BRANCH=master
 
 ENV HOME /home/opnfv
 ENV working_dir ${HOME}/releng/utils/test/reporting
-ENV CONFIG_REPORTING_YAML ${working_dir}/reporting.yaml
+ENV CONFIG_REPORTING_YAML ${working_dir}/reporting/reporting.yaml
 
 WORKDIR ${HOME}
 # Packaged dependencies
