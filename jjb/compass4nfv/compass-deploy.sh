@@ -39,7 +39,7 @@ elif [[ "${DEPLOY_SCENARIO}" =~ "-onos" ]]; then
     export NETWORK_CONF_FILE=network_onos.yml
 elif [[ "${DEPLOY_SCENARIO}" =~ "-openo" ]]; then
     export NETWORK_CONF_FILE=network_openo.yml
-elif [[ "${DEPLOY_SCENARIO}" =~ "-dpdk" ]]; then
+elif [[ "${DEPLOY_SCENARIO}" =~ "-ovs_dpdk" ]]; then
     export NETWORK_CONF_FILE=network_dpdk.yml
 else
     export NETWORK_CONF_FILE=network.yml
