@@ -27,7 +27,7 @@ run_tiers() {
 run_test() {
     test_name=$1
     cmd_opt='prepare_env start && run_tests -r -t $test_name'
-    [[ $BUILD_TAG =~ "suite" ]] && cmd_opt='prepare_env start && run_tests -t $test_name'
+    [[ $BUILD_TAG =~ "suite" ]] && cmd_opt="prepare_env start && run_tests -t $test_name"
     ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
     echo 0 > ${ret_val_file}
     # Determine which Functest image should be used for the test case
@@ -42,7 +42,7 @@ run_test() {
             FUNCTEST_IMAGE=opnfv/functest-vnf ;;
         promise|doctor-notification|bgpvpn|functest-odl-sfc|domino-multinode|barometercollectd)
             FUNCTEST_IMAGE=opnfv/functest-features ;;
-        parser)
+        parser-basics)
             FUNCTEST_IMAGE=opnfv/functest-parser ;;
         *)
             echo "Unkown test case $test_name"
