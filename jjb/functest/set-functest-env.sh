@@ -106,7 +106,7 @@ if [ $(docker ps | grep "${FUNCTEST_IMAGE}:${DOCKER_TAG}" | wc -l) == 0 ]; then
     exit 1
 fi
 
-if [ "$BRANCH" == 'master' ]; then
+if [ "$BRANCH" == 'master' ] || [ "$BRANCH" == 'stable/euphrates' ]; then
     cmd="prepare_env start"
 else
     cmd="python ${FUNCTEST_REPO_DIR}/functest/ci/prepare_env.py start"
