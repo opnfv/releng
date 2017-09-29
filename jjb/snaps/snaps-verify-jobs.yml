@@ -1,3 +1,4 @@
+---
 ###################################################
 # All the jobs except verify have been removed!
 # They will only be enabled on request by projects!
@@ -8,13 +9,13 @@
     project: '{name}'
 
     jobs:
-        - 'snaps-verify-{stream}'
+      - 'snaps-verify-{stream}'
 
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            disabled: false
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
 
 - job-template:
     name: 'snaps-verify-{stream}'
@@ -24,49 +25,49 @@
     concurrent: false
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - string:
-            name: DEPLOYMENT_HOST_IP
-            default: 192.168.122.2
-            description: 'IP of the deployment node'
-        - string:
-            name: CONTROLLER_IP
-            default: 192.168.122.3
-            description: 'IP of the controller node'
-        - 'intel-virtual10-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - string:
+          name: DEPLOYMENT_HOST_IP
+          default: 192.168.122.2
+          description: 'IP of the deployment node'
+      - string:
+          name: CONTROLLER_IP
+          default: 192.168.122.3
+          description: 'IP of the controller node'
+      - 'intel-virtual10-defaults'
 
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                disable-strict-forbidden-file-verification: 'true'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**|.gitignore'
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              disable-strict-forbidden-file-verification: 'true'
+              forbidden-file-paths:
+                - compare-type: ANT
+                  pattern: 'docs/**|.gitignore'
 
     builders:
-        - shell: |
-            #!/bin/bash
+      - shell: |
+          #!/bin/bash
 
-            cd $WORKSPACE/ci
-            ./run_tests.sh $DEPLOYMENT_HOST_IP $CONTROLLER_IP
+          cd $WORKSPACE/ci
+          ./run_tests.sh $DEPLOYMENT_HOST_IP $CONTROLLER_IP
