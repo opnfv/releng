@@ -1,20 +1,21 @@
+---
 - project:
     name: vnf_forwarding_graph
 
     project: '{name}'
 
     jobs:
-        - 'vnf_forwarding_graph-verify-{stream}'
+      - 'vnf_forwarding_graph-verify-{stream}'
 
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            disabled: false
-        - euphrates:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
-            disabled: false
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
+      - euphrates:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
 
 - job-template:
     name: 'vnf_forwarding_graph-verify-{stream}'
@@ -22,32 +23,32 @@
     disabled: '{obj:disabled}'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
 
     builders:
-        - shell: |
-            echo "Nothing to verify!"
+      - shell: |
+          echo "Nothing to verify!"
