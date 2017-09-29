@@ -167,11 +167,7 @@ elif [ "$installer_type" == "apex" ]; then
     sudo scp $ssh_options root@$installer_ip:/home/stack/overcloudrc.v3 $dest_path
 
 elif [ "$installer_type" == "compass" ]; then
-    if [ "${BRANCH}" == "master" ]; then
-        sudo docker cp compass-tasks:/opt/openrc $dest_path &> /dev/null
-        sudo chown $(whoami):$(whoami) $dest_path
-        sudo docker cp compass-tasks:/opt/os_cacert $os_cacert
-    else
+    if [ "${BRANCH}" == "stable/danube" ]; then
         verify_connectivity $installer_ip
         controller_ip=$(sshpass -p'root' ssh 2>/dev/null $ssh_options root@${installer_ip} \
             'mysql -ucompass -pcompass -Dcompass -e"select *  from cluster;"' \
@@ -201,6 +197,10 @@ elif [ "$installer_type" == "compass" ]; then
         fi
         info "public_ip: $public_ip"
         swap_to_public $public_ip
+    else
+        sudo docker cp compass-tasks:/opt/openrc $dest_path &> /dev/null
+        sudo chown $(whoami):$(whoami) $dest_path
+        sudo docker cp compass-tasks:/opt/os_cacert $os_cacert
     fi
 
 elif [ "$installer_type" == "joid" ]; then
