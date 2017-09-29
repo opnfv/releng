@@ -13,8 +13,8 @@ import time
 
 import jinja2
 
-import testCase as tc
-import scenarioResult as sr
+import reporting.functest.testCase as tc
+import reporting.functest.scenarioResult as sr
 import reporting.utils.reporting_utils as rp_utils
 
 """
@@ -221,7 +221,7 @@ for version in versions:
                                 LOGGER.debug("No results found")
 
                         items[s] = testCases2BeDisplayed
-                except Exception:
+                except Exception:  # pylint: disable=broad-except
                     LOGGER.error("Error installer %s, version %s, scenario %s",
                                  installer, version, s)
                     LOGGER.error("No data available: %s", sys.exc_info()[0])
