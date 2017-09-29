@@ -18,6 +18,10 @@ if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
     fi
 fi
 
+if [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
+    sshkey="-v ${SSH_KEY}:/root/.ssh/mcp.rsa"
+fi
+
 if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     if [[ "${DEPLOY_SCENARIO:0:2}" == "k8" ]];then
         rc_file_vol="-v /home/ubuntu/config:/etc/yardstick/admin.conf"
@@ -46,6 +50,10 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
     -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NETWORK=${EXTERNAL_NETWORK} \
     -e YARDSTICK_BRANCH=${BRANCH} -e BRANCH=${BRANCH} \
     -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO}"
+
+if [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
+    envs+=" -e SSH_KEY=/root/.ssh/mcp.rsa"
+fi
 
 # Pull the image with correct tag
 DOCKER_REPO='opnfv/yardstick'
