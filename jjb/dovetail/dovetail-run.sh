@@ -152,8 +152,10 @@ dovetail_home_volume="-v ${DOVETAIL_HOME}:${DOVETAIL_HOME}"
 echo "Dovetail: Pulling image opnfv/dovetail:${DOCKER_TAG}"
 docker pull opnfv/dovetail:$DOCKER_TAG >$redirect
 
+env4bgpvpn="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP}"
+
 cmd="docker run ${opts} -e DOVETAIL_HOME=${DOVETAIL_HOME} ${docker_volume} ${dovetail_home_volume} \
-     ${sshkey} opnfv/dovetail:${DOCKER_TAG} /bin/bash"
+     ${sshkey} ${env4bgpvpn} opnfv/dovetail:${DOCKER_TAG} /bin/bash"
 echo "Dovetail: running docker run command: ${cmd}"
 ${cmd} >${redirect}
 sleep 5
