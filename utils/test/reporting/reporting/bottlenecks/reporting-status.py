@@ -37,10 +37,14 @@ for version in VERSIONS:
     # For all the installers
     for installer in INSTALLERS:
         # get scenarios results data
+        if version != 'master':
+            new_version = "stable/{}".format(version)
+        else:
+            new_version = version
         scenario_results = rp_utils.getScenarios("bottlenecks",
                                                  "posca_factor_ping",
                                                  installer,
-                                                 version)
+                                                 new_version)
         LOGGER.info("scenario_results: %s", scenario_results)
 
         scenario_stats = rp_utils.getScenarioStats(scenario_results)
