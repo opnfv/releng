@@ -32,7 +32,7 @@ if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
         # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
         # replace the default one by the customized one provided by jenkins config
     fi
-elif [[ ${INSTALLER_TYPE} == 'compass' && ${BRANCH} == 'master' ]]; then
+elif [[ ${INSTALLER_TYPE} == 'compass' ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:/etc/yardstick/os_cacert"
     echo "export OS_CACERT=/etc/yardstick/os_cacert" >> ${HOME}/opnfv-openrc.sh
     rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/etc/yardstick/openstack.creds"
