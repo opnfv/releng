@@ -53,6 +53,7 @@
 - job-template:
     name: 'qtip-{qpi}-{installer}-{stream}'
     disabled: false
+
     parameters:
       - project-parameter:
           project: '{project}'
@@ -75,6 +76,14 @@
           default: '{qpi}'
     scm:
       - git-scm
+
+    wrappers:
+      - timeout:
+          elastic-percentage: 150
+          elastic-default-timeout: 30
+          abort: true
+          type: elastic
+      - timestamps
 
     triggers:
       - 'qtip-daily'
