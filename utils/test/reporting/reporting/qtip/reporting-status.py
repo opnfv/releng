@@ -45,27 +45,22 @@ def prepare_profile_file(version):
 def profile_results(results, installer, profile_fd):
     result_criterias = {}
     for s_p, s_p_result in results.iteritems():
-        ten_criteria = len(s_p_result)
-        ten_score = sum(s_p_result)
+        avg_last_ten = sum([int(s) for s in s_p_result]) / len(s_p_result)
 
         LASTEST_TESTS = rp_utils.get_config(
             'general.nb_iteration_tests_success_criteria')
-        four_result = s_p_result[:LASTEST_TESTS]
-        four_criteria = len(four_result)
-        four_score = sum(four_result)
-
-        s_four_score = str(four_score / four_criteria)
-        s_ten_score = str(ten_score / ten_criteria)
+        last_four = s_p_result[-LASTEST_TESTS:]
+        avg_last_four = sum([int(s) for s in last_four]) / len(last_four)
 
         info = '{},{},{},{},{}\n'.format(reportingDate,
                                          s_p,
                                          installer,
-                                         s_ten_score,
-                                         s_four_score)
+                                         '',
+                                         avg_last_four)
         profile_fd.write(info)
         result_criterias[s_p] = sr.ScenarioResult('OK',
-                                                  s_four_score,
-                                                  s_ten_score,
+                                                  avg_last_four,
+                                                  avg_last_ten,
                                                   '100')
 
         logger.info("--------------------------")
