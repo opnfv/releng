@@ -59,8 +59,6 @@ if [ -z "$1" ]; then
     report_project $i $i "status"
     sleep 5
   done
-  report_project "QTIP" "qtip" "status"
-
 
   echo "Functest reporting vIMS..."
   report_project "functest" "functest" "vims"
