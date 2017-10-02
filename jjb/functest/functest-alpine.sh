@@ -23,7 +23,7 @@ run_tiers() {
             echo ${ret_value} > ${ret_val_file}
             if [ ${tier} == 'healthcheck' ]; then
                 echo "Healthcheck tier failed. Exiting Functest..."
-                exit 1
+                break
             fi
         fi
     done
