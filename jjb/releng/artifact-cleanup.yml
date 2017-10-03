@@ -1,15 +1,16 @@
+---
 - project:
     name: releng-artifact-cleanup
 
     project: 'releng'
 
     jobs:
-        - 'releng-artifact-cleanup-daily-{stream}'
+      - 'releng-artifact-cleanup-daily-{stream}'
 
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
 
 
 - job-template:
@@ -25,16 +26,16 @@
     disabled: false
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
 
     scm:
-        - git-scm
+      - git-scm
 
     triggers:
-        - timed: 'H H * * *'
+      - timed: 'H H * * *'
 
     builders:
-        - shell: |
-            $WORKSPACE/utils/retention_script.sh
+      - shell: |
+          $WORKSPACE/utils/retention_script.sh
