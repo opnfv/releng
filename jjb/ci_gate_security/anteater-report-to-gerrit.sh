@@ -13,7 +13,7 @@ if [[ -e securityaudit.log ]] ; then
         EXITSTATUS=1
     fi
 
-    awk -F"ERROR - " '{print $2}' securityaudit.log | sed -e "s/\"/\\\\\"/g;s/\'/\\\\/g"> shortlog
+    grep 'ERROR' securityaudit.log | awk -F"ERROR - " '{ print $2 }' | tr -d "\'\"" > shortlog
 
     ssh -p 29418 gerrit.opnfv.org \
         "gerrit review -p $GERRIT_PROJECT \
