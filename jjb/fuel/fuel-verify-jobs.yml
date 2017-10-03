@@ -1,37 +1,38 @@
+---
 - project:
     name: 'fuel-verify-jobs'
 
     project: 'fuel'
 
     installer: 'fuel'
-#####################################
-# branch definitions
-#####################################
+    #####################################
+    # branch definitions
+    #####################################
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            disabled: false
-        - euphrates:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
-            disabled: false
-#####################################
-# patch verification phases
-#####################################
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
+      - euphrates:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
+    #####################################
+    # patch verification phases
+    #####################################
     phase:
-        - 'basic':
-            slave-label: 'fuel-virtual'
-        - 'deploy-virtual':
-            slave-label: 'fuel-virtual'
-        - 'smoke-test':
-            slave-label: 'fuel-virtual'
-#####################################
-# jobs
-#####################################
+      - 'basic':
+          slave-label: 'fuel-virtual'
+      - 'deploy-virtual':
+          slave-label: 'fuel-virtual'
+      - 'smoke-test':
+          slave-label: 'fuel-virtual'
+    #####################################
+    # jobs
+    #####################################
     jobs:
-        - 'fuel-verify-{stream}'
-        - 'fuel-verify-{phase}-{stream}'
+      - 'fuel-verify-{stream}'
+      - 'fuel-verify-{phase}-{stream}'
 #####################################
 # job templates
 #####################################
@@ -45,110 +46,110 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 4
-            option: 'project'
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'fuel-os-.*?-virtual-daily-.*'
-            block-level: 'NODE'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 4
+          option: 'project'
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - 'fuel-os-.*?-virtual-daily-.*'
+          block-level: 'NODE'
 
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 360
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 360
+          fail: true
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'ci/**'
-                  - compare-type: ANT
-                    pattern: 'mcp/**'
-                disable-strict-forbidden-file-verification: 'true'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'docs/**'
-            readable-message: true
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: ANT
+                  pattern: 'ci/**'
+                - compare-type: ANT
+                  pattern: 'mcp/**'
+              disable-strict-forbidden-file-verification: 'true'
+              forbidden-file-paths:
+                - compare-type: ANT
+                  pattern: 'docs/**'
+          readable-message: true
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'fuel-virtual-defaults':
-            installer: '{installer}'
-        - '{installer}-defaults':
-            gs-pathname: '{gs-pathname}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'fuel-virtual-defaults':
+          installer: '{installer}'
+      - '{installer}-defaults':
+          gs-pathname: '{gs-pathname}'
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - multijob:
-            name: basic
-            condition: SUCCESSFUL
-            projects:
-                - name: 'fuel-verify-basic-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: deploy-virtual
-            condition: SUCCESSFUL
-            projects:
-                - name: 'fuel-verify-deploy-virtual-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: smoke-test
-            condition: SUCCESSFUL
-            projects:
-                - name: 'fuel-verify-smoke-test-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - multijob:
+          name: basic
+          condition: SUCCESSFUL
+          projects:
+            - name: 'fuel-verify-basic-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
+          name: deploy-virtual
+          condition: SUCCESSFUL
+          projects:
+            - name: 'fuel-verify-deploy-virtual-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
+          name: smoke-test
+          condition: SUCCESSFUL
+          projects:
+            - name: 'fuel-verify-smoke-test-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: true
 
 - job-template:
     name: 'fuel-verify-{phase}-{stream}'
@@ -158,62 +159,63 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 2
-            max-per-node: 1
-            option: 'project'
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'fuel-verify-deploy-.*'
-                - 'fuel-verify-test-.*'
-            block-level: 'NODE'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 2
+          max-per-node: 1
+          option: 'project'
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - 'fuel-verify-deploy-.*'
+            - 'fuel-verify-test-.*'
+          block-level: 'NODE'
 
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 360
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 360
+          fail: true
+
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - '{slave-label}-defaults'
-        - 'fuel-virtual-defaults':
-            installer: '{installer}'
-        - '{installer}-defaults':
-            gs-pathname: '{gs-pathname}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{slave-label}-defaults'
+      - 'fuel-virtual-defaults':
+          installer: '{installer}'
+      - '{installer}-defaults':
+          gs-pathname: '{gs-pathname}'
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - '{project}-verify-{phase}-macro'
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - '{project}-verify-{phase}-macro'
 #####################################
 # builder macros
 #####################################
 - builder:
     name: 'fuel-verify-basic-macro'
     builders:
-        - shell: |
-            #!/bin/bash
+      - shell: |
+          #!/bin/bash
 
-            echo "Not activated!"
+          echo "Not activated!"
 
 - builder:
     name: 'fuel-verify-deploy-virtual-macro'
     builders:
-        - shell:
-            !include-raw: ./fuel-deploy.sh
+      - shell:
+          !include-raw: ./fuel-deploy.sh
 
 - builder:
     name: 'fuel-verify-smoke-test-macro'
     builders:
-        - shell: |
-            #!/bin/bash
+      - shell: |
+          #!/bin/bash
 
-            echo "Not activated!"
+          echo "Not activated!"
