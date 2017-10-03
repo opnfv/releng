@@ -1,3 +1,4 @@
+---
 ##############################################
 # job configuration for docker build and push
 ##############################################
@@ -7,27 +8,27 @@
     name: opnfv-docker
 
     master: &master
-        stream: master
-        branch: '{stream}'
-        disabled: false
+      stream: master
+      branch: '{stream}'
+      disabled: false
     danube: &danube
-        stream: danube
-        branch: 'stable/{stream}'
-        disabled: false
+      stream: danube
+      branch: 'stable/{stream}'
+      disabled: false
     euphrates: &euphrates
-        stream: euphrates
-        branch: 'stable/{stream}'
-        disabled: false
+      stream: euphrates
+      branch: 'stable/{stream}'
+      disabled: false
     functest-receivers: &functest-receivers
-        receivers: >
-            jalausuch@suse.com morgan.richomme@orange.com
-            cedric.ollivier@orange.com feng.xiaowei@zte.com.cn
-            juha.kosonen@nokia.com wangwulin@huawei.com
+      receivers: >
+          jalausuch@suse.com morgan.richomme@orange.com
+          cedric.ollivier@orange.com feng.xiaowei@zte.com.cn
+          juha.kosonen@nokia.com wangwulin@huawei.com
     storperf-receivers: &storperf-receivers
-        receivers: >
-            mark.beierl@emc.com
+      receivers: >
+          mark.beierl@emc.com
     other-receivers: &other-receivers
-        receivers: ''
+      receivers: ''
 
     dockerfile: "Dockerfile"
     dockerdir: "docker"
@@ -36,126 +37,127 @@
     # This is the dockerhub repo the image will be pushed to as
     # 'opnfv/{dockerrepo}. See: DOCKER_REPO_NAME parameter.
     # 'project' is the OPNFV repo we expect to contain the Dockerfile
+    # yamllint disable rule:key-duplicates
     dockerrepo:
-        # projects with jobs for master
-        - 'releng-anteater':
-            project: 'releng-anteater'
-            <<: *master
-            <<: *other-receivers
-        - 'bottlenecks':
-            project: 'bottlenecks'
-            <<: *master
-            <<: *other-receivers
-        - 'cperf':
-            project: 'cperf'
-            <<: *master
-            <<: *other-receivers
-        - 'dovetail':
-            project: 'dovetail'
-            <<: *master
-            <<: *other-receivers
-        - 'functest':
-            project: 'functest'
-            <<: *master
-            <<: *functest-receivers
-        - 'nfvbench':
-            project: 'nfvbench'
-            <<: *master
-            <<: *other-receivers
-        - 'qtip':
-            project: 'qtip'
-            <<: *master
-            <<: *other-receivers
-        - 'storperf-master':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-master'
-            arch_tag: 'x86_64'
-            <<: *master
-            <<: *storperf-receivers
-        - 'storperf-graphite':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-graphite'
-            arch_tag: 'x86_64'
-            <<: *master
-            <<: *storperf-receivers
-        - 'storperf-httpfrontend':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-httpfrontend'
-            arch_tag: 'x86_64'
-            <<: *master
-            <<: *storperf-receivers
-        - 'storperf-reporting':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-reporting'
-            arch_tag: 'x86_64'
-            <<: *master
-            <<: *storperf-receivers
-        - 'storperf-swaggerui':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-swaggerui'
-            arch_tag: 'x86_64'
-            <<: *master
-            <<: *storperf-receivers
-        - 'yardstick':
-            project: 'yardstick'
-            <<: *master
-            <<: *other-receivers
-        # projects with jobs for Danube
-        - 'qtip':
-            project: 'qtip'
-            <<: *euphrates
-            <<: *other-receivers
-        - 'yardstick':
-            project: 'yardstick'
-            <<: *euphrates
-            <<: *other-receivers
-        # projects with jobs for euphrates
-        - 'bottlenecks':
-            project: 'bottlenecks'
-            <<: *euphrates
-            <<: *other-receivers
-        - 'functest':
-            project: 'functest'
-            <<: *euphrates
-            <<: *functest-receivers
-        - 'storperf-master':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-master'
-            arch_tag: 'x86_64'
-            <<: *euphrates
-            <<: *storperf-receivers
-        - 'storperf-graphite':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-graphite'
-            arch_tag: 'x86_64'
-            <<: *euphrates
-            <<: *storperf-receivers
-        - 'storperf-httpfrontend':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-httpfrontend'
-            arch_tag: 'x86_64'
-            <<: *euphrates
-            <<: *storperf-receivers
-        - 'storperf-reporting':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-reporting'
-            arch_tag: 'x86_64'
-            <<: *euphrates
-            <<: *storperf-receivers
-        - 'storperf-swaggerui':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-swaggerui'
-            arch_tag: 'x86_64'
-            <<: *euphrates
-            <<: *storperf-receivers
-        - 'nfvbench':
-            project: 'nfvbench'
-            <<: *euphrates
-            <<: *other-receivers
+      # projects with jobs for master
+      - 'releng-anteater':
+          project: 'releng-anteater'
+          <<: *master
+          <<: *other-receivers
+      - 'bottlenecks':
+          project: 'bottlenecks'
+          <<: *master
+          <<: *other-receivers
+      - 'cperf':
+          project: 'cperf'
+          <<: *master
+          <<: *other-receivers
+      - 'dovetail':
+          project: 'dovetail'
+          <<: *master
+          <<: *other-receivers
+      - 'functest':
+          project: 'functest'
+          <<: *master
+          <<: *functest-receivers
+      - 'nfvbench':
+          project: 'nfvbench'
+          <<: *master
+          <<: *other-receivers
+      - 'qtip':
+          project: 'qtip'
+          <<: *master
+          <<: *other-receivers
+      - 'storperf-master':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-master'
+          arch_tag: 'x86_64'
+          <<: *master
+          <<: *storperf-receivers
+      - 'storperf-graphite':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-graphite'
+          arch_tag: 'x86_64'
+          <<: *master
+          <<: *storperf-receivers
+      - 'storperf-httpfrontend':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-httpfrontend'
+          arch_tag: 'x86_64'
+          <<: *master
+          <<: *storperf-receivers
+      - 'storperf-reporting':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-reporting'
+          arch_tag: 'x86_64'
+          <<: *master
+          <<: *storperf-receivers
+      - 'storperf-swaggerui':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-swaggerui'
+          arch_tag: 'x86_64'
+          <<: *master
+          <<: *storperf-receivers
+      - 'yardstick':
+          project: 'yardstick'
+          <<: *master
+          <<: *other-receivers
+      # projects with jobs for Danube
+      - 'qtip':
+          project: 'qtip'
+          <<: *euphrates
+          <<: *other-receivers
+      - 'yardstick':
+          project: 'yardstick'
+          <<: *euphrates
+          <<: *other-receivers
+      # projects with jobs for euphrates
+      - 'bottlenecks':
+          project: 'bottlenecks'
+          <<: *euphrates
+          <<: *other-receivers
+      - 'functest':
+          project: 'functest'
+          <<: *euphrates
+          <<: *functest-receivers
+      - 'storperf-master':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-master'
+          arch_tag: 'x86_64'
+          <<: *euphrates
+          <<: *storperf-receivers
+      - 'storperf-graphite':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-graphite'
+          arch_tag: 'x86_64'
+          <<: *euphrates
+          <<: *storperf-receivers
+      - 'storperf-httpfrontend':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-httpfrontend'
+          arch_tag: 'x86_64'
+          <<: *euphrates
+          <<: *storperf-receivers
+      - 'storperf-reporting':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-reporting'
+          arch_tag: 'x86_64'
+          <<: *euphrates
+          <<: *storperf-receivers
+      - 'storperf-swaggerui':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-swaggerui'
+          arch_tag: 'x86_64'
+          <<: *euphrates
+          <<: *storperf-receivers
+      - 'nfvbench':
+          project: 'nfvbench'
+          <<: *euphrates
+          <<: *other-receivers
 
+    # yamllint enable rule:key-duplicates
     jobs:
-        - "{dockerrepo}-docker-build-push-{stream}"
-
+      - "{dockerrepo}-docker-build-push-{stream}"
 
 - project:
 
@@ -166,16 +168,16 @@
     arch_tag: ""
 
     project:
-        # projects with jobs for master
-        - 'daisy':
-            dockerrepo: 'daisy'
-            <<: *master
-        - 'escalator':
-            dockerrepo: 'escalator'
-            <<: *master
+      # projects with jobs for master
+      - 'daisy':
+          dockerrepo: 'daisy'
+          <<: *master
+      - 'escalator':
+          dockerrepo: 'escalator'
+          <<: *master
 
     jobs:
-        - '{project}-docker-build-push-monitor-{stream}'
+      - '{project}-docker-build-push-monitor-{stream}'
 
 ########################
 # job templates
@@ -186,82 +188,83 @@
     disabled: '{obj:disabled}'
 
     parameters: &parameters
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
-        - string:
-            name: PUSH_IMAGE
-            default: "true"
-            description: "To enable/disable pushing the image to Dockerhub."
-        - string:
-            name: DOCKER_REPO_NAME
-            default: "opnfv/{dockerrepo}"
-            description: "Dockerhub repo to be pushed to."
-        - string:
-            name: DOCKER_DIR
-            default: "{dockerdir}"
-            description: "Directory containing files needed by the Dockerfile"
-        - string:
-            name: COMMIT_ID
-            default: ""
-            description: "commit id to make a snapshot docker image"
-        - string:
-            name: RELEASE_VERSION
-            default: ""
-            description: "Release version, e.g. 1.0, 2.0, 3.0"
-        - string:
-            name: DOCKERFILE
-            default: "{dockerfile}"
-            description: "Dockerfile to use for creating the image."
-        - string:
-            name: ARCH_TAG
-            default: "{arch_tag}"
-            description: "If set, this value will be added to the docker image tag as a prefix"
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
+      - string:
+          name: PUSH_IMAGE
+          default: "true"
+          description: "To enable/disable pushing the image to Dockerhub."
+      - string:
+          name: DOCKER_REPO_NAME
+          default: "opnfv/{dockerrepo}"
+          description: "Dockerhub repo to be pushed to."
+      - string:
+          name: DOCKER_DIR
+          default: "{dockerdir}"
+          description: "Directory containing files needed by the Dockerfile"
+      - string:
+          name: COMMIT_ID
+          default: ""
+          description: "commit id to make a snapshot docker image"
+      - string:
+          name: RELEASE_VERSION
+          default: ""
+          description: "Release version, e.g. 1.0, 2.0, 3.0"
+      - string:
+          name: DOCKERFILE
+          default: "{dockerfile}"
+          description: "Dockerfile to use for creating the image."
+      - string:
+          name: ARCH_TAG
+          default: "{arch_tag}"
+          description: "If set, this value will be added to the docker image tag as a prefix"
 
     properties:
-        - throttle:
-            max-per-node: 1
-            option: 'project'
+      - throttle:
+          max-per-node: 1
+          option: 'project'
 
     scm:
-        - git-scm
+      - git-scm
 
     builders: &builders
-        - shell:
-            !include-raw-escape: ./opnfv-docker.sh
+      - shell:
+          !include-raw-escape: ./opnfv-docker.sh
 
     triggers:
-        - pollscm:
-            cron: "*/30 * * * *"
+      - pollscm:
+          cron: "*/30 * * * *"
 
     publishers:
-        - email:
-            recipients: '{receivers}'
-        - email-jenkins-admins-on-failure
+      - email:
+          recipients: '{receivers}'
+      - email-jenkins-admins-on-failure
 
 - job-template:
     name: '{project}-docker-build-push-monitor-{stream}'
     disabled: '{obj:disabled}'
     parameters: *parameters
+
     scm:
-        - git-scm
+      - git-scm
+
     builders: *builders
 
     # trigger only matching the file name
     triggers:
-        - gerrit:
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'docker/**'
-
+      - gerrit:
+          trigger-on:
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'remerge'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: ANT
+                  pattern: 'docker/**'

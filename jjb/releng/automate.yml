@@ -1,22 +1,23 @@
+---
 - project:
     name: utils-automate
     stream:
-        - master:
-            branch: '{stream}'
+      - master:
+          branch: '{stream}'
 
     module:
-        - 'testapi'
-        - 'reporting'
+      - 'testapi'
+      - 'reporting'
 
     phase:
-        - 'docker-deploy':
-            slave-label: 'testresults'
-        - 'generate-doc'
+      - 'docker-deploy':
+          slave-label: 'testresults'
+      - 'generate-doc'
 
     jobs:
-        - '{module}-automate-{stream}'
-        - '{module}-automate-{phase}-{stream}'
-        - '{module}-verify-{stream}'
+      - '{module}-automate-{stream}'
+      - '{module}-automate-{phase}-{stream}'
+      - '{module}-verify-{stream}'
 
     project: 'releng'
 
@@ -24,73 +25,73 @@
     name: 'testapi-mongodb-backup'
 
     parameters:
-        - label:
-            name: SLAVE_LABEL
-            default: 'testresults'
-            description: 'Slave label on Jenkins'
-        - project-parameter:
-            project: 'releng'
-            branch: 'master'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/releng
-            description: 'Git URL to use on this Jenkins Slave'
+      - label:
+          name: SLAVE_LABEL
+          default: 'testresults'
+          description: 'Slave label on Jenkins'
+      - project-parameter:
+          project: 'releng'
+          branch: 'master'
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/releng
+          description: 'Git URL to use on this Jenkins Slave'
 
     scm:
-        - git-scm
+      - git-scm
 
     triggers:
-        - timed: '@weekly'
+      - timed: '@weekly'
 
     builders:
-        - mongodb-backup
+      - mongodb-backup
 
 - job-template:
     name: '{module}-verify-{stream}'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
 
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: 'ANT'
-                    pattern: 'utils/test/{module}/**'
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: 'ANT'
+                  pattern: 'utils/test/{module}/**'
 
     builders:
-        - shell: |
-            cd ./utils/test/{module}/
-            tox
-            if [ -e *.xml ];then
-                cp *.xml $WORKSPACE
-            fi
+      - shell: |
+          cd ./utils/test/{module}/
+          tox
+          if [ -e *.xml ];then
+              cp *.xml $WORKSPACE
+          fi
 
     publishers:
-        - publish-coverage
-        - email-jenkins-admins-on-failure
+      - publish-coverage
+      - email-jenkins-admins-on-failure
 
 - job-template:
     name: '{module}-automate-{stream}'
@@ -98,108 +99,108 @@
     project-type: multijob
 
     properties:
-        - throttle:
-            enabled: true
-            max-total: 1
-            max-per-node: 1
-            option: 'project'
+      - throttle:
+          enabled: true
+          max-total: 1
+          max-per-node: 1
+          option: 'project'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - string:
-            name: DOCKER_TAG
-            default: 'latest'
-            description: 'Tag name for {module} docker image'
-        - string:
-            name: MODULE_NAME
-            default: '{module}'
-            description: "Name of the module"
-        - 'opnfv-build-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - string:
+          name: DOCKER_TAG
+          default: 'latest'
+          description: 'Tag name for {module} docker image'
+      - string:
+          name: MODULE_NAME
+          default: '{module}'
+          description: "Name of the module"
+      - 'opnfv-build-defaults'
 
     scm:
-        - git-scm
+      - git-scm
 
     wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 360
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 360
+          fail: true
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: 'ANT'
-                    pattern: 'utils/test/{module}/**'
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'remerge'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: 'ANT'
+                  pattern: 'utils/test/{module}/**'
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - docker-update
-        - multijob:
-            name: docker-deploy
-            condition: SUCCESSFUL
-            projects:
-                - name: '{module}-automate-docker-deploy-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    GIT_BASE=$GIT_BASE
-                  node-label-name: SLAVE_LABEL
-                  node-label: testresults
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: generate-doc
-            condition: SUCCESSFUL
-            projects:
-                - name: '{module}-automate-generate-doc-{stream}'
-                  current-parameters: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - docker-update
+      - multijob:
+          name: docker-deploy
+          condition: SUCCESSFUL
+          projects:
+            - name: '{module}-automate-docker-deploy-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                GIT_BASE=$GIT_BASE
+              node-label-name: SLAVE_LABEL
+              node-label: testresults
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
+          name: generate-doc
+          condition: SUCCESSFUL
+          projects:
+            - name: '{module}-automate-generate-doc-{stream}'
+              current-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: true
 
     publishers:
-        - 'email-publisher'
-        - email-jenkins-admins-on-failure
+      - 'email-publisher'
+      - email-jenkins-admins-on-failure
 
 - job-template:
     name: '{module}-automate-{phase}-{stream}'
 
     properties:
-        - throttle:
-            enabled: true
-            max-per-node: 1
-            option: 'project'
+      - throttle:
+          enabled: true
+          max-per-node: 1
+          option: 'project'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
 
     wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 120
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 120
+          fail: true
 
     scm:
-        - git-scm
+      - git-scm
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - '{module}-automate-{phase}-macro'
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - '{module}-automate-{phase}-macro'
 
 ################################
 # job builders
@@ -207,53 +208,53 @@
 - builder:
     name: 'docker-update'
     builders:
-        - shell:
-            !include-raw: ./docker-update.sh
+      - shell:
+          !include-raw: ./docker-update.sh
 
 - builder:
     name: 'testapi-automate-generate-doc-macro'
     builders:
-        - 'testapi-doc-build'
-        - 'upload-doc-artifact'
+      - 'testapi-doc-build'
+      - 'upload-doc-artifact'
 
 - builder:
     name: 'testapi-doc-build'
     builders:
-        - shell: |
-            bash ./utils/test/testapi/htmlize/doc-build.sh
+      - shell: |
+          bash ./utils/test/testapi/htmlize/doc-build.sh
 
 - builder:
     name: 'upload-doc-artifact'
     builders:
-        - shell: |
-            bash ./utils/test/testapi/htmlize/push-doc-artifact.sh
+      - shell: |
+          bash ./utils/test/testapi/htmlize/push-doc-artifact.sh
 
 - builder:
     name: 'reporting-automate-generate-doc-macro'
     builders:
-        - shell: echo "To Be Done"
+      - shell: echo "To Be Done"
 
 - builder:
     name: 'testapi-automate-docker-deploy-macro'
     builders:
-        - shell: |
-            sudo bash ./jjb/releng/docker-deploy.sh "sudo docker run -dti --name testapi -p 8082:8000
-            -e mongodb_url=mongodb://172.17.0.1:27017
-            -e base_url=http://testresults.opnfv.org/test opnfv/testapi" \
-            "http://testresults.opnfv.org/test/" "testapi"
+      - shell: |
+          sudo bash ./jjb/releng/docker-deploy.sh "sudo docker run -dti --name testapi -p 8082:8000
+          -e mongodb_url=mongodb://172.17.0.1:27017
+          -e base_url=http://testresults.opnfv.org/test opnfv/testapi" \
+          "http://testresults.opnfv.org/test/" "testapi"
 
 - builder:
     name: 'reporting-automate-docker-deploy-macro'
     builders:
-        - shell: |
-            sudo bash ./jjb/releng/docker-deploy.sh "sudo docker run -itd --name reporting -p 8084:8000 opnfv/reporting" \
-            "http://testresults.opnfv.org/reporting/index.html" "reporting"
+      - shell: |
+          sudo bash ./jjb/releng/docker-deploy.sh "sudo docker run -itd --name reporting -p 8084:8000 opnfv/reporting" \
+          "http://testresults.opnfv.org/reporting/index.html" "reporting"
 
 - builder:
     name: mongodb-backup
     builders:
-        - shell: |
-            bash ./jjb/releng/testapi-backup-mongodb.sh
+      - shell: |
+          bash ./jjb/releng/testapi-backup-mongodb.sh
 
 ################################
 # job publishers
@@ -262,7 +263,7 @@
 - publisher:
     name: 'email-publisher'
     publishers:
-        - email:
-            recipients: rohitsakala@gmail.com feng.xiaowei@zte.com.cn morgan.richomme@orange.com
-            notify-every-unstable-build: false
-            send-to-individuals: true
+      - email:
+          recipients: rohitsakala@gmail.com feng.xiaowei@zte.com.cn morgan.richomme@orange.com
+          notify-every-unstable-build: false
+          send-to-individuals: true

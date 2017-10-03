@@ -1,10 +1,11 @@
+---
 - project:
     name: releng-builder-jobs
     jobs:
-        - 'releng-verify-jjb'
-        - 'releng-merge-jjb'
-        - 'releng-comment-jjb'
-        - 'releng-generate-artifacts-api'
+      - 'releng-verify-jjb'
+      - 'releng-merge-jjb'
+      - 'releng-comment-jjb'
+      - 'releng-generate-artifacts-api'
 
     project: 'releng'
 
@@ -12,69 +13,71 @@
     name: releng-verify-jjb
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: 'master'
+      - project-parameter:
+          project: '{project}'
+          branch: 'master'
+
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'releng'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/master'
-                file-paths:
-                    - compare-type: ANT
-                      pattern: jjb/**
-                    - compare-type: ANT
-                      pattern: jjb-templates/**
-                    - compare-type: ANT
-                      pattern: utils/**
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'releng'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/master'
+              file-paths:
+                - compare-type: ANT
+                  pattern: jjb/**
+                - compare-type: ANT
+                  pattern: jjb-templates/**
+                - compare-type: ANT
+                  pattern: utils/**
 
 
     builders:
-        - shell:
-            !include-raw: verify-releng.sh
+      - shell:
+          !include-raw: verify-releng.sh
 
     publishers:
-        - archive-artifacts:
-            artifacts: 'job_output/*'
-        - email-jenkins-admins-on-failure
+      - archive-artifacts:
+          artifacts: 'job_output/*'
+      - email-jenkins-admins-on-failure
 
 - job-template:
     name: releng-comment-jjb
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: 'master'
+      - project-parameter:
+          project: '{project}'
+          branch: 'master'
+
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     triggers:
-        - experimental:
-            project: '{project}'
-            branch: 'master'
-            files: 'jjb/**'
+      - experimental:
+          project: '{project}'
+          branch: 'master'
+          files: 'jjb/**'
 
     builders:
-        - shell:
-            !include-raw-escape: generate-job-list.sh
-        - report-build-result-to-gerrit
+      - shell:
+          !include-raw-escape: generate-job-list.sh
+      - report-build-result-to-gerrit
 
 - job-template:
     name: 'releng-merge-jjb'
@@ -84,38 +87,38 @@
     # This job's purpose is to update all the JJB
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: 'master'
+      - project-parameter:
+          project: '{project}'
+          branch: 'master'
 
     scm:
-        - git-scm
+      - git-scm
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'releng'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/master'
-                file-paths:
-                    - compare-type: ANT
-                      pattern: jjb/**
-                    - compare-type: ANT
-                      pattern: utils/**
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'remerge'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'releng'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/master'
+              file-paths:
+                - compare-type: ANT
+                  pattern: jjb/**
+                - compare-type: ANT
+                  pattern: utils/**
 
     builders:
-        - shell: |
-                source /opt/virtualenv/jenkins-job-builder/bin/activate
-                cd /opt/jenkins-ci/releng
-                git pull
-                jenkins-jobs update -r --delete-old jjb/
+      - shell: |
+              source /opt/virtualenv/jenkins-job-builder/bin/activate
+              cd /opt/jenkins-ci/releng
+              git pull
+              jenkins-jobs update -r --delete-old jjb/
 
 - job-template:
     name: 'releng-generate-artifacts-api'
@@ -123,15 +126,15 @@
     # Generate and upload the JSON file to used for artifacts site
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: 'master'
+      - project-parameter:
+          project: '{project}'
+          branch: 'master'
 
     scm:
-        - git-scm
+      - git-scm
 
     triggers:
-        - timed: '@hourly'
+      - timed: '@hourly'
 
     builders:
-        - build-and-upload-artifacts-json-api
+      - build-and-upload-artifacts-json-api

@@ -1,11 +1,12 @@
+---
 - project:
 
     name: opnfv-utils
 
     jobs:
-        - 'prune-docker-images'
-        - 'archive-repositories'
-        - 'check-status-of-slaves'
+      - 'prune-docker-images'
+      - 'archive-repositories'
+      - 'check-status-of-slaves'
 
 ########################
 # job templates
@@ -18,28 +19,28 @@
     concurrent: true
 
     parameters:
-        - node:
-            name: SLAVE_NAME
-            description: Slaves to prune docker images
-            default-slaves:
-                - arm-build2
-                - ericsson-build4
-                - ericsson-build5
-                - lf-build2
-            allowed-multiselect: true
-            ignore-offline-nodes: true
+      - node:
+          name: SLAVE_NAME
+          description: Slaves to prune docker images
+          default-slaves:
+            - arm-build2
+            - ericsson-build4
+            - ericsson-build5
+            - lf-build2
+          allowed-multiselect: true
+          ignore-offline-nodes: true
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - shell: |
-            #!/bin/bash
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - shell: |
+          #!/bin/bash
 
-            (docker ps -q; docker ps -aq) | sort | uniq -u | xargs --no-run-if-empty docker rm
-            docker images -f dangling=true -q | xargs --no-run-if-empty docker rmi
+          (docker ps -q; docker ps -aq) | sort | uniq -u | xargs --no-run-if-empty docker rm
+          docker images -f dangling=true -q | xargs --no-run-if-empty docker rmi
 
     triggers:
-        - timed: '@midnight'
+      - timed: '@midnight'
 
 - job-template:
     name: 'archive-repositories'
@@ -49,20 +50,20 @@
     concurrent: true
 
     parameters:
-        - node:
-            name: SLAVE_NAME
-            description: Where to create the archive
-            default-slaves:
-                - master
-            allowed-multiselect: false
-            ignore-offline-nodes: true
+      - node:
+          name: SLAVE_NAME
+          description: Where to create the archive
+          default-slaves:
+            - master
+          allowed-multiselect: false
+          ignore-offline-nodes: true
 
     triggers:
-        - timed: '@monthly'
+      - timed: '@monthly'
 
     builders:
-        - shell:
-            !include-raw-escape: opnfv-repo-archiver.sh
+      - shell:
+          !include-raw-escape: opnfv-repo-archiver.sh
 
 - job-template:
     name: 'check-status-of-slaves'
@@ -72,18 +73,18 @@
     concurrent: true
 
     parameters:
-        - node:
-            name: SLAVE_NAME
-            description: We don't want workspace wiped. so I just threw the script on the master
-            default-slaves:
-                - master
-            allowed-multiselect: false
-            ignore-offline-nodes: true
+      - node:
+          name: SLAVE_NAME
+          description: We don't want workspace wiped. so I just threw the script on the master
+          default-slaves:
+            - master
+          allowed-multiselect: false
+          ignore-offline-nodes: true
 
     triggers:
-        - timed: '@midnight'
+      - timed: '@midnight'
 
     builders:
-        - shell: |
-            cd /opt/jenkins-ci/slavemonitor
-            bash slave-monitor-0.1.sh | sort
+      - shell: |
+          cd /opt/jenkins-ci/slavemonitor
+          bash slave-monitor-0.1.sh | sort

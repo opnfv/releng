@@ -1,3 +1,4 @@
+---
 ########################
 # Job configuration for opnfv-docs
 ########################
@@ -8,20 +9,20 @@
     project: opnfv-docs
 
     jobs:
-        - 'opnfv-docs-verify-{stream}'
-        - 'opnfv-docs-merge-{stream}'
+      - 'opnfv-docs-verify-{stream}'
+      - 'opnfv-docs-merge-{stream}'
 
     stream:
-        - master:
-            branch: '{stream}'
-            doc-version: ''
-            gs-pathname: ''
-            disabled: false
-        - danube:
-            branch: 'stable/{stream}'
-            doc-version: '3.0'
-            gs-pathname: '/{stream}/{doc-version}'
-            disabled: true
+      - master:
+          branch: '{stream}'
+          doc-version: ''
+          gs-pathname: ''
+          disabled: false
+      - danube:
+          branch: 'stable/{stream}'
+          doc-version: '3.0'
+          gs-pathname: '/{stream}/{doc-version}'
+          disabled: true
 
 ########################
 # job templates
@@ -33,40 +34,40 @@
     disabled: '{obj:disabled}'
 
     parameters:
-        - project-parameter:
-            project: $GERRIT_PROJECT
-            branch: '{branch}'
+      - project-parameter:
+          project: $GERRIT_PROJECT
+          branch: '{branch}'
 
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-                - project-compare-type: 'ANT'
-                  project-pattern: '*'
-                  branches:
-                      - branch-compare-type: 'ANT'
-                        branch-pattern: '**/{branch}'
-                  file-paths:
-                      - compare-type: ANT
-                        pattern: docs/**
-                      - compare-type: ANT
-                        pattern: yardstick/**
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '*'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: ANT
+                  pattern: docs/**
+                - compare-type: ANT
+                  pattern: yardstick/**
 
     builders:
-        - upload-review-docs
+      - upload-review-docs
 
 - job-template:
     name: 'opnfv-docs-merge-{stream}'
@@ -74,41 +75,41 @@
     disabled: '{obj:disabled}'
 
     parameters:
-        - project-parameter:
-            project: $GERRIT_PROJECT
-            branch: '{branch}'
-        - string:
-            name: GS_URL
-            default: '$GS_BASE{gs-pathname}'
-            description: "Directory where the build artifact will be located upon the completion of the build."
-        - string:
-            name: GERRIT_REFSPEC
-            default: 'refs/heads/{branch}'
-            description: "JJB configured GERRIT_REFSPEC parameter"
+      - project-parameter:
+          project: $GERRIT_PROJECT
+          branch: '{branch}'
+      - string:
+          name: GS_URL
+          default: '$GS_BASE{gs-pathname}'
+          description: "Directory where the build artifact will be located upon the completion of the build."
+      - string:
+          name: GERRIT_REFSPEC
+          default: 'refs/heads/{branch}'
+          description: "JJB configured GERRIT_REFSPEC parameter"
 
     scm:
-        - git-scm
+      - git-scm
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-                - comment-added-contains-event:
-                    comment-contains-value: 'rebuild docs'
-            projects:
-                - project-compare-type: 'ANT'
-                  project-pattern: '*'
-                  branches:
-                      - branch-compare-type: 'ANT'
-                        branch-pattern: '**/{branch}'
-                  file-paths:
-                      - compare-type: ANT
-                        pattern: docs/**
-                      - compare-type: ANT
-                        pattern: yardstick/**
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'remerge'
+            - comment-added-contains-event:
+                comment-contains-value: 'rebuild docs'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '*'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: ANT
+                  pattern: docs/**
+                - compare-type: ANT
+                  pattern: yardstick/**
 
     builders:
-        - upload-merged-docs
+      - upload-merged-docs

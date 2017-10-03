@@ -1,3 +1,4 @@
+---
 ##############################################
 # job configuration for docker build and push
 ##############################################
@@ -7,153 +8,155 @@
     name: opnfv-docker-arm
 
     master: &master
-        stream: master
-        branch: '{stream}'
-        disabled: false
+      stream: master
+      branch: '{stream}'
+      disabled: false
     euphrates: &euphrates
-        stream: euphrates
-        branch: 'stable/{stream}'
-        disabled: false
+      stream: euphrates
+      branch: 'stable/{stream}'
+      disabled: false
     functest-arm-receivers: &functest-arm-receivers
-        receivers: >
-            cristina.pauna@enea.com
-            alexandru.avadanii@enea.com
-            delia.popescu@enea.com
+      receivers: >
+          cristina.pauna@enea.com
+          alexandru.avadanii@enea.com
+          delia.popescu@enea.com
     dovetail-arm-receivers: &dovetail-arm-receivers
-        receivers: >
-            cristina.pauna@enea.com
-            alexandru.avadanii@enea.com
-            alexandru.nemes@enea.com
+      receivers: >
+          cristina.pauna@enea.com
+          alexandru.avadanii@enea.com
+          alexandru.nemes@enea.com
     storperf-arm-receivers: &storperf-arm-receivers
-        receivers: >
-            cristina.pauna@enea.com
-            alexandru.avadanii@enea.com
-            mark.beierl@emc.com
+      receivers: >
+          cristina.pauna@enea.com
+          alexandru.avadanii@enea.com
+          mark.beierl@emc.com
     yardstick-arm-receivers: &yardstick-arm-receivers
-        receivers: >
-            cristina.pauna@enea.com
-            alexandru.avadanii@enea.com
-            alexandru.nemes@enea.com
-            catalina.focsa@enea.com
-            delia.popescu@enea.com
+      receivers: >
+          cristina.pauna@enea.com
+          alexandru.avadanii@enea.com
+          alexandru.nemes@enea.com
+          catalina.focsa@enea.com
+          delia.popescu@enea.com
     other-receivers: &other-receivers
-        receivers: ''
+      receivers: ''
 
     dockerfile: "Dockerfile.aarch64"
     dockerdir: "docker"
     docker_repo_name: "opnfv/{project}_aarch64"
     arch_tag: ""
 
+    # yamllint disable rule:key-duplicates
     dockerrepo:
-        # projects with jobs for master
-        - 'functest':
-            project: 'functest'
-            <<: *master
-            <<: *functest-arm-receivers
-        - 'dovetail':
-            project: 'dovetail'
-            <<: *master
-            <<: *dovetail-arm-receivers
-        - 'storperf-master':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-master'
-            dockerfile: 'Dockerfile'
-            docker_repo_name: 'opnfv/storperf-master'
-            arch_tag: 'aarch64'
-            <<: *master
-            <<: *storperf-arm-receivers
-        - 'storperf-graphite':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-graphite'
-            dockerfile: 'Dockerfile'
-            docker_repo_name: 'opnfv/storperf-graphite'
-            arch_tag: 'aarch64'
-            <<: *master
-            <<: *storperf-arm-receivers
-        - 'storperf-httpfrontend':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-httpfrontend'
-            dockerfile: 'Dockerfile'
-            docker_repo_name: 'opnfv/storperf-httpfrontend'
-            arch_tag: 'aarch64'
-            <<: *master
-            <<: *storperf-arm-receivers
-        - 'storperf-reporting':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-reporting'
-            dockerfile: 'Dockerfile'
-            docker_repo_name: 'opnfv/storperf-reporting'
-            arch_tag: 'aarch64'
-            <<: *master
-            <<: *storperf-arm-receivers
-        - 'storperf-swaggerui':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-swaggerui'
-            dockerfile: 'Dockerfile'
-            docker_repo_name: 'opnfv/storperf-swaggerui'
-            arch_tag: 'aarch64'
-            <<: *master
-            <<: *storperf-arm-receivers
-        - 'yardstick':
-            project: 'yardstick'
-            <<: *master
-            <<: *yardstick-arm-receivers
-        # projects with jobs for stable/euphrates
-        - 'functest':
-            project: 'functest'
-            <<: *euphrates
-            <<: *functest-arm-receivers
-        - 'dovetail':
-            project: 'dovetail'
-            <<: *euphrates
-            <<: *dovetail-arm-receivers
-        - 'storperf-master':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-master'
-            dockerfile: 'Dockerfile'
-            docker_repo_name: 'opnfv/storperf-master'
-            arch_tag: 'aarch64'
-            <<: *euphrates
-            <<: *storperf-arm-receivers
-        - 'storperf-graphite':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-graphite'
-            dockerfile: 'Dockerfile'
-            docker_repo_name: 'opnfv/storperf-graphite'
-            arch_tag: 'aarch64'
-            <<: *euphrates
-            <<: *storperf-arm-receivers
-        - 'storperf-httpfrontend':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-httpfrontend'
-            dockerfile: 'Dockerfile'
-            docker_repo_name: 'opnfv/storperf-httpfrontend'
-            arch_tag: 'aarch64'
-            <<: *euphrates
-            <<: *storperf-arm-receivers
-        - 'storperf-reporting':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-reporting'
-            dockerfile: 'Dockerfile'
-            docker_repo_name: 'opnfv/storperf-reporting'
-            arch_tag: 'aarch64'
-            <<: *euphrates
-            <<: *storperf-arm-receivers
-        - 'storperf-swaggerui':
-            project: 'storperf'
-            dockerdir: 'docker/storperf-swaggerui'
-            dockerfile: 'Dockerfile'
-            docker_repo_name: 'opnfv/storperf-swaggerui'
-            arch_tag: 'aarch64'
-            <<: *euphrates
-            <<: *storperf-arm-receivers
-        - 'yardstick':
-            project: 'yardstick'
-            <<: *euphrates
-            <<: *yardstick-arm-receivers
+      # projects with jobs for master
+      - 'functest':
+          project: 'functest'
+          <<: *master
+          <<: *functest-arm-receivers
+      - 'dovetail':
+          project: 'dovetail'
+          <<: *master
+          <<: *dovetail-arm-receivers
+      - 'storperf-master':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-master'
+          dockerfile: 'Dockerfile'
+          docker_repo_name: 'opnfv/storperf-master'
+          arch_tag: 'aarch64'
+          <<: *master
+          <<: *storperf-arm-receivers
+      - 'storperf-graphite':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-graphite'
+          dockerfile: 'Dockerfile'
+          docker_repo_name: 'opnfv/storperf-graphite'
+          arch_tag: 'aarch64'
+          <<: *master
+          <<: *storperf-arm-receivers
+      - 'storperf-httpfrontend':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-httpfrontend'
+          dockerfile: 'Dockerfile'
+          docker_repo_name: 'opnfv/storperf-httpfrontend'
+          arch_tag: 'aarch64'
+          <<: *master
+          <<: *storperf-arm-receivers
+      - 'storperf-reporting':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-reporting'
+          dockerfile: 'Dockerfile'
+          docker_repo_name: 'opnfv/storperf-reporting'
+          arch_tag: 'aarch64'
+          <<: *master
+          <<: *storperf-arm-receivers
+      - 'storperf-swaggerui':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-swaggerui'
+          dockerfile: 'Dockerfile'
+          docker_repo_name: 'opnfv/storperf-swaggerui'
+          arch_tag: 'aarch64'
+          <<: *master
+          <<: *storperf-arm-receivers
+      - 'yardstick':
+          project: 'yardstick'
+          <<: *master
+          <<: *yardstick-arm-receivers
+      # projects with jobs for stable/euphrates
+      - 'functest':
+          project: 'functest'
+          <<: *euphrates
+          <<: *functest-arm-receivers
+      - 'dovetail':
+          project: 'dovetail'
+          <<: *euphrates
+          <<: *dovetail-arm-receivers
+      - 'storperf-master':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-master'
+          dockerfile: 'Dockerfile'
+          docker_repo_name: 'opnfv/storperf-master'
+          arch_tag: 'aarch64'
+          <<: *euphrates
+          <<: *storperf-arm-receivers
+      - 'storperf-graphite':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-graphite'
+          dockerfile: 'Dockerfile'
+          docker_repo_name: 'opnfv/storperf-graphite'
+          arch_tag: 'aarch64'
+          <<: *euphrates
+          <<: *storperf-arm-receivers
+      - 'storperf-httpfrontend':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-httpfrontend'
+          dockerfile: 'Dockerfile'
+          docker_repo_name: 'opnfv/storperf-httpfrontend'
+          arch_tag: 'aarch64'
+          <<: *euphrates
+          <<: *storperf-arm-receivers
+      - 'storperf-reporting':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-reporting'
+          dockerfile: 'Dockerfile'
+          docker_repo_name: 'opnfv/storperf-reporting'
+          arch_tag: 'aarch64'
+          <<: *euphrates
+          <<: *storperf-arm-receivers
+      - 'storperf-swaggerui':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-swaggerui'
+          dockerfile: 'Dockerfile'
+          docker_repo_name: 'opnfv/storperf-swaggerui'
+          arch_tag: 'aarch64'
+          <<: *euphrates
+          <<: *storperf-arm-receivers
+      - 'yardstick':
+          project: 'yardstick'
+          <<: *euphrates
+          <<: *yardstick-arm-receivers
 
+    # yamllint enable rule:key-duplicates
     jobs:
-        - '{dockerrepo}-docker-build-arm-push-{stream}'
+      - '{dockerrepo}-docker-build-arm-push-{stream}'
 
 ########################
 # job templates
@@ -164,52 +167,52 @@
     disabled: '{obj:disabled}'
 
     parameters: &parameters
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-ubuntu-arm-defaults'
-        - string:
-            name: PUSH_IMAGE
-            default: "true"
-            description: "To enable/disable pushing the image to Dockerhub."
-        - string:
-            name: DOCKER_REPO_NAME
-            default: "{docker_repo_name}"
-            description: "Dockerhub repo to be pushed to."
-        - string:
-            name: RELEASE_VERSION
-            default: ""
-            description: "Release version, e.g. 1.0, 2.0, 3.0"
-        - string:
-            name: DOCKER_DIR
-            default: "{dockerdir}"
-            description: "Directory containing files needed by the Dockerfile"
-        - string:
-            name: DOCKERFILE
-            default: "{dockerfile}"
-            description: "Dockerfile to use for creating the image."
-        - string:
-            name: ARCH_TAG
-            default: "{arch_tag}"
-            description: "If set, this value will be added to the docker image tag"
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-arm-defaults'
+      - string:
+          name: PUSH_IMAGE
+          default: "true"
+          description: "To enable/disable pushing the image to Dockerhub."
+      - string:
+          name: DOCKER_REPO_NAME
+          default: "{docker_repo_name}"
+          description: "Dockerhub repo to be pushed to."
+      - string:
+          name: RELEASE_VERSION
+          default: ""
+          description: "Release version, e.g. 1.0, 2.0, 3.0"
+      - string:
+          name: DOCKER_DIR
+          default: "{dockerdir}"
+          description: "Directory containing files needed by the Dockerfile"
+      - string:
+          name: DOCKERFILE
+          default: "{dockerfile}"
+          description: "Dockerfile to use for creating the image."
+      - string:
+          name: ARCH_TAG
+          default: "{arch_tag}"
+          description: "If set, this value will be added to the docker image tag"
 
     properties:
-        - throttle:
-            max-per-node: 1
-            option: 'project'
+      - throttle:
+          max-per-node: 1
+          option: 'project'
 
     scm:
-        - git-scm
+      - git-scm
 
     builders: &builders
-        - shell:
-            !include-raw-escape: ./opnfv-docker.sh
+      - shell:
+          !include-raw-escape: ./opnfv-docker.sh
 
     triggers:
-        - pollscm:
-            cron: "*/30 * * * *"
+      - pollscm:
+          cron: "*/30 * * * *"
 
     publishers:
-        - email:
-            recipients: '{receivers}'
-        - email-jenkins-admins-on-failure
+      - email:
+          recipients: '{receivers}'
+      - email-jenkins-admins-on-failure
