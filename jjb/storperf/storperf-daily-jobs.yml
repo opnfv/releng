@@ -1,3 +1,4 @@
+---
 ###################################
 # job configuration for storperf
 ###################################
@@ -6,90 +7,90 @@
 
     project: storperf
 
-#--------------------------------
-# BRANCH ANCHORS
-#--------------------------------
+    # -------------------------------
+    # BRANCH ANCHORS
+    # -------------------------------
     master: &master
-        stream: master
-        branch: '{stream}'
-        gs-pathname: ''
-        docker-tag: 'latest'
+      stream: master
+      branch: '{stream}'
+      gs-pathname: ''
+      docker-tag: 'latest'
     euphrates: &euphrates
-        stream: euphrates
-        branch: 'stable/{stream}'
-        gs-pathname: '/{stream}'
-        disabled: false
-        docker-tag: 'stable'
-#--------------------------------
-# POD, INSTALLER, AND BRANCH MAPPING
-#--------------------------------
-#    Installers using labels
-#            CI PODs
-# This section should only contain the installers
-# that have been switched using labels for slaves
-#--------------------------------
+      stream: euphrates
+      branch: 'stable/{stream}'
+      gs-pathname: '/{stream}'
+      disabled: false
+      docker-tag: 'stable'
+    # -------------------------------
+    # POD, INSTALLER, AND BRANCH MAPPING
+    # -------------------------------
+    #    Installers using labels
+    #            CI PODs
+    # This section should only contain the installers
+    # that have been switched using labels for slaves
+    # -------------------------------
     pod:
-## fuel CI PODs
-#        - baremetal:
-#            slave-label: fuel-baremetal
-#            installer: fuel
-#            <<: *master
-#        - virtual:
-#            slave-label: fuel-virtual
-#            installer: fuel
-#            <<: *master
-## joid CI PODs
-#        - baremetal:
-#            slave-label: joid-baremetal
-#            installer: joid
-#            <<: *master
-#        - virtual:
-#            slave-label: joid-virtual
-#            installer: joid
-#            <<: *master
-## compass CI PODs
-#        - baremetal:
-#            slave-label: compass-baremetal
-#            installer: compass
-#            <<: *master
-#        - virtual:
-#            slave-label: compass-virtual
-#            installer: compass
-#            <<: *master
-## apex CI PODs
-#        - virtual:
-#            slave-label: apex-virtual-master
-#            installer: apex
-#            <<: *master
-        - baremetal:
-            slave-label: apex-baremetal-master
-            installer: apex
-            <<: *master
-        - baremetal:
-            slave-label: apex-baremetal-master
-            installer: apex
-            <<: *euphrates
-## armband CI PODs
-#        - armband-baremetal:
-#            slave-label: armband-baremetal
-#            installer: fuel
-#            <<: *master
-#        - armband-virtual:
-#            slave-label: armband-virtual
-#            installer: fuel
-#            <<: *master
-## daisy CI PODs
-#        - baremetal:
-#            slave-label: daisy-baremetal
-#            installer: daisy
-#            <<: *master
-#        - virtual:
-#            slave-label: daisy-virtual
-#            installer: daisy
-#            <<: *master
+      # # fuel CI PODs
+      # - baremetal:
+      #     slave-label: fuel-baremetal
+      #     installer: fuel
+      #     <<: *master
+      # - virtual:
+      #     slave-label: fuel-virtual
+      #     installer: fuel
+      #     <<: *master
+      # # joid CI PODs
+      # - baremetal:
+      #     slave-label: joid-baremetal
+      #     installer: joid
+      #     <<: *master
+      # - virtual:
+      #     slave-label: joid-virtual
+      #     installer: joid
+      #     <<: *master
+      # # compass CI PODs
+      # - baremetal:
+      #     slave-label: compass-baremetal
+      #     installer: compass
+      #     <<: *master
+      # - virtual:
+      #     slave-label: compass-virtual
+      #     installer: compass
+      #     <<: *master
+      # # apex CI PODs
+      # - virtual:
+      #     slave-label: apex-virtual-master
+      #     installer: apex
+      #     <<: *master
+      - baremetal:
+          slave-label: apex-baremetal-master
+          installer: apex
+          <<: *master
+      - baremetal:
+          slave-label: apex-baremetal-master
+          installer: apex
+          <<: *euphrates
+    ## armband CI PODs
+    # - armband-baremetal:
+    #     slave-label: armband-baremetal
+    #     installer: fuel
+    #     <<: *master
+    # - armband-virtual:
+    #     slave-label: armband-virtual
+    #     installer: fuel
+    #     <<: *master
+    ## daisy CI PODs
+    # - baremetal:
+    #     slave-label: daisy-baremetal
+    #     installer: daisy
+    #     <<: *master
+    # - virtual:
+    #     slave-label: daisy-virtual
+    #     installer: daisy
+    #     <<: *master
 
     jobs:
-        - 'storperf-{installer}-{pod}-daily-{stream}'
+      - 'storperf-{installer}-{pod}-daily-{stream}'
 
 ################################
 # job template
@@ -100,77 +101,77 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-per-node: 1
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-per-node: 1
+          option: 'project'
 
     wrappers:
-        - build-name:
-            name: '$BUILD_NUMBER Scenario: $DEPLOY_SCENARIO'
-        - timeout:
-            timeout: '30'
-            abort: true
+      - build-name:
+          name: '$BUILD_NUMBER Scenario: $DEPLOY_SCENARIO'
+      - timeout:
+          timeout: '30'
+          abort: true
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - '{installer}-defaults'
-        - '{slave-label}-defaults'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'os-odl_l2-nofeature-ha'
-        - string:
-            name: DOCKER_TAG
-            default: '{docker-tag}'
-            description: 'Tag to pull docker image'
-        - string:
-            name: CLEAN_DOCKER_IMAGES
-            default: 'false'
-            description: 'Remove downloaded docker images (opnfv/storperf*:*)'
-        - string:
-            name: GS_PATHNAME
-            default: '{gs-pathname}'
-            description: "Version directory where the opnfv documents will be stored in gs repository"
-        - string:
-            name: DISK_TYPE
-            default: 'HDD'
-            description: 'The type of hard disk that Cinder uses'
-        - string:
-            name: VOLUME_SIZE
-            default: '2'
-            description: 'Size of Cinder volume (in GB)'
-        - string:
-            name: WORKLOADS
-            default: 'rw'
-            description: 'Workloads to run'
-        - string:
-            name: BLOCK_SIZES
-            default: '16384'
-            description: 'Block sizes for VM I/O operations'
-        - string:
-            name: QUEUE_DEPTHS
-            default: '4'
-            description: 'Number of simultaneous I/O operations to keep active'
-        - string:
-            name: STEADY_STATE_SAMPLES
-            default: '10'
-            description: 'Number of samples to use (1 per minute) to measure steady state'
-        - string:
-            name: TEST_CASE
-            choices:
-                - 'snia_steady_state'
-            description: 'The test case to run'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - '{slave-label}-defaults'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-odl_l2-nofeature-ha'
+      - string:
+          name: DOCKER_TAG
+          default: '{docker-tag}'
+          description: 'Tag to pull docker image'
+      - string:
+          name: CLEAN_DOCKER_IMAGES
+          default: 'false'
+          description: 'Remove downloaded docker images (opnfv/storperf*:*)'
+      - string:
+          name: GS_PATHNAME
+          default: '{gs-pathname}'
+          description: "Version directory where the opnfv documents will be stored in gs repository"
+      - string:
+          name: DISK_TYPE
+          default: 'HDD'
+          description: 'The type of hard disk that Cinder uses'
+      - string:
+          name: VOLUME_SIZE
+          default: '2'
+          description: 'Size of Cinder volume (in GB)'
+      - string:
+          name: WORKLOADS
+          default: 'rw'
+          description: 'Workloads to run'
+      - string:
+          name: BLOCK_SIZES
+          default: '16384'
+          description: 'Block sizes for VM I/O operations'
+      - string:
+          name: QUEUE_DEPTHS
+          default: '4'
+          description: 'Number of simultaneous I/O operations to keep active'
+      - string:
+          name: STEADY_STATE_SAMPLES
+          default: '10'
+          description: 'Number of samples to use (1 per minute) to measure steady state'
+      - string:
+          name: TEST_CASE
+          choices:
+            - 'snia_steady_state'
+          description: 'The test case to run'
 
     scm:
-        - git-scm
+      - git-scm
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - 'storperf-daily-builder'
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - 'storperf-daily-builder'
 
 ########################
 # builder macros
@@ -178,8 +179,8 @@
 - builder:
     name: storperf-daily-builder
     builders:
-        - shell: |
-            #!/bin/bash
+      - shell: |
+          #!/bin/bash
 
-            cd $WORKSPACE
-            ./ci/daily.sh
+          cd $WORKSPACE
+          ./ci/daily.sh
