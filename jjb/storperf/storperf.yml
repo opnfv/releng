@@ -1,22 +1,23 @@
+---
 - project:
     name: storperf
 
     project: '{name}'
 
     jobs:
-        - 'storperf-merge-{stream}'
+      - 'storperf-merge-{stream}'
 
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            disabled: false
-            docker-tag: 'latest'
-        - euphrates:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
-            disabled: false
-            docker-tag: 'stable'
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
+          docker-tag: 'latest'
+      - euphrates:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
+          docker-tag: 'stable'
 
 - job-template:
     name: 'storperf-merge-{stream}'
@@ -24,52 +25,53 @@
     node: opnfv-build-ubuntu
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          # yamllint disable rule:line-length
+          description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+          # yamllint enable rule:line-length
 
     scm:
-        - git-scm
+      - git-scm
 
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - change-merged-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'remerge'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: '{project}'
-                branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: '**/{branch}'
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'remerge'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
 
     builders:
-        - shell: |
-            $WORKSPACE/ci/merge.sh
+      - shell: |
+          $WORKSPACE/ci/merge.sh
 
     publishers:
-        - junit:
-            results: nosetests.xml
-        - cobertura:
-            report-file: "coverage.xml"
-            only-stable: "true"
-            health-auto-update: "true"
-            stability-auto-update: "true"
-            zoom-coverage-chart: "true"
-            targets:
-                - files:
-                    healthy: 10
-                    unhealthy: 20
-                    failing: 30
-                - method:
-                    healthy: 50
-                    unhealthy: 40
-                    failing: 30
-        - email-jenkins-admins-on-failure
-
+      - junit:
+          results: nosetests.xml
+      - cobertura:
+          report-file: "coverage.xml"
+          only-stable: "true"
+          health-auto-update: "true"
+          stability-auto-update: "true"
+          zoom-coverage-chart: "true"
+          targets:
+            - files:
+                healthy: 10
+                unhealthy: 20
+                failing: 30
+            - method:
+                healthy: 50
+                unhealthy: 40
+                failing: 30
+      - email-jenkins-admins-on-failure
