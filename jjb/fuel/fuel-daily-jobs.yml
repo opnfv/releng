@@ -114,6 +114,7 @@
     jobs:
         - 'fuel-{scenario}-{pod}-daily-{stream}'
         - 'fuel-deploy-{pod}-daily-{stream}'
+        - 'fuel-collect-logs-{stream}'
 
 ########################
 # job templates
@@ -214,6 +215,15 @@
                         build-step-failure-threshold: 'never'
                         failure-threshold: 'never'
                         unstable-threshold: 'FAILURE'
+        - trigger-builds:
+            - project: 'fuel-collect-logs-{stream}'
+              current-parameters: false
+              block: true
+              same-node: true
+              block-thresholds:
+                build-step-failure-threshold: 'never'
+                failure-threshold: 'never'
+                unstable-threshold: 'FAILURE'
 
     publishers:
         - email:
@@ -277,6 +287,41 @@
     publishers:
         - email:
             recipients: peter.barabas@ericsson.com fzhadaev@mirantis.com
+        - email-jenkins-admins-on-failure
+
+- job-template:
+    name: 'fuel-collect-logs-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+        - logrotate-default
+
+    parameters:
+        - project-parameter:
+            project: '{project}'
+            branch: '{branch}'
+        - '{installer}-defaults':
+            gs-pathname: '{gs-pathname}'
+        - '{slave-label}-defaults':
+            installer: '{installer}'
+
+    scm:
+        - git-scm
+
+    wrappers:
+        - build-name:
+            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    builders:
+        - description-setter:
+            description: "Built on $NODE_NAME"
+        - shell:
+            !include-raw-escape: ./fuel-logs.sh
+
+    publishers:
         - email-jenkins-admins-on-failure
 
 ########################

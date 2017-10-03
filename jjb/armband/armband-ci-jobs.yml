@@ -158,6 +158,16 @@
                     build-step-failure-threshold: 'never'
                     failure-threshold: 'never'
                     unstable-threshold: 'FAILURE'
+      # Armband uses Fuel's log collection project job, no need to duplicate
+      - trigger-builds:
+          - project: 'fuel-collect-logs-{stream}'
+            current-parameters: false
+            block: true
+            same-node: true
+            block-thresholds:
+              build-step-failure-threshold: 'never'
+              failure-threshold: 'never'
+              unstable-threshold: 'FAILURE'
 
 - job-template:
     name: '{installer}-deploy-{pod}-daily-{stream}'
