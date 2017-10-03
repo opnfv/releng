@@ -18,10 +18,6 @@ if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
     fi
 fi
 
-if [[ "${INSTALLER_TYPE}" == 'fuel' ]]; then
-    sshkey="-v ${SSH_KEY}:/root/.ssh/mcp.rsa"
-fi
-
 if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     if [[ "${DEPLOY_SCENARIO:0:2}" == "k8" ]];then
         rc_file_vol="-v /home/ubuntu/config:/etc/yardstick/admin.conf"
@@ -36,6 +32,9 @@ elif [[ ${INSTALLER_TYPE} == 'compass' ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:/etc/yardstick/os_cacert"
     echo "export OS_CACERT=/etc/yardstick/os_cacert" >> ${HOME}/opnfv-openrc.sh
     rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/etc/yardstick/openstack.creds"
+elif [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
+    cacert_file_vol="-v ${HOME}/os_cacert:/etc/ssl/certs/mcp_os_cacert"
+    sshkey="-v ${SSH_KEY}:/root/.ssh/mcp.rsa"
 else
     rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/etc/yardstick/openstack.creds"
 fi
