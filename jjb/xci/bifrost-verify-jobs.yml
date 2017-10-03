@@ -1,57 +1,58 @@
+---
 - project:
     name: 'openstack-bifrost-verify'
-#--------------------------------
-# branches
-#--------------------------------
+    # -------------------------------
+    # branches
+    # -------------------------------
     stream:
-        - master:
-            branch: '{stream}'
-#--------------------------------
-# projects
-#--------------------------------
+      - master:
+          branch: '{stream}'
+    # -------------------------------
+    # projects
+    # -------------------------------
     project:
-        - 'openstack':
-            project-repo: 'https://git.openstack.org/openstack/bifrost'
-            clone-location: '$WORKSPACE/bifrost'
-        - 'opnfv':
-            project-repo: 'https://gerrit.opnfv.org/gerrit/releng-xci'
-            clone-location: '$WORKSPACE/releng-xci'
-#--------------------------------
-# distros
-#--------------------------------
+      - 'openstack':
+          project-repo: 'https://git.openstack.org/openstack/bifrost'
+          clone-location: '$WORKSPACE/bifrost'
+      - 'opnfv':
+          project-repo: 'https://gerrit.opnfv.org/gerrit/releng-xci'
+          clone-location: '$WORKSPACE/releng-xci'
+    # -------------------------------
+    # distros
+    # -------------------------------
     distro:
-        - 'xenial':
-            disabled: true
-            dib-os-release: 'xenial'
-            dib-os-element: 'ubuntu-minimal'
-            dib-os-packages: 'vlan,vim,less,bridge-utils,language-pack-en,iputils-ping,rsyslog,curl'
-            extra-dib-elements: 'openssh-server'
-        - 'centos7':
-            disabled: true
-            dib-os-release: '7'
-            dib-os-element: 'centos-minimal'
-            dib-os-packages: 'vim,less,bridge-utils,iputils,rsyslog,curl'
-            extra-dib-elements: 'openssh-server'
-        - 'suse':
-            disabled: true
-            dib-os-release: '42.3'
-            dib-os-element: 'opensuse-minimal'
-            dib-os-packages: 'vim,less,bridge-utils,iputils,rsyslog,curl'
-            extra-dib-elements: 'openssh-server'
-#--------------------------------
-# type
-#--------------------------------
+      - 'xenial':
+          disabled: true
+          dib-os-release: 'xenial'
+          dib-os-element: 'ubuntu-minimal'
+          dib-os-packages: 'vlan,vim,less,bridge-utils,language-pack-en,iputils-ping,rsyslog,curl'
+          extra-dib-elements: 'openssh-server'
+      - 'centos7':
+          disabled: true
+          dib-os-release: '7'
+          dib-os-element: 'centos-minimal'
+          dib-os-packages: 'vim,less,bridge-utils,iputils,rsyslog,curl'
+          extra-dib-elements: 'openssh-server'
+      - 'suse':
+          disabled: true
+          dib-os-release: '42.3'
+          dib-os-element: 'opensuse-minimal'
+          dib-os-packages: 'vim,less,bridge-utils,iputils,rsyslog,curl'
+          extra-dib-elements: 'openssh-server'
+    # -------------------------------
+    # type
+    # -------------------------------
     type:
-        - virtual
-#--------------------------------
-# jobs
-#--------------------------------
+      - virtual
+    # -------------------------------
+    # jobs
+    # -------------------------------
     jobs:
-        - '{project}-bifrost-verify-{distro}-{type}-{stream}'
+      - '{project}-bifrost-verify-{distro}-{type}-{stream}'
 
-#--------------------------------
+# -------------------------------
 # VM defaults
-#--------------------------------
+# -------------------------------
 - defaults:
     name: verify_vm_defaults
     test-vm-num-nodes: '3'
@@ -62,9 +63,9 @@
     vm-memory-size: '4096'
     vm-disk-cache: 'unsafe'
 
-#--------------------------------
+# -------------------------------
 # job templates
-#--------------------------------
+# -------------------------------
 - job-template:
     name: '{project}-bifrost-verify-{distro}-{type}-{stream}'
 
@@ -75,170 +76,174 @@
     concurrent: false
 
     properties:
-        - logrotate-default
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - '.*-bifrost-verify.*-{type}'
-            block-level: 'NODE'
+      - logrotate-default
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - '.*-bifrost-verify.*-{type}'
+          block-level: 'NODE'
 
     parameters:
-        - string:
-            name: PROJECT
-            default: '{project}'
-        - string:
-            name: PROJECT_REPO
-            default: '{project-repo}'
-        - string:
-            name: CLONE_LOCATION
-            default: '{clone-location}'
-        - string:
-            name: DISTRO
-            default: '{distro}'
-        - string:
-            name: DIB_OS_RELEASE
-            default: '{dib-os-release}'
-        - string:
-            name: DIB_OS_ELEMENT
-            default: '{dib-os-element}'
-        - string:
-            name: EXTRA_DIB_ELEMENTS
-            default: '{extra-dib-elements}'
-        - string:
-            name: DIB_OS_PACKAGES
-            default: '{dib-os-packages}'
-        - string:
-            name: TEST_VM_NUM_NODES
-            default: '{test-vm-num-nodes}'
-        - string:
-            name: TEST_VM_NODE_NAMES
-            default: '{test-vm-node-names}'
-        - string:
-            name: VM_DOMAIN_TYPE
-            default: '{vm-domain-type}'
-        - string:
-            name: VM_CPU
-            default: '{vm-cpu}'
-        - string:
-            name: VM_DISK
-            default: '{vm-disk}'
-        - string:
-            name: VM_MEMORY_SIZE
-            default: '{vm-memory-size}'
-        - string:
-            name: VM_DISK_CACHE
-            default: '{vm-disk-cache}'
-        - string:
-            name: CLEAN_DIB_IMAGES
-            default: 'true'
-        - label:
-            name: SLAVE_LABEL
-            default: 'infra-{type}-{distro}'
-        - string:
-            name: BIFROST_LOG_URL
-            default: 'http://artifacts.opnfv.org/cross-community-ci/openstack/bifrost/$GERRIT_NAME/$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER/$JOB_NAME'
-        - string:
-            name: XCI_LOOP
-            default: 'verify'
+      - string:
+          name: PROJECT
+          default: '{project}'
+      - string:
+          name: PROJECT_REPO
+          default: '{project-repo}'
+      - string:
+          name: CLONE_LOCATION
+          default: '{clone-location}'
+      - string:
+          name: DISTRO
+          default: '{distro}'
+      - string:
+          name: DIB_OS_RELEASE
+          default: '{dib-os-release}'
+      - string:
+          name: DIB_OS_ELEMENT
+          default: '{dib-os-element}'
+      - string:
+          name: EXTRA_DIB_ELEMENTS
+          default: '{extra-dib-elements}'
+      - string:
+          name: DIB_OS_PACKAGES
+          default: '{dib-os-packages}'
+      - string:
+          name: TEST_VM_NUM_NODES
+          default: '{test-vm-num-nodes}'
+      - string:
+          name: TEST_VM_NODE_NAMES
+          default: '{test-vm-node-names}'
+      - string:
+          name: VM_DOMAIN_TYPE
+          default: '{vm-domain-type}'
+      - string:
+          name: VM_CPU
+          default: '{vm-cpu}'
+      - string:
+          name: VM_DISK
+          default: '{vm-disk}'
+      - string:
+          name: VM_MEMORY_SIZE
+          default: '{vm-memory-size}'
+      - string:
+          name: VM_DISK_CACHE
+          default: '{vm-disk-cache}'
+      - string:
+          name: CLEAN_DIB_IMAGES
+          default: 'true'
+      - label:
+          name: SLAVE_LABEL
+          default: 'infra-{type}-{distro}'
+      # yamllint disable rule:line-length
+      - string:
+          name: BIFROST_LOG_URL
+          default: 'http://artifacts.opnfv.org/cross-community-ci/openstack/bifrost/$GERRIT_NAME/$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER/$JOB_NAME'
+      # yamllint enable rule:line-length
+      - string:
+          name: XCI_LOOP
+          default: 'verify'
 
     scm:
-        - git:
-            url: '$PROJECT_REPO'
-            refspec: '$GERRIT_REFSPEC'
-            branches:
-                - 'origin/$BRANCH'
-            skip-tag: true
-            choosing-strategy: 'gerrit'
-            timeout: 10
-            wipe-workspace: true
+      - git:
+          url: '$PROJECT_REPO'
+          refspec: '$GERRIT_REFSPEC'
+          branches:
+            - 'origin/$BRANCH'
+          skip-tag: true
+          choosing-strategy: 'gerrit'
+          timeout: 10
+          wipe-workspace: true
 
     triggers:
-        - '{project}-gerrit-trigger':
-            branch: '{branch}'
+      - '{project}-gerrit-trigger':
+          branch: '{branch}'
 
     builders:
-        - bifrost-set-name
-        - bifrost-build
+      - bifrost-set-name
+      - bifrost-build
 
     wrappers:
-        - fix-workspace-permissions
-        - build-timeout:
-            timeout: 90
+      - fix-workspace-permissions
+      - build-timeout:
+          timeout: 90
 
     publishers:
-        - email:
-            recipients: fatih.degirmenci@ericsson.com yroblamo@redhat.com mchandras@suse.de jack.morgan@intel.com julienjut@gmail.com
-        - email-jenkins-admins-on-failure
-#--------------------------------
+      # yamllint disable rule:line-length
+      - email:
+          recipients: fatih.degirmenci@ericsson.com yroblamo@redhat.com mchandras@suse.de jack.morgan@intel.com julienjut@gmail.com
+      # yamllint enable rule:line-length
+      - email-jenkins-admins-on-failure
+# -------------------------------
 # trigger macros
-#--------------------------------
+# -------------------------------
 - trigger:
     name: 'openstack-gerrit-trigger'
     triggers:
-        - gerrit:
-            server-name: 'review.openstack.org'
-            escape-quotes: true
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-            custom-url: '* $JOB_NAME $BIFROST_LOG_URL/index.html'
-            silent-start: true
-            projects:
-              - project-compare-type: 'PLAIN'
-                project-pattern: 'openstack/bifrost'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                disable-strict-forbidden-file-verification: 'true'
-                forbidden-file-paths:
-                  - compare-type: ANT
-                    pattern: 'doc/**'
-                  - compare-type: ANT
-                    pattern: 'releasenotes/**'
-                disable-strict-forbidden-file-verification: 'true'
-            readable-message: true
+      - gerrit:
+          server-name: 'review.openstack.org'
+          escape-quotes: true
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+          custom-url: '* $JOB_NAME $BIFROST_LOG_URL/index.html'
+          silent-start: true
+          projects:
+            - project-compare-type: 'PLAIN'
+              project-pattern: 'openstack/bifrost'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              disable-strict-forbidden-file-verification: 'true'
+              forbidden-file-paths:
+                - compare-type: ANT
+                  pattern: 'doc/**'
+                - compare-type: ANT
+                  pattern: 'releasenotes/**'
+          readable-message: true
+
 - trigger:
     name: 'opnfv-gerrit-trigger'
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            custom-url: '* $JOB_NAME $BIFROST_LOG_URL/index.html'
-            projects:
-              - project-compare-type: 'ANT'
-                project-pattern: 'releng-xci'
-                branches:
-                  - branch-compare-type: 'ANT'
-                    branch-pattern: '**/{branch}'
-                file-paths:
-                  - compare-type: ANT
-                    pattern: 'bifrost/**'
-            readable-message: true
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          custom-url: '* $JOB_NAME $BIFROST_LOG_URL/index.html'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'releng-xci'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: ANT
+                  pattern: 'bifrost/**'
+          readable-message: true
 
-#---------------------------
+# --------------------------
 # builder macros
-#---------------------------
+# --------------------------
 - builder:
     name: bifrost-set-name
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
+      - description-setter:
+          description: "Built on $NODE_NAME"
 
 - builder:
     name: bifrost-build
     builders:
-        - shell:
-            !include-raw: ./bifrost-verify.sh
+      - shell:
+          !include-raw: ./bifrost-verify.sh
