@@ -1,3 +1,4 @@
+---
 ########################
 # Job configuration for fuel
 ########################
@@ -9,17 +10,17 @@
     installer: 'fuel'
 
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            disabled: false
-        - euphrates:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
-            disabled: false
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
+      - euphrates:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
 
     jobs:
-        - 'fuel-deploy-generic-daily-{stream}'
+      - 'fuel-deploy-generic-daily-{stream}'
 
 ########################
 # job templates
@@ -32,48 +33,48 @@
     disabled: '{obj:disabled}'
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-per-node: 1
-            option: 'project'
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'fuel-os-.*?-daily-.*'
-                - 'fuel-deploy-generic-daily-.*'
-            block-level: 'NODE'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-per-node: 1
+          option: 'project'
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - 'fuel-os-.*?-daily-.*'
+            - 'fuel-deploy-generic-daily-.*'
+          block-level: 'NODE'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - '{installer}-defaults':
-            gs-pathname: '{gs-pathname}'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'os-odl-nofeature-ha'
-        - node:
-            name: SLAVE_NAME
-            description: 'Slave name on Jenkins'
-            allowed-slaves:
-                - ericsson-pod2
-                - lf-pod2
-                - ericsson-pod1
-            default-slaves:
-                - ericsson-pod2
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults':
+          gs-pathname: '{gs-pathname}'
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: 'Git URL to use on this Jenkins Slave'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-odl-nofeature-ha'
+      - node:
+          name: SLAVE_NAME
+          description: 'Slave name on Jenkins'
+          allowed-slaves:
+            - ericsson-pod2
+            - lf-pod2
+            - ericsson-pod1
+          default-slaves:
+            - ericsson-pod2
 
     scm:
-        - git-scm
+      - git-scm
 
     wrappers:
-        - build-name:
-            name: '$BUILD_NUMBER - POD: $NODE_NAME Scenario: $DEPLOY_SCENARIO'
+      - build-name:
+          name: '$BUILD_NUMBER - POD: $NODE_NAME Scenario: $DEPLOY_SCENARIO'
 
     builders:
-        - shell:
-            !include-raw-escape: ./fuel-deploy.sh
+      - shell:
+          !include-raw-escape: ./fuel-deploy.sh

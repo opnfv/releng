@@ -1,3 +1,4 @@
+---
 # jenkins job templates for Fuel
 - project:
 
@@ -7,48 +8,48 @@
 
     installer: fuel
 
-#--------------------------------
-# BRANCH ANCHORS
-#--------------------------------
+    # -------------------------------
+    # BRANCH ANCHORS
+    # -------------------------------
     master: &master
-        stream: master
-        branch: '{stream}'
-        disabled: false
-        gs-pathname: ''
+      stream: master
+      branch: '{stream}'
+      disabled: false
+      gs-pathname: ''
     euphrates: &euphrates
-        stream: euphrates
-        branch: 'stable/{stream}'
-        disabled: false
-        gs-pathname: '/{stream}'
-#--------------------------------
-# POD, INSTALLER, AND BRANCH MAPPING
-#--------------------------------
-#        CI PODs
-#--------------------------------
+      stream: euphrates
+      branch: 'stable/{stream}'
+      disabled: false
+      gs-pathname: '/{stream}'
+    # -------------------------------
+    # POD, INSTALLER, AND BRANCH MAPPING
+    # -------------------------------
+    #        CI PODs
+    # -------------------------------
     pod:
-        - baremetal:
-            slave-label: fuel-baremetal
-            <<: *master
-        - virtual:
-            slave-label: fuel-virtual
-            <<: *master
-        - baremetal:
-            slave-label: fuel-baremetal
-            <<: *euphrates
-        - virtual:
-            slave-label: fuel-virtual
-            <<: *euphrates
-#--------------------------------
-#       scenarios
-#--------------------------------
+      - baremetal:
+          slave-label: fuel-baremetal
+          <<: *master
+      - virtual:
+          slave-label: fuel-virtual
+          <<: *master
+      - baremetal:
+          slave-label: fuel-baremetal
+          <<: *euphrates
+      - virtual:
+          slave-label: fuel-virtual
+          <<: *euphrates
+    # -------------------------------
+    #       scenarios
+    # -------------------------------
     scenario:
-        # HA scenarios
-        - 'os-nosdn-nofeature-ha':
-            auto-trigger-name: 'weekly-trigger-disabled'
+      # HA scenarios
+      - 'os-nosdn-nofeature-ha':
+          auto-trigger-name: 'weekly-trigger-disabled'
 
     jobs:
-        - 'fuel-{scenario}-{pod}-weekly-{stream}'
-        - 'fuel-deploy-{pod}-weekly-{stream}'
+      - 'fuel-{scenario}-{pod}-weekly-{stream}'
+      - 'fuel-deploy-{pod}-weekly-{stream}'
 
 ########################
 # job templates
@@ -61,65 +62,65 @@
     concurrent: false
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 4
-            max-per-node: 1
-            option: 'project'
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'fuel-os-.*?-{pod}-daily-.*'
-                - 'fuel-os-.*?-{pod}-weekly-.*'
-                - 'fuel-verify-.*'
-            block-level: 'NODE'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 4
+          max-per-node: 1
+          option: 'project'
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - 'fuel-os-.*?-{pod}-daily-.*'
+            - 'fuel-os-.*?-{pod}-weekly-.*'
+            - 'fuel-verify-.*'
+          block-level: 'NODE'
 
     wrappers:
-        - build-name:
-            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+      - build-name:
+          name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
 
     triggers:
-        - '{auto-trigger-name}'
+      - '{auto-trigger-name}'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - '{installer}-defaults':
-            gs-pathname: '{gs-pathname}'
-        - '{slave-label}-defaults':
-            installer: '{installer}'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: '{scenario}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults':
+          gs-pathname: '{gs-pathname}'
+      - '{slave-label}-defaults':
+          installer: '{installer}'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: '{scenario}'
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - trigger-builds:
-            - project: 'fuel-deploy-{pod}-weekly-{stream}'
-              current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO={scenario}
-              same-node: true
-              block: true
-        - trigger-builds:
-            - project: 'functest-fuel-{pod}-weekly-{stream}'
-              current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO={scenario}
-              same-node: true
-              block: true
-              block-thresholds:
-                build-step-failure-threshold: 'never'
-                failure-threshold: 'never'
-                unstable-threshold: 'FAILURE'
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - trigger-builds:
+          - project: 'fuel-deploy-{pod}-weekly-{stream}'
+            current-parameters: false
+            predefined-parameters:
+              DEPLOY_SCENARIO={scenario}
+            same-node: true
+            block: true
+      - trigger-builds:
+          - project: 'functest-fuel-{pod}-weekly-{stream}'
+            current-parameters: false
+            predefined-parameters:
+              DEPLOY_SCENARIO={scenario}
+            same-node: true
+            block: true
+            block-thresholds:
+              build-step-failure-threshold: 'never'
+              failure-threshold: 'never'
+              unstable-threshold: 'FAILURE'
 
     publishers:
-        - email:
-            recipients: peter.barabas@ericsson.com fzhadaev@mirantis.com
-        - email-jenkins-admins-on-failure
+      - email:
+          recipients: peter.barabas@ericsson.com fzhadaev@mirantis.com
+      - email-jenkins-admins-on-failure
 
 - job-template:
     name: 'fuel-deploy-{pod}-weekly-{stream}'
@@ -129,63 +130,63 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 4
-            max-per-node: 1
-            option: 'project'
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'fuel-deploy-{pod}-daily-.*'
-                - 'fuel-deploy-generic-daily-.*'
-                - 'fuel-deploy-{pod}-weekly-.*'
-                - 'fuel-deploy-generic-weekly-.*'
-            block-level: 'NODE'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 4
+          max-per-node: 1
+          option: 'project'
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - 'fuel-deploy-{pod}-daily-.*'
+            - 'fuel-deploy-generic-daily-.*'
+            - 'fuel-deploy-{pod}-weekly-.*'
+            - 'fuel-deploy-generic-weekly-.*'
+          block-level: 'NODE'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - '{installer}-defaults':
-            gs-pathname: '{gs-pathname}'
-        - '{slave-label}-defaults':
-            installer: '{installer}'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'os-odl-nofeature-ha'
-        - string:
-            name: DEPLOY_TIMEOUT
-            default: '150'
-            description: 'Deployment timeout in minutes'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults':
+          gs-pathname: '{gs-pathname}'
+      - '{slave-label}-defaults':
+          installer: '{installer}'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-odl-nofeature-ha'
+      - string:
+          name: DEPLOY_TIMEOUT
+          default: '150'
+          description: 'Deployment timeout in minutes'
 
     scm:
-        - git-scm
+      - git-scm
 
     wrappers:
-        - build-name:
-            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+      - build-name:
+          name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - shell:
-            !include-raw-escape: ./fuel-deploy.sh
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - shell:
+          !include-raw-escape: ./fuel-deploy.sh
 
     publishers:
-        - email:
-            recipients: peter.barabas@ericsson.com fzhadaev@mirantis.com
-        - email-jenkins-admins-on-failure
+      - email:
+          recipients: peter.barabas@ericsson.com fzhadaev@mirantis.com
+      - email-jenkins-admins-on-failure
 
 ########################
 # trigger macros
 ########################
-#-----------------------------------------------
+# ----------------------------------------------
 # Triggers for job running on fuel-baremetal against master branch
-#-----------------------------------------------
+# ----------------------------------------------
 # HA Scenarios
 - trigger:
     name: 'fuel-os-nosdn-nofeature-ha-baremetal-weekly-master-trigger'
     triggers:
-        - timed: ''
+      - timed: ''
