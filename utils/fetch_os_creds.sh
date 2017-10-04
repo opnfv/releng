@@ -114,8 +114,10 @@ if [ "$installer_type" == "fuel" ]; then
         ssh ${ssh_options} "${ssh_user}@${controller_ip}" \
             "sudo cat /root/keystonercv3" > "${dest_path}"
 
-        ssh ${ssh_options} "${ssh_user}@${installer_ip}" \
-            "cat /etc/ssl/certs/os_cacert" > "${os_cacert}" || touch "${os_cacert}"
+        if [[ "${BUILD_TAG}" =~ "baremetal" ]]; then
+            ssh ${ssh_options} "${ssh_user}@${installer_ip}" \
+                "cat /etc/ssl/certs/os_cacert" > "${os_cacert}"
+        fi
     else
         env=$(sshpass -p r00tme ssh 2>/dev/null ${ssh_options} root@${installer_ip} \
             'fuel env'|grep operational|head -1|awk '{print $1}') &> /dev/null
