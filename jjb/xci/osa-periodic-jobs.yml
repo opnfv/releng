@@ -1,43 +1,45 @@
+---
 - project:
     name: 'opnfv-osa-periodic'
 
     project: 'releng-xci'
-#--------------------------------
-# branches
-#--------------------------------
+    # -------------------------------
+    # branches
+    # -------------------------------
     stream:
-        - master:
-            branch: '{stream}'
-#--------------------------------
-# distros
-#--------------------------------
+      - master:
+          branch: '{stream}'
+    # -------------------------------
+    # distros
+    # -------------------------------
     distro:
-        - 'xenial':
-            disabled: false
-        - 'centos7':
-            disabled: true
-        - 'suse':
-            disabled: true
-#--------------------------------
-# type
-#--------------------------------
+      - 'xenial':
+          disabled: false
+      - 'centos7':
+          disabled: true
+      - 'suse':
+          disabled: true
+    # -------------------------------
+    # type
+    # -------------------------------
     type:
-        - virtual
-#--------------------------------
-# phases
-#--------------------------------
+      - virtual
+    # -------------------------------
+    # phases
+    # -------------------------------
     phase:
-        - 'deploy'
-        - 'healthcheck'
-#--------------------------------
-# jobs
-#--------------------------------
+      - 'deploy'
+      - 'healthcheck'
+    # -------------------------------
+    # jobs
+    # -------------------------------
     jobs:
-        - 'osa-periodic-{distro}-{type}-{stream}'
-        - 'osa-periodic-{phase}-{type}-{stream}'
-#--------------------------------
+      - 'osa-periodic-{distro}-{type}-{stream}'
+      - 'osa-periodic-{phase}-{type}-{stream}'
+
+# -------------------------------
 # job templates
-#--------------------------------
+# -------------------------------
 - job-template:
     name: 'osa-periodic-{distro}-{type}-{stream}'
 
@@ -48,69 +50,69 @@
     concurrent: false
 
     properties:
-        - logrotate-default
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'xci-verify-.*'
-                - 'bifrost-verify-.*'
-                - 'bifrost-periodic-.*'
-                - 'osa-verify-.*'
-                - 'osa-periodic-.*'
-            block-level: 'NODE'
+      - logrotate-default
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - 'xci-verify-.*'
+            - 'bifrost-verify-.*'
+            - 'bifrost-periodic-.*'
+            - 'osa-verify-.*'
+            - 'osa-periodic-.*'
+          block-level: 'NODE'
 
     wrappers:
-        - ssh-agent-wrapper
-        - build-timeout:
-            timeout: 240
-        - fix-workspace-permissions
+      - ssh-agent-wrapper
+      - build-timeout:
+          timeout: 240
+      - fix-workspace-permissions
 
     scm:
-        - git-scm-osa
+      - git-scm-osa
 
     triggers:
-        - pollscm:
-            cron: "@midnight"
-            ignore-post-commit-hooks: True
+      - pollscm:
+          cron: "@midnight"
+          ignore-post-commit-hooks: true
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - label:
-            name: SLAVE_LABEL
-            default: 'xci-virtual-{distro}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - label:
+          name: SLAVE_LABEL
+          default: 'xci-virtual-{distro}'
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - multijob:
-            name: deploy
-            condition: SUCCESSFUL
-            projects:
-                - name: 'osa-periodic-deploy-{type}-{stream}'
-                  current-parameters: true
-                  predefined-parameters: |
-                    DISTRO={distro}
-                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
-                  git-revision: true
-                  node-parameters: true
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: healthcheck
-            condition: SUCCESSFUL
-            projects:
-                - name: 'osa-periodic-healthcheck-{type}-{stream}'
-                  current-parameters: true
-                  predefined-parameters: |
-                    DISTRO={distro}
-                    DEPLOY_SCENARIO=os-nosdn-nofeature-noha
-                    FUNCTEST_MODE=tier
-                    FUNCTEST_TIER=healthcheck
-                  node-parameters: true
-                  kill-phase-on: NEVER
-                  abort-all-job: false
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - multijob:
+          name: deploy
+          condition: SUCCESSFUL
+          projects:
+            - name: 'osa-periodic-deploy-{type}-{stream}'
+              current-parameters: true
+              predefined-parameters: |
+                DISTRO={distro}
+                DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+              git-revision: true
+              node-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
+          name: healthcheck
+          condition: SUCCESSFUL
+          projects:
+            - name: 'osa-periodic-healthcheck-{type}-{stream}'
+              current-parameters: true
+              predefined-parameters: |
+                DISTRO={distro}
+                DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                FUNCTEST_MODE=tier
+                FUNCTEST_TIER=healthcheck
+              node-parameters: true
+              kill-phase-on: NEVER
+              abort-all-job: false
 
 - job-template:
     name: 'osa-periodic-{phase}-{type}-{stream}'
@@ -120,109 +122,109 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - 'xci-verify-deploy-.*'
-                - 'xci-verify-healthcheck-.*'
-                - 'bifrost-verify-.*'
-                - 'bifrost-periodic-.*'
-                - 'osa-verify-deploy-.*'
-                - 'osa-verify-halthcheck-.*'
-                - 'osa-periodic-deploy-.*'
-                - 'osa-periodic-healthcheck-.*'
-            block-level: 'NODE'
+      - logrotate-default
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - 'xci-verify-deploy-.*'
+            - 'xci-verify-healthcheck-.*'
+            - 'bifrost-verify-.*'
+            - 'bifrost-periodic-.*'
+            - 'osa-verify-deploy-.*'
+            - 'osa-verify-halthcheck-.*'
+            - 'osa-periodic-deploy-.*'
+            - 'osa-periodic-healthcheck-.*'
+          block-level: 'NODE'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - label:
-            name: SLAVE_LABEL
-            default: 'xci-virtual-{distro}'
-        - string:
-            name: OPENSTACK_OSA_VERSION
-            default: 'master'
-        - string:
-            name: DISTRO
-            default: 'xenial'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'os-nosdn-nofeature-noha'
-        - string:
-            name: XCI_FLAVOR
-            default: 'mini'
-        - string:
-            name: XCI_LOOP
-            default: 'periodic'
-        - string:
-            name: OPNFV_RELENG_DEV_PATH
-            default: $WORKSPACE/releng-xci
-        - string:
-            name: FUNCTEST_MODE
-            default: 'tier'
-        - string:
-            name: FUNCTEST_SUITE_NAME
-            default: 'healthcheck'
-        - string:
-            name: FORCE_MASTER
-            default: 'true'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - label:
+          name: SLAVE_LABEL
+          default: 'xci-virtual-{distro}'
+      - string:
+          name: OPENSTACK_OSA_VERSION
+          default: 'master'
+      - string:
+          name: DISTRO
+          default: 'xenial'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-nosdn-nofeature-noha'
+      - string:
+          name: XCI_FLAVOR
+          default: 'mini'
+      - string:
+          name: XCI_LOOP
+          default: 'periodic'
+      - string:
+          name: OPNFV_RELENG_DEV_PATH
+          default: $WORKSPACE/releng-xci
+      - string:
+          name: FUNCTEST_MODE
+          default: 'tier'
+      - string:
+          name: FUNCTEST_SUITE_NAME
+          default: 'healthcheck'
+      - string:
+          name: FORCE_MASTER
+          default: 'true'
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
 
     scm:
-        - git-scm-osa
+      - git-scm-osa
 
     wrappers:
-        - ssh-agent-wrapper
-        - build-timeout:
-            timeout: 240
-        - fix-workspace-permissions
+      - ssh-agent-wrapper
+      - build-timeout:
+          timeout: 240
+      - fix-workspace-permissions
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - 'osa-periodic-{phase}-macro'
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - 'osa-periodic-{phase}-macro'
 
-#--------------------------------
+# -------------------------------
 # builder macros
-#--------------------------------
+# -------------------------------
 - builder:
     name: 'osa-periodic-deploy-macro'
     builders:
-        - shell: |
-            #!/bin/bash
+      - shell: |
+          #!/bin/bash
 
-            # here we will
-            # - clone releng-xci repo as the jobs are running against openstack gerrit
-            #   and we need to clone releng-xci ourselves to $OPNFV_RELENG_DEV_PATH
-            # - run sources-branch-updater.sh from osa to update/pin the role versions
-            #   at the time this job gets triggered against osa master in case if the
-            #   deployment succeeds and we decide to bump version used by xci
-            # - copy generated role versions into $OPNFV_RELENG_DEV_PATH/xci/file
-            # - start the deployment by executing xci-deploy.sh as usual
-            #
-            # we might also need to pin versions of openstack services as well.
+          # here we will
+          # - clone releng-xci repo as the jobs are running against openstack gerrit
+          #   and we need to clone releng-xci ourselves to $OPNFV_RELENG_DEV_PATH
+          # - run sources-branch-updater.sh from osa to update/pin the role versions
+          #   at the time this job gets triggered against osa master in case if the
+          #   deployment succeeds and we decide to bump version used by xci
+          # - copy generated role versions into $OPNFV_RELENG_DEV_PATH/xci/file
+          # - start the deployment by executing xci-deploy.sh as usual
+          #
+          # we might also need to pin versions of openstack services as well.
 
-            echo "Hello World!"
+          echo "Hello World!"
 
 - builder:
     name: 'osa-periodic-healthcheck-macro'
     builders:
-        - shell: |
-            #!/bin/bash
+      - shell: |
+          #!/bin/bash
 
-            echo "Hello World!"
-#--------------------------------
+          echo "Hello World!"
+# -------------------------------
 # scm macro
-#--------------------------------
+# -------------------------------
 - scm:
     name: git-scm-osa
     scm:
-        - git:
-            url: https://review.openstack.org/p/openstack/openstack-ansible.git
-            branches:
-                - master
-            timeout: 15
+      - git:
+          url: https://review.openstack.org/p/openstack/openstack-ansible.git
+          branches:
+            - master
+          timeout: 15
