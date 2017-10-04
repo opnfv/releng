@@ -1,3 +1,4 @@
+---
 ###################################
 # job configuration for functest
 ###################################
@@ -6,50 +7,50 @@
 
     project: functest
 
-#--------------------------------
-# BRANCH ANCHORS
-#--------------------------------
+    # -------------------------------
+    # BRANCH ANCHORS
+    # -------------------------------
     master: &master
-        stream: master
-        branch: '{stream}'
-        gs-pathname: ''
-        docker-tag: 'latest'
-        disabled: false
+      stream: master
+      branch: '{stream}'
+      gs-pathname: ''
+      docker-tag: 'latest'
+      disabled: false
     euphrates: &euphrates
-        stream: euphrates
-        branch: 'stable/{stream}'
-        gs-pathname: '/{stream}'
-        docker-tag: 'stable'
-        disabled: false
-#--------------------------------
-# POD, INSTALLER, AND BRANCH MAPPING
-#--------------------------------
-#    Installers using labels
-#            CI PODs
-# This section should only contain the installers
-# that have been switched using labels for slaves
-#--------------------------------
+      stream: euphrates
+      branch: 'stable/{stream}'
+      gs-pathname: '/{stream}'
+      docker-tag: 'stable'
+      disabled: false
+    # -------------------------------
+    # POD, INSTALLER, AND BRANCH MAPPING
+    # -------------------------------
+    #    Installers using labels
+    #            CI PODs
+    # This section should only contain the installers
+    # that have been switched using labels for slaves
+    # -------------------------------
     pod:
-# fuel CI PODs
-        - baremetal:
-            slave-label: fuel-baremetal
-            installer: fuel
-            <<: *master
-        - virtual:
-            slave-label: fuel-virtual
-            installer: fuel
-            <<: *master
-        - baremetal:
-            slave-label: fuel-baremetal
-            installer: fuel
-            <<: *euphrates
-        - virtual:
-            slave-label: fuel-virtual
-            installer: fuel
-            <<: *euphrates
-#--------------------------------
+      # fuel CI PODs
+      - baremetal:
+          slave-label: fuel-baremetal
+          installer: fuel
+          <<: *master
+      - virtual:
+          slave-label: fuel-virtual
+          installer: fuel
+          <<: *master
+      - baremetal:
+          slave-label: fuel-baremetal
+          installer: fuel
+          <<: *euphrates
+      - virtual:
+          slave-label: fuel-virtual
+          installer: fuel
+          <<: *euphrates
+    # -------------------------------
     jobs:
-        - 'functest-{installer}-{pod}-weekly-{stream}'
+      - 'functest-{installer}-{pod}-weekly-{stream}'
 
 ################################
 # job template
@@ -62,66 +63,68 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-per-node: 1
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-per-node: 1
+          option: 'project'
 
     wrappers:
-        - build-name:
-            name: '$BUILD_NUMBER Suite: $FUNCTEST_SUITE_NAME Scenario: $DEPLOY_SCENARIO'
-        - timeout:
-            timeout: '400'
-            abort: true
+      - build-name:
+          name: '$BUILD_NUMBER Suite: $FUNCTEST_SUITE_NAME Scenario: $DEPLOY_SCENARIO'
+      - timeout:
+          timeout: '400'
+          abort: true
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - '{installer}-defaults'
-        - '{slave-label}-defaults'
-        - string:
-            name: FUNCTEST_SUITE_NAME
-            default: 'weekly'
-            description: "Weekly suite name to run"
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'os-odl_l2-nofeature-ha'
-        - string:
-            name: DOCKER_TAG
-            default: '{docker-tag}'
-            description: 'Tag to pull docker image'
-        - string:
-            name: CLEAN_DOCKER_IMAGES
-            default: 'false'
-            description: 'Remove downloaded docker images (opnfv/functest*:*)'
-        - functest-parameter:
-            gs-pathname: '{gs-pathname}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - '{slave-label}-defaults'
+      - string:
+          name: FUNCTEST_SUITE_NAME
+          default: 'weekly'
+          description: "Weekly suite name to run"
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-odl_l2-nofeature-ha'
+      - string:
+          name: DOCKER_TAG
+          default: '{docker-tag}'
+          description: 'Tag to pull docker image'
+      - string:
+          name: CLEAN_DOCKER_IMAGES
+          default: 'false'
+          description: 'Remove downloaded docker images (opnfv/functest*:*)'
+      - functest-parameter:
+          gs-pathname: '{gs-pathname}'
 
     scm:
-        - git-scm
+      - git-scm
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - 'functest-weekly-builder'
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - 'functest-weekly-builder'
 ########################
 # builder macros
 ########################
 - builder:
     name: functest-weekly-builder
     builders:
-        - shell:
-            !include-raw: ./functest-cleanup.sh
-        - shell:
-            !include-raw:
-                - ./functest-env-presetup.sh
-                - ../../utils/fetch_os_creds.sh
-                - ./set-functest-env.sh
-        - shell:
-            !include-raw: ./functest-loop.sh
-        - shell:
-            !include-raw: ../../utils/push-test-logs.sh
-        - shell:
-            !include-raw: ./functest-exit.sh
+      - shell:
+          !include-raw: ./functest-cleanup.sh
+      # yamllint disable rule:indentation
+      - shell:
+          !include-raw:
+             - ./functest-env-presetup.sh
+             - ../../utils/fetch_os_creds.sh
+             - ./set-functest-env.sh
+      # yamllint enable rule:indentation
+      - shell:
+          !include-raw: ./functest-loop.sh
+      - shell:
+          !include-raw: ../../utils/push-test-logs.sh
+      - shell:
+          !include-raw: ./functest-exit.sh
