@@ -18,6 +18,17 @@
       gs-pathname: '/{stream}'
       disabled: false
     # -------------------------------
+    # DEPLOY TYPE ANCHORS
+    # -------------------------------
+    baremetal: &baremetal
+      installer: 'fuel'
+      deploy-type: 'baremetal'
+      slave-label: 'armband-{deploy-type}'
+    virtual: &virtual
+      installer: 'fuel'
+      deploy-type: 'virtual'
+      slave-label: 'armband-{deploy-type}'
+    # -------------------------------
     # POD, INSTALLER, AND BRANCH MAPPING
     # -------------------------------
     # CI POD's
@@ -26,23 +37,19 @@
     # -------------------------------
     pod:
       - armband-baremetal:
-          slave-label: armband-baremetal
-          installer: fuel
+          <<: *baremetal
           <<: *euphrates
       - armband-virtual:
-          slave-label: armband-virtual
-          installer: fuel
+          <<: *virtual
           <<: *euphrates
       # -------------------------------
       #        master
       # -------------------------------
       - armband-baremetal:
-          slave-label: armband-baremetal
-          installer: fuel
+          <<: *baremetal
           <<: *master
       - armband-virtual:
-          slave-label: armband-virtual
-          installer: fuel
+          <<: *virtual
           <<: *master
     # -------------------------------
     #       scenarios
@@ -160,7 +167,7 @@
                     unstable-threshold: 'FAILURE'
       # Armband uses Fuel's log collection project job, no need to duplicate
       - trigger-builds:
-          - project: 'fuel-collect-logs-{pod}-daily-{stream}'
+          - project: 'fuel-collect-logs-{deploy-type}-daily-{stream}'
             current-parameters: false
             block: true
             same-node: true
