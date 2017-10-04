@@ -11,7 +11,7 @@
 from opnfv.deployment.apex import adapter as apex_adapter
 from opnfv.deployment.compass import adapter as compass_adapter
 from opnfv.deployment.fuel import adapter as fuel_adapter
-from opnfv.deployment.OSA import adapter as osa_adapter
+from opnfv.deployment.osa import adapter as osa_adapter
 from opnfv.utils import opnfv_logger as logger
 
 logger = logger.Logger(__name__).getLogger()
@@ -19,7 +19,7 @@ logger = logger.Logger(__name__).getLogger()
 
 class Factory(object):
 
-    INSTALLERS = ["fuel", "apex", "compass", "joid", "daisy", "OSA"]
+    INSTALLERS = ["fuel", "apex", "compass", "joid", "daisy", "osa"]
 
     def __init__(self):
         pass
