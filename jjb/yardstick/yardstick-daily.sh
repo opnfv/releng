@@ -6,6 +6,8 @@ rc_file_vol=""
 cacert_file_vol=""
 sshkey=""
 
+rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/etc/yardstick/openstack.creds"
+
 if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
     instack_mac=$(sudo virsh domiflist undercloud | grep default | \
                   grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
@@ -31,14 +33,10 @@ if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
 elif [[ ${INSTALLER_TYPE} == 'compass' ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:/etc/yardstick/os_cacert"
     echo "export OS_CACERT=/etc/yardstick/os_cacert" >> ${HOME}/opnfv-openrc.sh
-    rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/etc/yardstick/openstack.creds"
 elif [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:/etc/ssl/certs/mcp_os_cacert"
     sshkey="-v ${SSH_KEY}:/root/.ssh/mcp.rsa"
-else
-    rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/etc/yardstick/openstack.creds"
 fi
-
 # Set iptables rule to allow forwarding return traffic for container
 if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FORWARD | awk 'NR==3' | grep RETURN 2> ${redirect}; then
     sudo iptables -I FORWARD -j RETURN
