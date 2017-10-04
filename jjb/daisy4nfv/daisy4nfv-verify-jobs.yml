@@ -1,38 +1,42 @@
+---
 - project:
     name: 'daisy4nfv-verify-jobs'
     project: 'daisy'
     installer: 'daisy'
-##########################################################
-# use alias to keep the jobs'name existed alread unchanged
-##########################################################
+    ##########################################################
+    # use alias to keep the jobs'name existed alread unchanged
+    ##########################################################
     alias: 'daisy4nfv'
 
-#####################################
-# branch definitions
-#####################################
+    #####################################
+    # branch definitions
+    #####################################
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            disabled: false
-        - euphrates:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
-            disabled: false
-#####################################
-# patch verification phases
-#####################################
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
+      - euphrates:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
+
+    #####################################
+    # patch verification phases
+    #####################################
     phase:
-        - unit:
-            slave-label: 'opnfv-build'
-        - build:
-            slave-label: 'opnfv-build-centos'
-#####################################
-# jobs
-#####################################
+      - unit:
+          slave-label: 'opnfv-build'
+      - build:
+          slave-label: 'opnfv-build-centos'
+
+    #####################################
+    # jobs
+    #####################################
     jobs:
-        - '{alias}-verify-{stream}'
-        - '{alias}-verify-{phase}-{stream}'
+      - '{alias}-verify-{stream}'
+      - '{alias}-verify-{phase}-{stream}'
+
 #####################################
 # job templates
 #####################################
@@ -42,138 +46,142 @@
     disabled: false
     concurrent: true
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 4
-            option: 'project'
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - '{alias}-merge-build-.*'
-            block-level: 'NODE'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 4
+          option: 'project'
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - '{alias}-merge-build-.*'
+          block-level: 'NODE'
 
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
+
     wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 360
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 360
+          fail: true
+
     triggers:
-        - gerrit:
-            server-name: 'gerrit.opnfv.org'
-            trigger-on:
-                - patchset-created-event:
-                    exclude-drafts: 'false'
-                    exclude-trivial-rebase: 'false'
-                    exclude-no-code-change: 'false'
-                - draft-published-event
-                - comment-added-contains-event:
-                    comment-contains-value: 'recheck'
-                - comment-added-contains-event:
-                    comment-contains-value: 'reverify'
-            projects:
-                - project-compare-type: 'ANT'
-                  project-pattern: '{project}'
-                  branches:
-                      - branch-compare-type: 'ANT'
-                        branch-pattern: '**/{branch}'
-                  file-paths:
-                      - compare-type: ANT
-                        pattern: 'ci/**'
-                      - compare-type: ANT
-                        pattern: 'code/**'
-                      - compare-type: ANT
-                        pattern: 'deploy/**'
-                      - compare-type: ANT
-                        pattern: 'tests/**'
-                  disable-strict-forbidden-file-verification: 'true'
-                  forbidden-file-paths:
-                      - compare-type: ANT
-                        pattern: 'docs/**'
-                      - compare-type: ANT
-                        pattern: '.gitignore'
-            readable-message: true
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: ANT
+                  pattern: 'ci/**'
+                - compare-type: ANT
+                  pattern: 'code/**'
+                - compare-type: ANT
+                  pattern: 'deploy/**'
+                - compare-type: ANT
+                  pattern: 'tests/**'
+              disable-strict-forbidden-file-verification: 'true'
+              forbidden-file-paths:
+                - compare-type: ANT
+                  pattern: 'docs/**'
+                - compare-type: ANT
+                  pattern: '.gitignore'
+          readable-message: true
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-centos-defaults'
-        - '{alias}-verify-defaults':
-            gs-pathname: '{gs-pathname}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-centos-defaults'
+      - '{alias}-verify-defaults':
+          gs-pathname: '{gs-pathname}'
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - multijob:
-            name: unit
-            condition: SUCCESSFUL
-            projects:
-                - name: '{alias}-verify-unit-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: build
-            condition: SUCCESSFUL
-            projects:
-                - name: '{alias}-verify-build-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - multijob:
+          name: unit
+          condition: SUCCESSFUL
+          projects:
+            - name: '{alias}-verify-unit-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
+          name: build
+          condition: SUCCESSFUL
+          projects:
+            - name: '{alias}-verify-build-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: true
 
 - job-template:
     name: '{alias}-verify-{phase}-{stream}'
     disabled: '{obj:disabled}'
     concurrent: true
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 6
-            option: 'project'
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - '{alias}-merge-build-.*'
-                - '{alias}-verify-build-.*'
-                - '{installer}-daily-.*'
-            block-level: 'NODE'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 6
+          option: 'project'
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - '{alias}-merge-build-.*'
+            - '{alias}-verify-build-.*'
+            - '{installer}-daily-.*'
+          block-level: 'NODE'
 
     scm:
-        - git-scm-gerrit
+      - git-scm-gerrit
+
     wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 360
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 360
+          fail: true
+
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - '{installer}-defaults'
-        - '{slave-label}-defaults'
-        - '{alias}-verify-defaults':
-            gs-pathname: '{gs-pathname}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - '{slave-label}-defaults'
+      - '{alias}-verify-defaults':
+          gs-pathname: '{gs-pathname}'
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - '{project}-verify-{phase}-macro'
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - '{project}-verify-{phase}-macro'
 
 #####################################
 # builder macros
@@ -181,21 +189,21 @@
 - builder:
     name: 'daisy-verify-build-macro'
     builders:
-        - shell:
-            !include-raw: ./daisy4nfv-basic.sh
-        - shell:
-            !include-raw: ./daisy4nfv-build.sh
-        - 'clean-workspace'
+      - shell:
+          !include-raw: ./daisy4nfv-basic.sh
+      - shell:
+          !include-raw: ./daisy4nfv-build.sh
+      - 'clean-workspace'
 
 - builder:
     name: daisy-verify-unit-macro
     builders:
-        - shell: |
-            #!/bin/bash
-            set -o errexit
-            set -o pipefail
-            set -o xtrace
-            tox -e py27
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+          set -o xtrace
+          tox -e py27
 
 #####################################
 # parameter macros
@@ -203,15 +211,15 @@
 - parameter:
     name: 'daisy4nfv-verify-defaults'
     parameters:
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-            description: "Directory where the build artifact will be located upon the completion of the build."
-        - string:
-            name: CACHE_DIRECTORY
-            default: $HOME/opnfv/cache/$INSTALLER_TYPE
-            description: "Directory where the cache to be used during the build is located."
-        - string:
-            name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
-            description: "URL to Google Storage."
+      - string:
+          name: BUILD_DIRECTORY
+          default: $WORKSPACE/build_output
+          description: "Directory where the build artifact will be located upon the completion of the build."
+      - string:
+          name: CACHE_DIRECTORY
+          default: $HOME/opnfv/cache/$INSTALLER_TYPE
+          description: "Directory where the cache to be used during the build is located."
+      - string:
+          name: GS_URL
+          default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+          description: "URL to Google Storage."

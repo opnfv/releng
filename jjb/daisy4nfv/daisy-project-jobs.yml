@@ -1,3 +1,4 @@
+---
 ######################################################################
 # Add daily jobs, for buidoing, deploying and testing
 # TODO:
@@ -16,25 +17,26 @@
     installer: 'daisy'
 
     stream:
-        - master:
-            branch: '{stream}'
-            gs-pathname: ''
-            disabled: false
-        - euphrates:
-            branch: 'stable/{stream}'
-            gs-pathname: '/{stream}'
-            disabled: false
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
+      - euphrates:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
 
     phase:
-        - 'build':
-            slave-label: 'opnfv-build-centos'
-        - 'deploy':
-            slave-label: 'daisy-baremetal'
-        - 'test':
-            slave-label: 'opnfv-build-centos'
+      - 'build':
+          slave-label: 'opnfv-build-centos'
+      - 'deploy':
+          slave-label: 'daisy-baremetal'
+      - 'test':
+          slave-label: 'opnfv-build-centos'
+
     jobs:
-        - '{installer}-daily-{stream}'
-        - '{installer}-{phase}-daily-{stream}'
+      - '{installer}-daily-{stream}'
+      - '{installer}-{phase}-daily-{stream}'
 
 ########################
 # job templates
@@ -49,89 +51,89 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 4
-            option: 'project'
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-                - '{installer}-daily-.*'
-                - 'daisy4nfv-merge-build-.*'
-                - 'daisy4nfv-verify-build-.*'
-            block-level: 'NODE'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 4
+          option: 'project'
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - '{installer}-daily-.*'
+            - 'daisy4nfv-merge-build-.*'
+            - 'daisy4nfv-verify-build-.*'
+          block-level: 'NODE'
 
     scm:
-        - git-scm
+      - git-scm
 
     triggers:
-        - timed: '0 8 * * *'
+      - timed: '0 8 * * *'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - 'opnfv-build-centos-defaults'
-        - '{installer}-defaults'
-        - '{installer}-project-parameter':
-            gs-pathname: '{gs-pathname}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-centos-defaults'
+      - '{installer}-defaults'
+      - '{installer}-project-parameter':
+          gs-pathname: '{gs-pathname}'
 
     wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 360
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 360
+          fail: true
 
     builders:
-        - description-setter:
-            description: "Built on $NODE_NAME"
-        - multijob:
-            name: build
-            condition: SUCCESSFUL
-            projects:
-                - name: '{installer}-build-daily-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: deploy
-            condition: SUCCESSFUL
-            projects:
-                - name: '{installer}-deploy-daily-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
-        - multijob:
-            name: test
-            condition: SUCCESSFUL
-            projects:
-                - name: '{installer}-test-daily-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    BRANCH=$BRANCH
-                    GERRIT_REFSPEC=$GERRIT_REFSPEC
-                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                  node-parameters: false
-                  kill-phase-on: FAILURE
-                  abort-all-job: true
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - multijob:
+          name: build
+          condition: SUCCESSFUL
+          projects:
+            - name: '{installer}-build-daily-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
+          name: deploy
+          condition: SUCCESSFUL
+          projects:
+            - name: '{installer}-deploy-daily-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
+          name: test
+          condition: SUCCESSFUL
+          projects:
+            - name: '{installer}-test-daily-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: true
 
     publishers:
-        - '{installer}-recipients'
-        - email-jenkins-admins-on-failure
+      - '{installer}-recipients'
+      - email-jenkins-admins-on-failure
 
 - job-template:
     name: '{installer}-{phase}-daily-{stream}'
@@ -141,41 +143,41 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-total: 6
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 6
+          option: 'project'
 
     scm:
-        - git-scm
+      - git-scm
 
     wrappers:
-        - ssh-agent-wrapper
-        - timeout:
-            timeout: 360
-            fail: true
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 360
+          fail: true
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - '{installer}-defaults'
-        - '{slave-label}-defaults'
-        - string:
-            name: GIT_BASE
-            default: https://gerrit.opnfv.org/gerrit/$PROJECT
-            description: 'Git URL to use on this Jenkins Slave'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'os-nosdn-nofeature-ha'
-        - '{installer}-project-parameter':
-            gs-pathname: '{gs-pathname}'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - '{slave-label}-defaults'
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: 'Git URL to use on this Jenkins Slave'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-nosdn-nofeature-ha'
+      - '{installer}-project-parameter':
+          gs-pathname: '{gs-pathname}'
 
     builders:
-        - description-setter:
-              description: "Built on $NODE_NAME"
-        - '{installer}-{phase}-daily-macro'
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - '{installer}-{phase}-daily-macro'
 
 #####################################
 # builder macros
@@ -183,29 +185,29 @@
 - builder:
     name: 'daisy-build-daily-macro'
     builders:
-        - shell:
-            !include-raw: ./daisy4nfv-basic.sh
-        - shell:
-            !include-raw: ./daisy4nfv-build.sh
-        - shell:
-            !include-raw: ./daisy4nfv-upload-artifact.sh
-        - 'clean-workspace'
+      - shell:
+          !include-raw: ./daisy4nfv-basic.sh
+      - shell:
+          !include-raw: ./daisy4nfv-build.sh
+      - shell:
+          !include-raw: ./daisy4nfv-upload-artifact.sh
+      - 'clean-workspace'
 
 - builder:
     name: 'daisy-deploy-daily-macro'
     builders:
-        - shell:
-            !include-raw: ./daisy4nfv-download-artifact.sh
-        - shell:
-            !include-raw: ./daisy-deploy.sh
+      - shell:
+          !include-raw: ./daisy4nfv-download-artifact.sh
+      - shell:
+          !include-raw: ./daisy-deploy.sh
 
 - builder:
     name: 'daisy-test-daily-macro'
     builders:
-        - shell: |
-            #!/bin/bash
+      - shell: |
+          #!/bin/bash
 
-            echo "Not activated!"
+          echo "Not activated!"
 
 #####################################
 # parameter macros
@@ -213,22 +215,24 @@
 - publisher:
     name: 'daisy-recipients'
     publishers:
-        - email:
-            recipients: hu.zhijiang@zte.com.cn lu.yao135@zte.com.cn zhou.ya@zte.com.cn yangyang1@zte.com.cn julienjut@gmail.com
-        - email-jenkins-admins-on-failure
+      # yamllint disable rule:line-length
+      - email:
+          recipients: hu.zhijiang@zte.com.cn lu.yao135@zte.com.cn zhou.ya@zte.com.cn yangyang1@zte.com.cn julienjut@gmail.com
+      # yamllint enable rule:line-length
+      - email-jenkins-admins-on-failure
 
 - parameter:
     name: 'daisy-project-parameter'
     parameters:
-        - string:
-            name: BUILD_DIRECTORY
-            default: $WORKSPACE/build_output
-            description: "Directory where the build artifact will be located upon the completion of the build."
-        - string:
-            name: CACHE_DIRECTORY
-            default: $HOME/opnfv/cache/$INSTALLER_TYPE
-            description: "Directory where the cache to be used during the build is located."
-        - string:
-            name: GS_URL
-            default: artifacts.opnfv.org/$PROJECT{gs-pathname}
-            description: "URL to Google Storage."
+      - string:
+          name: BUILD_DIRECTORY
+          default: $WORKSPACE/build_output
+          description: "Directory where the build artifact will be located upon the completion of the build."
+      - string:
+          name: CACHE_DIRECTORY
+          default: $HOME/opnfv/cache/$INSTALLER_TYPE
+          description: "Directory where the cache to be used during the build is located."
+      - string:
+          name: GS_URL
+          default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+          description: "URL to Google Storage."
