@@ -19,7 +19,7 @@ logger = logger.Logger(__name__).getLogger()
 
 class Factory(object):
 
-    INSTALLERS = ["fuel", "apex", "compass", "joid", "daisy", "OSA"]
+    INSTALLERS = ["fuel", "apex", "compass", "joid", "daisy", "osa"]
 
     def __init__(self):
         pass
