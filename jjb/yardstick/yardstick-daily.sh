@@ -35,6 +35,7 @@ elif [[ ${INSTALLER_TYPE} == 'compass' ]]; then
 elif [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:/etc/ssl/certs/mcp_os_cacert"
     sshkey="-v ${SSH_KEY}:/root/.ssh/mcp.rsa"
+    rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/etc/yardstick/openstack.creds"
 else
     rc_file_vol="-v ${HOME}/opnfv-openrc.sh:/etc/yardstick/openstack.creds"
 fi
