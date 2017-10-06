@@ -231,11 +231,16 @@ for version in versions:
                 # **********************************************
                 # the validation criteria = nb runnable tests x 3
                 # because each test case = 0,1,2 or 3
-                scenario_criteria = nb_test_runnable_for_this_scenario * 3
-                # if 0 runnable tests set criteria at a high value
-                if scenario_criteria < 1:
-                    scenario_criteria = 50  # conf.MAX_SCENARIO_CRITERIA
+                if len(s_result) > 3:
+                    nb_scen = 3
+                elif len(s_result) < 2:
+                    nb_scen = 1
+                else:
+                    nb_scen = len(s_result)
 
+                scenario_criteria = nb_test_runnable_for_this_scenario*nb_scen
+
+                # score for reporting
                 s_score = str(scenario_score) + "/" + str(scenario_criteria)
                 s_score_percent = rp_utils.getScenarioPercent(
                     scenario_score,
