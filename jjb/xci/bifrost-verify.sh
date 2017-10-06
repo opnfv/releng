@@ -25,11 +25,9 @@ cd $WORKSPACE/releng-xci
 cat > bifrost_test.sh<<EOF
 cd ~/bifrost
 # provision 3 VMs; xcimaster, controller, and compute
-cd $WORKSPACE/bifrost
 ./scripts/bifrost-provision.sh
 
 # list the provisioned VMs
-cd $WORKSPACE/bifrost
 source env-vars
 ironic node-list
 sudo -H -E virsh list
@@ -40,4 +38,4 @@ chmod a+x bifrost_test.sh
 
 rsync -a $WORKSPACE/bifrost ${DISTRO,,}_xci_vm:~/bifrost
 
-ssh ${DISTRO,,}_xci_vm "cd ~/bifrost && ./bifrost_test.sh"
+ssh -F $HOME/.ssh/xci-vm-config ${DISTRO}_xci_vm "cd ~/bifrost && ./bifrost_test.sh"
