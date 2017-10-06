@@ -263,6 +263,11 @@
           description: "Built on $NODE_NAME"
       - 'functest-{testsuite}-builder'
 
+    publishers:
+    - postbuildscript:
+        builders:
+            - 'functest-store-results'
+
 - job-template:
     name: 'functest-alpine-{installer}-{alpine-pod}-{testsuite}-{stream}'
 
@@ -302,6 +307,11 @@
       - description-setter:
           description: "Built on $NODE_NAME"
       - 'functest-alpine-daily-builder'
+
+    publishers:
+    - postbuildscript:
+        builders:
+            - 'functest-store-results'
 
 ########################
 # parameter macros
@@ -411,7 +421,6 @@
     builders:
       - 'functest-cleanup'
       - 'functest-daily'
-      - 'functest-store-results'
       - 'functest-exit'
 
 - builder:
@@ -420,7 +429,6 @@
       - 'functest-cleanup'
       - 'set-functest-env'
       - 'functest-arm-daily'
-      - 'functest-store-results'
       - 'functest-exit'
 
 - builder:
@@ -429,7 +437,6 @@
       - 'functest-cleanup'
       - 'set-functest-env-alpine'
       - 'functest-suite'
-      - 'functest-store-results'
       - 'functest-exit'
 
 - builder:
@@ -438,7 +445,6 @@
       - 'functest-cleanup'
       - 'set-functest-env-alpine'
       - 'functest-daily'
-      - 'functest-store-results'
       - 'functest-exit'
 
 - builder:
