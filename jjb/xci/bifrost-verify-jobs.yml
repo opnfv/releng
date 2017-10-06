@@ -8,16 +8,6 @@
       - master:
           branch: '{stream}'
     # -------------------------------
-    # projects
-    # -------------------------------
-    project:
-      - 'openstack':
-          project-repo: 'https://git.openstack.org/openstack/bifrost'
-          clone-location: '$WORKSPACE/bifrost'
-      - 'opnfv':
-          project-repo: 'https://gerrit.opnfv.org/gerrit/releng-xci'
-          clone-location: '$WORKSPACE/releng-xci'
-    # -------------------------------
     # distros
     # -------------------------------
     distro:
@@ -48,7 +38,7 @@
     # jobs
     # -------------------------------
     jobs:
-      - '{project}-bifrost-verify-{distro}-{type}-{stream}'
+      - 'openstack-bifrost-verify-{distro}-{type}-{stream}'
 
 # -------------------------------
 # VM defaults
@@ -67,7 +57,7 @@
 # job templates
 # -------------------------------
 - job-template:
-    name: '{project}-bifrost-verify-{distro}-{type}-{stream}'
+    name: 'openstack-bifrost-verify-{distro}-{type}-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -85,14 +75,11 @@
 
     parameters:
       - string:
-          name: PROJECT
-          default: '{project}'
-      - string:
           name: PROJECT_REPO
-          default: '{project-repo}'
+          default: 'https://git.openstack.org/openstack/bifrost'
       - string:
           name: CLONE_LOCATION
-          default: '{clone-location}'
+          default: '$WORKSPACE/bifrost'
       - string:
           name: DISTRO
           default: '{distro}'
@@ -134,12 +121,7 @@
           default: 'true'
       - label:
           name: SLAVE_LABEL
-          default: 'infra-{type}-{distro}'
-      # yamllint disable rule:line-length
-      - string:
-          name: BIFROST_LOG_URL
-          default: 'http://artifacts.opnfv.org/cross-community-ci/openstack/bifrost/$GERRIT_NAME/$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER/$JOB_NAME'
-      # yamllint enable rule:line-length
+          default: 'xci-virtual'
       - string:
           name: XCI_LOOP
           default: 'verify'
@@ -156,7 +138,7 @@
           wipe-workspace: true
 
     triggers:
-      - '{project}-gerrit-trigger':
+      - 'openstack-gerrit-trigger':
           branch: '{branch}'
 
     builders:
@@ -190,7 +172,6 @@
                 exclude-no-code-change: 'false'
             - comment-added-contains-event:
                 comment-contains-value: 'recheck'
-          custom-url: '* $JOB_NAME $BIFROST_LOG_URL/index.html'
           silent-start: true
           projects:
             - project-compare-type: 'PLAIN'
@@ -204,33 +185,6 @@
                   pattern: 'doc/**'
                 - compare-type: ANT
                   pattern: 'releasenotes/**'
-          readable-message: true
-
-- trigger:
-    name: 'opnfv-gerrit-trigger'
-    triggers:
-      - gerrit:
-          server-name: 'gerrit.opnfv.org'
-          trigger-on:
-            - patchset-created-event:
-                exclude-drafts: 'false'
-                exclude-trivial-rebase: 'false'
-                exclude-no-code-change: 'false'
-            - draft-published-event
-            - comment-added-contains-event:
-                comment-contains-value: 'recheck'
-            - comment-added-contains-event:
-                comment-contains-value: 'reverify'
-          custom-url: '* $JOB_NAME $BIFROST_LOG_URL/index.html'
-          projects:
-            - project-compare-type: 'ANT'
-              project-pattern: 'releng-xci'
-              branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
-              file-paths:
-                - compare-type: ANT
-                  pattern: 'bifrost/**'
           readable-message: true
 
 # --------------------------
