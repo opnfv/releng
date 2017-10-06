@@ -76,13 +76,6 @@ if [[ "${LAB_CONFIG_URL}" =~ ^(git|ssh):// ]]; then
     rm -rf "${LOCAL_CFG}"
     git clone --quiet --branch "${BRANCH}" "${LAB_CONFIG_URL}" "${LOCAL_CFG}"
     LAB_CONFIG_URL="file://${LOCAL_CFG}"
-
-    # Source local_env if present, which contains POD-specific config
-    local_env="${LOCAL_CFG}/labs/${LAB_NAME}/${POD_NAME}/fuel/config/local_env"
-    if [ -e "${local_env}" ]; then
-        echo "-- Sourcing local environment file"
-        source "${local_env}"
-    fi
 fi
 
 # releng wants us to use nothing else but opnfv.iso for now. We comply.
