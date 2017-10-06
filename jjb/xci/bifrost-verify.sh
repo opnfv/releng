@@ -25,19 +25,24 @@ cd $WORKSPACE/releng-xci
 cat > bifrost_test.sh<<EOF
 cd ~/bifrost
 # provision 3 VMs; xcimaster, controller, and compute
-cd $WORKSPACE/bifrost
 ./scripts/bifrost-provision.sh
 
 # list the provisioned VMs
-cd $WORKSPACE/bifrost
 source env-vars
 ironic node-list
 sudo -H -E virsh list
 EOF
 chmod a+x bifrost_test.sh
 
-./xci/scripts/vm/start-new-vm.sh $DISTRO
+# Fix up distros
+case ${DISTRO} in
+	xenial) VM_DISTRO=ubuntu ;;
+	centos7) VM_DISTRO=centos ;;
+	*suse*) VM_DISTRO=opensuse ;;
+esac
 
-rsync -a $WORKSPACE/bifrost ${DISTRO,,}_xci_vm:~/bifrost
+./xci/scripts/vm/start-new-vm.sh $VM_DISTRO
 
-ssh ${DISTRO,,}_xci_vm "cd ~/bifrost && ./bifrost_test.sh"
+rsync -a $WORKSPACE/releng-xci ${VM_DISTRO}_xci_vm:~/bifrost
+
+ssh -F $HOME/.ssh/xci-vm-config ${VM_DISTRO}_xci_vm "cd ~/bifrost && ./bifrost_test.sh"
