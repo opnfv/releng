@@ -14,22 +14,26 @@ export TERM="vt220"
 
 if [[ "$BRANCH" =~ 'danube' ]]; then
     # source the file so we get OPNFV vars
+    # shellcheck disable=SC1091
     source latest.properties
 
     # echo the info about artifact that is used during the deployment
     echo "Using ${OPNFV_ARTIFACT_URL/*\/} for deployment"
-fi
 
-# shellcheck disable=SC2153
-if [[ "${JOB_NAME}" =~ 'verify' ]]; then
-    # set simplest scenario for virtual deploys to run for verify
-    DEPLOY_SCENARIO="os-nosdn-nofeature-ha"
-elif [[ "${BRANCH}" =~ 'danube' ]]; then
     # for Danube deployments (no artifact for current master or newer branches)
     # checkout the commit that was used for building the downloaded artifact
     # to make sure the ISO and deployment mechanism uses same versions
     echo "Checking out ${OPNFV_GIT_SHA1}"
     git checkout "${OPNFV_GIT_SHA1}" --quiet
+
+    # releng wants us to use nothing else but opnfv.iso for now. We comply.
+    ISO_FILE_ARG="-i file://${WORKSPACE}/opnfv.iso"
+fi
+
+# shellcheck disable=SC2153
+if [[ "${JOB_NAME}" =~ 'verify' ]]; then
+    # set simplest scenario for virtual deploys to run for verify
+    DEPLOY_SCENARIO="os-nosdn-nofeature-noha"
 fi
 
 # set deployment parameters
@@ -78,15 +82,12 @@ if [[ "${LAB_CONFIG_URL}" =~ ^(git|ssh):// ]]; then
     LAB_CONFIG_URL="file://${LOCAL_CFG}"
 fi
 
-# releng wants us to use nothing else but opnfv.iso for now. We comply.
-ISO_FILE=file://${WORKSPACE}/opnfv.iso
-
 # log file name
 FUEL_LOG_FILENAME="${JOB_NAME}_${BUILD_NUMBER}.log.tar.gz"
 
 # construct the command
 DEPLOY_COMMAND="${SUDO} ${WORKSPACE}/ci/deploy.sh -b ${LAB_CONFIG_URL} \
-    -l ${LAB_NAME} -p ${POD_NAME} -s ${DEPLOY_SCENARIO} -i ${ISO_FILE} \
+    -l ${LAB_NAME} -p ${POD_NAME} -s ${DEPLOY_SCENARIO} ${ISO_FILE_ARG:-} \
     -B ${DEFAULT_BRIDGE:-${BRIDGE}} -S ${TMPDIR} \
     -L ${WORKSPACE}/${FUEL_LOG_FILENAME}"
 
