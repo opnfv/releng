@@ -31,6 +31,8 @@ cd $WORKSPACE
     echo "OPNFV_GIT_SHA1=$(git rev-parse HEAD)"
     echo "OPNFV_ARTIFACT_URL=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.bin"
     echo "OPNFV_ARTIFACT_SHA512SUM=$(sha512sum $OUTPUT_DIR/opnfv-$OPNFV_ARTIFACT_VERSION.bin | cut -d' ' -f1)"
+    echo "OPNFV_ARTIFACT_URL_ISO=$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso"
+    echo "OPNFV_ARTIFACT_SHA512SUM_ISO=$(sha512sum $OUTPUT_DIR/opnfv-$OPNFV_ARTIFACT_VERSION.iso | cut -d' ' -f1)"
     echo "OPNFV_BUILD_URL=$BUILD_URL"
 ) > $WORKSPACE/opnfv.properties
 

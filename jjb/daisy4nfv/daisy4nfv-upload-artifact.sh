@@ -50,13 +50,15 @@ cd $WORKSPACE
 # upload artifact and additional files to google storage
 gsutil cp $BUILD_DIRECTORY/opnfv-$OPNFV_ARTIFACT_VERSION.bin \
     gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.bin > gsutil.bin.log 2>&1
+gsutil cp $BUILD_DIRECTORY/opnfv-$OPNFV_ARTIFACT_VERSION.iso \
+    gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.bin >> gsutil.bin.log 2>&1
 gsutil cp $WORKSPACE/opnfv.properties \
     gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
 if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
     gsutil cp $WORKSPACE/opnfv.properties \
     gs://$GS_URL/latest.properties > gsutil.latest.log 2>&1
 elif [[ "$JOB_NAME" =~ "merge" ]]; then
-    echo "Uploaded Daisy4nfv BIN for a merged change"
+    echo "Uploaded Daisy4nfv artifacts for a merged change"
 fi
 
 gsutil -m setmeta \
