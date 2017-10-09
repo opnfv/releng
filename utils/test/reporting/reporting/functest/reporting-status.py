@@ -230,12 +230,26 @@ for version in versions:
                 # Evaluate the results for scenario validation
                 # **********************************************
                 # the validation criteria = nb runnable tests x 3
-                # because each test case = 0,1,2 or 3
-                scenario_criteria = nb_test_runnable_for_this_scenario * 3
-                # if 0 runnable tests set criteria at a high value
-                if scenario_criteria < 1:
-                    scenario_criteria = 50  # conf.MAX_SCENARIO_CRITERIA
+                # because each test case can get
+                # 0 point (never PASS)
+                # 1 point at least (PASS once over the time window)
+                # 2 points (PASS more than once but 1 FAIL on the last 4)
+                # 3 points PASS on the last 4 iterations
+                # e.g. 1 scenario = 10 cases
+                # 1 iteration : max score = 10 (10x1)
+                # 2 iterations : max score = 20 (10x2)
+                # 3 iterations : max score = 20
+                # 4 or more iterations : max score = 30 (1x30)
+                if len(s_result) > 3:
+                    k_score = 3
+                elif len(s_result) < 2:
+                    k_score = 1
+                else:
+                    k_score = 2
 
+                scenario_criteria = nb_test_runnable_for_this_scenario*k_score
+
+                # score for reporting
                 s_score = str(scenario_score) + "/" + str(scenario_criteria)
                 s_score_percent = rp_utils.getScenarioPercent(
                     scenario_score,
