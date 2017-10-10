@@ -10,6 +10,7 @@
 
     jobs:
       - 'container4nfv-verify-{stream}'
+      - 'container4nfv-daily-{stream}'
 
     stream:
       - master:
@@ -61,4 +62,39 @@
 
     builders:
       - shell: |
-          echo "Nothing to verify!"
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          cd $WORKSPACE/ci
+          ./build.sh
+
+- job-template:
+    name: 'container4nfv-daily-{stream}'
+
+    project-type: freestyle
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    properties:
+      - logrotate-default
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+
+    scm:
+      - git-scm
+
+    triggers:
+      - timed: '@midnight'
+
+    builders:
+      - shell:
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          cd $WORKSPACE/ci
+          ./deploy.sh
