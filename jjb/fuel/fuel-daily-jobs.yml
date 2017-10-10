@@ -226,6 +226,8 @@
             - trigger-builds:
                 - project: 'fuel-collect-logs-{pod}-daily-{stream}'
                   current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO={scenario}
                   block: true
                   same-node: true
                   block-thresholds:
@@ -272,10 +274,6 @@
       - string:
           name: DEPLOY_SCENARIO
           default: 'os-odl-nofeature-ha'
-      - string:
-          name: DEPLOY_TIMEOUT
-          default: '150'
-          description: 'Deployment timeout in minutes'
 
     scm:
       - git-scm
@@ -315,6 +313,9 @@
           gs-pathname: '{gs-pathname}'
       - '{slave-label}-defaults':
           installer: '{installer}'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-odl-nofeature-ha'
 
     scm:
       - git-scm
