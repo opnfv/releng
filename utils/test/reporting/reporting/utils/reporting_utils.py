@@ -205,25 +205,34 @@ def getScenarioStatus(installer, version):
     except URLError:
         print "GetScenarioStatus: error when calling the API"
 
-    scenario_results = {}
-    result_dict = {}
+    x86 = 'x86'
+    aarch64 = 'aarch64'
+    scenario_results = {x86: {}, aarch64: {}}
+    result_dict = {x86: {}, aarch64: {}}
     if test_results is not None:
         for test_r in test_results:
             if (test_r['stop_date'] != 'None' and
                     test_r['criteria'] is not None):
-                if not test_r['scenario'] in scenario_results.keys():
-                    scenario_results[test_r['scenario']] = []
-                scenario_results[test_r['scenario']].append(test_r)
-
-        for scen_k, scen_v in scenario_results.items():
-            # scenario_results[k] = v[:LASTEST_TESTS]
-            s_list = []
-            for element in scen_v:
-                if element['criteria'] == 'SUCCESS':
-                    s_list.append(1)
+                scenario_name = test_r['scenario']
+                if 'arm' in test_r['pod_name']:
+                    if not test_r['scenario'] in scenario_results[aarch64]:
+                        scenario_results[aarch64][scenario_name] = []
+                    scenario_results[aarch64][scenario_name].append(test_r)
                 else:
-                    s_list.append(0)
-            result_dict[scen_k] = s_list
+                    if not test_r['scenario'] in scenario_results[x86]:
+                        scenario_results[x86][scenario_name] = []
+                    scenario_results[x86][scenario_name].append(test_r)
+
+        for key in scenario_results:
+            for scen_k, scen_v in scenario_results[key].items():
+                # scenario_results[k] = v[:LASTEST_TESTS]
+                s_list = []
+                for element in scen_v:
+                    if element['criteria'] == 'SUCCESS':
+                        s_list.append(1)
+                    else:
+                        s_list.append(0)
+                result_dict[key][scen_k] = s_list
 
     # return scenario_results
     return result_dict
