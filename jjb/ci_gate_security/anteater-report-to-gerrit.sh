@@ -15,11 +15,14 @@ if [[ -e securityaudit.log ]] ; then
 
     grep 'ERROR' securityaudit.log | awk -F"ERROR - " '{ print $2 }' | tr -d "\'\"" > shortlog
 
-    ssh -p 29418 gerrit.opnfv.org \
-        "gerrit review -p $GERRIT_PROJECT \
-        -m \"$(cat shortlog)\" \
-        $GERRIT_PATCHSET_REVISION \
-        --notify NONE"
+    # Only report to Gerrit when there are errors to report.
+    if [[ -s shortlog ]]; then
+        ssh -p 29418 gerrit.opnfv.org \
+            "gerrit review -p $GERRIT_PROJECT \
+            -m \"$(cat shortlog)\" \
+            $GERRIT_PATCHSET_REVISION \
+            --notify NONE"
+    fi
 
     exit $EXITSTATUS
 fi
