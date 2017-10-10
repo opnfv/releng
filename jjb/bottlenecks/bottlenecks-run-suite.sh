@@ -27,6 +27,7 @@ BOTTLENECKS_CONFIG=/tmp
 
 if [[ $SUITE_NAME == *posca* ]]; then
     POSCA_SCRIPT=/home/opnfv/bottlenecks/testsuites/posca
+    sudo rm -f ${OPENRC}
 
     # Preparing OpenStack RC and Cacert files
     echo "BOTTLENECKS INFO: fetching os credentials from $INSTALLER_TYPE"
