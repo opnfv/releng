@@ -11,109 +11,147 @@ import os
 
 import jinja2
 
-import reporting.utils.scenarioResult as sr
-import reporting.utils.reporting_utils as rp_utils
-from scenarios import config as cf
+from reporting.utils.scenarioResult import ScenarioResult
+from reporting.utils import reporting_utils as utils
+from scenarios import config as blacklist
 
-installers = rp_utils.get_config('general.installers')
-versions = rp_utils.get_config('general.versions')
-PERIOD = rp_utils.get_config('general.period')
 
 # Logger
-logger = rp_utils.getLogger("Yardstick-Status")
-reportingDate = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-
-logger.info("*******************************************")
-logger.info("*   Generating reporting scenario status  *")
-logger.info("*   Data retention = %s days              *" % PERIOD)
-logger.info("*                                         *")
-logger.info("*******************************************")
+LOG = utils.getLogger("Yardstick-Status")
 
 
-# For all the versions
-for version in versions:
-    # For all the installers
-    for installer in installers:
-        # get scenarios results data
-        scenario_results = rp_utils.getScenarioStatus(installer, version)
-        if 'colorado' == version:
-            stable_result = rp_utils.getScenarioStatus(installer,
-                                                       'stable/colorado')
-            for k, v in stable_result.items():
-                if k not in scenario_results.keys():
-                    scenario_results[k] = []
-                scenario_results[k] += stable_result[k]
-        scenario_result_criteria = {}
+def get_scenario_data(version, installer):
+    scenarios = utils.getScenarioStatus(installer, version)
 
-        for s in scenario_results.keys():
-            if installer in cf.keys() and s in cf[installer].keys():
-                scenario_results.pop(s)
+    if 'colorado' == version:
+        data = utils.getScenarioStatus(installer, 'stable/colorado')
+        for archi, value in data.items():
+            for k, v in value.items():
+                if k not in scenarios[archi]:
+                    scenarios[archi][k] = []
+                scenarios[archi][k].extend(data[archi][k])
 
-        # From each scenarios get results list
-        for s, s_result in scenario_results.items():
-            logger.info("---------------------------------")
-            logger.info("installer %s, version %s, scenario %s", installer,
-                        version, s)
+    for archi, value in scenarios.items():
+        for scenario in value:
+            if installer in blacklist and scenario in blacklist[installer]:
+                scenarios[archi].pop(scenario)
 
-            ten_criteria = len(s_result)
-            ten_score = 0
-            for v in s_result:
-                ten_score += v
+    return scenarios
 
-            LASTEST_TESTS = rp_utils.get_config(
-                'general.nb_iteration_tests_success_criteria')
-            four_result = s_result[:LASTEST_TESTS]
-            four_criteria = len(four_result)
-            four_score = 0
-            for v in four_result:
-                four_score += v
 
-            s_status = str(rp_utils.get_percent(four_result, s_result))
-            s_four_score = str(four_score) + '/' + str(four_criteria)
-            s_ten_score = str(ten_score) + '/' + str(ten_criteria)
-            s_score_percent = rp_utils.get_percent(four_result, s_result)
+def write_history_data(version, scenario, installer, ten_score, percent):
+    # Save daily results in a file
+    history_file = './display/{}/yardstick/scenario_history.txt'.format(
+        version)
 
-            if '100' == s_status:
-                logger.info(">>>>> scenario OK, save the information")
-            else:
-                logger.info(">>>> scenario not OK, last 4 iterations = %s, \
-                            last 10 days = %s" % (s_four_score, s_ten_score))
+    if not os.path.exists(history_file):
+        with open(history_file, 'w') as f:
+            f.write('date,scenario,installer,details,score\n')
 
-            # Save daily results in a file
-            path_validation_file = ("./display/" + version +
-                                    "/yardstick/scenario_history.txt")
+    date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    with open(history_file, "a") as f:
+        info = '{},{},{},{},{}\n'.format(date,
+                                         scenario,
+                                         installer,
+                                         ten_score,
+                                         percent)
+        f.write(info)
 
-            if not os.path.exists(path_validation_file):
-                with open(path_validation_file, 'w') as f:
-                    info = 'date,scenario,installer,details,score\n'
-                    f.write(info)
 
-            with open(path_validation_file, "a") as f:
-                info = (reportingDate + "," + s + "," + installer +
-                        "," + s_ten_score + "," +
-                        str(s_score_percent) + "\n")
-                f.write(info)
+def generate_page(scenario_data, installer, period, version, architecture):
+    date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
-            scenario_result_criteria[s] = sr.ScenarioResult(s_status,
-                                                            s_four_score,
-                                                            s_ten_score,
-                                                            s_score_percent)
+    templateLoader = jinja2.FileSystemLoader(".")
+    template_env = jinja2.Environment(loader=templateLoader,
+                                      autoescape=True)
 
-            logger.info("--------------------------")
+    template_file = "./reporting/yardstick/template/index-status-tmpl.html"
+    template = template_env.get_template(template_file)
 
-        templateLoader = jinja2.FileSystemLoader(".")
-        templateEnv = jinja2.Environment(loader=templateLoader,
-                                         autoescape=True)
+    if installer == 'fuel':
+        installer = '{}@{}'.format(installer, architecture)
 
-        TEMPLATE_FILE = "./reporting/yardstick/template/index-status-tmpl.html"
-        template = templateEnv.get_template(TEMPLATE_FILE)
+    output_text = template.render(scenario_results=scenario_data,
+                                  installer=installer,
+                                  period=period,
+                                  version=version,
+                                  date=date)
 
-        outputText = template.render(scenario_results=scenario_result_criteria,
-                                     installer=installer,
-                                     period=PERIOD,
-                                     version=version,
-                                     date=reportingDate)
+    page_file = './display/{}/yardstick/status-{}.html'.format(version,
+                                                               installer)
+    with open(page_file, 'wb') as f:
+        f.write(output_text)
 
-        with open("./display/" + version +
-                  "/yardstick/status-" + installer + ".html", "wb") as fh:
-            fh.write(outputText)
+
+def do_statistic(data):
+    ten_score = 0
+    for v in data:
+        ten_score += v
+
+    last_count = utils.get_config(
+        'general.nb_iteration_tests_success_criteria')
+    last_data = data[:last_count]
+    last_score = 0
+    for v in last_data:
+        last_score += v
+
+    percent = utils.get_percent(last_data, data)
+    status = str(percent)
+    last_score = '{}/{}'.format(last_score, len(last_data))
+    ten_score = '{}/{}'.format(ten_score, len(data))
+
+    if '100' == status:
+        LOG.info(">>>>> scenario OK, save the information")
+    else:
+        LOG.info(">>>> scenario not OK, last 4 iterations = %s, \
+                    last 10 days = %s" % (last_score, ten_score))
+
+    return last_score, ten_score, percent, status
+
+
+def generate_reporting_page(version, installer, archi, scenarios, period):
+    scenario_data = {}
+
+    # From each scenarios get results list
+    for scenario, data in scenarios.items():
+        LOG.info("---------------------------------")
+
+        LOG.info("installer %s, version %s, scenario %s",
+                 installer,
+                 version,
+                 scenario)
+        last_score, ten_score, percent, status = do_statistic(data)
+        write_history_data(version, scenario, installer, ten_score, percent)
+        scenario_data[scenario] = ScenarioResult(status,
+                                                 last_score,
+                                                 ten_score,
+                                                 percent)
+
+        LOG.info("--------------------------")
+    if scenario_data:
+        generate_page(scenario_data, installer, period, version, archi)
+
+
+def main():
+    installers = utils.get_config('general.installers')
+    versions = utils.get_config('general.versions')
+    period = utils.get_config('general.period')
+
+    LOG.info("*******************************************")
+    LOG.info("*   Generating reporting scenario status  *")
+    LOG.info("*   Data retention = %s days              *" % period)
+    LOG.info("*                                         *")
+    LOG.info("*******************************************")
+
+    # For all the versions
+    for version in versions:
+        # For all the installers
+        for installer in installers:
+            # get scenarios results data
+            scenarios = get_scenario_data(version, installer)
+            for k, v in scenarios.items():
+                generate_reporting_page(version, installer, k, v, period)
+
+
+if __name__ == '__main__':
+    main()
