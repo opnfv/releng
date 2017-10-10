@@ -1,3 +1,4 @@
+---
 ###################################
 # job configuration for yardstick
 ###################################
@@ -6,197 +7,197 @@
 
     project: '{name}'
 
-#--------------------------------
-# BRANCH ANCHORS
-#--------------------------------
+    # -------------------------------
+    # BRANCH ANCHORS
+    # -------------------------------
     master: &master
-        stream: master
-        branch: '{stream}'
-        gs-pathname: ''
-        docker-tag: 'latest'
+      stream: master
+      branch: '{stream}'
+      gs-pathname: ''
+      docker-tag: 'latest'
     euphrates: &euphrates
-        stream: euphrates
-        branch: 'stable/{stream}'
-        gs-pathname: '{stream}'
-        docker-tag: 'stable'
-#--------------------------------
-# POD, INSTALLER, AND BRANCH MAPPING
-#--------------------------------
-#    Installers using labels
-#            CI PODs
-# This section should only contain the installers
-# that have been switched using labels for slaves
-#--------------------------------
+      stream: euphrates
+      branch: 'stable/{stream}'
+      gs-pathname: '{stream}'
+      docker-tag: 'stable'
+    # -------------------------------
+    # POD, INSTALLER, AND BRANCH MAPPING
+    # -------------------------------
+    #    Installers using labels
+    #            CI PODs
+    # This section should only contain the installers
+    # that have been switched using labels for slaves
+    # -------------------------------
     pod:
-# apex CI PODs
-        - virtual:
-            slave-label: apex-virtual-master
-            installer: apex
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - baremetal:
-            slave-label: apex-baremetal-master
-            installer: apex
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - virtual:
-            slave-label: apex-virtual-euphrates
-            installer: apex
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *euphrates
-        - baremetal:
-            slave-label: apex-baremetal-euphrates
-            installer: apex
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *euphrates
-# fuel CI PODs
-        - baremetal:
-            slave-label: fuel-baremetal
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - virtual:
-            slave-label: fuel-virtual
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - baremetal:
-            slave-label: fuel-baremetal
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *euphrates
-        - virtual:
-            slave-label: fuel-virtual
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *euphrates
-# armband CI PODs
-        - armband-baremetal:
-            slave-label: armband-baremetal
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - armband-virtual:
-            slave-label: armband-virtual
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - armband-baremetal:
-            slave-label: armband-baremetal
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *euphrates
-        - armband-virtual:
-            slave-label: armband-virtual
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *euphrates
-# joid CI PODs
-        - baremetal:
-            slave-label: joid-baremetal
-            installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - virtual:
-            slave-label: joid-virtual
-            installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - baremetal:
-            slave-label: joid-baremetal
-            installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *euphrates
-        - virtual:
-            slave-label: joid-virtual
-            installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *euphrates
-# compass CI PODs
-        - baremetal:
-            slave-label: compass-baremetal
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - virtual:
-            slave-label: compass-virtual
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - baremetal:
-            slave-label: compass-baremetal
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *euphrates
-        - virtual:
-            slave-label: compass-virtual
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *euphrates
-#--------------------------------
-#        None-CI PODs
-#--------------------------------
-        - orange-pod1:
-            slave-label: '{pod}'
-            installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - zte-pod1:
-            slave-label: '{pod}'
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - zte-pod1:
-            slave-label: '{pod}'
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *euphrates
-        - zte-pod2:
-            slave-label: '{pod}'
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - zte-pod3:
-            slave-label: '{pod}'
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - zte-pod3:
-            slave-label: '{pod}'
-            installer: fuel
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *euphrates
-        - orange-pod2:
-            slave-label: '{pod}'
-            installer: joid
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - huawei-pod3:
-            slave-label: '{pod}'
-            installer: compass
-            auto-trigger-name: 'yardstick-daily-huawei-pod3-trigger'
-            <<: *master
-        - huawei-pod4:
-            slave-label: '{pod}'
-            installer: compass
-            auto-trigger-name: 'yardstick-daily-huawei-pod4-trigger'
-            <<: *master
-        - baremetal-centos:
-            slave-label: 'intel-pod8'
-            installer: compass
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-        - flex-pod1:
-            slave-label: '{pod}'
-            installer: apex
-            auto-trigger-name: 'daily-trigger-disabled'
-            <<: *master
-#--------------------------------
+      # apex CI PODs
+      - virtual:
+          slave-label: apex-virtual-master
+          installer: apex
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - baremetal:
+          slave-label: apex-baremetal-master
+          installer: apex
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - virtual:
+          slave-label: apex-virtual-euphrates
+          installer: apex
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *euphrates
+      - baremetal:
+          slave-label: apex-baremetal-euphrates
+          installer: apex
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *euphrates
+      # fuel CI PODs
+      - baremetal:
+          slave-label: fuel-baremetal
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - virtual:
+          slave-label: fuel-virtual
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - baremetal:
+          slave-label: fuel-baremetal
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *euphrates
+      - virtual:
+          slave-label: fuel-virtual
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *euphrates
+      # armband CI PODs
+      - armband-baremetal:
+          slave-label: armband-baremetal
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - armband-virtual:
+          slave-label: armband-virtual
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - armband-baremetal:
+          slave-label: armband-baremetal
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *euphrates
+      - armband-virtual:
+          slave-label: armband-virtual
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *euphrates
+      # joid CI PODs
+      - baremetal:
+          slave-label: joid-baremetal
+          installer: joid
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - virtual:
+          slave-label: joid-virtual
+          installer: joid
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - baremetal:
+          slave-label: joid-baremetal
+          installer: joid
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *euphrates
+      - virtual:
+          slave-label: joid-virtual
+          installer: joid
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *euphrates
+      # compass CI PODs
+      - baremetal:
+          slave-label: compass-baremetal
+          installer: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - virtual:
+          slave-label: compass-virtual
+          installer: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - baremetal:
+          slave-label: compass-baremetal
+          installer: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *euphrates
+      - virtual:
+          slave-label: compass-virtual
+          installer: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *euphrates
+      # -------------------------------
+      #        None-CI PODs
+      # -------------------------------
+      - orange-pod1:
+          slave-label: '{pod}'
+          installer: joid
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - zte-pod1:
+          slave-label: '{pod}'
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - zte-pod1:
+          slave-label: '{pod}'
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *euphrates
+      - zte-pod2:
+          slave-label: '{pod}'
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - zte-pod3:
+          slave-label: '{pod}'
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - zte-pod3:
+          slave-label: '{pod}'
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *euphrates
+      - orange-pod2:
+          slave-label: '{pod}'
+          installer: joid
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - huawei-pod3:
+          slave-label: '{pod}'
+          installer: compass
+          auto-trigger-name: 'yardstick-daily-huawei-pod3-trigger'
+          <<: *master
+      - huawei-pod4:
+          slave-label: '{pod}'
+          installer: compass
+          auto-trigger-name: 'yardstick-daily-huawei-pod4-trigger'
+          <<: *master
+      - baremetal-centos:
+          slave-label: 'intel-pod8'
+          installer: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - flex-pod1:
+          slave-label: '{pod}'
+          installer: apex
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+    # -------------------------------
     testsuite:
-        - 'daily'
+      - 'daily'
 
     jobs:
-        - 'yardstick-{installer}-{pod}-{testsuite}-{stream}'
+      - 'yardstick-{installer}-{pod}-{testsuite}-{stream}'
 
 ################################
 # job templates
@@ -209,61 +210,61 @@
     concurrent: true
 
     properties:
-        - logrotate-default
-        - throttle:
-            enabled: true
-            max-per-node: 1
-            option: 'project'
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-per-node: 1
+          option: 'project'
 
     wrappers:
-        - build-name:
-            name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
-        - timeout:
-            timeout: 180
-            abort: true
+      - build-name:
+          name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+      - timeout:
+          timeout: 180
+          abort: true
 
     triggers:
-        - '{auto-trigger-name}'
+      - '{auto-trigger-name}'
 
     parameters:
-        - project-parameter:
-            project: '{project}'
-            branch: '{branch}'
-        - '{installer}-defaults'
-        - '{slave-label}-defaults'
-        - 'yardstick-params-{slave-label}'
-        - string:
-            name: DEPLOY_SCENARIO
-            default: 'os-odl_l2-nofeature-ha'
-        - string:
-            name: DOCKER_TAG
-            default: '{docker-tag}'
-            description: 'Tag to pull docker image'
-        - string:
-            name: YARDSTICK_SCENARIO_SUITE_NAME
-            default: opnfv_${{DEPLOY_SCENARIO}}_{testsuite}.yaml
-            description: 'Path to test scenario suite'
-        - string:
-            name: CI_DEBUG
-            default: 'false'
-            description: "Show debut output information"
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - '{slave-label}-defaults'
+      - 'yardstick-params-{slave-label}'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-odl_l2-nofeature-ha'
+      - string:
+          name: DOCKER_TAG
+          default: '{docker-tag}'
+          description: 'Tag to pull docker image'
+      - string:
+          name: YARDSTICK_SCENARIO_SUITE_NAME
+          default: opnfv_${{DEPLOY_SCENARIO}}_{testsuite}.yaml
+          description: 'Path to test scenario suite'
+      - string:
+          name: CI_DEBUG
+          default: 'false'
+          description: "Show debut output information"
 
     scm:
-        - git-scm
+      - git-scm
 
     builders:
-        - description-setter:
-            description: "POD: $NODE_NAME"
-        - 'yardstick-cleanup'
-        - 'yardstick-fetch-os-creds'
-        - 'yardstick-fetch-k8s-conf'
-        - 'yardstick-{testsuite}'
-        - 'yardstick-store-results'
+      - description-setter:
+          description: "POD: $NODE_NAME"
+      - 'yardstick-cleanup'
+      - 'yardstick-fetch-os-creds'
+      - 'yardstick-fetch-k8s-conf'
+      - 'yardstick-{testsuite}'
+      - 'yardstick-store-results'
 
     publishers:
-        - email:
-            recipients: jean.gaoliang@huawei.com limingjiang@huawei.com ross.b.brattain@intel.com
-        - email-jenkins-admins-on-failure
+      - email:
+          recipients: jean.gaoliang@huawei.com limingjiang@huawei.com ross.b.brattain@intel.com
+      - email-jenkins-admins-on-failure
 
 ########################
 # builder macros
@@ -271,204 +272,216 @@
 - builder:
     name: yardstick-daily
     builders:
-        - shell:
-            !include-raw: ./yardstick-daily.sh
+      - shell:
+          !include-raw: ./yardstick-daily.sh
 
 - builder:
     name: yardstick-vtcdaily
     builders:
-        - shell:
-            !include-raw: ./yardstick-vtcdaily.sh
+      - shell:
+          !include-raw: ./yardstick-vtcdaily.sh
 
 - builder:
     name: yardstick-fetch-os-creds
     builders:
-        - shell:
-            !include-raw: ../../utils/fetch_os_creds.sh
+      - shell:
+          !include-raw: ../../utils/fetch_os_creds.sh
 
 - builder:
     name: yardstick-fetch-k8s-conf
     builders:
-        - shell:
-            !include-raw: ./yardstick-get-k8s-conf.sh
+      - shell:
+          !include-raw: ./yardstick-get-k8s-conf.sh
 
 - builder:
     name: yardstick-store-results
     builders:
-        - shell:
-            !include-raw: ../../utils/push-test-logs.sh
+      - shell:
+          !include-raw: ../../utils/push-test-logs.sh
 
 - builder:
     name: yardstick-cleanup
     builders:
-        - shell:
-            !include-raw: ./yardstick-cleanup.sh
+      - shell:
+          !include-raw: ./yardstick-cleanup.sh
 ########################
 # parameter macros
 ########################
 - parameter:
     name: 'yardstick-params-apex-virtual-master'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
 - parameter:
     name: 'yardstick-params-apex-baremetal-master'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
 - parameter:
     name: 'yardstick-params-apex-virtual-euphrates'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
 - parameter:
     name: 'yardstick-params-apex-baremetal-euphrates'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
 - parameter:
     name: 'yardstick-params-fuel-baremetal'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
 - parameter:
     name: 'yardstick-params-fuel-virtual'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
 - parameter:
     name: 'yardstick-params-armband-baremetal'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
 - parameter:
     name: 'yardstick-params-armband-virtual'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
 - parameter:
     name: 'yardstick-params-joid-baremetal'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
 - parameter:
     name: 'yardstick-params-joid-virtual'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
 - parameter:
     name: 'yardstick-params-intel-pod8'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
 - parameter:
     name: 'yardstick-params-compass-baremetal'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
 - parameter:
     name: 'yardstick-params-zte-pod1'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
     name: 'yardstick-params-zte-pod2'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
     name: 'yardstick-params-zte-pod3'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
     name: 'yardstick-params-orange-pod1'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
     name: 'yardstick-params-orange-pod2'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
     name: 'yardstick-params-virtual'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
     name: 'yardstick-params-compass-virtual'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
     name: 'yardstick-params-huawei-pod3'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
     name: 'yardstick-params-huawei-pod4'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
     name: 'yardstick-params-flex-pod1'
     parameters:
-        - string:
-            name: YARDSTICK_DB_BACKEND
-            default: '-i 104.197.68.199:8086'
-            description: 'Arguments to use in order to choose the backend DB'
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
 
 #######################
 ## trigger macros
@@ -477,9 +490,9 @@
 - trigger:
     name: 'yardstick-daily-huawei-pod3-trigger'
     triggers:
-        - timed: '0 1 * * *'
+      - timed: '0 1 * * *'
 
 - trigger:
     name: 'yardstick-daily-huawei-pod4-trigger'
     triggers:
-        - timed: ''
+      - timed: ''
