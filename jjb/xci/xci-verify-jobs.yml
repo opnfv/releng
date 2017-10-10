@@ -221,6 +221,15 @@
           name: XCI_FLAVOR
           default: 'mini'
       - string:
+          name: XCI_VM_NCPUS
+          default: '24'
+      - string:
+          name: XCI_VM_MEMORY_SIZE
+          default: '49152'
+      - string:
+          name: XCI_VM_DISK_SIZE
+          default: '500'
+      - string:
           name: CLEAN_DIB_IMAGES
           default: 'true'
       - string:
@@ -276,14 +285,18 @@
           export FUNCTEST_MODE=$FUNCTEST_MODE
           export FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
           export XCI_FLAVOR=$XCI_FLAVOR
+          export XCI_VM_NCPUS=$XCI_VM_NCPUS
+          export XCI_VM_MEMORY_SIZE=$XCI_VM_MEMORY_SIZE
+          export XCI_VM_DISK_SIZE=$XCI_VM_DISK_SIZE
           export CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
           export OPNFV_RELENG_DEV_PATH=/home/devuser/releng-xci/
           export INSTALLER_TYPE=$INSTALLER_TYPE
           export GIT_BASE=$GIT_BASE
           export JENKINS_HOME=$JENKINS_HOME
+          export _XCI_ENV_IS_PREPARED_=true
 
           cd xci
-          ./xci-deploy.sh
+          ./xci-deploy-core.sh
           EOF
           chmod a+x xci_test.sh
 
