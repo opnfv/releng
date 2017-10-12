@@ -51,7 +51,7 @@ cd $WORKSPACE
 gsutil cp $BUILD_DIRECTORY/opnfv-$OPNFV_ARTIFACT_VERSION.bin \
     gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.bin > gsutil.bin.log 2>&1
 gsutil cp $BUILD_DIRECTORY/opnfv-$OPNFV_ARTIFACT_VERSION.iso \
-    gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.bin >> gsutil.bin.log 2>&1
+    gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.iso >> gsutil.bin.log 2>&1
 gsutil cp $WORKSPACE/opnfv.properties \
     gs://$GS_URL/opnfv-$OPNFV_ARTIFACT_VERSION.properties > gsutil.properties.log 2>&1
 if [[ ! "$JOB_NAME" =~ (verify|merge) ]]; then
