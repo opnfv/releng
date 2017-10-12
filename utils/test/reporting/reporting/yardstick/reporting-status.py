@@ -39,7 +39,12 @@ def get_scenario_data(version, installer):
     return scenarios
 
 
-def write_history_data(version, scenario, installer, ten_score, percent):
+def write_history_data(version,
+                       scenario,
+                       installer,
+                       archi,
+                       ten_score,
+                       percent):
     # Save daily results in a file
     history_file = './display/{}/yardstick/scenario_history.txt'.format(
         version)
@@ -49,6 +54,8 @@ def write_history_data(version, scenario, installer, ten_score, percent):
             f.write('date,scenario,installer,details,score\n')
 
     date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    if installer == 'fuel':
+        installer = '{}@{}'.format(installer, archi)
     with open(history_file, "a") as f:
         info = '{},{},{},{},{}\n'.format(date,
                                          scenario,
@@ -121,7 +128,12 @@ def generate_reporting_page(version, installer, archi, scenarios, period):
                  version,
                  scenario)
         last_score, ten_score, percent, status = do_statistic(data)
-        write_history_data(version, scenario, installer, ten_score, percent)
+        write_history_data(version,
+                           scenario,
+                           installer,
+                           archi,
+                           ten_score,
+                           percent)
         scenario_data[scenario] = ScenarioResult(status,
                                                  last_score,
                                                  ten_score,
