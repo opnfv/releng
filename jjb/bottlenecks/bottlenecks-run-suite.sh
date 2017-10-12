@@ -72,7 +72,7 @@ if [[ $SUITE_NAME == *posca* ]]; then
 
     set +e
 
-    sudo pip install virtualenv
+    sudo -H pip install virtualenv
 
     cd ${RELENG_REPO}/modules
     sudo virtualenv venv
