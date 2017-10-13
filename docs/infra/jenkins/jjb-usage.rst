@@ -1,3 +1,9 @@
+.. This work is licensed under a Creative Commons Attribution 4.0 International License.
+.. SPDX-License-Identifier: CC-BY-4.0
+.. (c) Open Platform for NFV Project, Inc. and its contributors
+
+.. _jjb:
+
 ===========================================
 Creating/Configuring/Verifying Jenkins Jobs
 ===========================================
@@ -16,9 +22,9 @@ Make changes::
     remote: Processing changes: new: 1, refs: 1, done
     remote:
     remote: New Changes:
-    remote:   https://gerrit.opnfv.org/gerrit/51
+    remote:   https://gerrit.opnfv.org/gerrit/<CHANGE_ID>
     remote:
-    To ssh://agardner@gerrit.opnfv.org:29418/releng.git
+    To ssh://YOU@gerrit.opnfv.org:29418/releng.git
      * [new branch]      HEAD -> refs/publish/master
 
 Test with tox::
@@ -29,12 +35,12 @@ Submit the change to gerrit::
 
     git review -v
 
-Follow the link given in the stdoutput to gerrit eg: https://gerrit.opnfv.org/gerrit/"Your_Change_ID"
-the verify job will have completed and you will see Verified +1 jenkins-ci in
-the gerrit ui.
+Follow the link given in the stdoutput to gerrit eg:
+``https://gerrit.opnfv.org/gerrit/<CHANGE_ID>`` the verify job will
+have completed and you will see Verified +1 jenkins-ci in the gerrit ui.
 
 If the changes pass the verify job
-https://build.opnfv.org/ci/view/builder/job/builder-verify-jjb/ ,
+https://build.opnfv.org/ci/job/releng-verify-jjb/ ,
 the patch can be submitited by a committer.
 
 Job Types
@@ -65,8 +71,9 @@ it will reset the verified status to 0. If you want to keep the verified
 status, use **recheck-experimental** in commit message to trigger both
 verify and experimental jobs.
 
-You can look in the releng/INFO file for a list of current committers to add as reviewers to your patch in order to get it
-reviewed and submitted.
+You can look in the releng/INFO file for a list of current committers to
+add as reviewers to your patch in order to get it reviewed and
+submitted.
 
 Or Add the group releng-contributors
 
