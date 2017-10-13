@@ -6,7 +6,6 @@ EXITSTATUS=0
 
 # This Log should always exist
 if [[ -e securityaudit.log ]] ; then
-    echo -e "\nposting security audit report to gerrit...\n"
 
     #check if log has errors
     if grep ERROR securityaudit.log; then
@@ -17,6 +16,7 @@ if [[ -e securityaudit.log ]] ; then
 
     # Only report to Gerrit when there are errors to report.
     if [[ -s shortlog ]]; then
+        echo -e "\nposting security audit report to gerrit...\n"
         ssh -p 29418 gerrit.opnfv.org \
             "gerrit review -p $GERRIT_PROJECT \
             -m \"$(cat shortlog)\" \
