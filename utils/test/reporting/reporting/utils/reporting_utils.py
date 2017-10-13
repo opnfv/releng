@@ -186,7 +186,6 @@ def getScenarioStats(scenario_results):
 def getScenarioStatus(installer, version):
     """
     Get the status of a scenariofor Yardstick
-    they used criteria SUCCESS (default: PASS)
     """
     period = get_config('general.period')
     url_base = get_config('testapi.url')
@@ -228,7 +227,7 @@ def getScenarioStatus(installer, version):
                 # scenario_results[k] = v[:LASTEST_TESTS]
                 s_list = []
                 for element in scen_v:
-                    if element['criteria'] == 'SUCCESS':
+                    if element['criteria'] == 'PASS':
                         s_list.append(1)
                     else:
                         s_list.append(0)
