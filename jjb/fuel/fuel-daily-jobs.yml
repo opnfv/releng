@@ -171,28 +171,42 @@
               DEPLOY_SCENARIO={scenario}
             same-node: true
             block: true
-      - trigger-builds:
-          - project: 'functest-fuel-{pod}-daily-{stream}'
-            current-parameters: false
-            predefined-parameters:
-              DEPLOY_SCENARIO={scenario}
-            same-node: true
-            block: true
-            block-thresholds:
-              build-step-failure-threshold: 'never'
-              failure-threshold: 'never'
-              unstable-threshold: 'FAILURE'
-      - trigger-builds:
-          - project: 'yardstick-fuel-{pod}-daily-{stream}'
-            current-parameters: false
-            predefined-parameters:
-              DEPLOY_SCENARIO={scenario}
-            block: true
-            same-node: true
-            block-thresholds:
-              build-step-failure-threshold: 'never'
-              failure-threshold: 'never'
-              unstable-threshold: 'FAILURE'
+      - conditional-step:
+          condition-kind: not
+          condition-operand:
+            condition-kind: regex-match
+            regex: 'stable/danube'
+            label: '{stream}'
+          steps:
+            - trigger-builds:
+                - project: 'functest-fuel-{pod}-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO={scenario}
+                  same-node: true
+                  block: true
+                  block-thresholds:
+                    build-step-failure-threshold: 'never'
+                    failure-threshold: 'never'
+                    unstable-threshold: 'FAILURE'
+      - conditional-step:
+          condition-kind: not
+          condition-operand:
+            condition-kind: regex-match
+            regex: 'stable/danube'
+            label: '{stream}'
+          steps:
+            - trigger-builds:
+                - project: 'yardstick-fuel-{pod}-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO={scenario}
+                  block: true
+                  same-node: true
+                  block-thresholds:
+                    build-step-failure-threshold: 'never'
+                    failure-threshold: 'never'
+                    unstable-threshold: 'FAILURE'
       # 1.dovetail only has master, based on D release
       # 2.here the stream means the SUT stream, dovetail stream is defined in its own job
       # 3.only debug testsuite here(refstack, ha, ipv6, bgpvpn)
@@ -201,9 +215,14 @@
       # 5.only run against scenario os-odl-bgpvpn-ha(regex used here, can extend to more scenarios future)
       # 6.ZTE pod1, os-nosdn-nofeature-ha and os-odl-bgpvpn-ha, run against danube
       - conditional-step:
-          condition-kind: regex-match
-          regex: os-(nosdn-nofeature|odl_l2-bgpvpn)-ha
-          label: '{scenario}'
+          condition-kind: and
+          condition-operands:
+            - condition-kind: regex-match
+              regex: os-(nosdn-nofeature|odl_l2-bgpvpn)-ha
+              label: '{scenario}'
+            - condition-kind: regex-match
+              regex: 'stable/danube'
+              label: '{stream}'
           steps:
             - trigger-builds:
                 - project: 'dovetail-fuel-{pod}-proposed_tests-master'
@@ -220,7 +239,7 @@
           condition-kind: not
           condition-operand:
             condition-kind: regex-match
-            regex: 'danube'
+            regex: 'stable/danube'
             label: '{stream}'
           steps:
             - trigger-builds:

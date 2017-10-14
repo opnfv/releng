@@ -122,28 +122,42 @@
               DEPLOY_SCENARIO={scenario}
             same-node: true
             block: true
-      - trigger-builds:
-          - project: 'functest-{installer}-{pod}-arm-daily-{stream}'
-            current-parameters: false
-            predefined-parameters:
-              DEPLOY_SCENARIO={scenario}
-            block: true
-            same-node: true
-            block-thresholds:
-              build-step-failure-threshold: 'never'
-              failure-threshold: 'never'
-              unstable-threshold: 'FAILURE'
-      - trigger-builds:
-          - project: 'yardstick-{installer}-{pod}-daily-{stream}'
-            current-parameters: false
-            predefined-parameters:
-              DEPLOY_SCENARIO={scenario}
-            block: true
-            same-node: true
-            block-thresholds:
-              build-step-failure-threshold: 'never'
-              failure-threshold: 'never'
-              unstable-threshold: 'FAILURE'
+      - conditional-step:
+          condition-kind: not
+          condition-operand:
+            condition-kind: regex-match
+            regex: 'stable/danube'
+            label: '{stream}'
+          steps:
+            - trigger-builds:
+                - project: 'functest-{installer}-{pod}-arm-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO={scenario}
+                  block: true
+                  same-node: true
+                  block-thresholds:
+                    build-step-failure-threshold: 'never'
+                    failure-threshold: 'never'
+                    unstable-threshold: 'FAILURE'
+      - conditional-step:
+          condition-kind: not
+          condition-operand:
+            condition-kind: regex-match
+            regex: 'stable/danube'
+            label: '{stream}'
+          steps:
+            - trigger-builds:
+                - project: 'yardstick-{installer}-{pod}-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO={scenario}
+                  block: true
+                  same-node: true
+                  block-thresholds:
+                    build-step-failure-threshold: 'never'
+                    failure-threshold: 'never'
+                    unstable-threshold: 'FAILURE'
       # 1.dovetail only master, based on D release
       # 2.here the stream means the SUT stream,
       #   dovetail stream is defined in its own job
@@ -152,9 +166,14 @@
       #   only to debug the dovetail tool bugs with arm pods
       # 5.only run against scenario os-(nosdn|odl)-(nofeature-bgpvpn)-ha
       - conditional-step:
-          condition-kind: regex-match
-          regex: os-(nosdn|odl)-(nofeature|bgpvpn)-ha
-          label: '{scenario}'
+          condition-kind: and
+          condition-operands:
+            - condition-kind: regex-match
+              regex: os-(nosdn|odl)-(nofeature|bgpvpn)-ha
+              label: '{scenario}'
+            - condition-kind: regex-match
+              regex: 'stable/danube'
+              label: '{stream}'
           steps:
             - trigger-builds:
                 - project: 'dovetail-{installer}-{pod}-proposed_tests-master'
@@ -168,15 +187,24 @@
                     failure-threshold: 'never'
                     unstable-threshold: 'FAILURE'
       # Armband uses Fuel's log collection project job, no need to duplicate
-      - trigger-builds:
-          - project: 'fuel-collect-logs-{deploy-type}-daily-{stream}'
-            current-parameters: false
-            block: true
-            same-node: true
-            block-thresholds:
-              build-step-failure-threshold: 'never'
-              failure-threshold: 'never'
-              unstable-threshold: 'FAILURE'
+      - conditional-step:
+          condition-kind: not
+          condition-operand:
+            condition-kind: regex-match
+            regex: 'stable/danube'
+            label: '{stream}'
+          steps:
+            - trigger-builds:
+                - project: 'fuel-collect-logs-{deploy-type}-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO={scenario}
+                  block: true
+                  same-node: true
+                  block-thresholds:
+                    build-step-failure-threshold: 'never'
+                    failure-threshold: 'never'
+                    unstable-threshold: 'FAILURE'
 
 - job-template:
     name: '{installer}-deploy-{pod}-daily-{stream}'
