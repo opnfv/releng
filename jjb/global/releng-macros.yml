@@ -450,15 +450,17 @@
           # generate and upload lint log
           echo "Running yaml code on $PROJECT ..."
 
+          # Get list of yaml files
+          git diff HEAD^1 --name-only | egrep "ya?ml$" > patchset-files
+
           # Ensure we start with a clean environment
           rm -f yaml-violation.log lint.log
 
           # Get number of yaml violations. If none, this will be an
           # empty string: ""
-          find . \
-              -type f -name "*.yml" -print \
-              -o -name "*.yaml" -print | \
-              xargs yamllint > yaml-violation.log || true
+          for yamlfile in $(cat patchset-files); do
+             yamllint $yamlfile >> yaml-violation.log || true
+          done
 
           if [ -s "yaml-violation.log" ]; then
             SHOWN=$(cat yaml-violation.log| grep -v "^$" |wc -l)
