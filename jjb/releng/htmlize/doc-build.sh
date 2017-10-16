@@ -18,4 +18,4 @@ fi
 # Install Pre-requistics
 pip install requests
 
-python ./utils/test/testapi/htmlize/htmlize.py -o ${WORKSPACE}/
+python ./jjb/releng/htmlize/htmlize.py -o ${WORKSPACE}/
