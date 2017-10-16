@@ -247,7 +247,8 @@
     name: 'reporting-automate-docker-deploy-macro'
     builders:
       - shell: |
-          sudo bash ./jjb/releng/docker-deploy.sh "sudo docker run -itd --name reporting -p 8084:8000 opnfv/reporting" \
+          sudo bash ./jjb/releng/docker-deploy.sh "sudo docker run -itd --name reporting -p 8084:8000
+          -v reporting:/home/opnfv/releng/utils/test/reporting/display opnfv/reporting" \
           "http://testresults.opnfv.org/reporting/index.html" "reporting"
 
 - builder:

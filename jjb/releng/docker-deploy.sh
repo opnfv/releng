@@ -47,6 +47,20 @@ function check_connectivity() {
     fi
 }
 
+function check_reporting_volume() {
+    # check update status via test the connectivity of provide url
+    sleep 5
+    cmd=`docker volume inspect reporting`
+    rc=$?
+    DEBUG $rc
+    if [[ $rc == 0 ]]; then
+        return 0
+    else
+        docker volume create --name reporting
+        return 1
+    fi
+}
+
 
 function pull_latest_image() {
     DEBUG "pull latest image $latest_image"
@@ -147,6 +161,11 @@ else
     fi
     exit 1
 fi
+
+if check_reporting_volume; then
+    DEBUG "reporting volume found, use it!"
+else
+    DEBUG "Reporting volume not found, create it"
 
 docker images
 docker ps -a
