@@ -77,8 +77,8 @@ if [[ $SUITE_NAME == *posca* ]]; then
     cd ${RELENG_REPO}/modules
     sudo virtualenv venv
     source venv/bin/activate
-    sudo pip install -e ./ >/dev/null
-    sudo pip install netaddr
+    sudo -H pip install -e ./ >/dev/null
+    sudo -H pip install netaddr
 
     if [[ ${INSTALLER_TYPE} == compass ]]; then
         options="-u root -p root"
