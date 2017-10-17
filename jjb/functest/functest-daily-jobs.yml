@@ -190,16 +190,6 @@
     #       <<: *master
     # -------------------------------
 
-    alpine-pod:
-      - ericsson-virtual-pod1bl01:
-          slave-label: '{alpine-pod}'
-          installer: fuel
-          <<: *master
-      - huawei-virtual5:
-          slave-label: '{alpine-pod}'
-          installer: compass
-          <<: *master
-
     testsuite:
       - 'suite':
           job-timeout: 60
@@ -210,7 +200,6 @@
 
     jobs:
       - 'functest-{installer}-{pod}-{testsuite}-{stream}'
-      - 'functest-alpine-{installer}-{alpine-pod}-{testsuite}-{stream}'
 
 ################################
 # job template
@@ -263,45 +252,6 @@
           description: "Built on $NODE_NAME"
       - 'functest-{testsuite}-builder'
 
-- job-template:
-    name: 'functest-alpine-{installer}-{alpine-pod}-{testsuite}-{stream}'
-
-    concurrent: true
-
-    properties:
-      - logrotate-default
-      - throttle:
-          enabled: true
-          max-per-node: 1
-          option: 'project'
-
-    wrappers:
-      - build-name:
-          name: '$BUILD_NUMBER Suite: $FUNCTEST_SUITE_NAME Scenario: $DEPLOY_SCENARIO'
-      - timeout:
-          timeout: '{job-timeout}'
-          abort: true
-
-    parameters:
-      - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - '{installer}-defaults'
-      - '{slave-label}-defaults'
-      - 'functest-{testsuite}-parameter'
-      - string:
-          name: DEPLOY_SCENARIO
-          default: 'os-nosdn-nofeature-noha'
-      - functest-parameter:
-          gs-pathname: '{gs-pathname}'
-
-    scm:
-      - git-scm
-
-    builders:
-      - description-setter:
-          description: "Built on $NODE_NAME"
-      - 'functest-alpine-daily-builder'
 
 ########################
 # parameter macros
@@ -410,6 +360,7 @@
     name: functest-daily-builder
     builders:
       - 'functest-cleanup'
+      - 'set-functest-env'
       - 'functest-daily'
       - 'functest-store-results'
       - 'functest-exit'
@@ -427,17 +378,8 @@
     name: functest-suite-builder
     builders:
       - 'functest-cleanup'
-      - 'set-functest-env-alpine'
+      - 'set-functest-env'
       - 'functest-suite'
-      - 'functest-store-results'
-      - 'functest-exit'
-
-- builder:
-    name: functest-alpine-daily-builder
-    builders:
-      - 'functest-cleanup'
-      - 'set-functest-env-alpine'
-      - 'functest-daily'
       - 'functest-store-results'
       - 'functest-exit'
 
@@ -447,8 +389,6 @@
       # yamllint disable rule:indentation
       - shell:
           !include-raw:
-              - ./functest-env-presetup.sh
-              - ../../utils/fetch_os_creds.sh
               - ./functest-alpine.sh
 
 # yamllint enable rule:indentation
@@ -456,7 +396,9 @@
     name: functest-arm-daily
     builders:
       - shell:
-          !include-raw: ./functest-loop.sh
+          !include-raw:
+              - ./set-functest-env.sh
+              - ./functest-loop.sh
 
 - builder:
     name: functest-suite
@@ -469,17 +411,6 @@
 # yamllint enable rule:indentation
 - builder:
     name: set-functest-env
-    builders:
-      # yamllint disable rule:indentation
-      - shell:
-          !include-raw:
-              - ./functest-env-presetup.sh
-              - ../../utils/fetch_os_creds.sh
-              - ./set-functest-env.sh
-
-# yamllint enable rule:indentation
-- builder:
-    name: set-functest-env-alpine
     builders:
       # yamllint disable rule:indentation
       - shell:
