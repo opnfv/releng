@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a3d3df0_dab0f2f6",
+        "filename": "jjb/releng/opnfv-docker.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 5807
+      },
+      "writtenOn": "2017-10-17T15:54:33Z",
+      "side": 1,
+      "message": "this patch works but does not check that the current commit on that branch has the right version tag.\n\nThere are 2 ways we can make this work with proper checking:\n\na) always assume that the tip of release branch must have a tag corresponding to the RELEASE_VERSION arg passed (e.g. if RELEASE_VERSION is 5.0.0 then the tip of this branch must have a tag \u003d opnfv-5.0.0)\nNote that a \"git tag --contains\" can return more than 1 tag:\ne.g. \ngit tag --contains\ncan return a list of 2 git tags:\nopnfv-5.0.RC1\nopnfv-5.0.0\nIf the tip of branch does not contain the corresponding git tag, the script must fail\n\nb) allow this script to build any version with the tag corresponding to the passed RELEASE_VERSION (i.e. not necessarily at tip of release branch).\ne.g. if RELEASE_VERSION is passed with \"5.0.RC1\", then the script assumes the tag exists and will checkout that tag before building (if the tag does not exist then error out) - e,g. git checkout opnfv-$RELEASE_VERSION\n\n I think (b) is more flexible as it allows to build any tag on the release branch.",
+      "revId": "17780d57119b51133c1a01eaf6d1e81da115a317",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a3d3df0_dab912eb",
+        "filename": "jjb/releng/opnfv-docker.yml",
+        "patchSetId": 1
+      },
+      "lineNbr": 214,
+      "author": {
+        "id": 5807
+      },
+      "writtenOn": "2017-10-17T15:54:33Z",
+      "side": 1,
+      "message": "should also add 5.0.RC1 as examples?\nwould be good to add comment here in how a release build is triggered, when and by who/",
+      "revId": "17780d57119b51133c1a01eaf6d1e81da115a317",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
