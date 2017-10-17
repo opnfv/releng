@@ -6,13 +6,14 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-from urllib2 import Request, urlopen, URLError
 import logging
 import json
 import os
 import requests
 import pdfkit
 import yaml
+
+from urllib2 import Request, urlopen, URLError
 
 
 # ----------------------------------------------------------
@@ -284,7 +285,7 @@ def getNbtestOk(results):
     return nb_test_ok
 
 
-def getResult(testCase, installer, scenario, version):
+def getCaseScore(testCase, installer, scenario, version):
     """
     Get Result  for a given Functest Testcase
     """
@@ -340,6 +341,41 @@ def getResult(testCase, installer, scenario, version):
                     test_result_indicator = 2
             else:
                 test_result_indicator = 2
+    return test_result_indicator
+
+
+def getCaseScoreFromBuildTag(testCase, s_results):
+    """
+    Get Results for a given Functest Testcase with arch filtering
+    """
+    url_base = get_config('testapi.url')
+    nb_tests = get_config('general.nb_iteration_tests_success_criteria')
+    test_result_indicator = 0
+    # architecture is not a result field...so we cannot use getResult as it is
+    res_matrix = []
+    try:
+        for s_result in s_results:
+            build_tag = s_result['build_tag']
+            d = s_result['start_date']
+            res_matrix.append({'date': d,
+                               'build_tag': build_tag})
+        # sort res_matrix
+        filter_res_matrix = sorted(res_matrix, key=lambda k: k['date'],
+                                   reverse=True)[:nb_tests]
+        for my_res in filter_res_matrix:
+            url = ("http://" + url_base + "?case=" + testCase +
+                   "&build_tag=" + my_res['build_tag'])
+            request = Request(url)
+            response = urlopen(request)
+            k = response.read()
+            results = json.loads(k)
+            if "PASS" in results['results'][0]['criteria']:
+                test_result_indicator += 1
+    except:
+        print "No results found for this case"
+    if test_result_indicator > 3:
+        test_result_indicator = 3
+
     return test_result_indicator
 
 
