@@ -172,8 +172,13 @@ for version in versions:
                             nb_test_runnable_for_this_scenario += 1
                             LOGGER.info(" Searching results for case %s ",
                                         displayName)
-                            result = rp_utils.getResult(name, installer,
-                                                        s, version)
+                            if "fuel" in installer:
+                                result = rp_utils.getCaseScoreFromBuildTag(
+                                    name,
+                                    s_result)
+                            else:
+                                result = rp_utils.getCaseScore(name, installer,
+                                                               s, version)
                             # if no result set the value to 0
                             if result < 0:
                                 result = 0
@@ -204,8 +209,13 @@ for version in versions:
                             project = test_case.getProject()
                             LOGGER.info(" Searching results for case %s ",
                                         displayName)
-                            result = rp_utils.getResult(name, installer,
-                                                        s, version)
+                            if "fuel" in installer:
+                                result = rp_utils.getCaseScoreFromBuildTag(
+                                    name,
+                                    s_result)
+                            else:
+                                result = rp_utils.getCaseScore(name, installer,
+                                                               s, version)
                             # at least 1 result for the test
                             if result > -1:
                                 test_case.setCriteria(result)
@@ -240,6 +250,8 @@ for version in versions:
                 # 2 iterations : max score = 20 (10x2)
                 # 3 iterations : max score = 20
                 # 4 or more iterations : max score = 30 (1x30)
+                LOGGER.info("Number of iterations for this scenario: %s",
+                            len(s_result))
                 if len(s_result) > 3:
                     k_score = 3
                 elif len(s_result) < 2:
