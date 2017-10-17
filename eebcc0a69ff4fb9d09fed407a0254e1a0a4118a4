@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "9a3d3df0_3d7758d6",
+        "filename": "jjb/releng/opnfv-docker.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 5807
+      },
+      "writtenOn": "2017-10-17T23:49:16Z",
+      "side": 1,
+      "message": "for euphrates: RELEASE_VERSION should be set to \"opnfv-5.0.0\" (for example)\n \nThis works for the docker tag\nHowever there is a problem with the Dockerfile itself: which version of Dockerfile is used here?\nTip of stable branch?\nCan we always assume this script is called from tip of branch?\n\nWhat if user mistakenly passes RELEASE_VERSION \u003d \"opnfv-5.0.RC1\" and the tip of stable euphrates has the opnfv-5.0.0 tag (and the opnfv-5.0.RC1 tag is behind)? This would not work right? Even for functest (because functest too might pick the wrong Dockerfile version to run the docker build below).\n\nGranted that Dockerfiles will typically not change much on a stable branch but why take a risk?\nThat is why I think it is safer to explicitly checkout the passed RELEASE_VERSION:\n\ngit checkout ${RELEASE_VERSION}\n\nto make sure the script picks up the corresponding Dockerfile version to run docker build against.\n\nThe BRANCH should still be set to \"stable/euphrates\" for those Dockerfile that needs it \n\nand not sure if there are Dockerfiles that also need the exact version (5.0.0)? in that case we may need to add\n--build-arg RELEASE_VERSION\u003d${RELEASE_VERSION}\n\nFor functest, the Dockerifles will pick up opnfv projects using $BRANCH, eg, for FDS:\n\nRUN git clone --depth 1 -b $BRANCH https://gerrit.opnfv.org/gerrit/fds /src/fds\n\nso BRANCH really needs to be set to stable/euphrates (and not RELEASE_VERSION).",
+      "revId": "eebcc0a69ff4fb9d09fed407a0254e1a0a4118a4",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9a3d3df0_dd03cc71",
         "filename": "jjb/releng/opnfv-docker.sh",
         "patchSetId": 2
@@ -13,6 +30,30 @@
       "writtenOn": "2017-10-17T22:40:33Z",
       "side": 1,
       "message": "What\u0027s with the \u0027-\u0027 suffix on all these variables? Is this some feature of bash being used?",
+      "range": {
+        "startLine": 80,
+        "startChar": 0,
+        "endLine": 87,
+        "endChar": 61
+      },
+      "revId": "eebcc0a69ff4fb9d09fed407a0254e1a0a4118a4",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a3d3df0_5d1dfcbc",
+        "filename": "jjb/releng/opnfv-docker.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 5807
+      },
+      "writtenOn": "2017-10-17T23:49:16Z",
+      "side": 1,
+      "message": "this is equivalent to ${COMMIT_ID:-}\nso expands to COMMIT_ID value if not null or \u0027\u0027 if null/undefined",
+      "parentUuid": "9a3d3df0_dd03cc71",
       "range": {
         "startLine": 80,
         "startChar": 0,
