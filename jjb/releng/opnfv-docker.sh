@@ -78,8 +78,8 @@ BUILD_BRANCH=$BRANCH
 if [[ "$BRANCH" == "master" ]]; then
     DOCKER_TAG="latest"
 elif [[ -n "${RELEASE_VERSION-}" ]]; then
-    DOCKER_TAG=${BRANCH##*/}.${RELEASE_VERSION}
-    # e.g. danube.1.0, danube.2.0, danube.3.0
+    DOCKER_TAG=opnfv-${RELEASE_VERSION}
+    # e.g. opnfv-5.0.0, opnfv-5.1.0
 else
     DOCKER_TAG="stable"
 fi
