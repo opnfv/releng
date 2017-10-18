@@ -137,6 +137,27 @@
               build-step-failure-threshold: 'never'
               failure-threshold: 'never'
               unstable-threshold: 'FAILURE'
+      - conditional-step:
+          condition-kind: and
+          condition-operands:
+            - condition-kind: regex-match
+              regex: 'baremetal'
+              label: '{pod}'
+            - condition-kind: regex-match
+              regex: 'master'
+              label: '{stream}'
+          steps:
+            - trigger-builds:
+                - project: 'yardstick-daisy-{pod}-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO={scenario}
+                  block: true
+                  same-node: true
+                  block-thresholds:
+                    build-step-failure-threshold: 'never'
+                    failure-threshold: 'never'
+                    unstable-threshold: 'FAILURE'
 
 - job-template:
     name: '{project}-deploy-{pod}-daily-{stream}'
@@ -200,7 +221,7 @@
 - trigger:
     name: 'daisy-os-nosdn-nofeature-ha-baremetal-daily-master-trigger'
     triggers:
-      - timed: '0 16 * * *'
+      - timed: '0 18 * * *'
 # Basic NOHA Scenarios
 - trigger:
     name: 'daisy-os-nosdn-nofeature-noha-baremetal-daily-master-trigger'
