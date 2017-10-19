@@ -47,7 +47,7 @@ if [[ $SUITE_NAME == *posca* ]]; then
 
     if [[ -f ${OPENRC} ]]; then
         echo "BOTTLENECKS INFO: openstack credentials path is ${OPENRC}"
-        if [[ $INSTALLER_TYPE == 'compass' && ${BRANCH} == 'master' ]]; then
+        if [[ $INSTALLER_TYPE == 'compass' ]]; then
             echo "BOTTLENECKS INFO: writing ${OS_CACERT} to ${OPENRC}"
             echo "export OS_CACERT=${OS_CACERT}" >> ${OPENRC}
         fi
