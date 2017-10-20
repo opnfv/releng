@@ -114,7 +114,8 @@ def getScenarios(project, case, installer, version):
     """
     Get the list of Scenarios
     """
-
+    test_results = None
+    scenario_results = None
     period = get_config('general.period')
     url_base = get_config('testapi.url')
 
@@ -373,8 +374,8 @@ def getCaseScoreFromBuildTag(testCase, s_results):
                 test_result_indicator += 1
     except:
         print "No results found for this case"
-    if test_result_indicator > 3:
-        test_result_indicator = 3
+    if test_result_indicator > 2:
+        test_result_indicator = test_result_indicator - 1
 
     return test_result_indicator
 
