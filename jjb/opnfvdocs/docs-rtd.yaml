@@ -36,6 +36,7 @@
           files: 'docs/**/*.*'
 
     builders:
+      - 'remove-old-docs-from-opnfv-artifacts'
       - shell: |
           if [ $GERRIT_BRANCH == "master" ]; then
             RTD_BUILD_VERSION=latest
@@ -90,3 +91,4 @@
           pip freeze
           pip install tox
           tox -edocs
+      - 'upload-review-docs'
