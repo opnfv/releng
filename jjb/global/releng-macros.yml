@@ -182,17 +182,6 @@
              sudo chown -R $USER:$USER $WORKSPACE || exit 1
 
 - builder:
-    name: build-html-and-pdf-docs-output
-    builders:
-      - shell: |
-          #!/bin/bash
-          set -o errexit
-          set -o xtrace
-          export PATH=$PATH:/usr/local/bin/
-          git clone ssh://gerrit.opnfv.org:29418/opnfvdocs docs_build/_opnfvdocs
-          GERRIT_COMMENT=gerrit_comment.txt ./docs_build/_opnfvdocs/scripts/docs-build.sh
-
-- builder:
     name: upload-under-review-docs-to-opnfv-artifacts
     builders:
       - shell: |
@@ -216,48 +205,8 @@
           local_path="upload/$GERRIT_CHANGE_NUMBER"
 
           mkdir -p upload
-          mv docs_output "$local_path"
+          mv docs/_build/html/ "$local_path"
           gsutil -m cp -r "$local_path" "gs://$gs_base"
-
-          gsutil -m setmeta \
-              -h "Content-Type:text/html" \
-              -h "Cache-Control:private, max-age=0, no-transform" \
-              "gs://$gs_path"/**.html > /dev/null 2>&1
-
-          echo "Document link(s):" >> gerrit_comment.txt
-          find "$local_path" | grep -e 'index.html$' -e 'pdf$' | \
-              sed -e "s|^$local_path|    http://$gs_path|" >> gerrit_comment.txt
-
-- builder:
-    name: upload-generated-docs-to-opnfv-artifacts
-    builders:
-      - shell: |
-          #!/bin/bash
-          set -o errexit
-          set -o pipefail
-          set -o xtrace
-          export PATH=$PATH:/usr/local/bin/
-
-          [[ -d docs_output ]] || exit 0
-
-          echo
-          echo "########################"
-          echo "UPLOADING GENERATED DOCS"
-          echo "########################"
-          echo
-
-          echo "gs_path="$GS_URL/docs""
-          echo "local_path="upload/docs""
-
-          gs_path="$GS_URL/docs"
-          local_path="upload/docs"
-
-          mkdir -p upload
-          mv docs_output "$local_path"
-          ls "$local_path"
-
-          echo "gsutil -m cp -r "$local_path"/* "gs://$gs_path""
-          gsutil -m cp -r "$local_path"/* "gs://$gs_path"
 
           gsutil -m setmeta \
               -h "Content-Type:text/html" \
@@ -417,17 +366,8 @@
 - builder:
     name: upload-review-docs
     builders:
-      - build-html-and-pdf-docs-output
       - upload-under-review-docs-to-opnfv-artifacts
       - report-build-result-to-gerrit
-
-- builder:
-    name: upload-merged-docs
-    builders:
-      - build-html-and-pdf-docs-output
-      - upload-generated-docs-to-opnfv-artifacts
-      - report-build-result-to-gerrit
-      - remove-old-docs-from-opnfv-artifacts
 
 - builder:
     name: check-bash-syntax
