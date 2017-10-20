@@ -215,12 +215,18 @@ class ResultsCLHandler(GenericResultHandler):
             return {'project_name': self.json_args.get('project_name'),
                     'name': self.json_args.get('case_name')}
 
+        def options_check(field, options):
+            return self.json_args.get(field).upper() in options
+
         miss_fields = ['pod_name', 'project_name', 'case_name']
         carriers = [('pods', pod_query),
                     ('projects', project_query),
                     ('testcases', testcase_query)]
+        values_check = [('criteria', options_check, ['PASS', 'FAIL'])]
 
-        self._create(miss_fields=miss_fields, carriers=carriers)
+        self._create(miss_fields=miss_fields,
+                     carriers=carriers,
+                     values_check=values_check)
 
 
 class ResultsUploadHandler(ResultsCLHandler):

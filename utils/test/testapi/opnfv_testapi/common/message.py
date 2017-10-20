@@ -26,6 +26,10 @@ def missing(name):
     return '{} Missing'.format(name)
 
 
+def invalid_value(name, options):
+    return '{} must be in {}'.format(name, options)
+
+
 def exist(key, value):
     return '{} [{}] {}'.format(key, value, exist_base)
 

@@ -79,6 +79,7 @@ class GenericApiHandler(web.RequestHandler):
     @check.valid_token
     @check.no_body
     @check.miss_fields
+    @check.values_check
     @check.carriers_exist
     @check.new_not_exists
     def _create(self, **kwargs):
