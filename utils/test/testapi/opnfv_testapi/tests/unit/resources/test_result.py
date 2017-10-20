@@ -62,7 +62,7 @@ class TestResultBase(base.TestBase):
         self.version = 'C'
         self.build_tag = 'v3.0'
         self.scenario = 'odl-l2'
-        self.criteria = 'passed'
+        self.criteria = 'PASS'
         self.trust_indicator = result_models.TI(0.7)
         self.start_date = str(datetime.now())
         self.stop_date = str(datetime.now() + timedelta(minutes=1))
@@ -168,6 +168,13 @@ class TestResultCreate(TestResultBase):
     def test_testcaseNotProvided(self):
         req = self.req_d
         req.case_name = None
+        return req
+
+    @executor.create(httplib.BAD_REQUEST,
+                     message.invalid_value('criteria', ['PASS', 'FAIL']))
+    def test_invalid_criteria(self):
+        req = self.req_d
+        req.criteria = 'invalid'
         return req
 
     @executor.create(httplib.FORBIDDEN, message.not_found_base)

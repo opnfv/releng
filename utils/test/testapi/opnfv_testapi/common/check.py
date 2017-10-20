@@ -102,6 +102,19 @@ def carriers_exist(xstep):
     return wrap
 
 
+def values_check(xstep):
+    @functools.wraps(xstep)
+    def wrap(self, *args, **kwargs):
+        checks = kwargs.pop('values_check', {})
+        if checks:
+            for field, check, options in checks:
+                if not check(field, options):
+                    raises.BadRequest(message.invalid_value(field, options))
+        ret = yield gen.coroutine(xstep)(self, *args, **kwargs)
+        raise gen.Return(ret)
+    return wrap
+
+
 def new_not_exists(xstep):
     @functools.wraps(xstep)
     def wrap(self, *args, **kwargs):
