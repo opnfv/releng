@@ -61,4 +61,8 @@
 
     builders:
       - shell: |
-          echo "Nothing to verify!"
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          cd $WORKSPACE/ci
+          ./build.sh
