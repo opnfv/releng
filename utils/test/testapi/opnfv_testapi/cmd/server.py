@@ -42,7 +42,7 @@ def make_app():
     return swagger.Application(
         url_mappings.mappings,
         debug=CONF.api_debug,
-        auth=CONF.api_authenticate,
+        auth=CONF.api_token_check,
         cookie_secret='opnfv-testapi',
     )
 

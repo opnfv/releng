@@ -14,13 +14,14 @@ from tornado import gen
 from opnfv_testapi.common import constants
 from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
+from opnfv_testapi.common.config import CONF
 from opnfv_testapi.db import api as dbapi
 
 
 def is_authorized(method):
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
-        if self.table in ['pods']:
+        if CONF.api_authenticate and self.table in ['pods']:
             testapi_id = self.get_secure_cookie(constants.TESTAPI_ID)
             if not testapi_id:
                 raises.Unauthorized(message.not_login())

@@ -1,5 +1,6 @@
 from opnfv_testapi.common import constants
 from opnfv_testapi.common import raises
+from opnfv_testapi.common.config import CONF
 from opnfv_testapi.resources import handlers
 from opnfv_testapi.resources import models
 
@@ -19,8 +20,14 @@ class UserHandler(handlers.GenericApiHandler):
         self.table_cls = User
 
     def get(self):
-        username = self.get_secure_cookie(constants.TESTAPI_ID)
-        if username:
-            self._get_one(query={'user': username})
+        if CONF.api_authenticate:
+            username = self.get_secure_cookie(constants.TESTAPI_ID)
+            if username:
+                self._get_one(query={'user': username})
+            else:
+                raises.Unauthorized('Unauthorized')
         else:
-            raises.Unauthorized('Unauthorized')
+            self.finish_request(User('anonymous',
+                                     'anonymous@linuxfoundation.com',
+                                     'anonymous lf',
+                                     constants.TESTAPI_USERS).format())
