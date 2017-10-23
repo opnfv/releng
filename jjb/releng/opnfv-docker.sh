@@ -125,3 +125,12 @@ if [[ "$PUSH_IMAGE" == "true" ]]; then
     echo
     docker push $DOCKER_REPO_NAME:$DOCKER_TAG
 fi
+
+#Create manifest for funnctest alpine images
+dockerrepo_manifests=(core healthcheck components smoke promise features restapi vnf)
+if [[ "$DOCKER_REPO_NAME" =~  "${dockerrepo_manifests}" ]];then
+        sudo manifest-tool push from-args \
+          --platforms linux/amd64,linux/arm64 \
+          --template ${DOCKER_REPO_NAME}:${DOCKER_TAG} \
+          --target ${DOCKER_REPO_NAME}:${RELEASE_VERSION}
+fi

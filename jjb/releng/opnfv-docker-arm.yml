@@ -153,10 +153,77 @@
           project: 'yardstick'
           <<: *euphrates
           <<: *yardstick-arm-receivers
+      - 'functest-core':
+          project: 'functest-core'
+          dockerdir: 'docker/functest-core'
+          docker_repo_name: 'opnfv/functest-core'
+          dockerfile: 'Dockerfile'
+          arch_tag: 'arm64'
+          <<: *euphrates
+          <<: *functest-arm-receivers
+      - 'functest-healthcheck':
+          project: 'functest-healthcheck'
+          dockerdir: 'docker/functest-healthcheck'
+          docker_repo_name: 'opnfv/functest-healthcheck'
+          dockerfile: 'Dockerfile'
+          arch_tag: 'arm64'
+          <<: *euphrates
+          <<: *functest-arm-receivers
+      - 'functest-features':
+          project: 'functest-features'
+          dockerdir: 'docker/functest-features'
+          docker_repo_name: 'opnfv/functest-features'
+          dockerfile: 'Dockerfile'
+          arch_tag: 'arm64'
+          <<: *euphrates
+          <<: *functest-arm-receivers
+      - 'functest-components':
+          project: 'functest-components'
+          dockerdir: 'docker/functest-components'
+          docker_repo_name: 'opnfv/functest-components'
+          dockerfile: 'Dockerfile'
+          arch_tag: 'arm64'
+          <<: *euphrates
+          <<: *functest-arm-receivers
+      - 'functest-promiser':
+          project: 'functest-promiser'
+          dockerdir: 'docker/functest-promiser'
+          docker_repo_name: 'opnfv/functest-promiser'
+          docker_repo_name: 'opnfv/functest-healthcheck'
+          dockerfile: 'Dockerfile'
+          arch_tag: 'arm64'
+          <<: *euphrates
+          <<: *functest-arm-receivers
+      - 'functest-smoke':
+          project: 'functest-smoke'
+          dockerdir: 'docker/functest-smoke'
+          docker_repo_name: 'opnfv/functest-smoke'
+          dockerfile: 'Dockerfile'
+          arch_tag: 'arm64'
+          <<: *euphrates
+          <<: *functest-arm-receivers
+      - 'functest-vnf':
+          project: 'functest-vnf'
+          dockerdir: 'docker/functest-vnf'
+          docker_repo_name: 'opnfv/functest-vnf'
+          dockerfile: 'Dockerfile'
+          arch_tag: 'arm64'
+          <<: *euphrates
+          <<: *functest-arm-receivers
+      - 'functest-restapi':
+          project: 'functest-restapi'
+          dockerdir: 'docker/functest-restapi'
+          docker_repo_name: 'opnfv/functest-restapi'
+          dockerfile: 'Dockerfile'
+          arch_tag: 'arm64'
+          <<: *euphrates
+          <<: *functest-arm-receivers
+
 
     # yamllint enable rule:key-duplicates
     jobs:
       - '{dockerrepo}-docker-build-arm-push-{stream}'
+      - '{dockerrepo}-build-arm-push-{stream}'
 
 ########################
 # job templates
@@ -164,8 +231,10 @@
 - job-template:
     name: '{dockerrepo}-docker-build-arm-push-{stream}'
 
-    disabled: '{obj:disabled}'
+    project-type: multijob
 
+    disabled: '{obj:disabled}'
+ 
     parameters: &parameters
       - project-parameter:
           project: '{project}'
@@ -194,7 +263,11 @@
       - string:
           name: ARCH_TAG
           default: "{arch_tag}"
-          description: "If set, this value will be added to the docker image tag"
+          description: "If set, will be added to the docker image tag"
+      - string:
+          name: DOCKERREPO
+          default: "{dockerrepo}"
+          description: "Project name used to enable job conditions "
 
     properties:
       - throttle:
@@ -204,9 +277,39 @@
     scm:
       - git-scm
 
-    builders: &builders
-      - shell:
-          !include-raw-escape: ./opnfv-docker.sh
+    builders:
+      - shell: |
+          #!/bin/bash
+          echo "Triggering phase jobs!"
+      - multijob:
+          name: 'Phase1'
+          execution-type: SEQUENTIAL
+          projects:
+            - name: '{dockerrepo}-build-push-{stream}'
+              current-parameters: false
+              git-revision: true
+              node-parameters: false
+              predefined-parameters:
+                DOCKERREPO=$DOCKERREPO
+              enable-condition:
+                "def proj = '$DOCKERREPO' != /functest-(healthcheck|components|features|vnf|restapi|components|smoke)/"
+              kill-phase-on: FAILURE
+              abort-all-jobs: false
+      - multijob:
+          name: 'Phase2'
+          condition: SUCCESSFUL
+          execution-type: PARALLEL
+          projects:
+            - name: '{dockerrepo}-build-push-{stream}'
+              current-parameters: false
+              git-revision: true
+              node-parameters: false
+              predefined-parameters:
+                DOCKERREPO=$DOCKERREPO
+              kill-phase-on: FAILURE
+              enable-condition:
+                "def proj = '$DOCKERREPO' == /functest-(healthcheck|components|features|vnf|restapi|components|smoke)/"
+              abort-all-jobs: false
 
     triggers:
       - pollscm:
@@ -216,3 +319,11 @@
       - email:
           recipients: '{receivers}'
       - email-jenkins-admins-on-failure
+
+- job-template:
+    name: '{dockerrepo}-build-arm-push-{stream}'
+    disabled: '{obj:disabled}'
+    parameters: *parameters
+    builders: &builders
+      - shell:
+          !include-raw-escape: ./opnfv-docker.sh
