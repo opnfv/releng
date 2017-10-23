@@ -167,7 +167,7 @@ class FuelAdapter(manager.DeploymentHandler):
         return nodes
 
     def get_openstack_version(self):
-        cmd = 'source openrc;nova-manage version 2>/dev/null'
+        cmd = 'source keystonercv3;nova-manage version 2>/dev/null'
         version = None
         for node in self.nodes:
             if node.is_controller() and node.is_active():
