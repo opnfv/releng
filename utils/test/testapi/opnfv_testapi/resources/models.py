@@ -91,10 +91,10 @@ class ModelBase(object):
         elif isinstance(obj, unicode):
             try:
                 obj = self._obj_format(ast.literal_eval(obj))
-            except:
+            except Exception:
                 try:
                     obj = str(obj)
-                except:
+                except Exception:
                     obj = obj
         elif isinstance(obj, list):
             hs = list()
