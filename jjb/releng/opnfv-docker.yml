@@ -154,10 +154,60 @@
           project: 'nfvbench'
           <<: *euphrates
           <<: *other-receivers
+      - 'functest-core':
+          project: 'functest-core'
+          dockerdir: 'docker/functest-core'
+          arch_tag: 'amd64'
+          <<: *euphrates
+          <<: *functest-receivers
+      - 'functest-healthcheck':
+          project: 'functest-healthcheck'
+          dockerdir: 'docker/functest-healthcheck'
+          arch_tag: 'amd64'
+          <<: *euphrates
+          <<: *functest-receivers
+      - 'functest-features':
+          project: 'functest-features'
+          dockerdir: 'docker/functest-features'
+          arch_tag: 'amd64'
+          <<: *euphrates
+          <<: *functest-receivers
+      - 'functest-components':
+          project: 'functest-components'
+          dockerdir: 'docker/functest-components'
+          arch_tag: 'amd64'
+          <<: *euphrates
+          <<: *functest-receivers
+      - 'functest-promiser':
+          project: 'functest-promiser'
+          dockerdir: 'docker/functest-promiser'
+          arch_tag: 'amd64'
+          <<: *euphrates
+          <<: *functest-receivers
+      - 'functest-smoke':
+          project: 'functest-smoke'
+          dockerdir: 'docker/functest-smoke'
+          arch_tag: 'amd64'
+          <<: *euphrates
+          <<: *functest-receivers
+      - 'functest-vnf':
+          project: 'functest-vnf'
+          dockerdir: 'docker/functest-vnf'
+          arch_tag: 'amd64'
+          <<: *euphrates
+          <<: *functest-receivers
+      - 'functest-restapi':
+          project: 'functest-restapi'
+          dockerdir: 'docker/functest-restapi'
+          arch_tag: 'amd64'
+          <<: *euphrates
+          <<: *functest-receivers
 
     # yamllint enable rule:key-duplicates
     jobs:
       - "{dockerrepo}-docker-build-push-{stream}"
+      - "{dockerrepo}-build-push-{stream}"
+
 
 - project:
 
@@ -184,6 +234,8 @@
 ########################
 - job-template:
     name: '{dockerrepo}-docker-build-push-{stream}'
+
+    project-type: multijob
 
     disabled: '{obj:disabled}'
 
@@ -220,6 +272,10 @@
           name: ARCH_TAG
           default: "{arch_tag}"
           description: "If set, this value will be added to the docker image tag as a prefix"
+      - string:
+          name: DOCKERREPO
+          default: "{dockerrepo}"
+          description: "Project name used to enable job conditions "
 
     properties:
       - throttle:
@@ -229,18 +285,54 @@
     scm:
       - git-scm
 
-    builders: &builders
-      - shell:
-          !include-raw-escape: ./opnfv-docker.sh
-
     triggers:
       - pollscm:
           cron: "*/30 * * * *"
+
+    builders:
+      - shell: |
+          #!/bin/bash
+          echo "Triggering phase jobs!"
+      - multijob:
+          name: 'Phase1'
+          execution-type: SEQUENTIAL
+          projects:
+            - name: '{dockerrepo}-build-push-{stream}'
+              current-parameters: false
+              git-revision: true
+              node-parameters: false
+              predefined-parameters:
+                DOCKERREPO=$DOCKERREPO
+              enable-condition: "def proj = '$DOCKERREPO' != /functest-(healthcheck|components|features|vnf|restapi|components|smoke)/"
+              kill-phase-on: FAILURE
+              abort-all-jobs: false
+      - multijob:
+          name: 'Phase2'
+          condition: SUCCESSFUL
+          execution-type: PARALLEL
+          projects:
+            - name: '{dockerrepo}-build-push-{stream}'
+              current-parameters: false
+              git-revision: true
+              node-parameters: false
+              predefined-parameters:
+                DOCKERREPO=$DOCKERREPO
+              kill-phase-on: FAILURE
+              enable-condition: "def proj = '$DOCKERREPO' == /functest-(healthcheck|components|features|vnf|restapi|components|smoke)/"
+              abort-all-jobs: false
 
     publishers:
       - email:
           recipients: '{receivers}'
       - email-jenkins-admins-on-failure
+
+- job-template:
+    name: '{dockerrepo}-build-push-{stream}'
+    disabled: '{obj:disabled}'
+    paraeters: *parameters
+    builders: &builders
+      - shell:
+          !include-raw-escape: ./opnfv-docker.sh
 
 - job-template:
     name: '{project}-docker-build-push-monitor-{stream}'
