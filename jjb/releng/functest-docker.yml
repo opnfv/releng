@@ -1,0 +1,214 @@
+---
+##############################################
+# job configuration for docker build and push
+##############################################
+- project:
+
+    name: functest-docker
+
+    project: functest
+
+    stream:
+      - master:
+          branch: '{stream}'
+          disabled: false
+      - euphrates:
+          branch: 'stable/{stream}'
+          disabled: false
+
+
+    arch_tag:
+      - 'amd64':
+          slave_label: 'opnfv-build-ubuntu'
+      - 'arm64':
+          slave_label: 'opnfv-build-ubuntu-arm'
+
+    # yamllint disable rule:key-duplicates
+    image:
+      - 'functest'
+      - 'core'
+      - 'healthcheck'
+      - 'features'
+      - 'components'
+      - 'parser'
+      - 'smoke'
+      - 'vnf'
+      - 'restapi'
+
+    # settings for jobs run in multijob phases
+    build-job-settings: &build-job-settings
+      current-parameters: false
+      git-revision: true
+      node-parameters: true
+      predefined-parameters: |
+        PUSH_IMAGE=$PUSH_IMAGE
+        DOCKER_REPO_NAME=$DOCKER_REPO_NAME
+        DOCKER_DIR=$DOCKER_DIR
+        COMMIT_ID=$COMMIT_ID
+        RELEASE_VERSION=$RELEASE_VERSION
+        DOCKERFILE=$DOCKERFILE
+        ARCH_TAG=$ARCH_TAG
+        PROJECT=$PROJECT
+      kill-phase-on: FAILURE
+      abort-all-jobs: false
+
+    manifest-job-settings: &manifest-job-settings
+      current-parameters: false
+      git-revision: true
+      node-parameters: true
+      predefined-parameters: |
+        DOCKER_REPO_NAME=$DOCKER_REPO_NAME
+        RELEASE_VERSION=$RELEASE_VERSION
+        ARCH_TAG=$ARCH_TAG
+        PROJECT=$PROJECT
+      kill-phase-on: FAILURE
+      abort-all-jobs: false
+
+    # yamllint enable rule:key-duplicates
+    jobs:
+      - "functest-{image}-docker-build-push-{arch_tag}-{stream}"
+      - "functest-{image}-build-push-{arch_tag}-{stream}"
+      - "functest-{image}-create-manifest-{arch_tag}-{stream}"
+########################
+# job templates
+########################
+- job-template:
+    name: 'functest-{image}-docker-build-push-{arch_tag}-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    parameters: &parameters
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{slave_label}-defaults'
+      - string:
+          name: PUSH_IMAGE
+          default: "true"
+          description: "To enable/disable pushing the image to Dockerhub."
+      - string:
+          name: DOCKER_REPO_NAME
+          default: "opnfv/functest-{image}"
+          description: "Dockerhub repo to be pushed to."
+      - string:
+          name: DOCKER_DIR
+          default: "docker/{image}"
+          description: "Directory containing files needed by the Dockerfile"
+      - string:
+          name: COMMIT_ID
+          default: ""
+          description: "commit id to make a snapshot docker image"
+      - string:
+          name: RELEASE_VERSION
+          default: ""
+          description: "Docker tag to be built, e.g. 5.0.0, opnfv-5.0.0, 5.0.RC1"
+      - string:
+          name: DOCKERFILE
+          default: "Dockerfile"
+          description: "Dockerfile to use for creating the image."
+      - string:
+          name: ARCH_TAG
+          default: "{arch_tag}"
+          description: "If set, this value will be added to the docker image tag as a prefix"
+      - string:
+          name: PROJECT
+          default: "{project}"
+          description: "Project name used to enable job conditions"
+
+    properties:
+      - throttle:
+          max-per-node: 1
+          option: 'project'
+
+    scm:
+      - git-scm
+
+    triggers:
+      - pollscm:
+          cron: "*/30 * * * *"
+
+    builders:
+      - multijob:
+          name: 'build-base-img-create-manifest'
+          execution-type: SEQUENTIAL
+          projects:
+            - name: 'functest-core-build-push-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-core-create-manifest-{stream}'
+              <<: *manifest-job-settings
+      - multijob:
+          name: 'build-child-img'
+          condition: SUCCESSFUL
+          execution-type: PARALLEL
+          projects:
+            - name: 'functest-healthcheck-build-push-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-features-build-push-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-components-build-push-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-parser-build-push-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-smoke-build-push-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-vnf-build-push-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-restapi-build-push-{stream}'
+              <<: *build-job-settings
+      - multijob:
+          name: 'create-img-manifest'
+          condition: SUCCESSFUL
+          execution-type: PARALLEL
+          projects:
+            - name: 'functest-healthcheck-create-manifest-{stream}'
+              <<: *manifest-job-settings
+            - name: 'functest-features-create-manifest-{stream}'
+              <<: *manifest-job-settings
+            - name: 'functest-components-create-manifest-{stream}'
+              <<: *manifest-job-settings
+            - name: 'functest-parser-create-manifest-{stream}'
+              <<: *manifest-job-settings
+            - name: 'functest-smoke-create-manifest-{stream}'
+              <<: *manifest-job-settings
+            - name: 'functest-vnf-create-manifest-{stream}'
+              <<: *manifest-job-settings
+            - name: 'functest-restapi-create-manifest-{stream}'
+              <<: *manifest-job-settings
+
+    publishers:
+      - 'functest-{arch_tag}-recipients'
+
+- job-template:
+    name: 'functest-{image}-build-push-{arch_tag}-{stream}'
+    disabled: '{obj:disabled}'
+    builders: &builders
+      - shell:
+          !include-raw-escape: ./opnfv-docker.sh
+
+- job-template:
+    name: 'functest-{image}-create-manifest-{arch_tag}-{stream}'
+    disabled: '{obj:disabled}'
+    builders:
+      - shell:
+          !include-raw-escape: ./opnfv-manifest.sh
+
+# publisher macros
+- publisher:
+    name: 'functest-arm64-recipients'
+    publishers:
+      - email:
+          recipients: >
+            cristina.pauna@enea.com
+            alexandru.avadanii@enea.com
+            delia.popescu@enea.com
+
+- publisher:
+    name: 'functest-amd64-recipients'
+    publishers:
+      - email:
+          recipients: >
+            jalausuch@suse.com morgan.richomme@orange.com
+            cedric.ollivier@orange.com feng.xiaowei@zte.com.cn
+            juha.kosonen@nokia.com wangwulin@huawei.com
