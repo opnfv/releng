@@ -44,7 +44,7 @@ class Config(object):
     def _parse_value(value):
         try:
             value = int(value)
-        except:
+        except Exception:
             if str(value).lower() == 'true':
                 value = True
             elif str(value).lower() == 'false':

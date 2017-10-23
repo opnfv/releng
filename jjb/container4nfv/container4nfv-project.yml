@@ -10,6 +10,7 @@
 
     jobs:
       - 'container4nfv-verify-{stream}'
+      - 'container4nfv-daily-{stream}'
 
     stream:
       - master:
@@ -61,4 +62,41 @@
 
     builders:
       - shell: |
-          echo "Nothing to verify!"
+          cd $WORKSPACE/ci
+          ./build.sh
+
+
+- job-template:
+    name: 'container4nfv-daily-{stream}'
+
+    project-type: freestyle
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    properties:
+      - logrotate-default
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - node:
+          name: SLAVE_NAME
+          description: 'Slave name on Jenkins'
+          allowed-slaves:
+            - huawei-virtaul6
+          default-slaves:
+            - huawei-virtaul6
+
+    scm:
+      - git-scm
+
+    triggers:
+      - timed: '@midnight'
+
+    builders:
+      - shell:
+          cd $WORKSPACE/ci
+          ./deploy.sh

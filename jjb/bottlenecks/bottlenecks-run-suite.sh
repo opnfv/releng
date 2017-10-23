@@ -32,16 +32,12 @@ if [[ $SUITE_NAME == *posca* ]]; then
     # Preparing OpenStack RC and Cacert files
     echo "BOTTLENECKS INFO: fetching os credentials from $INSTALLER_TYPE"
     if [[ $INSTALLER_TYPE == 'compass' ]]; then
-        if [[ ${BRANCH} == 'master' ]]; then
-            ${RELENG_REPO}/utils/fetch_os_creds.sh -d ${OPENRC} -i ${INSTALLER_TYPE} -a ${INSTALLER_IP} -o ${OS_CACERT} >${redirect}
-            if [[ -f ${OS_CACERT} ]]; then
-                echo "BOTTLENECKS INFO: successfully fetching os_cacert for openstack: ${OS_CACERT}"
-            else
-                echo "BOTTLENECKS ERROR: couldn't find os_cacert file: ${OS_CACERT}, please check if the it's been properly provided."
-                exit 1
-            fi
+        ${RELENG_REPO}/utils/fetch_os_creds.sh -d ${OPENRC} -i ${INSTALLER_TYPE} -a ${INSTALLER_IP} -o ${OS_CACERT} >${redirect}
+        if [[ -f ${OS_CACERT} ]]; then
+            echo "BOTTLENECKS INFO: successfully fetching os_cacert for openstack: ${OS_CACERT}"
         else
-            ${RELENG_REPO}/utils/fetch_os_creds.sh -d ${OPENRC} -i ${INSTALLER_TYPE} -a ${INSTALLER_IP}  >${redirect}
+            echo "BOTTLENECKS ERROR: couldn't find os_cacert file: ${OS_CACERT}, please check if the it's been properly provided."
+            exit 1
         fi
     fi
 

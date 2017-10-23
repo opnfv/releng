@@ -26,7 +26,7 @@ def swagger_handlers():
             settings.docs_settings,
             name=settings.API_DOCS_NAME),
         tornado.web.URLSpec(
-            _path(r'resources.json$'),
+            _path(r'models.json$'),
             views.SwaggerResourcesHandler,
             settings.docs_settings,
             name=settings.RESOURCE_LISTING_NAME),

@@ -134,6 +134,17 @@
           installer: compass
           auto-trigger-name: 'daily-trigger-disabled'
           <<: *euphrates
+      # daisy CI PODs
+      - baremetal:
+          slave-label: zte-pod3
+          installer: daisy
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - virtual:
+          slave-label: daisy-virtual
+          installer: daisy
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
       # -------------------------------
       #        None-CI PODs
       # -------------------------------
@@ -154,19 +165,14 @@
           <<: *euphrates
       - zte-pod2:
           slave-label: '{pod}'
-          installer: fuel
+          installer: daisy
           auto-trigger-name: 'daily-trigger-disabled'
           <<: *master
       - zte-pod3:
           slave-label: '{pod}'
-          installer: fuel
+          installer: daisy
           auto-trigger-name: 'daily-trigger-disabled'
           <<: *master
-      - zte-pod3:
-          slave-label: '{pod}'
-          installer: fuel
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *euphrates
       - orange-pod2:
           slave-label: '{pod}'
           installer: joid
@@ -391,6 +397,22 @@
 
 - parameter:
     name: 'yardstick-params-compass-baremetal'
+    parameters:
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'yardstick-params-daisy-baremetal'
+    parameters:
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'yardstick-params-daisy-virtual'
     parameters:
       - string:
           name: YARDSTICK_DB_BACKEND

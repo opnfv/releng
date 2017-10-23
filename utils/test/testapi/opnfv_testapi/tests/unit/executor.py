@@ -14,7 +14,7 @@ import mock
 
 
 O_get_secure_cookie = (
-    'opnfv_testapi.resources.handlers.GenericApiHandler.get_secure_cookie')
+    'opnfv_testapi.handlers.base_handlers.GenericApiHandler.get_secure_cookie')
 
 
 def thread_execute(method, *args, **kwargs):
