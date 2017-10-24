@@ -203,7 +203,7 @@
           export PATH=$PATH:/usr/local/bin/
 
           [[ $GERRIT_CHANGE_NUMBER =~ .+ ]]
-          [[ -d docs_output ]] || exit 0
+          [[ -d docs/_build/html ]] || exit 0
 
           echo
           echo "###########################"
@@ -216,7 +216,13 @@
           local_path="upload/$GERRIT_CHANGE_NUMBER"
 
           mkdir -p upload
-          mv docs_output "$local_path"
+          if [ "$GERRIT_PROJECT" != "opnfvdocs" ]; then
+              src_path="docs/_build/html/submodules/"$GERRIT_PROJECT"/docs"
+          else
+              src_path="docs/_build/html"
+          fi
+          mv "$src_path" "$local_path"
+
           gsutil -m cp -r "$local_path" "gs://$gs_base"
 
           gsutil -m setmeta \
@@ -417,7 +423,6 @@
 - builder:
     name: upload-review-docs
     builders:
-      - build-html-and-pdf-docs-output
       - upload-under-review-docs-to-opnfv-artifacts
       - report-build-result-to-gerrit
 
