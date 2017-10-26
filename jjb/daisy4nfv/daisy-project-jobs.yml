@@ -37,6 +37,72 @@
     jobs:
       - '{installer}-daily-{stream}'
       - '{installer}-{phase}-daily-{stream}'
+      - '{installer}-docker-build-{stream}'
+
+#############################
+# docker build job templates
+#############################
+- job-template:
+    name: '{installer}-docker-build-{stream}'
+    disabled: false
+    concurrent: true
+
+    properties:
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 4
+          option: 'project'
+      - build-blocker:
+          use-build-blocker: true
+          # Note: Need to block all jobs which may create daisy VM.
+          blocking-jobs:
+            - '{installer}-docker-build-.*'
+            - 'daisy.*-deploy-({pod})?-daily-.*'
+            - 'daisy-daily-.*'
+          block-level: 'NODE'
+
+    scm:
+      - git-scm
+
+    triggers:
+      - 'daisy-docker-build-{stream}-trigger'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'daisy-virtual-defaults'
+      - '{installer}-defaults'
+      - '{installer}-project-parameter':
+          gs-pathname: '{gs-pathname}'
+
+    wrappers:
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 720
+          fail: true
+
+    builders:
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - shell:
+          !include-raw-escape: ./daisy4nfv-build-kolla-image.sh
+
+    publishers:
+      - '{installer}-recipients'
+      - email-jenkins-admins-on-failure
+
+- trigger:
+    name: 'daisy-docker-build-euphrates-trigger'
+    triggers:
+      - timed: '0 0 * * 0'
+
+- trigger:
+    name: 'daisy-docker-build-master-trigger'
+    triggers:
+      - timed: '0 12 * * 0'
+
 
 ########################
 # job templates
@@ -60,6 +126,7 @@
           use-build-blocker: true
           blocking-jobs:
             - '{installer}-daily-.*'
+            - '{installer}-docker-build-.*'
             - 'daisy4nfv-merge-build-.*'
             - 'daisy4nfv-verify-build-.*'
           block-level: 'NODE'
