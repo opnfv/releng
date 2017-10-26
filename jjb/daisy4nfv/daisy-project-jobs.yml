@@ -37,6 +37,58 @@
     jobs:
       - '{installer}-daily-{stream}'
       - '{installer}-{phase}-daily-{stream}'
+      - '{installer}-docker-build-{stream}'
+
+#############################
+# docker build job templates
+#############################
+- job-template:
+    name: '{installer}-docker-build-{stream}'
+    disabled: false
+    concurrent: true
+
+    properties:
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 4
+          option: 'project'
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - '{installer}-docker-build-.*'
+          block-level: 'NODE'
+
+    scm:
+      - git-scm
+
+    triggers:
+      - timed: '0 12 * * 1'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-centos-defaults'
+      - '{installer}-defaults'
+      - '{installer}-project-parameter':
+          gs-pathname: '{gs-pathname}'
+
+    wrappers:
+      - ssh-agent-wrapper
+      - timeout:
+          timeout: 720
+          fail: true
+
+    builders:
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - shell:
+          !include-raw: ./daisy4nfv-build-kolla-image.sh
+
+    publishers:
+      - '{installer}-recipients'
+      - email-jenkins-admins-on-failure
 
 ########################
 # job templates
