@@ -70,7 +70,7 @@ class OVSLogger(object):
     def ofctl_dump_flows(self, ssh_conn, br='br-int',
                          choose_table=None, timestamp=None):
         try:
-            cmd = 'ovs-ofctl -OOpenFlow13 dump-flows {0}'.format(br)
+            cmd = 'sudo ovs-ofctl -OOpenFlow13 dump-flows {0}'.format(br)
             if choose_table is not None:
                 cmd = '{0} table={1}'.format(cmd, choose_table)
             output = self.__remote_cmd(ssh_conn, cmd)
@@ -85,7 +85,7 @@ class OVSLogger(object):
 
     def vsctl_show(self, ssh_conn, timestamp=None):
         try:
-            cmd = 'ovs-vsctl show'
+            cmd = 'sudo ovs-vsctl show'
             output = self.__remote_cmd(ssh_conn, cmd)
             operation = 'vsctl_show'
             host = self.__ssh_host(ssh_conn)
