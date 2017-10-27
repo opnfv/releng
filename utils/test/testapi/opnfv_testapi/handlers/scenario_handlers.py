@@ -2,12 +2,12 @@ import functools
 
 from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
-from opnfv_testapi.resources import handlers
-import opnfv_testapi.resources.scenario_models as models
+from opnfv_testapi.handlers import base_handlers
+import opnfv_testapi.models.scenario_models as models
 from opnfv_testapi.tornado_swagger import swagger
 
 
-class GenericScenarioHandler(handlers.GenericApiHandler):
+class GenericScenarioHandler(base_handlers.GenericApiHandler):
     def __init__(self, application, request, **kwargs):
         super(GenericScenarioHandler, self).__init__(application,
                                                      request,

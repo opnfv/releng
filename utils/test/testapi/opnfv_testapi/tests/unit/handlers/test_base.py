@@ -14,8 +14,8 @@ from bson.objectid import ObjectId
 import mock
 from tornado import testing
 
-from opnfv_testapi.resources import models
-from opnfv_testapi.resources import pod_models
+from opnfv_testapi.models import base_models
+from opnfv_testapi.models import pod_models
 from opnfv_testapi.tests.unit import fake_pymongo
 
 
@@ -25,7 +25,7 @@ class TestBase(testing.AsyncHTTPTestCase):
     def setUp(self):
         self._patch_server()
         self.basePath = ''
-        self.create_res = models.CreateResponse
+        self.create_res = base_models.CreateResponse
         self.get_res = None
         self.list_res = None
         self.update_res = None

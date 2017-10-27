@@ -7,12 +7,12 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-from opnfv_testapi.resources import handlers
-from opnfv_testapi.resources import project_models
+from opnfv_testapi.handlers import base_handlers
+from opnfv_testapi.models import project_models
 from opnfv_testapi.tornado_swagger import swagger
 
 
-class GenericProjectHandler(handlers.GenericApiHandler):
+class GenericProjectHandler(base_handlers.GenericApiHandler):
     def __init__(self, application, request, **kwargs):
         super(GenericProjectHandler, self).__init__(application,
                                                     request,
