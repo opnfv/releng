@@ -6,48 +6,43 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-from opnfv_testapi.resources import models
+from opnfv_testapi.models import base_models
 from opnfv_testapi.tornado_swagger import swagger
 
 
-# name: name of the POD e.g. zte-1
-# mode: metal or virtual
-# details: any detail
-# role: ci-pod or community-pod or single-node
-
-
 @swagger.model()
-class PodCreateRequest(models.ModelBase):
-    def __init__(self, name, mode='', details='', role=""):
+class ProjectCreateRequest(base_models.ModelBase):
+    def __init__(self, name, description=''):
         self.name = name
-        self.mode = mode
-        self.details = details
-        self.role = role
+        self.description = description
 
 
 @swagger.model()
-class Pod(models.ModelBase):
+class ProjectUpdateRequest(base_models.ModelBase):
+    def __init__(self, name='', description=''):
+        self.name = name
+        self.description = description
+
+
+@swagger.model()
+class Project(base_models.ModelBase):
     def __init__(self,
-                 name='', mode='', details='',
-                 role="", _id='', create_date='', owner=''):
-        self.name = name
-        self.mode = mode
-        self.details = details
-        self.role = role
+                 name=None, _id=None, description=None, create_date=None):
         self._id = _id
+        self.name = name
+        self.description = description
         self.creation_date = create_date
-        self.owner = owner
 
 
 @swagger.model()
-class Pods(models.ModelBase):
+class Projects(base_models.ModelBase):
     """
-        @property pods:
-        @ptype pods: C{list} of L{Pod}
+        @property projects:
+        @ptype projects: C{list} of L{Project}
     """
     def __init__(self):
-        self.pods = list()
+        self.projects = list()
 
     @staticmethod
     def attr_parser():
-        return {'pods': Pod}
+        return {'projects': Project}
