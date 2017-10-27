@@ -1,19 +1,11 @@
 from opnfv_testapi.common import constants
 from opnfv_testapi.common import raises
 from opnfv_testapi.common.config import CONF
-from opnfv_testapi.resources import handlers
-from opnfv_testapi.resources import models
+from opnfv_testapi.handlers import base_handlers
+from opnfv_testapi.models.user_models import User
 
 
-class User(models.ModelBase):
-    def __init__(self, user=None, email=None, fullname=None, groups=None):
-        self.user = user
-        self.email = email
-        self.fullname = fullname
-        self.groups = groups
-
-
-class UserHandler(handlers.GenericApiHandler):
+class UserHandler(base_handlers.GenericApiHandler):
     def __init__(self, application, request, **kwargs):
         super(UserHandler, self).__init__(application, request, **kwargs)
         self.table = 'users'

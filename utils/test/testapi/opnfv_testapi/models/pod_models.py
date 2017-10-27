@@ -6,43 +6,48 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-from opnfv_testapi.resources import models
+from opnfv_testapi.models import base_models
 from opnfv_testapi.tornado_swagger import swagger
 
 
+# name: name of the POD e.g. zte-1
+# mode: metal or virtual
+# details: any detail
+# role: ci-pod or community-pod or single-node
+
+
 @swagger.model()
-class ProjectCreateRequest(models.ModelBase):
-    def __init__(self, name, description=''):
+class PodCreateRequest(base_models.ModelBase):
+    def __init__(self, name, mode='', details='', role=""):
         self.name = name
-        self.description = description
+        self.mode = mode
+        self.details = details
+        self.role = role
 
 
 @swagger.model()
-class ProjectUpdateRequest(models.ModelBase):
-    def __init__(self, name='', description=''):
-        self.name = name
-        self.description = description
-
-
-@swagger.model()
-class Project(models.ModelBase):
+class Pod(base_models.ModelBase):
     def __init__(self,
-                 name=None, _id=None, description=None, create_date=None):
-        self._id = _id
+                 name='', mode='', details='',
+                 role="", _id='', create_date='', owner=''):
         self.name = name
-        self.description = description
+        self.mode = mode
+        self.details = details
+        self.role = role
+        self._id = _id
         self.creation_date = create_date
+        self.owner = owner
 
 
 @swagger.model()
-class Projects(models.ModelBase):
+class Pods(base_models.ModelBase):
     """
-        @property projects:
-        @ptype projects: C{list} of L{Project}
+        @property pods:
+        @ptype pods: C{list} of L{Pod}
     """
     def __init__(self):
-        self.projects = list()
+        self.pods = list()
 
     @staticmethod
     def attr_parser():
-        return {'projects': Project}
+        return {'pods': Pod}

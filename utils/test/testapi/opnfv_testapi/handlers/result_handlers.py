@@ -6,23 +6,23 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+from datetime import datetime
+from datetime import timedelta
 import json
 import logging
 
 from bson import objectid
-from datetime import datetime
-from datetime import timedelta
 
 from opnfv_testapi.common import constants
 from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
 from opnfv_testapi.common.config import CONF
-from opnfv_testapi.resources import handlers
-from opnfv_testapi.resources import result_models
+from opnfv_testapi.handlers import base_handlers
+from opnfv_testapi.models import result_models
 from opnfv_testapi.tornado_swagger import swagger
 
 
-class GenericResultHandler(handlers.GenericApiHandler):
+class GenericResultHandler(base_handlers.GenericApiHandler):
     def __init__(self, application, request, **kwargs):
         super(GenericResultHandler, self).__init__(application,
                                                    request,

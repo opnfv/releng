@@ -6,12 +6,12 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-from opnfv_testapi.resources import models
+from opnfv_testapi.models import base_models
 from opnfv_testapi.tornado_swagger import swagger
 
 
 @swagger.model()
-class TIHistory(models.ModelBase):
+class TIHistory(base_models.ModelBase):
     """
         @ptype step: L{float}
     """
@@ -21,7 +21,7 @@ class TIHistory(models.ModelBase):
 
 
 @swagger.model()
-class TI(models.ModelBase):
+class TI(base_models.ModelBase):
     """
         @property histories: trust_indicator update histories
         @ptype histories: C{list} of L{TIHistory}
@@ -37,7 +37,7 @@ class TI(models.ModelBase):
 
 
 @swagger.model()
-class ResultCreateRequest(models.ModelBase):
+class ResultCreateRequest(base_models.ModelBase):
     """
         @property trust_indicator:
         @ptype trust_indicator: L{TI}
@@ -74,7 +74,7 @@ class ResultCreateRequest(models.ModelBase):
 
 
 @swagger.model()
-class ResultUpdateRequest(models.ModelBase):
+class ResultUpdateRequest(base_models.ModelBase):
     """
         @property trust_indicator:
         @ptype trust_indicator: L{TI}
@@ -84,7 +84,7 @@ class ResultUpdateRequest(models.ModelBase):
 
 
 @swagger.model()
-class TestResult(models.ModelBase):
+class TestResult(base_models.ModelBase):
     """
         @property trust_indicator: used for long duration test case
         @ptype trust_indicator: L{TI}
@@ -116,7 +116,7 @@ class TestResult(models.ModelBase):
 
 
 @swagger.model()
-class TestResults(models.ModelBase):
+class TestResults(base_models.ModelBase):
     """
         @property results:
         @ptype results: C{list} of L{TestResult}
