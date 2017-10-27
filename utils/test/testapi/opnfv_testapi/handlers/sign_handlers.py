@@ -5,10 +5,10 @@ from tornado import web
 from opnfv_testapi.common import constants
 from opnfv_testapi.common.config import CONF
 from opnfv_testapi.db import api as dbapi
-from opnfv_testapi.resources import handlers
+from opnfv_testapi.handlers import base_handlers
 
 
-class SignBaseHandler(handlers.GenericApiHandler):
+class SignBaseHandler(base_handlers.GenericApiHandler):
     def __init__(self, application, request, **kwargs):
         super(SignBaseHandler, self).__init__(application, request, **kwargs)
         self.table = 'users'

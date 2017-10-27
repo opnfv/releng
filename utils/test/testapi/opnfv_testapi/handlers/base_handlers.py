@@ -20,8 +20,8 @@
 # feng.xiaowei@zte.com.cn remove DashboardHandler            5-30-2016
 ##############################################################################
 
-import json
 from datetime import datetime
+import json
 
 from tornado import gen
 from tornado import web
@@ -30,7 +30,7 @@ from opnfv_testapi.common import check
 from opnfv_testapi.common import message
 from opnfv_testapi.common import raises
 from opnfv_testapi.db import api as dbapi
-from opnfv_testapi.resources import models
+from opnfv_testapi.models import base_models
 from opnfv_testapi.tornado_swagger import swagger
 
 DEFAULT_REPRESENTATION = "application/json"
@@ -67,7 +67,7 @@ class GenericApiHandler(web.RequestHandler):
 
     def _create_response(self, resource):
         href = self.request.full_url() + '/' + str(resource)
-        return models.CreateResponse(href=href).format()
+        return base_models.CreateResponse(href=href).format()
 
     def format_data(self, data):
         cls_data = self.table_cls.from_dict(data)

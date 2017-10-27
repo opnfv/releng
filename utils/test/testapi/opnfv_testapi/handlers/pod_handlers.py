@@ -6,12 +6,12 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-import handlers
-from opnfv_testapi.resources import pod_models
+from opnfv_testapi.handlers import base_handlers
+from opnfv_testapi.models import pod_models
 from opnfv_testapi.tornado_swagger import swagger
 
 
-class GenericPodHandler(handlers.GenericApiHandler):
+class GenericPodHandler(base_handlers.GenericApiHandler):
     def __init__(self, application, request, **kwargs):
         super(GenericPodHandler, self).__init__(application, request, **kwargs)
         self.table = 'pods'
