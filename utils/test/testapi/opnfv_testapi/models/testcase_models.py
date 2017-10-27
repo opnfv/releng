@@ -6,12 +6,12 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-from opnfv_testapi.resources import models
+from opnfv_testapi.models import base_models
 from opnfv_testapi.tornado_swagger import swagger
 
 
 @swagger.model()
-class TestcaseCreateRequest(models.ModelBase):
+class TestcaseCreateRequest(base_models.ModelBase):
     def __init__(self, name, url=None, description=None,
                  catalog_description=None, tier=None, ci_loop=None,
                  criteria=None, blocking=None, dependencies=None, run=None,
@@ -33,7 +33,7 @@ class TestcaseCreateRequest(models.ModelBase):
 
 
 @swagger.model()
-class TestcaseUpdateRequest(models.ModelBase):
+class TestcaseUpdateRequest(base_models.ModelBase):
     def __init__(self, name=None, description=None, project_name=None,
                  catalog_description=None, tier=None, ci_loop=None,
                  criteria=None, blocking=None, dependencies=None, run=None,
@@ -55,7 +55,7 @@ class TestcaseUpdateRequest(models.ModelBase):
 
 
 @swagger.model()
-class Testcase(models.ModelBase):
+class Testcase(base_models.ModelBase):
     def __init__(self, _id=None, name=None, project_name=None,
                  description=None, url=None, creation_date=None,
                  catalog_description=None, tier=None, ci_loop=None,
@@ -82,7 +82,7 @@ class Testcase(models.ModelBase):
 
 
 @swagger.model()
-class Testcases(models.ModelBase):
+class Testcases(base_models.ModelBase):
     """
         @property testcases:
         @ptype testcases: C{list} of L{Testcase}

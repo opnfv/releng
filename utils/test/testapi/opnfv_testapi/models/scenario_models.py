@@ -1,4 +1,4 @@
-from opnfv_testapi.resources import models
+from opnfv_testapi.models import base_models
 from opnfv_testapi.tornado_swagger import swagger
 
 
@@ -11,7 +11,7 @@ def dict_default(value):
 
 
 @swagger.model()
-class ScenarioTI(models.ModelBase):
+class ScenarioTI(base_models.ModelBase):
     def __init__(self, date=None, status='silver'):
         self.date = date
         self.status = status
@@ -25,7 +25,7 @@ class ScenarioTI(models.ModelBase):
 
 
 @swagger.model()
-class ScenarioScore(models.ModelBase):
+class ScenarioScore(base_models.ModelBase):
     def __init__(self, date=None, score='0'):
         self.date = date
         self.score = score
@@ -39,7 +39,7 @@ class ScenarioScore(models.ModelBase):
 
 
 @swagger.model()
-class ScenarioProject(models.ModelBase):
+class ScenarioProject(base_models.ModelBase):
     """
         @property customs:
         @ptype customs: C{list} of L{string}
@@ -83,7 +83,7 @@ class ScenarioProject(models.ModelBase):
 
 
 @swagger.model()
-class ScenarioVersion(models.ModelBase):
+class ScenarioVersion(base_models.ModelBase):
     """
         @property projects:
         @ptype projects: C{list} of L{ScenarioProject}
@@ -116,7 +116,7 @@ class ScenarioVersion(models.ModelBase):
 
 
 @swagger.model()
-class ScenarioInstaller(models.ModelBase):
+class ScenarioInstaller(base_models.ModelBase):
     """
         @property versions:
         @ptype versions: C{list} of L{ScenarioVersion}
@@ -146,7 +146,7 @@ class ScenarioInstaller(models.ModelBase):
 
 
 @swagger.model()
-class ScenarioCreateRequest(models.ModelBase):
+class ScenarioCreateRequest(base_models.ModelBase):
     """
         @property installers:
         @ptype installers: C{list} of L{ScenarioInstaller}
@@ -161,19 +161,19 @@ class ScenarioCreateRequest(models.ModelBase):
 
 
 @swagger.model()
-class ScenarioChangeOwnerRequest(models.ModelBase):
+class ScenarioChangeOwnerRequest(base_models.ModelBase):
     def __init__(self, owner=None):
         self.owner = owner
 
 
 @swagger.model()
-class ScenarioUpdateRequest(models.ModelBase):
+class ScenarioUpdateRequest(base_models.ModelBase):
     def __init__(self, name=None):
         self.name = name
 
 
 @swagger.model()
-class Scenario(models.ModelBase):
+class Scenario(base_models.ModelBase):
     """
         @property installers:
         @ptype installers: C{list} of L{ScenarioInstaller}
@@ -205,7 +205,7 @@ class Scenario(models.ModelBase):
 
 
 @swagger.model()
-class Scenarios(models.ModelBase):
+class Scenarios(base_models.ModelBase):
     """
         @property scenarios:
         @ptype scenarios: C{list} of L{Scenario}

@@ -10,10 +10,10 @@ import httplib
 import unittest
 
 from opnfv_testapi.common import message
-from opnfv_testapi.resources import pod_models
+from opnfv_testapi.models import pod_models
 from opnfv_testapi.tests.unit import executor
 from opnfv_testapi.tests.unit import fake_pymongo
-from opnfv_testapi.tests.unit.resources import test_base as base
+from opnfv_testapi.tests.unit.handlers import test_base as base
 
 
 class TestPodBase(base.TestBase):

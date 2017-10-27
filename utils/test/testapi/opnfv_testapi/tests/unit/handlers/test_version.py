@@ -9,15 +9,15 @@
 import httplib
 import unittest
 
-from opnfv_testapi.resources import models
+from opnfv_testapi.models import base_models
 from opnfv_testapi.tests.unit import executor
-from opnfv_testapi.tests.unit.resources import test_base as base
+from opnfv_testapi.tests.unit.handlers import test_base as base
 
 
 class TestVersionBase(base.TestBase):
     def setUp(self):
         super(TestVersionBase, self).setUp()
-        self.list_res = models.Versions
+        self.list_res = base_models.Versions
         self.basePath = '/versions'
 
 

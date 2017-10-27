@@ -11,7 +11,7 @@ from tornado import web
 from opnfv_testapi.common import message
 from opnfv_testapi.tests.unit import executor
 from opnfv_testapi.tests.unit import fake_pymongo
-from opnfv_testapi.tests.unit.resources import test_result
+from opnfv_testapi.tests.unit.handlers import test_result
 
 
 class TestTokenCreateResult(test_result.TestResultBase):
