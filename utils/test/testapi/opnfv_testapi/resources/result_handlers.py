@@ -33,7 +33,7 @@ class GenericResultHandler(handlers.GenericApiHandler):
     def get_int(self, key, value):
         try:
             value = int(value)
-        except:
+        except Exception:
             raises.BadRequest(message.must_int(key))
         return value
 
