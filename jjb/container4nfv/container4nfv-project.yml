@@ -63,7 +63,7 @@
     builders:
       - shell: |
           cd $WORKSPACE/ci
-          ./build.sh
+          bash ./build.sh
 
 
 - job-template:
@@ -95,8 +95,12 @@
 
     triggers:
       - timed: '@midnight'
-
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - comment-added-contains-event:
+                comment-contains-value: 'deploy'
     builders:
       - shell:
           cd $WORKSPACE/ci
-          ./deploy.sh
+          bash ./deploy.sh
