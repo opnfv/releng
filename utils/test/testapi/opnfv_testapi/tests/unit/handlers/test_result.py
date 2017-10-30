@@ -15,12 +15,12 @@ import urllib
 import unittest
 
 from opnfv_testapi.common import message
-from opnfv_testapi.resources import project_models
-from opnfv_testapi.resources import result_models
-from opnfv_testapi.resources import testcase_models
+from opnfv_testapi.models import project_models
+from opnfv_testapi.models import result_models
+from opnfv_testapi.models import testcase_models
 from opnfv_testapi.tests.unit import executor
 from opnfv_testapi.tests.unit import fake_pymongo
-from opnfv_testapi.tests.unit.resources import test_base as base
+from opnfv_testapi.tests.unit.handlers import test_base as base
 
 
 class Details(object):

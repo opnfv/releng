@@ -6,8 +6,8 @@ import os
 from datetime import datetime
 
 from opnfv_testapi.common import message
-import opnfv_testapi.resources.scenario_models as models
-from opnfv_testapi.tests.unit.resources import test_base as base
+import opnfv_testapi.models.scenario_models as models
+from opnfv_testapi.tests.unit.handlers import test_base as base
 
 
 def _none_default(check, default):

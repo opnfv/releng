@@ -9,19 +9,19 @@
 import tornado.web
 
 from opnfv_testapi.common.config import CONF
-from opnfv_testapi.resources import handlers
-from opnfv_testapi.resources import pod_handlers
-from opnfv_testapi.resources import project_handlers
-from opnfv_testapi.resources import result_handlers
-from opnfv_testapi.resources import scenario_handlers
-from opnfv_testapi.resources import testcase_handlers
-from opnfv_testapi.ui import root
-from opnfv_testapi.ui.auth import sign
-from opnfv_testapi.ui.auth import user
+from opnfv_testapi.handlers import base_handlers
+from opnfv_testapi.handlers import pod_handlers
+from opnfv_testapi.handlers import project_handlers
+from opnfv_testapi.handlers import result_handlers
+from opnfv_testapi.handlers import root_handlers
+from opnfv_testapi.handlers import scenario_handlers
+from opnfv_testapi.handlers import sign_handlers
+from opnfv_testapi.handlers import testcase_handlers
+from opnfv_testapi.handlers import user_handlers
 
 mappings = [
     # GET /versions => GET API version
-    (r"/versions", handlers.VersionHandler),
+    (r"/versions", base_handlers.VersionHandler),
 
     # few examples:
     # GET /api/v1/pods => Get all pods
@@ -74,10 +74,11 @@ mappings = [
      tornado.web.StaticFileHandler,
      {'path': CONF.ui_static_path}),
 
-    (r'/', root.RootHandler),
-    (r'/api/v1/auth/signin', sign.SigninHandler),
-    (r'/{}'.format(CONF.lfid_signin_return), sign.SigninReturnHandler),
-    (r'/api/v1/auth/signout', sign.SignoutHandler),
-    (r'/api/v1/profile', user.UserHandler),
+    (r'/', root_handlers.RootHandler),
+    (r'/api/v1/auth/signin', sign_handlers.SigninHandler),
+    (r'/{}'.format(CONF.lfid_signin_return),
+     sign_handlers.SigninReturnHandler),
+    (r'/api/v1/auth/signout', sign_handlers.SignoutHandler),
+    (r'/api/v1/profile', user_handlers.UserHandler),
 
 ]
