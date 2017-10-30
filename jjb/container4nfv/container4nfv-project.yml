@@ -63,7 +63,7 @@
     builders:
       - shell: |
           cd $WORKSPACE/ci
-          ./build.sh
+          bash ./build.sh
 
 
 - job-template:
@@ -82,21 +82,19 @@
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
-      - node:
-          name: SLAVE_NAME
-          description: 'Slave name on Jenkins'
-          allowed-slaves:
-            - huawei-virtaul6
-          default-slaves:
-            - huawei-virtaul6
+      - 'container4nfv'
 
     scm:
       - git-scm
 
     triggers:
       - timed: '@midnight'
-
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - comment-added-contains-event:
+                comment-contains-value: 'deploy'
     builders:
       - shell:
           cd $WORKSPACE/ci
-          ./deploy.sh
+          bash ./deploy.sh
