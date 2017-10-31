@@ -136,6 +136,20 @@
                   pattern: '{files}'
 
 - trigger:
+    name: gerrit-trigger-tag-created
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - ref-updated
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: 'refs/tags/**'
+
+- trigger:
     name: 'experimental'
     triggers:
       - gerrit:
