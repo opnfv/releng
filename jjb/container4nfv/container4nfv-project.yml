@@ -31,7 +31,6 @@
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
-      - 'opnfv-build-ubuntu-defaults'
 
     scm:
       - git-scm-gerrit
@@ -61,10 +60,15 @@
                   pattern: 'docs/**|.gitignore'
 
     builders:
-      - shell: |
-          cd $WORKSPACE/ci
-          ./build.sh
+        - build:
+            - 'opnfv-build-ubuntu-defaults'
+            - shell: |
+                cd $WORKSPACE/ci && ./build.sh
 
+        - deploy:
+            - 'container4nfv'
+            - shell: |
+                cd $WORKSPACE/ci && ./deploy.sh
 
 - job-template:
     name: 'container4nfv-daily-{stream}'
