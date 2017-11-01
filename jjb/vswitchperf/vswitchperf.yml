@@ -15,12 +15,10 @@
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
-          slave-label: 'opnfv-build-ubuntu'
       - euphrates:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           disabled: false
-          slave-label: 'opnfv-build-ubuntu'
 
 - job-template:
 
@@ -74,7 +72,13 @@
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
-      - '{slave-label}-defaults'
+      - node:
+          name: SLAVE_NAME
+          description: 'Slave name on Jenkins'
+          allowed-slaves:
+            - ericsson-build4
+          default-slaves:
+            - ericsson-build4
 
     scm:
       - git-scm-gerrit
@@ -136,7 +140,13 @@
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
-      - '{slave-label}-defaults'
+      - node:
+          name: SLAVE_NAME
+          description: 'Slave name on Jenkins'
+          allowed-slaves:
+            - ericsson-build4
+          default-slaves:
+            - ericsson-build4
 
     scm:
       - git-scm
