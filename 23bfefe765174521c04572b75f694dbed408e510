@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a3d3df0_ac695c8d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 24
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 5807
+      },
+      "writtenOn": "2017-11-01T21:43:29Z",
+      "side": 1,
+      "message": "If I understand correctly: if there are N projects that build docker images we first build all these N images in sequence.\nAnd only if all N images succeed the second batch of functest child images are built?\nOr is it finer grain - at the level of every repo (meaning storperf and yardstick containers can be built concurrently)?\n\nWhich repos get their images rebuilt? Only those that have a changeset submitted in gerrit? On what trigger?\nJust too many questions maybe we need a short document that describes how all this works (gerrit not best format).\nWe need to document clearly:\n- how builds are trigerred\n- in what order/sequence/concurrency\n\nAs of today it looks like the builds are triggered periodically (even when there is no change in repo) on an unknown period (looks like once or twice a day).\n\nAlso would be nice to mention how to trigger a container build based on tag (got a piece of it in another review but missing the other half).",
+      "revId": "23bfefe765174521c04572b75f694dbed408e510",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
