@@ -8,10 +8,6 @@
 
     project: '{name}'
 
-    jobs:
-      - 'container4nfv-verify-{stream}'
-      - 'container4nfv-daily-{stream}'
-
     stream:
       - master:
           branch: '{stream}'
@@ -21,17 +17,30 @@
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           disabled: false
+    phase:
+      - 'build':
+          node-label: 'opnfv-build-ubuntu-defaults'
+      - 'deploy':
+#         node-label: 'container4nfv'
+          node-label: 'opnfv-build-ubuntu-defaults'
+    jobs:
+      - 'container4nfv-{phase}-verify-{stream}'
+      - 'container4nfv-daily-{stream}'
 
 - job-template:
-    name: 'container4nfv-verify-{stream}'
+    name: 'container4nfv-{phase}-verify-{stream}'
+
+    project-type: multijob
 
     disabled: '{obj:disabled}'
+
+    concurrent: true
 
     parameters:
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
-      - 'opnfv-build-ubuntu-defaults'
+      - '{node-label}'
 
     scm:
       - git-scm-gerrit
@@ -61,10 +70,9 @@
                   pattern: 'docs/**|.gitignore'
 
     builders:
-      - shell: |
-          cd $WORKSPACE/ci
-          ./build.sh
-
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - 'container4nfv-{phase}'
 
 - job-template:
     name: 'container4nfv-daily-{stream}'
@@ -82,13 +90,7 @@
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
-      - node:
-          name: SLAVE_NAME
-          description: 'Slave name on Jenkins'
-          allowed-slaves:
-            - huawei-virtual6
-          default-slaves:
-            - huawei-virtual6
+      - 'container4nfv'
 
     scm:
       - git-scm
@@ -97,6 +99,19 @@
       - timed: '@midnight'
 
     builders:
-      - shell:
-          cd $WORKSPACE/ci
-          ./deploy.sh
+      - container4nfv-deploy
+
+#####################################
+# builder macros
+#####################################
+- builder:
+    name: container4nfv-build
+    builders:
+      - shell: |
+          cd $WORKSPACE/ci && ./build.sh
+
+- builder:
+    name: container4nfv-deploy
+    builders:
+      - shell: |
+          cd $WORKSPACE/ci && ./deploy.sh
