@@ -29,7 +29,7 @@ Submit the change to gerrit::
 
     git review -v
 
-Follow the link to gerrit https://gerrit.opnfv.org/gerrit/51 in a few moments
+Follow the link given in the stdoutput to gerrit eg: https://gerrit.opnfv.org/gerrit/"Your_Change_ID"
 the verify job will have completed and you will see Verified +1 jenkins-ci in
 the gerrit ui.
 
@@ -65,24 +65,12 @@ it will reset the verified status to 0. If you want to keep the verified
 status, use **recheck-experimental** in commit message to trigger both
 verify and experimental jobs.
 
-You can add below persons as reviewers to your patch in order to get it
+You can look in the releng/INFO file for a list of current committers to add as reviewers to your patch in order to get it
 reviewed and submitted.
-
-* fatih.degirmenci@ericsson.com
-* agardner@linuxfoundation.org
-* trozet@redhat.com
-* morgan.richomme@orange.com
-* vlaza@cloudbasesolutions.com
-* matthew.lijun@huawei.com
-* meimei@huawei.com
-* jose.lausuch@ericsson.com
-* koffirodrigue@gmail.com
-* r-mibu@cq.jp.nec.com
-* tbramwell@linuxfoundation.org
 
 Or Add the group releng-contributors
 
-Or just email a request for submission to opnfv-helpdesk@rt.linuxfoundation.org
+Or just email a request for review to helpdesk@opnfv.org
 
 The Current merge and verify jobs for jenkins job builder can be found
 in `releng-jobs.yaml`_.
