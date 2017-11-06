@@ -74,11 +74,21 @@ mkdir -p docker_build_dir
 
 # -j is for deciding which branch will be used when building,
 # only for OPNFV
-./ci/kolla-build.sh -j $JOB_NAME -w $WORKSPACE/docker_build_dir
+sudo -E ./ci/kolla-build.sh -j $JOB_NAME -w $WORKSPACE/docker_build_dir
+
+if [ $? -ne 0 ]; then
+    echo
+    echo "Kolla build failed!"
+    deploy_ret=1
+else
+    echo
+    echo "--------------------------------------------------------"
+    echo "Kolla build done!"
+fi
 
 image=$(ls $WORKSPACE/docker_build_dir/kolla-build-output/kolla-image-*.tgz)
 upload_image_to_opnfv $image
 
 echo
 echo "--------------------------------------------------------"
-echo "Done!"
+echo "All done!"
