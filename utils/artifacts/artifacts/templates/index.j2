@@ -1,0 +1,20 @@
+{% extends "base.j2" %}
+{% block body %}
+  {% if header %}
+  <h1>{{ header|title }}</h1>
+  {% else %}
+  <h1>OPNFV Artifacts</h1>
+  {% endif %}
+  <ul>
+    {% for file in files %}
+    <li>
+      <a href="http://{{ file.blob.bucket.name }}/{{ file.url_path }}">{{ file.name }}</a>
+    </li>
+    {% endfor %}
+    {% for directory in directories %}
+    <li>
+      <a href="{{ directory }}/index.html">{{ directory }}/</a>
+    </li>
+    {% endfor %}
+  </ul>
+{% endblock %}
