@@ -54,20 +54,13 @@ if [[ -n "$(docker images | grep $DOCKER_REPO_NAME)" ]]; then
     done
 fi
 
-cd $WORKSPACE/$DOCKER_DIR
-HOST_ARCH=$(uname -m)
-if [ ! -f "${DOCKERFILE}" ]; then
-    # If this is expected to be a Dockerfile for other arch than x86
-    # and it does not exist, but there is a patch for the said arch,
-    # then apply the patch and create the Dockerfile.${HOST_ARCH} file
-    if [[ "${DOCKERFILE}" == *"${HOST_ARCH}" && \
-          -f "Dockerfile.${HOST_ARCH}.patch" ]]; then
-        patch -o Dockerfile."${HOST_ARCH}" Dockerfile \
-        Dockerfile."${HOST_ARCH}".patch
-    else
-        echo "ERROR: No Dockerfile or ${HOST_ARCH} patch found."
-        exit 1
-    fi
+cd "$WORKSPACE/$DOCKER_DIR" || exit 1
+HOST_ARCH="$(uname -m)"
+#If there is a patch for other arch then x86, apply the patch and
+#replace Dockerfile file
+dockerfile_patch="Dockerfile.${HOST_ARCH}.patch"
+if [[ -n "${dockerfile_patch}" ]]; then
+        patch -f Dockerfile -p1 < "$patch"
 fi
 
 # Get tag version
