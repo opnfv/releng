@@ -167,6 +167,16 @@
           default: "docker/{image}"
           description: "Directory containing files needed by the Dockerfile"
 
+    scm:
+      - git-scm
+
+    triggers:
+      - pollscm:
+          cron: "*/30 * * * *"
+
+    publishers:
+      - 'functest-{arch_tag}-recipients'
+
     builders:
       - shell:
           !include-raw-escape: ./opnfv-docker.sh
@@ -195,6 +205,16 @@
     builders:
       - shell:
           !include-raw-escape: ./opnfv-manifest.sh
+
+    scm:
+      - git-scm
+
+    triggers:
+      - pollscm:
+          cron: "*/30 * * * *"
+
+    publishers:
+      - 'functest-{arch_tag}-recipients'
 
 # parameter macro
 - parameter:
