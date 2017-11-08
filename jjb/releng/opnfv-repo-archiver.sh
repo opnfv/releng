@@ -35,7 +35,7 @@ for PROJECT in "${PROJECT_LIST[@]}"; do
 
   # Don't license scan kernel or qemu in kvmfornfv
   if [ "$PROJECT" == "kvmfornfv" ]; then
-    rm -rf "$CLONE_PATH/$PROJECT/{kernel,qemu}"
+    rm -rf "$CLONE_PATH/$PROJECT/"{kernel,qemu}
   fi
 done
 
