@@ -21,7 +21,7 @@ from opnfv_testapi.db import api as dbapi
 def is_authorized(method):
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
-        if CONF.api_authenticate and self.table in ['pods']:
+        if CONF.api_authenticate and self.table in ['pods', 'projects']:
             testapi_id = self.get_secure_cookie(constants.TESTAPI_ID)
             if not testapi_id:
                 raises.Unauthorized(message.not_login())
@@ -29,6 +29,12 @@ def is_authorized(method):
             if not user_info:
                 raises.Unauthorized(message.not_lfid())
             kwargs['owner'] = testapi_id
+            if self.table in ['projects']:
+                query = kwargs.get('query')
+                query_data = query()
+                group = "opnfv-gerrit-" + query_data['name'] + "-submitters"
+                if group not in user_info['groups']:
+                    raises.Unauthorized(message.no_permission())
         ret = yield gen.coroutine(method)(self, *args, **kwargs)
         raise gen.Return(ret)
     return wrapper

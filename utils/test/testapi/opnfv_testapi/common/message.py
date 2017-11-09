@@ -60,3 +60,7 @@ def no_update():
 
 def must_int(name):
     return '{} must be int'.format(name)
+
+
+def no_permission():
+    return 'You do not have permission to perform this action'
