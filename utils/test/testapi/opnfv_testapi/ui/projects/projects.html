@@ -1,0 +1,38 @@
+<h3>Projects</h3>
+<p> </p>
+
+<div class="row" style="margin-bottom:24px;"></div>
+<div class="project-create" ng-class="{ 'hidden': ! (auth.projectNames.length>0) }">
+    <h4>Create</h4>
+    <div class="row">
+        <div ng-repeat="require in ctrl.createRequirements">
+            <div class="create-project" style="margin-left:24px;">
+                <p class="input-group">
+                    <label for="cpid">{{require.label|capitalize}}: </label>
+                    <a ng-if="require.type == 'text'">
+                        <input type="text" dynamic-model="'ctrl.' + require.label"/>
+                    </a>
+                    <a ng-if="require.type == 'textarea'">
+                        <textarea rows="2" cols="50" dynamic-model="'ctrl.' + require.label">
+                        </textarea>
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-3" style="margin-top:12px; margin-left:8px;">
+            <button type="submit" class="btn btn-primary" ng-click="ctrl.create()">Create</button>
+        </div>
+    </div>
+</div>
+
+<div ng-show="ctrl.showError" class="alert alert-danger" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Error:</span>
+    {{ctrl.error}}
+</div>
+
+<div ng-show="ctrl.showSuccess" class="alert alert-success" role="alert">
+    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+    Create Success
+</div>

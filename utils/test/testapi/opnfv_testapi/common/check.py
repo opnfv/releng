@@ -21,7 +21,7 @@ from opnfv_testapi.db import api as dbapi
 def is_authorized(method):
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
-        if CONF.api_authenticate and self.table in ['pods']:
+        if CONF.api_authenticate and self.table in ['pods', 'projects']:
             testapi_id = self.get_secure_cookie(constants.TESTAPI_ID)
             if not testapi_id:
                 raises.Unauthorized(message.not_login())
