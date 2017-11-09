@@ -31,6 +31,12 @@ module.exports = function (grunt) {
 			},
 			components: {
 				expand: true,
+				cwd: '../../../opnfv_testapi/ui',
+				src: '**',
+				dest: 'components',
+			},
+			copyComponents: {
+				expand: true,
 				cwd: 'components',
 				src: '**',
 				dest: 'testapi-ui/components',
@@ -82,6 +88,12 @@ module.exports = function (grunt) {
 			      async: true
 			    }
 			},
+			deleteFiles: {
+				command: 'rm -r testapi-ui && rm -r components',
+				options: {
+			      async: false
+			    }
+			},
 			options: {
 		        stdout: false,
 		        stderr: false
@@ -90,8 +102,8 @@ module.exports = function (grunt) {
 		instrument: {
 	        files: ['components/**/*.js'],
 	        options: {
-	        lazy: false,
-	            basePath: "./testapi-ui/"
+	        	lazy: false,
+				basePath: "./testapi-ui/"
 	        }
 	    },
 		karma: {
@@ -105,7 +117,8 @@ module.exports = function (grunt) {
 		        noColor: false,
 		        coverageDir: '../../../opnfv_testapi/tests/UI/coverage',
 		        args: {
-		            specs: ['../../../opnfv_testapi/tests/UI/e2e/podsControllerSpec.js']
+					specs: ['../../../opnfv_testapi/tests/UI/e2e/podsControllerSpec.js',
+							'../../../opnfv_testapi/tests/UI/e2e/projectControllerSpec.js']
 		        }
 		    },
 		    local: {
@@ -119,18 +132,7 @@ module.exports = function (grunt) {
 	        options: {
 	            print: 'detail'
 	        }
-	    },
-		protractor: {
-			e2e: {
-				options: {
-					args: {
-						specs: ['../../../opnfv_testapi/tests/UI/e2e/podsControllerSpec.js']
-					},
-					configFile: '../../../opnfv_testapi/tests/UI/protractor-conf.js',
-					keepAlive: true
-				}
-			}
-		}
+	    }
 	});
 	grunt.registerTask('test', [
 		'karma:unit'
@@ -138,6 +140,7 @@ module.exports = function (grunt) {
 	grunt.registerTask('e2e', [
 		'copy:assets',
 		'copy:components',
+		'copy:copyComponents',
 		'copy:shared',
 		'copy:filesPng',
 		'copy:filesIco',
@@ -149,7 +152,8 @@ module.exports = function (grunt) {
 		'shell:startSelenium',
 		'wait:default',
 		'protractor_coverage',
-		'makeReport'
-		// 'protractor'
+		'makeReport',
+		'shell:deleteFiles'
+
 	]);
 }

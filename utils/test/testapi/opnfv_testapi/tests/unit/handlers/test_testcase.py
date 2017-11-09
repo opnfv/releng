@@ -11,15 +11,16 @@ import httplib
 import unittest
 
 from opnfv_testapi.common import message
-from opnfv_testapi.models import project_models
 from opnfv_testapi.models import testcase_models
 from opnfv_testapi.tests.unit import executor
+from opnfv_testapi.tests.unit import fake_pymongo
 from opnfv_testapi.tests.unit.handlers import test_base as base
 
 
 class TestCaseBase(base.TestBase):
     def setUp(self):
         super(TestCaseBase, self).setUp()
+        self.project = 'functest'
         self.req_d = testcase_models.TestcaseCreateRequest('vping_1',
                                                            '/cases/vping_1',
                                                            'vping-ssh test')
@@ -36,7 +37,8 @@ class TestCaseBase(base.TestBase):
         self.list_res = testcase_models.Testcases
         self.update_res = testcase_models.Testcase
         self.basePath = '/api/v1/projects/%s/cases'
-        self.create_project()
+        fake_pymongo.projects.insert(self.project_e.format())
+        # self.create_project()
 
     def assert_body(self, case, req=None):
         if not req:
@@ -56,11 +58,12 @@ class TestCaseBase(base.TestBase):
         self.assertIsNotNone(new._id)
         self.assertIsNotNone(new.creation_date)
 
-    def create_project(self):
-        req_p = project_models.ProjectCreateRequest('functest',
-                                                    'vping-ssh test')
-        self.create_help('/api/v1/projects', req_p)
-        self.project = req_p.name
+    # @executor.mock_valid_lfid()
+    # def create_project(self):
+    #     req_p = project_models.ProjectCreateRequest('functest',
+    #                                                 'vping-ssh test')
+    #     self.create_help('/api/v1/projects', req_p)
+    #     self.project = req_p.name
 
     def create_d(self):
         return super(TestCaseBase, self).create_d(self.project)

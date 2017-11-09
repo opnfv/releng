@@ -15,7 +15,6 @@ import urllib
 import unittest
 
 from opnfv_testapi.common import message
-from opnfv_testapi.models import project_models
 from opnfv_testapi.models import result_models
 from opnfv_testapi.models import testcase_models
 from opnfv_testapi.tests.unit import executor
@@ -86,15 +85,12 @@ class TestResultBase(base.TestBase):
         self.list_res = result_models.TestResults
         self.update_res = result_models.TestResult
         self.basePath = '/api/v1/results'
-        self.req_project = project_models.ProjectCreateRequest(
-            self.project,
-            'vping test')
+        fake_pymongo.projects.insert(self.project_e.format())
         self.req_testcase = testcase_models.TestcaseCreateRequest(
             self.case,
             '/cases/vping',
             'vping-ssh test')
         fake_pymongo.pods.insert(self.pod_d.format())
-        self.create_help('/api/v1/projects', self.req_project)
         self.create_help('/api/v1/projects/%s/cases',
                          self.req_testcase,
                          self.project)

@@ -12,7 +12,9 @@ describe('testing the Pods page for anonymous user', function () {
 			},
 			response: {
 				data: {
-					pods: [{role: "community-ci", name: "test", owner: "testUser", details: "DemoDetails", mode: "metal", _id: "59f02f099a07c84bfc5c7aed", creation_date: "2017-10-25 11:58:25.926168"}]
+					pods: [{role: "community-ci", name: "test", owner: "testUser",
+					details: "DemoDetails", mode: "metal", _id: "59f02f099a07c84bfc5c7aed",
+					creation_date: "2017-10-25 11:58:25.926168"}]
 				}
 			}
 		  }]);
@@ -73,7 +75,8 @@ describe('testing the Pods page for anonymous user', function () {
 		mock.teardown();
 		var buttonFilter = element(by.buttonText('Filter'));
 		buttonFilter.click().then(function(){
-			expect(element(by.css('.alert.alert-danger.ng-binding.ng-scope')).isDisplayed()).toBe(true);
+			expect(element(by.css('.alert.alert-danger.ng-binding.ng-scope'))
+			.isDisplayed()).toBe(true);
 		});
 	});
 
@@ -116,7 +119,9 @@ describe('testing the Pods page for authorized user', function () {
 				},
 				response: {
 					data: {
-						"fullname": "Test User", "_id": "79f82eey9a00c84bfhc7aed", "user": "testUser", "groups": ["opnfv-testapi-users"], "email": "testuser@test.com"
+						"fullname": "Test User", "_id": "79f82eey9a00c84bfhc7aed",
+						"user": "testUser", "groups": ["opnfv-testapi-users",
+						"opnfv-gerrit-functest-submitters"], "email": "testuser@test.com"
 					}
 				}
 			}
@@ -136,7 +141,8 @@ describe('testing the Pods page for authorized user', function () {
 		details.sendKeys('DemoDetails');
 		var buttonCreate = element(by.buttonText('Create'));
 		buttonCreate.click().then(function(){
-			expect(element(by.css('.alert.alert-danger.ng-binding.ng-scope')).isDisplayed()).toBe(false);
+			expect(element(by.css('.alert.alert-danger.ng-binding.ng-scope'))
+			.isDisplayed()).toBe(false);
 		});
 	});
 
@@ -170,7 +176,9 @@ describe('testing the Pods page for authorized user', function () {
 				},
 				response: {
 					data: {
-						"fullname": "Test User", "_id": "79f82eey9a00c84bfhc7aed", "user": "testUser", "groups": ["opnfv-testapi-users"], "email": "testuser@test.com"
+						"fullname": "Test User", "_id": "79f82eey9a00c84bfhc7aed",
+						"user": "testUser", "groups": ["opnfv-testapi-users"],
+						"email": "testuser@test.com"
 					}
 				}
 			}
@@ -182,7 +190,8 @@ describe('testing the Pods page for authorized user', function () {
 		details.sendKeys('DemoDetails');
 		var buttonCreate = element(by.buttonText('Create'));
 		buttonCreate.click().then(function(){
-			expect(element(by.css('.alert.alert-danger.ng-binding.ng-scope')).isDisplayed()).toBe(true);
+			expect(element(by.css('.alert.alert-danger.ng-binding.ng-scope'))
+			.isDisplayed()).toBe(true);
 		});
-	})
+	});
 });
