@@ -64,6 +64,11 @@
                 templateUrl: 'testapi-ui/components/pods/pods.html',
                 controller: 'PodsController as ctrl'
             }).
+            state('projects', {
+                url: '/projects',
+                templateUrl: 'testapi-ui/components/projects/projects.html',
+                controller: 'ProjectsController as ctrl'
+            }).
             state('communityResults', {
                 url: '/community_results',
                 templateUrl: 'testapi-ui/components/results/results.html',
@@ -168,6 +173,7 @@
         $rootScope.auth.doSignIn = doSignIn;
         $rootScope.auth.doSignOut = doSignOut;
         $rootScope.auth.doSignCheck = doSignCheck;
+        $rootScope.auth.doSubmitterCheck = doSubmitterCheck;
 
         var sign_in_url = testapiApiUrl + '/auth/signin';
         var sign_out_url = testapiApiUrl + '/auth/signout';
@@ -182,6 +188,7 @@
         function doSignOut() {
             $rootScope.auth.currentUser = null;
             $rootScope.auth.isAuthenticated = false;
+            $rootScope.auth.projectNames = [];
             $window.location.href = sign_out_url;
         }
 
@@ -194,11 +201,23 @@
                 success(function (data) {
                     $rootScope.auth.currentUser = data;
                     $rootScope.auth.isAuthenticated = true;
+                    $rootScope.auth.projectNames = $rootScope.auth.doSubmitterCheck(data.groups);
                 }).
                 error(function () {
                     $rootScope.auth.currentUser = null;
                     $rootScope.auth.isAuthenticated = false;
+                    $rootScope.auth.projectNames  = [];
                 });
+        }
+
+        function doSubmitterCheck(groups){
+            var projectNames = []
+            for(var index=0;index<groups.length; index++){
+                if(groups[index].indexOf('-submitters')>=0){
+                    projectNames.push(groups[index].split('-')[2])
+                }
+            }
+            return projectNames;
         }
 
         $rootScope.auth.doSignCheck();
