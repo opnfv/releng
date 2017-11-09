@@ -1,3 +1,11 @@
+##############################################################################
+# Copyright (c) 2016 ZTE Corporation
+# feng.xiaowei@zte.com.cn
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
 import httplib
 import unittest
 
@@ -10,10 +18,10 @@ from opnfv_testapi.tests.unit.handlers import test_base as base
 class TestProjectBase(base.TestBase):
     def setUp(self):
         super(TestProjectBase, self).setUp()
-        self.req_d = project_models.ProjectCreateRequest('vping',
-                                                         'vping-ssh test')
-        self.req_e = project_models.ProjectCreateRequest('doctor',
-                                                         'doctor test')
+        self.req_d = project_models.ProjectCreateRequest('qtip',
+                                                         'qtip-ssh test')
+        self.req_e = project_models.ProjectCreateRequest('functest',
+                                                         'functest test')
         self.get_res = project_models.Project
         self.list_res = project_models.Projects
         self.update_res = project_models.Project
@@ -29,22 +37,32 @@ class TestProjectBase(base.TestBase):
 
 
 class TestProjectCreate(TestProjectBase):
+
+    @executor.create(httplib.BAD_REQUEST, message.not_login())
+    def test_notlogin(self):
+        return self.req_d
+
+    @executor.mock_valid_lfid()
     @executor.create(httplib.BAD_REQUEST, message.no_body())
     def test_withoutBody(self):
         return None
 
+    @executor.mock_valid_lfid()
     @executor.create(httplib.BAD_REQUEST, message.missing('name'))
     def test_emptyName(self):
         return project_models.ProjectCreateRequest('')
 
+    @executor.mock_valid_lfid()
     @executor.create(httplib.BAD_REQUEST, message.missing('name'))
     def test_noneName(self):
         return project_models.ProjectCreateRequest(None)
 
+    @executor.mock_valid_lfid()
     @executor.create(httplib.OK, 'assert_create_body')
     def test_success(self):
         return self.req_d
 
+    @executor.mock_valid_lfid()
     @executor.create(httplib.FORBIDDEN, message.exist_base)
     def test_alreadyExist(self):
         self.create_d()
@@ -52,6 +70,8 @@ class TestProjectCreate(TestProjectBase):
 
 
 class TestProjectGet(TestProjectBase):
+
+    @executor.mock_valid_lfid()
     def setUp(self):
         super(TestProjectGet, self).setUp()
         self.create_d()
@@ -78,6 +98,7 @@ class TestProjectGet(TestProjectBase):
 
 
 class TestProjectUpdate(TestProjectBase):
+    @executor.mock_valid_lfid()
     def setUp(self):
         super(TestProjectUpdate, self).setUp()
         _, d_body = self.create_d()
@@ -115,6 +136,7 @@ class TestProjectUpdate(TestProjectBase):
 
 
 class TestProjectDelete(TestProjectBase):
+    @executor.mock_valid_lfid()
     def setUp(self):
         super(TestProjectDelete, self).setUp()
         self.create_d()

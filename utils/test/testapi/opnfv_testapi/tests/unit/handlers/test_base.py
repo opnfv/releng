@@ -16,6 +16,7 @@ from tornado import testing
 
 from opnfv_testapi.models import base_models
 from opnfv_testapi.models import pod_models
+from opnfv_testapi.models import project_models
 from opnfv_testapi.tests.unit import fake_pymongo
 
 
@@ -43,6 +44,12 @@ class TestBase(testing.AsyncHTTPTestCase):
                                     _id=str(ObjectId()),
                                     owner='ValidUser',
                                     create_date=str(datetime.now()))
+        self.project_e = project_models.Project(
+            name='functest',
+            description='functest test',
+            _id=str(ObjectId()),
+            create_date=str(datetime.now()))
+
         self.req_d = None
         self.req_e = None
         self.addCleanup(self._clear)
@@ -53,6 +60,7 @@ class TestBase(testing.AsyncHTTPTestCase):
                                    'groups': [
                                        'opnfv-testapi-users',
                                        'opnfv-gerrit-functest-submitters',
+                                       'opnfv-gerrit-qtip-submitters',
                                        'opnfv-gerrit-qtip-contributors']
                                    })
 
