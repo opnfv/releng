@@ -19,7 +19,7 @@
       - '{module}-automate-{phase}-{stream}'
       - '{module}-verify-{stream}'
 
-    project: 'releng'
+    project: 'releng-testresults'
 
 - job:
     name: 'testapi-mongodb-backup'
@@ -30,11 +30,11 @@
           default: 'testresults'
           description: 'Slave label on Jenkins'
       - project-parameter:
-          project: 'releng'
+          project: 'releng-testresults'
           branch: 'master'
       - string:
           name: GIT_BASE
-          default: https://gerrit.opnfv.org/gerrit/releng
+          default: https://gerrit.opnfv.org/gerrit/releng-testresults
           description: 'Git URL to use on this Jenkins Slave'
 
     scm:
@@ -79,11 +79,11 @@
                   branch-pattern: '**/{branch}'
               file-paths:
                 - compare-type: 'ANT'
-                  pattern: 'utils/test/{module}/**'
+                  pattern: '{module}/**'
 
     builders:
       - shell: |
-          cd ./utils/test/{module}/
+          cd {module}/
           tox
           if [ -e *.xml ];then
               cp *.xml $WORKSPACE
@@ -143,7 +143,7 @@
                   branch-pattern: '**/{branch}'
               file-paths:
                 - compare-type: 'ANT'
-                  pattern: 'utils/test/{module}/**'
+                  pattern: '{module}/**'
 
     builders:
       - description-setter:
@@ -208,8 +208,8 @@
 - builder:
     name: 'docker-update'
     builders:
-      - shell:
-          !include-raw: ./docker-update.sh
+      - shell: |
+          bash ./ci/docker-update.sh
 
 - builder:
     name: 'testapi-automate-generate-doc-macro'
@@ -221,13 +221,13 @@
     name: 'testapi-doc-build'
     builders:
       - shell: |
-          bash ./jjb/releng/htmlize/doc-build.sh
+          bash ./ci/htmlize/doc-build.sh
 
 - builder:
     name: 'upload-doc-artifact'
     builders:
       - shell: |
-          bash ./jjb/releng/htmlize/push-doc-artifact.sh
+           bash ./ci/htmlize/push-doc-artifacts.sh
 
 - builder:
     name: 'reporting-automate-generate-doc-macro'
@@ -238,7 +238,7 @@
     name: 'testapi-automate-docker-deploy-macro'
     builders:
       - shell: |
-          sudo bash ./jjb/releng/docker-deploy.sh "sudo docker run -dti --name testapi -p 8082:8000
+          sudo bash ./ci/docker-deploy.sh "sudo docker run -dti --name testapi -p 8082:8000
           -e mongodb_url=mongodb://172.17.0.1:27017
           -e base_url=http://testresults.opnfv.org/test opnfv/testapi" \
           "http://testresults.opnfv.org/test/" "testapi"
@@ -247,14 +247,15 @@
     name: 'reporting-automate-docker-deploy-macro'
     builders:
       - shell: |
-          sudo bash ./jjb/releng/docker-deploy.sh "sudo docker run -itd --name reporting -p 8084:8000 opnfv/reporting" \
+          sudo bash ./ci/docker-deploy.sh \
+          "sudo docker run -itd --name reporting -p 8084:8000 opnfv/reporting" \
           "http://testresults.opnfv.org/reporting/index.html" "reporting"
 
 - builder:
     name: mongodb-backup
     builders:
-      - shell: |
-          bash ./jjb/releng/testapi-backup-mongodb.sh
+      - shell:
+          bash ./ci/testapi-backup-mongodb.sh
 
 ################################
 # job publishers
