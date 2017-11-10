@@ -5,7 +5,6 @@
       - 'releng-verify-jjb'
       - 'releng-merge-jjb'
       - 'releng-comment-jjb'
-      - 'releng-generate-artifacts-api'
 
     project: 'releng'
 
@@ -119,22 +118,3 @@
               cd /opt/jenkins-ci/releng
               git pull
               jenkins-jobs update -r --delete-old jjb/
-
-- job-template:
-    name: 'releng-generate-artifacts-api'
-
-    # Generate and upload the JSON file to used for artifacts site
-
-    parameters:
-      - project-parameter:
-          project: '{project}'
-          branch: 'master'
-
-    scm:
-      - git-scm
-
-    triggers:
-      - timed: '@hourly'
-
-    builders:
-      - build-and-upload-artifacts-json-api
