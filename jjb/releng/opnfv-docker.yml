@@ -19,11 +19,6 @@
       stream: euphrates
       branch: 'stable/{stream}'
       disabled: false
-    functest-receivers: &functest-receivers
-      receivers: >
-          jalausuch@suse.com morgan.richomme@orange.com
-          cedric.ollivier@orange.com feng.xiaowei@zte.com.cn
-          juha.kosonen@nokia.com wangwulin@huawei.com
     storperf-receivers: &storperf-receivers
       receivers: >
           mark.beierl@emc.com
@@ -56,10 +51,6 @@
           project: 'dovetail'
           <<: *master
           <<: *other-receivers
-      - 'functest':
-          project: 'functest'
-          <<: *master
-          <<: *functest-receivers
       - 'nfvbench':
           project: 'nfvbench'
           <<: *master
@@ -116,10 +107,6 @@
           project: 'bottlenecks'
           <<: *euphrates
           <<: *other-receivers
-      - 'functest':
-          project: 'functest'
-          <<: *euphrates
-          <<: *functest-receivers
       - 'storperf-master':
           project: 'storperf'
           dockerdir: 'docker/storperf-master'
