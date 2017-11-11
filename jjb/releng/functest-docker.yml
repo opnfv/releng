@@ -100,47 +100,47 @@
           name: 'build-base-img-create-manifest'
           execution-type: SEQUENTIAL
           projects:
-            - name: 'functest-core-build-push-{stream}'
+            - name: 'functest-core-build-push-{arch_tag}-{stream}'
               <<: *build-job-settings
-            - name: 'functest-core-create-manifest-{stream}'
+            - name: 'functest-core-create-manifest-{arch_tag}-{stream}'
               <<: *manifest-job-settings
       - multijob:
           name: 'build-child-img'
           condition: SUCCESSFUL
           execution-type: PARALLEL
           projects:
-            - name: 'functest-healthcheck-build-push-{stream}'
+            - name: 'functest-healthcheck-build-push-{arch_tag}-{stream}'
               <<: *build-job-settings
-            - name: 'functest-features-build-push-{stream}'
+            - name: 'functest-features-build-push-{arch_tag}-{stream}'
               <<: *build-job-settings
-            - name: 'functest-components-build-push-{stream}'
+            - name: 'functest-components-build-push-{arch_tag}-{stream}'
               <<: *build-job-settings
-            - name: 'functest-parser-build-push-{stream}'
+            - name: 'functest-parser-build-push-{arch_tag}-{stream}'
               <<: *build-job-settings
-            - name: 'functest-smoke-build-push-{stream}'
+            - name: 'functest-smoke-build-push-{arch_tag}-{stream}'
               <<: *build-job-settings
-            - name: 'functest-vnf-build-push-{stream}'
+            - name: 'functest-vnf-build-push-{arch_tag}-{stream}'
               <<: *build-job-settings
-            - name: 'functest-restapi-build-push-{stream}'
+            - name: 'functest-restapi-build-push-{arch_tag}-{stream}'
               <<: *build-job-settings
       - multijob:
           name: 'create-img-manifest'
           condition: SUCCESSFUL
           execution-type: PARALLEL
           projects:
-            - name: 'functest-healthcheck-create-manifest-{stream}'
+            - name: 'functest-healthcheck-create-manifest-{arch_tag}-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-features-create-manifest-{stream}'
+            - name: 'functest-features-create-manifest-{arch_tag}-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-components-create-manifest-{stream}'
+            - name: 'functest-components-create-manifest-{arch_tag}-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-parser-create-manifest-{stream}'
+            - name: 'functest-parser-create-manifest-{arch_tag}-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-smoke-create-manifest-{stream}'
+            - name: 'functest-smoke-create-manifest-{arch_tag}-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-vnf-create-manifest-{stream}'
+            - name: 'functest-vnf-create-manifest-{arch_tag}-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-restapi-create-manifest-{stream}'
+            - name: 'functest-restapi-create-manifest-{arch_tag}-{stream}'
               <<: *manifest-job-settings
 
     publishers:
@@ -169,10 +169,6 @@
 
     scm:
       - git-scm
-
-    triggers:
-      - pollscm:
-          cron: "*/30 * * * *"
 
     publishers:
       - 'functest-{arch_tag}-recipients'
@@ -208,10 +204,6 @@
 
     scm:
       - git-scm
-
-    triggers:
-      - pollscm:
-          cron: "*/30 * * * *"
 
     publishers:
       - 'functest-{arch_tag}-recipients'
