@@ -383,7 +383,12 @@
           echo "Running yaml code on $PROJECT ..."
 
           # Get list of yaml files
-          YAML_FILES=$(git --no-pager diff --diff-filter=MCRAT --name-only HEAD^1 | egrep "ya?ml$")
+          YAML_FILES=$(git --no-pager diff --diff-filter=MCRAT --name-only HEAD^1 | egrep "ya?ml$") || true
+
+          #If YAML_FILES is none exit with 0
+          if [ -z "$YAML_FILES" ]; then
+              exit 0
+          fi
 
           # Ensure we start with a clean environment
           rm -f yaml-violation.log lint.log
