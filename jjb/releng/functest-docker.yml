@@ -59,14 +59,15 @@
 
     # yamllint enable rule:key-duplicates
     jobs:
-      - "functest-docker-build-push-{arch_tag}-{stream}"
-      - "functest-{image}-build-push-{arch_tag}-{stream}"
-      - "functest-{image}-create-manifest-{arch_tag}-{stream}"
+      - "functest-docker-{stream}"
+      - "functest-{image}-build-{arch_tag}-{stream}"
+      - "functest-{image}-manifest-{stream}"
+
 ########################
 # job templates
 ########################
 - job-template:
-    name: 'functest-docker-build-push-{arch_tag}-{stream}'
+    name: 'functest-docker-{stream}'
 
     project-type: multijob
 
@@ -76,8 +77,8 @@
       - job-parameters:
           project: '{project}'
           branch: '{branch}'
-          slave_label: '{slave_label}'
-          arch_tag: '{arch_tag}'
+          slave_label: 'opnfv-build-ubuntu'
+          arch_tag: 'amd64'
       - string:
           name: ARCH_TAG
           default: "{arch_tag}"
@@ -97,116 +98,119 @@
 
     builders:
       - multijob:
-          name: 'build-base-img-create-manifest'
-          execution-type: SEQUENTIAL
+          name: 'build functest-core images'
+          execution-type: PARALLEL
           projects:
-            - name: 'functest-core-build-push-{arch_tag}-{stream}'
+            - name: 'functest-core-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-core-create-manifest-{arch_tag}-{stream}'
+            - name: 'functest-core-build-arm64-{stream}'
+              <<: *build-job-settings
+      - multijob:
+          name: 'publish functest-core manifests'
+          execution-type: PARALLEL
+          projects:
+            - name: 'functest-core-manifest-{stream}'
               <<: *manifest-job-settings
       - multijob:
-          name: 'build-child-img'
+          name: 'build all functest images'
           condition: SUCCESSFUL
           execution-type: PARALLEL
           projects:
-            - name: 'functest-healthcheck-build-push-{arch_tag}-{stream}'
+            - name: 'functest-healthcheck-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-features-build-push-{arch_tag}-{stream}'
+            - name: 'functest-healthcheck-build-arm64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-components-build-push-{arch_tag}-{stream}'
+            - name: 'functest-features-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-parser-build-push-{arch_tag}-{stream}'
+            - name: 'functest-features-build-arm64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-smoke-build-push-{arch_tag}-{stream}'
+            - name: 'functest-components-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-vnf-build-push-{arch_tag}-{stream}'
+            - name: 'functest-components-build-arm64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-restapi-build-push-{arch_tag}-{stream}'
+            - name: 'functest-parser-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-parser-build-arm64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-smoke-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-smoke-build-arm64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-vnf-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-restapi-build-amd64-{stream}'
               <<: *build-job-settings
       - multijob:
-          name: 'create-img-manifest'
+          name: 'publish all manifests'
           condition: SUCCESSFUL
           execution-type: PARALLEL
           projects:
-            - name: 'functest-healthcheck-create-manifest-{arch_tag}-{stream}'
+            - name: 'functest-healthcheck-manifest-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-features-create-manifest-{arch_tag}-{stream}'
+            - name: 'functest-features-manifest-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-components-create-manifest-{arch_tag}-{stream}'
+            - name: 'functest-components-manifest-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-parser-create-manifest-{arch_tag}-{stream}'
+            - name: 'functest-parser-manifest-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-smoke-create-manifest-{arch_tag}-{stream}'
+            - name: 'functest-smoke-manifest-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-vnf-create-manifest-{arch_tag}-{stream}'
+            - name: 'functest-vnf-manifest-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-restapi-create-manifest-{arch_tag}-{stream}'
+            - name: 'functest-restapi-manifest-{stream}'
               <<: *manifest-job-settings
 
     publishers:
-      - 'functest-{arch_tag}-recipients'
+      - 'functest-amd64-recipients'
+      - 'functest-arm64-recipients'
 
 - job-template:
-
-    name: 'functest-{image}-build-push-{arch_tag}-{stream}'
-
+    name: 'functest-{image}-build-{arch_tag}-{stream}'
     disabled: '{obj:disabled}'
-
     parameters:
       - job-parameters:
           project: '{project}'
           branch: '{branch}'
           slave_label: '{slave_label}'
           arch_tag: '{arch_tag}'
-      - string:
-          name: DOCKER_REPO_NAME
-          default: "opnfv/functest-{image}"
-          description: "Dockerhub repo to be pushed to."
-      - string:
-          name: DOCKER_DIR
-          default: "docker/{image}"
-          description: "Directory containing files needed by the Dockerfile"
-
     scm:
       - git-scm
-
-    publishers:
-      - 'functest-{arch_tag}-recipients'
-
     builders:
-      - shell:
-          !include-raw-escape: ./opnfv-docker.sh
+      - shell: |
+          #!/bin/bash -ex
+          case "{arch_tag}" in
+          "arm64")
+              sudo amd64_dirs= arm64_dirs=docker/{image} bash ./build.sh ;;
+          *)
+              sudo amd64_dirs=docker/{image} arm64_dirs= bash ./build.sh ;;
+          esac
+          exit $?
 
 - job-template:
-
-    name: 'functest-{image}-create-manifest-{arch_tag}-{stream}'
-
+    name: 'functest-{image}-manifest-{stream}'
     disabled: '{obj:disabled}'
-
-    parameters:
-      - job-parameters:
-          project: '{project}'
-          branch: '{branch}'
-          slave_label: '{slave_label}'
-          arch_tag: '{arch_tag}'
-      - string:
-          name: DOCKER_REPO_NAME
-          default: "opnfv/functest-{image}"
-          description: "Dockerhub repo to be pushed to."
-      - string:
-          name: DOCKER_DIR
-          default: "docker/{image}"
-          description: "Directory containing files needed by the Dockerfile"
-
     builders:
-      - shell:
-          !include-raw-escape: ./opnfv-manifest.sh
-
-    scm:
-      - git-scm
-
-    publishers:
-      - 'functest-{arch_tag}-recipients'
+      - shell: |
+          #!/bin/bash -ex
+          case "{stream}" in
+          "master")
+              tag="latest" ;;
+          "*")
+              tag="{stream}" ;;
+          esac
+          case "{image}" in
+          "vnf"|"restapi")
+              sudo manifest-tool push from-args \
+                  --platforms linux/amd64 \
+                  --template opnfv/functest-{image}:ARCH-$tag \
+                  --target opnfv/functest-{image}:$tag ;;
+          *)
+              sudo manifest-tool push from-args \
+                  --platforms linux/amd64,linux/arm64 \
+                  --template opnfv/functest-{image}:ARCH-$tag \
+                  --target opnfv/functest-{image}:$tag ;;
+          esac
+          exit $?
 
 # parameter macro
 - parameter:
