@@ -15,11 +15,6 @@
       stream: euphrates
       branch: 'stable/{stream}'
       disabled: false
-    functest-arm-receivers: &functest-arm-receivers
-      receivers: >
-          cristina.pauna@enea.com
-          alexandru.avadanii@enea.com
-          delia.popescu@enea.com
     dovetail-arm-receivers: &dovetail-arm-receivers
       receivers: >
           cristina.pauna@enea.com
@@ -48,10 +43,6 @@
     # yamllint disable rule:key-duplicates
     dockerrepo:
       # projects with jobs for master
-      - 'functest':
-          project: 'functest'
-          <<: *master
-          <<: *functest-arm-receivers
       - 'dovetail':
           project: 'dovetail'
           <<: *master
@@ -96,10 +87,6 @@
           <<: *master
           <<: *yardstick-arm-receivers
       # projects with jobs for stable/euphrates
-      - 'functest':
-          project: 'functest'
-          <<: *euphrates
-          <<: *functest-arm-receivers
       - 'dovetail':
           project: 'dovetail'
           <<: *euphrates
