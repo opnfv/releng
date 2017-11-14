@@ -43,7 +43,6 @@
         COMMIT_ID=$COMMIT_ID
         RELEASE_VERSION=$RELEASE_VERSION
         DOCKERFILE=$DOCKERFILE
-        ARCH_TAG=$ARCH_TAG
       kill-phase-on: FAILURE
       abort-all-jobs: false
 
@@ -51,9 +50,8 @@
       current-parameters: false
       git-revision: true
       node-parameters: false
-      predefined-parameters: |
+      predefined-parameters:
         RELEASE_VERSION=$RELEASE_VERSION
-        ARCH_TAG=$ARCH_TAG
       kill-phase-on: FAILURE
       abort-all-jobs: false
 
@@ -79,10 +77,6 @@
           branch: '{branch}'
           slave_label: 'opnfv-build-ubuntu'
           arch_tag: 'amd64'
-      - string:
-          name: ARCH_TAG
-          default: "{arch_tag}"
-          description: "If set, this value will be added to the docker image tag as a prefix"
 
     properties:
       - throttle:
@@ -201,6 +195,10 @@
           name: PROJECT
           default: "{project}"
           description: "Project name used to enable job conditions"
+      - string:
+          name: RELEASE_VERSION
+          default: ""
+          description: "Docker tag to be built, e.g. 5.0.0, opnfv-5.0.0, 5.0.RC1"
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
