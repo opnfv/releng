@@ -71,7 +71,7 @@ FUNCTEST_DIR=/home/opnfv/functest
 DEPLOY_TYPE=baremetal
 [[ $BUILD_TAG =~ "virtual" ]] && DEPLOY_TYPE=virt
 HOST_ARCH=$(uname -m)
-DOCKER_TAG=${DOCKER_TAG:-latest}
+DOCKER_TAG=`[[ ${BRANCH##*/} == "master" ]] && echo "latest" || echo ${BRANCH##*/}`
 
 # Prepare OpenStack credentials volume
 rc_file=${HOME}/opnfv-openrc.sh
