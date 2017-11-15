@@ -110,13 +110,13 @@ def getApiResults(case, installer, scenario, version):
     return results
 
 
-def getScenarios(project, case, installer, version):
+def getScenarios(project, case, installer, version, **kwargs):
     """
     Get the list of Scenarios
     """
     test_results = None
     scenario_results = None
-    period = get_config('general.period')
+    period = kwargs.get('period', get_config('general.period'))
     url_base = get_config('testapi.url')
 
     url = ("http://" + url_base +
