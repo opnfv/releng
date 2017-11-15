@@ -12,13 +12,12 @@
     <script>
         function onDocumentReady() {
             // Gauge management
-            {% for scenario in scenario_results.keys() -%}
-            var gaugeScenario{{loop.index}} = gauge('#gaugeScenario{{loop.index}}');
+            {% for scenario in case_result.keys() -%} var gaugeScenario{{loop.index}} = gauge('#gaugeScenario{{loop.index}}');
             {%- endfor %}
             // assign success rate to the gauge
             function updateReadings() {
-                {% for scenario in scenario_results.keys() -%}
-                 gaugeScenario{{loop.index}}.update({{scenario_results[scenario].getScorePercent()}});
+                {% for case in case_result.keys() -%}
+                 gaugeScenario{{loop.index}}.update({{case_result[case].getScorePercent()}});
                  {%- endfor %}
             }
             updateReadings();
@@ -28,11 +27,11 @@
         d3.csv("./scenario_history.txt", function(data) {
             // ***************************************
             // Create the trend line
-            {% for scenario in scenario_results.keys() -%}
+            {% for case in case_result.keys() -%}
             // for scenario {{scenario}}
             // Filter results
                 var trend{{loop.index}} = data.filter(function(row) {
-                    return row["scenario"]=="{{scenario}}" && row["installer"]=="{{installer}}";
+                    return row["case"]=="{{case}}";
                 })
             // Parse the date
             trend{{loop.index}}.forEach(function(d) {
@@ -68,41 +67,30 @@
         <nav>
           <ul class="nav nav-justified">
             <li class="active"><a href="http://testresults.opnfv.org/reporting/index.html">Home</a></li>
-            <li><a href="status-apex.html">Apex</a></li>
-            <li><a href="status-compass.html">Compass</a></li>
-            <li><a href="status-fuel.html">Fuel</a></li>
-            <li><a href="status-joid.html">Joid</a></li>
+            <li><a href="reporting.html">Baremetal</a></li>
           </ul>
         </nav>
       </div>
 <div class="row">
     <div class="col-md-1"></div>
     <div class="col-md-10">
-        <div class="page-header">
-            <h2>{{installer}}</h2>
-        </div>
-        <div><h1>Reported values represent the percentage of completed
-
-          CI tests during the reporting period, where results
-
-          were communicated to the Test Database.</h1></div>
         <div class="scenario-overview">
-            <div class="panel-heading"><h4><b>List of last scenarios ({{version}}) run over the last {{period}} days </b></h4></div>
+            <div class="panel-heading"><h4><b>List of last cases ({{version}}) run over the last {{period}} days </b></h4></div>
                 <table class="table">
                     <tr>
-                        <th width="40%">Scenario</th>
+                        <th width="40%">Case</th>
                         <th width="20%">Status</th>
                         <th width="20%">Trend</th>
                         <th width="10%">Last 4 Iterations</th>
-                        <th width="10%">Last 10 Days</th>
+                        <th width="10%">Last 50 Days</th>
                     </tr>
-                        {% for scenario,result in scenario_results.iteritems() -%}
+                        {% for case,result in case_result.items() -%}
                             <tr class="tr-ok">
-                                <td><a href="{{scenario_results[scenario].getLastUrl()}}">{{scenario}}</a></td>
+                                <td><a href="{{case_result[case].getLastUrl()}}">{{case}}</a></td>
                                 <td><div id="gaugeScenario{{loop.index}}"></div></td>
                                 <td><div id="trend_svg{{loop.index}}"></div></td>
-                                <td>{{scenario_results[scenario].getFourDaysScore()}}</td>
-                                <td>{{scenario_results[scenario].getTenDaysScore()}}</td>
+                                <td>{{case_result[case].getFourDaysScore()}}</td>
+                                <td>{{case_result[case].getTenDaysScore()}}</td>
                             </tr>
                         {%- endfor %}
                 </table>
