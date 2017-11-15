@@ -4,10 +4,25 @@ set -e
 set +u
 set +o pipefail
 
+check_os_deployment() {
+    FUNCTEST_IMAGE=opnfv/functest-healthcheck:${DOCKER_TAG}
+    cmd="docker run --rm --privileged=true ${volumes} ${FUNCTEST_IMAGE} /bin/bash -c check_deployment"
+    eval ${cmd}
+    ret_value=$?
+    if [ ${ret_value} != 0 ]; then
+        echo "ERROR: Problem while checking OpenStack deployment."
+        exit 1
+    else
+        echo "OpenStack deployment OK."
+    fi
+
+}
+
+
 run_tiers() {
     tiers=$1
-    cmd_opt="prepare_env start && run_tests -r -t all"
-    [[ $BUILD_TAG =~ "suite" ]] && cmd_opt="prepare_env start && run_tests -t all"
+    cmd_opt="run_tests -r -t all"
+    [[ $BUILD_TAG =~ "suite" ]] && cmd_opt="run_tests -t all"
     ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
     echo 0 > ${ret_val_file}
 
@@ -31,8 +46,8 @@ run_tiers() {
 
 run_test() {
     test_name=$1
-    cmd_opt="prepare_env start && run_tests -t ${test_name}"
-    [[ $BUILD_TAG =~ "suite" ]] && cmd_opt="prepare_env start && run_tests -t ${test_name}"
+    cmd_opt="run_tests -t ${test_name}"
+    [[ $BUILD_TAG =~ "suite" ]] && cmd_opt="run_tests -t ${test_name}"
     ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
     echo 0 > ${ret_val_file}
     # Determine which Functest image should be used for the test case
@@ -132,6 +147,7 @@ set +e
 
 
 if [[ ${DEPLOY_SCENARIO} =~ ^os-.* ]]; then
+    check_os_deployment
     if [ ${FUNCTEST_MODE} == 'testcase' ]; then
         echo "FUNCTEST_MODE=testcase, FUNCTEST_SUITE_NAME=${FUNCTEST_SUITE_NAME}"
         run_test ${FUNCTEST_SUITE_NAME}
