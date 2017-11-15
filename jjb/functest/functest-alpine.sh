@@ -131,16 +131,16 @@ volumes="${images_vol} ${results_vol} ${sshkey_vol} ${rc_file_vol} ${cacert_file
 set +e
 
 
-if [[ ${DEPLOY_SCENARIO} =~ ^os-.* ]]; then
-    if [ ${FUNCTEST_MODE} == 'testcase' ]; then
+if [[ "${DEPLOY_SCENARIO}" =~ ^os-.* ]]; then
+    if [ "${FUNCTEST_MODE}" == "testcase" ]; then
         echo "FUNCTEST_MODE=testcase, FUNCTEST_SUITE_NAME=${FUNCTEST_SUITE_NAME}"
         run_test ${FUNCTEST_SUITE_NAME}
-    elif [ ${FUNCTEST_MODE} == 'tier' ]; then
+    elif [ "${FUNCTEST_MODE}" == "tier" ]; then
         echo "FUNCTEST_MODE=tier, FUNCTEST_TIER=${FUNCTEST_TIER}"
         tiers=(${FUNCTEST_TIER})
         run_tiers ${tiers}
     else
-        if [ ${DEPLOY_TYPE} == 'baremetal' ]; then
+        if [ "${DEPLOY_TYPE}" == "baremetal" ]; then
             tiers=(healthcheck smoke features vnf parser)
         else
             tiers=(healthcheck smoke features)
