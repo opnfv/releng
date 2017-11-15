@@ -14,12 +14,10 @@
       stream: master
       branch: '{stream}'
       gs-pathname: ''
-      docker-tag: 'latest'
     euphrates: &euphrates
       stream: euphrates
       branch: 'stable/{stream}'
       gs-pathname: '/{stream}'
-      docker-tag: 'stable'
     # -------------------------------
     # POD, INSTALLER, AND BRANCH MAPPING
     # -------------------------------
@@ -234,10 +232,6 @@
           name: DEPLOY_SCENARIO
           default: 'os-odl_l2-nofeature-ha'
       - string:
-          name: DOCKER_TAG
-          default: '{docker-tag}'
-          description: 'Tag to pull docker image'
-      - string:
           name: CLEAN_DOCKER_IMAGES
           default: 'false'
           description: 'Remove downloaded docker images (opnfv/functest*:*)'
@@ -399,8 +393,7 @@
           !include-raw:
               - ./functest-env-presetup.sh
               - ../../utils/fetch_os_creds.sh
-              - ./set-functest-env.sh
-              - ./functest-loop.sh
+              - ./functest-alpine.sh
 
 # yamllint enable rule:indentation
 - builder:

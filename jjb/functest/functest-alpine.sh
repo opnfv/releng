@@ -71,7 +71,10 @@ FUNCTEST_DIR=/home/opnfv/functest
 DEPLOY_TYPE=baremetal
 [[ $BUILD_TAG =~ "virtual" ]] && DEPLOY_TYPE=virt
 HOST_ARCH=$(uname -m)
-DOCKER_TAG=${DOCKER_TAG:-latest}
+
+tag_arch=`[[ $HOST_ARCH =~ "x86" ]] && echo "amd64" || echo "arm64")`
+tag_branch=` [[ ${BRANCH##*/} == "master" ]]&& echo "latest" || echo ${BRANCH##*/}`
+DOCKER_TAG=${tag_arch}-${tag_branch} #amd64-latest, amd64-euphrates, arm64-latest, arm64-euphrates
 
 # Prepare OpenStack credentials volume
 rc_file=${HOME}/opnfv-openrc.sh
