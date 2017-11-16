@@ -1,0 +1,176 @@
+---
+##############################################
+# job configuration for docker build and push
+##############################################
+- project:
+
+    name: compass-docker
+
+    project: compass-containers
+
+    stream:
+      - master:
+          branch: '{stream}'
+          disabled: false
+      - euphrates:
+          branch: 'stable/{stream}'
+          disabled: true
+
+    arch_tag:
+      - 'amd64':
+          slave_label: 'opnfv-build-ubuntu'
+
+    # yamllint disable rule:key-duplicates
+    image:
+      - 'tasks'
+      - 'cobbler'
+      - 'db'
+      - 'deck'
+      - 'tasks-k8s'
+      - 'tasks-osa'
+
+    # settings for jobs run in multijob phases
+    build-job-settings: &build-job-settings
+      current-parameters: false
+      git-revision: true
+      node-parameters: false
+      predefined-parameters: |
+        PUSH_IMAGE=$PUSH_IMAGE
+        COMMIT_ID=$COMMIT_ID
+        RELEASE_VERSION=$RELEASE_VERSION
+        DOCKERFILE=$DOCKERFILE
+      kill-phase-on: FAILURE
+      abort-all-jobs: false
+
+    # yamllint enable rule:key-duplicates
+    jobs:
+      - "compass-docker-{stream}"
+      - "compass-{image}-build-{arch_tag}-{stream}"
+
+########################
+# job templates
+########################
+- job-template:
+    name: 'compass-docker-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - job-parameters:
+          project: '{project}'
+          branch: '{branch}'
+          slave_label: 'opnfv-build-ubuntu'
+          arch_tag: 'amd64'
+
+    properties:
+      - throttle:
+          max-per-node: 1
+          option: 'project'
+
+    scm:
+      - git-scm
+
+    triggers:
+      - timed: '0 6 * * *'
+
+    builders:
+      - multijob:
+          name: 'build compass-tasks images'
+          execution-type: PARALLEL
+          projects:
+            - name: 'compass-tasks-build-amd64-{stream}'
+              <<: *build-job-settings
+      - multijob:
+          name: 'build all compass images'
+          condition: SUCCESSFUL
+          execution-type: PARALLEL
+          projects:
+            - name: 'compass-cobbler-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'compass-db-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'compass-deck-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'compass-tasks-k8s-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'compass-tasks-osa-build-amd64-{stream}'
+              <<: *build-job-settings
+
+    publishers:
+      - 'compass-amd64-recipients'
+
+- job-template:
+    name: 'compass-{image}-build-{arch_tag}-{stream}'
+    disabled: '{obj:disabled}'
+    parameters:
+      - job-parameters:
+          project: '{project}'
+          branch: '{branch}'
+          slave_label: '{slave_label}'
+          arch_tag: '{arch_tag}'
+    scm:
+      - git-scm
+    builders:
+      - shell:
+          !include-raw-escape: ./opnfv-docker.sh
+
+# parameter macro
+- parameter:
+    name: job-parameters
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - label:
+          name: SLAVE_LABEL
+          default: '{slave_label}'
+          description: 'Slave label on Jenkins'
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: 'Git URL to use on this Jenkins Slave'
+      - string:
+          name: PUSH_IMAGE
+          default: "true"
+          description: "To enable/disable pushing the image to Dockerhub."
+      - string:
+          name: DOCKER_REPO_NAME
+          default: "opnfv/compass-{image}"
+          description: "Dockerhub repo to be pushed to."
+      - string:
+          name: DOCKER_DIR
+          default: "compass-{image}"
+          description: "Directory containing files needed by the Dockerfile"
+      - string:
+          name: COMMIT_ID
+          default: ""
+          description: "commit id to make a snapshot docker image"
+      - string:
+          name: RELEASE_VERSION
+          default: ""
+          description: "Docker tag to be built, e.g. 5.0.0, opnfv-5.0.0, 5.0.RC1"
+      - string:
+          name: DOCKERFILE
+          default: "Dockerfile"
+          description: "Dockerfile to use for creating the image."
+      - string:
+          name: ARCH_TAG
+          default: ""
+          description: "If set, this value will be added to the docker image tag as a prefix"
+      - string:
+          name: PROJECT
+          default: "{project}"
+          description: "Project name used to enable job conditions"
+
+# publisher macros
+- publisher:
+    name: 'compass-arm64-recipients'
+    publishers:
+      - email:
+          recipients: >
+            chigang@huawei.com
+            huangxiangyui5@huawei.com
+            xueyifei@huawei.com
+            wutianwei1@huawei.com
