@@ -17,6 +17,38 @@ echo "Starting opnfv-docker for $DOCKER_REPO_NAME ..."
 echo "--------------------------------------------------------"
 echo
 
+function remove_containers_images()
+{
+    # Remove previous running containers if exist
+    if [[ -n "$(docker ps -a | grep $DOCKER_REPO_NAME)" ]]; then
+        echo "Removing existing $DOCKER_REPO_NAME containers..."
+        docker ps -a | grep $DOCKER_REPO_NAME | awk '{print $1}' | xargs docker rm -f
+        t=60
+        # Wait max 60 sec for containers to be removed
+        while [[ $t -gt 0 ]] && [[ -n "$(docker ps| grep $DOCKER_REPO_NAME)" ]]; do
+            sleep 1
+            let t=t-1
+        done
+    fi
+
+
+    # Remove existing images if exist
+    if [[ -n "$(docker images | grep $DOCKER_REPO_NAME)" ]]; then
+        echo "Docker images to remove:"
+        docker images | head -1 && docker images | grep $DOCKER_REPO_NAME
+        image_ids=($(docker images | grep $DOCKER_REPO_NAME | awk '{print $3}'))
+        for id in "${image_ids[@]}"; do
+            if [[ -n "$(docker images|grep $DOCKER_REPO_NAME|grep $id)" ]]; then
+                echo "Removing docker image $DOCKER_REPO_NAME:$id..."
+                docker rmi -f $id
+            fi
+        done
+    fi
+}
+
+# Remove the existing containers and images before building
+remove_containers_images
+
 count=30 # docker build jobs might take up to ~30 min
 while [[ -n `ps -ef| grep 'docker build' | grep $DOCKER_REPO_NAME | grep -v grep` ]]; do
     echo "Build or cleanup of $DOCKER_REPO_NAME in progress. Waiting..."
@@ -27,32 +59,6 @@ while [[ -n `ps -ef| grep 'docker build' | grep $DOCKER_REPO_NAME | grep -v grep
         exit 1
     fi
 done
-
-# Remove previous running containers if exist
-if [[ -n "$(docker ps -a | grep $DOCKER_REPO_NAME)" ]]; then
-    echo "Removing existing $DOCKER_REPO_NAME containers..."
-    docker ps -a | grep $DOCKER_REPO_NAME | awk '{print $1}' | xargs docker rm -f
-    t=60
-    # Wait max 60 sec for containers to be removed
-    while [[ $t -gt 0 ]] && [[ -n "$(docker ps| grep $DOCKER_REPO_NAME)" ]]; do
-        sleep 1
-        let t=t-1
-    done
-fi
-
-
-# Remove existing images if exist
-if [[ -n "$(docker images | grep $DOCKER_REPO_NAME)" ]]; then
-    echo "Docker images to remove:"
-    docker images | head -1 && docker images | grep $DOCKER_REPO_NAME
-    image_ids=($(docker images | grep $DOCKER_REPO_NAME | awk '{print $3}'))
-    for id in "${image_ids[@]}"; do
-        if [[ -n "$(docker images|grep $DOCKER_REPO_NAME|grep $id)" ]]; then
-            echo "Removing docker image $DOCKER_REPO_NAME:$id..."
-            docker rmi -f $id
-        fi
-    done
-fi
 
 cd "$WORKSPACE/$DOCKER_DIR" || exit 1
 HOST_ARCH="$(uname -m)"
@@ -117,3 +123,6 @@ if [[ "$PUSH_IMAGE" == "true" ]]; then
     echo
     docker push $DOCKER_REPO_NAME:$DOCKER_TAG
 fi
+
+# Remove the existing containers and images after building
+remove_containers_images
