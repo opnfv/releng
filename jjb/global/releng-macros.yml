@@ -463,3 +463,27 @@
           failure: true
           send-to:
             - recipients
+
+# Email PTL publishers
+- email_ptl_defaults: &email_ptl_defaults
+  content-type: text
+  attach-build-log: true
+  compress-log: true
+  always: true
+  subject: '{subject}'
+
+- publisher:
+    name: 'email-apex-ptl'
+    publishers:
+      - email-ext:
+          <<: *email_ptl_defaults
+          recipients: >
+            trozet@redhat.com
+
+- publisher:
+    name: 'email-armband-ptl'
+    publishers:
+      - email-ext:
+          <<: *email_ptl_defaults
+          recipients: >
+            bob.monkman@arm.com

@@ -1,37 +1,39 @@
 #!/bin/bash
-# SPDX-license-identifier: Apache-2.0
+cd $WORKSPACE
+REPORTDIR='.reports'
+mkdir -p $REPORTDIR
+# Ensure any user can read the reports directory
+chmod 777 $REPORTDIR
 
-echo "--------------------------------------------------------"
-vols="-v $WORKSPACE/allrepos/:/home/opnfv/anteater/allrepos/"
+ANTEATER_FILES="--patchset /home/opnfv/anteater/$PROJECT/patchset"
+
+if [[ ! $ANTEATER_SCAN_PATCHSET == 'true' ]]; then
+    echo "Generating patchset file to list changed files"
+    git diff HEAD^1 --name-only | sed "s#^#/home/opnfv/anteater/$PROJECT/#" > $WORKSPACE/patchset
+    echo "Changed files are"
+    echo "--------------------------------------------------------"
+    cat $WORKSPACE/patchset
+    echo "--------------------------------------------------------"
+else
+    ANTEATER_FILES="--path /home/opnfv/anteater/$PROJECT"
+fi
+
+vols="-v $WORKSPACE:/home/opnfv/anteater/$PROJECT -v $WORKSPACE/$REPORTDIR:/home/opnfv/anteater/$REPORTDIR"
+envs="-e PROJECT=$PROJECT"
+
 echo "Pulling releng-anteater docker image"
 echo "--------------------------------------------------------"
 docker pull opnfv/releng-anteater
 echo "--------------------------------------------------------"
-cmd="docker run -id $vols opnfv/releng-anteater /bin/bash"
-echo "Running docker command $cmd"
-container_id=$($cmd)
-echo "Container ID is $container_id"
-source $WORKSPACE/opnfv-projects.sh
-for project in "${PROJECT_LIST[@]}"
 
-do
-  cmd="/home/opnfv/venv/bin/anteater --project testproj --path /home/opnfv/anteater/allrepos/$project"
-  echo "Executing command inside container"
-  echo "$cmd"
-  echo "--------------------------------------------------------"
-  docker exec $container_id $cmd > $WORKSPACE/"$project".securityaudit.log 2>&1
-done
-
+cmd="docker run -i $envs $vols --rm opnfv/releng-anteater \
+/home/opnfv/venv/bin/anteater --project $PROJECT $ANTEATER_FILES"
+echo "Running docker container"
+echo "$cmd"
+$cmd > $WORKSPACE/securityaudit.log 2>&1
 exit_code=$?
 echo "--------------------------------------------------------"
-echo "Stopping docker container with ID $container_id"
-docker stop $container_id
-
-
-#gsutil cp $WORKSPACE/securityaudit.log \
-#    gs://$GS_URL/$PROJECT-securityaudit-weekly.log 2>&1
-#
-#gsutil -m setmeta \
-#    -h "Content-Type:text/html" \
-#    -h "Cache-Control:private, max-age=0, no-transform" \
-#    gs://$GS_URL/$PROJECT-securityaudit-weekly.log > /dev/null 2>&1
+echo "Docker container exited with code: $exit_code"
+echo "--------------------------------------------------------"
+cat securityaudit.log
+exit 0
