@@ -9,9 +9,14 @@
 
     project: anteaterfw
 
+    # To include all projects in the trigger REG_EXP for audit-verify job...
+    repo:
+      - apex
+      - armband
+
     jobs:
       - 'opnfv-security-audit-verify-{stream}'
-      - 'opnfv-security-audit-weekly-{stream}'
+      - 'opnfv-security-audit-{repo}-weekly-{stream}'
 
     stream:
       - master:
@@ -23,24 +28,31 @@
 # job templates
 ########################
 - job-template:
-    name: 'opnfv-security-audit-weekly-{stream}'
+    name: 'opnfv-security-audit-{repo}-weekly-{stream}'
 
     disabled: '{obj:disabled}'
 
     parameters:
-      - label:
-          name: SLAVE_LABEL
-          default: 'ericsson-build3'
-          description: 'Slave label on Jenkins'
+      - ericsson-build3-defaults
+      - anteater-parameters
       - project-parameter:
-          project: releng
+          project: '{repo}'
           branch: '{branch}'
+
+    scm:
+      - git-scm-gerrit
 
     triggers:
       - timed: '@weekly'
 
     builders:
       - anteater-security-audit-weekly
+      - clean-workspace
+
+    publishers:
+      # defined in jjb/global/releng-macros.yml
+      - 'email-{repo}-ptl':
+          subject: 'OPNFV Security Scan Result: {repo}'
 
 - job-template:
     name: 'opnfv-security-audit-verify-{stream}'
@@ -55,6 +67,7 @@
       - project-parameter:
           project: $GERRIT_PROJECT
           branch: '{branch}'
+      - anteater-parameters
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -102,6 +115,17 @@
       - archive-artifacts:
           artifacts: ".reports/*"
 
+###
+# Shared parameters
+###
+- parameter:
+    name: anteater-parameters
+    parameters:
+      - boolean:
+          name: ANTEATER_SCAN_PATCHSET
+          default: true
+          description: "Have anteater scan patchsets (true) or full project (false)"
+
 ########################
 # builder macros
 ########################
@@ -117,12 +141,8 @@
       - shell:
           !include-raw: ./anteater-report-to-gerrit.sh
 
-# yamllint disable rule:indentation
 - builder:
     name: anteater-security-audit-weekly
     builders:
       - shell:
-          !include-raw:
-              - ./anteater-clone-all-repos.sh
-              - ./anteater-security-audit-weekly.sh
-# yamllint enable rule:indentation
+          !include-raw: ./anteater-security-audit-weekly.sh
