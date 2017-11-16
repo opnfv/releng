@@ -50,7 +50,7 @@
     jobs:
       - 'doctor-verify-{stream}'
       - 'doctor-verify-unit-test-{stream}'
-      - 'doctor-{task}-{installer}-{inspector}-{stream}'
+      - 'doctor-{task}-{inspector}-{stream}'
       - 'doctor-{task}-{installer}-{inspector}-{phase}-{stream}'
 
 - job-template:
@@ -135,13 +135,11 @@
 
 
 - job-template:
-    name: 'doctor-{task}-{installer}-{inspector}-{stream}'
+    name: 'doctor-{task}-{inspector}-{stream}'
 
     disabled: '{obj:disabled}'
 
     project-type: 'multijob'
-
-    node: '{slave-label}'
 
     parameters:
       - project-parameter:
@@ -151,8 +149,7 @@
           name: OS_CREDS
           default: /home/jenkins/openstack.creds
           description: 'OpenStack credentials'
-      - '{slave-label}-defaults'
-      - '{installer}-defaults'
+      - 'opnfv-build-ubuntu-defaults'
       - string:
           name: DOCKER_TAG
           default: '{docker-tag}'
@@ -214,16 +211,30 @@
          # in phase jobs
          echo "Triggering phase jobs!"
       - multijob:
-          name: 'doctor-verify-installer-inspector'
+          name: 'doctor-verify-apex-inspector'
           execution-type: PARALLEL
           projects:
-            - name: 'doctor-{task}-{installer}-{inspector}-build-x86_64-{stream}'
+            - name: 'doctor-{task}-apex-{inspector}-build-x86_64-{stream}'
               current-parameters: false
               git-revision: true
               node-parameters: false
               kill-phase-on: FAILURE
               abort-all-job: false
-            - name: 'doctor-{task}-{installer}-{inspector}-build-aarch64-{stream}'
+      - multijob:
+          name: 'doctor-verify-fuel-inspector'
+          execution-type: PARALLEL
+          projects:
+            - name: 'doctor-{task}-fuel-{inspector}-build-x86_64-{stream}'
+              current-parameters: false
+              git-revision: true
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: false
+      - multijob:
+          name: 'doctor-verify-fuel-inspector'
+          execution-type: PARALLEL
+          projects:
+            - name: 'doctor-{task}-fuel-{inspector}-build-aarch64-{stream}'
               current-parameters: false
               git-revision: true
               node-parameters: false
@@ -233,6 +244,7 @@
 - job-template:
     name: 'doctor-{task}-{installer}-{inspector}-{phase}-{stream}'
     disabled: '{obj:disabled}'
+    node: '{slave-label}'
     wrappers:
       - ssh-agent-wrapper
       - build-timeout:
@@ -241,6 +253,7 @@
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
+      - '{installer}-defaults'
       - '{slave-label}-defaults'
     scm:
       - git-scm-gerrit
