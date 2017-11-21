@@ -26,6 +26,16 @@
 
     disabled: '{obj:disabled}'
 
+    properties:
+      - logrotate-default
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - 'vswitchperf-verify-.*'
+            - 'vswitchperf-merge-.*'
+            - 'vswitchperf-daily-.*'
+          block-level: 'NODE'
+
     parameters:
       - project-parameter:
           project: '{project}'
@@ -45,8 +55,6 @@
           cd src
           make clobber
           make MORE_MAKE_FLAGS="-j 10"
-          # run basic sanity test
-          make sanity
           cd ../ci
           scl enable python33 "source ~/vsperfenv/bin/activate ; ./build-vsperf.sh daily"
 
@@ -66,6 +74,7 @@
           blocking-jobs:
             - 'vswitchperf-verify-.*'
             - 'vswitchperf-merge-.*'
+            - 'vswitchperf-daily-.*'
           block-level: 'NODE'
 
     parameters:
@@ -80,8 +89,10 @@
           name: SLAVE_NAME
           description: 'Slave name on Jenkins'
           allowed-slaves:
+            - intel-pod12
             - ericsson-build4
           default-slaves:
+            - intel-pod12
             - ericsson-build4
 
     scm:
@@ -117,8 +128,6 @@
           cd src
           make clobber
           make MORE_MAKE_FLAGS="-j 5"
-          # run basic sanity test
-          make sanity
           cd ../ci
           ./build-vsperf.sh verify
 
@@ -138,6 +147,7 @@
           blocking-jobs:
             - 'vswitchperf-verify-.*'
             - 'vswitchperf-merge-.*'
+            - 'vswitchperf-daily-.*'
           block-level: 'NODE'
 
     parameters:
@@ -152,8 +162,10 @@
           name: SLAVE_NAME
           description: 'Slave name on Jenkins'
           allowed-slaves:
+            - intel-pod12
             - ericsson-build4
           default-slaves:
+            - intel-pod12
             - ericsson-build4
 
     scm:
