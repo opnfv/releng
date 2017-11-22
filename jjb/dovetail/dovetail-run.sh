@@ -24,6 +24,7 @@ mkdir -p ${DOVETAIL_CONFIG}
 sshkey=""
 # The path of openrc.sh is defined in fetch_os_creds.sh
 OPENRC=${DOVETAIL_CONFIG}/env_config.sh
+CACERT=${DOVETAIL_CONFIG}/os_cacert
 if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
     instack_mac=$(sudo virsh domiflist undercloud | grep default | \
                   grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
@@ -56,12 +57,22 @@ if [[ ${INSTALLER_TYPE} != 'joid' ]]; then
     echo "dovetail branch is $BRANCH"
     BRANCH_BACKUP=$BRANCH
     export BRANCH=$SUT_BRANCH
-    ${releng_repo}/utils/fetch_os_creds.sh -d ${OPENRC} -i ${INSTALLER_TYPE} -a ${INSTALLER_IP} >${redirect}
+    ${releng_repo}/utils/fetch_os_creds.sh -d ${OPENRC} -i ${INSTALLER_TYPE} -a ${INSTALLER_IP} -o ${CACERT} >${redirect}
     export BRANCH=$BRANCH_BACKUP
 fi
 
 if [[ -f $OPENRC ]]; then
     echo "INFO: openstack credentials path is $OPENRC"
+    if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == "compass" ]]; then
+        if [[ -f ${CACERT} ]]; then
+            echo "INFO: ${INSTALLER_TYPE} openstack cacert file is ${CACERT}"
+            echo "export OS_CACERT=${CACERT}" >> ${OPENRC}
+        else
+            echo "ERROR: Can't find ${INSTALLER_TYPE} openstack cacert file. Please check if it is existing."
+            sudo ls -al ${DOVETAIL_CONFIG}
+            exit 1
+        fi
+    fi
     cat $OPENRC
 else
     echo "ERROR: cannot find file $OPENRC. Please check if it is existing."
