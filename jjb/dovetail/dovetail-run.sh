@@ -69,37 +69,51 @@ else
     exit 1
 fi
 
-set +e
+if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == "compass" ]]; then
+    cat << EOF >${DOVETAIL_CONFIG}/pod.yaml
+nodes:
+- {ip: 10.1.0.52, name: node1, password: root, role: controller, user: root}
+- {ip: 10.1.0.51, name: node2, password: root, role: controller, user: root}
+- {ip: 10.1.0.50, name: node3, password: root, role: controller, user: root}
+- {ip: 10.1.0.54, name: node4, password: root, role: compute, user: root}
+- {ip: 10.1.0.53, name: node5, password: root, role: compute, user: root}
 
-sudo pip install virtualenv
-
-cd ${releng_repo}/modules
-sudo virtualenv venv
-source venv/bin/activate
-sudo pip install -e ./ >/dev/null
-sudo pip install netaddr
-
-if [[ ${INSTALLER_TYPE} == compass ]]; then
-    options="-u root -p root"
-elif [[ ${INSTALLER_TYPE} == fuel ]]; then
-    options="-u root -p r00tme"
-elif [[ ${INSTALLER_TYPE} == apex ]]; then
-    options="-u stack -k /root/.ssh/id_rsa"
-else
-    echo "Don't support to generate pod.yaml on ${INSTALLER_TYPE} currently."
-    echo "HA test cases may not run properly."
+EOF
 fi
 
-cmd="sudo python ${releng_repo}/utils/create_pod_file.py -t ${INSTALLER_TYPE} \
-     -i ${INSTALLER_IP} ${options} -f ${DOVETAIL_CONFIG}/pod.yaml"
-echo ${cmd}
-${cmd}
+if [[ ! -f ${DOVETAIL_CONFIG}/pod.yaml ]]; then
+    set +e
 
-deactivate
+    sudo pip install virtualenv
 
-set -e
+    cd ${releng_repo}/modules
+    sudo virtualenv venv
+    source venv/bin/activate
+    sudo pip install -e ./ >/dev/null
+    sudo pip install netaddr
 
-cd ${WORKSPACE}
+    if [[ ${INSTALLER_TYPE} == compass ]]; then
+        options="-u root -p root"
+    elif [[ ${INSTALLER_TYPE} == fuel ]]; then
+        options="-u root -p r00tme"
+    elif [[ ${INSTALLER_TYPE} == apex ]]; then
+        options="-u stack -k /root/.ssh/id_rsa"
+    else
+        echo "Don't support to generate pod.yaml on ${INSTALLER_TYPE} currently."
+        echo "HA test cases may not run properly."
+    fi
+
+    cmd="sudo python ${releng_repo}/utils/create_pod_file.py -t ${INSTALLER_TYPE} \
+         -i ${INSTALLER_IP} ${options} -f ${DOVETAIL_CONFIG}/pod.yaml"
+    echo ${cmd}
+    ${cmd}
+
+    deactivate
+
+    set -e
+
+    cd ${WORKSPACE}
+fi
 
 if [ -f ${DOVETAIL_CONFIG}/pod.yaml ]; then
     echo "file ${DOVETAIL_CONFIG}/pod.yaml:"
