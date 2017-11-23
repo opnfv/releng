@@ -4,10 +4,30 @@ set -e
 set +u
 set +o pipefail
 
+check_os_deployment() {
+    FUNCTEST_IMAGE=opnfv/functest-healthcheck:${DOCKER_TAG}
+    cmd="docker run --rm --privileged=true ${volumes} ${FUNCTEST_IMAGE} check_deployment"
+    eval ${cmd}
+    ret_value=$?
+    if [ ${ret_value} != 0 ]; then
+        echo "ERROR: Problem while checking OpenStack deployment."
+        exit 1
+    else
+        echo "OpenStack deployment OK."
+    fi
+
+}
+
+
 run_tiers() {
     tiers=$1
-    cmd_opt="prepare_env start && run_tests -r -t all"
-    [[ $BUILD_TAG =~ "suite" ]] && cmd_opt="prepare_env start && run_tests -t all"
+    if [[ ${BRANCH##*/} == "master" ]]; then
+        cmd_opt="run_tests -r -t all"
+        [[ $BUILD_TAG =~ "suite" ]] && cmd_opt="run_tests -t all"
+    else
+        cmd_opt="prepare_env start && run_tests -r -t all"
+        [[ $BUILD_TAG =~ "suite" ]] && cmd_opt="prepare_env start && run_tests -t all"
+    fi
     ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
     echo 0 > ${ret_val_file}
 
@@ -15,7 +35,7 @@ run_tiers() {
         FUNCTEST_IMAGE=opnfv/functest-${tier}:${DOCKER_TAG}
         echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
         docker pull ${FUNCTEST_IMAGE}>/dev/null
-        cmd="docker run --privileged=true ${envs} ${volumes} ${TESTCASE_OPTIONS} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
+        cmd="docker run --rm  --privileged=true ${envs} ${volumes} ${TESTCASE_OPTIONS} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
         echo "Running Functest tier '${tier}'. CMD: ${cmd}"
         eval ${cmd}
         ret_value=$?
@@ -31,21 +51,24 @@ run_tiers() {
 
 run_test() {
     test_name=$1
-    cmd_opt="prepare_env start && run_tests -t ${test_name}"
-    [[ $BUILD_TAG =~ "suite" ]] && cmd_opt="prepare_env start && run_tests -t ${test_name}"
+    if [[ ${BRANCH##*/} == "master" ]]; then
+        cmd_opt="run_tests -t ${test_name}"
+    else
+        cmd_opt="prepare_env start && run_tests -t ${test_name}"
+    fi
     ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
     echo 0 > ${ret_val_file}
     # Determine which Functest image should be used for the test case
     case ${test_name} in
         connection_check|api_check|snaps_health_check)
             FUNCTEST_IMAGE=opnfv/functest-healthcheck:${DOCKER_TAG} ;;
-        vping_ssh|vping_userdata|tempest_smoke_serial|rally_sanity|refstack_defcore|odl|odl_netvirt|fds|snaps_smoke)
+        vping_ssh|vping_userdata|tempest_smoke_serial|rally_sanity|refstack_defcore|odl|odl_netvirt|snaps_smoke)
             FUNCTEST_IMAGE=opnfv/functest-smoke:${DOCKER_TAG} ;;
-        tempest_full_parallel|tempest_custom|rally_full)
+        tempest_full_parallel|rally_full)
             FUNCTEST_IMAGE=opnfv/functest-components:${DOCKER_TAG} ;;
         cloudify_ims|orchestra_openims|orchestra_clearwaterims|vyos_vrouter)
             FUNCTEST_IMAGE=opnfv/functest-vnf:${DOCKER_TAG} ;;
-        promise|doctor-notification|bgpvpn|functest-odl-sfc|domino-multinode|barometercollectd)
+        promise|doctor-notification|bgpvpn|functest-odl-sfc|domino-multinode|barometercollectd|fds)
             FUNCTEST_IMAGE=opnfv/functest-features:${DOCKER_TAG} ;;
         parser-basics)
             FUNCTEST_IMAGE=opnfv/functest-parser:${DOCKER_TAG} ;;
@@ -56,7 +79,7 @@ run_test() {
     esac
     echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
     docker pull ${FUNCTEST_IMAGE}>/dev/null
-    cmd="docker run --privileged=true ${envs} ${volumes} ${TESTCASE_OPTIONS} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
+    cmd="docker run --rm --privileged=true ${envs} ${volumes} ${TESTCASE_OPTIONS} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
     echo "Running Functest test case '${test_name}'. CMD: ${cmd}"
     eval ${cmd}
     ret_value=$?
@@ -132,6 +155,7 @@ set +e
 
 
 if [[ ${DEPLOY_SCENARIO} =~ ^os-.* ]]; then
+    [[ ${BRANCH##*/} == "master" ]] && check_os_deployment
     if [ ${FUNCTEST_MODE} == 'testcase' ]; then
         echo "FUNCTEST_MODE=testcase, FUNCTEST_SUITE_NAME=${FUNCTEST_SUITE_NAME}"
         run_test ${FUNCTEST_SUITE_NAME}
