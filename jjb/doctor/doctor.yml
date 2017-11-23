@@ -145,11 +145,11 @@
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
       - string:
           name: OS_CREDS
           default: /home/jenkins/openstack.creds
           description: 'OpenStack credentials'
-      - 'opnfv-build-ubuntu-defaults'
       - string:
           name: DOCKER_TAG
           default: '{docker-tag}'
@@ -216,6 +216,11 @@
           projects:
             - name: 'doctor-{task}-apex-{inspector}-build-x86_64-{stream}'
               current-parameters: false
+              predefined-parameters: |
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               git-revision: true
               node-parameters: false
               kill-phase-on: FAILURE
@@ -226,6 +231,11 @@
           projects:
             - name: 'doctor-{task}-fuel-{inspector}-build-x86_64-{stream}'
               current-parameters: false
+              predefined-parameters: |
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               git-revision: true
               node-parameters: false
               kill-phase-on: FAILURE
@@ -236,6 +246,11 @@
           projects:
             - name: 'doctor-{task}-fuel-{inspector}-build-aarch64-{stream}'
               current-parameters: false
+              predefined-parameters: |
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               git-revision: true
               node-parameters: false
               kill-phase-on: FAILURE
