@@ -26,7 +26,7 @@
           baremetal-slave: 'apex-baremetal-master'
           verify-scenario: 'os-odl-nofeature-ha'
           scenario_stream: 'master'
-          disable_daily: true
+          disable_daily: false
       - euphrates: &euphrates
           branch: 'stable/euphrates'
           gs-pathname: '/euphrates'
@@ -1640,12 +1640,12 @@
 - trigger:
     name: 'apex-master'
     triggers:
-      - timed: '0 3 1 1 7'
+      - timed: '0 0 1-31/2 * *'
 
 - trigger:
     name: 'apex-euphrates'
     triggers:
-      - timed: '0 12 * * *'
+      - timed: '0 0 2-30/2 * *'
 
 - trigger:
     name: 'apex-danube'
