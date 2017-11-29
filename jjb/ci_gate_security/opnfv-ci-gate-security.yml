@@ -116,12 +116,13 @@
 
     builders:
       - anteater-security-audit-weekly
-      - clean-workspace
 
     publishers:
       # defined in jjb/global/releng-macros.yml
       - 'email-{repo}-ptl':
           subject: 'OPNFV Security Scan Result: {repo}'
+      - workspace-cleanup:
+          fail-build: false
 
 - job-template:
     name: 'opnfv-security-audit-verify-{stream}'
