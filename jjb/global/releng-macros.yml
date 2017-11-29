@@ -469,29 +469,27 @@
     name: 'email_ptl_defaults'
     content-type: text
     attach-build-log: true
+    attachments: '*.log'
     compress-log: true
     always: true
     subject: '{subject}'
 
-- publisher:
+- publisher: &email_apex_ptl_defaults
     name: 'email-apex-ptl'
-    publishers: &email_apex_ptl_defaults
+    publishers:
       - email-ext:
           <<: *email_ptl_defaults
           recipients: >
             trozet@redhat.com
 - publisher:
     name: 'email-apex-os-net-config-ptl'
-    publishers:
-      <<: *email_apex_ptl_defaults
+    <<: *email_apex_ptl_defaults
 - publisher:
     name: 'email-apex-puppet-tripleo-ptl'
-    publishers:
-      <<: *email_apex_ptl_defaults
+    <<: *email_apex_ptl_defaults
 - publisher:
     name: 'email-apex-tripleo-heat-templates-ptl'
-    publishers:
-      <<: *email_apex_ptl_defaults
+    <<: *email_apex_ptl_defaults
 
 - publisher:
     name: 'email-armband-ptl'
@@ -557,17 +555,16 @@
           recipients: >
             stephen.wong1@huawei.com
 
-- publisher:
+- publisher: &email_compass4nfv_ptl_defaults
     name: 'email-compass4nfv-ptl'
-    publishers: &email_compass4nfv_ptl_defaults
+    publishers:
       - email-ext:
           <<: *email_ptl_defaults
           recipients: >
             chigang@huawei.com
 - publisher:
     name: 'email-compass-containers-ptl'
-    publishers:
-      <<: *email_compass4nfv_ptl_defaults
+    <<: *email_compass4nfv_ptl_defaults
 
 - publisher:
     name: 'email-conductor-ptl'
@@ -833,17 +830,16 @@
           recipients: >
             shang.xiaodong@zte.com.cn
 
-- publisher:
+- publisher: &email_pharos_ptl_defaults
     name: 'email-pharos-ptl'
-    publishers: &email_pharos_ptl_defaults
+    publishers:
       - email-ext:
           <<: *email_ptl_defaults
           recipients: >
             jack.morgan@intel.com
 - publisher:
     name: 'email-pharos-tools-ptl'
-    publishers:
-      <<: *email_pharos_ptl_defaults
+    <<: *email_pharos_ptl_defaults
 
 - publisher:
     name: 'email-promise-ptl'
@@ -861,29 +857,25 @@
           recipients: >
             wu.zhihui1@zte.com.cn
 
-- publisher:
+- publisher: &email_releng_ptl_defaults
     name: 'email-releng-ptl'
-    publishers: &email_releng_ptl_defaults
+    publishers:
       - email-ext:
           <<: *email_ptl_defaults
           recipients: >
             fatih.degirmenci@ericsson.com
 - publisher:
     name: 'email-releng-anteater-ptl'
-    publishers:
-      <<: *email_releng_ptl_defaults
+    <<: *email_releng_ptl_defaults
 - publisher:
     name: 'email-releng-testresults-ptl'
-    publishers:
-      <<: *email_releng_ptl_defaults
+    <<: *email_releng_ptl_defaults
 - publisher:
     name: 'email-releng-utils-ptl'
-    publishers:
-      <<: *email_releng_ptl_defaults
+    <<: *email_releng_ptl_defaults
 - publisher:
     name: 'email-releng-xci-ptl'
-    publishers:
-      <<: *email_releng_ptl_defaults
+    <<: *email_releng_ptl_defaults
 
 - publisher:
     name: 'email-samplevnf-ptl'
