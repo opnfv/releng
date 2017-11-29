@@ -9,9 +9,76 @@
 
     project: anteaterfw
 
+    repo:
+      - apex
+      - apex-os-net-config
+      - apex-puppet-tripleo
+      - apex-tripleo-heat-templates
+      - armband
+      - auto
+      - availability
+      - bamboo
+      - barometer
+      - bottlenecks
+      - calipso
+      - clover
+      - compass-containers
+      - compass4nfv
+      - conductor
+      - container4nfv
+      - copper
+      - cperf
+      - daisy
+      - doctor
+      - domino
+      - dovetail
+      - dpacc
+      - enfv
+      - fastpathmetrics
+      - fds
+      - fuel
+      - functest
+      - ipv6
+      - joid
+      - kvmfornfv
+      - models
+      - moon
+      - multisite
+      - netready
+      - nfvbench
+      - octopus
+      - onosfw
+      - openretriever
+      - opera
+      - opnfvdocs
+      - orchestra
+      - ovn4nfv
+      - ovno
+      - ovsnfv
+      - parser
+      - pharos
+      - pharos-tools
+      - promise
+      - qtip
+      - releng
+      - releng-anteater
+      - releng-testresults
+      - releng-utils
+      - releng-xci
+      - samplevnf
+      - sdnvpn
+      - securityscanning
+      - sfc
+      - snaps
+      - stor4nfv
+      - storperf
+      - ves
+      - vswitchperf
+      - yardstick
+
     jobs:
       - 'opnfv-security-audit-verify-{stream}'
-      - 'opnfv-security-audit-weekly-{stream}'
+      - 'opnfv-security-audit-{repo}-weekly-{stream}'
 
     stream:
       - master:
@@ -23,24 +90,34 @@
 # job templates
 ########################
 - job-template:
-    name: 'opnfv-security-audit-weekly-{stream}'
+    name: 'opnfv-security-audit-{repo}-weekly-{stream}'
 
     disabled: '{obj:disabled}'
 
     parameters:
-      - label:
-          name: SLAVE_LABEL
-          default: 'ericsson-build3'
-          description: 'Slave label on Jenkins'
+      - ericsson-build3-defaults
+      - string:
+          name: ANTEATER_SCAN_PATCHSET
+          default: "false"
+          description: "Have anteater scan patchsets (true) or full project (false)"
       - project-parameter:
-          project: releng
+          project: '{repo}'
           branch: '{branch}'
+
+    scm:
+      - git-scm-gerrit
 
     triggers:
       - timed: '@weekly'
 
     builders:
       - anteater-security-audit-weekly
+      - clean-workspace
+
+    publishers:
+      # defined in jjb/global/releng-macros.yml
+      - 'email-{repo}-ptl':
+          subject: 'OPNFV Security Scan Result: {repo}'
 
 - job-template:
     name: 'opnfv-security-audit-verify-{stream}'
@@ -117,12 +194,8 @@
       - shell:
           !include-raw: ./anteater-report-to-gerrit.sh
 
-# yamllint disable rule:indentation
 - builder:
     name: anteater-security-audit-weekly
     builders:
       - shell:
-          !include-raw:
-              - ./anteater-clone-all-repos.sh
-              - ./anteater-security-audit-weekly.sh
-# yamllint enable rule:indentation
+          !include-raw: ./anteater-security-audit-weekly.sh
