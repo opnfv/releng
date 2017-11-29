@@ -47,5 +47,4 @@ exit_code=$?
 echo "--------------------------------------------------------"
 echo "Docker container exited with code: $exit_code"
 echo "--------------------------------------------------------"
-cat securityaudit.log
 exit 0
