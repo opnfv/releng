@@ -157,9 +157,9 @@
           default: "{docker_repo_name}"
           description: "Dockerhub repo to be pushed to."
       - string:
-          name: RELEASE_VERSION
+          name: GERRIT_REFNAME
           default: ""
-          description: "Release version, e.g. 1.0, 2.0, 3.0"
+          description: "Docker tag to be built, e.g. refs/tags/5.0.0, refs/tags/opnfv-5.0.0, refs/tags/5.0.RC1"
       - string:
           name: DOCKER_DIR
           default: "{dockerdir}"
@@ -188,6 +188,8 @@
     triggers:
       - pollscm:
           cron: "*/30 * * * *"
+      - gerrit-trigger-tag-created:
+          project: '{project}'
 
     publishers:
       - email:
