@@ -196,9 +196,9 @@
           default: ""
           description: "commit id to make a snapshot docker image"
       - string:
-          name: RELEASE_VERSION
+          name: GERRIT_REFNAME
           default: ""
-          description: "Docker tag to be built, e.g. 5.0.0, opnfv-5.0.0, 5.0.RC1"
+          description: "Docker tag to be built, e.g. refs/tags/5.0.0, refs/tags/opnfv-5.0.0, refs/tags/5.0.RC1"
       - string:
           name: DOCKERFILE
           default: "{dockerfile}"
@@ -223,6 +223,8 @@
     triggers:
       - pollscm:
           cron: "*/30 * * * *"
+      - gerrit-trigger-tag-created:
+          project: '{project}'
 
     publishers:
       - email:
