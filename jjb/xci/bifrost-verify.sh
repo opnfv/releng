@@ -39,6 +39,9 @@ case ${DISTRO} in
 	*suse*) VM_DISTRO=opensuse ;;
 esac
 
+export XCI_BUILD_CLEAN_VM_OS=false
+export XCI_UPDATE_CLEAN_VM_OS=true
+
 ./xci/scripts/vm/start-new-vm.sh $VM_DISTRO
 
 rsync -a $WORKSPACE/ ${VM_DISTRO}_xci_vm:~/bifrost
