@@ -41,7 +41,7 @@
       predefined-parameters: |
         PUSH_IMAGE=$PUSH_IMAGE
         COMMIT_ID=$COMMIT_ID
-        RELEASE_VERSION=$RELEASE_VERSION
+        GERRIT_REFNAME=$GERRIT_REFNAME
         DOCKERFILE=$DOCKERFILE
       kill-phase-on: FAILURE
       abort-all-jobs: false
@@ -51,7 +51,7 @@
       git-revision: true
       node-parameters: false
       predefined-parameters:
-        RELEASE_VERSION=$RELEASE_VERSION
+        GERRIT_REFNAME=$GERRIT_REFNAME
       kill-phase-on: FAILURE
       abort-all-jobs: false
 
@@ -89,6 +89,8 @@
     triggers:
       - pollscm:
           cron: "*/30 * * * *"
+      - gerrit-trigger-tag-created:
+          project: '{project}'
 
     builders:
       - multijob:
@@ -196,10 +198,6 @@
           default: "{project}"
           description: "Project name used to enable job conditions"
       - string:
-          name: RELEASE_VERSION
-          default: ""
-          description: "Docker tag to be built, e.g. 5.0.0, opnfv-5.0.0, 5.0.RC1"
-      - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
           description: 'Git URL to use on this Jenkins Slave'
@@ -253,9 +251,9 @@
           default: ""
           description: "commit id to make a snapshot docker image"
       - string:
-          name: RELEASE_VERSION
+          name: GERRIT_REFNAME
           default: ""
-          description: "Docker tag to be built, e.g. 5.0.0, opnfv-5.0.0, 5.0.RC1"
+          description: "Docker tag to be built, e.g. refs/tags/5.0.0, refs/tags/opnfv-5.0.0, refs/tags/5.0.RC1"
       - string:
           name: DOCKERFILE
           default: "Dockerfile"
