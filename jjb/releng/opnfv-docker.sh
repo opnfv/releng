@@ -75,6 +75,8 @@ echo "Current branch: $BRANCH"
 
 BUILD_BRANCH=$BRANCH
 
+RELEASE_VERSION=${GERRIT_REFNAME/refs\/tags//}
+
 if [[ "$BRANCH" == "master" ]]; then
     DOCKER_TAG="latest"
 elif [[ -n "${RELEASE_VERSION-}" ]]; then
