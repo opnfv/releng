@@ -11,15 +11,13 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-git clone https://git.openstack.org/openstack/bifrost $WORKSPACE/bifrost
 git clone https://gerrit.opnfv.org/gerrit/releng-xci $WORKSPACE/releng-xci
 
-# checkout the patch
-cd $CLONE_LOCATION
+cd $WORKSPACE
 git fetch $PROJECT_REPO $GERRIT_REFSPEC && sudo git checkout FETCH_HEAD
 
 # combine opnfv and upstream scripts/playbooks
-/bin/cp -rf $WORKSPACE/releng-xci/bifrost/* $WORKSPACE/bifrost/
+/bin/cp -rf $WORKSPACE/releng-xci/bifrost/* $WORKSPACE/
 
 cd $WORKSPACE/releng-xci
 cat > bifrost_test.sh<<EOF
@@ -43,6 +41,6 @@ esac
 
 ./xci/scripts/vm/start-new-vm.sh $VM_DISTRO
 
-rsync -a $WORKSPACE/releng-xci ${VM_DISTRO}_xci_vm:~/bifrost
+rsync -a $WORKSPACE/ ${VM_DISTRO}_xci_vm:~/bifrost
 
 ssh -F $HOME/.ssh/xci-vm-config ${VM_DISTRO}_xci_vm "cd ~/bifrost && ./bifrost_test.sh"

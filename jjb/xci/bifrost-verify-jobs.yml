@@ -70,16 +70,15 @@
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
+            - 'xci-verify-{distro}-.*'
             - '.*-bifrost-verify.*-{type}'
+
           block-level: 'NODE'
 
     parameters:
       - string:
           name: PROJECT_REPO
           default: 'https://git.openstack.org/openstack/bifrost'
-      - string:
-          name: CLONE_LOCATION
-          default: '$WORKSPACE/bifrost'
       - string:
           name: DISTRO
           default: '{distro}'
