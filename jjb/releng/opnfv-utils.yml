@@ -65,6 +65,17 @@
       - shell:
           !include-raw-escape: opnfv-repo-archiver.sh
 
+    publishers:
+      - email-ext:
+          content-type: 'text'
+          body:
+            ${{FILE,path="archive-link.txt"}}
+          reply-to: >
+            helpdesk@opnfv.org
+          recipients: >
+            swinslow@linuxfoundation.org
+
+
 - job-template:
     name: 'check-status-of-slaves'
 
