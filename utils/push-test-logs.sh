@@ -33,6 +33,7 @@ node_list=(\
 'huawei-virtual1' 'huawei-virtual2' 'huawei-virtual3' 'huawei-virtual4' \
 'huawei-virtual5' 'huawei-virtual8' 'huawei-virtual9' \
 'zte-pod2' \
+'zte-pod3' \
 'zte-virtual1')
 
 
