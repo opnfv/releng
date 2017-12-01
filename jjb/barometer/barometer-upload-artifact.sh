@@ -2,7 +2,7 @@
 set -o nounset
 set -o pipefail
 
-RPM_LIST=$WORKSPACE/ci/utilities/rpms_list
+RPM_LIST=$WORKSPACE/rpms_list
 RPM_WORKDIR=$WORKSPACE/rpmbuild
 RPM_DIR=$RPM_WORKDIR/RPMS/x86_64/
 cd $WORKSPACE/
