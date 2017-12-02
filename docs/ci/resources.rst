@@ -21,7 +21,9 @@ resources:
 Baremetal PODs
 --------------
 
-TBD
+Baremetal PODs are used to deploy OPNFV on to baremetal hardware through
+one of the installer projects. They enable the full range of scenarios
+to be deployed and tested.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Baremetal PODs Requirements
@@ -40,22 +42,31 @@ must be met:
 Virtual PODS
 ------------
 
-TBD
+Virtual PODs are used to deploy OPNFV in a virtualized environment
+generally on top of KVM through libvirt.
 
 ~~~~~~~~~~~~
 Requirements
 ~~~~~~~~~~~~
 
-TBD
+ #. Have required virtualization packages installed
+ #. Meet the Pharos resource specification for virtual PODs
+ #. Connected to Jenkins
+ #. 24/7 Uptime
 
 -------------
 Build Servers
 -------------
 
-TBD
+Build servers are used to build project, run basic verifications (such
+as unit tests and linting), and generate documentation.
 
 ~~~~~~~~~~~~
 Requirements
 ~~~~~~~~~~~~
 
-TBD
+ #. Have required `packages_` installed
+ #. 24/7 Uptime
+ #. Connected to Jenkins
+
+.. _packages: https://wiki.opnfv.org/display/INF/Continuous+Integration#ContinuousIntegration-BuildServers
