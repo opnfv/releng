@@ -67,7 +67,12 @@
           fail: true
 
     builders:
-      - yardstick-unit-tests-and-docs-build
+      - yardstick-unit-tests-python-27
+      - yardstick-unit-tests-python-3
+      - yardstick-functional-tests-python-27
+      - yardstick-functional-tests-python-3
+      - yardstick-coverage-tests
+      - yardstick-pep8-tests
 
 - job-template:
     name: 'yardstick-merge-{stream}'
@@ -108,14 +113,19 @@
           fail: true
 
     builders:
-      - yardstick-unit-tests-and-docs-build
+      - yardstick-unit-tests-python-27
+      - yardstick-unit-tests-python-3
+      - yardstick-functional-tests-python-27
+      - yardstick-functional-tests-python-3
+      - yardstick-coverage-tests
+      - yardstick-pep8-tests
 
 ################################
 # job builders
 ################################
 
 - builder:
-    name: yardstick-unit-tests-and-docs-build
+    name: yardstick-unit-tests-python-27
     builders:
       - shell: |
           #!/bin/bash
@@ -124,6 +134,76 @@
 
           sudo apt-get install -y build-essential python-dev python3-dev
 
-          echo "Running unit tests..."
+          echo "Running unit tests in Python 2.7 ..."
           cd $WORKSPACE
-          tox
+          tox -epy27
+
+- builder:
+    name: yardstick-unit-tests-python-3
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+
+          sudo apt-get install -y build-essential python-dev python3-dev
+
+          echo "Running unit tests in Python 3 ..."
+          cd $WORKSPACE
+          tox -epy3
+
+- builder:
+    name: yardstick-functional-tests-python-27
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+
+          sudo apt-get install -y build-essential python-dev python3-dev
+
+          echo "Running functional tests in Python 2.7 ..."
+          cd $WORKSPACE
+          tox -efunctional
+
+- builder:
+    name: yardstick-functional-tests-python-3
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+
+          sudo apt-get install -y build-essential python-dev python3-dev
+
+          echo "Running functional tests in Python 3 ..."
+          cd $WORKSPACE
+          tox -efunctional-py3
+
+- builder:
+    name: yardstick-coverage-tests
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+
+          sudo apt-get install -y build-essential python-dev python3-dev
+
+          echo "Running coverage tests ..."
+          cd $WORKSPACE
+          tox -ecoverage
+
+- builder:
+    name: yardstick-pep8-tests
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+
+          sudo apt-get install -y build-essential python-dev python3-dev
+
+          echo "Running style guidelines (PEP8) tests ..."
+          cd $WORKSPACE
+          tox -ecoverage
