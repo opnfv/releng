@@ -191,7 +191,7 @@
 
           mkdir -p $local_path
 
-          git diff HEAD~1 --name-only | grep -E ".+\.ipynb$" | xargs -I '{}' cp '{}' $local_path
+          git diff HEAD~1 --name-status | grep -E "[AM]\t.+\.ipynb$" | awk '{print $2}' | xargs -I '{}' cp '{}' $local_path
           gsutil -m cp -r "$local_path" "gs://$gs_base/"
 
           echo "Document link(s):" >> gerrit_comment.txt
