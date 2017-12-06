@@ -13,6 +13,7 @@
     jobs:
       - '{project}-verify-{stream}'
       - 'backup-pharos-dashboard'
+      - 'deploy-pharos-dashboard'
 
     stream:
       - master:
@@ -97,3 +98,37 @@
           sudo mv /tmp/pharos-dashboard-db-$(date +%Y%m%d).tar.gz /home/backups/
           sudo chown $USER:$USER $WORKSPACE/backups/pharos-dashboard-db-$(date +%Y%m%d).tar.gz
           echo "...complete"
+
+- job-template:
+    name: 'deploy-pharos-dashboard'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - project-parameter:
+          project: 'pharos-tools'
+          branch: 'master'
+      - 'pharos-dashboard-defaults'
+
+    scm:
+      - git-scm-gerrit
+
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - ref-updated-event
+            - comment-added-contains-event:
+                comment-contains-value: '^redeploy$'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'pharos-tools'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/master'
+
+    builders:
+      - shell: |
+          cd $WORKSPACE/dashboard
+          sudo docker-compose build
+          sudo docker-compose up -d
