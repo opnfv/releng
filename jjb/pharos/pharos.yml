@@ -12,6 +12,7 @@
 
     jobs:
       - '{project}-verify-{stream}'
+      - 'backup-pharos-dashboard'
 
     stream:
       - master:
@@ -64,3 +65,35 @@
     builders:
       - shell: |
           echo "Nothing to verify!"
+
+- job-template:
+    name: 'backup-pharos-dashboard'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - project-parameter:
+          project: 'pharos-tools'
+          branch: 'master'
+      - 'pharos-dashboard-defaults'
+
+    scm:
+      - git-scm-gerrit
+
+    triggers:
+      - timed: '@daily'
+
+    builders:
+      - shell: |
+          mkdir -p /home/backups/
+          DATE=$(date +%Y%m%d)
+          echo "-- $DATE --"
+          echo "Backing up Pharos Dashboard data..."
+          sudo docker run -it --rm \
+            -v pharos_data:/pharos_data:ro \
+            -v /tmp:/backup \
+            alpine \
+            tar -czf /backup/pharos-dashboard-db-$(date +%Y%m%d).tar.gz -C /pharos_data ./
+          sudo mv /tmp/pharos-dashboard-db-$(date +%Y%m%d).tar.gz /home/backups/
+          sudo chown $USER:$USER $WORKSPACE/backups/pharos-dashboard-db-$(date +%Y%m%d).tar.gz
+          echo "...complete"
