@@ -12,6 +12,7 @@
 
     jobs:
       - '{project}-verify-{stream}'
+      - 'deploy-pharos-dashboard'
 
     stream:
       - master:
@@ -64,3 +65,38 @@
     builders:
       - shell: |
           echo "Nothing to verify!"
+
+
+- job-template:
+    name: 'deploy-pharos-dashboard'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - project-parameter:
+          project: 'pharos-tools'
+          branch: 'master'
+      - 'pharos-dashboard-defaults'
+
+    scm:
+      - git-scm-gerrit
+
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - ref-updated-event
+            - comment-added-contains-event:
+                comment-contains-value: '^redeploy$'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'pharos-tools'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/master'
+
+    builders:
+      - shell: |
+          cd $WORKSPACE/dashboard
+          docker-compose build
+          docker-compose up -d
