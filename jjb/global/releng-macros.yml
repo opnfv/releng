@@ -431,6 +431,12 @@
       - shell: |
           find $WORKSPACE -type f -name '*.log' | xargs rm -f
 
+- builder:
+    name: track-begin-timestamp
+    builders:
+      - shell: |
+          echo "export TIMESTAMP_START="\'`date '+%Y-%m-%d %H:%M:%S.%3N'`\' > $WORKSPACE/installer_track.sh
+
 - publisher:
     name: archive-artifacts
     publishers:
@@ -971,3 +977,23 @@
           <<: *email_ptl_defaults
           recipients: >
             ross.b.brattain@intel.com
+
+- publisher:
+    name: 'report-provision-result'
+    publishers:
+      - postbuildscript:
+          script-only-if-succeeded: true
+          builders:
+            - shell: |
+                echo "export PROVISION_RESULT=SUCCEED" >> $WORKSPACE/installer_track.sh
+                echo "export INSTALLER={installer}" >> $WORKSPACE/installer_track.sh
+            - shell:
+                !include-raw-escape: installer-report.sh
+      - postbuildscript:
+          script-only-if-failed: true
+          builders:
+            - shell: |
+                echo "export PROVISION_RESULT=FAIL" >> $WORKSPACE/installer_track.sh
+                echo "export INSTALLER={installer}" >> $WORKSPACE/installer_track.sh
+            - shell:
+                !include-raw-escape: installer-report.sh
