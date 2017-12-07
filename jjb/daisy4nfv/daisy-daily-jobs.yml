@@ -126,6 +126,9 @@
             current-parameters: false
             predefined-parameters:
               DEPLOY_SCENARIO={scenario}
+              INSTALLER_VERSION={stream}
+              UPSTREAM_JOB_NAME=$JOB_NAME
+              UPSTREAM_BUILD_ID=$BUILD_ID
             same-node: true
             block: true
       - trigger-builds:
@@ -133,6 +136,9 @@
             current-parameters: false
             predefined-parameters:
               DEPLOY_SCENARIO={scenario}
+              INSTALLER_VERSION={stream}
+              UPSTREAM_JOB_NAME=$JOB_NAME
+              UPSTREAM_BUILD_ID=$BUILD_ID
             same-node: true
             block: true
             block-thresholds:
@@ -154,6 +160,9 @@
                   current-parameters: false
                   predefined-parameters:
                     DEPLOY_SCENARIO={scenario}
+                    INSTALLER_VERSION={stream}
+                    UPSTREAM_JOB_NAME=$JOB_NAME
+                    UPSTREAM_BUILD_ID=$BUILD_ID
                   block: true
                   same-node: true
                   block-thresholds:
@@ -209,10 +218,14 @@
     builders:
       - description-setter:
           description: "POD: $NODE_NAME"
+      - 'track-begin-timestamp'
       - shell:
           !include-raw-escape: ./daisy4nfv-download-artifact.sh
       - shell:
           !include-raw-escape: ./daisy-deploy.sh
+    publishers:
+      - report-provision-result:
+          INSTALLER: '{project}'
 
 ########################
 # trigger macros
