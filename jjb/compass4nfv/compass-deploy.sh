@@ -45,10 +45,6 @@ else
     export NETWORK_CONF_FILE=network.yml
 fi
 
-if [[ "$NODE_NAME" =~ "intel-pod8" ]]; then
-    export OS_MGMT_NIC=em4
-fi
-
 if [[ "$NODE_NAME" =~ "-virtual" ]]; then
     export NETWORK_CONF=$CONFDIR/vm_environment/$NODE_NAME/${NETWORK_CONF_FILE}
     export DHA_CONF=$CONFDIR/vm_environment/${DEPLOY_SCENARIO}.yml
@@ -58,7 +54,11 @@ if [[ "$NODE_NAME" =~ "-virtual" ]]; then
         export VIRT_NUMBER=2
     fi
 else
-    export INSTALL_NIC=eth1
+    if [[ "$NODE_NAME" =~ "intel-pod17" ]]; then
+        export INSTALL_NIC=eno2
+    else
+        export INSTALL_NIC=eth1
+    fi
     export NETWORK_CONF=$CONFDIR/hardware_environment/$NODE_NAME/${NETWORK_CONF_FILE}
     export DHA_CONF=$CONFDIR/hardware_environment/$NODE_NAME/${DEPLOY_SCENARIO}.yml
 fi
