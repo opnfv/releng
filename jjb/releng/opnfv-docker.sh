@@ -61,7 +61,9 @@ done
 # Remove the existing containers and images before building
 remove_containers_images
 
-cd "$WORKSPACE/$DOCKER_DIR" || exit 1
+DOCKER_PATH=$WORKSPACE/$DOCKER_DIR
+
+cd $DOCKER_PATH || exit 1
 HOST_ARCH="$(uname -m)"
 #If there is a patch for other arch then x86, apply the patch and
 #replace Dockerfile file
@@ -108,7 +110,7 @@ echo "--------------------------------------------------------"
 echo
 cmd="docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG --build-arg BRANCH=$BUILD_BRANCH
     $ARCH_BUILD_ARG
-    -f $DOCKERFILE ."
+    -f $DOCKERFILE $DOCKER_PATH"
 
 echo ${cmd}
 ${cmd}
