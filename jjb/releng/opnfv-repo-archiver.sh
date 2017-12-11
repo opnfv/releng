@@ -61,6 +61,8 @@ echo "--------------------------------------"
 gsutil cp "$WORKSPACE/opnfv-archive-$DATE.tar.gz" \
     "gs://opnfv-archive/opnfv-archive-$DATE.tar.gz" 2>&1
 
+echo "https://storage.googleapis.com/opnfv-archive/opnfv-archive-$DATE.tar.gz" > archive-link.txt
+
 rm -f opnfv-archive-$DATE.tar.gz
 
 echo "Finished"
