@@ -23,7 +23,7 @@ dir_result="${HOME}/opnfv/$project/results/${branch}"
 node_list=(\
 'lf-pod1' 'lf-pod2' 'intel-pod2' 'intel-pod12' \
 'lf-virtual2' 'lf-virtual3' \
-'intel-pod5' 'intel-pod6' 'intel-pod7' 'intel-pod8' \
+'intel-pod5' 'intel-pod6' 'intel-pod7' 'intel-pod8' 'intel-pod18' \
 'ericsson-pod1' 'ericsson-pod2' \
 'ericsson-virtual1' 'ericsson-virtual2'  'ericsson-virtual3' \
 'ericsson-virtual4' 'ericsson-virtual5' 'ericsson-virtual12' \
