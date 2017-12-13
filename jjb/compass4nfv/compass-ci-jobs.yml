@@ -207,24 +207,21 @@
               unstable-threshold: 'FAILURE'
       # dovetail only master by now, not sync with A/B/C branches
       # here the stream means the SUT stream, dovetail stream is defined in its own job
-      # only run on os-(nosdn|odl_l2|onos|odl_l3)-nofeature-ha scenario
-      # run against SUT master branch, dovetail docker image with latest tag
-      # run against SUT danube branch, dovetail docker image with latest tag(Monday and Sunday)
-      # run against SUT danube branch, dovetail docker image with cvp.X.X.X tag(Tuesday, Thursday, Friday and Saturday)
+      # only run on os-(nosdn|odl_l2|odl_l3)-nofeature-ha scenario
+      # run against SUT master/euphrates branch, dovetail docker image with latest tag(Monday, Tuesday)
+      # run against SUT master/euphrates branch, dovetail docker image with cvp.X.X.X tag(Thursday, Friday)
+      # run against SUT danube branch, dovetail docker image with cvp.X.X.X tag on huawei-pod7
       - conditional-step:
           condition-kind: and
           condition-operands:
             - condition-kind: regex-match
-              regex: danube
-              label: '{stream}'
-            - condition-kind: regex-match
-              regex: os-(nosdn|odl_l2|odl_l3)-nofeature-ha
+              regex: os-(nosdn|odl_l3)-nofeature-ha
               label: '{scenario}'
             - condition-kind: day-of-week
               day-selector: select-days
               days:
                 MON: true
-                SUN: true
+                TUES: true
               use-build-time: true
           steps:
             - trigger-builds:
@@ -243,41 +240,14 @@
           condition-kind: and
           condition-operands:
             - condition-kind: regex-match
-              regex: danube
-              label: '{stream}'
-            - condition-kind: regex-match
-              regex: os-(nosdn|odl_l2|odl_l3)-nofeature-ha
+              regex: os-(nosdn|odl_l3)-nofeature-ha
               label: '{scenario}'
             - condition-kind: day-of-week
               day-selector: select-days
               days:
-                TUES: true
-                WED: true
                 THURS: true
                 FRI: true
-                SAT: true
               use-build-time: true
-          steps:
-            - trigger-builds:
-                - project: 'dovetail-compass-{pod}-proposed_tests-{stream}'
-                  current-parameters: false
-                  predefined-parameters:
-                    DEPLOY_SCENARIO={scenario}
-                  block: true
-                  same-node: true
-                  block-thresholds:
-                    build-step-failure-threshold: 'never'
-                    failure-threshold: 'never'
-                    unstable-threshold: 'FAILURE'
-      - conditional-step:
-          condition-kind: and
-          condition-operands:
-            - condition-kind: regex-match
-              regex: os-(nosdn|odl_l2|odl_l3)-nofeature-ha
-              label: '{scenario}'
-            - condition-kind: regex-match
-              regex: master
-              label: '{stream}'
           steps:
             - trigger-builds:
                 - project: 'dovetail-compass-{pod}-proposed_tests-{stream}'
