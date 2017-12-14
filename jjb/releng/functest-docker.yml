@@ -58,8 +58,8 @@
     # yamllint enable rule:key-duplicates
     jobs:
       - "functest-docker-{stream}"
-      - "functest-{image}-build-{arch_tag}-{stream}"
-      - "functest-{image}-manifest-{stream}"
+      - "functest-{image}-docker-build-{arch_tag}-{stream}"
+      - "functest-{image}-docker-manifest-{stream}"
 
 ########################
 # job templates
@@ -95,63 +95,63 @@
           name: 'build functest-core images'
           execution-type: PARALLEL
           projects:
-            - name: 'functest-core-build-amd64-{stream}'
+            - name: 'functest-core-docker-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-core-build-arm64-{stream}'
+            - name: 'functest-core-docker-build-arm64-{stream}'
               <<: *build-job-settings
       - multijob:
           name: 'publish functest-core manifests'
           execution-type: PARALLEL
           projects:
-            - name: 'functest-core-manifest-{stream}'
+            - name: 'functest-core-docker-manifest-{stream}'
               <<: *manifest-job-settings
       - multijob:
           name: 'build all functest images'
           condition: SUCCESSFUL
           execution-type: PARALLEL
           projects:
-            - name: 'functest-healthcheck-build-amd64-{stream}'
+            - name: 'functest-healthcheck-docker-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-healthcheck-build-arm64-{stream}'
+            - name: 'functest-healthcheck-docker-build-arm64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-features-build-amd64-{stream}'
+            - name: 'functest-features-docker-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-features-build-arm64-{stream}'
+            - name: 'functest-features-docker-build-arm64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-components-build-amd64-{stream}'
+            - name: 'functest-components-docker-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-components-build-arm64-{stream}'
+            - name: 'functest-components-docker-build-arm64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-parser-build-amd64-{stream}'
+            - name: 'functest-parser-docker-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-parser-build-arm64-{stream}'
+            - name: 'functest-parser-docker-build-arm64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-smoke-build-amd64-{stream}'
+            - name: 'functest-smoke-docker-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-smoke-build-arm64-{stream}'
+            - name: 'functest-smoke-docker-build-arm64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-vnf-build-amd64-{stream}'
+            - name: 'functest-vnf-docker-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-restapi-build-amd64-{stream}'
+            - name: 'functest-restapi-docker-build-amd64-{stream}'
               <<: *build-job-settings
       - multijob:
           name: 'publish all manifests'
           condition: SUCCESSFUL
           execution-type: PARALLEL
           projects:
-            - name: 'functest-healthcheck-manifest-{stream}'
+            - name: 'functest-healthcheck-docker-manifest-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-features-manifest-{stream}'
+            - name: 'functest-features-docker-manifest-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-components-manifest-{stream}'
+            - name: 'functest-components-docker-manifest-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-parser-manifest-{stream}'
+            - name: 'functest-parser-docker-manifest-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-smoke-manifest-{stream}'
+            - name: 'functest-smoke-docker-manifest-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-vnf-manifest-{stream}'
+            - name: 'functest-vnf-docker-manifest-{stream}'
               <<: *manifest-job-settings
-            - name: 'functest-restapi-manifest-{stream}'
+            - name: 'functest-restapi-docker-manifest-{stream}'
               <<: *manifest-job-settings
 
     publishers:
@@ -159,7 +159,7 @@
       - 'functest-arm64-recipients'
 
 - job-template:
-    name: 'functest-{image}-build-{arch_tag}-{stream}'
+    name: 'functest-{image}-docker-build-{arch_tag}-{stream}'
     disabled: '{obj:disabled}'
     parameters:
       - job-parameters:
@@ -181,7 +181,7 @@
           exit $?
 
 - job-template:
-    name: 'functest-{image}-manifest-{stream}'
+    name: 'functest-{image}-docker-manifest-{stream}'
 
     parameters:
       - project-parameter:
