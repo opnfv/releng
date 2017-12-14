@@ -25,9 +25,6 @@ cd ~/bifrost
 # provision 3 VMs; xcimaster, controller, and compute
 ./scripts/bifrost-provision.sh
 
-# list the provisioned VMs
-source env-vars
-ironic node-list
 sudo -H -E virsh list
 EOF
 chmod a+x bifrost_test.sh
@@ -44,6 +41,6 @@ export XCI_UPDATE_CLEAN_VM_OS=true
 
 ./xci/scripts/vm/start-new-vm.sh $VM_DISTRO
 
-rsync -a $WORKSPACE/ ${VM_DISTRO}_xci_vm:~/bifrost
+rsync -a -e "ssh -F $HOME/.ssh/xci-vm-config" $WORKSPACE/ ${VM_DISTRO}_xci_vm:~/bifrost
 
 ssh -F $HOME/.ssh/xci-vm-config ${VM_DISTRO}_xci_vm "cd ~/bifrost/releng-xci && ./bifrost_test.sh"
