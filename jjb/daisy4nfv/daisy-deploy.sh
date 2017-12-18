@@ -26,6 +26,10 @@ rm -rf $SECURELAB_DIR
 git clone ssh://jenkins-zte@gerrit.opnfv.org:29418/securedlab --quiet \
     --branch $BRANCH $SECURELAB_DIR
 
+pushd $SECURELAB_DIR
+git submodule update --init --remote || true
+popd
+
 DEPLOY_COMMAND="sudo -E ./ci/deploy/deploy.sh -L $SECURELAB_DIR \
                 -l $LAB_NAME -p $POD_NAME -B $BRIDGE -s $DEPLOY_SCENARIO"
 
