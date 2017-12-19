@@ -2,7 +2,7 @@
 - project:
     name: 'opnfv-osa-periodic'
 
-    project: 'releng-xci'
+    project: openstack-ansible
     # -------------------------------
     # branches
     # -------------------------------
@@ -13,19 +13,19 @@
     # distros
     # -------------------------------
     distro:
-      - 'xenial':
+      - ubuntu:
           disabled: false
-      - 'centos7':
-          disabled: true
-      - 'suse':
-          disabled: true
+      - centos:
+          disabled: false
+      - opensuse:
+          disabled: false
     # -------------------------------
     # type
     # -------------------------------
     type:
       - virtual
     # -------------------------------
-    # phases
+    # periodic deploy & test phases
     # -------------------------------
     phase:
       - 'deploy'
@@ -34,32 +34,37 @@
     # jobs
     # -------------------------------
     jobs:
-      - 'osa-periodic-{distro}-{type}-{stream}'
-      - 'osa-periodic-{phase}-{type}-{stream}'
-
+      - 'xci-osa-periodic-{distro}-{type}-{stream}'
+      - 'xci-osa-periodic-{distro}-{phase}-{type}-{stream}'
 # -------------------------------
 # job templates
 # -------------------------------
 - job-template:
-    name: 'osa-periodic-{distro}-{type}-{stream}'
+    name: 'xci-osa-periodic-{distro}-{type}-{stream}'
 
     project-type: multijob
 
     disabled: '{obj:disabled}'
 
-    concurrent: false
+    concurrent: true
 
     properties:
       - logrotate-default
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
-            - 'xci-verify-.*'
-            - 'bifrost-verify-.*'
-            - 'bifrost-periodic-.*'
-            - 'osa-verify-.*'
-            - 'osa-periodic-.*'
+            - 'xci-verify-{distro}-.*'
+            - 'bifrost-verify-{distro}-.*'
+            - 'bifrost-periodic-{distro}-.*'
+            - 'xci-osa-verify-{distro}-.*'
+            - 'xci-osa-periodic-{distro}-.*'
           block-level: 'NODE'
+      - throttle:
+          max-per-node: 2
+          max-total: 10
+          categories:
+            - xci-verify-virtual
+          option: category
 
     wrappers:
       - ssh-agent-wrapper
@@ -68,12 +73,7 @@
       - fix-workspace-permissions
 
     scm:
-      - git-scm-osa
-
-    triggers:
-      - pollscm:
-          cron: "@midnight"
-          ignore-post-commit-hooks: true
+      - git-scm-openstack
 
     parameters:
       - project-parameter:
@@ -81,7 +81,17 @@
           branch: '{branch}'
       - label:
           name: SLAVE_LABEL
-          default: 'xci-virtual-{distro}'
+          default: 'xci-virtual'
+      - string:
+          name: OPENSTACK_OSA_VERSION
+          default: 'master'
+      - string:
+          name: CLEAN_DIB_IMAGES
+          default: 'true'
+      - string:
+          name: GIT_BASE
+          default: 'https://git.openstack.org/openstack/$PROJECT'
+          description: 'Git URL to use on this Jenkins Slave'
 
     builders:
       - description-setter:
@@ -90,32 +100,38 @@
           name: deploy
           condition: SUCCESSFUL
           projects:
-            - name: 'osa-periodic-deploy-{type}-{stream}'
+            - name: 'xci-osa-periodic-{distro}-deploy-{type}-{stream}'
               current-parameters: true
               predefined-parameters: |
                 DISTRO={distro}
                 DEPLOY_SCENARIO=os-nosdn-nofeature-noha
-              git-revision: true
+                OPENSTACK_OSA_VERSION=$OPENSTACK_OSA_VERSION
+                CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
+                BRANCH=$BRANCH
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: true
+              git-revision: true
       - multijob:
           name: healthcheck
           condition: SUCCESSFUL
           projects:
-            - name: 'osa-periodic-healthcheck-{type}-{stream}'
+            - name: 'xci-osa-periodic-{distro}-healthcheck-{type}-{stream}'
               current-parameters: true
               predefined-parameters: |
                 DISTRO={distro}
                 DEPLOY_SCENARIO=os-nosdn-nofeature-noha
+                OPENSTACK_OSA_VERSION=$OPENSTACK_OSA_VERSION
+                CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
                 FUNCTEST_MODE=tier
                 FUNCTEST_TIER=healthcheck
+                BRANCH=$BRANCH
               node-parameters: true
               kill-phase-on: NEVER
-              abort-all-job: false
+              abort-all-job: true
 
 - job-template:
-    name: 'osa-periodic-{phase}-{type}-{stream}'
+    name: 'xci-osa-periodic-{distro}-{phase}-{type}-{stream}'
 
     disabled: false
 
@@ -126,41 +142,25 @@
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
-            - 'xci-verify-deploy-.*'
-            - 'xci-verify-healthcheck-.*'
-            - 'bifrost-verify-.*'
-            - 'bifrost-periodic-.*'
-            - 'osa-verify-deploy-.*'
-            - 'osa-verify-halthcheck-.*'
-            - 'osa-periodic-deploy-.*'
-            - 'osa-periodic-healthcheck-.*'
+            - '.*-bifrost-verify-.*'
+            - '.*-bifrost-periodic-.*'
+            - 'osa-verify-.*'
+            - 'osa-periodic-.*'
           block-level: 'NODE'
 
     parameters:
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
-      - label:
-          name: SLAVE_LABEL
-          default: 'xci-virtual-{distro}'
-      - string:
-          name: OPENSTACK_OSA_VERSION
-          default: 'master'
       - string:
           name: DISTRO
-          default: 'xenial'
+          default: 'ubuntu'
       - string:
           name: DEPLOY_SCENARIO
           default: 'os-nosdn-nofeature-noha'
       - string:
-          name: XCI_FLAVOR
-          default: 'mini'
-      - string:
-          name: XCI_LOOP
-          default: 'periodic'
-      - string:
-          name: OPNFV_RELENG_DEV_PATH
-          default: $WORKSPACE/releng-xci
+          name: OPENSTACK_OSA_VERSION
+          default: 'master'
       - string:
           name: FUNCTEST_MODE
           default: 'tier'
@@ -168,14 +168,18 @@
           name: FUNCTEST_SUITE_NAME
           default: 'healthcheck'
       - string:
-          name: FORCE_MASTER
+          name: XCI_FLAVOR
+          default: 'mini'
+      - string:
+          name: CLEAN_DIB_IMAGES
           default: 'true'
       - string:
+          name: INSTALLER_TYPE
+          default: 'osa'
+      - string:
           name: GIT_BASE
-          default: https://gerrit.opnfv.org/gerrit/$PROJECT
-
-    scm:
-      - git-scm-osa
+          default: 'https://git.openstack.org/openstack/$PROJECT'
+          description: 'Git URL to use on this Jenkins Slave'
 
     wrappers:
       - ssh-agent-wrapper
@@ -183,48 +187,76 @@
           timeout: 240
       - fix-workspace-permissions
 
+    scm:
+      - git-scm-openstack
+
     builders:
       - description-setter:
           description: "Built on $NODE_NAME"
-      - 'osa-periodic-{phase}-macro'
+      - 'xci-osa-periodic-{phase}-macro'
 
 # -------------------------------
 # builder macros
 # -------------------------------
 - builder:
-    name: 'osa-periodic-deploy-macro'
+    name: 'xci-osa-periodic-deploy-macro'
     builders:
       - shell: |
           #!/bin/bash
 
-          # here we will
-          # - clone releng-xci repo as the jobs are running against openstack gerrit
-          #   and we need to clone releng-xci ourselves to $OPNFV_RELENG_DEV_PATH
-          # - run sources-branch-updater.sh from osa to update/pin the role versions
-          #   at the time this job gets triggered against osa master in case if the
-          #   deployment succeeds and we decide to bump version used by xci
-          # - copy generated role versions into $OPNFV_RELENG_DEV_PATH/xci/file
-          # - start the deployment by executing xci-deploy.sh as usual
-          #
-          # we might also need to pin versions of openstack services as well.
+          cd $WORKSPACE
 
-          echo "Hello World!"
+          # The start-new-vm.sh script will copy the entire releng-xci directory
+          # so lets prepare the test script now so it can be copied by the script.
+          # Please do not move it elsewhere or you would have to move it to the VM
+          # yourself.
+          cat > xci_test.sh<<EOF
+          #!/bin/bash
+          export DISTRO=$DISTRO
+          export DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+          export OPENSTACK_OSA_VERSION=$OPENSTACK_OSA_VERSION
+          export FUNCTEST_MODE=$FUNCTEST_MODE
+          export FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
+          export XCI_FLAVOR=$XCI_FLAVOR
+          export CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
+          export OPNFV_RELENG_DEV_PATH=/home/devuser/releng-xci/
+          export INSTALLER_TYPE=$INSTALLER_TYPE
+          export GIT_BASE=$GIT_BASE
+          export JENKINS_HOME=$JENKINS_HOME
+
+          cd xci
+          ./xci-deploy.sh
+          EOF
+          chmod a+x xci_test.sh
+
+          export XCI_BUILD_CLEAN_VM_OS=false
+          export XCI_UPDATE_CLEAN_VM_OS=true
+
+          ./xci/scripts/vm/start-new-vm.sh $DISTRO
+      - shell: |
+          #!/bin/bash
+
+          ssh -F $HOME/.ssh/xci-vm-config ${DISTRO}_xci_vm "cd releng-xci && ./xci_test.sh"
+
 
 - builder:
-    name: 'osa-periodic-healthcheck-macro'
+    name: 'xci-osa-periodic-healthcheck-macro'
     builders:
       - shell: |
           #!/bin/bash
 
           echo "Hello World!"
-# -------------------------------
-# scm macro
-# -------------------------------
-- scm:
-    name: git-scm-osa
-    scm:
-      - git:
-          url: https://review.openstack.org/p/openstack/openstack-ansible.git
-          branches:
-            - master
-          timeout: 15
+      - shell: |
+          #!/bin/bash
+
+          sudo virsh destroy ${DISTRO}_xci_vm
+          sudo virsh undefine ${DISTRO}_xci_vm
+
+# this will be enabled once the xci is prepared
+# - builder:
+#    name: 'xci-verify-healthcheck-macro'
+#    builders:
+#        - shell:
+#            !include-raw: ../../utils/fetch_os_creds.sh
+#        - shell:
+#            !include-raw: ../functest/functest-alpine.sh
