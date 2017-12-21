@@ -26,8 +26,7 @@
       - 'cobbler'
       - 'db'
       - 'deck'
-      - 'tasks-k8s'
-      - 'tasks-osa'
+      - 'tasks-base'
 
     # settings for jobs run in multijob phases
     build-job-settings: &build-job-settings
@@ -78,10 +77,10 @@
 
     builders:
       - multijob:
-          name: 'build compass-tasks images'
+          name: 'build compass-tasks-base images'
           execution-type: PARALLEL
           projects:
-            - name: 'compass-tasks-build-amd64-{stream}'
+            - name: 'compass-tasks-base-build-amd64-{stream}'
               <<: *build-job-settings
       - multijob:
           name: 'build all compass images'
@@ -94,9 +93,7 @@
               <<: *build-job-settings
             - name: 'compass-deck-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'compass-tasks-k8s-build-amd64-{stream}'
-              <<: *build-job-settings
-            - name: 'compass-tasks-osa-build-amd64-{stream}'
+            - name: 'compass-tasks-build-amd64-{stream}'
               <<: *build-job-settings
 
     publishers:
