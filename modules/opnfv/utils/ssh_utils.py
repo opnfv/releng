@@ -49,9 +49,11 @@ def get_ssh_client(hostname,
             client = paramiko.SSHClient()
         else:
             client = ProxyHopClient()
+            proxy_pkey_file = proxy.get('pkey_file', None)
             client.configure_jump_host(proxy['ip'],
                                        proxy['username'],
-                                       proxy['password'])
+                                       proxy['password'],
+                                       proxy_pkey_file)
         if client is None:
             raise Exception('Could not connect to client')
 
@@ -115,6 +117,7 @@ class ProxyHopClient(paramiko.SSHClient):
                             jh_ssh_key='/root/.ssh/id_rsa'):
         self.proxy_ip = jh_ip
         self.proxy_ssh_key = jh_ssh_key
+        self.local_ssh_key = os.path.join(os.getcwd(), jh_ssh_key.split('/')[-1])
         self.proxy_ssh = paramiko.SSHClient()
         self.proxy_ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.proxy_ssh.connect(jh_ip,
@@ -138,8 +141,12 @@ class ProxyHopClient(paramiko.SSHClient):
                                     self.local_ssh_key)
             if get_file_res is None:
                 raise Exception('Could\'t fetch SSH key from jump host')
-            proxy_key = (paramiko.RSAKey
-                         .from_private_key_file(self.local_ssh_key))
+            if self.proxy_ssh_key.split('/')[-1] == 'id_dsa':
+                proxy_key = (paramiko.DSSKey
+                             .from_private_key_file(self.local_ssh_key))
+            else:
+                proxy_key = (paramiko.RSAKey
+                             .from_private_key_file(self.local_ssh_key))
 
             self.proxy_channel = self.proxy_transport.open_channel(
                 "direct-tcpip",

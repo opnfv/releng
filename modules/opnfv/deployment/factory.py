@@ -12,6 +12,7 @@ from opnfv.deployment.apex import adapter as apex_adapter
 from opnfv.deployment.compass import adapter as compass_adapter
 from opnfv.deployment.fuel import adapter as fuel_adapter
 from opnfv.deployment.osa import adapter as osa_adapter
+from opnfv.deployment.daisy import adapter as daisy_adapter
 from opnfv.utils import opnfv_logger as logger
 
 logger = logger.Logger(__name__).getLogger()
@@ -51,6 +52,10 @@ class Factory(object):
             return osa_adapter.OSAAdapter(installer_ip=installer_ip,
                                           installer_user=installer_user,
                                           pkey_file=pkey_file)
+        elif installer.lower() == "daisy":
+            return daisy_adapter.DaisyAdapter(installer_ip=installer_ip,
+                                              installer_user=installer_user,
+                                              installer_pwd=installer_pwd)
         else:
             raise Exception("Installer adapter is not implemented for "
                             "the given installer.")

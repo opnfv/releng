@@ -92,6 +92,9 @@ def create_file(handler, INSTALLER_TYPE):
     if args.INSTALLER_TYPE == 'compass':
         for item in node_list:
             item['password'] = 'root'
+    elif args.INSTALLER_TYPE == 'daisy':
+        for item in node_list:
+            item['key_filename'] = '/root/.ssh/id_dsa'
     else:
         for item in node_list:
             item['key_filename'] = args.sshkey
