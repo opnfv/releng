@@ -109,6 +109,8 @@ if [[ ! -f ${DOVETAIL_CONFIG}/pod.yaml ]]; then
         options="-u root -p r00tme"
     elif [[ ${INSTALLER_TYPE} == apex ]]; then
         options="-u stack -k /root/.ssh/id_rsa"
+    elif [[ ${INSTALLER_TYPE} == daisy ]]; then
+        options="-u root -p r00tme"
     else
         echo "Don't support to generate pod.yaml on ${INSTALLER_TYPE} currently."
         echo "HA test cases may not run properly."
@@ -146,6 +148,12 @@ if [ "$INSTALLER_TYPE" == "apex" ]; then
     echo "Fetching id_rsa file from jump_server $INSTALLER_IP..."
     sudo scp $ssh_options stack@${INSTALLER_IP}:~/.ssh/id_rsa ${DOVETAIL_CONFIG}/id_rsa
 fi
+
+if [ "$INSTALLER_TYPE" == "daisy" ]; then
+    echo "Fetching id_dsa file from jump_server $INSTALLER_IP..."
+    sshpass -p r00tme sudo scp $ssh_options root@${INSTALLER_IP}:~/.ssh/id_dsa ${DOVETAIL_CONFIG}/id_rsa
+fi
+
 
 image_path=${HOME}/opnfv/dovetail/images
 if [[ ! -d ${image_path} ]]; then
