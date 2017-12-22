@@ -107,6 +107,7 @@ echo "Building docker image: $DOCKER_REPO_NAME:$DOCKER_TAG"
 echo "--------------------------------------------------------"
 echo
 cmd="docker build --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG --build-arg BRANCH=$BUILD_BRANCH
+    $ARCH_BUILD_ARG
     -f $DOCKERFILE ."
 
 echo ${cmd}
