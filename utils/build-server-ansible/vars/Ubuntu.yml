@@ -1,0 +1,77 @@
+---
+- name: Ensure old versions of Docker are not installed.
+  package:
+    name: '{{ item }}'
+    state: absent
+  with_items:
+    - docker
+    - docker-engine
+
+- name: Ensure depdencies are installed.
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - git
+    - build-essential
+    - curl
+    - wget
+    - rpm
+    - fuseiso
+    - createrepo
+    - genisoimage
+    - libfuse-dev
+    - dh-autoreconf
+    - pkg-config
+    - zlib1g-dev
+    - libglib2.0-dev
+    - libpixman-1-dev
+    - python-virtualenv
+    - python-dev
+    - libffi-dev
+    - libssl-dev
+    - libxml2-dev
+    - libxslt1-dev
+    - bc
+    - qemu-kvm
+    - libvirt-bin
+    - ubuntu-vm-builder
+    - bridge-utils
+    - monit
+    - openjdk-8-jre-headless
+    - python-nose
+    - dirmngr
+    - collectd
+    - flex
+    - bison
+    - libnuma-dev
+    - shellcheck
+    - python-pip
+
+- name: Add Docker apt key.
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+    state: present
+  register: add_repository_key
+  ignore_errors: true
+
+- name: Ensure curl is present (on older systems without SNI).
+  package: name=curl state=present
+  when: add_repository_key|failed
+
+- name: Add Docker apt key (alternative for older systems without SNI).
+  # yamllint disable rule:line-length
+  shell: "curl -sSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -"
+  # yamllint enable rule:line-length
+  args:
+    warn: "no"
+  when: add_repository_key|failed
+
+- name: Add Docker repository.
+  apt_repository:
+    repo: "{{ docker_apt_repository }}"
+    state: present
+    update_cache: "yes"
