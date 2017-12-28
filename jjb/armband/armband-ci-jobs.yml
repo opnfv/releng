@@ -158,34 +158,21 @@
                     build-step-failure-threshold: 'never'
                     failure-threshold: 'never'
                     unstable-threshold: 'FAILURE'
-      # 1.dovetail only master, based on D release
-      # 2.here the stream means the SUT stream,
-      #   dovetail stream is defined in its own job
-      # 3.only proposed_tests testsuite here(refstack, ha, ipv6, bgpvpn)
-      # 4.not used for release criteria or compliance,
+      # 1.here the stream means the SUT stream, dovetail stream is defined in its own job
+      # 2.only debug testsuite here(refstack, ha, vping, ipv6, tempest, bgpvpn)
+      # 3.not used for release criteria or compliance,
       #   only to debug the dovetail tool bugs with arm pods
-      # 5.only run against scenario os-(nosdn|odl)-(nofeature-bgpvpn)-ha
-      - conditional-step:
-          condition-kind: and
-          condition-operands:
-            - condition-kind: regex-match
-              regex: os-(nosdn|odl)-(nofeature|bgpvpn)-ha
-              label: '{scenario}'
-            - condition-kind: regex-match
-              regex: 'danube'
-              label: '{stream}'
-          steps:
-            - trigger-builds:
-                - project: 'dovetail-{installer}-{pod}-proposed_tests-master'
-                  current-parameters: false
-                  predefined-parameters:
-                    DEPLOY_SCENARIO={scenario}
-                  block: true
-                  same-node: true
-                  block-thresholds:
-                    build-step-failure-threshold: 'never'
-                    failure-threshold: 'never'
-                    unstable-threshold: 'FAILURE'
+      - trigger-builds:
+          - project: 'dovetail-{installer}-{pod}-proposed_tests-{stream}'
+            current-parameters: false
+            predefined-parameters:
+              DEPLOY_SCENARIO={scenario}
+            block: true
+            same-node: true
+            block-thresholds:
+              build-step-failure-threshold: 'never'
+              failure-threshold: 'never'
+              unstable-threshold: 'FAILURE'
       # Armband uses Fuel's log collection project job, no need to duplicate
       - conditional-step:
           condition-kind: not
