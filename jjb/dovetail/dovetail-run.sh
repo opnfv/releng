@@ -174,20 +174,25 @@ docker_volume="-v /var/run/docker.sock:/var/run/docker.sock"
 dovetail_home_volume="-v ${DOVETAIL_HOME}:${DOVETAIL_HOME}"
 
 # Pull the image with correct tag
-echo "Dovetail: Pulling image opnfv/dovetail:${DOCKER_TAG}"
-docker pull opnfv/dovetail:$DOCKER_TAG >$redirect
+DOCKER_REPO='opnfv/dovetail'
+if [ "$(uname -m)" = 'aarch64' ]; then
+    DOCKER_REPO="${DOCKER_REPO}_$(uname -m)"
+fi
+
+echo "Dovetail: Pulling image ${DOCKER_REPO}:${DOCKER_TAG}"
+docker pull ${DOCKER_REPO}:$DOCKER_TAG >$redirect
 
 env4bgpvpn="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP}"
 
 cmd="docker run ${opts} -e DOVETAIL_HOME=${DOVETAIL_HOME} ${docker_volume} ${dovetail_home_volume} \
-     ${sshkey} ${env4bgpvpn} opnfv/dovetail:${DOCKER_TAG} /bin/bash"
+     ${sshkey} ${env4bgpvpn} ${DOCKER_REPO}:${DOCKER_TAG} /bin/bash"
 echo "Dovetail: running docker run command: ${cmd}"
 ${cmd} >${redirect}
 sleep 5
-container_id=$(docker ps | grep "opnfv/dovetail:${DOCKER_TAG}" | awk '{print $1}' | head -1)
+container_id=$(docker ps | grep "${DOCKER_REPO}:${DOCKER_TAG}" | awk '{print $1}' | head -1)
 echo "Container ID=${container_id}"
 if [ -z ${container_id} ]; then
-    echo "Cannot find opnfv/dovetail container ID ${container_id}. Please check if it is existing."
+    echo "Cannot find ${DOCKER_REPO} container ID ${container_id}. Please check if it is existing."
     docker ps -a
     exit 1
 fi
@@ -195,8 +200,8 @@ echo "Container Start: docker start ${container_id}"
 docker start ${container_id}
 sleep 5
 docker ps >${redirect}
-if [ $(docker ps | grep "opnfv/dovetail:${DOCKER_TAG}" | wc -l) == 0 ]; then
-    echo "The container opnfv/dovetail with ID=${container_id} has not been properly started. Exiting..."
+if [ $(docker ps | grep "${DOCKER_REPO}:${DOCKER_TAG}" | wc -l) == 0 ]; then
+    echo "The container ${DOCKER_REPO} with ID=${container_id} has not been properly started. Exiting..."
     exit 1
 fi
 
