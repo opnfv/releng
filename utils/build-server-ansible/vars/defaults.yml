@@ -1,0 +1,23 @@
+#############################################################################
+# Copyright (c) 2016 The Linux Foundation and others.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+#############################################################################
+---
+docker_package: "docker-ce"
+docker_package_state: present
+
+# Used only for Debian/Ubuntu. Switch 'stable' to 'edge' if needed.
+docker_apt_release_channel: stable
+# yamllint disable rule:line-length
+docker_apt_repository: "deb https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} {{ docker_apt_release_channel }}"
+# yamllint enable rule:line-length
+
+# Used only for RedHat/CentOS.
+# yamllint disable rule:line-length
+docker_yum_repo_url: https://download.docker.com/linux/centos/docker-ce.repo
+# yamllint enable rule:line-length
+docker_yum_repo_enable_edge: 0
+docker_yum_repo_enable_test: 0

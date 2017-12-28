@@ -1,0 +1,37 @@
+############################################################################
+# Copyright (c) 2016 The Linux Foundation and others.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+#############################################################################
+---
+- hosts: "localhost"
+  become: "True"
+  tasks:
+    - debug:
+        msg: "{{ inventory_hostname }} is {{ ansible_distribution }}"
+    - include_vars: vars/defaults.yml
+    - include: vars/CentOS.yml
+      when: ansible_distribution == "CentOS"
+    - include: vars/Ubuntu.yml
+      when: ansible_distribution == "Ubuntu"
+    - name: Install Docker.
+      package: name={{ docker_package }} state={{ docker_package_state }}
+    - name: Ensure Docker is started and enabled at boot.
+      service:
+        name: docker
+        state: started
+        enabled: "yes"
+    - name: install gsutil
+      pip:
+        name: gsutil
+        state: present
+    - name: install tox
+      pip:
+        name: tox
+        state: present
+    - include: vars/docker-compose-CentOS.yml
+      when: ansible_distribution == "CentOS"
+    - include: vars/docker-compose-Ubuntu.yml
+      when: ansible_distribution == "Ubuntu"
