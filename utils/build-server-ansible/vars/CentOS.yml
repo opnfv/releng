@@ -1,0 +1,65 @@
+---
+- name: Ensure old versions of Docker are not installed.
+  package:
+    name: '{{ item }}'
+    state: absent
+  with_items:
+    - docker
+    - docker-common
+    - docker-engine
+
+- name: Add Docker GPG key.
+  rpm_key:
+    key: https://download.docker.com/linux/centos/gpg
+    state: present
+
+- name: Ensure epel is installed.
+  yum:
+    name: epel-release
+    state: present
+- name: Ensure depdencies are installed.
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python-pip
+    - rpm-build
+    - kernel-headers
+    - libpcap-devel
+    - zlib-devel
+    - numactl-devel
+    - doxygen
+    - python-sphinx
+    - libvirt-devel
+    - python-devel
+    - openssl-devel
+    - python-six
+    - net-tools
+    - bc
+
+- name: install the 'Development tools' package group
+  yum:
+    name: "@Development tools"
+    state: present
+
+- name: Add Docker repository.
+  get_url:
+    url: "{{ docker_yum_repo_url }}"
+    dest: '/etc/yum.repos.d/docker-ce.repo'
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Configure Docker Edge repo.
+  ini_file:
+    dest: '/etc/yum.repos.d/docker-ce.repo'
+    section: 'docker-ce-edge'
+    option: enabled
+    value: '{{ docker_yum_repo_enable_edge }}'
+
+- name: Configure Docker Test repo.
+  ini_file:
+    dest: '/etc/yum.repos.d/docker-ce.repo'
+    section: 'docker-ce-test'
+    option: enabled
+    value: '{{ docker_yum_repo_enable_test }}'
