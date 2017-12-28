@@ -1,0 +1,28 @@
+---
+- hosts: "localhost"
+  become: "True"
+  tasks:
+    - debug:
+        msg: "{{ inventory_hostname }} is {{ ansible_distribution }}"
+    - include_vars: defaults.yml
+    - include: setup-CentOS.yml
+      when: ansible_distribution == "CentOS"
+    - include: setup-Ubuntu.yml
+      when: ansible_distribution == "Ubuntu"
+    - name: Install Docker.
+      package: name={{ docker_package }} state={{ docker_package_state }}
+    - name: Ensure Docker is started and enabled at boot.
+      service:
+        name: docker
+        state: started
+        enabled: "yes"
+    - include: docker-compose.yml
+      when: docker_install_compose
+    - name: install gsutil
+      pip:
+        name: gsutil
+        state: present
+    - name: install tox
+      pip:
+        name: tox
+        state: present
