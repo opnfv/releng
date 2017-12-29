@@ -73,12 +73,16 @@ if [[ -f $OPENRC ]]; then
             exit 1
         fi
     fi
-    cat $OPENRC
 else
     echo "ERROR: cannot find file $OPENRC. Please check if it is existing."
     sudo ls -al ${DOVETAIL_CONFIG}
     exit 1
 fi
+
+if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == "fuel" ]]; then
+    sed -i "s#/etc/ssl/certs/mcp_os_cacert#${CACERT}#g" ${OPENRC}
+fi
+cat $OPENRC
 
 if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == "compass" ]]; then
     cat << EOF >${DOVETAIL_CONFIG}/pod.yaml
@@ -138,8 +142,12 @@ fi
 ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 if [ "$INSTALLER_TYPE" == "fuel" ]; then
-    echo "Fetching id_rsa file from jump_server $INSTALLER_IP..."
-    sshpass -p r00tme sudo scp $ssh_options root@${INSTALLER_IP}:~/.ssh/id_rsa ${DOVETAIL_CONFIG}/id_rsa
+    if [[ "${SUT_BRANCH}" =~ "danube" ]]; then
+        echo "Fetching id_rsa file from jump_server $INSTALLER_IP..."
+        sshpass -p r00tme sudo scp $ssh_options root@${INSTALLER_IP}:~/.ssh/id_rsa ${DOVETAIL_CONFIG}/id_rsa
+    else
+        cp ${SSH_KEY} ${DOVETAIL_CONFIG}/id_rsa
+    fi
 fi
 
 if [ "$INSTALLER_TYPE" == "apex" ]; then
