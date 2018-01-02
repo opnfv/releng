@@ -213,6 +213,15 @@ if [ $(docker ps | grep "${DOCKER_REPO}:${DOCKER_TAG}" | wc -l) == 0 ]; then
     exit 1
 fi
 
+if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_TYPE} == 'baremetal' ]]; then
+    source_cmd="source ${OPENRC}"
+    get_public_url_cmd="openstack --insecure endpoint list --service keystone --interface public | sed -n 4p | awk '{print \$14}'"
+    public_url=$(sudo docker exec "$container_id" /bin/bash -c "${source_cmd} && ${get_public_url_cmd}")
+    sed -i 's#OS_AUTH_URL=.*#OS_AUTH_URL='"${public_url}"'#g' ${OPENRC}
+    sed -i 's/internal/public/g' ${OPENRC}
+    cat ${OPENRC}
+fi
+
 # Modify tempest_conf.yaml file
 tempest_conf_file=${DOVETAIL_CONFIG}/tempest_conf.yaml
 if [[ ${INSTALLER_TYPE} == 'compass' || ${INSTALLER_TYPE} == 'apex' ]]; then
