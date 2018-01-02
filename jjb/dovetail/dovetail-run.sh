@@ -13,6 +13,9 @@
 set -e
 [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
 
+DEPLOY_TYPE=baremetal
+[[ $BUILD_TAG =~ "virtual" ]] && DEPLOY_TYPE=virt
+
 DOVETAIL_HOME=${WORKSPACE}/cvp
 [ -d ${DOVETAIL_HOME} ] && sudo rm -rf ${DOVETAIL_HOME}
 
