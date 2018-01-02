@@ -185,6 +185,7 @@ dovetail_home_volume="-v ${DOVETAIL_HOME}:${DOVETAIL_HOME}"
 DOCKER_REPO='opnfv/dovetail'
 if [ "$(uname -m)" = 'aarch64' ]; then
     DOCKER_REPO="${DOCKER_REPO}_$(uname -m)"
+    DOCKER_TAG="latest"
 fi
 
 echo "Dovetail: Pulling image ${DOCKER_REPO}:${DOCKER_TAG}"
@@ -211,6 +212,15 @@ docker ps >${redirect}
 if [ $(docker ps | grep "${DOCKER_REPO}:${DOCKER_TAG}" | wc -l) == 0 ]; then
     echo "The container ${DOCKER_REPO} with ID=${container_id} has not been properly started. Exiting..."
     exit 1
+fi
+
+if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_TYPE} == 'baremetal' ]]; then
+    source_cmd="source ${OPENRC}"
+    get_public_url_cmd="openstack --insecure endpoint list --service keystone --interface public | sed -n 4p | awk '{print \$14}'"
+    public_url=$(sudo docker exec "$container_id" /bin/bash -c "${source_cmd} && ${get_public_url_cmd}")
+    sed -i 's#OS_AUTH_URL=.*#OS_AUTH_URL='"${public_url}"'#g' ${OPENRC}
+    sed -i 's/internal/public/g' ${OPENRC}
+    cat ${OPENRC}
 fi
 
 # Modify tempest_conf.yaml file
