@@ -19,14 +19,22 @@ fi
 
 # clone the securedlab repo
 cd $WORKSPACE
-SECURELAB_DIR=/var/tmp/opnfv-securedlab
 
-echo "Cloning securedlab repo $BRANCH to $SECURELAB_DIR"
-rm -rf $SECURELAB_DIR
-git clone ssh://jenkins-zte@gerrit.opnfv.org:29418/securedlab --quiet \
-    --branch $BRANCH $SECURELAB_DIR
+# There are no PDFs in euphrates branch of pharos repo.
+if [[  "$BRANCH" =~ "euphrates" ]]; then
+    CONFIG_REPO_NAME=securedlab
+else
+    CONFIG_REPO_NAME=pharos
+fi
 
-DEPLOY_COMMAND="sudo -E ./ci/deploy/deploy.sh -L $SECURELAB_DIR \
+LABS_DIR=/var/tmp/opnfv-${CONFIG_REPO_NAME}
+
+echo "Cloning ${CONFIG_REPO_NAME} repo $BRANCH to $LABS_DIR"
+rm -rf $LABS_DIR
+git clone ssh://jenkins-zte@gerrit.opnfv.org:29418/${CONFIG_REPO_NAME} \
+    --quiet --branch $BRANCH $LABS_DIR
+
+DEPLOY_COMMAND="sudo -E ./ci/deploy/deploy.sh -L $LABS_DIR \
                 -l $LAB_NAME -p $POD_NAME -B $BRIDGE -s $DEPLOY_SCENARIO"
 
 # log info to console
