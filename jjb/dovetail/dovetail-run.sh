@@ -24,6 +24,8 @@ mkdir -p ${DOVETAIL_HOME}
 DOVETAIL_CONFIG=${DOVETAIL_HOME}/pre_config
 mkdir -p ${DOVETAIL_CONFIG}
 
+ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+
 sshkey=""
 # The path of openrc.sh is defined in fetch_os_creds.sh
 OPENRC=${DOVETAIL_CONFIG}/env_config.sh
@@ -99,6 +101,19 @@ nodes:
 EOF
 fi
 
+if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_TYPE} == 'baremetal' ]]; then
+    fuel_ctl_ssh_options="${ssh_options} -i ${SSH_KEY}"
+    ssh_user="ubuntu"
+    fuel_ctl_ip=$(ssh 2>/dev/null ${fuel_ctl_ssh_options} "${ssh_user}@${INSTALLER_IP}" \
+            "sudo salt --out yaml 'ctl*' pillar.get _param:openstack_control_address | \
+                awk '{print \$2; exit}'") &> /dev/null
+    cat << EOF >${DOVETAIL_CONFIG}/pod.yaml
+nodes:
+- {ip: ${fuel_ctl_ip}, name: node1, key_filename: /root/.ssh/id_rsa, role: controller, user: ${ssh_user}}
+
+EOF
+fi
+
 if [[ ! -f ${DOVETAIL_CONFIG}/pod.yaml ]]; then
     set +e
 
@@ -141,8 +156,6 @@ else
     sudo ls -al ${DOVETAIL_CONFIG}
     echo "HA test cases may not run properly."
 fi
-
-ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 if [ "$INSTALLER_TYPE" == "fuel" ]; then
     if [[ "${SUT_BRANCH}" =~ "danube" ]]; then
@@ -223,6 +236,11 @@ if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_T
     public_url=$(sudo docker exec "$container_id" /bin/bash -c "${source_cmd} && ${get_public_url_cmd}")
     sed -i 's#OS_AUTH_URL=.*#OS_AUTH_URL='"${public_url}"'#g' ${OPENRC}
     sed -i 's/internal/public/g' ${OPENRC}
+    if [[ ${public_url} =~ 'v2' ]]; then
+        sed -i "s/OS_IDENTITY_API_VERSION=3/OS_IDENTITY_API_VERSION=2.0/g" ${OPENRC}
+        sed -i '/OS_PROJECT_DOMAIN_NAME/d' ${OPENRC}
+        sed -i '/OS_USER_DOMAIN_NAME/d' ${OPENRC}
+    fi
     cat ${OPENRC}
 fi
 
