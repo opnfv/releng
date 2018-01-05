@@ -50,7 +50,9 @@
       - baremetal:
           slave-label: zte-pod3
           <<: *master
-
+      - zte-pod9:
+          slave-label: zte-pod9
+          <<: *master
     # -------------------------------
     #        None-CI PODs
     # -------------------------------
@@ -67,6 +69,9 @@
           auto-trigger-name: 'daisy-{scenario}-{pod}-daily-{stream}-trigger'
       # ODL_L3 scenarios
       - 'os-odl-nofeature-ha':
+          auto-trigger-name: 'daisy-{scenario}-{pod}-daily-{stream}-trigger'
+      # ovs_dpdk scenarios
+      - 'os-nosdn-ovs_dpdk-noha':
           auto-trigger-name: 'daisy-{scenario}-{pod}-daily-{stream}-trigger'
 
     jobs:
@@ -235,6 +240,11 @@
     name: 'daisy-os-odl-nofeature-ha-baremetal-daily-master-trigger'
     triggers:
       - timed: '0 12 * * *'
+# ovs_dpsk Scenarios
+- trigger:
+    name: 'daisy-os-nosdn-ovs_dpdk-noha-baremetal-daily-master-trigger'
+    triggers:
+      - timed: ''
 
 # ----------------------------------------------
 # Triggers for job running on daisy-virtual against master branch
@@ -254,6 +264,11 @@
     name: 'daisy-os-odl-nofeature-ha-virtual-daily-master-trigger'
     triggers:
       - timed: '0 12 * * *'
+# ovs_dpsk Scenarios
+- trigger:
+    name: 'daisy-os-nosdn-ovs_dpdk-noha-virtual-daily-master-trigger'
+    triggers:
+      - timed: ''
 
 # ----------------------------------------------
 # Triggers for job running on daisy-baremetal against euphrates branch
@@ -273,6 +288,11 @@
     name: 'daisy-os-odl-nofeature-ha-baremetal-daily-euphrates-trigger'
     triggers:
       - timed: '0 20 * * *'
+# ovs_dpsk Scenarios
+- trigger:
+    name: 'daisy-os-nosdn-ovs_dpdk-noha-baremetal-daily-euphrates-trigger'
+    triggers:
+      - timed: ''
 
 # ----------------------------------------------
 # Triggers for job running on daisy-virtual against euphrates branch
@@ -292,3 +312,17 @@
     name: 'daisy-os-odl-nofeature-ha-virtual-daily-euphrates-trigger'
     triggers:
       - timed: '0 20 * * *'
+# ovs_dpsk Scenarios
+- trigger:
+    name: 'daisy-os-nosdn-ovs_dpdk-noha-virtual-daily-euphrates-trigger'
+    triggers:
+      - timed: ''
+
+# ----------------------------------------------
+# ZTE POD9 Triggers running against master branch
+# ----------------------------------------------
+# ovs_dpsk Scenarios
+- trigger:
+    name: 'daisy-os-nosdn-ovs_dpdk-noha-zte-pod9-daily-master-trigger'
+    triggers:
+      - timed: '0 10 * * *'
