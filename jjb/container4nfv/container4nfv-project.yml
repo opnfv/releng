@@ -10,7 +10,8 @@
 
     jobs:
       - 'container4nfv-verify-{stream}'
-      - 'container4nfv-daily-{stream}'
+      - 'container4nfv-daily-upload-{stream}'
+      - 'container4nfv-daily-deploy-{stream}'
 
     stream:
       - master:
@@ -71,9 +72,34 @@
           cd $WORKSPACE/ci
           ./build.sh
 
+- job-template:
+    name: 'container4nfv-daily-upload-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    scm:
+      - git-scm
+
+    wrappers:
+      - fix-workspace-permissions
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
+      - 'container4nfv-defaults':
+          gs-pathname: '{gs-pathname}'
+
+    builders:
+      - shell: |
+          cd $WORKSPACE/ci
+          ./upload.sh
 
 - job-template:
-    name: 'container4nfv-daily-{stream}'
+    name: 'container4nfv-daily-deploy-{stream}'
 
     project-type: freestyle
 
@@ -115,3 +141,14 @@
       - shell: |
           cd $WORKSPACE/ci
           ./deploy.sh
+
+###################
+# parameter macros
+###################
+- parameter:
+    name: 'container4nfv-defaults'
+    parameters:
+      - string:
+          name: GS_URL
+          default: artifacts.opnfv.org/$PROJECT{gs-pathname}
+          description: "URL to Google Storage."
