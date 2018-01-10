@@ -72,20 +72,15 @@
     disabled: '{obj:disabled}'
 
     parameters:
-      - project-parameter:
-          project: 'pharos-tools'
-          branch: 'master'
       - 'pharos-dashboard-defaults'
-
-    scm:
-      - git-scm-gerrit
 
     triggers:
       - timed: '@daily'
 
     builders:
       - shell: |
-          mkdir -p /home/backups/
+          BACKUP_DIR=/home/$USER/backups/
+          mkdir -p $BACKUP_DIR
           DATE=$(date +%Y%m%d)
           echo "-- $DATE --"
           echo "Backing up Pharos Dashboard data..."
@@ -94,6 +89,6 @@
             -v /tmp:/backup \
             alpine \
             tar -czf /backup/pharos-dashboard-db-$(date +%Y%m%d).tar.gz -C /pharos_data ./
-          sudo mv /tmp/pharos-dashboard-db-$(date +%Y%m%d).tar.gz /home/backups/
-          sudo chown $USER:$USER $WORKSPACE/backups/pharos-dashboard-db-$(date +%Y%m%d).tar.gz
+          sudo mv /tmp/pharos-dashboard-db-$(date +%Y%m%d).tar.gz $BACKUP_DIR
+          sudo chown $USER:$USER $BACKUP_DIR/pharos-dashboard-db-$(date +%Y%m%d).tar.gz
           echo "...complete"
