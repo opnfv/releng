@@ -1,0 +1,46 @@
+---
+##
+# Basic Job Config
+#
+# This is used for project which don't have any jobs of substance
+# defined yet, but still need 'Verified+1'.
+##
+- job-group:
+    name: '{project}-verify-basic'
+
+    stream:
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
+      - euphrates:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
+
+    jobs:
+      - '{project}-verify-{stream}'
+
+- job-template:
+    name: '{project}-verify-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-defaults'
+
+    scm:
+      - git-scm-gerrit
+
+    triggers:
+      - gerrit-trigger-patchset-created:
+          project: '{project}'
+          branch: '{branch}'
+          files: 'docs/**|.gitignore'
+
+    builders:
+      - shell: |
+          echo "Nothing to verify!"
