@@ -1,0 +1,52 @@
+---
+
+- project:
+    name: 'container4nfv-arm64'
+    project: 'container4nfv'
+    installer: 'compass'
+    scenario:
+      - 'k8-multus-nofeature-noha':
+          disabled: false
+      - 'k8-sriov-nofeature-noha':
+          disabled: false
+    jobs:
+      - 'container4nfv-{scenario}-virtual-daily-master'
+
+
+- job-template:
+    name: 'container4nfv-{scenario}-virtual-daily-master'
+    disabled: '{obj:disabled}'
+    concurrent: false
+    node: arm-packet01
+
+    scm:
+      - git:
+          url: https://gerrit.opnfv.org/gerrit/compass4nfv
+          branches:
+            - origin/master
+          basedir: compass4nfv
+          wipe-workspace: true
+
+    triggers:
+      - 'trigger-{scenario}-virtual'
+
+    wrappers:
+      - timeout:
+          timeout: 120
+          fail: true
+
+    builders:
+      - shell:
+          !include-raw: arm64/compass-build.sh
+      - shell:
+          !include-raw: arm64/compass-deploy.sh
+
+
+- trigger:
+    name: 'trigger-k8-multus-nofeature-noha-virtual'
+    triggers:
+      - timed: '0 12 * * *'
+- trigger:
+    name: 'trigger-k8-sriov-nofeature-noha-virtual'
+    triggers:
+      - timed: '0 16 * * *'
