@@ -10,6 +10,7 @@ DEPLOY_SCENARIO=${DEPLOY_SCENARIO:-"os-nosdn-nofeature-noha"}
 BRIDGE=${BRIDGE:-pxebr}
 LAB_NAME=${NODE_NAME/-*}
 POD_NAME=${NODE_NAME/*-}
+IMAGE_DIR=${IMAGE_DIR:-/tmp/workdir/daisy}
 deploy_ret=0
 
 if [[ ! "$NODE_NAME" =~ "-virtual" ]] && [[ ! "$LAB_NAME" =~ (zte) ]]; then
@@ -35,7 +36,8 @@ git clone ssh://jenkins-zte@gerrit.opnfv.org:29418/${CONFIG_REPO_NAME} \
     --quiet --branch $BRANCH $LABS_DIR
 
 DEPLOY_COMMAND="sudo -E ./ci/deploy/deploy.sh -L $LABS_DIR \
-                -l $LAB_NAME -p $POD_NAME -B $BRIDGE -s $DEPLOY_SCENARIO"
+                -l $LAB_NAME -p $POD_NAME -B $BRIDGE -s $DEPLOY_SCENARIO \
+                -w IMAGE_DIR"
 
 # log info to console
 echo """
