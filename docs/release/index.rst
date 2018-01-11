@@ -13,5 +13,6 @@ Releasing OPNFV
    :maxdepth: 2
 
    release-process
+   release-automation
    stable-branch-guide
    versioning

@@ -1,0 +1,119 @@
+# SPDX-License-Identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2018 The Linux Foundation and others.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+---
+- project:
+    name: releng-release-jobs
+
+    stream:
+      - 'fraser'
+
+    jobs:
+      - 'releng-release-{stream}-verify'
+      - 'releng-release-{stream}-merge'
+
+    project: 'releng'
+
+- job-template:
+    name: 'releng-release-{stream}-verify'
+
+    parameters:
+      - stream-parameter:
+          stream: '{stream}'
+      - project-parameter:
+          project: '{project}'
+          branch: 'master'
+
+    scm:
+      - git-scm-gerrit
+
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'releng'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/master'
+              file-paths:
+                - compare-type: ANT
+                  pattern: 'releases/{stream}/**'
+                - compare-type: ANT
+                  pattern: 'releases/schema.yaml'
+                - compare-type: ANT
+                  pattern: 'releases/scripts/verify_schema.py'
+
+    builders:
+      - create-virtualenv
+      - shell:
+          !include-raw-escape: releng-release-verify.sh
+
+    publishers:
+      - email-jenkins-admins-on-failure
+
+- job-template:
+    name: 'releng-release-{stream}-merge'
+
+    parameters:
+      - node:
+          name: SLAVE_NAME
+          description: 'Only run merge job on build1'
+          default-slaves:
+            - lf-build1
+          allowed-multiselect: false
+          ignore-offline-nodes: true
+      - stream-parameter:
+          stream: '{stream}'
+      - project-parameter:
+          project: '{project}'
+          branch: 'master'
+
+    scm:
+      - git-scm-gerrit
+
+    triggers:
+      - gerrit-trigger-change-merged:
+          project: '{project}'
+          branch: 'master'
+          files: 'releases/**'
+
+    builders:
+      - create-virtualenv
+      - shell:
+          !include-raw-escape: releng-release-create-branch.sh
+
+    publishers:
+      - email-jenkins-admins-on-failure
+
+- parameter:
+    name: stream-parameter
+    parameters:
+      - string:
+          name: STREAM
+          default: '{stream}'
+          description: "OPNFV Stable Stream"
+
+- builder:
+    name: create-virtualenv
+    builders:
+      - shell: |
+          #!/bin/bash
+          sudo pip install virtualenv
+          virtualenv $WORKSPACE/venv
+          . $WORKSPACE/venv/bin/activate
+          pip install --upgrade pip

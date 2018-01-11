@@ -1,0 +1,56 @@
+##############################################################################
+# Copyright (c) 2018 Linux Foundation and others.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+---
+$schema: 'http://json-schema.org/schema#'
+$id: 'https://github.com/opnfv/releng/blob/master/releases/schema.yaml'
+
+additionalProperties: false
+
+required:
+  - 'project'
+  - 'project-type'
+
+properties:
+  project:
+    type: 'string'
+  release-model:
+    type: 'string'
+    enum: ['stable', 'non-release']
+  project-type:
+    type: 'string'
+    enum: ['installer', 'testing', 'feature', 'tools', 'infra']
+  upstream:
+    type: 'string'
+  releases:
+    type: 'array'
+    items:
+      type: 'object'
+      properties:
+        version:
+          type: 'string'
+          # Matches semantic versioning (X.Y.Z)
+          pattern: '^opnfv-([0-9]+\.){2}[0-9]+$'
+        location:
+          type: 'object'
+      required: ['version', 'location']
+      additionalProperties: false
+  branches:
+    type: 'array'
+    items:
+      type: 'object'
+      properties:
+        name:
+          type: 'string'
+          pattern: '^stable/[a-z]+$'
+        location:
+          type: 'object'
+      required: ['name', 'location']
+      additionalProperties: false
+  release-notes:
+    type: 'string'
+    format: 'uri'
