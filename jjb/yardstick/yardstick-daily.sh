@@ -22,7 +22,7 @@ fi
 
 if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     if [[ "${DEPLOY_SCENARIO:0:2}" == "k8" ]];then
-        rc_file_vol="-v /home/ubuntu/config:/etc/yardstick/admin.conf"
+        rc_file_vol="-v ${HOME}/admin.conf:/etc/yardstick/admin.conf"
     else
         # If production lab then creds may be retrieved dynamically
         # creds are on the jumphost, always in the same folder
@@ -31,8 +31,12 @@ if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
         # replace the default one by the customized one provided by jenkins config
     fi
 elif [[ ${INSTALLER_TYPE} == 'compass' ]]; then
-    cacert_file_vol="-v ${HOME}/os_cacert:/etc/yardstick/os_cacert"
-    echo "export OS_CACERT=/etc/yardstick/os_cacert" >> ${HOME}/opnfv-openrc.sh
+    if [[ "${DEPLOY_SCENARIO:0:2}" == "k8" ]];then
+        rc_file_vol="-v ${HOME}/admin.conf:/etc/yardstick/admin.conf"
+    else
+        cacert_file_vol="-v ${HOME}/os_cacert:/etc/yardstick/os_cacert"
+        echo "export OS_CACERT=/etc/yardstick/os_cacert" >> ${HOME}/opnfv-openrc.sh
+    fi
 elif [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:/etc/ssl/certs/mcp_os_cacert"
     sshkey="-v ${SSH_KEY}:/root/.ssh/mcp.rsa"
@@ -68,13 +72,8 @@ sudo rm -rf ${dir_result}/*
 map_log_dir="-v ${dir_result}:/tmp/yardstick"
 
 # Run docker
-if [[ ${INSTALLER_TYPE} == "joid" && "${DEPLOY_SCENARIO:0:2}" == "k8" ]];then
-    juju ssh kubernetes-master/0 sudo apt-get install -y docker.io
-    cmd="juju ssh kubernetes-master/0 sudo docker run ${opts} ${envs} ${rc_file_vol} ${cacert_file_vol} ${map_log_dir} ${sshkey} ${DOCKER_REPO}:${DOCKER_TAG} exec_tests.sh ${YARDSTICK_DB_BACKEND} ${YARDSTICK_SCENARIO_SUITE_NAME}"
-else
-    cmd="sudo docker run ${opts} ${envs} ${rc_file_vol} ${cacert_file_vol} ${map_log_dir} ${sshkey} ${DOCKER_REPO}:${DOCKER_TAG} \
-    exec_tests.sh ${YARDSTICK_DB_BACKEND} ${YARDSTICK_SCENARIO_SUITE_NAME}"
-fi
+cmd="sudo docker run ${opts} ${envs} ${rc_file_vol} ${cacert_file_vol} ${map_log_dir} ${sshkey} ${DOCKER_REPO}:${DOCKER_TAG} \
+exec_tests.sh ${YARDSTICK_DB_BACKEND} ${YARDSTICK_SCENARIO_SUITE_NAME}"
 
 echo "Yardstick: Running docker cmd: ${cmd}"
 ${cmd}
