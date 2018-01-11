@@ -1,0 +1,60 @@
+##############################################################################
+# Copyright (c) 2018 Enea AB and others.
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+---
+$schema: 'http://json-schema.org/schema#'
+$id: 'https://github.com/opnfv/releng/blob/master/releases/schema.yaml'
+
+definitions:
+  team:
+    type: 'string'
+  release-model:
+    type: 'string'
+  type:
+    type: 'string'
+    enum:
+      - 'installer'
+      - 'feature'
+      - 'misc'
+  upstream:
+    type: 'string'
+  repos:
+    type: 'array'
+    items:
+      type: 'object'
+      properties:
+        name:
+          type: 'string'
+        releases:
+          type: 'array'
+          items:
+            type: 'object'
+            properties:
+              version:
+                type: 'string'
+              hash:
+                type: 'string'
+  branches:
+    type: 'array'
+    items:
+      type: 'object'
+      properties:
+        name:
+          type: 'string'
+        location:
+          type: 'string'
+  release-notes:
+    type: 'string'
+  required:
+    - 'team'
+    - 'release-model'
+    - 'type'
+    - 'upstream'
+    - 'repos'
+    - 'branches'
+    - 'release-notes'
+  additionalProperties: false
