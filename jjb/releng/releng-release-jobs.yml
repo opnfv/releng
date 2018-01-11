@@ -1,0 +1,100 @@
+---
+- project:
+    name: releng-release-jobs
+
+    stream:
+      - 'fraser'
+
+    jobs:
+      - 'releng-release-verify'
+      - 'releng-release-merge'
+
+    project: 'releng'
+
+- job-template:
+    name: releng-release-verify
+
+    parameters:
+      - stream-parameter
+      - project-parameter:
+          project: '{project}'
+          branch: 'master'
+
+    scm:
+      - git-scm-gerrit
+
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'releng'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/master'
+              file-paths:
+                - compare-type: ANT
+                  pattern: 'releases/{stream}/**'
+                - compare-type: ANT
+                  pattern: 'releases/schema.yaml'
+
+    builders:
+      - create-virtualenv
+      - shell:
+          !include-raw-escape: releng-release-verify.sh
+
+    publishers:
+      - email-jenkins-admins-on-failure
+
+- job-template:
+    name: releng-release-merge
+
+    parameters:
+      - stream-parameter
+      - project-parameter:
+          project: '{project}'
+          branch: 'master'
+
+    scm:
+      - git-scm-gerrit
+
+    triggers:
+      - gerrit-trigger-change-merged:
+          project: '{project}'
+          branch: 'master'
+          files: 'releases/**'
+
+    builders:
+      - create-virtualenv
+      - shell:
+          !include-raw-escape: releng-release-create-branch.sh
+
+    publishers:
+      - email-jenkins-admins-on-failure
+
+- parameter:
+    name: stream-parameter
+    parameters:
+      - string:
+          name: STREAM
+          default: '{stream}'
+          description: "OPNFV Stable Stream"
+
+- builder:
+    name: create-virtualenv
+    builders:
+      - shell: |
+          #!/bin/bash
+          sudo pip install virtualenv
+          virtualenv $WORKSPACE/venv
+          . $WORKSPACE/venv/bin/activate
+          pip install --upgrade pip
