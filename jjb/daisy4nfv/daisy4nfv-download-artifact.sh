@@ -68,7 +68,15 @@ else
     DOWNLOAD_CMD="curl -L -s -o $WORKSPACE/opnfv.bin"
 fi
 
-$DOWNLOAD_CMD http://$OPNFV_ARTIFACT_URL > gsutil.bin.log 2>&1
+maxretries=3
+cnt=0
+rc=1
+while [ $cnt -lt $maxretries ] && [ $rc -ne 0 ]
+do
+    cnt=$[cnt + 1]
+    $DOWNLOAD_CMD http://$OPNFV_ARTIFACT_URL > gsutil.bin.log 2>&1
+    rc=$?
+done
 
 # list the file
 ls -al $WORKSPACE/opnfv.bin
