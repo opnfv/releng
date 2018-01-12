@@ -132,7 +132,11 @@
               <<: *build-job-settings
             - name: 'functest-vnf-docker-build-amd64-{stream}'
               <<: *build-job-settings
+            - name: 'functest-vnf-docker-build-arm64-{stream}'
+              <<: *build-job-settings
             - name: 'functest-restapi-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-restapi-docker-build-arm64-{stream}'
               <<: *build-job-settings
       - multijob:
           name: 'publish all manifests'
@@ -215,18 +219,10 @@
           *)
               tag="{stream}" ;;
           esac
-          case "{image}" in
-          "vnf"|"restapi")
-              sudo manifest-tool push from-args \
-                  --platforms linux/amd64 \
-                  --template opnfv/functest-{image}:ARCH-$tag \
-                  --target opnfv/functest-{image}:$tag ;;
-          *)
-              sudo manifest-tool push from-args \
-                  --platforms linux/amd64,linux/arm64 \
-                  --template opnfv/functest-{image}:ARCH-$tag \
-                  --target opnfv/functest-{image}:$tag ;;
-          esac
+          sudo manifest-tool push from-args \
+              --platforms linux/amd64,linux/arm64 \
+              --template opnfv/functest-{image}:ARCH-$tag \
+              --target opnfv/functest-{image}:$tag ;;
           exit $?
 
 # parameter macro
