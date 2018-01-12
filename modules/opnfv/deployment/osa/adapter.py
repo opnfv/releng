@@ -19,7 +19,8 @@ logger = logger.Logger(__name__).getLogger()
 class OSAAdapter(manager.DeploymentHandler):
 
     def __init__(self, installer_ip, installer_user, pkey_file):
-        self.SOURCE_PATH_UC = "/etc/openstack_deploy/openstack_user_config.yml"
+        self.SOURCE_PATH_UC = ("/etc/openstack_deploy/"
+                               "openstack_hostnames_ips.yml")
         self.DEST_PATH_UC = "/tmp/openstack_user_config.yml"
         super(OSAAdapter, self).__init__(installer='osa',
                                          installer_ip=installer_ip,
@@ -28,24 +29,26 @@ class OSAAdapter(manager.DeploymentHandler):
                                          pkey_file=pkey_file)
 
     def _find_nodes(self, file):
-        nodes = file['compute_hosts']
-        controllers = file['haproxy_hosts']
-        for controller in controllers:
-            nodes[controller] = controllers[controller]
+        nodes = []
+        for line in file.keys():
+            if "neutron_server_container" in line:
+                nodes.append({line: file[line]})
+            if "compute" in line:
+                nodes.append({line: file[line]})
         return nodes
 
     def _process_nodes(self, raw_nodes):
         nodes = []
 
         for node in raw_nodes:
-            name = node
-            ip = raw_nodes[node]['ip']
+            name = node.keys()[0]
+            ip = node[name]['container_address']
             # TODO when xci provides status and id of nodes add logic
             status = 'active'
             id = None
-            if 'controller' in node:
+            if 'controller' in name:
                 roles = 'controller'
-            elif 'compute' in node:
+            elif 'compute' in name:
                 roles = 'compute'
             ssh_client = ssh_utils.get_ssh_client(hostname=ip,
                                                   username=self.installer_user,
