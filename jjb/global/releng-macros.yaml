@@ -172,7 +172,7 @@
 - trigger:
     name: gerrit-trigger-patchset-created
     triggers:
-      - gerrit:
+      - gerrit: &gerrit_trigger_defaults
           server-name: 'gerrit.opnfv.org'
           trigger-on:
             - patchset-created-event:
@@ -190,14 +190,67 @@
               branches:
                 - branch-compare-type: 'ANT'
                   branch-pattern: '**/{branch}'
-              file-paths:
-                - compare-type: 'ANT'
-                  pattern: '{files}'
           skip-vote:
             successful: false
             failed: false
             unstable: false
             notbuilt: false
+
+- trigger:
+    name: gerrit-trigger-patchset-created-files
+    triggers:
+      - gerrit: &gerrit_trigger_files_defaults
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths: '{obj:file_paths}'
+          <<: *gerrit_trigger_defaults
+
+- trigger:
+    name: gerrit-trigger-patchset-created-files-readable
+    triggers:
+      - gerrit:
+          readable-message: true
+          <<: *gerrit_trigger_files_defaults
+
+- trigger:
+    name: gerrit-trigger-patchset-created-except-docs
+    triggers:
+      - gerrit: &gerrit_trigger_except_docs_defaults
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              disable-strict-forbidden-file-verification: 'true'
+              forbidden-file-paths:
+                - compare-type: ANT
+                  pattern: 'docs/**'
+                - compare-type: ANT
+                  pattern: '.gitignore'
+          <<: *gerrit_trigger_defaults
+
+- trigger:
+    name: gerrit-trigger-patchset-created-except-docs-readable
+    triggers:
+      - gerrit:
+          readable-message: true
+          <<: *gerrit_trigger_except_docs_defaults
+
+- trigger:
+    name: gerrit-trigger-patchset-created-non-voting
+    triggers:
+      - gerrit:
+          skip-vote:
+            successful: true
+            failed: true
+            unstable: true
+            notbuilt: true
+          <<: *gerrit_trigger_defaults
 
 - trigger:
     name: gerrit-trigger-change-merged
@@ -233,7 +286,7 @@
                   branch-pattern: 'refs/tags/**'
 
 - trigger:
-    name: 'experimental'
+    name: experimental
     triggers:
       - gerrit:
           server-name: 'gerrit.opnfv.org'
