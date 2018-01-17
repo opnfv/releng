@@ -136,60 +136,6 @@
 
     project-type: 'multijob'
 
-    parameters:
-      - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - 'opnfv-build-ubuntu-defaults'
-      - string:
-          name: OS_CREDS
-          default: /home/jenkins/openstack.creds
-          description: 'OpenStack credentials'
-      - string:
-          name: DOCKER_TAG
-          default: '{docker-tag}'
-          description: 'Tag to pull docker image'
-      - string:
-          name: CLEAN_DOCKER_IMAGES
-          default: 'false'
-          description: 'Remove downloaded docker images (opnfv/functest:*)'
-      - string:
-          name: DEPLOY_SCENARIO
-          default: 'os-nosdn-nofeature-ha'
-          description: 'Scenario to deploy and test'
-      # functest-suite-parameter
-      - string:
-          name: FUNCTEST_MODE
-          default: 'testcase'
-      - string:
-          name: FUNCTEST_SUITE_NAME
-          default: 'doctor-notification'
-      - string:
-          name: TESTCASE_OPTIONS
-          # yamllint disable rule:line-length
-          default: '-e INSPECTOR_TYPE={inspector} -v $WORKSPACE:/home/opnfv/repos/doctor'
-          # yamllint enable rule:line-length
-          description: 'Addtional parameters specific to test case(s)'
-      # functest-parameter
-      - string:
-          name: GS_PATHNAME
-          default: '{gs-pathname}'
-          # yamllint disable rule:line-length
-          description: "Version directory where the opnfv documents will be stored in gs repository"
-          # yamllint enable rule:line-length
-      - string:
-          name: FUNCTEST_REPO_DIR
-          default: "/home/opnfv/repos/functest"
-          description: "Directory where the Functest repository is cloned"
-      - string:
-          name: PUSH_RESULTS_TO_DB
-          default: "true"
-          description: "Push the results of all the tests to the resultDB"
-      - string:
-          name: CI_DEBUG
-          default: 'true'
-          description: "Show debug output information"
-
     scm:
       - git-scm-gerrit
 
@@ -265,12 +211,75 @@
           branch: '{branch}'
       - '{installer}-defaults'
       - '{slave-label}-defaults'
+      - 'opnfv-build-ubuntu-defaults'
+      - 'doctor-parameter'
+      - 'doctor-functest-parameter'
     scm:
       - git-scm-gerrit
     builders:
       - 'doctor-verify-installer-inspector-builders-macro'
     publishers:
       - 'doctor-verify-publishers-macro'
+
+
+# -------------------------------
+# parameter macros
+# -------------------------------
+- parameter:
+    name: 'doctor-parameter'
+    parameters:
+      - string:
+          name: OS_CREDS
+          default: /home/jenkins/openstack.creds
+          description: 'OpenStack credentials'
+      - string:
+          name: DOCKER_TAG
+          default: '{docker-tag}'
+          description: 'Tag to pull docker image'
+      - string:
+          name: CLEAN_DOCKER_IMAGES
+          default: 'false'
+          description: 'Remove downloaded docker images (opnfv/functest:*)'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-nosdn-nofeature-ha'
+          description: 'Scenario to deploy and test'
+
+- parameter:
+    name: 'doctor-functest-parameter'
+    parameters:
+      # functest-suite-parameter
+      - string:
+          name: FUNCTEST_MODE
+          default: 'testcase'
+      - string:
+          name: FUNCTEST_SUITE_NAME
+          default: 'doctor-notification'
+      - string:
+          name: TESTCASE_OPTIONS
+          # yamllint disable rule:line-length
+          default: '-e INSPECTOR_TYPE={inspector} -v $WORKSPACE:/home/opnfv/repos/doctor'
+          # yamllint enable rule:line-length
+          description: 'Addtional parameters specific to test case(s)'
+      # functest-parameter
+      - string:
+          name: GS_PATHNAME
+          default: '{gs-pathname}'
+          # yamllint disable rule:line-length
+          description: "Version directory where the opnfv documents will be stored in gs repository"
+          # yamllint enable rule:line-length
+      - string:
+          name: FUNCTEST_REPO_DIR
+          default: "/home/opnfv/repos/functest"
+          description: "Directory where the Functest repository is cloned"
+      - string:
+          name: PUSH_RESULTS_TO_DB
+          default: "true"
+          description: "Push the results of all the tests to the resultDB"
+      - string:
+          name: CI_DEBUG
+          default: 'true'
+          description: "Show debug output information"
 # -------------------------------
 # builder macros
 # -------------------------------
