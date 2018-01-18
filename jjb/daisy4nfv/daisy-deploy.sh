@@ -30,7 +30,7 @@ fi
 LABS_DIR=/var/tmp/opnfv-${CONFIG_REPO_NAME}
 
 echo "Cloning ${CONFIG_REPO_NAME} repo $BRANCH to $LABS_DIR"
-rm -rf $LABS_DIR
+sudo rm -rf $LABS_DIR
 git clone ssh://jenkins-zte@gerrit.opnfv.org:29418/${CONFIG_REPO_NAME} \
     --quiet --branch $BRANCH $LABS_DIR
 
