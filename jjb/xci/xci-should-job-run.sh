@@ -14,5 +14,17 @@
 # what you are doing.
 #----------------------------------------------------------------------
 
+# skip the deployment if the patch doesn't impact the deployment
+if [[ "$GERRIT_TOPIC" =~ 'skip-verify' ]]; then
+    echo "# SKIPPED: Patch doesn't impact deployment"
+fi
+
+# skip the deployment if the scenario is not supported on this distro
+OPNFV_SCENARIO_REQUIREMENTS=$WORKSPACE/xci/opnfv-scenario-requirements.yml
+if ! sed -n "/^- scenario: $DEPLOY_SCENARIO$/,/^- scenario/p" $OPNFV_SCENARIO_REQUIREMENTS | grep -q $DISTRO; then
+    echo "# SKIPPED: Scenario $DEPLOY_SCENARIO is NOT supported on $DISTRO"
+fi
+
 sudo virsh destroy ${DISTRO}_xci_vm
 sudo virsh undefine ${DISTRO}_xci_vm
+exit 1
