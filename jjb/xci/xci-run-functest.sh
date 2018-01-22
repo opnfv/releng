@@ -14,10 +14,4 @@
 # what you are doing.
 #----------------------------------------------------------------------
 
-# skip the healthcheck if the patch doesn't impact the deployment
-if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]]; then
-    echo "Skipping the healthcheck!"
-    exit 0
-fi
-
 echo "Hello World!"
