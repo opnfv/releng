@@ -52,7 +52,7 @@
 
     disabled: '{obj:disabled}'
 
-    concurrent: true
+    concurrent: false
 
     properties:
       - logrotate-default
@@ -66,12 +66,6 @@
             - 'xci-osa-periodic-{distro}-.*'
             - 'xci-(os|k8s).*?-virtual-{distro}-.*'
           block-level: 'NODE'
-      - throttle:
-          max-per-node: 2
-          max-total: 10
-          categories:
-            - xci-verify-virtual
-          option: category
 
     wrappers:
       - ssh-agent-wrapper
@@ -230,23 +224,21 @@
 - builder:
     name: 'xci-merge-deploy-macro'
     builders:
-      - shell: |
-          #!/bin/bash
-
-          echo "Hello World!"
+      - shell:
+          !include-raw: ./xci-start-new-vm.sh
+      - shell:
+          !include-raw: ./xci-start-deployment.sh
 
 - builder:
     name: 'xci-merge-healthcheck-macro'
     builders:
-      - shell: |
-          #!/bin/bash
-
-          echo "Hello World!"
+      - shell:
+          !include-raw: ./xci-run-functest.sh
+      - shell:
+          !include-raw: ./xci-cleanup.sh
 
 - builder:
     name: 'xci-merge-promote-macro'
     builders:
-      - shell: |
-          #!/bin/bash
-
-          echo "Hello World!"
+      - shell:
+          !include-raw: ./xci-promote.sh
