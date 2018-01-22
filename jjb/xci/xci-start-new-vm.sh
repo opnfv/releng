@@ -39,7 +39,7 @@ export INSTALLER_TYPE=$INSTALLER_TYPE
 export GIT_BASE=$GIT_BASE
 export JENKINS_HOME=$JENKINS_HOME
 
-if [ ! -z ${WORKSPACE+x} ]; then
+if [[ ! -z ${WORKSPACE+x} && $GERRIT_PROJECT != "releng-xci" ]]; then
     git clone https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT xci/scenarios/$DEPLOY_SCENARIO && cd xci/scenarios/$DEPLOY_SCENARIO
     git fetch https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT $GERRIT_REFSPEC && git checkout FETCH_HEAD
     cd -
