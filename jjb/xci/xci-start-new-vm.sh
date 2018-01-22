@@ -14,12 +14,6 @@
 # what you are doing.
 #----------------------------------------------------------------------
 
-# skip the deployment if the patch doesn't impact the deployment
-if [[ "$GERRIT_TOPIC" =~ 'skip-verify' ]]; then
-    echo "Skipping the deployment!"
-    exit 0
-fi
-
 cd $WORKSPACE
 
 # The start-new-vm.sh script will copy the entire releng-xci directory

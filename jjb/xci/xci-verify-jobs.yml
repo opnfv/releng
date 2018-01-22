@@ -137,6 +137,24 @@
       - description-setter:
           description: "Built on $NODE_NAME"
       - multijob:
+          name: check scenario support on distro
+          condition: SUCCESSFUL
+          projects:
+            - name: 'xci-verify-{distro}-check-{type}-{stream}'
+              current-parameters: true
+              predefined-parameters: |
+                PROJECT=$PROJECT
+                DISTRO={distro}
+                DEPLOY_SCENARIO={scenario}
+                CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - multijob:
           name: deploy
           condition: SUCCESSFUL
           projects:
@@ -172,6 +190,10 @@
               node-parameters: true
               kill-phase-on: NEVER
               abort-all-job: true
+
+    publishers:
+      - groovy-postbuild:
+          script: "if( manager.logContains('.*# SKIPPED.*') ) { manager.buildNotBuilt() }"
 
 - job-template:
     name: 'xci-verify-{distro}-{phase}-{type}-{stream}'
@@ -241,6 +263,12 @@
 # -------------------------------
 # builder macros
 # -------------------------------
+- builder:
+    name: 'xci-verify-check-macro'
+    builders:
+      - shell:
+          !include-raw: ./xci-should-job-run.sh
+
 - builder:
     name: 'xci-verify-deploy-macro'
     builders:
