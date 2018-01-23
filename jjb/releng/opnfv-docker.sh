@@ -12,8 +12,8 @@ set -o nounset
 set -o pipefail
 
 
-
-echo "Starting opnfv-docker for $DOCKER_REPO_NAME ..."
+echo "Using Docker $(docker --version) on $NODE_NAME"
+echo "Starting Docker build for $DOCKER_REPO_NAME ..."
 echo "--------------------------------------------------------"
 echo
 
