@@ -6,6 +6,8 @@
       - '{name}'
       - '{name}-tools'
 
+    disabled: false
+
     jobs:
       - '{project}-verify-basic'
       - 'backup-pharos-dashboard'
@@ -29,7 +31,7 @@
           mkdir -p $BACKUP_DIR
           echo "-- $(date +%Y%m%d) --"
           echo "Backing up Pharos Dashboard data..."
-          sudo docker run -it --rm \
+          sudo docker run --rm \
             -v pharos-data:/pharos-data:ro \
             -v $TMP_DIR:/backup \
             alpine \
