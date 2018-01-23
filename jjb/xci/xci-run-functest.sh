@@ -20,4 +20,11 @@ if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]]; then
     exit 0
 fi
 
+# skip the deployment if the scenario is not supported on this distro
+OPNFV_SCENARIO_REQUIREMENTS=$WORKSPACE/xci/opnfv-scenario-requirements.yml
+if ! sed -n "/^- scenario: $DEPLOY_SCENARIO$/,/^- scenario/p" $OPNFV_SCENARIO_REQUIREMENTS | grep -q $DISTRO; then
+    echo "# SKIPPED: Scenario $DEPLOY_SCENARIO is NOT supported on $DISTRO"
+    exit 0
+fi
+
 echo "Hello World!"
