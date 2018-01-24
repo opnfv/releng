@@ -71,6 +71,8 @@
                   pattern: 'config/installers/**/*.j2'
                 - compare-type: ANT
                   pattern: 'check-jinja2.sh'
+                - compare-type: ANT
+                  pattern: 'check-schema.sh'
           skip-vote:
             successful: true
             failed: true
@@ -79,9 +81,15 @@
 
     builders:
       - check-pdf-jinja
+      - check-pdf-schema
 
 - builder:
     name: check-pdf-jinja
     builders:
       - shell: |
           $WORKSPACE/config/utils/check-jinja2.sh
+- builder:
+    name: check-pdf-schema
+    builders:
+      - shell: |
+          $WORKSPACE/config/utils/check-schema.sh
