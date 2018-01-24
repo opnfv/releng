@@ -980,15 +980,18 @@
           description: 'Git URL to use on this Jenkins Slave'
 
 - parameter:
-    name: 'doctor-defaults'
+    name: 'doctor-slave-defaults'
     parameters:
       - node:
           name: SLAVE_NAME
           description: 'Slave name on Jenkins'
           allowed-slaves:
-            - '{default-slave}'
+            - 'doctor-apex-verify'
+            - 'doctor-fuel-verify'
+            - 'doctor-fuel-build-aarch64-verify'
+            - 'doctor-joid-verify'
           default-slaves:
-            - '{default-slave}'
+            - '{slave-label}'
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -997,30 +1000,6 @@
           name: SSH_KEY
           default: /root/.ssh/id_rsa
           description: 'SSH key to be used'
-
-- parameter:
-    name: 'doctor-apex-verify-defaults'
-    parameters:
-      - 'doctor-defaults':
-          default-slave: 'doctor-apex-verify'
-
-- parameter:
-    name: 'doctor-fuel-verify-defaults'
-    parameters:
-      - 'doctor-defaults':
-          default-slave: 'doctor-fuel-verify'
-
-- parameter:
-    name: 'doctor-fuel-build-aarch64-verify-defaults'
-    parameters:
-      - 'doctor-defaults':
-          default-slave: 'doctor-fuel-build-aarch64-verify'
-
-- parameter:
-    name: 'doctor-joid-verify-defaults'
-    parameters:
-      - 'doctor-defaults':
-          default-slave: 'doctor-joid-verify'
 
 - parameter:
     name: 'multisite-virtual-defaults'
