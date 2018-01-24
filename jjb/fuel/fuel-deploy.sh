@@ -74,19 +74,20 @@ mkdir -p "${TMPDIR}"
 chmod a+x "${HOME}" "${TMPDIR}"
 
 cd "${WORKSPACE}" || exit 1
-if [[ "${LAB_CONFIG_URL}" =~ ^(git|ssh):// ]]; then
+if [[ "$BRANCH" =~ (danube|euphrates) ]] && \
+   [[ "${LAB_CONFIG_URL}" =~ ^(git|ssh):// ]]; then
     echo "Cloning securedlab repo ${BRANCH}"
     LOCAL_CFG="${TMPDIR}/securedlab"
     rm -rf "${LOCAL_CFG}"
     git clone --quiet --branch "${BRANCH}" "${LAB_CONFIG_URL}" "${LOCAL_CFG}"
-    LAB_CONFIG_URL="file://${LOCAL_CFG}"
+    LAB_CONFIG_ARG="-b file://${LOCAL_CFG}"
 fi
 
 # log file name
 FUEL_LOG_FILENAME="${JOB_NAME}_${BUILD_NUMBER}.log.tar.gz"
 
 # construct the command
-DEPLOY_COMMAND="${SUDO} ${WORKSPACE}/ci/deploy.sh -b ${LAB_CONFIG_URL} \
+DEPLOY_COMMAND="${SUDO} ${WORKSPACE}/ci/deploy.sh ${LAB_CONFIG_ARG:-} \
     -l ${LAB_NAME} -p ${POD_NAME} -s ${DEPLOY_SCENARIO} ${ISO_FILE_ARG:-} \
     -B ${DEFAULT_BRIDGE:-${BRIDGE}} -S ${TMPDIR} \
     -L ${WORKSPACE}/${FUEL_LOG_FILENAME}"
