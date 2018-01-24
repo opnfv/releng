@@ -17,19 +17,13 @@
           disabled: false
 
     installer:
-      - apex:
-          slave-label: 'doctor-apex-verify'
-      - fuel:
-          slave-label: 'doctor-fuel-verify'
-    # - joid:
-    #     slave-label: 'ool-virtual3'
-    #     pod: 'ool-virtual3'
+      - 'apex'
+      - 'fuel'
+    # - 'joid'
 
-    phase:
-      - 'build-x86_64':
-          slave-label: 'doctor-{installer}-verify'
-      - 'build-aarch64':
-          slave-label: 'doctor-{installer}-{phase}-verify'
+    arch:
+      - 'x86_64'
+      - 'aarch64'
 
     inspector:
       - 'sample'
@@ -41,30 +35,25 @@
 
     exclude:
       - installer: 'apex'
-        phase: 'build-aarch64'
+        arch: 'aarch64'
 
     jobs:
       - 'doctor-verify-{stream}'
       - 'doctor-verify-unit-test-{stream}'
       - 'doctor-{task}-{inspector}-{stream}'
-      - 'doctor-{task}-{installer}-{inspector}-{phase}-{stream}'
+      - 'doctor-{task}-{installer}-{inspector}-{arch}-{stream}'
 
 - job-template:
     name: 'doctor-verify-{stream}'
-
     disabled: '{obj:disabled}'
-
     project-type: 'multijob'
-
     parameters:
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
       - 'opnfv-build-ubuntu-defaults'
-
     scm:
       - git-scm-gerrit
-
     triggers:
       - gerrit:
           server-name: 'gerrit.opnfv.org'
@@ -87,7 +76,6 @@
               file-paths:
                 - compare-type: ANT
                   pattern: 'doctor_tests/**'
-
     builders:
       - shell: |
          #!/bin/bash
@@ -99,16 +87,12 @@
           execution-type: PARALLEL
           projects:
             - name: 'doctor-verify-unit-test-{stream}'
-              current-parameters: false
               predefined-parameters: |
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              git-revision: true
-              node-parameters: false
               kill-phase-on: FAILURE
-              abort-all-job: false
 
 - job-template:
     name: 'doctor-verify-unit-test-{stream}'
@@ -131,20 +115,15 @@
 
 - job-template:
     name: 'doctor-{task}-{inspector}-{stream}'
-
     disabled: '{obj:disabled}'
-
     project-type: 'multijob'
-
     scm:
       - git-scm-gerrit
-
     triggers:
       - '{auto-trigger-name}':
           project: '{project}'
           branch: '{branch}'
           files: 'doctor_tests/**'
-
     builders:
       - shell: |
          #!/bin/bash
@@ -155,52 +134,40 @@
           name: 'doctor-verify-apex-inspector'
           execution-type: PARALLEL
           projects:
-            - name: 'doctor-{task}-apex-{inspector}-build-x86_64-{stream}'
-              current-parameters: false
+            - name: 'doctor-{task}-apex-{inspector}-x86_64-{stream}'
               predefined-parameters: |
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              git-revision: true
-              node-parameters: false
               kill-phase-on: FAILURE
-              abort-all-job: false
       - multijob:
           name: 'doctor-verify-fuel-inspector'
           execution-type: PARALLEL
           projects:
-            - name: 'doctor-{task}-fuel-{inspector}-build-x86_64-{stream}'
-              current-parameters: false
+            - name: 'doctor-{task}-fuel-{inspector}-x86_64-{stream}'
               predefined-parameters: |
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              git-revision: true
-              node-parameters: false
               kill-phase-on: FAILURE
-              abort-all-job: false
       - multijob:
           name: 'doctor-verify-fuel-inspector'
           execution-type: PARALLEL
           projects:
-            - name: 'doctor-{task}-fuel-{inspector}-build-aarch64-{stream}'
-              current-parameters: false
+            - name: 'doctor-{task}-fuel-{inspector}-aarch64-{stream}'
               predefined-parameters: |
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              git-revision: true
-              node-parameters: false
               kill-phase-on: FAILURE
-              abort-all-job: false
 
 - job-template:
     name: 'doctor-{task}-{installer}-{inspector}-{phase}-{stream}'
     disabled: '{obj:disabled}'
-    node: '{slave-label}'
+    node: 'doctor-{installer}-{arch}'
     wrappers:
       - ssh-agent-wrapper
       - build-timeout:
@@ -210,7 +177,7 @@
           project: '{project}'
           branch: '{branch}'
       - '{installer}-defaults'
-      - '{slave-label}-defaults'
+      - 'doctor-slave-parameter'
       - 'doctor-parameter'
       - 'doctor-functest-parameter'
     scm:
