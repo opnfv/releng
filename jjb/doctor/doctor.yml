@@ -17,19 +17,13 @@
           disabled: false
 
     installer:
-      - apex:
-          slave-label: 'doctor-apex-verify'
-      - fuel:
-          slave-label: 'doctor-fuel-verify'
-    # - joid:
-    #     slave-label: 'ool-virtual3'
-    #     pod: 'ool-virtual3'
+      - 'apex'
+      - 'fuel'
+    # - 'joid'
 
     phase:
-      - 'build-x86_64':
-          slave-label: 'doctor-{installer}-verify'
-      - 'build-aarch64':
-          slave-label: 'doctor-{installer}-{phase}-verify'
+      - 'build-x86_64'
+      - 'build-aarch64'
 
     inspector:
       - 'sample'
@@ -163,7 +157,7 @@
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               git-revision: true
-              node-parameters: false
+              node-label: 'doctor-apex-verify'
               kill-phase-on: FAILURE
               abort-all-job: false
       - multijob:
@@ -178,7 +172,7 @@
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               git-revision: true
-              node-parameters: false
+              node-label: 'doctor-fuel-verify'
               kill-phase-on: FAILURE
               abort-all-job: false
       - multijob:
@@ -193,14 +187,14 @@
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               git-revision: true
-              node-parameters: false
+              node-label: 'doctor-fuel-build-aarch64-verify'
               kill-phase-on: FAILURE
               abort-all-job: false
 
 - job-template:
     name: 'doctor-{task}-{installer}-{inspector}-{phase}-{stream}'
     disabled: '{obj:disabled}'
-    node: '{slave-label}'
+    node: '{node-label}'
     wrappers:
       - ssh-agent-wrapper
       - build-timeout:
@@ -210,7 +204,7 @@
           project: '{project}'
           branch: '{branch}'
       - '{installer}-defaults'
-      - '{slave-label}-defaults'
+      - 'doctor-slave-defaults'
       - 'doctor-parameter'
       - 'doctor-functest-parameter'
     scm:
