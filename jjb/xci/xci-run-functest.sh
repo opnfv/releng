@@ -27,4 +27,4 @@ if ! sed -n "/^- scenario: $DEPLOY_SCENARIO$/,/^$/p" $OPNFV_SCENARIO_REQUIREMENT
     exit 0
 fi
 
-echo "Hello World!"
+ssh -F $HOME/.ssh/xci-vm-config ${DISTRO}_xci_vm "cd releng-xci/xci && PATH=/home/devuser/.local/bin:$PATH ansible-playbook -i installer/osa/files/mini/inventory playbooks/run-functest.yml"
