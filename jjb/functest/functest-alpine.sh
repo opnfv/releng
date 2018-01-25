@@ -35,7 +35,7 @@ run_tiers() {
         FUNCTEST_IMAGE=opnfv/functest-${tier}:${DOCKER_TAG}
         echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
         docker pull ${FUNCTEST_IMAGE}>/dev/null
-        cmd="docker run --rm  --privileged=true ${envs} ${volumes} ${TESTCASE_OPTIONS} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
+        cmd="docker run --rm  --privileged=true --env-file ${rc_env_file} ${envs} ${volumes} ${TESTCASE_OPTIONS} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
         echo "Running Functest tier '${tier}'. CMD: ${cmd}"
         eval ${cmd}
         ret_value=$?
@@ -79,7 +79,7 @@ run_test() {
     esac
     echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
     docker pull ${FUNCTEST_IMAGE}>/dev/null
-    cmd="docker run --rm --privileged=true ${envs} ${volumes} ${TESTCASE_OPTIONS} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
+    cmd="docker run --rm --privileged=true --env-file ${rc_env_file} ${envs} ${volumes} ${TESTCASE_OPTIONS} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
     echo "Running Functest test case '${test_name}'. CMD: ${cmd}"
     eval ${cmd}
     ret_value=$?
@@ -98,6 +98,7 @@ DOCKER_TAG=`[[ ${BRANCH##*/} == "master" ]] && echo "latest" || echo ${BRANCH##*
 
 # Prepare OpenStack credentials volume
 rc_file=${HOME}/opnfv-openrc.sh
+rc_env_file=${HOME}/opnfv.creds
 
 if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     rc_file=$LAB_CONFIG/admin-openrc
@@ -109,6 +110,7 @@ elif [[ ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_TYPE} == 'baremetal' ]]; then
 fi
 rc_file_vol="-v ${rc_file}:${FUNCTEST_DIR}/conf/openstack.creds"
 
+sudo sed 's/export //g' ${rc_file} > ${rc_env_file}
 
 # Set iptables rule to allow forwarding return traffic for container
 if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FORWARD | awk 'NR==3' | grep RETURN 2> ${redirect}; then
@@ -149,7 +151,7 @@ if [ "${INSTALLER_TYPE}" == 'fuel' ]; then
     envs="${envs} -e POD_ARCH=${COMPUTE_ARCH}"
 fi
 
-volumes="${images_vol} ${results_vol} ${sshkey_vol} ${rc_file_vol} ${cacert_file_vol}"
+volumes="${images_vol} ${results_vol} ${sshkey_vol} ${cacert_file_vol}"
 
 set +e
 
