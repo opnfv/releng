@@ -244,12 +244,31 @@
     builders:
       - description-setter:
           description: "Built on $NODE_NAME"
-      - 'functest-{testsuite}-builder'
+      - conditional-step:
+          condition-kind: regex-match
+          regex: "os-*"
+          label: '{scenario}'
+          steps:
+            - 'functest-{testsuite}-builder'
+      - conditional-step:
+          condition-kind: regex-match
+          regex: "k8-*"
+          label: '{scenario}'
+          steps:
+            - 'functest-k8-builder'
 
 
 ########################
 # parameter macros
 ########################
+- parameter:
+    name: functest-k8-parameter
+    parameters:
+      - string:
+          name: FUNCTEST_MODE
+          default: 'daily'
+          description: "Daily suite name to run on K8 deployment"
+
 - parameter:
     name: functest-daily-parameter
     parameters:
@@ -373,6 +392,23 @@
       - 'functest-daily'
       - 'functest-store-results'
       - 'functest-exit'
+
+- builder:
+    name: functest-k8-builder
+    builders:
+      - 'functest-cleanup'
+      - 'functest-daily-k8'
+      - 'functest-store-results'
+      - 'functest-exit'
+
+- builder:
+    name: functest-daily-k8
+    builders:
+      # yamllint disable rule:indentation
+      - shell:
+          !include-raw:
+              - ../../utils/fetch_k8_conf.sh
+              - ./functest-k8.sh
 
 - builder:
     name: functest-daily
