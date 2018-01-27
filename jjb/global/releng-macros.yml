@@ -39,6 +39,10 @@
           name: GERRIT_REFSPEC
           default: 'refs/heads/{branch}'
           description: "Default refspec needed for manually triggering."
+      - string:
+          name: TESTAPI_URL
+          default: 'http://testresults.opnfv.org/test/api/v1'
+          description: "Default TestAPI URL, currently using v1"
 
 - property:
     name: logrotate-default
@@ -960,7 +964,7 @@
           script-only-if-succeeded: true
           builders:
             - shell: |
-                echo "export PROVISION_RESULT=SUCCEED" >> $WORKSPACE/installer_track.sh
+                echo "export PROVISION_RESULT=PASS" >> $WORKSPACE/installer_track.sh
                 echo "export INSTALLER={installer}" >> $WORKSPACE/installer_track.sh
             - shell:
                 !include-raw-escape: installer-report.sh
