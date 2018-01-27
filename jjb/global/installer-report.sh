@@ -8,18 +8,26 @@
 ##############################################################################
 
 source $WORKSPACE/installer_track.sh
-echo """
-    INSTALLER: $INSTALLER
-    INSTALLER_VERSION: $INSTALLER_VERSION
-    JOB_NAME: $JOB_NAME
-    BUILD_ID: $BUILD_ID
-    SENARIO: $DEPLOY_SCENARIO
-    UPSTREAM_JOB_NAME: $UPSTREAM_JOB_NAME:
-    UPSTREAM_BUILD_ID: $UPSTREAM_BUILD_ID
-    PROVISION_RESULT: $PROVISION_RESULT
-    TIMESTAMP_START: $TIMESTAMP_START
-    TIMESTAMP_END: `date '+%Y-%m-%d %H:%M:%S.%3N'`
-    POD_NAME: $NODE_NAME
-"""
 
-# TODO call TestAPI to report installer provisoin result when API is ready
+gen_content()
+{
+    cat <<EOF
+{
+    "installer": "$INSTALLER",
+    "version": "$INSTALLER_VERSION",
+    "pod_name": "$POD_NAME",
+    "job_name": "$JOB_NAME",
+    "build_id": "$BUILD_ID",
+    "scenario": "$SCENARIO",
+    "upstream_job_name": "$UPSTREAM_JOB_NAME",
+    "upstream_build_id":"$UPSTREAM_BUILD_ID",
+    "criteria": "$PROVISION_RESULT",
+    "start_date": "$TIMESTAMP_START",
+    "stop_date": "$TIMESTAMP_END",
+    "detail":""
+}
+EOF
+}
+
+echo $(gen_content)
+curl -H "Accept: application/json" -X -v -d "$(gen_content)" http://testresults.opnfv.org/test/api/v1/deployresults
