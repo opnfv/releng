@@ -49,10 +49,6 @@ LAB_CONFIG_URL=${LAB_CONFIG_URL:-'ssh://jenkins-ericsson@gerrit.opnfv.org:29418/
 # Fuel requires deploy script to be ran with sudo, Armband does not
 SUDO='sudo -E'
 if [ "${PROJECT}" = 'fuel' ]; then
-    # Fuel does not use any POD-specific configuration for virtual deploys
-    if [[ "${NODE_NAME}" =~ "virtual" ]]; then
-        POD_NAME="virtual_kvm"
-    fi
     # Fuel currently supports ericsson, intel, lf and zte labs
     if [[ ! "${LAB_NAME}" =~ (ericsson|intel|lf|zte) ]]; then
         echo "Unsupported/unidentified lab ${LAB_NAME}. Cannot continue!"
