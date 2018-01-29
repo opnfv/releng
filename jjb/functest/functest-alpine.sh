@@ -6,7 +6,10 @@ set +o pipefail
 
 check_os_deployment() {
     FUNCTEST_IMAGE=opnfv/functest-healthcheck:${DOCKER_TAG}
+    echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
+    docker pull ${FUNCTEST_IMAGE}>/dev/null
     cmd="docker run --rm --privileged=true ${volumes} ${FUNCTEST_IMAGE} check_deployment"
+    echo "Checking deployment, CMD: ${cmd}"
     eval ${cmd}
     ret_value=$?
     if [ ${ret_value} != 0 ]; then
