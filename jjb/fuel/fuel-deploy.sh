@@ -38,7 +38,6 @@ fi
 
 # set deployment parameters
 export TMPDIR=${HOME}/tmpdir
-BRIDGE=${BRIDGE:-pxebr}
 # shellcheck disable=SC2153
 LAB_NAME=${NODE_NAME/-*}
 # shellcheck disable=SC2153
@@ -77,6 +76,7 @@ if [[ "$BRANCH" =~ (danube|euphrates) ]]; then
         rm -rf "${LOCAL_CFG}"
         git clone --quiet --branch "${BRANCH}" "${LAB_CONFIG_URL}" "${LOCAL_CFG}"
         LAB_CONFIG_ARG="-b file://${LOCAL_CFG}"
+        BRIDGE_ARG="-B ${BRIDGE:-pxebr}"
     else
         LAB_CONFIG_ARG="-b ${LAB_CONFIG_URL}"
     fi
@@ -88,7 +88,7 @@ FUEL_LOG_FILENAME="${JOB_NAME}_${BUILD_NUMBER}.log.tar.gz"
 # construct the command
 DEPLOY_COMMAND="${SUDO} ${WORKSPACE}/ci/deploy.sh ${LAB_CONFIG_ARG:-} \
     -l ${LAB_NAME} -p ${POD_NAME} -s ${DEPLOY_SCENARIO} ${ISO_FILE_ARG:-} \
-    -B ${DEFAULT_BRIDGE:-${BRIDGE}} -S ${TMPDIR} \
+    -S ${TMPDIR} ${BRIDGE_ARG:-} \
     -L ${WORKSPACE}/${FUEL_LOG_FILENAME}"
 
 # log info to console
