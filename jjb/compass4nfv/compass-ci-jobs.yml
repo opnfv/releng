@@ -127,6 +127,7 @@
     jobs:
       - 'compass-{scenario}-{pod}-daily-{stream}'
       - 'compass-deploy-{pod}-daily-{stream}'
+      - 'compass-collect-logs-{pod}-daily-{stream}'
 
 ########################
 # job templates
@@ -281,6 +282,25 @@
                     build-step-failure-threshold: 'never'
                     failure-threshold: 'never'
                     unstable-threshold: 'FAILURE'
+      - conditional-step:
+          condition-kind: and
+          condition-operands:
+            condition-kind: regex-match
+            regex: master
+            label: '{stream}'
+          steps:
+            - trigger-builds:
+                - project: 'compass-collect-logs-{pod}-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO={scenario}
+                  block: true
+                  same-node: true
+                  block-thresholds:
+                    build-step-failure-threshold: 'never'
+                    failure-threshold: 'never'
+                    unstable-threshold: 'FAILURE'
+
 
 - job-template:
     name: 'compass-deploy-{pod}-daily-{stream}'
@@ -346,6 +366,44 @@
             - shell:
                 !include-raw-escape: ./compass-deploy.sh
 
+- job-template:
+    name: 'compass-collect-logs-{pod}-daily-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+      - logrotate-default
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - compass-ci-parameter:
+          installer: '{installer}'
+          gs-pathname: '{gs-pathname}'
+          ppa-pathname: '{ppa-pathname}'
+      - '{slave-label}-defaults'
+      - '{installer}-defaults'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-nosdn-nofeature-ha'
+
+    scm:
+      - git-scm
+
+    wrappers:
+      - build-name:
+          name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+      - fix-workspace-permissions
+
+    builders:
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - shell:
+          !include-raw-escape: ./compass-logs.sh
+
 ########################
 # parameter macros
 ########################
@@ -370,6 +428,10 @@
       - string:
           name: PPA_CACHE
           default: "$WORKSPACE/work/repo/"
+      - string:
+          name: LOG_DIRECTORY
+          default: $WORKSPACE/log_output
+          description: "Directory where the logs will be located upon the completion of the collection."
 
 ########################
 # trigger macros
