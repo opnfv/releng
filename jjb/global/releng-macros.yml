@@ -345,6 +345,7 @@
     builders:
       - shell: |
           # Install python package 
+          set +e
           sudo pip install "flake8==2.6.2"
 
           echo "Checking python code..."
@@ -356,6 +357,7 @@
               echo -e "Python violation(s)\n---" >> violation.log
               sed -e 's/^/ /g' python-violation.log >> violation.log
           fi
+          set -e
 
 - builder:
     name: lint-yaml-code
