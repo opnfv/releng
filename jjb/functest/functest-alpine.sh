@@ -4,6 +4,8 @@ set -e
 set +u
 set +o pipefail
 
+TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results
+
 check_os_deployment() {
     FUNCTEST_IMAGE=opnfv/functest-healthcheck:${DOCKER_TAG}
     cmd="docker run --rm --privileged=true ${volumes} ${FUNCTEST_IMAGE} check_deployment"
@@ -138,7 +140,8 @@ test -f ${HOME}/opnfv/functest/custom/params_${DOCKER_TAG} && custom_params=$(ca
 
 envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
     -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
-    -e BUILD_TAG=${BUILD_TAG} -e DEPLOY_TYPE=${DEPLOY_TYPE}"
+    -e BUILD_TAG=${BUILD_TAG} -e DEPLOY_TYPE=${DEPLOY_TYPE} \
+    -e TEST_DB_URL=${TEST_DB_URL}"
 
 ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
