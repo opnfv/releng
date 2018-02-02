@@ -307,6 +307,7 @@
     name: lint-init
     builders:
       - shell: |
+          #!/bin/bash
           # Ensure we start with a clean environment
           rm -f bash-violation.log python-violation.log yaml-violation.log violation.log
           git --no-pager diff --diff-filter=MCRAT --name-only HEAD^1 > modified_files
@@ -315,6 +316,7 @@
     name: lint-report
     builders:
       - shell: |
+          #!/bin/bash
           if [[ -s violation.log ]]; then
               echo "Reporting lint result..."
               msg="Found syntax error and/or coding style violation(s) in the files modified by your patchset."
@@ -330,6 +332,7 @@
     name: lint-bash-code
     builders:
       - shell: |
+          #!/bin/bash
           echo "Checking bash code..."
           for f in $(egrep '\.sh$' modified_files)
           do
@@ -344,6 +347,7 @@
     name: lint-python-code
     builders:
       - shell: |
+          #!/bin/bash
           # Install python package 
           sudo pip install "flake8==2.6.2"
 
@@ -361,6 +365,7 @@
     name: lint-yaml-code
     builders:
       - shell: |
+          #!/bin/bash
           # sudo Install python packages
           sudo pip install "yamllint==1.8.2"
 
