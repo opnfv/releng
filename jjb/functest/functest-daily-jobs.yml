@@ -249,31 +249,12 @@
     builders:
       - description-setter:
           description: "Built on $NODE_NAME"
-      - conditional-step:
-          condition-kind: regex-match
-          regex: "os-.*"
-          label: 'DEPLOY_SCENARIO'
-          steps:
-            - 'functest-{testsuite}-builder'
-      - conditional-step:
-          condition-kind: regex-match
-          regex: "k8-.*"
-          label: 'DEPLOY_SCENARIO'
-          steps:
-            - 'functest-k8-builder'
+      - 'functest-{testsuite}-builder'
 
 
 ########################
 # parameter macros
 ########################
-- parameter:
-    name: functest-k8-parameter
-    parameters:
-      - string:
-          name: FUNCTEST_MODE
-          default: 'daily'
-          description: "Daily suite name to run on K8 deployment"
-
 - parameter:
     name: functest-daily-parameter
     parameters:
@@ -399,31 +380,28 @@
       - 'functest-exit'
 
 - builder:
-    name: functest-k8-builder
-    builders:
-      - 'functest-cleanup'
-      - 'functest-daily-k8'
-      - 'functest-store-results'
-      - 'functest-exit'
-
-- builder:
-    name: functest-daily-k8
-    builders:
-      # yamllint disable rule:indentation
-      - shell:
-          !include-raw:
-              - ../../utils/fetch_k8_conf.sh
-              - ./functest-k8.sh
-
-- builder:
     name: functest-daily
     builders:
       # yamllint disable rule:indentation
-      - shell:
-          !include-raw:
-              - ./functest-env-presetup.sh
-              - ../../utils/fetch_os_creds.sh
-              - ./functest-alpine.sh
+      - conditional-step:
+          condition-kind: regex-match
+          regex: "os-.*"
+          label: '$DEPLOY_SCENARIO'
+          steps:
+            - shell:
+                !include-raw:
+                    - ./functest-env-presetup.sh
+                    - ../../utils/fetch_os_creds.sh
+                    - ./functest-alpine.sh
+      - conditional-step:
+          condition-kind: regex-match
+          regex: "k8-.*"
+          label: '$DEPLOY_SCENARIO'
+          steps:
+            - shell:
+                !include-raw:
+                    - ../../utils/fetch_k8_conf.sh
+                    - ./functest-k8.sh
 
 # yamllint enable rule:indentation
 - builder:
