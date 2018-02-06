@@ -38,7 +38,7 @@ elif [[ ${INSTALLER_TYPE} == 'daisy' ]]; then
 
         installer_mac=$(sudo virsh domiflist daisy | grep vnet | \
                       grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
-        export INSTALLER_IP=$(/usr/sbin/arp -e -i $bridge_name | grep ${installer_mac} | awk {'print $1'})
+        export INSTALLER_IP=$(/usr/sbin/arp -e -i $bridge_name | grep ${installer_mac} | head -n 1 | awk {'print $1'})
 
         echo "Installer ip is ${INSTALLER_IP}"
     else
