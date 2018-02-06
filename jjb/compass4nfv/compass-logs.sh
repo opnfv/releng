@@ -14,7 +14,7 @@ OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d_%H-%M-%S")
 COMPASS_LOG_FILENAME="${JOB_NAME}_${BUILD_NUMBER}_${OPNFV_ARTIFACT_VERSION}.log.tar.gz"
 
 
-sudo docker exec -it compass-tasks /bin/bash /opt/collect-log.sh
+sudo docker exec compass-tasks /bin/bash /opt/collect-log.sh
 sudo docker cp compass-tasks:/opt/log.tar.gz ${LOG_DIRECTORY}/${COMPASS_LOG_FILENAME}
 
 sudo chown $(whoami):$(whoami) ${LOG_DIRECTORY}/${COMPASS_LOG_FILENAME}
