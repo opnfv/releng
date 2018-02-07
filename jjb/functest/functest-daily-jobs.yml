@@ -198,17 +198,95 @@
           job-timeout: 60
       - 'daily':
           job-timeout: 300
-      - 'arm-daily':
-          job-timeout: 300
+
+    functest-tier:
+      - 'healthcheck'
+      - 'smoke'
+      - 'features'
+      - 'components'
+      - 'vnf'
+
+    build-job-settings: &build-job-settings
+      current-parameter: false
+      git-revision: true
+      node-parameters: false
+      kill-phase-on: FAILURE
+      abort-all-jobs: false
 
     jobs:
       - 'functest-{installer}-{pod}-{testsuite}-{stream}'
+      - 'functest-{installer}-{pod}-{testsuite}-{functest-tier}-{stream}'
 
 ################################
 # job template
 ################################
 - job-template:
+
     name: 'functest-{installer}-{pod}-{testsuite}-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - '{slave-label}-defaults'
+      - 'functest-{testsuite}-parameter'
+      - string:
+          name: FUNCTEST_TIER
+          default: '{functest-tier}'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-odl_l2-nofeature-ha'
+      - string:
+          name: CLEAN_DOCKER_IMAGES
+          default: 'false'
+          description: 'Remove downloaded docker images (opnfv/functest*:*)'
+      - functest-parameter:
+          gs-pathname: '{gs-pathname}'
+
+    builders:
+      - multijob:
+          name: 'Run functest test tier'
+          execution-type: SEQUENTIAL
+          projects:
+            - name: 'functest-{installer}-{pod}-{testsuite}-healthcheck-{stream}'
+              <<: *build-job-settings
+              predefined-parameters: |
+                GERRIT_REFNAME=$GERRIT_REFNAME
+                COMMIT_ID=$COMMIT_ID
+                FUNCTEST_TIER=$FUNCTEST_TIER
+            - name: 'functest-{installer}-{pod}-{testsuite}-smoke-{stream}'
+              <<: *build-job-settings
+              predefined-parameters: |
+                GERRIT_REFNAME=$GERRIT_REFNAME
+                COMMIT_ID=$COMMIT_ID
+                FUNCTEST_TIER=$FUNCTEST_TIER
+            - name: 'functest-{installer}-{pod}-{testsuite}-features-{stream}'
+              <<: *build-job-settings
+              predefined-parameters: |
+                GERRIT_REFNAME=$GERRIT_REFNAME
+                COMMIT_ID=$COMMIT_ID
+                FUNCTEST_TIER=$FUNCTEST_TIER
+            - name: 'functest-{installer}-{pod}-{testsuite}-components-{stream}'
+              <<: *build-job-settings
+              predefined-parameters: |
+                GERRIT_REFNAME=$GERRIT_REFNAME
+                COMMIT_ID=$COMMIT_ID
+                FUNCTEST_TIER=$FUNCTEST_TIER
+            - name: 'functest-{installer}-{pod}-{testsuite}-vnf-{stream}'
+              <<: *build-job-settings
+              predefined-parameters: |
+                GERRIT_REFNAME=$GERRIT_REFNAME
+                COMMIT_ID=$COMMIT_ID
+                FUNCTEST_TIER=$FUNCTEST_TIER
+
+- job-template:
+
+    name: 'functest-{installer}-{pod}-{testsuite}-{functest-tier}-{stream}'
 
     concurrent: true
 
@@ -233,6 +311,9 @@
       - '{installer}-defaults'
       - '{slave-label}-defaults'
       - 'functest-{testsuite}-parameter'
+      - string:
+          name: FUNCTEST_TIER
+          default: '{functest-tier}'
       - string:
           name: DEPLOY_SCENARIO
           default: 'os-odl_l2-nofeature-ha'
@@ -262,14 +343,6 @@
           name: FUNCTEST_MODE
           default: 'daily'
           description: "Daily suite name to run"
-
-- parameter:
-    name: functest-arm-daily-parameter
-    parameters:
-      - string:
-          name: FUNCTEST_MODE
-          default: 'arm-daily'
-          description: "Daily suite name (Aarch64) to run"
 
 - parameter:
     name: functest-suite-parameter
@@ -364,14 +437,6 @@
       - 'functest-exit'
 
 - builder:
-    name: functest-arm-daily-builder
-    builders:
-      - 'functest-cleanup'
-      - 'functest-arm-daily'
-      - 'functest-store-results'
-      - 'functest-exit'
-
-- builder:
     name: functest-suite-builder
     builders:
       - 'functest-cleanup'
@@ -402,17 +467,6 @@
                 !include-raw:
                     - ../../utils/fetch_k8_conf.sh
                     - ./functest-k8.sh
-
-# yamllint enable rule:indentation
-- builder:
-    name: functest-arm-daily
-    builders:
-      # yamllint disable rule:indentation
-      - shell:
-          !include-raw:
-              - ./functest-env-presetup.sh
-              - ../../utils/fetch_os_creds.sh
-              - ./functest-alpine.sh
 
 # yamllint enable rule:indentation
 - builder:
