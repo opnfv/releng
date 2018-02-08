@@ -108,8 +108,6 @@
 - job-template:
     name: 'apex-verify-{stream}'
 
-    node: 'apex-virtual-master'
-
     concurrent: true
 
     disabled: '{obj:disabled}'
@@ -117,6 +115,7 @@
     project-type: 'multijob'
 
     parameters:
+      - '{project}-virtual-{stream}-defaults'
       - apex-parameter:
           gs-pathname: '{gs-pathname}/dev'
       - project-parameter:
@@ -248,8 +247,6 @@
 - job-template:
     name: 'apex-verify-gate-{stream}'
 
-    node: 'apex-build-{stream}'
-
     concurrent: true
 
     disabled: '{obj:disabled}'
@@ -257,6 +254,7 @@
     project-type: 'multijob'
 
     parameters:
+      - '{project}-virtual-{stream}-defaults'
       - apex-parameter:
           gs-pathname: '{gs-pathname}/dev'
       - project-parameter:
