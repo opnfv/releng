@@ -19,7 +19,7 @@
     installer:
       - 'apex'
       - 'fuel'
-    # - 'joid'
+      - 'daisy'
 
     arch:
       - 'x86_64'
@@ -29,19 +29,17 @@
       - 'sample'
       - 'congress'
 
-    task:
-      - verify:
-          auto-trigger-name: 'doctor-verify'
-
     exclude:
       - installer: 'apex'
+        arch: 'aarch64'
+      - installer: 'daisy'
         arch: 'aarch64'
 
     jobs:
       - 'doctor-verify-{stream}'
       - 'doctor-verify-unit-test-{stream}'
-      - 'doctor-{task}-{inspector}-{stream}'
-      - 'doctor-{task}-{installer}-{inspector}-{arch}-{stream}'
+      - 'doctor-verify-{inspector}-{stream}'
+      - 'doctor-verify-{installer}-{inspector}-{arch}-{stream}'
 
 - job-template:
     name: 'doctor-verify-{stream}'
@@ -76,6 +74,7 @@
               file-paths:
                 - compare-type: ANT
                   pattern: 'doctor_tests/**'
+
     builders:
       - shell: |
          #!/bin/bash
@@ -114,16 +113,17 @@
       - 'doctor-verify-unit-test-publishers-macro'
 
 - job-template:
-    name: 'doctor-{task}-{inspector}-{stream}'
+    name: 'doctor-verify-{inspector}-{stream}'
     disabled: '{obj:disabled}'
     project-type: 'multijob'
     scm:
       - git-scm-gerrit
     triggers:
-      - '{auto-trigger-name}':
+      - 'doctor-verify':
           project: '{project}'
           branch: '{branch}'
           files: 'doctor_tests/**'
+
     builders:
       - shell: |
          #!/bin/bash
@@ -134,7 +134,7 @@
           name: 'doctor-verify-apex-inspector'
           execution-type: PARALLEL
           projects:
-            - name: 'doctor-{task}-apex-{inspector}-x86_64-{stream}'
+            - name: 'doctor-verify-apex-{inspector}-x86_64-{stream}'
               predefined-parameters: |
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
@@ -145,7 +145,7 @@
           name: 'doctor-verify-fuel-inspector'
           execution-type: PARALLEL
           projects:
-            - name: 'doctor-{task}-fuel-{inspector}-x86_64-{stream}'
+            - name: 'doctor-verify-fuel-{inspector}-x86_64-{stream}'
               predefined-parameters: |
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
@@ -156,7 +156,18 @@
           name: 'doctor-verify-fuel-inspector'
           execution-type: PARALLEL
           projects:
-            - name: 'doctor-{task}-fuel-{inspector}-aarch64-{stream}'
+            - name: 'doctor-verify-fuel-{inspector}-aarch64-{stream}'
+              predefined-parameters: |
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              kill-phase-on: FAILURE
+      - multijob:
+          name: 'doctor-verify-daisy-inspector'
+          execution-type: PARALLEL
+          projects:
+            - name: 'doctor-verify-daisy-{inspector}-x86_64-{stream}'
               predefined-parameters: |
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
@@ -165,7 +176,7 @@
               kill-phase-on: FAILURE
 
 - job-template:
-    name: 'doctor-{task}-{installer}-{inspector}-{arch}-{stream}'
+    name: 'doctor-verify-{installer}-{inspector}-{arch}-{stream}'
     disabled: '{obj:disabled}'
     node: 'doctor-{installer}-{arch}'
     wrappers:
