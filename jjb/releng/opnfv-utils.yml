@@ -148,7 +148,7 @@
           if [ -f /etc/debian_version ] \
           || grep -qi ubuntu /etc/lsb-release \
           || grep -qi ubuntu /etc/os-release; then
-          apt-get install ansible
+          sudo apt-get install ansible
           fi
 
 - builder:
@@ -156,6 +156,6 @@
     builders:
       - shell: |
           # run playbook
-          ansible-playbook -C -D -i \
+          sudo ansible-playbook -C -D -i \
           $WORKSPACE/utils/build-server-ansible/inventory.ini \
           $WORKSPACE/utils/build-server-ansible/main.yml
