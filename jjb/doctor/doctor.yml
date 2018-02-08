@@ -88,11 +88,14 @@
           projects:
             - name: 'doctor-verify-unit-test-{stream}'
               predefined-parameters: |
+                PROJECT=$PROJECT
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               kill-phase-on: FAILURE
+              current-parameters: true
+              git-revision: true
 
 - job-template:
     name: 'doctor-verify-unit-test-{stream}'
@@ -136,33 +139,42 @@
           projects:
             - name: 'doctor-{task}-apex-{inspector}-x86_64-{stream}'
               predefined-parameters: |
+                PROJECT=$PROJECT
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               kill-phase-on: FAILURE
+              current-parameters: true
+              git-revision: true
       - multijob:
           name: 'doctor-verify-fuel-inspector'
           execution-type: PARALLEL
           projects:
             - name: 'doctor-{task}-fuel-{inspector}-x86_64-{stream}'
               predefined-parameters: |
+                PROJECT=$PROJECT
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               kill-phase-on: FAILURE
+              current-parameters: true
+              git-revision: true
       - multijob:
           name: 'doctor-verify-fuel-inspector'
           execution-type: PARALLEL
           projects:
             - name: 'doctor-{task}-fuel-{inspector}-aarch64-{stream}'
               predefined-parameters: |
+                PROJECT=$PROJECT
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               kill-phase-on: FAILURE
+              current-parameters: true
+              git-revision: true
 
 - job-template:
     name: 'doctor-{task}-{installer}-{inspector}-{arch}-{stream}'
