@@ -320,7 +320,7 @@
           if [[ -s violation.log ]]; then
               echo "Reporting lint result..."
               msg="Found syntax error and/or coding style violation(s) in the files modified by your patchset."
-              sed -i -e '1s/^//$msg\n\n/' violation.log
+              sed -i -e "1s#^#${msg}\n\n#" violation.log
               cmd="gerrit review -p $GERRIT_PROJECT -m \"$(cat violation.log)\" $GERRIT_PATCHSET_REVISION --notify NONE"
               ssh -p 29418 gerrit.opnfv.org "$cmd"
 
@@ -348,7 +348,7 @@
     builders:
       - shell: |
           #!/bin/bash
-          # Install python package 
+          # Install python package
           sudo pip install "flake8==2.6.2"
 
           echo "Checking python code..."
