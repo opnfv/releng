@@ -21,6 +21,11 @@ git fetch $PROJECT_REPO $GERRIT_REFSPEC && sudo git checkout FETCH_HEAD
 
 cd $WORKSPACE/releng-xci
 cat > bifrost_test.sh<<EOF
+#!/bin/bash
+set -o errexit
+set -o nounset
+set -o pipefail
+
 cd ~/bifrost
 # provision 3 VMs; xcimaster, controller, and compute
 ./scripts/bifrost-provision.sh
