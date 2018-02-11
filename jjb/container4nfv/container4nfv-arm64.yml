@@ -32,7 +32,7 @@
 
     wrappers:
       - timeout:
-          timeout: 120
+          timeout: 150
           fail: true
 
     builders:
@@ -40,7 +40,11 @@
           !include-raw: arm64/compass-build.sh
       - shell:
           !include-raw: arm64/compass-deploy.sh
-
+      - trigger-builds:
+          - project: yardstick-arm64-compass-arm-virtual03-daily-master
+            current-parameters: false
+            same-node: true
+            block: false
 
 - trigger:
     name: 'trigger-k8-multus-nofeature-noha-virtual'
