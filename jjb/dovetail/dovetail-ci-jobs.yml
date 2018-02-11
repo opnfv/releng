@@ -20,18 +20,12 @@
       dovetail-branch: '{stream}'
       gs-pathname: ''
       docker-tag: 'latest'
-    danube: &danube
-      stream: danube
-      branch: 'stable/{stream}'
-      dovetail-branch: master
-      gs-pathname: '/{stream}'
-      docker-tag: 'cvp.0.9.0'
     euphrates: &euphrates
       stream: euphrates
       branch: 'stable/{stream}'
       dovetail-branch: master
       gs-pathname: '/{stream}'
-      docker-tag: 'cvp.0.9.0'
+      docker-tag: 'latest'
 
     # ----------------------------------
     # POD, PLATFORM, AND BRANCH MAPPING
@@ -60,16 +54,6 @@
           slave-label: fuel-baremetal
           SUT: fuel
           auto-trigger-name: 'daily-trigger-disabled'
-          <<: *danube
-      - virtual:
-          slave-label: fuel-virtual
-          SUT: fuel
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *danube
-      - baremetal:
-          slave-label: fuel-baremetal
-          SUT: fuel
-          auto-trigger-name: 'daily-trigger-disabled'
           <<: *euphrates
       - virtual:
           slave-label: fuel-virtual
@@ -87,16 +71,6 @@
           SUT: compass
           auto-trigger-name: 'daily-trigger-disabled'
           <<: *master
-      - baremetal:
-          slave-label: compass-baremetal
-          SUT: compass
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *danube
-      - virtual:
-          slave-label: compass-virtual
-          SUT: compass
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *danube
       - baremetal:
           slave-label: compass-baremetal
           SUT: compass
@@ -125,16 +99,6 @@
           auto-trigger-name: 'daily-trigger-disabled'
           <<: *master
       - virtual:
-          slave-label: apex-virtual-danube
-          SUT: apex
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *danube
-      - baremetal:
-          slave-label: apex-baremetal-danube
-          SUT: apex
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *danube
-      - virtual:
           slave-label: apex-virtual-master
           SUT: apex
           auto-trigger-name: 'daily-trigger-disabled'
@@ -155,16 +119,6 @@
           SUT: fuel
           auto-trigger-name: 'daily-trigger-disabled'
           <<: *master
-      - armband-baremetal:
-          slave-label: armband-baremetal
-          SUT: fuel
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *danube
-      - armband-virtual:
-          slave-label: armband-virtual
-          SUT: fuel
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *danube
       - armband-baremetal:
           slave-label: armband-baremetal
           SUT: fuel
@@ -202,26 +156,6 @@
           slave-label: zte-pod1
           SUT: fuel
           auto-trigger-name: 'daily-trigger-disabled'
-          <<: *danube
-      - zte-pod3:
-          slave-label: zte-pod3
-          SUT: fuel
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *danube
-      - huawei-pod4:
-          slave-label: huawei-pod4
-          SUT: apex
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *danube
-      - huawei-pod7:
-          slave-label: huawei-pod7
-          SUT: compass
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *danube
-      - zte-pod1:
-          slave-label: zte-pod1
-          SUT: fuel
-          auto-trigger-name: 'daily-trigger-disabled'
           <<: *euphrates
       - zte-pod3:
           slave-label: zte-pod3
@@ -241,6 +175,7 @@
 
     # -------------------------------
     testsuite:
+      - 'default'
       - 'proposed_tests'
 
     jobs:

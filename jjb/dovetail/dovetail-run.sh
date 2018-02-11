@@ -246,8 +246,6 @@ if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_T
     sed -i 's/internal/public/g' ${OPENRC}
     if [[ ${public_url} =~ 'v2' ]]; then
         sed -i "s/OS_IDENTITY_API_VERSION=3/OS_IDENTITY_API_VERSION=2.0/g" ${OPENRC}
-        sed -i '/OS_PROJECT_DOMAIN_NAME/d' ${OPENRC}
-        sed -i '/OS_USER_DOMAIN_NAME/d' ${OPENRC}
     fi
     cat ${OPENRC}
 fi
@@ -275,10 +273,13 @@ cp_tempest_cmd="docker cp ${DOVETAIL_CONFIG}/tempest_conf.yaml $container_id:/ho
 echo "exec command: ${cp_tempest_cmd}"
 $cp_tempest_cmd
 
-list_cmd="dovetail list ${TESTSUITE}"
-run_cmd="dovetail run --testsuite ${TESTSUITE} -d"
-echo "Container exec command: ${list_cmd}"
-docker exec $container_id ${list_cmd}
+if [[ ${TESTSUITE} == 'default' ]]; then
+    testsuite= ''
+else
+    testsuite= "--testsuite ${TESTSUITE}"
+fi
+
+run_cmd="dovetail run ${testsuite} -d"
 echo "Container exec command: ${run_cmd}"
 docker exec $container_id ${run_cmd}
 
