@@ -274,9 +274,9 @@ echo "exec command: ${cp_tempest_cmd}"
 $cp_tempest_cmd
 
 if [[ ${TESTSUITE} == 'default' ]]; then
-    testsuite= ''
+    testsuite=''
 else
-    testsuite= "--testsuite ${TESTSUITE}"
+    testsuite="--testsuite ${TESTSUITE}"
 fi
 
 run_cmd="dovetail run ${testsuite} -d"
