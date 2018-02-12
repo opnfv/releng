@@ -4,7 +4,9 @@ set -e
 set +u
 set +o pipefail
 
+CI_LOOP=${CI_LOOP:-daily}
 TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results
+ENERGY_RECORDER_API_URL=http://energy.opnfv.fr/resources
 
 check_os_deployment() {
     FUNCTEST_IMAGE=opnfv/functest-healthcheck:${DOCKER_TAG}
@@ -147,8 +149,8 @@ test -f ${HOME}/opnfv/functest/custom/params_${DOCKER_TAG} && custom_params=$(ca
 
 envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
     -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
-    -e BUILD_TAG=${BUILD_TAG} -e DEPLOY_TYPE=${DEPLOY_TYPE} \
-    -e TEST_DB_URL=${TEST_DB_URL}"
+    -e BUILD_TAG=${BUILD_TAG} -e DEPLOY_TYPE=${DEPLOY_TYPE} -e CI_LOOP=${CI_LOOP} \
+    -e TEST_DB_URL=${TEST_DB_URL} -e ENERGY_RECORDER_API_URL=${ENERGY_RECORDER_API_URL}"
 
 ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
