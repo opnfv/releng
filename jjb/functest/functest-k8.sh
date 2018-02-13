@@ -11,12 +11,12 @@ rc_file=${HOME}/k8.creds
 sudo rm -rf $rc_file
 
 if [[ ${INSTALLER_TYPE} == 'compass' ]]; then
-    admin_conf_file_vol = "-v ${HOME}/admin.conf:/root/.kube/config"
+    admin_conf_file_vol="-v ${HOME}/admin.conf:/root/.kube/config"
     echo "export KUBECONFIG=/root/.kube/config" >> $rc_file
     echo "export KUBERNETES_PROVIDER=local" >> $rc_file
-    KUBE_MASTER_URL = $(cat ${HOME}/admin.conf|grep server| awk '{print $2}')
+    KUBE_MASTER_URL=$(cat ${HOME}/admin.conf|grep server| awk '{print $2}')
     echo "export KUBE_MASTER_URL=$KUBE_MASTER_URL" >> $rc_file
-    KUBE_MASTER_IP = $(echo $KUBE_MASTER_URL|awk -F'https://|:[0-9]+' '$0=$2')
+    KUBE_MASTER_IP=$(echo $KUBE_MASTER_URL|awk -F'https://|:[0-9]+' '$0=$2')
     echo "export KUBE_MASTER_IP=$KUBE_MASTER_IP" >> $rc_file
 else
     echo "Not supported by other installers yet"
