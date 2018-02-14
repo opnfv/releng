@@ -164,3 +164,112 @@
           sudo ansible-playbook -C -D -i \
           $WORKSPACE/utils/build-server-ansible/inventory.ini \
           $WORKSPACE/utils/build-server-ansible/main.yml
+
+- job-template:
+
+    name: 'check-java-version-on-slaves'
+
+    project-type: freestyle
+
+    disabled: false
+    concurrent: true
+
+    parameters:
+      - node:
+          name: SLAVE_NAME
+          description: Build Servers
+          default-slaves:
+            - arm-build2
+            - arm-build3
+            - arm-build4
+            - arm-build5
+            - arm-build6
+            - arm-pod6
+            - arm-virtual2
+            - arm-virtual3
+            - arm-virtual4
+            - cengn-pod1
+            - ericsson-build3
+            - ericsson-build4
+            - ericsson-pod1
+            - ericsson-pod2
+            - ericsson-virtual-pod1bl01
+            - ericsson-virtual1
+            - ericsson-virtual2
+            - ericsson-virtual3
+            - ericsson-virtual4
+            - ericsson-virtual5
+            - flex-pod2
+            - huawei-pod1
+            - huawei-pod12
+            - huawei-pod2
+            - huawei-pod3
+            - huawei-pod6
+            - huawei-pod7
+            - huawei-pod8
+            - huawei-virtual1
+            - huawei-virtual2
+            - huawei-virtual3
+            - huawei-virtual4
+            - huawei-virtual5
+            - huawei-virtual6
+            - huawei-virtual7
+            - huawei-virtual8
+            - huawei-virtual9
+            - intel-pod10
+            - intel-pod12
+            - intel-pod17
+            - intel-pod18
+            - intel-virtual11
+            - intel-virtual12
+            - intel-virtual13
+            - intel-virtual14
+            - intel-virtual16
+            - lf-build1
+            - lf-build2
+            - lf-pod1
+            - lf-pod2
+            - lf-pod5
+            - lf-virtual1
+            - lf-virtual2
+            - lf-virtual3
+            - nokia-pod1
+            - ool-virtual1
+            - ool-virtual2
+            - ool-virtual3
+            - pharos-dashboard
+            - testresults-server
+            - zte-pod4
+            - zte-pod9
+            - zte-virtual3
+            - zte-virtual4
+
+          allowed-multiselect: true
+          ignore-offline-nodes: true
+      - project-parameter:
+          project: releng
+          branch: master
+
+    scm:
+      - git-scm
+
+    triggers:
+      - timed: ''
+
+    builders:
+      - check-java-version
+
+
+- builder:
+    name: check-java-version
+    builders:
+      - shell: |
+          #!/bin/bash
+          java -version
+          echo "##### Checking #####"
+          JAVA_VER=$(java -version 2>&1 \
+          | sed -n ';s/.* version "\(.*\)\.\(.*\)\..*"/\1\2/p;')
+          [ "$JAVA_VER" -ge 18 ] \
+          && echo "ok, java is 1.8 or newer" \
+          || echo "java must be updated on this host before jenkins upgrade" \
+          && exit 1
