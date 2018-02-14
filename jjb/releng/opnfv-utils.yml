@@ -164,3 +164,92 @@
           sudo ansible-playbook -C -D -i \
           $WORKSPACE/utils/build-server-ansible/inventory.ini \
           $WORKSPACE/utils/build-server-ansible/main.yml
+
+- job-template:
+
+    name: 'check-java-version-on-slaves'
+
+    project-type: freestyle
+
+    disabled: false
+    concurrent: true
+
+    parameters:
+      - node:
+          name: SLAVE_NAME
+          description: Build Servers
+          default-slaves:
+            - cengn-pod1
+            - flex-pod2
+            - huawei-pod1
+            - huawei-pod2
+            - huawei-pod6
+            - huawei-pod7
+            - huawei-virtual1
+            - huawei-virtual2
+            - huawei-virtual3
+            - huawei-virtual4
+            - huawei-virtual5
+            - huawei-virtual7
+            - huawei-virtual8
+            - huawei-virtual9
+          allowed-multiselect: true
+          ignore-offline-nodes: true
+      - project-parameter:
+          project: releng
+          branch: master
+
+    scm:
+      - git-scm
+
+    triggers:
+      - timed: ''
+
+    builders:
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - check-java-version
+
+
+- builder:
+    name: check-java-version
+    builders:
+      - shell: |
+          #!/bin/bash
+          java -version
+          echo "##### Checking #####"
+          JAVA_VER=$(java -version 2>&1 \
+          | sed -n ';s/.* version "\(.*\)\.\(.*\)\..*"/\1\2/p;')
+          if [[ "$JAVA_VER" -ge 18 ]] ; then
+            echo "ok, java is 1.8 or newer"
+          else
+            echo "java must be updated on this host before jenkins upgrade"
+            exit 1
+          #if [ -f /etc/centos-release ] \
+          #  || [ -f /etc/redhat-release ] \
+          #  || [ -f /etc/system-release ]; then
+          #  sudo yum -y install java-1.8.0-openjdk.x86_64
+          #fi
+          #if [ -f /etc/debian_version ] \
+          #  || grep -qi ubuntu /etc/lsb-release \
+          #  || grep -qi ubuntu /etc/os-release; then
+          #release=$(lsb_release -r | awk '{print $2}')
+          #if [[ $release == "14.04" ]]; then
+          #  sudo apt-get -y update
+          #  sudo apt-get -y upgrade
+          #  sudo apt-get -y dist-upgrade
+          #  # yamllint disable rule:line-length
+          #  sudo sh -c \
+          #  "echo 'deb http://ppa.launchpad.net/openjdk-r/ppa/ubuntu trusty main'\
+          #  >> /etc/apt/sources.list.d/openjdk-r-ubuntu-ppa-trusty.list"
+          #  # yamllint enable rule:line-length
+          #  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 86F44E2A
+          #  sudo apt-get update
+          #  sudo apt-get -y install openjdk-8-jdk-headless
+          #  java -version
+          #else
+          #  sudo apt-get -y install openjdk-8-jdk-headless
+          #fi
+          #fi
+          fi
+          #java -version
