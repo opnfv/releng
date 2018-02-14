@@ -164,3 +164,77 @@
           sudo ansible-playbook -C -D -i \
           $WORKSPACE/utils/build-server-ansible/inventory.ini \
           $WORKSPACE/utils/build-server-ansible/main.yml
+
+- job-template:
+
+    name: 'check-java-version-on-slaves'
+
+    project-type: freestyle
+
+    disabled: false
+    concurrent: true
+
+    parameters:
+      - node:
+          name: SLAVE_NAME
+          description: Build Servers
+          default-slaves:
+            - arm-build2
+            - cengn-pod1
+            - flex-pod2
+            - huawei-pod1
+            - huawei-pod2
+            - huawei-pod6
+            - huawei-pod7
+            - huawei-virtual1
+            - huawei-virtual2
+            - huawei-virtual3
+            - huawei-virtual4
+            - huawei-virtual5
+            - huawei-virtual7
+            - huawei-virtual8
+            - huawei-virtual9
+            - lf-pod2
+            - lf-virtual1
+          allowed-multiselect: true
+          ignore-offline-nodes: true
+      - project-parameter:
+          project: releng
+          branch: master
+
+    scm:
+      - git-scm
+
+    triggers:
+      - timed: ''
+
+    builders:
+      - check-java-version
+
+
+- builder:
+    name: check-java-version
+    builders:
+      - shell: |
+          #!/bin/bash
+          java -version
+          echo "##### Checking #####"
+          JAVA_VER=$(java -version 2>&1 \
+          | sed -n ';s/.* version "\(.*\)\.\(.*\)\..*"/\1\2/p;')
+          if [[ "$JAVA_VER" -ge 18 ]] ; then
+            echo "ok, java is 1.8 or newer"
+          else
+            echo "java must be updated on this host before jenkins upgrade"
+          if [ -f /etc/centos-release ] \
+            || [ -f /etc/redhat-release ] \
+            || [ -f /etc/system-release ]; then
+            sudo yum -y install java-1.8.0-openjdk.x86_64
+          fi
+          if [ -f /etc/debian_version ] \
+            || grep -qi ubuntu /etc/lsb-release \
+            || grep -qi ubuntu /etc/os-release; then
+            sudo apt-get -y install openjdk-8-jdk-headless
+          fi
+          fi
+          java -version
+
