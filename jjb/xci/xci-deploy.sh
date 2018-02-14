@@ -15,14 +15,14 @@ cd $WORKSPACE/xci
 
 # for daily jobs, we want to use working versions
 # for periodic jobs, we will use whatever is set in the job, probably master
-if [[ "$XCI_LOOP" == "daily" ]]; then
+if [[ "$CI_LOOP" == "daily" ]]; then
     # source pinned-vars to get releng version
     source ./config/pinned-versions
 
     # checkout the version
     git checkout -q $OPNFV_RELENG_VERSION
     echo "Info: Using $OPNFV_RELENG_VERSION"
-elif [[ "$XCI_LOOP" == "periodic" ]]; then
+elif [[ "$CI_LOOP" == "periodic" ]]; then
     echo "Info: Using $OPNFV_RELENG_VERSION"
 fi
 
@@ -31,7 +31,7 @@ fi
 # to take this into account while deploying anyways
 # clone openstack-ansible
 # stable/ocata already use pinned versions so this is only valid for master
-if [[ "$XCI_LOOP" == "periodic" && "$OPENSTACK_OSA_VERSION" == "master" ]]; then
+if [[ "$CI_LOOP" == "periodic" && "$OPENSTACK_OSA_VERSION" == "master" ]]; then
     cd $WORKSPACE
     # get the url to openstack-ansible git
     source ./config/env-vars
