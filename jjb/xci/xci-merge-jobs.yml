@@ -60,12 +60,19 @@
           use-build-blocker: true
           blocking-jobs:
             - 'xci-verify-{distro}-.*'
+            - 'xci-.*-{distro}-merge-.*'
             - 'bifrost-verify-{distro}-.*'
             - 'bifrost-periodic-{distro}-.*'
             - 'xci-osa-verify-{distro}-.*'
             - 'xci-osa-periodic-{distro}-.*'
             - 'xci-(os|k8s).*?-virtual-{distro}-.*'
           block-level: 'NODE'
+      - throttle:
+          max-per-node: 2
+          max-total: 10
+          categories:
+            - xci-merge-virtual
+          option: category
 
     wrappers:
       - ssh-agent-wrapper
