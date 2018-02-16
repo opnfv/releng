@@ -103,7 +103,7 @@ if does not exist then exec "$mkdir -p /var/run/$jenkinsuser"
 if failed uid $jenkinsuser then exec "$chown $jenkinsuser /var/run/$jenkinsuser"
 if failed gid $jenkinsuser then exec "$chown :$jenkinsuser /var/run/$jenkinsuser"
 
-check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
+check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid every 2 cycles
 start program = "/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $jenkinshome; export started_monit=true; $0 $@' with timeout 60 seconds"
 stop program = "/bin/bash -c '/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)'"
 depends on jenkins_piddir
@@ -118,7 +118,7 @@ if does not exist then exec \"$mkdir -p /var/run/$jenkinsuser\"
 if failed uid $jenkinsuser then exec \"$chown $jenkinsuser /var/run/$jenkinsuser\"
 if failed gid $jenkinsuser then exec \"$chown :$jenkinsuser /var/run/$jenkinsuser\"
 
-check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
+check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid every 2 cycles
 start program = \"/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $jenkinshome; export started_monit=true; $0 $@' with timeout 60 seconds\"
 stop program = \"/bin/bash -c '/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)'\"
 depends on jenkins_piddir\
