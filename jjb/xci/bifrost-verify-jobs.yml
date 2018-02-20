@@ -71,7 +71,14 @@
           use-build-blocker: true
           blocking-jobs:
             - 'xci-verify-{distro}-.*'
+            - 'xci-.*-{distro}-merge-.*'
             - '.*-bifrost-verify.*-{type}'
+      - throttle:
+          max-per-node: 2
+          max-total: 10
+          categories:
+            - bifrost-verify-virtual
+          option: category
 
           block-level: 'NODE'
 
