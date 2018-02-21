@@ -167,6 +167,14 @@
               kill-phase-on: NEVER
               abort-all-job: true
 
+    publishers:
+      - postbuildscript:
+          script-only-if-succeeded: false
+          script-only-if-failed: false
+          builders:
+            - shell:
+                !include-raw: ./xci-remove-new-vm.sh
+
 - job-template:
     name: 'xci-{phase}-{type}-{distro}-merge-{stream}'
 
@@ -236,6 +244,14 @@
       - description-setter:
           description: "Built on $NODE_NAME"
       - 'xci-merge-{phase}-macro'
+
+    publishers:
+      - postbuildscript:
+          script-only-if-succeeded: false
+          script-only-if-failed: false
+          builders:
+            - shell:
+                !include-raw: ./xci-remove-new-vm.sh
 
 # -------------------------------
 # builder macros
