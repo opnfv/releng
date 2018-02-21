@@ -28,7 +28,7 @@ set -o pipefail
 
 cd ~/bifrost
 # provision 3 VMs; xcimaster, controller, and compute
-./scripts/bifrost-provision.sh
+./scripts/bifrost-provision.sh | ts
 
 sudo -H -E virsh list
 EOF

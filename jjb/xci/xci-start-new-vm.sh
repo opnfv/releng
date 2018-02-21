@@ -53,7 +53,7 @@ if [[ ! -z ${WORKSPACE+x} && $GERRIT_PROJECT != "releng-xci" ]]; then
 fi
 
 cd xci
-./xci-deploy.sh
+./xci-deploy.sh | ts
 EOF
 chmod a+x xci_test.sh
 
