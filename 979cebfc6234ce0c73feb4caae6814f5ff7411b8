@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "5a3f45e8_ab996870",
+        "filename": "jjb/xci/xci-set-scenario.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 254
+      },
+      "writtenOn": "2018-02-21T09:32:39Z",
+      "side": 1,
+      "message": "the scenario info is extracted by the upstream job xci-verify-{distro}-{type}-{stream} which then get used by the downstream jobs to set the scenario to deploy and test. if we use $WORKSPACE of the parent job we probably need to hardcode that into scripts like how we are doing with /tmp directory.\n\nso it is not straightforward to get the relation between upstream and downstream jobs; who triggered me info. if you look at the env vars of deploy job, you will see the upstream job is not listed there.\n\nhttps://build.opnfv.org/ci/job/xci-verify-ubuntu-deploy-virtual-master/731/injectedEnvVars/\n\nif we ever change the job names, everything will be impacted due to hardcoded upstream job name.\n\nbut common things across the jobs are GERRIT_CHANGE_NUMBER and the /tmp directory.",
+      "parentUuid": "5a3f45e8_d0f46589",
+      "range": {
+        "startLine": 46,
+        "startChar": 23,
+        "endLine": 46,
+        "endChar": 28
+      },
+      "revId": "979cebfc6234ce0c73feb4caae6814f5ff7411b8",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a3f45e8_3fa63ac2",
         "filename": "jjb/xci/xci-verify-jobs.yml",
         "patchSetId": 2
