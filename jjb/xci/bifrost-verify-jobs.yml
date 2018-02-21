@@ -162,6 +162,15 @@
           recipients: fatih.degirmenci@ericsson.com yroblamo@redhat.com mchandras@suse.de jack.morgan@intel.com julienjut@gmail.com
       # yamllint enable rule:line-length
       - email-jenkins-admins-on-failure
+      - postbuildscript:
+          generic-script:
+            - file-path: ./xci-remove-new-vm.sh
+              role: SLAVE
+              build-on:
+                - SUCCESS
+                - FAILURE
+                - ABORTED
+
 # -------------------------------
 # trigger macros
 # -------------------------------

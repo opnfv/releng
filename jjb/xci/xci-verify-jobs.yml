@@ -238,6 +238,16 @@
           description: "Built on $NODE_NAME"
       - 'xci-verify-{phase}-macro'
 
+    publishers:
+      - postbuildscript:
+          generic-script:
+            - file-path: ./xci-remove-new-vm.sh
+              role: SLAVE
+              build-on:
+                - SUCCESS
+                - FAILURE
+                - ABORTED
+
 # -------------------------------
 # builder macros
 # -------------------------------
