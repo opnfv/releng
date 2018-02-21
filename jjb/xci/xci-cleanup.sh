@@ -14,11 +14,16 @@
 # what you are doing.
 #----------------------------------------------------------------------
 
+# Need to workaround ${{}} and ${} for jjb depending on whether the macro takes a
+# parameter or not
+VM_NAME=$DISTRO
+VM_NAME+=_xci_vm
+
 # skip the deployment if the patch doesn't impact the deployment
 if [[ "$GERRIT_TOPIC" =~ 'skip-verify' ]]; then
     echo "Skipping the deployment!"
     exit 0
 fi
 
-sudo virsh destroy ${DISTRO}_xci_vm
-sudo virsh undefine ${DISTRO}_xci_vm
+sudo virsh destroy $VM_NAME
+sudo virsh undefine $VM_NAME
