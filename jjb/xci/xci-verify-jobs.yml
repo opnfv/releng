@@ -188,6 +188,15 @@
               kill-phase-on: NEVER
               abort-all-job: true
 
+    publishers:
+      - postbuildscript:
+          script-only-if-succeeded: false
+          script-only-if-failed: false
+          builders:
+            - shell:
+                !include-raw: ./xci-cleanup.sh
+
+
 - job-template:
     name: 'xci-verify-{distro}-{phase}-{type}-{stream}'
 
