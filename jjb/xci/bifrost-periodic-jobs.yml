@@ -142,6 +142,16 @@
           description: "Built on $NODE_NAME - Flavor: $XCI_FLAVOR"
       - 'bifrost-provision-builder'
 
+    publishers:
+      - postbuildscript:
+          generic-script:
+            - file-path: './xci-remove-new-vm.sh'
+              role: SLAVE
+              build-on:
+                - SUCCESS
+                - FAILURE
+                - ABORTED
+
 # --------------------------
 # builder macros
 # --------------------------

@@ -154,6 +154,15 @@
           recipients: fatih.degirmenci@ericsson.com yroblamo@redhat.com mchandras@suse.de jack.morgan@intel.com julienjut@gmail.com
       # yamllint enable rule:line-length
       - email-jenkins-admins-on-failure
+      - postbuildscript:
+          generic-script:
+            - file-path: './xci-remove-new-vm.sh'
+              role: SLAVE
+              build-on:
+                - SUCCESS
+                - FAILURE
+                - ABORTED
+
 
 - job-template:
     name: 'xci-{phase}-{pod}-{distro}-daily-{stream}'
@@ -231,6 +240,17 @@
       - description-setter:
           description: "Built on $NODE_NAME - Scenario: $DEPLOY_SCENARIO"
       - 'xci-{phase}-builder'
+
+    publishers:
+      - postbuildscript:
+          generic-script:
+            - file-path: './xci-remove-new-vm.sh'
+              role: SLAVE
+              build-on:
+                - SUCCESS
+                - FAILURE
+                - ABORTED
+
 
 # --------------------------
 # builder macros
