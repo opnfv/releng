@@ -129,6 +129,13 @@
               node-parameters: true
               kill-phase-on: NEVER
               abort-all-job: true
+    publishers:
+      - postbuildscript:
+          script-only-if-succeeded: false
+          script-only-if-failed: false
+          builders:
+            - shell:
+                !include-raw: ./xci-remove-new-vm.sh
 
 - job-template:
     name: 'xci-osa-periodic-{distro}-{phase}-{type}-{stream}'
@@ -192,6 +199,14 @@
       - description-setter:
           description: "Built on $NODE_NAME"
       - 'xci-osa-periodic-{phase}-macro'
+
+    publishers:
+      - postbuildscript:
+          script-only-if-succeeded: false
+          script-only-if-failed: false
+          builders:
+            - shell:
+                !include-raw: ./xci-remove-new-vm.sh
 
 # -------------------------------
 # builder macros
