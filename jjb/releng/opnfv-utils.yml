@@ -8,6 +8,7 @@
       - 'archive-repositories'
       - 'check-status-of-slaves'
       - 'ansible-build-server'
+      - 'generate-artifacts-index-pages'
 
 ########################
 # job templates
@@ -164,3 +165,40 @@
           sudo ansible-playbook -C -D -i \
           $WORKSPACE/utils/build-server-ansible/inventory.ini \
           $WORKSPACE/utils/build-server-ansible/main.yml
+
+
+- job-template:
+    name: 'generate-artifacts-index-pages'
+
+    project-type: freestyle
+
+    disabled: false
+
+    concurrent: false
+
+    parameters:
+      - node:
+          name: SLAVE_NAME
+          description: Build Servers
+          default-slaves:
+            - lf-build2
+      - project-parameter:
+          project: releng
+          branch: master
+
+    scm:
+      - git-scm
+
+    triggers:
+      - timed: '@hourly'
+
+    builders:
+      - generate-artifact-html
+
+
+- builder:
+    name: generate-artifact-html
+    builders:
+      - shell: |
+          cd $WORKSPACE/utils/
+          ./artifacts.opnfv.org.sh
