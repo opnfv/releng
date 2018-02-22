@@ -318,7 +318,9 @@
       - shell: |
           #!/bin/bash
           if [[ -s violation.log ]]; then
-              echo "Reporting lint result..."
+              cat violation.log
+              echo "Reporting lint result...."
+              set -x
               msg="Found syntax error and/or coding style violation(s) in the files modified by your patchset."
               sed -i -e "1s#^#${msg}\n\n#" violation.log
               cmd="gerrit review -p $GERRIT_PROJECT -m \"$(cat violation.log)\" $GERRIT_PATCHSET_REVISION --notify NONE"
