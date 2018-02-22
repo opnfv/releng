@@ -11,7 +11,8 @@
     jobs:
       - '{project}-verify-basic'
       - 'backup-pharos-dashboard'
-      - 'deploy-pharos-dashboard'
+      - 'deploy-pharos-dashboard':
+          disabled: true
 
 - job-template:
     name: 'backup-pharos-dashboard'
@@ -52,7 +53,16 @@
       - 'pharos-dashboard-defaults'
 
     scm:
-      - git-scm-gerrit
+      - git:
+          choosing-strategy: 'gerrit'
+          refspec: '$GERRIT_REFSPEC'
+          branches:
+            - 'origin/$BRANCH'
+          timeout: 15
+          credentials-id: '$SSH_CREDENTIAL_ID'
+          url: '$GIT_BASE'
+          skip-tag: true
+          wipe-workspace: false
 
     triggers:
       - gerrit:
@@ -71,6 +81,8 @@
     builders:
       - shell: |
           cp $HOME/config.env $WORKSPACE/dashboard
+          cp $HOME/rsa.pub $WORKSPACE/dashboard
+          cp $HOME/rsa.pem $WORKSPACE/dashboard
           cd $WORKSPACE/dashboard
           sudo docker-compose build
           sudo docker-compose up -d
