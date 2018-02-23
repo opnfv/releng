@@ -205,6 +205,11 @@
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
           description: 'Git URL to use on this Jenkins Slave'
+      - string:
+          name: REPO
+          default: "opnfv"
+          description: "Repository name for functest images"
+
 
     disabled: '{obj:disabled}'
 
@@ -219,8 +224,8 @@
           esac
           sudo manifest-tool push from-args \
               --platforms linux/amd64,linux/arm64 \
-              --template opnfv/functest-{image}:ARCH-$tag \
-              --target opnfv/functest-{image}:$tag
+              --template $REPO/functest-{image}:ARCH-$tag \
+              --target $REPO/functest-{image}:$tag
           exit $?
 
 # parameter macro
@@ -262,6 +267,10 @@
           name: PROJECT
           default: "{project}"
           description: "Project name used to enable job conditions"
+      - string:
+          name: REPO
+          default: "opnfv"
+          description: "Repository name for functest images"
 
 # publisher macros
 - publisher:
