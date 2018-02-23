@@ -89,7 +89,6 @@
     name: 'check-status-of-slaves'
 
     disabled: false
-
     concurrent: true
 
     parameters:
@@ -97,17 +96,23 @@
           name: SLAVE_NAME
           description: 'script lives on master node'
           default-slaves:
-            - master
+            - lf-build1
           allowed-multiselect: false
           ignore-offline-nodes: true
+      - project-parameter:
+          project: releng
+          branch: master
+
+    scm:
+      - git-scm
 
     triggers:
       - timed: '@midnight'
 
     builders:
       - shell: |
-          cd /opt/jenkins-ci/slavemonitor
-          bash slave-monitor-0.1.sh | sort
+          cd $WORKSPACE/utils/
+          bash slave-monitor-0.1.sh
 
 - job-template:
     name: 'ansible-build-server'

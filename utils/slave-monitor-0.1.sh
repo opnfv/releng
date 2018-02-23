@@ -8,9 +8,8 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-#This will put a bunch of files in the pwd. you have been warned.
 #Counts how long slaves have been online or offline
-
+exec 2>/dev/null
 
 #Yes I know about jq
 curlcommand() {
@@ -25,74 +24,66 @@ curl -s "https://build.opnfv.org/ci/computer/api/json?tree=computer\[displayName
     | sed s,\",,g
 }
 
-if [ -f podoutput-current ]; then
-  cp podoutput-current podoutput-lastiteration
-fi
+curlcommand > /tmp/podoutput-current
 
-curlcommand > podoutput-current
-
-declare -A slavescurrent slaveslastiteration
+declare -A slavescurrent
 
 while read -r name status ; do
             slavescurrent["$name"]="$status"
 done < <(cat podoutput-current)
 
-while read -r name status ; do
-            slaveslastiteration["$name"]=$status
-done < <(cat podoutput-lastiteration)
-
+#haste bin stopped allowing post :(
+#files=(*online)
+#for ((i=0; i<${#files[@]}; i+=9)); do
+#./eplot -d -r [-1:74][-1:30] -m    ${files[i]} ${files[i+1]} ${files[i+2]} ${files[i+3]} ${files[i+4]} ${files[i+5]}  ${files[i+6]} ${files[i+7]} ${files[i+8]} ${files[i+9]}
+#done  | ./haste.bash
+##
 main () {
+
 for slavename in "${!slavescurrent[@]}"; do
-    #Slave is online. Mark it down.
+
+  #Slave is online. Mark it down.
     if [ "${slavescurrent[$slavename]}" == "false" ]; then
 
-        if  [ -f "$slavename"-offline ]; then
-            echo "removing offline status from $slavename slave was offline for $(cat "$slavename"-offline ) iterations"
-            rm "$slavename"-offline
-        fi
+      if  ! [ -f /tmp/"$slavename"-online ]; then
+        echo "1" > /tmp/"$slavename"-online
+                echo "new online slave file created $slavename ${slavescurrent[$slavename]} up for 1 iterations"
+          fi
 
-        if  ! [ -f "$slavename"-online ]; then
-            echo "1" > "$slavename"-online
-        elif [ -f "$slavename"-online ]; then
-            #read and increment slavename
-            read -r -d $'\x04' var < "$slavename"-online
-            ((var++))
-            echo -n "ONLINE $slavename "
-            echo "for $var iterations"
-            echo "$var" > "$slavename"-online
-        fi
-    fi
-
-    #went offline since last iteration.
-    if [ "${slavescurrent[$slavename]}" == "false" ] && [ "${slaveslastiteration[$slavename]}" == "true" ];  then
-        echo "JUST WENT OFFLINE $slavename "
-        if  [ -f "$slavename"-online ]; then
-            echo "removing online status from $slavename. slave was online for $(cat "$slavename"-online ) iterations"
-            rm "$slavename"-online
-        fi
-
-    fi
-
-    #slave is offline
-    if [ "${slavescurrent[$slavename]}" == "true" ]; then
-        if  ! [ -f "$slavename"-offline ]; then
-            echo "1" > "$slavename"-offline
-        fi
-
-        if [ -f "$slavename"-offline ]; then
-            #read and increment slavename
-            read -r -d $'\x04' var < "$slavename"-offline
-            ((var++))
-            echo "$var" > "$slavename"-offline
-                if  [ "$var" -gt "30" ]; then
-                    echo "OFFLINE FOR $var ITERATIONS REMOVE $slavename "
-                else
-                    echo "OFFLINE $slavename FOR $var ITERATIONS "
+                #read and increment slavename
+                var="$(cat /tmp/"$slavename"-online |tail -n 1)"
+                if [[ "$var" == "0" ]]; then
+                    echo "slave $slavename ${slavescurrent[$slavename]} back up for $var iterations"
                 fi
-        fi
+                ((var++))
+                echo "$var" >> /tmp/"$slavename"-online
+                unset var
+                echo "$slavename up $(cat /tmp/$slavename-online | tail -n 10 | xargs)"
+
     fi
+
+    #slave is offline remove all points
+    if [ "${slavescurrent[$slavename]}" == "true" ]; then
+      if  ! [ -f /tmp/"$slavename"-online ]; then
+        echo "0" > /tmp/"$slavename"-online
+                echo "new offline slave file created $slavename ${slavescurrent[$slavename]} up for 0 iterations"
+
+          fi
+          var="$(cat /tmp/"$slavename"-online |tail -n 1)"
+
+            if [[ "$var" != "0" ]]; then
+                    echo "slave $slavename ${slavescurrent[$slavename]} was up for $var iterations"
+                echo "slave $slavename ${slavescurrent[$slavename]} has gone offline, was $var iterations now reset to 0"
+            fi
+
+        echo "0" >> /tmp/"$slavename"-online
+            echo "$slavename down $(cat /tmp/$slavename-online | tail -n 10 | xargs)"
+            unset var
+
+    fi
+
 
 done
 }
 
-main
+main | sort | column -t
