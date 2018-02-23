@@ -35,6 +35,7 @@ cd $WORKSPACE
 # yourself.
 cat > xci_test.sh<<EOF
 #!/bin/bash
+set -o pipefail
 export DISTRO=$DISTRO
 export DEPLOY_SCENARIO=$DEPLOY_SCENARIO
 export FUNCTEST_MODE=$FUNCTEST_MODE
