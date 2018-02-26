@@ -17,25 +17,22 @@ set -o pipefail
 # what you are doing.
 #----------------------------------------------------------------------
 
+# ensure GERRIT_TOPIC is set
+GERRIT_TOPIC="${GERRIT_TOPIC:-''}"
 # skip the healthcheck if the patch doesn't impact the deployment
 if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]]; then
     echo "Skipping the healthcheck!"
     exit 0
 fi
 
-# skip the deployment if the scenario is not supported on this distro
-OPNFV_SCENARIO_REQUIREMENTS=$WORKSPACE/xci/opnfv-scenario-requirements.yml
-if ! sed -n "/^- scenario: $DEPLOY_SCENARIO$/,/^$/p" $OPNFV_SCENARIO_REQUIREMENTS | grep -q $DISTRO; then
-    echo "# SKIPPED: Scenario $DEPLOY_SCENARIO is NOT supported on $DISTRO"
-    exit 0
-fi
+WORK_DIRECTORY=/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO
+/bin/rm -rf $WORK_DIRECTORY && mkdir -p $WORK_DIRECTORY
 
 # if change is coming to releng-xci, continue as usual until that part is fixed as well
 if [[ $GERRIT_PROJECT == "releng-xci" ]]; then
     # save the scenario name into java properties file to be injected to downstream jobs via envInject
     echo "Recording scenario name for downstream jobs"
-    rm /tmp/$GERRIT_CHANGE_NUMBER/scenario.properties
-    echo "DEPLOY_SCENARIO=os-nosdn-nofeature" > /tmp/$GERRIT_CHANGE_NUMBER/scenario.properties
+    echo "DEPLOY_SCENARIO=os-nosdn-nofeature" > $WORK_DIRECTORY/scenario.properties
     exit 0
 fi
 
@@ -43,10 +40,9 @@ fi
 # change under test so the jobs can deploy and test the right scenario.
 # we need to fetch the change and look at the changeset to find out the scenario instead
 # of hardcoding scenario per project.
-PROJECT_CLONE_LOCATION=/tmp/${GERRIT_PROJECT}_${GERRIT_CHANGE_NUMBER}
-rm -rf $PROJECT_CLONE_LOCATION
-git clone https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT $PROJECT_CLONE_LOCATION
-cd $PROJECT_CLONE_LOCATION
+
+git clone https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT $WORK_DIRECTORY/$GERRIT_PROJECT
+cd $WORK_DIRECTORY/$GERRIT_PROJECT
 git fetch https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT $GERRIT_REFSPEC && git checkout FETCH_HEAD
 DEPLOY_SCENARIO=$(git diff HEAD^..HEAD --name-only | grep scenarios | sed -r 's/scenarios\/(.*?)\/role.*/\1/' | uniq)
 
@@ -60,5 +56,11 @@ fi
 
 # save the scenario name into java properties file to be injected to downstream jobs via envInject
 echo "Recording scenario name for downstream jobs"
-rm /tmp/$GERRIT_CHANGE_NUMBER/scenario.properties
-echo "DEPLOY_SCENARIO=$DEPLOY_SCENARIO" > /tmp/$GERRIT_CHANGE_NUMBER/scenario.properties
+echo "DEPLOY_SCENARIO=$DEPLOY_SCENARIO" > $WORK_DIRECTORY/scenario.properties
+
+# skip the deployment if the scenario is not supported on this distro
+OPNFV_SCENARIO_REQUIREMENTS=$WORKSPACE/xci/opnfv-scenario-requirements.yml
+if ! sed -n "/^- scenario: $DEPLOY_SCENARIO$/,/^$/p" $OPNFV_SCENARIO_REQUIREMENTS | grep -q $DISTRO; then
+    echo "# SKIPPED: Scenario $DEPLOY_SCENARIO is NOT supported on $DISTRO"
+    exit 0
+fi

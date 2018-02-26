@@ -135,6 +135,9 @@
           name: SLAVE_LABEL
           default: 'xci-virtual'
       - string:
+          name: DISTRO
+          default: '{distro}'
+      - string:
           name: CLEAN_DIB_IMAGES
           default: 'true'
       - string:
@@ -145,7 +148,7 @@
     builders:
       - 'xci-verify-set-scenario-macro'
       - inject:
-          properties-file: "/tmp/$GERRIT_CHANGE_NUMBER/scenario.properties"
+          properties-file: "/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO/scenario.properties"
       - description-setter:
           description: "Scenario: $DEPLOY_SCENARIO | Node: $NODE_NAME"
       - multijob:
@@ -238,7 +241,7 @@
 
     wrappers:
       - inject:
-          properties-file: "/tmp/$GERRIT_CHANGE_NUMBER/scenario.properties"
+          properties-file: "/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO/scenario.properties"
       - ssh-agent-wrapper
       - build-timeout:
           timeout: 240
