@@ -199,6 +199,27 @@ if [[ ! -f ${cirros_image} ]]; then
 fi
 sudo cp ${cirros_image} ${DOVETAIL_CONFIG}
 
+# snaps_smoke test case needs to download this image first before running
+ubuntu14_image=${image_path}/ubuntu-14.04-server-cloudimg-amd64-disk1.img
+if [[ ! -f ${ubuntu14_image} ]]; then
+    echo "Download image ubuntu-14.04-server-cloudimg-amd64-disk1.img ..."
+    wget -q -nc https://cloud-images.ubuntu.com/releases/14.04/release/ubuntu-14.04-server-cloudimg-amd64-disk1.img -P ${image_path}
+fi
+sudo cp ${ubuntu14_image} ${DOVETAIL_CONFIG}
+
+# cloudify_ims test case needs to download these 2 images first before running
+cloudify_image=${image_path}/cloudify-manager-premium-4.0.1.qcow2
+if [[ ! -f ${cloudify_image} ]]; then
+    echo "Download image cloudify-manager-premium-4.0.1.qcow2 ..."
+    wget -q -nc http://repository.cloudifysource.org/cloudify/4.0.1/sp-release/cloudify-manager-premium-4.0.1.qcow2 -P ${image_path}
+fi
+sudo cp ${cloudify_image} ${DOVETAIL_CONFIG}
+trusty_image=${image_path}/trusty-server-cloudimg-amd64-disk1.img
+if [[ ! -f ${trusty_image} ]]; then
+    echo "Download image trusty-server-cloudimg-amd64-disk1.img ..."
+    wget -q -nc http://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img -P ${image_path}
+fi
+sudo cp ${trusty_image} ${DOVETAIL_CONFIG}
 
 opts="--privileged=true -id"
 
@@ -236,18 +257,6 @@ docker ps >${redirect}
 if [ $(docker ps | grep "${DOCKER_REPO}:${DOCKER_TAG}" | wc -l) == 0 ]; then
     echo "The container ${DOCKER_REPO} with ID=${container_id} has not been properly started. Exiting..."
     exit 1
-fi
-
-if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_TYPE} == 'baremetal' ]]; then
-    source_cmd="source ${OPENRC}"
-    get_public_url_cmd="openstack --insecure endpoint list --service keystone --interface public | sed -n 4p | awk '{print \$14}'"
-    public_url=$(sudo docker exec "$container_id" /bin/bash -c "${source_cmd} && ${get_public_url_cmd}")
-    sed -i 's#OS_AUTH_URL=.*#OS_AUTH_URL='"${public_url}"'#g' ${OPENRC}
-    sed -i 's/internal/public/g' ${OPENRC}
-    if [[ ${public_url} =~ 'v2' ]]; then
-        sed -i "s/OS_IDENTITY_API_VERSION=3/OS_IDENTITY_API_VERSION=2.0/g" ${OPENRC}
-    fi
-    cat ${OPENRC}
 fi
 
 # Modify tempest_conf.yaml file
