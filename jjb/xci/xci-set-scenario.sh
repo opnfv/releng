@@ -32,8 +32,8 @@ fi
 # if the change is coming to releng-xci, we don't need to do anything since the patch is checked
 # out to the WORKSPACE anyways
 if [[ $GERRIT_PROJECT != "releng-xci" ]]; then
-    /bin/rm -rf $WORKSPACE
-    git clone https://gerrit.opnfv.org/gerrit/releng-xci $WORKSPACE
+    cd $HOME && /bin/rm -rf $WORKSPACE
+    git clone https://gerrit.opnfv.org/gerrit/releng-xci $WORKSPACE && cd $WORKSPACE
 fi
 
 WORK_DIRECTORY=/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO
@@ -55,7 +55,7 @@ fi
 git clone https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT $WORK_DIRECTORY/$GERRIT_PROJECT
 cd $WORK_DIRECTORY/$GERRIT_PROJECT
 git fetch https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT $GERRIT_REFSPEC && git checkout FETCH_HEAD
-DEPLOY_SCENARIO=$(git diff HEAD^..HEAD --name-only | grep scenarios | sed -r 's/scenarios\/(.*?)\/role.*/\1/' | uniq)
+DEPLOY_SCENARIO=$(git diff HEAD^..HEAD --name-only | grep scenarios | sed -r 's/scenarios\/(.*?)\/.*/\1/' | uniq)
 
 # ensure single scenario is impacted
 if [[ $(echo $DEPLOY_SCENARIO | wc -w) != 1 ]]; then
@@ -66,7 +66,7 @@ if [[ $(echo $DEPLOY_SCENARIO | wc -w) != 1 ]]; then
 fi
 
 # save the scenario name into java properties file to be injected to downstream jobs via envInject
-echo "Recording scenario name for downstream jobs"
+echo "Recording scenario name '$DEPLOY_SCENARIO' for downstream jobs"
 echo "DEPLOY_SCENARIO=$DEPLOY_SCENARIO" > $WORK_DIRECTORY/scenario.properties
 
 # skip the deployment if the scenario is not supported on this distro
