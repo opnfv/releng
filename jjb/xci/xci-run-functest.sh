@@ -27,8 +27,8 @@ fi
 # if the change is coming to releng-xci, we don't need to do anything since the patch is checked
 # out to the WORKSPACE anyways
 if [[ $GERRIT_PROJECT != "releng-xci" ]]; then
-    /bin/rm -rf $WORKSPACE
-    git clone https://gerrit.opnfv.org/gerrit/releng-xci $WORKSPACE
+    cd $HOME && /bin/rm -rf $WORKSPACE
+    git clone https://gerrit.opnfv.org/gerrit/releng-xci $WORKSPACE && cd $WORKSPACE
 fi
 
 # skip the deployment if the scenario is not supported on this distro
