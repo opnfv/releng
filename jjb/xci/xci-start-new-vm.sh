@@ -20,6 +20,17 @@ if [[ "$GERRIT_TOPIC" =~ 'skip-verify' ]]; then
     exit 0
 fi
 
+# if the scenario is external, we need to wipe WORKSPACE to place releng-xci there since
+# the project where the scenario is coming from is cloned and the patch checked out to the
+# xci/scenarios/$DEPLOY_SCENARIO to be synched on clean VM
+# apart from that, we need releng-xci stuff in WORKSPACE for things to function correctly on Jenkins.
+# if the change is coming to releng-xci, we don't need to do anything since the patch is checked
+# out to the WORKSPACE anyways
+if [[ $GERRIT_PROJECT != "releng-xci" ]]; then
+    /bin/rm -rf $WORKSPACE
+    git clone https://gerrit.opnfv.org/gerrit/releng-xci $WORKSPACE
+fi
+
 # skip the deployment if the scenario is not supported on this distro
 OPNFV_SCENARIO_REQUIREMENTS=$WORKSPACE/xci/opnfv-scenario-requirements.yml
 if ! sed -n "/^- scenario: $DEPLOY_SCENARIO$/,/^$/p" $OPNFV_SCENARIO_REQUIREMENTS | grep -q $DISTRO; then
