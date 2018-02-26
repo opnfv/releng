@@ -34,6 +34,7 @@ fi
 if [[ $GERRIT_PROJECT != "releng-xci" ]]; then
     cd $HOME && /bin/rm -rf $WORKSPACE
     git clone https://gerrit.opnfv.org/gerrit/releng-xci $WORKSPACE && cd $WORKSPACE
+    chmod -R go-rwx $WORKSPACE/xci/scripts/vm
 fi
 
 WORK_DIRECTORY=/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO
