@@ -29,6 +29,7 @@ fi
 if [[ $GERRIT_PROJECT != "releng-xci" ]]; then
     cd $HOME && /bin/rm -rf $WORKSPACE
     git clone https://gerrit.opnfv.org/gerrit/releng-xci $WORKSPACE && cd $WORKSPACE
+    chmod -R go-rwx $WORKSPACE/xci/scripts/vm
 fi
 
 # skip the deployment if the scenario is not supported on this distro
