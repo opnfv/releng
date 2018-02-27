@@ -7,7 +7,7 @@
     name: qtip-experimental-jobs
     project: qtip
     jobs:
-      - 'qtip-experimental-{pod}-{stream}'
+      - 'qtip-{sut}-experimental-{pod}-{stream}'
     stream:
       - master:
           branch: '{stream}'
@@ -19,12 +19,19 @@
           installer: fuel
           pod: zte-virtual6
 
+    # -------------------------------
+    # SYSTEM UNDER TEST
+    # -------------------------------
+    sut:
+      - 'host'
+      - 'vnf'
+
 ################################
 ## job templates
 #################################
 
 - job-template:
-    name: 'qtip-experimental-{pod}-{stream}'
+    name: 'qtip-{sut}-experimental-{pod}-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -34,6 +41,9 @@
           branch: '{branch}'
       - '{installer}-defaults'
       - '{pod}-defaults'
+      - string:
+          name: SUT
+          default: '{sut}'
     scm:
       - git-scm-gerrit
 

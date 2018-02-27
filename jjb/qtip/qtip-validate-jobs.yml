@@ -38,16 +38,23 @@
           <<: *master
 
     # -------------------------------
+    # SYSTEM UNDER TEST
+    # -------------------------------
+    sut:
+      - 'host'
+      - 'vnf'
+
+    # -------------------------------
     # JOB LIST
     # -------------------------------
     jobs:
-      - 'qtip-{qpi}-{installer}-{pod}-{stream}'
+      - 'qtip-{qpi}-{sut}-{installer}-{pod}-{stream}'
 
 ################################
 # job templates
 ################################
 - job-template:
-    name: 'qtip-{qpi}-{installer}-{pod}-{stream}'
+    name: 'qtip-{qpi}-{sut}-{installer}-{pod}-{stream}'
     disabled: false
 
     parameters:
@@ -76,6 +83,9 @@
       - string:
           name: OPNFV_RELEASE
           default: '{stream}'
+      - string:
+          name: SUT
+          default: '{sut}'
     scm:
       - git-scm
 
