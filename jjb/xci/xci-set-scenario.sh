@@ -17,11 +17,16 @@ set -o pipefail
 # what you are doing.
 #----------------------------------------------------------------------
 
+WORK_DIRECTORY=/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO
+/bin/rm -rf $WORK_DIRECTORY && mkdir -p $WORK_DIRECTORY
+
 # ensure GERRIT_TOPIC is set
 GERRIT_TOPIC="${GERRIT_TOPIC:-''}"
+
 # skip the healthcheck if the patch doesn't impact the deployment
 if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]]; then
-    echo "Skipping the healthcheck!"
+    echo "Skipping verify!"
+    echo "DEPLOY_SCENARIO=os-nosdn-nofeature" > $WORK_DIRECTORY/scenario.properties
     exit 0
 fi
 
@@ -36,9 +41,6 @@ if [[ $GERRIT_PROJECT != "releng-xci" ]]; then
     git clone https://gerrit.opnfv.org/gerrit/releng-xci $WORKSPACE && cd $WORKSPACE
     chmod -R go-rwx $WORKSPACE/xci/scripts/vm
 fi
-
-WORK_DIRECTORY=/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO
-/bin/rm -rf $WORK_DIRECTORY && mkdir -p $WORK_DIRECTORY
 
 # if change is coming to releng-xci, continue as usual until that part is fixed as well
 if [[ $GERRIT_PROJECT == "releng-xci" ]]; then
