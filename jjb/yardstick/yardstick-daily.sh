@@ -50,7 +50,7 @@ opts="--privileged=true --rm"
 envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
     -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NETWORK=${EXTERNAL_NETWORK} \
     -e YARDSTICK_BRANCH=${BRANCH} -e BRANCH=${BRANCH} \
-    -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO}"
+    -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} -e CI_DEBUG=true"
 
 if [[ "${INSTALLER_TYPE}" == 'fuel' ]]; then
     envs+=" -e SSH_KEY=/root/.ssh/mcp.rsa"
