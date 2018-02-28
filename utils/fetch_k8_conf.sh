@@ -52,12 +52,14 @@ else
     touch $dest_path || error "Cannot create the file specified. Check that the path is correct and run the script again."
 fi
 
-info "Fetching admin.conf file..."
 if [ "$installer_type" == "compass" ]; then
+    info "Fetching admin.conf file on Compass"
     sudo docker cp compass-tasks:/opt/admin.conf $dest_path &> /dev/null
     sudo chown $(whoami):$(whoami) $dest_path
     info "Fetch admin.conf successfully"
+elif [ "$installer_type" == "joid" ]; then
+    info "Do nothing, config file has been provided in $HOME/joid_config/config for joid"
 else
-    error "Installer $installer is not supported by this script"
+    error "Installer $installer_type is not supported by this script"
 fi
 
