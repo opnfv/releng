@@ -27,6 +27,8 @@
       - 'db'
       - 'deck'
       - 'tasks-base'
+      - 'tasks-k8s'
+      - 'tasks-osa'
 
     # settings for jobs run in multijob phases
     build-job-settings: &build-job-settings
@@ -94,6 +96,10 @@
             - name: 'compass-deck-build-amd64-{stream}'
               <<: *build-job-settings
             - name: 'compass-tasks-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'compass-tasks-k8s-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'compass-tasks-osa-build-amd64-{stream}'
               <<: *build-job-settings
 
     publishers:
