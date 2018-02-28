@@ -23,7 +23,6 @@
     baremetal: &baremetal
       installer: 'fuel'
       deploy-type: 'baremetal'
-      slave-label: 'armband-{deploy-type}'
     virtual: &virtual
       installer: 'fuel'
       deploy-type: 'virtual'
@@ -60,12 +59,15 @@
       # HA scenarios
       - 'os-nosdn-nofeature-ha':
           auto-trigger-name: '{installer}-{scenario}-{pod}-{stream}-trigger'
+          slave-label: 'armband-{deploy-type}'
       - 'os-odl-nofeature-ha':
           auto-trigger-name: '{installer}-{scenario}-{pod}-{stream}-trigger'
+          slave-label: 'ericsson-build3'
 
       # NOHA scenarios
       - 'os-nosdn-nofeature-noha':
           auto-trigger-name: '{installer}-{scenario}-{pod}-{stream}-trigger'
+          slave-label: 'armband-{deploy-type}'
 
     jobs:
       - '{installer}-{scenario}-{pod}-daily-{stream}'
