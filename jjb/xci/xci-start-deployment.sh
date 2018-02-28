@@ -39,4 +39,4 @@ if ! sed -n "/^- scenario: $DEPLOY_SCENARIO$/,/^$/p" $OPNFV_SCENARIO_REQUIREMENT
     exit 0
 fi
 
-ssh -F $HOME/.ssh/${VM_DISTRO}-xci-vm-config ${DISTRO}_xci_vm "cd releng-xci && ./xci_test.sh"
+ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm "cd releng-xci && ./xci_test.sh"
