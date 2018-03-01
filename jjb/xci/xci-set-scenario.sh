@@ -58,7 +58,7 @@ fi
 git clone https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT $WORK_DIRECTORY/$GERRIT_PROJECT
 cd $WORK_DIRECTORY/$GERRIT_PROJECT
 git fetch https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT $GERRIT_REFSPEC && git checkout FETCH_HEAD
-DEPLOY_SCENARIO=$(git diff HEAD^..HEAD --name-only | grep scenarios | sed -r 's/scenarios\/(.*?)\/.*/\1/' | uniq)
+DEPLOY_SCENARIO=$(git diff HEAD^..HEAD --name-only | grep scenarios | awk -F '[/|/]' '{print $2}' | uniq)
 
 # ensure single scenario is impacted
 if [[ $(echo $DEPLOY_SCENARIO | wc -w) != 1 ]]; then
