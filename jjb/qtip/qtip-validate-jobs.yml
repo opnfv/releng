@@ -27,34 +27,30 @@
       - compute:
           installer: apex
           pod: zte-virtual5
+          sut: node
           <<: *master
       - storage:
           installer: apex
           pod: zte-virtual5
+          sut: ''
           <<: *master
       - compute:
           installer: fuel
           pod: zte-virtual6
+          sut: vnf
           <<: *master
-
-    # -------------------------------
-    # SYSTEM UNDER TEST
-    # -------------------------------
-    sut:
-      - 'host'
-      - 'vnf'
 
     # -------------------------------
     # JOB LIST
     # -------------------------------
     jobs:
-      - 'qtip-{qpi}-{sut}-{installer}-{pod}-{stream}'
+      - 'qtip-{qpi}-{installer}-{pod}-{stream}'
 
 ################################
 # job templates
 ################################
 - job-template:
-    name: 'qtip-{qpi}-{sut}-{installer}-{pod}-{stream}'
+    name: 'qtip-{qpi}-{installer}-{pod}-{stream}'
     disabled: false
 
     parameters:
@@ -85,6 +81,7 @@
           default: '{stream}'
       - string:
           name: SUT
+          description: "System Under Test"
           default: '{sut}'
     scm:
       - git-scm
