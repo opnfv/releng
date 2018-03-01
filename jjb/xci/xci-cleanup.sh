@@ -20,5 +20,5 @@ if [[ "$GERRIT_TOPIC" =~ 'skip-verify' ]]; then
     exit 0
 fi
 
-sudo virsh destroy ${DISTRO}_xci_vm
-sudo virsh undefine ${DISTRO}_xci_vm
+sudo virsh destroy ${DISTRO}_xci_vm || true
+sudo virsh undefine ${DISTRO}_xci_vm || true
