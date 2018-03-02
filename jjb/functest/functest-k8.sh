@@ -47,9 +47,10 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} \
 DOCKER_TAG=`[[ ${BRANCH##*/} == "master" ]] && echo "latest" || echo ${BRANCH##*/}`
 
 FUNCTEST_IMAGE=opnfv/functest-kubernetes:${DOCKER_TAG}
+echo "Pulling Docker image ${FUNCTEST_IMAGE} ..."
 docker pull ${FUNCTEST_IMAGE}>/dev/null
 cmd_opt="run_tests -r -t all"
-cmd="docker run --rm --privileged=true ${volumes} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
+cmd="docker run --rm --privileged=true ${envs} ${volumes} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
 echo "Running Functest k8s test cases, CMD: ${cmd}"
 eval ${cmd}
 ret_value=$?
