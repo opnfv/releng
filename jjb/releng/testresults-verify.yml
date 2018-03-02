@@ -11,6 +11,7 @@
 
     jobs:
       - '{module}-verify-{stream}'
+      - '{module}-client-verify-{stream}'
 
     project: 'releng-testresults'
 
@@ -36,6 +37,37 @@
     builders:
       - shell: |
           cd {module}/
+          tox
+          if [ -e *.xml ];then
+              cp *.xml $WORKSPACE
+          fi
+
+    publishers:
+      - publish-coverage
+      - email-jenkins-admins-on-failure
+
+- job-template:
+    name: '{module}-client-verify-{stream}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+      - git-scm-gerrit
+
+    triggers:
+      - gerrit-trigger-patchset-created:
+          server: 'gerrit.opnfv.org'
+          project: '**'
+          branch: '{branch}'
+          files: '{module}/{module}-client/**'
+
+    builders:
+      - shell: |
+          cd {module}/{module}-client
           tox
           if [ -e *.xml ];then
               cp *.xml $WORKSPACE
