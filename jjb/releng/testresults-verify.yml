@@ -1,0 +1,46 @@
+---
+- project:
+    name: testresults-verify
+    stream:
+      - master:
+          branch: '{stream}'
+
+    module:
+      - 'testapi'
+      - 'reporting'
+
+    jobs:
+      - '{module}-verify-{stream}'
+
+    project: 'releng-testresults'
+
+- job-template:
+    name: '{module}-verify-{stream}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+      - git-scm-gerrit
+
+    triggers:
+      - gerrit-trigger-patchset-created:
+          server: 'gerrit.opnfv.org'
+          project: '**'
+          branch: '{branch}'
+          files: '{module}/**'
+
+    builders:
+      - shell: |
+          cd {module}/
+          tox
+          if [ -e *.xml ];then
+              cp *.xml $WORKSPACE
+          fi
+
+    publishers:
+      - publish-coverage
+      - email-jenkins-admins-on-failure
