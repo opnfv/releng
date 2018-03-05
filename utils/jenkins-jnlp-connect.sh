@@ -11,10 +11,13 @@
 #Monit setup script for opnfv jnlp slave connections
 
 test_firewall() {
-    echo "testing that the firewall is open for us at build.opnfv.org"
-    test=$(echo "blah"| nc -w 4 build.opnfv.org 57387 > /dev/null 2>&1; echo $?)
+jenkins_hostname="${jenkins_hostname:-build.opnfv.org}"
+
+
+    echo "testing that the firewall is open for us at $jenkins_hostname"
+    test=$(echo "blah"| nc -w 4 $jenkins_hostname 57387 > /dev/null 2>&1; echo $?)
     if [[ $test == 0 ]]; then
-        echo "Firewall is open for us at build.opnfv.org"
+        echo "Firewall is open for us at $jenkins_hostname"
         exit 0
     else
         cat << EOF
@@ -138,7 +141,7 @@ depends on jenkins_piddir\
     fi
 
     if [[ $started_monit == "true" ]]; then
-        wget --timestamping https://build.opnfv.org/ci/jnlpJars/slave.jar && true
+        wget --timestamping https://"$jenkins_hostname"/jnlpJars/slave.jar && true
         chown $jenkinsuser:$jenkinsuser slave.jar
 
         if [[ -f /var/run/$jenkinsuser/jenkins_jnlp_pid ]]; then
@@ -182,6 +185,7 @@ usage: $0 [OPTIONS]
  -u  set jenkins user
  -n  set slave name
  -s  set secret key
+ -l  set host, default is build.opnfv.org/ci
  -t  test the connection string by connecting without monit
  -f  test firewall
 
@@ -196,13 +200,14 @@ if [[ -z "$@" ]]; then
     usage
 fi
 
-while getopts "j:u:n:s:htf" OPTION
+while getopts "j:u:n:s:l:htf" OPTION
 do
     case $OPTION in
         j ) jenkinshome="$OPTARG" ;;
         u ) jenkinsuser="$OPTARG" ;;
         n ) slave_name="$OPTARG" ;;
         s ) slave_secret="$OPTARG";;
+        l ) jenkins_hostname="$OPTARG" ;;
         h ) usage ;;
         t ) started_monit=true
             skip_monit=true
@@ -212,6 +217,6 @@ do
     esac
 done
 
-connectionstring="java -jar slave.jar -jnlpUrl https://build.opnfv.org/ci/computer/"$slave_name"/slave-agent.jnlp -secret "$slave_secret" -noCertificateCheck "
-
+jenkins_hostname="${jenkins_hostname:-build.opnfv.org/ci}"
+connectionstring="java -jar slave.jar -jnlpUrl https://"$jenkins_hostname"/computer/"$slave_name"/slave-agent.jnlp -secret "$slave_secret" -noCertificateCheck "
 main "$@"
