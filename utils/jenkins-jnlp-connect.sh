@@ -84,8 +84,14 @@ main () {
 
         if [ -d /etc/monit/conf.d ]; then
             monitconfdir="/etc/monit/conf.d/"
+            monitconfig="/etc/monit/monitrc"
+            #add start delay
+            sed -i '/^#.* delay /s/^#//' "$monitconfig"
         elif [ -d /etc/monit.d ]; then
             monitconfdir="/etc/monit.d"
+            monitconfig="/etc/monitrc"
+            #add start delay
+            sed -i '/^#.* delay /s/^#//' "$monitconfig"
         else
             echo "Could not determine the location of the monit configuration file."
             echo "Make sure monit is installed."
@@ -103,7 +109,7 @@ if does not exist then exec "$mkdir -p /var/run/$jenkinsuser"
 if failed uid $jenkinsuser then exec "$chown $jenkinsuser /var/run/$jenkinsuser"
 if failed gid $jenkinsuser then exec "$chown :$jenkinsuser /var/run/$jenkinsuser"
 
-check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid every 2 cycles
+check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
 start program = "/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $jenkinshome; export started_monit=true; $0 $@' with timeout 60 seconds"
 stop program = "/bin/bash -c '/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)'"
 depends on jenkins_piddir
@@ -118,7 +124,7 @@ if does not exist then exec \"$mkdir -p /var/run/$jenkinsuser\"
 if failed uid $jenkinsuser then exec \"$chown $jenkinsuser /var/run/$jenkinsuser\"
 if failed gid $jenkinsuser then exec \"$chown :$jenkinsuser /var/run/$jenkinsuser\"
 
-check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid every 2 cycles
+check process jenkins with pidfile /var/run/$jenkinsuser/jenkins_jnlp_pid
 start program = \"/usr/bin/sudo -u $jenkinsuser /bin/bash -c 'cd $jenkinshome; export started_monit=true; $0 $@' with timeout 60 seconds\"
 stop program = \"/bin/bash -c '/bin/kill \$(/bin/cat /var/run/$jenkinsuser/jenkins_jnlp_pid)'\"
 depends on jenkins_piddir\
