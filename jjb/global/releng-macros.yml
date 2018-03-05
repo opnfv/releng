@@ -371,10 +371,13 @@
           # sudo Install python packages
           sudo pip install "yamllint==1.8.2"
 
+          ll='{{max: 120, allow-non-breakable-words: true, allow-non-breakable-inline-mappings: true}}'
+          config="{{extends: default, rules: {{line-length: $ll}} }}"
+
           echo "Checking yaml file..."
           for f in $(egrep '\.ya?ml$' modified_files)
           do
-              yamllint "$f" >> yaml-violation.log
+              yamllint -d "$config" "$f" >> yaml-violation.log
           done
           if [[ -s yaml-violation.log ]]; then
               echo -e "YAML violation(s)\n---" >> violation.log
