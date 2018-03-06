@@ -9,15 +9,20 @@
           disabled: false
       - 'k8-sriov-nofeature-noha':
           disabled: false
+    pod:
+      - virtual:
+          slave-label: arm-packet01
+      - baremetal:
+          slave-label: compass-baremetal-arm
     jobs:
-      - 'container4nfv-{scenario}-virtual-daily-master'
+      - 'container4nfv-{scenario}-{pod}-daily-master'
 
 
 - job-template:
-    name: 'container4nfv-{scenario}-virtual-daily-master'
+    name: 'container4nfv-{scenario}-{pod}-daily-master'
     disabled: '{obj:disabled}'
     concurrent: false
-    node: arm-packet01
+    node: '{slave-label}'
 
     scm:
       - git:
@@ -28,7 +33,7 @@
           wipe-workspace: true
 
     triggers:
-      - 'trigger-{scenario}-virtual'
+      - 'trigger-{scenario}-{pod}'
 
     wrappers:
       - timeout:
@@ -46,6 +51,7 @@
             same-node: true
             block: false
 
+
 - trigger:
     name: 'trigger-k8-multus-nofeature-noha-virtual'
     triggers:
@@ -54,3 +60,12 @@
     name: 'trigger-k8-sriov-nofeature-noha-virtual'
     triggers:
       - timed: '0 16 * * *'
+
+- trigger:
+    name: 'trigger-k8-multus-nofeature-noha-baremetal'
+    triggers:
+      - timed: '0 16 * * *'
+- trigger:
+    name: 'trigger-k8-sriov-nofeature-noha-baremetal'
+    triggers:
+      - timed: '0 20 * * *'
