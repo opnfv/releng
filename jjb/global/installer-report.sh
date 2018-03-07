@@ -33,4 +33,14 @@ echo "Installer: $INSTALLER provision result: $PROVISION_RESULT"
 echo $(gen_content)
 
 set -o xtrace
-curl -H "Content-Type: application/json" -X POST -v -d "$(gen_content)" $TESTAPI_URL/deployresults
+curl -H "Content-Type: application/json" -X POST -v -d "$(gen_content)" \
+    $TESTAPI_URL/deployresults || true
+
+# INFO
+# postbuildscript plugin shall always return the original job running status,
+# for the result returned from postbuildscript affects the CI pipeline.
+if [ "$PROVISION_RESULT" == "PASS" ]; then
+    return 0
+else
+    return 1
+fi
