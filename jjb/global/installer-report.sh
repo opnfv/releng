@@ -15,10 +15,10 @@ gen_content()
 {
     "installer": "$INSTALLER",
     "version": "$INSTALLER_VERSION",
-    "pod_name": "$POD_NAME",
+    "pod_name": "$NODE_NAME",
     "job_name": "$JOB_NAME",
     "build_id": "$BUILD_ID",
-    "scenario": "$SCENARIO",
+    "scenario": "$DEPLOY_SCENARIO",
     "upstream_job_name": "$UPSTREAM_JOB_NAME",
     "upstream_build_id":"$UPSTREAM_BUILD_ID",
     "criteria": "$PROVISION_RESULT",
@@ -33,4 +33,14 @@ echo "Installer: $INSTALLER provision result: $PROVISION_RESULT"
 echo $(gen_content)
 
 set -o xtrace
-curl -H "Content-Type: application/json" -X POST -v -d "$(gen_content)" $TESTAPI_URL/deployresults
+curl -H "Content-Type: application/json" -X POST -v -d "$(gen_content)" \
+    $TESTAPI_URL/deployresults || true
+
+# INFO
+# postbuildscript plugin shall always return the original job running status,
+# for the result returned from postbuildscript affects the CI pipeline.
+if [ "$PROVISION_RESULT" == "PASS" ]; then
+    exit 0
+else
+    exit 1
+fi
