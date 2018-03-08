@@ -200,8 +200,12 @@
           job-timeout: 180
       - 'components':
           job-timeout: 240
+      - 'patrole':
+          job-timeout: 20
       - 'vnf':
           job-timeout: 240
+      - 'parser':
+          job-timeout: 20
 
     features-suite:
       - 'doctor-notification'
@@ -274,6 +278,8 @@
               <<: *build-job-settings
             - name: 'functest-{installer}-{pod}-daily-smoke-{stream}'
               <<: *build-job-settings
+            - name: 'functest-{installer}-{pod}-daily-patrole-{stream}'
+              <<: *build-job-settings
             - name: 'functest-{installer}-{pod}-daily-vnf-{stream}'
               <<: *build-job-settings
             - name: 'functest-{installer}-{pod}-daily-features-doctor-notification-{stream}'
@@ -290,6 +296,8 @@
               <<: *features-job-settings
             - name: 'functest-{installer}-{pod}-daily-features-domino-multinode-{stream}'
               <<: *features-job-settings
+            - name: 'functest-{installer}-{pod}-daily-parser-{stream}'
+              <<: *build-job-settings
 
 - job-template: &functest-installer-tier-job
 
@@ -463,6 +471,7 @@
             - 'odl_netvirt'
             - 'snaps_smoke'
             - 'refstack_defcore'
+            - 'patrole'
             - 'promise'
             - 'doctor'
             - 'bgpvpn'
@@ -480,9 +489,11 @@
           choices:
             - 'healthcheck'
             - 'smoke'
+            - 'patrole'
             - 'features'
             - 'components'
             - 'vnf'
+            - 'parser'
           default: 'healthcheck'
       - string:
           name: TESTCASE_OPTIONS
