@@ -7,6 +7,9 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
+set -o errexit
+set -o nounset
+set -o pipefail
 
 #----------------------------------------------------------------------
 # This script is used by CI and executed by Jenkins jobs.
