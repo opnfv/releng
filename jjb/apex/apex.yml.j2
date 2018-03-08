@@ -166,6 +166,7 @@
           block-level: 'NODE'
           blocking-jobs:
             - 'apex-deploy.*'
+            - 'functest.*'
             - 'yardstick.*'
             - 'dovetail.*'
             - 'storperf.*'
@@ -249,23 +250,23 @@
               kill-phase-on: FAILURE
               abort-all-job: true
               git-revision: true
-#      - multijob:
-#          name: functest-smoke
-#          condition: SUCCESSFUL
-#          projects:
-#            - name: 'functest-apex-virtual-suite-{stream}'
-#              current-parameters: false
-#              predefined-parameters: |
-#                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-#                FUNCTEST_SUITE_NAME=healthcheck
-#                GERRIT_BRANCH=$GERRIT_BRANCH
-#                GERRIT_REFSPEC=$GERRIT_REFSPEC
-#                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-#                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-#              node-parameters: true
-#              kill-phase-on: NEVER
-#              abort-all-job: true
-#              git-revision: false
+      - multijob:
+          name: functest-smoke
+          condition: SUCCESSFUL
+          projects:
+            - name: 'functest-apex-virtual-suite-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                FUNCTEST_SUITE_NAME=healthcheck
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: true
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
 
 # Baremetal Deploy and Test
 - job-template:
@@ -382,18 +383,18 @@
     builders:
       - description-setter:
           description: "Testing on $NODE_NAME - Scenario: $DEPLOY_SCENARIO"
-#      - multijob:
-#          name: Functest
-#          condition: ALWAYS
-#          projects:
-#            - name: 'functest-apex-baremetal-daily-{scenario_stream}'
-#              node-parameters: true
-#              current-parameters: false
-#              predefined-parameters:
-#                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-#              kill-phase-on: NEVER
-#              abort-all-job: false
-#              git-revision: false
+      - multijob:
+          name: Functest
+          condition: ALWAYS
+          projects:
+            - name: 'functest-apex-baremetal-daily-{scenario_stream}'
+              node-parameters: true
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+              kill-phase-on: NEVER
+              abort-all-job: false
+              git-revision: false
       - multijob:
           name: Yardstick
           condition: ALWAYS
@@ -612,23 +613,23 @@
               kill-phase-on: FAILURE
               abort-all-job: true
               git-revision: false
-#      - multijob:
-#          name: functest-smoke
-#          condition: SUCCESSFUL
-#          projects:
-#            - name: 'functest-apex-virtual-suite-{stream}'
-#              current-parameters: false
-#              predefined-parameters: |
-#                DEPLOY_SCENARIO=os-odl_l3-nofeature-noha
-#                FUNCTEST_SUITE_NAME=tempest_smoke_serial
-#                GERRIT_BRANCH=$GERRIT_BRANCH
-#                GERRIT_REFSPEC=$GERRIT_REFSPEC
-#                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-#                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-#              node-parameters: true
-#              kill-phase-on: FAILURE
-#              abort-all-job: true
-#              git-revision: false
+      - multijob:
+          name: functest-smoke
+          condition: SUCCESSFUL
+          projects:
+            - name: 'functest-apex-virtual-suite-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                DEPLOY_SCENARIO=os-odl_l3-nofeature-noha
+                FUNCTEST_SUITE_NAME=tempest_smoke_serial
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: true
+              git-revision: false
       - multijob:
           name: create snapshot
           condition: SUCCESSFUL
@@ -780,7 +781,7 @@
       - string:
           name: SSH_KEY
           default: /root/.ssh/id_rsa
-          description: 'SSH key to use for Apex.'
+          description: 'SSH key to use for Apex'
 
     properties:
       - logrotate-default
