@@ -17,11 +17,51 @@ set -o pipefail
 # what you are doing.
 #----------------------------------------------------------------------
 
-WORK_DIRECTORY=/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO
-/bin/rm -rf $WORK_DIRECTORY && mkdir -p $WORK_DIRECTORY
+# This function will determine the impacted generic scenario by processing the
+# change and using diff to see what changed.
+# It currently sets the scenario to os-nosdn-nofeature.
+function determine_generic_scenario() {
+    echo "Processing $GERRIT_PROJECT $GERRIT_REFSPEC"
+
+    # set the default scenario
+    DEPLOY_SCENARIO="os-nosdn-nofeature"
+}
+
+# This function determines the impacted external scenario by processing the Gerrit
+# change and using diff to see what changed. If changed files belong to a scenario
+# its name gets recorded for deploying and testing the right scenario.
+#
+# Pattern
+# <project-repo>/scenarios/<scenario>/<impacted files>: <scenario>
+function determine_external_scenario() {
+    echo "Processing $GERRIT_PROJECT $GERRIT_REFSPEC"
+
+    # remove the clone that is done via jenkins and place releng-xci there so the
+    # things continue functioning properly
+    cd $HOME && /bin/rm -rf $WORKSPACE
+    git clone -q https://gerrit.opnfv.org/gerrit/releng-xci $WORKSPACE && cd $WORKSPACE
+
+    # fix the permissions so ssh doesn't complain due to having world-readable keyfiles
+    chmod -R go-rwx $WORKSPACE/xci/scripts/vm
+
+    # clone the project repo and fetch the patchset to process for further processing
+    git clone -q https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT $WORK_DIRECTORY/$GERRIT_PROJECT
+    cd $WORK_DIRECTORY/$GERRIT_PROJECT
+    git fetch -q https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT $GERRIT_REFSPEC && git checkout -q FETCH_HEAD
+
+    # process the diff to find out what scenario(s) are impacted - there should only be 1
+    DEPLOY_SCENARIO=$(git diff HEAD^..HEAD --name-only | grep scenarios | awk -F '[/|/]' '{print $2}' | uniq)
+}
+
+echo "Determining the impacted scenario"
 
 # ensure GERRIT_TOPIC is set
 GERRIT_TOPIC="${GERRIT_TOPIC:-''}"
+
+# this directory is where the temporary clones and files are created
+# while extracting the impacted scenario
+WORK_DIRECTORY=/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO
+/bin/rm -rf $WORK_DIRECTORY && mkdir -p $WORK_DIRECTORY
 
 # skip the healthcheck if the patch doesn't impact the deployment
 if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]]; then
@@ -30,35 +70,11 @@ if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]]; then
     exit 0
 fi
 
-# if the scenario is external, we need to wipe WORKSPACE to place releng-xci there since
-# the project where the scenario is coming from is cloned and the patch checked out to the
-# xci/scenarios/$DEPLOY_SCENARIO to be synched on clean VM
-# apart from that, we need releng-xci stuff in WORKSPACE for things to function correctly on Jenkins.
-# if the change is coming to releng-xci, we don't need to do anything since the patch is checked
-# out to the WORKSPACE anyways
-if [[ $GERRIT_PROJECT != "releng-xci" ]]; then
-    cd $HOME && /bin/rm -rf $WORKSPACE
-    git clone https://gerrit.opnfv.org/gerrit/releng-xci $WORKSPACE && cd $WORKSPACE
-    chmod -R go-rwx $WORKSPACE/xci/scripts/vm
-fi
-
-# if change is coming to releng-xci, continue as usual until that part is fixed as well
 if [[ $GERRIT_PROJECT == "releng-xci" ]]; then
-    # save the scenario name into java properties file to be injected to downstream jobs via envInject
-    echo "Recording scenario name for downstream jobs"
-    echo "DEPLOY_SCENARIO=os-nosdn-nofeature" > $WORK_DIRECTORY/scenario.properties
-    exit 0
+    determine_generic_scenario
+else
+    determine_external_scenario
 fi
-
-# projects develop different scenarios and jobs need to know which scenario got the
-# change under test so the jobs can deploy and test the right scenario.
-# we need to fetch the change and look at the changeset to find out the scenario instead
-# of hardcoding scenario per project.
-
-git clone https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT $WORK_DIRECTORY/$GERRIT_PROJECT
-cd $WORK_DIRECTORY/$GERRIT_PROJECT
-git fetch https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT $GERRIT_REFSPEC && git checkout FETCH_HEAD
-DEPLOY_SCENARIO=$(git diff HEAD^..HEAD --name-only | grep scenarios | awk -F '[/|/]' '{print $2}' | uniq)
 
 # ensure single scenario is impacted
 if [[ $(echo $DEPLOY_SCENARIO | wc -w) != 1 ]]; then
@@ -68,9 +84,21 @@ if [[ $(echo $DEPLOY_SCENARIO | wc -w) != 1 ]]; then
     exit 1
 fi
 
-# save the scenario name into java properties file to be injected to downstream jobs via envInject
-echo "Recording scenario name '$DEPLOY_SCENARIO' for downstream jobs"
-echo "DEPLOY_SCENARIO=$DEPLOY_SCENARIO" > $WORK_DIRECTORY/scenario.properties
+# set the installer
+if [[ $DEPLOY_SCENARIO =~ ^(os-) ]]; then
+    XCI_INSTALLER=osa
+elif [[ $DEPLOY_SCENARIO =~ ^(k8-) ]]; then
+    XCI_INSTALLER=kubespray
+else
+    echo "Unable to determine the installer. Exiting!"
+    exit 1
+fi
+
+# save the installer and scenario names into java properties file
+# so they can be injected to downstream jobs via envInject
+echo "Recording the installer '$XCI_INSTALLER' and scenario '$DEPLOY_SCENARIO' for downstream jobs"
+echo "XCI_INSTALLER=$XCI_INSTALLER" > $WORK_DIRECTORY/scenario.properties
+echo "DEPLOY_SCENARIO=$DEPLOY_SCENARIO" >> $WORK_DIRECTORY/scenario.properties
 
 # skip the deployment if the scenario is not supported on this distro
 OPNFV_SCENARIO_REQUIREMENTS=$WORKSPACE/xci/opnfv-scenario-requirements.yml
