@@ -178,6 +178,7 @@
           <<: *other-receivers
       - 'xtesting':
           project: 'functest-xtesting'
+          arch_tag: 'x86_64'
           <<: *master
           <<: *other-receivers
       # projects with jobs for danube
@@ -189,7 +190,6 @@
     # yamllint enable rule:key-duplicates
     jobs:
       - "{dockerrepo}-docker-build-push-{stream}"
-
 - project:
 
     name: opnfv-monitor-docker        # projects which only monitor dedicated file or path
@@ -261,8 +261,47 @@
       - git-scm
 
     builders: &builders
-      - shell:
-          !include-raw-escape: ./opnfv-docker.sh
+      - conditional-step:
+          condition-kind: not
+          condition-operand:
+            condition-kind: regex-match
+            regex: 'functest-xtesting'
+            label: '{project}'
+          steps:
+            - shell:
+                !include-raw-escape: ./opnfv-docker.sh
+      - conditional-step:
+          condition-kind: regex-match
+          regex: 'functest-xtesting'
+          label: '{project}'
+          steps:
+            - shell: |
+                #!/bin/bash -xe
+                case "{arch_tag}" in
+                "arm64")
+                   sudo arch_tag=arm64 ./build.sh;;
+                *)
+                   sudo arch_tag=amd64 ./build.sh;;
+                esac
+                exit $?
+      - conditional-step:
+          condition-kind: current-status
+          condition-worst: SUCCESS
+          condition-best: SUCCESS
+          steps:
+            - shell: |
+                #!/bin/bash -xe
+                case "{stream}" in
+                "master")
+                    tag="latest" ;;
+                *)
+                    tag="{stream}" ;;
+                esac
+                sudo manifest-tool push from-args \
+                    --platforms linux/amd64,linux/arm64 \
+                    --template opnfv/functest-xtesting:ARCH-$tag \
+                    --target opnfv/functest-xtesting:$tag
+                exit $?
 
     triggers:
       - pollscm:
@@ -274,6 +313,7 @@
       - email:
           recipients: '{receivers}'
       - email-jenkins-admins-on-failure
+
 
 - job-template:
     name: '{project}-docker-build-push-monitor-{stream}'
