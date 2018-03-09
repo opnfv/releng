@@ -223,7 +223,7 @@
         stream: 'master'
       - features-suite: 'domino-multinode'
         stream: 'master'
-      - features-suite: 'fds'
+      - features-suite: 'patrole'
         stream: 'euphrates'
 
     build-job-settings: &build-job-settings
@@ -273,31 +273,84 @@
 
     builders:
       - multijob:
-          name: 'Run functest tests'
-          execution-type: SEQUENTIALLY
+          name: 'Run healthcheck'
+          execution-type: PARALLEL
           projects:
             - name: 'functest-{installer}-{pod}-daily-healthcheck-{stream}'
               <<: *build-job-settings
+      - multijob:
+          name: 'Run smoke'
+          execution-type: PARALLEL
+          projects:
             - name: 'functest-{installer}-{pod}-daily-smoke-{stream}'
               <<: *build-job-settings
+      - multijob:
+          name: 'Run patrole'
+          execution-type: PARALLEL
+          projects:
             - name: 'functest-{installer}-{pod}-daily-patrole-{stream}'
               <<: *build-job-settings
+
+      - multijob:
+          name: 'Run vnf'
+          execution-type: PARALLEL
+          projects:
             - name: 'functest-{installer}-{pod}-daily-vnf-{stream}'
               <<: *build-job-settings
+
+      - multijob:
+          name: 'Run doctor-notification'
+          execution-type: PARALLEL
+          projects:
             - name: 'functest-{installer}-{pod}-daily-features-doctor-notification-{stream}'
               <<: *features-job-settings
+
+      - multijob:
+          name: 'Run bgpvpn'
+          execution-type: PARALLEL
+          projects:
             - name: 'functest-{installer}-{pod}-daily-features-bgpvpn-{stream}'
               <<: *features-job-settings
+
+      - multijob:
+          name: 'Run odl-sfc'
+          execution-type: PARALLEL
+          projects:
             - name: 'functest-{installer}-{pod}-daily-features-functest-odl-sfc-{stream}'
               <<: *features-job-settings
+
+      - multijob:
+          name: 'Run barometercollectd'
+          execution-type: PARALLEL
+          projects:
             - name: 'functest-{installer}-{pod}-daily-features-barometercollectd-{stream}'
               <<: *features-job-settings
+
+      - multijob:
+          name: 'Run fds'
+          execution-type: PARALLEL
+          projects:
             - name: 'functest-{installer}-{pod}-daily-features-fds-{stream}'
               <<: *features-job-settings
+
+      - multijob:
+          name: 'Run promise'
+          execution-type: PARALLEL
+          projects:
             - name: 'functest-{installer}-{pod}-daily-features-promise-{stream}'
               <<: *features-job-settings
+
+      - multijob:
+          name: 'Run domino-multinode'
+          execution-type: PARALLEL
+          projects:
             - name: 'functest-{installer}-{pod}-daily-features-domino-multinode-{stream}'
               <<: *features-job-settings
+
+      - multijob:
+          name: 'Run parser'
+          execution-type: PARALLEL
+          projects:
             - name: 'functest-{installer}-{pod}-daily-parser-{stream}'
               <<: *build-job-settings
 
