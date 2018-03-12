@@ -47,6 +47,12 @@ function determine_generic_scenario() {
                 ;;
             esac
     done
+
+    # extract releng-xci sha
+    RELENG_XCI_SHA=$(cd $WORKSPACE && git rev-parse HEAD)
+
+    # extract scenario sha
+    SCENARIO_SHA=$(cd $WORK_DIRECTORY/$GERRIT_PROJECT && git rev-parse HEAD)
 }
 
 # This function determines the impacted external scenario by processing the Gerrit
@@ -73,6 +79,12 @@ function determine_external_scenario() {
 
     # process the diff to find out what scenario(s) are impacted - there should only be 1
     DEPLOY_SCENARIO+=$(git diff HEAD^..HEAD --name-only | grep scenarios | awk -F '[/|/]' '{print $2}' | uniq)
+
+    # extract releng-xci sha
+    RELENG_XCI_SHA=$(cd $WORKSPACE && git rev-parse HEAD)
+
+    # extract scenario sha
+    SCENARIO_SHA=$(cd $WORK_DIRECTORY/$GERRIT_PROJECT && git rev-parse HEAD)
 }
 
 echo "Determining the impacted scenario"
@@ -124,9 +136,11 @@ esac
 
 # save the installer and scenario names into java properties file
 # so they can be injected to downstream jobs via envInject
-echo "Recording the installer '$INSTALLER_TYPE' and scenario '${DEPLOY_SCENARIO[0]}' for downstream jobs"
+echo "Recording the installer '$INSTALLER_TYPE' and scenario '${DEPLOY_SCENARIO[0]}' and SHAs for downstream jobs"
 echo "INSTALLER_TYPE=$INSTALLER_TYPE" > $WORK_DIRECTORY/scenario.properties
 echo "DEPLOY_SCENARIO=$DEPLOY_SCENARIO" >> $WORK_DIRECTORY/scenario.properties
+echo "RELENG_XCI_SHA=$RELENG_XCI_SHA" >> $WORK_DIRECTORY/scenario.properties
+echo "SCENARIO_SHA=$SCENARIO_SHA" >> $WORK_DIRECTORY/scenario.properties
 
 # skip the deployment if the scenario is not supported on this distro
 OPNFV_SCENARIO_REQUIREMENTS=$WORKSPACE/xci/opnfv-scenario-requirements.yml
