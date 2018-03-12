@@ -2,6 +2,7 @@
 - project:
     name: 'opnfv-xci-merge'
 
+    project: releng-xci
     # -------------------------------
     # branches
     # -------------------------------
@@ -19,34 +20,35 @@
       - opensuse:
           disabled: false
     # -------------------------------
-    # type
-    # -------------------------------
-    type:
-      - virtual
-    # -------------------------------
-    # patch verification phases
-    # -------------------------------
-    phase:
-      - 'deploy'
-      - 'healthcheck'
-      - 'promote'
-    # -------------------------------
     # scenarios
     # -------------------------------
     scenario:
       - 'os-odl-sfc':
           project: sfc
     # -------------------------------
+    # type
+    # -------------------------------
+    type:
+      - virtual
+    # -------------------------------
+    # postmerge promotion phases
+    # -------------------------------
+    phase:
+      - 'deploy'
+      - 'healthcheck'
+    # -------------------------------
     # jobs
     # -------------------------------
     jobs:
-      - 'xci-{scenario}-{type}-{distro}-merge-{stream}'
-      - 'xci-{phase}-{type}-{distro}-merge-{stream}'
+      - 'xci-{scenario}-{type}-merge-{stream}'
+      - 'xci-{scenario}-{type}-promote-merge-{stream}'
+      - 'xci-merge-{distro}-{type}-{stream}'
+      - 'xci-merge-{distro}-{phase}-{type}-{stream}'
 # -------------------------------
 # job templates
 # -------------------------------
 - job-template:
-    name: 'xci-{scenario}-{type}-{distro}-merge-{stream}'
+    name: 'xci-{scenario}-{type}-merge-{stream}'
 
     project-type: multijob
 
@@ -60,18 +62,11 @@
           use-build-blocker: true
           blocking-jobs:
             - 'xci-verify-{distro}-.*'
-            - 'xci-.*-{distro}-merge-.*'
+            - 'xci-merge-{distro}-.*'
             - 'openstack-bifrost-verify-{distro}-.*'
             - 'xci-osa-verify-{distro}-.*'
             - 'xci-osa-periodic-{distro}-.*'
-            - 'xci-(os|k8s).*?-virtual-{distro}-.*'
           block-level: 'NODE'
-      - throttle:
-          max-per-node: 2
-          max-total: 10
-          categories:
-            - xci-verify-virtual
-          option: category
 
     wrappers:
       - ssh-agent-wrapper
@@ -80,12 +75,7 @@
       - fix-workspace-permissions
 
     scm:
-      - git:
-          credentials-id: '$SSH_CREDENTIAL_ID'
-          url: 'https://gerrit.opnfv.org/gerrit/releng-xci'
-          branches:
-            - 'origin/master'
-          timeout: 15
+      - git-scm-gerrit
 
     triggers:
       - gerrit:
@@ -109,14 +99,14 @@
 
     parameters:
       - project-parameter:
-          project: '{obj:project}'
+          project: $GERRIT_PROJECT
           branch: '{branch}'
       - label:
           name: SLAVE_LABEL
           default: 'xci-virtual'
       - string:
-          name: DEPLOY_SCENARIO
-          default: '{scenario}'
+          name: DISTRO
+          default: '{distro}'
       - string:
           name: CLEAN_DIB_IMAGES
           default: 'true'
@@ -127,18 +117,143 @@
 
     builders:
       - description-setter:
-          description: "Built on $NODE_NAME"
+          description: "Node: $NODE_NAME"
+      - multijob:
+          name: deploy and test
+          condition: SUCCESSFUL
+          projects:
+            - name: 'xci-merge-opensuse-{type}-{stream}'
+              current-parameters: true
+              predefined-parameters: |
+                DISTRO=opensuse
+                CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
+                GERRIT_PROJECT=$GERRIT_PROJECT
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: true
+            - name: 'xci-merge-ubuntu-{type}-{stream}'
+              current-parameters: true
+              predefined-parameters: |
+                DISTRO=ubuntu
+                CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
+                GERRIT_PROJECT=$GERRIT_PROJECT
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: true
+            - name: 'xci-merge-centos-{type}-{stream}'
+              current-parameters: true
+              predefined-parameters: |
+                DISTRO=centos
+                CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
+                GERRIT_PROJECT=$GERRIT_PROJECT
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: false
+              kill-phase-on: FAILURE
+              abort-all-job: true
+      - 'xci-merge-set-scenario-macro'
+      - inject:
+          properties-file: "/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO/scenario.properties"
+      - multijob:
+          name: promote
+          condition: SUCCESSFUL
+          projects:
+            - name: 'xci-{scenario}-{type}-promote-merge-{stream}'
+              current-parameters: true
+              predefined-parameters: |
+                DEPLOY_SCENARIO={scenario}
+                CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
+                GERRIT_PROJECT=$GERRIT_PROJECT
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                FUNCTEST_MODE=tier
+                FUNCTEST_TIER=healthcheck
+              node-parameters: true
+              kill-phase-on: NEVER
+              abort-all-job: true
+
+- job-template:
+    name: 'xci-merge-{distro}-{type}-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    concurrent: true
+
+    properties:
+      - logrotate-default
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - 'xci-verify-{distro}-.*'
+            - 'xci-merge-{distro}-.*'
+            - 'openstack-bifrost-verify-{distro}-.*'
+            - 'xci-osa-verify-{distro}-.*'
+            - 'xci-osa-periodic-{distro}-.*'
+          block-level: 'NODE'
+      - throttle:
+          max-per-node: 1
+          max-total: 3
+          categories:
+            - xci-verify-virtual
+          option: category
+
+    wrappers:
+      - ssh-agent-wrapper
+      - build-timeout:
+          timeout: 240
+      - fix-workspace-permissions
+
+    scm:
+      - git-scm-gerrit
+
+    parameters:
+      - project-parameter:
+          project: $GERRIT_PROJECT
+          branch: '{branch}'
+      - label:
+          name: SLAVE_LABEL
+          default: 'xci-virtual'
+      - string:
+          name: DISTRO
+          default: '{distro}'
+      - string:
+          name: CLEAN_DIB_IMAGES
+          default: 'true'
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: 'Git URL to use on this Jenkins Slave'
+
+    builders:
+      - 'xci-merge-set-scenario-macro'
+      - inject:
+          properties-file: "/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO/scenario.properties"
+      - description-setter:
+          description: "Scenario: $DEPLOY_SCENARIO | Node: $NODE_NAME"
       - multijob:
           name: deploy
           condition: SUCCESSFUL
           projects:
-            - name: 'xci-deploy-{type}-{distro}-merge-{stream}'
+            - name: 'xci-merge-{distro}-deploy-{type}-{stream}'
               current-parameters: true
               predefined-parameters: |
-                PROJECT=$PROJECT
                 DISTRO={distro}
-                DEPLOY_SCENARIO={scenario}
                 CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
+                GERRIT_PROJECT=$GERRIT_PROJECT
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
@@ -150,19 +265,18 @@
           name: healthcheck
           condition: SUCCESSFUL
           projects:
-            - name: 'xci-healthcheck-{type}-{distro}-merge-{stream}'
+            - name: 'xci-merge-{distro}-healthcheck-{type}-{stream}'
               current-parameters: true
               predefined-parameters: |
-                PROJECT=$PROJECT
                 DISTRO={distro}
-                DEPLOY_SCENARIO={scenario}
                 CLEAN_DIB_IMAGES=$CLEAN_DIB_IMAGES
-                FUNCTEST_MODE=tier
-                FUNCTEST_TIER=healthcheck
+                GERRIT_PROJECT=$GERRIT_PROJECT
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                FUNCTEST_MODE=tier
+                FUNCTEST_TIER=healthcheck
               node-parameters: true
               kill-phase-on: NEVER
               abort-all-job: true
@@ -176,7 +290,7 @@
                 !include-raw: ./xci-cleanup.sh
 
 - job-template:
-    name: 'xci-{phase}-{type}-{distro}-merge-{stream}'
+    name: 'xci-merge-{distro}-{phase}-{type}-{stream}'
 
     disabled: false
 
@@ -196,13 +310,10 @@
     parameters:
       - string:
           name: PROJECT
-          default: 'releng-xci'
+          default: $GERRIT_PROJECT
       - string:
           name: DISTRO
           default: 'ubuntu'
-      - string:
-          name: DEPLOY_SCENARIO
-          default: 'os-nosdn-nofeature-noha'
       - string:
           name: FUNCTEST_MODE
           default: 'tier'
@@ -219,51 +330,102 @@
           name: OPNFV_RELENG_DEV_PATH
           default: $WORKSPACE/
       - string:
-          name: INSTALLER_TYPE
-          default: 'osa'
-      - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
           description: 'Git URL to use on this Jenkins Slave'
 
     wrappers:
+      - inject:
+          properties-file: "/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO/scenario.properties"
       - ssh-agent-wrapper
       - build-timeout:
           timeout: 240
       - fix-workspace-permissions
 
     scm:
-      - git:
-          credentials-id: '$SSH_CREDENTIAL_ID'
-          url: 'https://gerrit.opnfv.org/gerrit/releng-xci'
-          branches:
-            - 'origin/master'
-          timeout: 15
+      - git-scm-gerrit
 
     builders:
       - description-setter:
-          description: "Built on $NODE_NAME"
+          description: "Scenario: $DEPLOY_SCENARIO | Node: $NODE_NAME"
       - 'xci-merge-{phase}-macro'
+
+- job-template:
+    name: 'xci-{scenario}-{type}-promote-merge-{stream}'
+
+    disabled: false
+
+    concurrent: false
+
+    properties:
+      - logrotate-default
+
+    parameters:
+      - string:
+          name: PROJECT
+          default: $GERRIT_PROJECT
+      - string:
+          name: DISTRO
+          default: 'ubuntu'
+      - string:
+          name: FUNCTEST_MODE
+          default: 'tier'
+      - string:
+          name: FUNCTEST_SUITE_NAME
+          default: 'healthcheck'
+      - string:
+          name: XCI_FLAVOR
+          default: 'mini'
+      - string:
+          name: CLEAN_DIB_IMAGES
+          default: 'true'
+      - string:
+          name: OPNFV_RELENG_DEV_PATH
+          default: $WORKSPACE/
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: 'Git URL to use on this Jenkins Slave'
+
+    wrappers:
+      - inject:
+          properties-file: "/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO/scenario.properties"
+      - ssh-agent-wrapper
+      - build-timeout:
+          timeout: 240
+      - fix-workspace-permissions
+
+    builders:
+      - description-setter:
+          description: "Scenario: $DEPLOY_SCENARIO | Node: $NODE_NAME"
+      - 'xci-merge-promote-macro'
 
 # -------------------------------
 # builder macros
 # -------------------------------
 - builder:
-    name: 'xci-merge-deploy-macro'
+    name: 'xci-merge-set-scenario-macro'
     builders:
       - shell:
-          !include-raw: ./xci-start-new-vm.sh
-      - shell:
-          !include-raw: ./xci-start-deployment.sh
+          !include-raw: ./xci-set-scenario.sh
+
+- builder:
+    name: 'xci-merge-deploy-macro'
+    builders:
+      - shell: |
+          #!/bin/bash
+          echo "Hello World"
 
 - builder:
     name: 'xci-merge-healthcheck-macro'
     builders:
-      - shell:
-          !include-raw: ./xci-run-functest.sh
+      - shell: |
+          #!/bin/bash
+          echo "Hello World"
 
 - builder:
     name: 'xci-merge-promote-macro'
     builders:
-      - shell:
-          !include-raw: ./xci-promote.sh
+      - shell: |
+          #!/bin/bash
+          echo "Hello World"
