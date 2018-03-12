@@ -162,6 +162,13 @@
           recipients: fatih.degirmenci@ericsson.com yroblamo@redhat.com mchandras@suse.de jack.morgan@intel.com julienjut@gmail.com
       # yamllint enable rule:line-length
       - email-jenkins-admins-on-failure
+      - postbuildscript:
+          script-only-if-succeeded: false
+          script-only-if-failed: false
+          builders:
+            - shell:
+                !include-raw: ./xci-cleanup.sh
+
 # -------------------------------
 # trigger macros
 # -------------------------------
