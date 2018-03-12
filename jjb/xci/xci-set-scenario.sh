@@ -8,7 +8,7 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 set -o errexit
-set -o nounset
+#set -o nounset
 set -o pipefail
 
 #----------------------------------------------------------------------
@@ -20,11 +20,34 @@ set -o pipefail
 # This function will determine the impacted generic scenario by processing the
 # change and using diff to see what changed.
 # It currently sets the scenario to os-nosdn-nofeature.
+#
+# Pattern
+# releng-xci/scenarios/<scenario>/<impacted files>: <scenario>
+# releng-xci/xci/installer/osa/<impacted files>: os-nosdn-nofeature
+# releng-xci/xci/installer/kubespray/<impacted files>: k8-nosdn-nofeature
+# the rest: os-nosdn-nofeature
 function determine_generic_scenario() {
-    echo "Processing $GERRIT_PROJECT $GERRIT_REFSPEC"
+    echo "Processing $GERRIT_PROJECT patchset $GERRIT_REFSPEC"
 
-    # set the default scenario
-    DEPLOY_SCENARIO="os-nosdn-nofeature"
+    # get the changeset
+    cd $WORKSPACE
+    CHANGESET=$(git diff HEAD^..HEAD --name-only)
+    for CHANGED_FILE in $CHANGESET; do
+        case $CHANGED_FILE in
+            *k8-nosdn*|*kubespray*)
+                [[ ${DEPLOY_SCENARIO[@]} =~ "k8-nosdn-nofeature" ]] || DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='k8-nosdn-nofeature'
+                ;;
+            *os-odl*)
+                [[ ${DEPLOY_SCENARIO[@]} =~ "os-odl-nofeature" ]] || DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='os-odl-nofeature'
+                ;;
+            *os-nosdn*|*osa*)
+                [[ ${DEPLOY_SCENARIO[@]} =~ "k8-nosdn-nofeature" ]] || DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='os-nosdn-nofeature'
+                ;;
+            *)
+                [[ ${DEPLOY_SCENARIO[@]} =~ "k8-nosdn-nofeature" ]] || DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='os-nosdn-nofeature'
+                ;;
+            esac
+    done
 }
 
 # This function determines the impacted external scenario by processing the Gerrit
@@ -34,7 +57,7 @@ function determine_generic_scenario() {
 # Pattern
 # <project-repo>/scenarios/<scenario>/<impacted files>: <scenario>
 function determine_external_scenario() {
-    echo "Processing $GERRIT_PROJECT $GERRIT_REFSPEC"
+    echo "Processing $GERRIT_PROJECT patchset $GERRIT_REFSPEC"
 
     # remove the clone that is done via jenkins and place releng-xci there so the
     # things continue functioning properly
@@ -50,10 +73,12 @@ function determine_external_scenario() {
     git fetch -q https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT $GERRIT_REFSPEC && git checkout -q FETCH_HEAD
 
     # process the diff to find out what scenario(s) are impacted - there should only be 1
-    DEPLOY_SCENARIO=$(git diff HEAD^..HEAD --name-only | grep scenarios | awk -F '[/|/]' '{print $2}' | uniq)
+    DEPLOY_SCENARIO+=$(git diff HEAD^..HEAD --name-only | grep scenarios | awk -F '[/|/]' '{print $2}' | uniq)
 }
 
 echo "Determining the impacted scenario"
+
+declare -a DEPLOY_SCENARIO
 
 # ensure GERRIT_TOPIC is set
 GERRIT_TOPIC="${GERRIT_TOPIC:-''}"
@@ -77,7 +102,7 @@ else
 fi
 
 # ensure single scenario is impacted
-if [[ $(echo $DEPLOY_SCENARIO | wc -w) != 1 ]]; then
+    if [[ $(IFS=$'\n' echo ${DEPLOY_SCENARIO[@]} | wc -w) != 1 ]]; then
     echo "Change impacts multiple scenarios!"
     echo "XCI doesn't support testing of changes that impact multiple scenarios currently."
     echo "Please split your change into multiple different/dependent changes, each modifying single scenario."
@@ -85,7 +110,7 @@ if [[ $(echo $DEPLOY_SCENARIO | wc -w) != 1 ]]; then
 fi
 
 # set the installer
-case $DEPLOY_SCENARIO in
+case ${DEPLOY_SCENARIO[0]} in
     os-*)
         XCI_INSTALLER=osa
         ;;
@@ -100,13 +125,13 @@ esac
 
 # save the installer and scenario names into java properties file
 # so they can be injected to downstream jobs via envInject
-echo "Recording the installer '$XCI_INSTALLER' and scenario '$DEPLOY_SCENARIO' for downstream jobs"
+echo "Recording the installer '$XCI_INSTALLER' and scenario '${DEPLOY_SCENARIO[0]}' for downstream jobs"
 echo "XCI_INSTALLER=$XCI_INSTALLER" > $WORK_DIRECTORY/scenario.properties
 echo "DEPLOY_SCENARIO=$DEPLOY_SCENARIO" >> $WORK_DIRECTORY/scenario.properties
 
 # skip the deployment if the scenario is not supported on this distro
 OPNFV_SCENARIO_REQUIREMENTS=$WORKSPACE/xci/opnfv-scenario-requirements.yml
-if ! sed -n "/^- scenario: $DEPLOY_SCENARIO$/,/^$/p" $OPNFV_SCENARIO_REQUIREMENTS | grep -q $DISTRO; then
-    echo "# SKIPPED: Scenario $DEPLOY_SCENARIO is NOT supported on $DISTRO"
+if ! sed -n "/^- scenario: ${DEPLOY_SCENARIO[0]}$/,/^$/p" $OPNFV_SCENARIO_REQUIREMENTS | grep -q $DISTRO; then
+    echo "# SKIPPED: Scenario ${DEPLOY_SCENARIO[0]} is NOT supported on $DISTRO"
     exit 0
 fi
