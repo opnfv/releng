@@ -111,10 +111,10 @@ fi
 # set the installer
 case ${DEPLOY_SCENARIO[0]} in
     os-*)
-        XCI_INSTALLER=osa
+        INSTALLER_TYPE=osa
         ;;
     k8-*)
-        XCI_INSTALLER=kubespray
+        INSTALLER_TYPE=kubespray
         ;;
     *)
         echo "Unable to determine the installer. Exiting!"
@@ -124,8 +124,8 @@ esac
 
 # save the installer and scenario names into java properties file
 # so they can be injected to downstream jobs via envInject
-echo "Recording the installer '$XCI_INSTALLER' and scenario '${DEPLOY_SCENARIO[0]}' for downstream jobs"
-echo "XCI_INSTALLER=$XCI_INSTALLER" > $WORK_DIRECTORY/scenario.properties
+echo "Recording the installer '$INSTALLER_TYPE' and scenario '${DEPLOY_SCENARIO[0]}' for downstream jobs"
+echo "INSTALLER_TYPE=$INSTALLER_TYPE" > $WORK_DIRECTORY/scenario.properties
 echo "DEPLOY_SCENARIO=$DEPLOY_SCENARIO" >> $WORK_DIRECTORY/scenario.properties
 
 # skip the deployment if the scenario is not supported on this distro
