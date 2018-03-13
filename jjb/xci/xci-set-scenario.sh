@@ -16,15 +16,76 @@ set -o pipefail
 # what you are doing.
 #----------------------------------------------------------------------
 
+# This function allows developers to specify the impacted scenario by adding
+# the info about installer and scenario into the commit message or using
+# the topic branch names. This results in either skipping the real verification
+# totally or skipping the determining the installer and scenario programmatically.
+# It is important to note that this feature is only available to generic scenarios
+# and only single installer/scenario pair is allowed.
+# The input in commit message should be placed at the end of the commit message body,
+# before the signed-off and change-id lines.
+#
+# Pattern to be searched in Commit Message
+#   deploy-scenario:<scenario-name>
+#   installer-type:<installer-type>
+# Examples:
+#   deploy-scenario:os-odl-nofeature
+#   installer-type:osa
+#
+#   deploy-scenario:k8-nosdn-nofeature
+#   installer-type:kubespray
+#
+# Patterns to be searched in topic branch name
+#   skip-verify
+#   skip-deployment
+#   force-verify
+function override_generic_scenario() {
+    echo "Processing $GERRIT_PROJECT patchset $GERRIT_REFSPEC"
+
+    # process topic branch names
+    if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]]; then
+        # skip the real verification
+        echo "Skipping verify!"
+        echo "INSTALLER_TYPE=osa" > $WORK_DIRECTORY/scenario.properties
+        echo "DEPLOY_SCENARIO=os-nosdn-nofeature" >> $WORK_DIRECTORY/scenario.properties
+        exit 0
+    elif [[ "$GERRIT_TOPIC" =~ 'force-verify' ]]; then
+        # Run the deployment with default installer and scenario when multiple things change
+        # and we want to force that.
+        echo "Recording the installer 'osa' and scenario 'os-nosdn-nofeature' for downstream jobs"
+        echo "Forcing CI verification of default scenario and installer!"
+        echo "INSTALLER_TYPE=osa" > $WORK_DIRECTORY/scenario.properties
+        echo "DEPLOY_SCENARIO=os-nosdn-nofeature" >> $WORK_DIRECTORY/scenario.properties
+        exit 0
+    fi
+
+    # process commit message
+    if [[ "$GERRIT_CHANGE_COMMIT_MESSAGE" =~ installer-type && "$GERRIT_CHANGE_COMMIT_MESSAGE" =~ deploy-scenario ]]; then
+        INSTALLER_TYPE=$(echo $GERRIT_CHANGE_COMMIT_MESSAGE | awk '/installer-type/' RS=" " | cut -d":" -f2)
+        DEPLOY_SCENARIO=$(echo $GERRIT_CHANGE_COMMIT_MESSAGE | awk '/deploy-scenario/' RS=" " | cut -d":" -f2)
+
+        if [[ -z "$INSTALLER_TYPE" || -z "$DEPLOY_SCENARIO" ]]; then
+            echo "Installer type or deploy scenario is not specified. Falling back to programmatically determining them."
+        else
+            echo "Recording the installer '$INSTALLER_TYPE' and scenario '$DEPLOY_SCENARIO' for downstream jobs"
+            echo "INSTALLER_TYPE=$INSTALLER_TYPE" > $WORK_DIRECTORY/scenario.properties
+            echo "DEPLOY_SCENARIO=$DEPLOY_SCENARIO" >> $WORK_DIRECTORY/scenario.properties
+            exit 0
+        fi
+    else
+        echo "Installer type or deploy scenario is not specified. Falling back to programmatically determining them."
+    fi
+}
+
 # This function determines the impacted generic scenario by processing the
 # change and using diff to see what changed. If changed files belong to a scenario
 # its name gets recorded for deploying and testing the right scenario.
 #
-# Pattern
-# releng-xci/scenarios/<scenario>/<impacted files>: <scenario>
-# releng-xci/xci/installer/osa/<impacted files>: os-nosdn-nofeature
-# releng-xci/xci/installer/kubespray/<impacted files>: k8-nosdn-nofeature
-# the rest: os-nosdn-nofeature
+# Pattern to be searched in Changeset
+#   releng-xci/scenarios/<scenario>/<impacted files>: <scenario>
+#   releng-xci/xci/installer/osa/<impacted files>: os-nosdn-nofeature
+#   releng-xci/xci/installer/kubespray/<impacted files>: k8-nosdn-nofeature
+#   the rest: os-nosdn-nofeature
 function determine_generic_scenario() {
     echo "Processing $GERRIT_PROJECT patchset $GERRIT_REFSPEC"
 
@@ -54,7 +115,7 @@ function determine_generic_scenario() {
 # its name gets recorded for deploying and testing the right scenario.
 #
 # Pattern
-# <project-repo>/scenarios/<scenario>/<impacted files>: <scenario>
+#   <project-repo>/scenarios/<scenario>/<impacted files>: <scenario>
 function determine_external_scenario() {
     echo "Processing $GERRIT_PROJECT patchset $GERRIT_REFSPEC"
 
@@ -87,21 +148,8 @@ GERRIT_TOPIC="${GERRIT_TOPIC:-''}"
 WORK_DIRECTORY=/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO
 /bin/rm -rf $WORK_DIRECTORY && mkdir -p $WORK_DIRECTORY
 
-# skip the healthcheck if the patch doesn't impact the deployment
-if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]]; then
-    echo "Skipping verify!"
-    echo "DEPLOY_SCENARIO=os-nosdn-nofeature" > $WORK_DIRECTORY/scenario.properties
-    exit 0
-elif [[ "$GERRIT_TOPIC" =~ 'force-verify' ]]; then
-    # Run the deployment with default installer and scenario when multiple things change
-    # and we want to force that.
-    echo "Forcing CI verification of default scenario and installer!"
-    echo "INSTALLER_TYPE=osa" > $WORK_DIRECTORY/scenario.properties
-    echo "DEPLOY_SCENARIO=os-nosdn-nofeature" >> $WORK_DIRECTORY/scenario.properties
-    exit 0
-fi
-
 if [[ $GERRIT_PROJECT == "releng-xci" ]]; then
+    override_generic_scenario
     determine_generic_scenario
 else
     determine_external_scenario
