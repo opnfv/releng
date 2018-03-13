@@ -16,6 +16,15 @@ set -o pipefail
 # what you are doing.
 #----------------------------------------------------------------------
 
+# Run the deployment with default installer and scenario when multiple things change
+# and we want to force that.
+if [[ "$GERRIT_TOPIC" =~ 'force-verify' ]]; then
+    echo "Forcing CI verification of default scenario!"
+    echo "INSTALLER_TYPE=osa" > $WORK_DIRECTORY/scenario.properties
+    echo "DEPLOY_SCENARIO=os-nosdn-nofeature" >> $WORK_DIRECTORY/scenario.properties
+    exit 0
+fi
+
 # This function determines the impacted generic scenario by processing the
 # change and using diff to see what changed. If changed files belong to a scenario
 # its name gets recorded for deploying and testing the right scenario.
@@ -92,7 +101,15 @@ if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]]; then
     echo "Skipping verify!"
     echo "DEPLOY_SCENARIO=os-nosdn-nofeature" > $WORK_DIRECTORY/scenario.properties
     exit 0
+elif [[ "$GERRIT_TOPIC" =~ 'force-verify' ]]; then
+    # Run the deployment with default installer and scenario when multiple things change
+    # and we want to force that.
+    echo "Forcing CI verification of default scenario and installer!"
+    echo "INSTALLER_TYPE=osa" > $WORK_DIRECTORY/scenario.properties
+    echo "DEPLOY_SCENARIO=os-nosdn-nofeature" >> $WORK_DIRECTORY/scenario.properties
+    exit 0
 fi
+
 
 if [[ $GERRIT_PROJECT == "releng-xci" ]]; then
     determine_generic_scenario
