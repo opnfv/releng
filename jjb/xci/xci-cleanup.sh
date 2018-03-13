@@ -14,6 +14,9 @@
 # what you are doing.
 #----------------------------------------------------------------------
 
+# ensure GERRIT_TOPIC is set
+GERRIT_TOPIC="${GERRIT_TOPIC:-''}"
+
 # Need to cover macros with and without parameters
 VM_NAME=$DISTRO
 VM_NAME+=_xci_vm

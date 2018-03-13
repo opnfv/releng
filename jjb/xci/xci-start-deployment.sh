@@ -14,6 +14,9 @@
 # what you are doing.
 #----------------------------------------------------------------------
 
+# ensure GERRIT_TOPIC is set
+GERRIT_TOPIC="${GERRIT_TOPIC:-''}"
+
 # skip the deployment if the patch doesn't impact the deployment
 if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]]; then
     echo "Skipping the deployment!"
