@@ -177,9 +177,9 @@ if [[ ${DEPLOY_SCENARIO} =~ ^os-.* ]]; then
         run_tiers ${tiers}
     else
         if [ ${DEPLOY_TYPE} == 'baremetal' ]; then
-            tiers=(healthcheck smoke patrole features vnf parser)
+            tiers=(healthcheck smoke features vnf parser)
         else
-            tiers=(healthcheck smoke patrole features)
+            tiers=(healthcheck smoke features)
         fi
         run_tiers ${tiers}
     fi
