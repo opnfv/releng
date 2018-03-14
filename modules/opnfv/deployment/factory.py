@@ -9,7 +9,7 @@
 
 
 from opnfv.deployment.apex import adapter as apex_adapter
-from opnfv.deployment.compass import adapter as compass_adapter
+from opnfv.deployment.compass import adapter_container as compass_adapter
 from opnfv.deployment.fuel import adapter as fuel_adapter
 from opnfv.deployment.osa import adapter as osa_adapter
 from opnfv.deployment.daisy import adapter as daisy_adapter
@@ -47,7 +47,7 @@ class Factory(object):
             return compass_adapter.CompassAdapter(
                 installer_ip=installer_ip,
                 installer_user=installer_user,
-                installer_pwd=installer_pwd)
+                pkey_file=pkey_file)
         elif installer.lower() == "osa":
             return osa_adapter.OSAAdapter(installer_ip=installer_ip,
                                           installer_user=installer_user,
