@@ -7,9 +7,7 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-set -o errexit
 set -o nounset
-set -o pipefail
 
 #----------------------------------------------------------------------
 # This script is used by CI and executed by Jenkins jobs.
@@ -58,3 +56,8 @@ echo "Functest log"
 echo "---------------------------------------------------------------------------------"
 ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "cat /root/results/functest.log"
 echo "---------------------------------------------------------------------------------"
+# check the log to see if we have any error
+if ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "grep -q 'FAIL' /root/results/functest.log"; then
+    echo "Error: Functest failed!"
+    exit 1
+fi
