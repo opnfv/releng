@@ -190,8 +190,10 @@
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
-            - 'daisy.*-deploy-({pod})?-daily-.*'
             - 'daisy-kolla-build-.*'
+            - '{installer}-daily-(build|deploy|test)-(euphrates|master)'
+            - '{installer}-.*-(baremetal|virtual|zte-pod9)-daily-(euphrates|master)'
+            - '(functest|yardstick)-{installer}-(baremetal|virtual|zte-pod9)-daily-(euphrates|master)'
           block-level: 'NODE'
 
     parameters:

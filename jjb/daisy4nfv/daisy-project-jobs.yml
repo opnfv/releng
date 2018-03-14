@@ -215,6 +215,13 @@
           enabled: true
           max-total: 6
           option: 'project'
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - '{installer}-daily-(build|deploy|test)-(euphrates|master)'
+            - '{installer}-.*-(baremetal|virtual|zte-pod9)-daily-(euphrates|master)'
+            - '(functest|yardstick)-{installer}-(baremetal|virtual|zte-pod9)-daily-(euphrates|master)'
+          block-level: 'NODE'
 
     scm:
       - git-scm
