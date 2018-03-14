@@ -46,6 +46,8 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} \
 
 DOCKER_TAG=`[[ ${BRANCH##*/} == "master" ]] && echo "latest" || echo ${BRANCH##*/}`
 
+set +e
+
 FUNCTEST_IMAGE=opnfv/functest-kubernetes:${DOCKER_TAG}
 echo "Pulling Docker image ${FUNCTEST_IMAGE} ..."
 docker pull ${FUNCTEST_IMAGE}>/dev/null
