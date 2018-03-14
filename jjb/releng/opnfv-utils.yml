@@ -207,3 +207,35 @@
       - shell: |
           cd $WORKSPACE/utils/
           ./artifacts.opnfv.org.sh
+
+- job-template:
+    name: 'check pod distro'
+
+    project-type: freestyle
+
+    disabled: false
+    concurrent: true
+    parameters:
+      - node:
+          name: SLAVE_NAME
+          description: Build Servers
+          default-slaves:
+            - huawei-pod1
+            - huawei-pod12
+            - huawei-pod2
+            - huawei-pod3
+            - huawei-pod6
+            - huawei-pod7
+            - huawei-pod8
+
+          allowed-multiselect: true
+          ignore-offline-nodes: true
+
+    builders:
+      - check-os
+
+- builder:
+    name: check-os
+    builders:
+      - shell: |
+          cat /etc/*release
