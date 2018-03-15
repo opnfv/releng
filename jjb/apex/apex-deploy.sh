@@ -31,7 +31,9 @@ elif [[ "$DEPLOY_SCENARIO" == *gate* ]]; then
 fi
 
 # Dev or RPM/ISO build
-if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
+# For upstream deployments we currently only use git repo and not RPM
+# Need to decide after Fraser if we want to use RPM or not for upstream
+if [[ "$ARTIFACT_VERSION" =~ dev || "$DEPLOY_SCENARIO" =~ "upstream" ]]; then
   # Settings for deploying from git workspace
   DEPLOY_SETTINGS_DIR="${WORKSPACE}/config/deploy"
   NETWORK_SETTINGS_DIR="${WORKSPACE}/config/network"
@@ -132,6 +134,11 @@ else
   fi
   # include inventory file for bare metal deployment
   DEPLOY_CMD="${DEPLOY_CMD} -i ${INVENTORY_FILE}"
+fi
+
+if [[ "$DEPLOY_SCENARIO" =~ "upstream" ]]; then
+  echo "Upstream deployment detected"
+  DEPLOY_CMD="${DEPLOY_CMD} --upstream"
 fi
 
 if [ "$IPV6_FLAG" == "True" ]; then

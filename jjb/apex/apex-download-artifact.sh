@@ -10,7 +10,10 @@ echo
 
 [[ -d $BUILD_DIRECTORY ]] || mkdir -p $BUILD_DIRECTORY
 
-if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
+# if upstream we do not need to download anything
+if [[ "$DEPLOY_SCENARIO" =~ upstream ]]; then
+  echo "Upstream deployment detected, skipping download artifact"
+elif [[ "$ARTIFACT_VERSION" =~ dev ]]; then
   # dev build
   GERRIT_PATCHSET_NUMBER=$(echo $GERRIT_REFSPEC | grep -Eo '[0-9]+$')
   export OPNFV_ARTIFACT_VERSION="dev${GERRIT_CHANGE_NUMBER}_${GERRIT_PATCHSET_NUMBER}"
