@@ -161,7 +161,19 @@ if [ "${INSTALLER_TYPE}" == 'fuel' ]; then
     envs="${envs} -e POD_ARCH=${COMPUTE_ARCH}"
 fi
 
-volumes="${images_vol} ${results_vol} ${sshkey_vol} ${rc_file_vol} ${cacert_file_vol}"
+
+if [[ ${INSTALLER_TYPE} == 'compass' && ${DEPLOY_SCENARIO} =~ 'odl.*sfc' ]]; then
+    ssh_key="/tmp/id_rsa"
+    user_config="/tmp/openstack_user_config.yml"
+    docker cp compass-tasks:/root/.ssh/id_rsa $ssh_key
+    docker cp compass-tasks:/etc/openstack_deploy/openstack_user_config.yml $user_config
+    sshkey_vol="-v ${ssh_key}:/root/.ssh/id_rsa"
+    userconfig_vol="-v ${user_config}:${user_config}"
+    envs="${envs} -e EXTERNAL_NETWORK=${EXTERNAL_NETWORK}"
+fi
+
+
+volumes="${images_vol} ${results_vol} ${sshkey_vol} ${userconfig_vol} ${rc_file_vol} ${cacert_file_vol}"
 
 set +e
 
