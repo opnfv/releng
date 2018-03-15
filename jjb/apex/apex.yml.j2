@@ -408,7 +408,7 @@
               abort-all-job: false
               git-revision: false
       - multijob:
-          name: Dovetail
+          name: Dovetail-proposed_tests
           condition: ALWAYS
           projects:
             - name: 'dovetail-apex-baremetal-proposed_tests-{scenario_stream}'
@@ -417,7 +417,22 @@
               predefined-parameters:
                 DEPLOY_SCENARIO=$DEPLOY_SCENARIO
               kill-phase-on: NEVER
-              enable-condition: "def m = '$DEPLOY_SCENARIO' ==~ /os-(nosdn-nofeature|odl-bgpvpn)-ha/"
+              enable-condition: "def m = '$DEPLOY_SCENARIO' ==~ /os-(nosdn-nofeature|odl-bgpvpn)-ha/
+                                 && $BUILD_NUMBER % 2 == 1"
+              abort-all-job: false
+              git-revision: false
+      - multijob:
+          name: Dovetail-default
+          condition: ALWAYS
+          projects:
+            - name: 'dovetail-apex-baremetal-default-{scenario_stream}'
+              node-parameters: true
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+              kill-phase-on: NEVER
+              enable-condition: "def m = '$DEPLOY_SCENARIO' ==~ /os-(nosdn-nofeature|odl-bgpvpn)-ha/
+                                 && $BUILD_NUMBER % 2 == 0"
               abort-all-job: false
               git-revision: false
       - multijob:
