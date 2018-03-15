@@ -26,12 +26,6 @@ if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]]; then
     exit 0
 fi
 
-# skip the healthcheck if the scenario is Kubernetes scenario
-if [[ "$DEPLOY_SCENARIO" =~ k8 ]]; then
-    echo "Skipping the healthcheck!"
-    exit 0
-fi
-
 # if the scenario is external, we need to wipe WORKSPACE to place releng-xci there since
 # the project where the scenario is coming from is cloned and the patch checked out to the
 # xci/scenarios/$DEPLOY_SCENARIO to be synched on clean VM
@@ -51,7 +45,11 @@ if ! sed -n "/^- scenario: $DEPLOY_SCENARIO$/,/^$/p" $OPNFV_SCENARIO_REQUIREMENT
     exit 0
 fi
 
-ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm "cd releng-xci/xci && PATH=/home/devuser/.local/bin:$PATH ansible-playbook -i installer/osa/files/$XCI_FLAVOR/inventory playbooks/prepare-functest.yml"
+# functest preparation is done in kubespray/deploy.sh so skipping it here
+if [[ "$DEPLOY_SCENARIO" != "k8-nosdn-nofeature" ]]; then
+    ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm "cd releng-xci/xci && PATH=/home/devuser/.local/bin:$PATH ansible-playbook -i installer/osa/files/$XCI_FLAVOR/inventory playbooks/prepare-functest.yml"
+fi
+
 echo "Running functest"
 ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "/root/run-functest.sh"
 echo "Functest log"
