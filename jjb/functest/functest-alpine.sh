@@ -161,6 +161,12 @@ if [ "${INSTALLER_TYPE}" == 'fuel' ]; then
     envs="${envs} -e POD_ARCH=${COMPUTE_ARCH}"
 fi
 
+ssh_key="/root/.ssh/id_rsa"
+if [ "${INSTALLER_TYPE}" == 'compass' ]; then
+    docker cp compass-tasks:/root/.ssh/id_rsa $ssh_key
+fi
+sshkey_vol="-v ${ssh_key}:${ssh_key}"
+
 volumes="${images_vol} ${results_vol} ${sshkey_vol} ${rc_file_vol} ${cacert_file_vol}"
 
 set +e
