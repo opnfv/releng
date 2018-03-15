@@ -136,13 +136,12 @@ if [[ $SUITE_NAME == *posca* ]]; then
     # Running test cases through Bottlenecks docker
     if [[ $SUITE_NAME == posca_stress_traffic ]]; then
         TEST_CASE=posca_factor_system_bandwidth
-        testcase_cmd="docker exec bottlenecks-load-master python ${POSCA_SCRIPT}/../run_testsuite.py testcase $TEST_CASE $REPORT"
-        echo "BOTTLENECKS INFO: running test case ${TEST_CASE} with report indicator: ${testcase_cmd}"
-        ${testcase_cmd} >$redirect
     elif [[ $SUITE_NAME == posca_stress_ping ]]; then
         TEST_CASE=posca_factor_ping
-        testcase_cmd="docker exec bottlenecks-load-master python ${POSCA_SCRIPT}/../run_testsuite.py testcase $TEST_CASE $REPORT"
-        echo "BOTTLENECKS INFO: running test case ${TEST_CASE} with report indicator: ${testcase_cmd}"
-        ${testcase_cmd} >$redirect
+    else
+        TEST_CASE=$SUITE_NAME
     fi
+    testcase_cmd="docker exec bottlenecks-load-master python ${POSCA_SCRIPT}/../run_testsuite.py testcase $TEST_CASE $REPORT"
+    echo "BOTTLENECKS INFO: running test case ${TEST_CASE} with report indicator: ${testcase_cmd}"
+    ${testcase_cmd} >$redirect
 fi
