@@ -51,7 +51,7 @@ if ! sed -n "/^- scenario: $DEPLOY_SCENARIO$/,/^$/p" $OPNFV_SCENARIO_REQUIREMENT
     exit 0
 fi
 
-ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "cd /root/releng-xci/xci/playbooks && ansible-playbook -i inventory -e ansible_python_interpreter=/usr/bin/python prepare-functest.yml"
+ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm "cd /root/releng-xci/xci && PATH=/home/devuser/.local/bin:$PATH ansible-playbook -i installer/osa/files/$XCI_FLAVOR/inventory playbooks/prepare-functest.yml"
 echo "Running functest"
 ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "/root/run-functest.sh"
 echo "Functest log"
