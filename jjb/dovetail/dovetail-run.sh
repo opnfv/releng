@@ -24,6 +24,9 @@ mkdir -p ${DOVETAIL_HOME}
 DOVETAIL_CONFIG=${DOVETAIL_HOME}/pre_config
 mkdir -p ${DOVETAIL_CONFIG}
 
+DOVETAIL_IMAGES=${DOVETAIL_HOME}/images
+mkdir -p ${DOVETAIL_IMAGES}
+
 ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 sshkey=""
@@ -189,7 +192,7 @@ if [[ ! -f ${ubuntu_image} ]]; then
     echo "Download image ubuntu-16.04-server-cloudimg-amd64-disk1.img ..."
     wget -q -nc http://artifacts.opnfv.org/sdnvpn/ubuntu-16.04-server-cloudimg-amd64-disk1.img -P ${image_path}
 fi
-sudo cp ${ubuntu_image} ${DOVETAIL_CONFIG}
+sudo cp ${ubuntu_image} ${DOVETAIL_IMAGES}
 
 # functest needs to download this image first before running
 cirros_image=${image_path}/cirros-0.3.5-x86_64-disk.img
@@ -197,7 +200,7 @@ if [[ ! -f ${cirros_image} ]]; then
     echo "Download image cirros-0.3.5-x86_64-disk.img ..."
     wget -q -nc http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img -P ${image_path}
 fi
-sudo cp ${cirros_image} ${DOVETAIL_CONFIG}
+sudo cp ${cirros_image} ${DOVETAIL_IMAGES}
 
 # snaps_smoke test case needs to download this image first before running
 ubuntu14_image=${image_path}/ubuntu-14.04-server-cloudimg-amd64-disk1.img
@@ -205,7 +208,7 @@ if [[ ! -f ${ubuntu14_image} ]]; then
     echo "Download image ubuntu-14.04-server-cloudimg-amd64-disk1.img ..."
     wget -q -nc https://cloud-images.ubuntu.com/releases/14.04/release/ubuntu-14.04-server-cloudimg-amd64-disk1.img -P ${image_path}
 fi
-sudo cp ${ubuntu14_image} ${DOVETAIL_CONFIG}
+sudo cp ${ubuntu14_image} ${DOVETAIL_IMAGES}
 
 # cloudify_ims test case needs to download these 2 images first before running
 cloudify_image=${image_path}/cloudify-manager-premium-4.0.1.qcow2
@@ -213,13 +216,13 @@ if [[ ! -f ${cloudify_image} ]]; then
     echo "Download image cloudify-manager-premium-4.0.1.qcow2 ..."
     wget -q -nc http://repository.cloudifysource.org/cloudify/4.0.1/sp-release/cloudify-manager-premium-4.0.1.qcow2 -P ${image_path}
 fi
-sudo cp ${cloudify_image} ${DOVETAIL_CONFIG}
+sudo cp ${cloudify_image} ${DOVETAIL_IMAGES}
 trusty_image=${image_path}/trusty-server-cloudimg-amd64-disk1.img
 if [[ ! -f ${trusty_image} ]]; then
     echo "Download image trusty-server-cloudimg-amd64-disk1.img ..."
     wget -q -nc http://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img -P ${image_path}
 fi
-sudo cp ${trusty_image} ${DOVETAIL_CONFIG}
+sudo cp ${trusty_image} ${DOVETAIL_IMAGES}
 
 opts="--privileged=true -id"
 
@@ -236,10 +239,8 @@ fi
 echo "Dovetail: Pulling image ${DOCKER_REPO}:${DOCKER_TAG}"
 docker pull ${DOCKER_REPO}:$DOCKER_TAG >$redirect
 
-env4bgpvpn="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP}"
-
 cmd="docker run ${opts} -e DOVETAIL_HOME=${DOVETAIL_HOME} ${docker_volume} ${dovetail_home_volume} \
-     ${sshkey} ${env4bgpvpn} ${DOCKER_REPO}:${DOCKER_TAG} /bin/bash"
+     ${sshkey} ${DOCKER_REPO}:${DOCKER_TAG} /bin/bash"
 echo "Dovetail: running docker run command: ${cmd}"
 ${cmd} >${redirect}
 sleep 5
