@@ -42,20 +42,22 @@ set -o pipefail
 function override_generic_scenario() {
     echo "Processing $GERRIT_PROJECT patchset $GERRIT_REFSPEC"
 
+    # ensure the metadata we record is consistent for all types of patches including skipped ones
+    # extract releng-xci sha
+    RELENG_XCI_SHA=$(cd $WORKSPACE && git rev-parse HEAD)
+
+    # extract scenario sha which is same as releng-xci sha for generic scenarios
+    SCENARIO_SHA=$RELENG_XCI_SHA
+
     # process topic branch names
-    if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]]; then
-        # skip the real verification
-        echo "Skipping verify!"
+    if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment|force-verify ]]; then
+        [[ "$GERRIT_TOPIC" =~ force-verify ]] && echo "Forcing CI verification using default scenario and installer!"
+        [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]] && echo "Skipping verification!"
         echo "INSTALLER_TYPE=osa" > $WORK_DIRECTORY/scenario.properties
         echo "DEPLOY_SCENARIO=os-nosdn-nofeature" >> $WORK_DIRECTORY/scenario.properties
-        exit 0
-    elif [[ "$GERRIT_TOPIC" =~ 'force-verify' ]]; then
-        # Run the deployment with default installer and scenario when multiple things change
-        # and we want to force that.
-        echo "Recording the installer 'osa' and scenario 'os-nosdn-nofeature' for downstream jobs"
-        echo "Forcing CI verification of default scenario and installer!"
-        echo "INSTALLER_TYPE=osa" > $WORK_DIRECTORY/scenario.properties
-        echo "DEPLOY_SCENARIO=os-nosdn-nofeature" >> $WORK_DIRECTORY/scenario.properties
+        echo "RELENG_XCI_SHA=$RELENG_XCI_SHA" >> $WORK_DIRECTORY/scenario.properties
+        echo "SCENARIO_SHA=$SCENARIO_SHA" >> $WORK_DIRECTORY/scenario.properties
+        echo "PROJECT_NAME=$GERRIT_PROJECT" >> $WORK_DIRECTORY/scenario.properties
         exit 0
     fi
 
@@ -70,6 +72,9 @@ function override_generic_scenario() {
             echo "Recording the installer '$INSTALLER_TYPE' and scenario '$DEPLOY_SCENARIO' for downstream jobs"
             echo "INSTALLER_TYPE=$INSTALLER_TYPE" > $WORK_DIRECTORY/scenario.properties
             echo "DEPLOY_SCENARIO=$DEPLOY_SCENARIO" >> $WORK_DIRECTORY/scenario.properties
+            echo "RELENG_XCI_SHA=$RELENG_XCI_SHA" >> $WORK_DIRECTORY/scenario.properties
+            echo "SCENARIO_SHA=$SCENARIO_SHA" >> $WORK_DIRECTORY/scenario.properties
+            echo "PROJECT_NAME=$GERRIT_PROJECT" >> $WORK_DIRECTORY/scenario.properties
             exit 0
         fi
     else
@@ -196,6 +201,7 @@ echo "INSTALLER_TYPE=$INSTALLER_TYPE" > $WORK_DIRECTORY/scenario.properties
 echo "DEPLOY_SCENARIO=$DEPLOY_SCENARIO" >> $WORK_DIRECTORY/scenario.properties
 echo "RELENG_XCI_SHA=$RELENG_XCI_SHA" >> $WORK_DIRECTORY/scenario.properties
 echo "SCENARIO_SHA=$SCENARIO_SHA" >> $WORK_DIRECTORY/scenario.properties
+echo "PROJECT_NAME=$GERRIT_PROJECT" >> $WORK_DIRECTORY/scenario.properties
 
 # skip scenario support check if the job is promotion job
 if [[ "$JOB_NAME" =~ (os|k8) ]]; then
