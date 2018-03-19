@@ -56,6 +56,9 @@ cmd="docker run --rm --privileged=true ${envs} ${volumes} ${FUNCTEST_IMAGE} /bin
 echo "Running Functest k8s test cases, CMD: ${cmd}"
 eval ${cmd}
 ret_value=$?
+
+ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
+echo 0 > ${ret_val_file}
 if [ ${ret_value} != 0 ]; then
   echo ${ret_value} > ${ret_val_file}
 fi
