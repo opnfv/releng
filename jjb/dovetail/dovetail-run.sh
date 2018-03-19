@@ -154,6 +154,13 @@ if [[ ! -f ${DOVETAIL_CONFIG}/pod.yaml ]]; then
 fi
 
 if [ -f ${DOVETAIL_CONFIG}/pod.yaml ]; then
+    echo "Adapt process info for $INSTALLER_TYPE ..."
+    attack_process='rabbitmq'
+    cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
+process_info:
+- {testcase_name: dovetail.ha.tc010, attack_process: ${attack_process}}
+
+EOF
     echo "file ${DOVETAIL_CONFIG}/pod.yaml:"
     cat ${DOVETAIL_CONFIG}/pod.yaml
 else
