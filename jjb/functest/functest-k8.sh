@@ -19,7 +19,7 @@ if [[ ${INSTALLER_TYPE} == 'compass' ]]; then
     KUBE_MASTER_IP=$(echo $KUBE_MASTER_URL|awk -F'https://|:[0-9]+' '$0=$2')
     echo "export KUBE_MASTER_IP=$KUBE_MASTER_IP" >> $rc_file
 elif [[ ${INSTALLER_TYPE} == 'joid' && ${BRANCH} == 'master' ]]; then
-    admin_conf_file_vol="-v ${HOME}/joid_config/config:/root/joid_config/config"
+    admin_conf_file_vol="-v ${HOME}/joid_config/config:/root/.kube/config"
     rc_file=${HOME}/joid_config/k8config
 else
     echo "Not supported by other installers yet"
