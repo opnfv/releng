@@ -41,7 +41,7 @@
 
     project-type: multijob
 
-    disabled: '{obj:disabled}'
+    disabled: false
 
     concurrent: false
 
@@ -167,9 +167,9 @@
 
     project-type: multijob
 
-    disabled: '{obj:disabled}'
+    disabled: false
 
-    concurrent: true
+    concurrent: false
 
     properties:
       - logrotate-default
@@ -272,7 +272,7 @@
 
     disabled: false
 
-    concurrent: true
+    concurrent: false
 
     properties:
       - logrotate-default
@@ -349,13 +349,19 @@
           name: OPNFV_RELENG_DEV_PATH
           default: $WORKSPACE/
       - string:
+          name: LOCAL_PROMOTION_METADATA_FILE
+          default: "/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO/scenario.properties"
+      - string:
+          name: REMOTE_PROMOTION_METADATA_FILE
+          default: "gs://artifacts.opnfv.org/xci/pipeline/merge/$DEPLOY_SCENARIO.properties"
+      - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
           description: 'Git URL to use on this Jenkins Slave'
 
     wrappers:
       - inject:
-          properties-file: "/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO/scenario.properties"
+          properties-file: "$LOCAL_PROMOTION_METADATA_FILE"
       - ssh-agent-wrapper
       - build-timeout:
           timeout: 240
@@ -392,6 +398,5 @@
 - builder:
     name: 'xci-merge-promote-macro'
     builders:
-      - shell: |
-          #!/bin/bash
-          echo "Hello World"
+      - shell:
+          !include-raw: ./xci-promote.sh
