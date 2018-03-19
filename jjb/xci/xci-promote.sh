@@ -23,13 +23,6 @@ if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]]; then
     exit 0
 fi
 
-# skip the deployment if the scenario is not supported on this distro
-OPNFV_SCENARIO_REQUIREMENTS=$WORKSPACE/xci/opnfv-scenario-requirements.yml
-if ! sed -n "/^- scenario: $DEPLOY_SCENARIO$/,/^$/p" $OPNFV_SCENARIO_REQUIREMENTS | grep -q $DISTRO; then
-    echo "# SKIPPED: Scenario $DEPLOY_SCENARIO is NOT supported on $DISTRO"
-    exit 0
-fi
-
 # fail if promotion metadata file doesn't exist
 if [ ! -f $LOCAL_PROMOTION_METADATA_FILE ]; then
     echo "Unable to find promotion metadata file $LOCAL_PROMOTION_METADATA_FILE"
@@ -39,7 +32,7 @@ fi
 
 # upload promotion metadata file to OPNFV artifact repo
 echo "Storing promotion metadata as $REMOTE_PROMOTION_METADATA_FILE"
-gsutil cp $LOCAL_PROMOTION_METADATA_FILE $REMOTE_PROMOTION_METADATA_FILE
+gsutil cp $LOCAL_PROMOTION_METADATA_FILE $REMOTE_PROMOTION_METADATA_FILE > /dev/null 2>&1
 
 # update the file metadata on gs to prevent the use of cached version of the file
 gsutil -m setmeta -r -h "Cache-Control:private, max-age=0, no-transform" \
