@@ -20,17 +20,6 @@
       - opensuse:
           disabled: false
     # -------------------------------
-    # scenarios
-    # -------------------------------
-    scenario:
-      - 'os-odl-sfc':
-          project: sfc
-    # -------------------------------
-    # type
-    # -------------------------------
-    type:
-      - virtual
-    # -------------------------------
     # postmerge promotion phases
     # -------------------------------
     phase:
@@ -40,15 +29,15 @@
     # jobs
     # -------------------------------
     jobs:
-      - 'xci-{scenario}-{type}-merge-{stream}'
-      - 'xci-{scenario}-{type}-promote-merge-{stream}'
-      - 'xci-merge-{distro}-{type}-{stream}'
-      - 'xci-merge-{distro}-{phase}-{type}-{stream}'
+      - 'xci-merge-virtual-{stream}'
+      - 'xci-merge-promote-virtual-{stream}'
+      - 'xci-merge-{distro}-virtual-{stream}'
+      - 'xci-merge-{distro}-{phase}-virtual-{stream}'
 # -------------------------------
 # job templates
 # -------------------------------
 - job-template:
-    name: 'xci-{scenario}-{type}-merge-{stream}'
+    name: 'xci-merge-virtual-{stream}'
 
     project-type: multijob
 
@@ -76,8 +65,8 @@
             - comment-added-contains-event:
                 comment-contains-value: 'remerge'
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{obj:project}'
+            - project-compare-type: 'REG_EXP'
+              project-pattern: 'sfc|sdnvpn'
               branches:
                 - branch-compare-type: 'ANT'
                   branch-pattern: '**/{branch}'
@@ -107,14 +96,16 @@
           description: 'Git URL to use on this Jenkins Slave'
 
     builders:
-      - description-setter:
-          description: "Node: $NODE_NAME"
       - 'xci-merge-set-scenario-macro'
+      - inject:
+          properties-file: "/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO/scenario.properties"
+      - description-setter:
+          description: "Scenario: $DEPLOY_SCENARIO | Node: $NODE_NAME"
       - multijob:
           name: deploy and test
           condition: SUCCESSFUL
           projects:
-            - name: 'xci-merge-opensuse-{type}-{stream}'
+            - name: 'xci-merge-opensuse-virtual-{stream}'
               current-parameters: false
               predefined-parameters: |
                 DISTRO=opensuse
@@ -127,7 +118,7 @@
               node-parameters: false
               kill-phase-on: FAILURE
               abort-all-job: true
-            - name: 'xci-merge-ubuntu-{type}-{stream}'
+            - name: 'xci-merge-ubuntu-virtual-{stream}'
               current-parameters: false
               predefined-parameters: |
                 DISTRO=ubuntu
@@ -140,7 +131,7 @@
               node-parameters: false
               kill-phase-on: FAILURE
               abort-all-job: true
-            - name: 'xci-merge-centos-{type}-{stream}'
+            - name: 'xci-merge-centos-virtual-{stream}'
               current-parameters: false
               predefined-parameters: |
                 DISTRO=centos
@@ -159,7 +150,7 @@
           name: promote
           condition: SUCCESSFUL
           projects:
-            - name: 'xci-{scenario}-{type}-promote-merge-{stream}'
+            - name: 'xci-merge-promote-virtual-{stream}'
               current-parameters: true
               predefined-parameters: |
                 GERRIT_PROJECT=$GERRIT_PROJECT
@@ -172,7 +163,7 @@
               abort-all-job: true
 
 - job-template:
-    name: 'xci-merge-{distro}-{type}-{stream}'
+    name: 'xci-merge-{distro}-virtual-{stream}'
 
     project-type: multijob
 
@@ -235,7 +226,7 @@
           name: deploy
           condition: SUCCESSFUL
           projects:
-            - name: 'xci-merge-{distro}-deploy-{type}-{stream}'
+            - name: 'xci-merge-{distro}-deploy-virtual-{stream}'
               current-parameters: true
               predefined-parameters: |
                 DISTRO={distro}
@@ -252,7 +243,7 @@
           name: healthcheck
           condition: SUCCESSFUL
           projects:
-            - name: 'xci-merge-{distro}-healthcheck-{type}-{stream}'
+            - name: 'xci-merge-{distro}-healthcheck-virtual-{stream}'
               current-parameters: true
               predefined-parameters: |
                 DISTRO={distro}
@@ -277,7 +268,7 @@
                 !include-raw: ./xci-cleanup.sh
 
 - job-template:
-    name: 'xci-merge-{distro}-{phase}-{type}-{stream}'
+    name: 'xci-merge-{distro}-{phase}-virtual-{stream}'
 
     disabled: false
 
@@ -338,7 +329,7 @@
       - 'xci-merge-{phase}-macro'
 
 - job-template:
-    name: 'xci-{scenario}-{type}-promote-merge-{stream}'
+    name: 'xci-merge-promote-virtual-{stream}'
 
     disabled: false
 
