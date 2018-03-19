@@ -384,16 +384,17 @@
 - builder:
     name: 'xci-merge-deploy-macro'
     builders:
-      - shell: |
-          #!/bin/bash
-          echo "Hello World"
+      - shell:
+          !include-raw: ./xci-start-new-vm.sh
+
+      - shell:
+          !include-raw: ./xci-start-deployment.sh
 
 - builder:
     name: 'xci-merge-healthcheck-macro'
     builders:
-      - shell: |
-          #!/bin/bash
-          echo "Hello World"
+      - shell:
+          !include-raw: ./xci-run-functest.sh
 
 - builder:
     name: 'xci-merge-promote-macro'
