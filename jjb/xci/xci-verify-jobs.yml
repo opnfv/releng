@@ -146,6 +146,15 @@
       - string:
           name: CLEAN_DIB_IMAGES
           default: 'true'
+        - string:
+          name: CI_LOOP
+          default: 'verify'
+        - string:
+          name: FUNCTEST_MODE
+          default: 'tier'
+        - string:
+          name: FUNCTEST_SUITE_NAME
+          default: 'healthcheck'
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
@@ -171,6 +180,7 @@
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                CI_LOOP=$CI_LOOP
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: true
@@ -188,8 +198,9 @@
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                FUNCTEST_MODE=tier
-                FUNCTEST_TIER=healthcheck
+                CI_LOOP=$CI_LOOP
+                FUNCTEST_MODE=$FUNCTEST_MODE
+                FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
               node-parameters: true
               kill-phase-on: NEVER
               abort-all-job: true
@@ -228,6 +239,9 @@
       - string:
           name: DISTRO
           default: 'ubuntu'
+      - string:
+          name: CI_LOOP
+          default: 'verify'
       - string:
           name: FUNCTEST_MODE
           default: 'tier'
