@@ -99,6 +99,15 @@
       - label:
           name: SLAVE_LABEL
           default: 'xci-virtual'
+       - string:
+          name: CI_LOOP
+          default: 'merge'
+        - string:
+          name: FUNCTEST_MODE
+          default: 'tier'
+        - string:
+          name: FUNCTEST_SUITE_NAME
+          default: 'healthcheck'
       - string:
           name: DISTRO
           default: 'all'
@@ -130,6 +139,9 @@
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                CI_LOOP=$CI_LOOP
+                FUNCTEST_MODE=$FUNCTEST_MODE
+                FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
               node-parameters: false
               kill-phase-on: FAILURE
               abort-all-job: true
@@ -143,6 +155,9 @@
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                CI_LOOP=$CI_LOOP
+                FUNCTEST_MODE=$FUNCTEST_MODE
+                FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
               node-parameters: false
               kill-phase-on: FAILURE
               abort-all-job: true
@@ -156,6 +171,9 @@
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                CI_LOOP=$CI_LOOP
+                FUNCTEST_MODE=$FUNCTEST_MODE
+                FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
               node-parameters: false
               kill-phase-on: NEVER
               abort-all-job: false
@@ -173,6 +191,9 @@
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                CI_LOOP=$CI_LOOP
+                FUNCTEST_MODE=$FUNCTEST_MODE
+                FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
               node-parameters: true
               kill-phase-on: NEVER
               abort-all-job: true
@@ -220,6 +241,15 @@
       - label:
           name: SLAVE_LABEL
           default: 'xci-virtual'
+       - string:
+          name: CI_LOOP
+          default: 'merge'
+        - string:
+          name: FUNCTEST_MODE
+          default: 'tier'
+        - string:
+          name: FUNCTEST_SUITE_NAME
+          default: 'healthcheck'
       - string:
           name: DISTRO
           default: '{distro}'
@@ -268,8 +298,9 @@
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                FUNCTEST_MODE=tier
-                FUNCTEST_TIER=healthcheck
+                CI_LOOP=$CI_LOOP
+                FUNCTEST_MODE=$FUNCTEST_MODE
+                FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
               node-parameters: true
               kill-phase-on: NEVER
               abort-all-job: true
@@ -307,6 +338,9 @@
       - string:
           name: DISTRO
           default: 'ubuntu'
+      - string:
+          name: CI_LOOP
+          default: 'merge'
       - string:
           name: FUNCTEST_MODE
           default: 'tier'
@@ -357,6 +391,15 @@
       - string:
           name: PROJECT
           default: $GERRIT_PROJECT
+      - string:
+          name: CI_LOOP
+          default: 'merge'
+      - string:
+          name: FUNCTEST_MODE
+          default: 'tier'
+      - string:
+          name: FUNCTEST_SUITE_NAME
+          default: 'healthcheck'
       - string:
           name: DISTRO
           default: 'all'
