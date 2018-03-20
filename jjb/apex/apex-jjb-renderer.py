@@ -12,30 +12,38 @@ import yaml
 from jinja2 import Environment
 from jinja2 import FileSystemLoader
 
-gspathname = dict()
-branch = dict()
-build_slave = dict()
-env = Environment(loader=FileSystemLoader('./'), autoescape=True)
 
-with open('scenarios.yaml.hidden') as _:
-    scenarios = yaml.safe_load(_)
+def render_jjb():
+    """Render JJB output from scenarios.yaml.hidden file and jinja
+    template"""
 
-template = env.get_template('apex.yml.j2')
+    gspathname = dict()
+    branch = dict()
+    build_slave = dict()
+    env = Environment(loader=FileSystemLoader('./'), autoescape=True)
 
-print("Scenarios are: ")
-pprint.pprint(scenarios)
+    with open('scenarios.yaml.hidden') as _:
+        scenarios = yaml.safe_load(_)
 
-for stream in scenarios:
-    if stream == 'master':
-        gspathname['master'] = ''
-        branch[stream] = stream
-    else:
-        gspathname[stream] = '/' + stream
-        branch[stream] = 'stable/' + stream
-    build_slave[stream] = 'apex-baremetal-{}'.format(stream)
+    template = env.get_template('apex.yml.j2')
 
-output = template.render(scenarios=scenarios, gspathname=gspathname,
-                         branch=branch, build_slave=build_slave)
+    print("Scenarios are: ")
+    pprint.pprint(scenarios)
 
-with open('./apex.yml', 'w') as fh:
-    fh.write(output)
+    for stream in scenarios:
+        if stream == 'master':
+            gspathname['master'] = ''
+            branch[stream] = stream
+        else:
+            gspathname[stream] = '/' + stream
+            branch[stream] = 'stable/' + stream
+        build_slave[stream] = 'apex-baremetal-{}'.format(stream)
+
+    output = template.render(scenarios=scenarios, gspathname=gspathname,
+                             branch=branch, build_slave=build_slave)
+
+    with open('./apex.yml', 'w') as fh:
+        fh.write(output)
+
+if __name__ == "__main__":
+    render_jjb()
