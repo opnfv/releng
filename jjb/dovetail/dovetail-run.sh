@@ -93,13 +93,24 @@ fi
 cat $OPENRC
 
 if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == "compass" ]]; then
+    compass_repo=${WORKSPACE}/compass4nfv/
+    git clone https://github.com/opnfv/compass4nfv.git ${compass_repo} >/dev/null
+    pip install shyaml
+    scenario_file=${compass_repo}/deploy/conf/hardware_environment/$NODE_NAME/os-nosdn-nofeature-ha.yml
+    ipmiIp=$(cat ${scenario_file} | shyaml get-value hosts.0.ipmiIp)
+    ipmiPass=$(cat ${scenario_file} | shyaml get-value hosts.0.ipmiPass)
+    ipmiUser=root
+    jumpserver_ip=$(ifconfig | grep -A 5 docker0 | grep "inet addr" | cut -d ':' -f 2 | cut -d ' ' -f 1)
+
     cat << EOF >${DOVETAIL_CONFIG}/pod.yaml
 nodes:
-- {ip: 10.1.0.52, name: node1, password: root, role: controller, user: root}
+- {ip: ${jumpserver_ip}, name: node0, password: root, role: Jumpserver, user: root}
+- {ip: 10.1.0.50, name: node1, password: root, role: controller, user: root,
+   ipmi_ip: ${ipmiIp}, ipmi_user: ${ipmiUser}, ipmi_password: ${ipmiPass}}
 - {ip: 10.1.0.51, name: node2, password: root, role: controller, user: root}
-- {ip: 10.1.0.50, name: node3, password: root, role: controller, user: root}
-- {ip: 10.1.0.54, name: node4, password: root, role: compute, user: root}
-- {ip: 10.1.0.53, name: node5, password: root, role: compute, user: root}
+- {ip: 10.1.0.52, name: node3, password: root, role: controller, user: root}
+- {ip: 10.1.0.53, name: node4, password: root, role: compute, user: root}
+- {ip: 10.1.0.54, name: node5, password: root, role: compute, user: root}
 
 EOF
 fi
@@ -154,6 +165,7 @@ if [[ ! -f ${DOVETAIL_CONFIG}/pod.yaml ]]; then
 fi
 
 if [ -f ${DOVETAIL_CONFIG}/pod.yaml ]; then
+    sudo chown jenkins:jenkins ${DOVETAIL_CONFIG}/pod.yaml
     echo "Adapt process info for $INSTALLER_TYPE ..."
     attack_process='rabbitmq'
     cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
