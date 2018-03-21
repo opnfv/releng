@@ -4,27 +4,23 @@
 # They will only be enabled on request by projects!
 ###################################################
 - project:
-    name: container4nfv
+    name: clover
 
     project: '{name}'
 
     jobs:
-      - 'container4nfv-verify-{stream}'
-      - 'container4nfv-daily-upload-{stream}'
-      - 'container4nfv-daily-deploy-{stream}'
+      - 'clover-verify-{stream}'
+      - 'clover-daily-upload-{stream}'
+      - 'clover-daily-deploy-{stream}'
 
     stream:
       - master:
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
-      - euphrates:
-          branch: 'stable/{stream}'
-          gs-pathname: '/{stream}'
-          disabled: false
 
 - job-template:
-    name: 'container4nfv-verify-{stream}'
+    name: 'clover-verify-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -70,10 +66,10 @@
     builders:
       - shell: |
           cd $WORKSPACE/ci
-          ./build.sh
+          ./verify.sh
 
 - job-template:
-    name: 'container4nfv-daily-upload-{stream}'
+    name: 'clover-daily-upload-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -90,7 +86,7 @@
           project: '{project}'
           branch: '{branch}'
       - 'opnfv-build-ubuntu-defaults'
-      - 'container4nfv-defaults':
+      - 'clover-defaults':
           gs-pathname: '{gs-pathname}'
 
     builders:
@@ -99,7 +95,7 @@
           ./upload.sh
 
 - job-template:
-    name: 'container4nfv-daily-deploy-{stream}'
+    name: 'clover-daily-deploy-{stream}'
 
     project-type: freestyle
 
@@ -145,7 +141,7 @@
       - git-scm
 
     triggers:
-      - timed: '@midnight'
+      - timed: '0 12 * * *'
 
     builders:
       - shell: |
@@ -156,7 +152,7 @@
 # parameter macros
 ###################
 - parameter:
-    name: 'container4nfv-defaults'
+    name: 'clover-defaults'
     parameters:
       - string:
           name: GS_URL
