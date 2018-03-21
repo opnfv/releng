@@ -15,10 +15,16 @@
     distro:
       - ubuntu:
           disabled: false
+          kill-phase-on: FAILURE
+          abort-all-job: true
       - centos:
           disabled: false
+          kill-phase-on: FAILURE
+          abort-all-job: true
       - opensuse:
           disabled: false
+          kill-phase-on: NEVER
+          abort-all-job: false
     # -------------------------------
     # postmerge promotion phases
     # -------------------------------
@@ -282,8 +288,8 @@
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               node-parameters: true
-              kill-phase-on: FAILURE
-              abort-all-job: true
+              kill-phase-on: '{obj:kill-phase-on}'
+              abort-all-job: '{obj:abort-all-job}'
       - multijob:
           name: healthcheck
           condition: SUCCESSFUL
@@ -302,8 +308,8 @@
                 FUNCTEST_MODE=$FUNCTEST_MODE
                 FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
               node-parameters: true
-              kill-phase-on: NEVER
-              abort-all-job: true
+              kill-phase-on: '{obj:kill-phase-on}'
+              abort-all-job: '{obj:abort-all-job}'
 
     publishers:
       - postbuildscript:
