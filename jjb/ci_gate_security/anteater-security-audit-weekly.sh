@@ -39,7 +39,7 @@ docker pull opnfv/releng-anteater
 echo "--------------------------------------------------------"
 
 cmd="docker run -i $envs $vols --rm opnfv/releng-anteater \
-/home/opnfv/venv/bin/anteater --project $PROJECT $ANTEATER_FILES"
+/home/opnfv/venv/bin/anteater --ips --urls -- binaries --project $PROJECT $ANTEATER_FILES"
 echo "Running docker container"
 echo "$cmd"
 $cmd > $WORKSPACE/securityaudit.log 2>&1
