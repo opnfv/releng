@@ -78,6 +78,9 @@
     scm:
       - git-scm
 
+    triggers:
+      - timed: '0 11 * * *'
+
     wrappers:
       - fix-workspace-permissions
 
@@ -117,6 +120,9 @@
           block-level: 'NODE'
 
     wrappers:
+      - timeout:
+          timeout: 180
+          abort: true
       - fix-workspace-permissions
 
     parameters:
