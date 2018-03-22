@@ -12,7 +12,12 @@ Create Gerrit Branchs
 """
 
 import argparse
-import ConfigParser
+
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
+
 import logging
 import os
 import yaml
@@ -105,7 +110,7 @@ def main():
 
     try:
         auth = GerritAuth(url=gerrit_url)
-    except ValueError, err:
+    except ValueError as err:
         logging.error("%s for %s", err, gerrit_url)
         quit(1)
     restapi = GerritRestAPI(url=gerrit_url, auth=auth)
