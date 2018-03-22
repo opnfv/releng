@@ -63,6 +63,9 @@ export OPNFV_RELENG_DEV_PATH=/home/devuser/releng-xci/
 export INSTALLER_TYPE=$INSTALLER_TYPE
 export GIT_BASE=$GIT_BASE
 export JENKINS_HOME=$JENKINS_HOME
+export CI_LOOP=$CI_LOOP
+export BUILD_TAG=$BUILD_TAG
+export NODE_NAME=$NODE_NAME
 
 if [[ ! -z ${WORKSPACE+x} && $GERRIT_PROJECT != "releng-xci" ]]; then
     git clone https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT xci/scenarios/$DEPLOY_SCENARIO && cd xci/scenarios/$DEPLOY_SCENARIO
