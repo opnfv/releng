@@ -165,7 +165,7 @@ if [[ ! -f ${DOVETAIL_CONFIG}/pod.yaml ]]; then
 fi
 
 if [ -f ${DOVETAIL_CONFIG}/pod.yaml ]; then
-    sudo chown jenkins:jenkins ${DOVETAIL_CONFIG}/pod.yaml
+    sudo chmod 666 ${DOVETAIL_CONFIG}/pod.yaml
     echo "Adapt process info for $INSTALLER_TYPE ..."
     attack_process='rabbitmq'
     cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
