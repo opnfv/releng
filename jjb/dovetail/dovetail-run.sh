@@ -95,7 +95,7 @@ cat $OPENRC
 if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == "compass" ]]; then
     compass_repo=${WORKSPACE}/compass4nfv/
     git clone https://github.com/opnfv/compass4nfv.git ${compass_repo} >/dev/null
-    pip install shyaml
+    sudo pip install shyaml
     scenario_file=${compass_repo}/deploy/conf/hardware_environment/$NODE_NAME/os-nosdn-nofeature-ha.yml
     ipmiIp=$(cat ${scenario_file} | shyaml get-value hosts.0.ipmiIp)
     ipmiPass=$(cat ${scenario_file} | shyaml get-value hosts.0.ipmiPass)
@@ -165,7 +165,7 @@ if [[ ! -f ${DOVETAIL_CONFIG}/pod.yaml ]]; then
 fi
 
 if [ -f ${DOVETAIL_CONFIG}/pod.yaml ]; then
-    sudo chown jenkins:jenkins ${DOVETAIL_CONFIG}/pod.yaml
+    sudo chmod 666 ${DOVETAIL_CONFIG}/pod.yaml
     echo "Adapt process info for $INSTALLER_TYPE ..."
     attack_process='rabbitmq'
     cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
