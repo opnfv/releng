@@ -17,7 +17,7 @@ cd $WORKSPACE
 git fetch $PROJECT_REPO $GERRIT_REFSPEC && sudo git checkout FETCH_HEAD
 
 # combine opnfv and upstream scripts/playbooks
-/bin/cp -rf $WORKSPACE/releng-xci/bifrost/* $WORKSPACE/
+/bin/cp -rf $WORKSPACE/releng-xci/xci/infra/bifrost/* $WORKSPACE/
 
 cd $WORKSPACE/releng-xci
 cat > bifrost_test.sh<<EOF
