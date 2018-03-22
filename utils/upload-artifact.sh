@@ -10,8 +10,6 @@
 set -e
 set -o pipefail
 
-export PATH=$PATH:/usr/local/bin/
-
 # 2 paramters
 # - $1: the source directory where the files to be uploaded are located
 # - $2: the target on artifact http://artifact.opnfv.org/<project>/$2

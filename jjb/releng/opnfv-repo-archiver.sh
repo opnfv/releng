@@ -9,7 +9,6 @@
 ##############################################################################
 set -o errexit
 set -o pipefail
-export PATH=$PATH:/usr/local/bin/
 
 DATE="$(date +%Y%m%d)"
 

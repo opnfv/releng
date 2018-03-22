@@ -8,8 +8,6 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-#export PATH=${PATH}:/root/gsutil
-
 #Step Generate index.html
 if [ -f index.html ] ; then
       rm -f index.html

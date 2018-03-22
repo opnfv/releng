@@ -10,8 +10,6 @@
 set -e
 set -o pipefail
 
-export PATH=$PATH:/usr/local/bin/
-
 git_sha1="$(git rev-parse HEAD)"
 res_build_date=${1:-$(date -u +"%Y-%m-%d_%H-%M-%S")}
 project=$PROJECT
