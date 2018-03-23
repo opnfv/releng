@@ -32,7 +32,7 @@ fi
 
 # put additional info into the metadata file so we can use that for displaying the information
 echo "PROMOTED_BY=$BUILD_URL" >> $LOCAL_PROMOTION_METADATA_FILE
-echo "PROMOTED_ON=$(date '+%F_%H:%M')" >> $LOCAL_PROMOTION_METADATA_FILE
+echo "PROMOTED_ON=$(date -u '+%F_%H:%M'UTC)" >> $LOCAL_PROMOTION_METADATA_FILE
 
 # upload promotion metadata file to OPNFV artifact repo
 echo "Storing promotion metadata as $REMOTE_PROMOTION_METADATA_FILE"
