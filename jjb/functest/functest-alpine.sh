@@ -162,7 +162,7 @@ if [ "${INSTALLER_TYPE}" == 'fuel' ]; then
 fi
 
 
-if [[ ${INSTALLER_TYPE} == 'compass' && ${DEPLOY_SCENARIO} =~ 'odl.*sfc' ]]; then
+if [[ ${INSTALLER_TYPE} == 'compass' && ${DEPLOY_SCENARIO} =~ 'sfc' ]]; then
     ssh_key="/tmp/id_rsa"
     user_config="/tmp/openstack_user_config.yml"
     docker cp compass-tasks:/root/.ssh/id_rsa $ssh_key
