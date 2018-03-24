@@ -68,8 +68,10 @@ export BUILD_TAG=$BUILD_TAG
 export NODE_NAME=$NODE_NAME
 
 if [[ ! -z ${WORKSPACE+x} && $GERRIT_PROJECT != "releng-xci" ]]; then
-    git clone https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT xci/scenarios/$DEPLOY_SCENARIO && cd xci/scenarios/$DEPLOY_SCENARIO
+    mkdir -p $WORKSPACE/$GERRIT_REFSPEC
+    git clone https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT $WORKSPACE/$GERRIT_REFSPEC && cd $WORKSPACE/$GERRIT_REFSPEC
     git fetch https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT $GERRIT_REFSPEC && git checkout FETCH_HEAD
+    cp -R $WORKSPACE/$GERRIT_REFSPEC/scenarios/$DEPLOY_SCENARIO/role/$DEPLOY_SCENARIO xci/scenarios/$DEPLOY_SCENARIO
     cd -
 fi
 
