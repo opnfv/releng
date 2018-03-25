@@ -65,8 +65,9 @@ def create_branch(api, arguments):
         logger.debug("Commit exists: %(commit)s", arguments)
     except RequestException as err:
         if hasattr(err, 'response') and err.response.status_code in [404]:
-            logger.warn("Commit %(commit)s for %(project)s:%(branch)s does"
+            logger.warn("Commit %(commit)s for %(project)s does"
                         " not exist. Not creating branch.", arguments)
+            logger.warn(err)
         else:
             logger.error("Error: %s", str(err))
         # Skip trying to create the branch
@@ -82,6 +83,7 @@ def create_branch(api, arguments):
         if hasattr(err, 'response') and err.response.status_code in [412, 409]:
             logger.info("Branch %(branch)s already created for %(project)s",
                         arguments)
+            logger.info(err)
         else:
             logger.error("Error: %s", str(err))
 
