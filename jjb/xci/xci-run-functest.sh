@@ -49,13 +49,22 @@ if ! sed -n "/^- scenario: $DEPLOY_SCENARIO$/,/^$/p" $OPNFV_SCENARIO_REQUIREMENT
     exit 0
 fi
 
-ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm "cd releng-xci/xci && PATH=/home/devuser/.local/bin:$PATH ansible-playbook -i installer/osa/files/$XCI_FLAVOR/inventory playbooks/prepare-functest.yml"
+# set XCI_VENV for ansible
+export XCI_VENV=/home/devuser/releng-xci/venv
+
+# prepare functest stuff from clean vm
+ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm "source $XCI_VENV/bin/activate; cd releng-xci/xci && ansible-playbook -i installer/osa/files/$XCI_FLAVOR/inventory playbooks/prepare-functest.yml"
+
+# run functest from opnfv vm
 echo "Running functest"
 ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "/root/run-functest.sh"
+
+# dump functest log to console
 echo "Functest log"
 echo "---------------------------------------------------------------------------------"
 ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "cat /root/results/functest.log"
 echo "---------------------------------------------------------------------------------"
+
 # check the log to see if we have any error
 if ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "grep -q 'FAIL' /root/results/functest.log"; then
     echo "Error: Functest failed!"
