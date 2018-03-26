@@ -10,8 +10,8 @@
 set -xe
 
 # Configure the git user/email as we'll be pushing up changes
-git config user.name "jenkins-ci"
-git config user.email "jenkins-opnfv-ci@opnfv.org"
+git config --global user.name "jenkins-ci"
+git config --global user.email "jenkins-opnfv-ci@opnfv.org"
 
 # Ensure we are able to generate Commit-IDs for new patchsets
 curl -kLo .git/hooks/commit-msg https://gerrit.opnfv.org/gerrit/tools/hooks/commit-msg
