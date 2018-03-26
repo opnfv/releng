@@ -39,7 +39,8 @@ echo "Storing promotion metadata as $REMOTE_PROMOTION_METADATA_FILE"
 gsutil cp $LOCAL_PROMOTION_METADATA_FILE $REMOTE_PROMOTION_METADATA_FILE > /dev/null 2>&1
 
 # update the file metadata on gs to prevent the use of cached version of the file
-gsutil -m setmeta -r -h "Cache-Control:private, max-age=0, no-transform" \
+gsutil -m setmeta -r -h "Content-Type:text/html" \
+    -h "Cache-Control:private, max-age=0, no-transform" \
     $REMOTE_PROMOTION_METADATA_FILE > /dev/null 2>&1
 
 # log the metadata to console
