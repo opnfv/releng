@@ -27,6 +27,7 @@
           verify-scenario: 'os-odl-nofeature-ha'
           scenario_stream: 'master'
           disable_daily: false
+          disable_promote: false
       - euphrates: &euphrates
           branch: 'stable/euphrates'
           gs-pathname: '/euphrates'
@@ -36,6 +37,7 @@
           verify-scenario: 'os-odl-nofeature-ha'
           scenario_stream: 'euphrates'
           disable_daily: true
+          disable_promote: true
       - danube: &danube
           branch: 'stable/danube'
           gs-pathname: '/danube'
@@ -46,6 +48,7 @@
           scenario_stream: 'danube'
           disabled: true
           disable_daily: true
+          disable_promote: true
 
     scenario:
       - 'os-nosdn-nofeature-noha':
@@ -181,6 +184,10 @@
       - 'baremetal'
       - 'virtual'
 
+    os_version:
+      - 'pike'
+      - 'queens'
+      - 'master'
 - job-template:
     name: 'apex-runner-cperf-{stream}'
 
@@ -691,7 +698,7 @@
     #     branch:    branch (eg. stable)
     node: '{virtual-slave}'
     project-type: 'multijob'
-    disabled: false
+    disabled: '{disable_promote}'
 
     scm:
       - git-scm
@@ -718,28 +725,13 @@
 
     builders:
       - multijob:
-          name: build
-          condition: SUCCESSFUL
-          projects:
-            - name: 'apex-build-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              node-parameters: false
-              kill-phase-on: FAILURE
-              abort-all-job: true
-              git-revision: true
-      - multijob:
           name: deploy-virtual
           condition: SUCCESSFUL
           projects:
             - name: 'apex-deploy-virtual-{stream}'
               current-parameters: false
               predefined-parameters: |
-                DEPLOY_SCENARIO=os-odl_l3-csit-noha
+                DEPLOY_SCENARIO=os-odl-{os_version}_upstream-noha
                 OPNFV_CLEAN=yes
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
@@ -757,7 +749,7 @@
             - name: 'functest-apex-virtual-suite-{stream}'
               current-parameters: false
               predefined-parameters: |
-                DEPLOY_SCENARIO=os-odl_l3-nofeature-noha
+                DEPLOY_SCENARIO=os-odl-{os_version}_upstream-noha
                 FUNCTEST_SUITE_NAME=tempest_smoke_serial
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC

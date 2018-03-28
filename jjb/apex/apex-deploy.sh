@@ -121,7 +121,7 @@ if [[ "$JOB_NAME" =~ "virtual" ]]; then
     DEPLOY_CMD="${DEPLOY_CMD} -e csit-environment.yaml"
   fi
   if [[ "$PROMOTE" == "True" ]]; then
-    DEPLOY_CMD="${DEPLOY_CMD} --virtual-computes 2"
+    DEPLOY_CMD="${DEPLOY_CMD} --virtual-computes 1"
   fi
 else
   # settings for bare metal deployment
