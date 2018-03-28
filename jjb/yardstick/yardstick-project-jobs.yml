@@ -165,8 +165,14 @@
           set -o pipefail
 
           sudo apt-get -y autoremove
-          sudo apt-get install -y build-essential python-dev python3-dev
+          sudo apt-get install -y build-essential python-dev python3-dev rabbitmq-server
           sudo apt-get -y clean && sudo apt-get -y autoremove
+
+          echo "Configure RabbitMQ service"
+          service rabbitmq-server restart
+          rabbitmqctl start_app
+          rabbitmqctl add_user yardstick yardstick
+          rabbitmqctl set_permissions yardstick ".*" ".*" ".*"
 
           echo "Running functional tests in Python 2.7 ..."
           cd $WORKSPACE
@@ -181,8 +187,14 @@
           set -o pipefail
 
           sudo apt-get -y autoremove
-          sudo apt-get install -y build-essential python-dev python3-dev
+          sudo apt-get install -y build-essential python-dev python3-dev rabbitmq-server
           sudo apt-get -y clean && sudo apt-get -y autoremove
+
+          echo "Configure RabbitMQ service"
+          service rabbitmq-server restart
+          rabbitmqctl start_app
+          rabbitmqctl add_user yardstick yardstick
+          rabbitmqctl set_permissions yardstick ".*" ".*" ".*"
 
           echo "Running functional tests in Python 3 ..."
           cd $WORKSPACE
