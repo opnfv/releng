@@ -10,6 +10,26 @@ echo
 
 [[ -d $BUILD_DIRECTORY ]] || mkdir -p $BUILD_DIRECTORY
 
+if [ -z "$DEPLOY_SCENARIO" ]; then
+  echo "Deploy scenario not set!"
+  exit 1
+elif [[ "$DEPLOY_SCENARIO" == *gate* ]]; then
+  echo "Detecting Gating scenario..."
+  if [ -z "$GERRIT_EVENT_COMMENT_TEXT" ]; then
+    echo "ERROR: Gate job triggered without comment!"
+    exit 1
+  else
+    DEPLOY_SCENARIO=$(echo ${GERRIT_EVENT_COMMENT_TEXT} | grep start-gate-scenario | grep -Eo 'os-.*$')
+    if [ -z "$DEPLOY_SCENARIO" ]; then
+      echo "ERROR: Unable to detect scenario in Gerrit Comment!"
+      echo "Format of comment to trigger gate should be 'start-gate-scenario: <scenario>'"
+      exit 1
+    else
+      echo "Gate scenario detected: ${DEPLOY_SCENARIO}"
+    fi
+  fi
+fi
+
 # if upstream we do not need to download anything
 if [[ "$DEPLOY_SCENARIO" =~ upstream ]]; then
   echo "Upstream deployment detected, skipping download artifact"
