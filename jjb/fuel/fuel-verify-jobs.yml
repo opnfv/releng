@@ -21,11 +21,7 @@
     # patch verification phases
     #####################################
     phase:
-      - 'basic':
-          slave-label: 'fuel-virtual'
       - 'deploy-virtual':
-          slave-label: 'fuel-virtual'
-      - 'smoke-test':
           slave-label: 'fuel-virtual'
     #####################################
     # jobs
@@ -110,20 +106,6 @@
       - description-setter:
           description: "Built on $NODE_NAME"
       - multijob:
-          name: basic
-          condition: SUCCESSFUL
-          projects:
-            - name: 'fuel-verify-basic-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                BRANCH=$BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              node-parameters: false
-              kill-phase-on: FAILURE
-              abort-all-job: true
-      - multijob:
           name: deploy-virtual
           condition: SUCCESSFUL
           projects:
@@ -137,19 +119,38 @@
               node-parameters: false
               kill-phase-on: FAILURE
               abort-all-job: true
+
       - multijob:
           name: smoke-test
           condition: SUCCESSFUL
           projects:
-            - name: 'fuel-verify-smoke-test-{stream}'
+            # Use Functest job definition from jjb/functest/functest-daily-jobs
+            - name: 'functest-fuel-virtual-suite-{stream}'
               current-parameters: false
               predefined-parameters: |
+                FUNCTEST_MODE=tier
+                FUNCTEST_TIER=healthcheck
+                # Should be in sync with fuel-deploy.sh default scenario
+                DEPLOY_SCENARIO=os-nosdn-nofeature-ha
                 BRANCH=$BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              node-parameters: false
-              kill-phase-on: FAILURE
+              node-parameters: true
+              kill-phase-on: NEVER
+              abort-all-job: true
+            - name: 'functest-fuel-virtual-suite-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                FUNCTEST_MODE=testcase
+                FUNCTEST_SUITE_NAME=vping_ssh
+                DEPLOY_SCENARIO=os-nosdn-nofeature-ha
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: true
+              kill-phase-on: NEVER
               abort-all-job: true
 
 - job-template:
@@ -170,7 +171,6 @@
           use-build-blocker: true
           blocking-jobs:
             - 'fuel-verify-deploy-.*'
-            - 'fuel-verify-test-.*'
           block-level: 'NODE'
 
     scm:
@@ -200,23 +200,7 @@
 # builder macros
 #####################################
 - builder:
-    name: 'fuel-verify-basic-macro'
-    builders:
-      - shell: |
-          #!/bin/bash
-
-          echo "Not activated!"
-
-- builder:
     name: 'fuel-verify-deploy-virtual-macro'
     builders:
       - shell:
           !include-raw: ./fuel-deploy.sh
-
-- builder:
-    name: 'fuel-verify-smoke-test-macro'
-    builders:
-      - shell: |
-          #!/bin/bash
-
-          echo "Not activated!"
