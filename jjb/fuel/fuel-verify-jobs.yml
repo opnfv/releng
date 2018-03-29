@@ -216,7 +216,8 @@
 - builder:
     name: 'fuel-verify-smoke-test-macro'
     builders:
-      - shell: |
-          #!/bin/bash
-
-          echo "Not activated!"
+      - shell:
+          !include-raw:
+            - ../functest/functest-cleanup.sh
+            - ../../utils/fetch_os_creds.sh
+            - ./fuel-smoke-test.sh
