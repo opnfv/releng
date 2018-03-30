@@ -49,7 +49,7 @@ elif [[ ${INSTALLER_TYPE} == 'daisy' ]]; then
 elif [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
     if [[ ! "${BRANCH}" =~ "danube" ]]; then
         echo "Map mcp ssh_key"
-        export sshkey_vol="-v ${SSH_KEY}:/root/.ssh/id_rsa"
+        export sshkey_vol="-v ${SSH_KEY:-/var/lib/opnfv/mcp.rsa}:/root/.ssh/id_rsa"
     fi
 fi
 
