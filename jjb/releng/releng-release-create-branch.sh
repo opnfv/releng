@@ -31,7 +31,7 @@ for release_file in $RELEASE_FILES; do
     NEW_FILES=$(git status --porcelain --untracked=no | cut -c4-)
     if [ -n "$NEW_FILES" ]; then
       git add $NEW_FILES
-      git commit -m "Create Stable Branch Jobs for $(basename $release_file .yaml)"
+      git commit -sm "Create Stable Branch Jobs for $(basename $release_file .yaml)"
       git push origin HEAD:refs/for/master
     fi
 done
