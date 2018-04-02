@@ -10,6 +10,10 @@
           gs-pathname: ''
           docker-tag: 'latest'
           disabled: false
+      - fraser: &fraser
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
       - euphrates:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
@@ -77,10 +81,10 @@
 
     builders:
       - shell: |
-         #!/bin/bash
-         # we do nothing here as the main stuff will be done
-         # in phase jobs
-         echo "Triggering phase jobs!"
+          #!/bin/bash
+          # we do nothing here as the main stuff will be done
+          # in phase jobs
+          echo "Triggering phase jobs!"
       - multijob:
           name: 'doctor-build-and-unittest'
           execution-type: PARALLEL
@@ -129,10 +133,10 @@
 
     builders:
       - shell: |
-         #!/bin/bash
-         # we do nothing here as the main stuff will be done
-         # in phase jobs
-         echo "Triggering phase jobs!"
+          #!/bin/bash
+          # we do nothing here as the main stuff will be done
+          # in phase jobs
+          echo "Triggering phase jobs!"
       - multijob:
           name: 'doctor-verify-apex-inspector'
           execution-type: PARALLEL
@@ -239,7 +243,7 @@
 - parameter:
     name: 'doctor-functest-parameter'
     parameters:
-      # functest-suite-parameter
+    # functest-suite-parameter
       - string:
           name: FUNCTEST_MODE
           default: 'testcase'
@@ -248,17 +252,18 @@
           default: 'doctor-notification'
       - string:
           name: TESTCASE_OPTIONS
-          # yamllint disable rule:line-length
+        # yamllint disable rule:line-length
           default: '-e INSPECTOR_TYPE={inspector} -v $WORKSPACE:/home/opnfv/repos/doctor'
-          # yamllint enable rule:line-length
+        # yamllint enable rule:line-length
           description: 'Addtional parameters specific to test case(s)'
-      # functest-parameter
+    # functest-parameter
       - string:
           name: GS_PATHNAME
           default: '{gs-pathname}'
-          # yamllint disable rule:line-length
-          description: "Version directory where the opnfv documents will be stored in gs repository"
-          # yamllint enable rule:line-length
+        # yamllint disable rule:line-length
+          description: "Version directory where the opnfv documents will be stored\
+            \ in gs repository"
+        # yamllint enable rule:line-length
       - string:
           name: FUNCTEST_REPO_DIR
           default: "/home/opnfv/repos/functest"
@@ -284,7 +289,7 @@
     name: 'doctor-verify-installer-inspector-builders-macro'
     builders:
       - 'clean-workspace-log'
-      # yamllint disable rule:line-length
+    # yamllint disable rule:line-length
       - shell: |
           # NOTE: Create symbolic link, so that we can archive file outside
           #       of $WORKSPACE .
@@ -303,7 +308,7 @@
           # NOTE: checking the test result, as the previous job could return
           #       0 regardless the result of doctor test scenario.
           grep -e 'doctor test successfully' $functest_log || exit 1
-      # yamllint enable rule:line-length
+    # yamllint enable rule:line-length
 
 # -------------------------------
 # publisher macros
