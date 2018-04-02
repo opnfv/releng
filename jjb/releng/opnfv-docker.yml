@@ -19,6 +19,11 @@
       stream: euphrates
       branch: 'stable/{stream}'
       disabled: false
+    fraser: &fraser
+      stream: fraser
+      branch: 'stable/{stream}'
+      disabled: false
+    storperf-receivers: &storperf-receivers
     storperf-receivers: &storperf-receivers
       receivers: >
           mark.beierl@emc.com
@@ -133,6 +138,11 @@
       - 'functest-kubernetes':
           project: 'functest-kubernetes'
           <<: *master
+          <<: *other-receivers
+      # projects with jobs for fraser
+      - 'functest-kubernetes':
+          project: 'functest-kubernetes'
+          <<: *fraser
           <<: *other-receivers
       # projects with jobs for euphrates
       - 'bottlenecks':
