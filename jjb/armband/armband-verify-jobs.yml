@@ -5,21 +5,25 @@
     project: 'armband'
 
     installer: 'fuel'
-    #####################################
-    # branch definitions
-    #####################################
+  #####################################
+  # branch definitions
+  #####################################
     stream:
       - master:
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
+      - fraser: &fraser
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
       - euphrates:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           disabled: false
-    #####################################
-    # patch verification phases
-    #####################################
+  #####################################
+  # patch verification phases
+  #####################################
     phase:
       - 'basic':
           slave-label: 'armband-virtual'
@@ -27,9 +31,9 @@
           slave-label: 'armband-virtual'
       - 'smoke-test':
           slave-label: 'armband-virtual'
-    #####################################
-    # jobs
-    #####################################
+  #####################################
+  # jobs
+  #####################################
     jobs:
       - 'armband-verify-{stream}'
       - 'armband-verify-{phase}-{stream}'
@@ -210,8 +214,7 @@
 - builder:
     name: 'armband-verify-deploy-virtual-macro'
     builders:
-      - shell:
-          !include-raw: ../fuel/fuel-deploy.sh
+      - shell: !include-raw: ../fuel/fuel-deploy.sh
 
 - builder:
     name: 'armband-verify-smoke-test-macro'
