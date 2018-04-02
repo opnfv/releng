@@ -16,6 +16,11 @@
       branch: '{stream}'
       disabled: false
       gs-pathname: ''
+    fraser: &fraser
+      stream: fraser
+      branch: 'stable/{stream}'
+      disabled: false
+      gs-pathname: '/{stream}'
     euphrates: &euphrates
       stream: euphrates
       branch: 'stable/{stream}'
@@ -39,6 +44,12 @@
       - virtual:
           slave-label: fuel-virtual
           <<: *euphrates
+      - baremetal:
+          slave-label: fuel-baremetal
+          <<: *fraser
+      - virtual:
+          slave-label: fuel-virtual
+          <<: *fraser
     # -------------------------------
     #       scenarios
     # -------------------------------
