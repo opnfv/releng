@@ -70,7 +70,7 @@ Issue and Bug Tracking
 JIRA
 
 .. toctree::
-   :maxdepth:
+   :maxdepth: 1
 
    jira/user-guide
 
