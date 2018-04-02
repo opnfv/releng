@@ -20,6 +20,11 @@
       branch: 'stable/{stream}'
       gs-pathname: '{stream}'
       docker-tag: 'stable'
+    fraser: &fraser
+      stream: fraser
+      branch: 'stable/{stream}'
+      gs-pathname: '{stream}'
+      docker-tag: 'stable'
     # -------------------------------
     # POD, INSTALLER, AND BRANCH MAPPING
     # -------------------------------
@@ -50,6 +55,16 @@
           installer: apex
           auto-trigger-name: 'daily-trigger-disabled'
           <<: *euphrates
+      - virtual:
+          slave-label: apex-virtual-fraser
+          installer: apex
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *fraser
+      - baremetal:
+          slave-label: apex-baremetal-fraser
+          installer: apex
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *fraser
       # fuel CI PODs
       - baremetal:
           slave-label: fuel-baremetal
@@ -71,6 +86,16 @@
           installer: fuel
           auto-trigger-name: 'daily-trigger-disabled'
           <<: *euphrates
+      - baremetal:
+          slave-label: fuel-baremetal
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *fraser
+      - virtual:
+          slave-label: fuel-virtual
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *fraser
       # armband CI PODs
       - armband-baremetal:
           slave-label: armband-baremetal
@@ -92,6 +117,16 @@
           installer: fuel
           auto-trigger-name: 'daily-trigger-disabled'
           <<: *euphrates
+      - armband-baremetal:
+          slave-label: armband-baremetal
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *fraser
+      - armband-virtual:
+          slave-label: armband-virtual
+          installer: fuel
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *fraser
       # joid CI PODs
       - baremetal:
           slave-label: joid-baremetal
@@ -113,6 +148,16 @@
           installer: joid
           auto-trigger-name: 'daily-trigger-disabled'
           <<: *euphrates
+      - baremetal:
+          slave-label: joid-baremetal
+          installer: joid
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *fraser
+      - virtual:
+          slave-label: joid-virtual
+          installer: joid
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *fraser
       # compass CI PODs
       - baremetal:
           slave-label: compass-baremetal
@@ -134,6 +179,16 @@
           installer: compass
           auto-trigger-name: 'daily-trigger-disabled'
           <<: *euphrates
+      - baremetal:
+          slave-label: compass-baremetal
+          installer: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *fraser
+      - virtual:
+          slave-label: compass-virtual
+          installer: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *fraser
       # daisy CI PODs
       - baremetal:
           slave-label: daisy-baremetal
@@ -339,6 +394,22 @@
 
 - parameter:
     name: 'yardstick-params-apex-baremetal-euphrates'
+    parameters:
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'yardstick-params-apex-virtual-fraser'
+    parameters:
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'yardstick-params-apex-baremetal-fraser'
     parameters:
       - string:
           name: YARDSTICK_DB_BACKEND
