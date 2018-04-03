@@ -13,6 +13,10 @@
           gs-pathname: ''
           disabled: false
           docker-tag: 'latest'
+      - fraser: &fraser
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
       - euphrates:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
@@ -31,9 +35,10 @@
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
-          # yamllint disable rule:line-length
-          description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
-          # yamllint enable rule:line-length
+        # yamllint disable rule:line-length
+          description: "Used for overriding the GIT URL coming from Global Jenkins\
+            \ configuration in case if the stuff is done on none-LF HW."
+        # yamllint enable rule:line-length
 
     scm:
       - git-scm
