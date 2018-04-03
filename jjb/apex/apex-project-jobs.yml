@@ -4,17 +4,21 @@
     project: 'apex'
 
     stream:
-      - master: &master
+      - master:
           branch: 'master'
           gs-pathname: ''
           concurrent-builds: 3
           disabled: false
-      - euphrates: &euphrates
+      - fraser: &fraser
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
+      - euphrates:
           branch: 'stable/euphrates'
           gs-pathname: '/euphrates'
           concurrent-builds: 3
           disabled: true
-      - danube: &danube
+      - danube:
           branch: 'stable/danube'
           gs-pathname: '/danube'
           concurrent-builds: 1
@@ -28,11 +32,11 @@
 - job-template:
     name: 'apex-build-{stream}'
 
-    # Job template for builds
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
+  # Job template for builds
+  #
+  # Required Variables:
+  #     stream:    branch with - in place of / (eg. stable)
+  #     branch:    branch (eg. stable)
     node: 'apex-build-master'
 
     disabled: false
@@ -77,11 +81,11 @@
 - job-template:
     name: 'apex-verify-iso-{stream}'
 
-    # Job template for builds
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
+  # Job template for builds
+  #
+  # Required Variables:
+  #     stream:    branch with - in place of / (eg. stable)
+  #     branch:    branch (eg. stable)
     node: 'apex-virtual-master'
 
     disabled: false
@@ -121,11 +125,9 @@
 - builder:
     name: 'apex-build'
     builders:
-      - shell:
-          !include-raw: ./apex-build.sh
+      - shell: !include-raw: ./apex-build.sh
 
 - builder:
     name: 'apex-iso-verify'
     builders:
-      - shell:
-          !include-raw: ./apex-iso-verify.sh
+      - shell: !include-raw: ./apex-iso-verify.sh
