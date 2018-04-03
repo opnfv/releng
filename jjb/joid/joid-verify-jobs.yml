@@ -5,21 +5,25 @@
     project: 'joid'
 
     installer: 'joid'
-    #####################################
-    # branch definitions
-    #####################################
+  #####################################
+  # branch definitions
+  #####################################
     stream:
       - master:
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
+      - fraser: &fraser
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
       - euphrates:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           disabled: false
-    #####################################
-    # patch verification phases
-    #####################################
+  #####################################
+  # patch verification phases
+  #####################################
     phase:
       - 'basic':
           slave-label: 'opnfv-build-ubuntu'
@@ -27,9 +31,9 @@
           slave-label: 'joid-virtual'
       - 'smoke-test':
           slave-label: 'joid-virtual'
-    #####################################
-    # jobs
-    #####################################
+  #####################################
+  # jobs
+  #####################################
     jobs:
       - 'joid-verify-{stream}'
       - 'joid-verify-{phase}-{stream}'
