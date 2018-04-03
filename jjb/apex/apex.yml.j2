@@ -28,6 +28,16 @@
           scenario_stream: 'master'
           disable_daily: false
           disable_promote: false
+      - fraser: &fraser
+          branch: 'stable/fraser'
+          gs-pathname: '/fraser'
+          build-slave: 'apex-build-master'
+          virtual-slave: 'apex-virtual-master'
+          baremetal-slave: 'apex-baremetal-master'
+          verify-scenario: 'os-odl-nofeature-ha'
+          scenario_stream: 'fraser'
+          disable_daily: true
+          disable_promote: true
       - euphrates: &euphrates
           branch: 'stable/euphrates'
           gs-pathname: '/euphrates'
@@ -994,6 +1004,11 @@
     name: 'apex-master'
     triggers:
       - timed: '0 0 1-31/2 * *'
+
+- trigger:
+    name: 'apex-fraser'
+    triggers:
+      - timed: '0 0 2-30/2 * *'
 
 - trigger:
     name: 'apex-euphrates'
