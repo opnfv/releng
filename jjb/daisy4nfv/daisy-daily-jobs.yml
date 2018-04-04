@@ -20,8 +20,8 @@
       branch: '{stream}'
       disabled: false
       gs-pathname: ''
-    euphrates: &euphrates
-      stream: euphrates
+    fraser: &fraser
+      stream: fraser
       branch: 'stable/{stream}'
       gs-pathname: '/{stream}'
       disabled: false
@@ -29,21 +29,22 @@
     # -------------------------------
     # POD, INSTALLER, AND BRANCH MAPPING
     # -------------------------------
-    #        CI PODs
-    # -------------------------------
     pod:
+      # -------------------------------
+      #        CI PODs
+      # -------------------------------
       - baremetal:
           slave-label: daisy-baremetal
           <<: *master
       - virtual:
           slave-label: daisy-virtual
           <<: *master
-      # - baremetal:
-      #     slave-label: daisy-baremetal
-      #     <<: *euphrates
-      # - virtual:
-      #     slave-label: daisy-virtual
-      #     <<: *euphrates
+      - baremetal:
+          slave-label: daisy-baremetal
+          <<: *fraser
+      - virtual:
+          slave-label: daisy-virtual
+          <<: *fraser
       # -------------------------------
       #        None-CI PODs
       # -------------------------------
@@ -53,9 +54,9 @@
       - zte-pod9:
           slave-label: zte-pod9
           <<: *master
-    # -------------------------------
-    #        None-CI PODs
-    # -------------------------------
+      - zte-pod9:
+          slave-label: zte-pod9
+          <<: *fraser
 
     # -------------------------------
     #       scenarios
@@ -191,9 +192,9 @@
           use-build-blocker: true
           blocking-jobs:
             - 'daisy-kolla-build-.*'
-            - '{installer}-(build|deploy|test)-daily-(euphrates|master)'
-            - '{installer}-deploy-(baremetal|virtual|zte-pod9)-daily-(euphrates|master)'
-            - '(functest|yardstick)-{installer}-(baremetal|virtual|zte-pod9)-daily-(euphrates|master)'
+            - '{installer}-(build|deploy|test)-daily-(fraser|master)'
+            - '{installer}-deploy-(baremetal|virtual|zte-pod9)-daily-(fraser|master)'
+            - '(functest|yardstick)-{installer}-(baremetal|virtual|zte-pod9)-daily-(fraser|master)'
           block-level: 'NODE'
 
     parameters:
@@ -281,50 +282,50 @@
       - timed: ''
 
 # ----------------------------------------------
-# Triggers for job running on daisy-baremetal against euphrates branch
+# Triggers for job running on daisy-baremetal against fraser branch
 # ----------------------------------------------
 # Basic HA Scenarios
 - trigger:
-    name: 'daisy-os-nosdn-nofeature-ha-baremetal-daily-euphrates-trigger'
+    name: 'daisy-os-nosdn-nofeature-ha-baremetal-daily-fraser-trigger'
     triggers:
       - timed: '0 0 * * *'
 # Basic NOHA Scenarios
 - trigger:
-    name: 'daisy-os-nosdn-nofeature-noha-baremetal-daily-euphrates-trigger'
+    name: 'daisy-os-nosdn-nofeature-noha-baremetal-daily-fraser-trigger'
     triggers:
       - timed: ''
 # ODL Scenarios
 - trigger:
-    name: 'daisy-os-odl-nofeature-ha-baremetal-daily-euphrates-trigger'
+    name: 'daisy-os-odl-nofeature-ha-baremetal-daily-fraser-trigger'
     triggers:
       - timed: '0 20 * * *'
 # ovs_dpdk Scenarios
 - trigger:
-    name: 'daisy-os-nosdn-ovs_dpdk-noha-baremetal-daily-euphrates-trigger'
+    name: 'daisy-os-nosdn-ovs_dpdk-noha-baremetal-daily-fraser-trigger'
     triggers:
       - timed: ''
 
 # ----------------------------------------------
-# Triggers for job running on daisy-virtual against euphrates branch
+# Triggers for job running on daisy-virtual against fraser branch
 # ----------------------------------------------
 # Basic HA Scenarios
 - trigger:
-    name: 'daisy-os-nosdn-nofeature-ha-virtual-daily-euphrates-trigger'
+    name: 'daisy-os-nosdn-nofeature-ha-virtual-daily-fraser-trigger'
     triggers:
       - timed: '0 0 * * *'
 # Basic NOHA Scenarios
 - trigger:
-    name: 'daisy-os-nosdn-nofeature-noha-virtual-daily-euphrates-trigger'
+    name: 'daisy-os-nosdn-nofeature-noha-virtual-daily-fraser-trigger'
     triggers:
       - timed: ''
 # ODL Scenarios
 - trigger:
-    name: 'daisy-os-odl-nofeature-ha-virtual-daily-euphrates-trigger'
+    name: 'daisy-os-odl-nofeature-ha-virtual-daily-fraser-trigger'
     triggers:
       - timed: '0 20 * * *'
 # ovs_dpdk Scenarios
 - trigger:
-    name: 'daisy-os-nosdn-ovs_dpdk-noha-virtual-daily-euphrates-trigger'
+    name: 'daisy-os-nosdn-ovs_dpdk-noha-virtual-daily-fraser-trigger'
     triggers:
       - timed: ''
 
@@ -335,7 +336,7 @@
 - trigger:
     name: 'daisy-os-nosdn-ovs_dpdk-noha-zte-pod9-daily-master-trigger'
     triggers:
-      - timed: '0 10,20 * * *'
+      - timed: '0 20 * * *'
 # Basic HA Scenarios
 - trigger:
     name: 'daisy-os-nosdn-nofeature-ha-zte-pod9-daily-master-trigger'
@@ -349,5 +350,29 @@
 # ODL Scenarios
 - trigger:
     name: 'daisy-os-odl-nofeature-ha-zte-pod9-daily-master-trigger'
+    triggers:
+      - timed: ''
+
+# ----------------------------------------------
+# ZTE POD9 Triggers running against fraser branch
+# ----------------------------------------------
+# ovs_dpdk Scenarios
+- trigger:
+    name: 'daisy-os-nosdn-ovs_dpdk-noha-zte-pod9-daily-fraser-trigger'
+    triggers:
+      - timed: '0 10 * * *'
+# Basic HA Scenarios
+- trigger:
+    name: 'daisy-os-nosdn-nofeature-ha-zte-pod9-daily-fraser-trigger'
+    triggers:
+      - timed: ''
+# Basic NOHA Scenarios
+- trigger:
+    name: 'daisy-os-nosdn-nofeature-noha-zte-pod9-daily-fraser-trigger'
+    triggers:
+      - timed: ''
+# ODL Scenarios
+- trigger:
+    name: 'daisy-os-odl-nofeature-ha-zte-pod9-daily-fraser-trigger'
     triggers:
       - timed: ''
