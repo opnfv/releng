@@ -27,6 +27,12 @@ else
     CONFIG_REPO_NAME=pharos
 fi
 
+if [[  "$BRANCH" =~ "master" ]]; then
+    DOCTOR_OPT="-d 1"
+else
+    DOCTOR_OPT=""
+fi
+
 LABS_DIR=/var/tmp/opnfv-${CONFIG_REPO_NAME}
 
 echo "Cloning ${CONFIG_REPO_NAME} repo $BRANCH to $LABS_DIR"
@@ -35,7 +41,8 @@ git clone ssh://jenkins-zte@gerrit.opnfv.org:29418/${CONFIG_REPO_NAME} \
     --quiet --branch $BRANCH $LABS_DIR
 
 DEPLOY_COMMAND="sudo -E ./ci/deploy/deploy.sh -L $LABS_DIR \
-                -l $LAB_NAME -p $POD_NAME -B $BRIDGE -s $DEPLOY_SCENARIO"
+                -l $LAB_NAME -p $POD_NAME -B $BRIDGE -s $DEPLOY_SCENARIO \
+                $DOCTOR_OPT"
 
 # log info to console
 echo """
