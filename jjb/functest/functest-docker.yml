@@ -15,9 +15,6 @@
       - fraser:
           branch: 'stable/{stream}'
           disabled: false
-      - euphrates:
-          branch: 'stable/{stream}'
-          disabled: false
 
     arch_tag:
       - 'amd64':
@@ -34,7 +31,6 @@
       - 'parser'
       - 'smoke'
       - 'vnf'
-      - 'restapi'
 
     # settings for jobs run in multijob phases
     build-job-settings: &build-job-settings
@@ -139,10 +135,6 @@
               <<: *build-job-settings
             - name: 'functest-vnf-docker-build-arm64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-restapi-docker-build-amd64-{stream}'
-              <<: *build-job-settings
-            - name: 'functest-restapi-docker-build-arm64-{stream}'
-              <<: *build-job-settings
       - multijob:
           name: 'publish all manifests'
           condition: SUCCESSFUL
@@ -159,8 +151,6 @@
             - name: 'functest-smoke-docker-manifest-{stream}'
               <<: *manifest-job-settings
             - name: 'functest-vnf-docker-manifest-{stream}'
-              <<: *manifest-job-settings
-            - name: 'functest-restapi-docker-manifest-{stream}'
               <<: *manifest-job-settings
 
     publishers:
