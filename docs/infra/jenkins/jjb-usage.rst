@@ -31,6 +31,12 @@ Test with tox::
 
     tox -v -ejjb
 
+.. note:: You can also test the jobs under a single jjb directory by
+    specifying the directory. For example to test only the releng jobs, you
+    could run:
+
+     tox -v -e jjb -- jjb/releng
+
 Submit the change to gerrit::
 
     git review -v
