@@ -19,6 +19,10 @@
       stream: euphrates
       branch: 'stable/{stream}'
       disabled: false
+    fraser: &fraser
+      stream: fraser
+      branch: 'stable/{stream}'
+      disabled: false
     storperf-receivers: &storperf-receivers
       receivers: >
           mark.beierl@emc.com
@@ -71,6 +75,36 @@
           <<: *other-receivers
       - 'bottlenecks':
           project: 'bottlenecks'
+          <<: *master
+          <<: *other-receivers
+      - 'clover':
+          project: 'clover'
+          dockerdir: '.'
+          dockerfile: 'docker/Dockerfile'
+          <<: *master
+          <<: *other-receivers
+      - 'clover-ns-nginx-lb':
+          project: 'clover'
+          dockerdir: 'samples/services/nginx/docker'
+          dockerfile: 'samples/services/nginx/docker/subservices/lb/Dockerfile'
+          <<: *master
+          <<: *other-receivers
+      - 'clover-ns-nginx-proxy':
+          project: 'clover'
+          dockerdir: 'samples/services/nginx/docker'
+          dockerfile: 'samples/services/nginx/docker/subservices/proxy/Dockerfile'
+          <<: *master
+          <<: *other-receivers
+      - 'clover-ns-nginx-server':
+          project: 'clover'
+          dockerdir: 'samples/services/nginx/docker'
+          dockerfile: 'samples/services/nginx/docker/subservices/server/Dockerfile'
+          <<: *master
+          <<: *other-receivers
+      - 'clover-ns-snort-ids':
+          project: 'clover'
+          dockerdir: 'samples/services/snort_ids/docker'
+          dockerfile: 'samples/services/snort_ids/docker/Dockerfile'
           <<: *master
           <<: *other-receivers
       - 'cperf':
@@ -186,7 +220,37 @@
           project: 'dovetail'
           <<: *danube
           <<: *other-receivers
-
+      # projects with jobs for fraser
+      - 'clover':
+          project: 'clover'
+          dockerdir: '.'
+          dockerfile: 'docker/Dockerfile'
+          <<: *fraser
+          <<: *other-receivers
+      - 'clover-ns-nginx-lb':
+          project: 'clover'
+          dockerdir: 'samples/services/nginx/docker'
+          dockerfile: 'samples/services/nginx/docker/subservices/lb/Dockerfile'
+          <<: *fraser
+          <<: *other-receivers
+      - 'clover-ns-nginx-proxy':
+          project: 'clover'
+          dockerdir: 'samples/services/nginx/docker'
+          dockerfile: 'samples/services/nginx/docker/subservices/proxy/Dockerfile'
+          <<: *fraser
+          <<: *other-receivers
+      - 'clover-ns-nginx-server':
+          project: 'clover'
+          dockerdir: 'samples/services/nginx/docker'
+          dockerfile: 'samples/services/nginx/docker/subservices/server/Dockerfile'
+          <<: *fraser
+          <<: *other-receivers
+      - 'clover-ns-snort-ids':
+          project: 'clover'
+          dockerdir: 'samples/services/snort_ids/docker'
+          dockerfile: 'samples/services/snort_ids/docker/Dockerfile'
+          <<: *fraser
+          <<: *other-receivers
     # yamllint enable rule:key-duplicates
     jobs:
       - "{dockerrepo}-docker-build-push-{stream}"
