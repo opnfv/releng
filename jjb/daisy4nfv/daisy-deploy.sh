@@ -17,7 +17,7 @@ if [[ ! "$NODE_NAME" =~ "-virtual" ]] && [[ ! "$LAB_NAME" =~ (zte) ]]; then
     exit $deploy_ret
 fi
 
-# clone the securedlab repo
+# clone the securedlab/pharos repo
 cd $WORKSPACE
 
 # There are no PDFs in euphrates branch of pharos repo.
