@@ -234,6 +234,35 @@
       - 'pike'
       - 'queens'
       - 'master'
+
+
+# Fetch Logs Job
+- job-template:
+    name: 'apex-fetch-logs-{stream}'
+
+    concurrent: true
+
+    disabled: false
+    scm:
+      - git-scm-gerrit
+    parameters:
+      - '{project}-{platform}-{stream}-defaults'
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - apex-parameter:
+          gs-pathname: '{gs-pathname}'
+    # yamllint enable rule:line-length
+    properties:
+      - logrotate-default
+      - throttle:
+          max-per-node: 1
+          max-total: 10
+          option: 'project'
+
+    builders:
+      - 'apex-fetch-logs'
+
 - job-template:
     name: 'apex-runner-cperf-{stream}'
 
@@ -442,6 +471,21 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
+      - multijob:
+          name: apex-fetch-logs
+          condition: ALWAYS
+          projects:
+            - name: 'apex-fetch-logs-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: true
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
 
 # Baremetal Deploy and Test
 - job-template:
@@ -512,7 +556,19 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-
+      - multijob:
+          name: apex-fetch-logs
+          condition: ALWAYS
+          projects:
+            - name: 'apex-fetch-logs'
+              current-parameters: true
+              predefined-parameters: |
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=
+              node-parameters: true
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
     publishers:
       - groovy-postbuild:
           script:
@@ -1825,6 +1881,12 @@
     builders:
       - shell:
           !include-raw: ./apex-deploy.sh
+
+- builder:
+    name: 'apex-fetch-logs'
+    builders:
+      -shell:
+          !include-raw: ./apex-fetch-logs.sh
 
 #######################
 # trigger macros
