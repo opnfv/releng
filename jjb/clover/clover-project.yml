@@ -18,6 +18,10 @@
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
+      - fraser: &fraser
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
 
 - job-template:
     name: 'clover-verify-{stream}'
@@ -32,7 +36,8 @@
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
-          description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+          description: "Used for overriding the GIT URL coming from Global Jenkins\
+            \ configuration in case if the stuff is done on none-LF HW."
       # yamllint enable rule:line-length
       - 'opnfv-build-ubuntu-defaults'
 
@@ -133,7 +138,8 @@
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
-          description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+          description: "Used for overriding the GIT URL coming from Global Jenkins\
+            \ configuration in case if the stuff is done on none-LF HW."
       # yamllint enable rule:line-length
       - node:
           name: SLAVE_NAME
