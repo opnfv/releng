@@ -358,6 +358,20 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
+      - multijob:
+          name: apex-fetch-logs
+          condition: ALWAYS
+          projects:
+            - name: 'apex-fetch-logs'
+              current-parameters: true
+              predefined-parameters: |
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+              node-parameters: true
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
 
 ########################
 # builder macros
