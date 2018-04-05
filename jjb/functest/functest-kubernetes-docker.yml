@@ -1,0 +1,174 @@
+---
+##############################################
+# job configuration for docker build and push
+##############################################
+- project:
+
+    name: functest-kubernetes-docker
+
+    project: functest-kubernetes
+
+    stream:
+      - master:
+          branch: '{stream}'
+          disabled: false
+      - fraser:
+          branch: 'stable/{stream}'
+          disabled: false
+
+    arch_tag:
+      - 'amd64':
+          slave_label: 'opnfv-build-ubuntu'
+
+    # yamllint disable rule:key-duplicates
+    image:
+      - 'kubernetes'
+
+    # settings for jobs run in multijob phases
+    build-job-settings: &build-job-settings
+      current-parameters: false
+      git-revision: true
+      node-parameters: false
+      predefined-parameters: |
+        PUSH_IMAGE=$PUSH_IMAGE
+        COMMIT_ID=$COMMIT_ID
+        GERRIT_REFNAME=$GERRIT_REFNAME
+        DOCKERFILE=$DOCKERFILE
+      kill-phase-on: FAILURE
+      abort-all-jobs: false
+
+    manifest-job-settings: &manifest-job-settings
+      current-parameters: false
+      git-revision: true
+      node-parameters: false
+      predefined-parameters:
+        GERRIT_REFNAME=$GERRIT_REFNAME
+      kill-phase-on: FAILURE
+      abort-all-jobs: false
+
+    # yamllint enable rule:key-duplicates
+    jobs:
+      - "functest-kubernetes-docker-{stream}"
+      - "functest-{image}-docker-build-{arch_tag}-{stream}"
+
+########################
+# job templates
+########################
+- job-template:
+    name: 'functest-kubernetes-docker-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - functest-kubernetes-job-parameters:
+          project: '{project}'
+          branch: '{branch}'
+          slave_label: 'opnfv-build-ubuntu'
+          arch_tag: 'amd64'
+
+    properties:
+      - throttle:
+          max-per-node: 1
+          option: 'project'
+
+    scm:
+      - git-scm
+
+    triggers:
+      - pollscm:
+          cron: "*/30 * * * *"
+      - gerrit-trigger-tag-created:
+          project: '{project}'
+
+    builders:
+      - multijob:
+          name: 'build functest-kubernetes images'
+          execution-type: PARALLEL
+          projects:
+            - name: 'functest-kubernetes-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+
+    publishers:
+      - 'functest-kubernetes-amd64-recipients'
+
+- job-template:
+    name: 'functest-{image}-docker-build-{arch_tag}-{stream}'
+    disabled: '{obj:disabled}'
+    parameters:
+      - functest-kubernetes-job-parameters:
+          project: '{project}'
+          branch: '{branch}'
+          slave_label: '{slave_label}'
+          arch_tag: '{arch_tag}'
+    scm:
+      - git-scm
+    builders:
+      - shell: |
+          #!/bin/bash -ex
+          case "{stream}" in
+          "master")
+              tag="latest" ;;
+          *)
+              tag="{stream}" ;;
+          esac
+          (cd docker && sudo docker build --pull=true --no-cache --force-rm=true \
+              -t "$REPO/functest-{image}:$tag" .)
+          docker push "$REPO/functest-{image}:$tag"
+          docker rmi "$REPO/functest-{image}:$tag"
+          exit $?
+
+# parameter macro
+- parameter:
+    name: functest-kubernetes-job-parameters
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - label:
+          name: SLAVE_LABEL
+          default: '{slave_label}'
+          description: 'Slave label on Jenkins'
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: 'Git URL to use on this Jenkins Slave'
+      - string:
+          name: PUSH_IMAGE
+          default: "true"
+          description: "To enable/disable pushing the image to Dockerhub."
+      - string:
+          name: COMMIT_ID
+          default: ""
+          description: "commit id to make a snapshot docker image"
+      - string:
+          name: GERRIT_REFNAME
+          default: ""
+          description: "Docker tag to be built, e.g. refs/tags/5.0.0, refs/tags/opnfv-5.0.0, refs/tags/5.0.RC1"
+      - string:
+          name: DOCKERFILE
+          default: "Dockerfile"
+          description: "Dockerfile to use for creating the image."
+      - string:
+          name: ARCH_TAG
+          default: "{arch_tag}"
+          description: "If set, this value will be added to the docker image tag as a prefix"
+      - string:
+          name: PROJECT
+          default: "{project}"
+          description: "Project name used to enable job conditions"
+      - string:
+          name: REPO
+          default: "opnfv"
+          description: "Repository name for functest images"
+
+- publisher:
+    name: 'functest-kubernetes-amd64-recipients'
+    publishers:
+      - email:
+          recipients: >
+            jalausuch@suse.com morgan.richomme@orange.com
+            cedric.ollivier@orange.com feng.xiaowei@zte.com.cn
+            juha.kosonen@nokia.com wangwulin@huawei.com
+            valentin.boucher@kontron.com
