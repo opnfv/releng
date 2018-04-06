@@ -97,22 +97,26 @@ function determine_generic_scenario() {
     # get the changeset
     cd $WORKSPACE
     SCENARIOS=$(git diff HEAD^..HEAD --name-only -- 'xci/scenarios' | cut -d "/" -f 3 | uniq)
-    # We need to set default scenario for changes that do not mess with scenarios
-    NO_SCENARIOS=$(git diff HEAD^..HEAD --name-only | grep -v 'xci/scenarios' | cut -d "/" -f 3 | uniq)
+    # We need to set default scenario for changes that mess with installers
+    INSTALLERS=$(git diff HEAD^..HEAD --name-only -- 'xci/installer' | cut -d "/" -f 3 | uniq)
     for CHANGED_SCENARIO in $SCENARIOS; do
-        [[ ${DEPLOY_SCENARIO[@]} =~ $CHANGED_SCENARIO ]] || DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]=$CHANGED_SCENARIO
+        DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]=$CHANGED_SCENARIO
     done
-    for CHANGED_FILE in $NO_SCENARIOS; do
-        case $CHANGED_FILE in
+    for CHANGED_INSTALLER in $INSTALLERS; do
+        case $CHANGED_INSTALLER in
             kubespray)
-                [[ ${DEPLOY_SCENARIO[@]} =~ "k8-nosdn-nofeature" ]] || DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='k8-nosdn-nofeature'
+                DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='k8-nosdn-nofeature'
                 ;;
             # Default case (including OSA changes)
             *)
-                [[ ${DEPLOY_SCENARIO[@]} =~ "os-nosdn-nofeature" ]] || DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='os-nosdn-nofeature'
+                DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='os-nosdn-nofeature'
                 ;;
         esac
     done
+    # For all other changes, we only need to set a default scenario if it's not set already
+    if git diff HEAD^..HEAD --name-only | grep -q -v 'xci/installer\|xci/scenario'; then
+         [[ ${#DEPLOY_SCENARIO[@]} -gt 0 ]] && DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='os-nosdn-nofeature'
+    fi
 
     # extract releng-xci sha
     XCI_SHA=$(cd $WORKSPACE && git rev-parse HEAD)
