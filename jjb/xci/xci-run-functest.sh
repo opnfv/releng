@@ -55,12 +55,10 @@ export XCI_VENV=/home/devuser/releng-xci/venv
 ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm "source $XCI_VENV/bin/activate; cd releng-xci/xci && ansible-playbook -i installer/osa/files/$XCI_FLAVOR/inventory playbooks/prepare-functest.yml"
 echo "Running functest"
 ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "/root/run-functest.sh"
+# Record exit code
+functest_exit=$?
 echo "Functest log"
 echo "---------------------------------------------------------------------------------"
 ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "cat /root/results/functest.log"
 echo "---------------------------------------------------------------------------------"
-# check the log to see if we have any error
-if ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "grep -q 'FAIL' /root/results/functest.log"; then
-    echo "Error: Functest failed!"
-    exit 1
-fi
+exit ${functest_exit}
