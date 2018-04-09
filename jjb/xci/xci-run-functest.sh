@@ -24,12 +24,6 @@ if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]]; then
     exit 0
 fi
 
-# skip the healthcheck if the scenario is Kubernetes scenario
-if [[ "$DEPLOY_SCENARIO" =~ k8 ]]; then
-    echo "Skipping the healthcheck!"
-    exit 0
-fi
-
 # if the scenario is external, we need to wipe WORKSPACE to place releng-xci there since
 # the project where the scenario is coming from is cloned and the patch checked out to the
 # xci/scenarios/$DEPLOY_SCENARIO to be synched on clean VM
