@@ -23,6 +23,9 @@
     # yamllint disable rule:key-duplicates
     image:
       - 'core'
+      - 'healthcheck'
+      - 'smoke'
+      - 'features'
 
     # settings for jobs run in multijob phases
     build-job-settings: &build-job-settings
@@ -89,6 +92,20 @@
           projects:
             - name: 'functest-kubernetes-core-docker-build-amd64-{stream}'
               <<: *build-job-settings
+      - multijob:
+          name: 'build functest-kubernetes-[healthcheck,features] image'
+          execution-type: PARALLEL
+          projects:
+            - name: 'functest-kubernetes-healthcheck-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-kubernetes-features-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+      - multijob:
+          name: 'build functest-kubernetes-smoke image'
+          execution-type: PARALLEL
+          projects:
+            - name: 'functest-kubernetes-smoke-docker-build-amd64-{stream}'
+              <<: *build-job-settings
 
     publishers:
       - 'functest-kubernetes-amd64-recipients'
@@ -107,16 +124,7 @@
     builders:
       - shell: |
           #!/bin/bash -ex
-          case "{stream}" in
-          "master")
-              tag="latest" ;;
-          *)
-              tag="{stream}" ;;
-          esac
-          (cd docker && sudo docker build --pull=true --no-cache --force-rm=true \
-              -t "$REPO/functest-kubernetes:$tag" .)
-          sudo docker push "$REPO/functest-kubernetes:$tag"
-          sudo docker rmi "$REPO/functest-kubernetes:$tag"
+          sudo amd64_dirs=docker/{image} bash ./build.sh
           exit $?
 
 # parameter macro
