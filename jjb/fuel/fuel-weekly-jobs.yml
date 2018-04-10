@@ -153,6 +153,7 @@
           gs-pathname: '{gs-pathname}'
       - '{slave-label}-defaults':
           installer: '{installer}'
+      - testapi-parameter
       - string:
           name: DEPLOY_SCENARIO
           default: 'os-odl-nofeature-ha'
@@ -167,6 +168,7 @@
     builders:
       - description-setter:
           description: "Built on $NODE_NAME"
+      - track-begin-timestamp
       - shell:
           !include-raw-escape: ./fuel-deploy.sh
 
@@ -174,6 +176,7 @@
       - email:
           recipients: peter.barabas@ericsson.com fzhadaev@mirantis.com
       - email-jenkins-admins-on-failure
+      - report-provision-result
 
 ########################
 # trigger macros
