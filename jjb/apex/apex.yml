@@ -316,6 +316,7 @@
           branch: '{branch}'
       - apex-parameter:
           gs-pathname: '{gs-pathname}'
+      - testapi-parameter
       - string:
           name: DEPLOY_SCENARIO
           default: '{verify-scenario}'
@@ -346,9 +347,12 @@
     builders:
       - description-setter:
           description: "Deployed on $NODE_NAME - Scenario: $DEPLOY_SCENARIO"
+      - 'track-begin-timestamp'
       - 'apex-download-artifact'
       - 'apex-deploy'
       - 'clean-workspace'
+    publishers:
+      - 'report-provision-result'
 
 
 # Virtual Deploy and Test
