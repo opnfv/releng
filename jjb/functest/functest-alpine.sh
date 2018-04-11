@@ -28,7 +28,7 @@ check_os_deployment() {
 
 run_tiers() {
     tiers=$1
-    if [[ ${BRANCH##*/} == "stable/euphrates" ]]; then
+    if [[ ${BRANCH##*/} == "stable/fraser" ]]; then
         cmd_opt="prepare_env start && run_tests -r -t all"
         [[ $BUILD_TAG =~ "suite" ]] && cmd_opt="prepare_env start && run_tests -t all"
     else
@@ -58,7 +58,7 @@ run_tiers() {
 
 run_test() {
     test_name=$1
-    if [[ ${BRANCH##*/} == "stable/euphrates" ]]; then
+    if [[ ${BRANCH##*/} == "stable/fraser" ]]; then
         cmd_opt="prepare_env start && run_tests -t ${test_name}"
     else
         cmd_opt="run_tests -t ${test_name}"
@@ -115,7 +115,7 @@ elif [[ ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_TYPE} == 'baremetal' ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:/etc/ssl/certs/mcp_os_cacert"
 fi
 
-if [[ ${BRANCH} == "stable/euphrates" ]]; then
+if [[ ${BRANCH} == "stable/fraser" ]]; then
     rc_file_vol="-v ${rc_file}:${FUNCTEST_DIR}/conf/openstack.creds"
 else
     rc_file_vol="-v ${rc_file}:${FUNCTEST_DIR}/conf/env_file"
