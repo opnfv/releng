@@ -27,6 +27,9 @@ set -o nounset
 set -o pipefail
 
 cd ~/bifrost
+# set path for XCI repository
+export XCI_PATH=~/bifrost/releng-xci
+
 # provision 3 VMs; xcimaster, controller, and compute
 ./scripts/bifrost-provision.sh | ts
 
