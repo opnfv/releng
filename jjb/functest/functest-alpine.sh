@@ -28,13 +28,8 @@ check_os_deployment() {
 
 run_tiers() {
     tiers=$1
-    if [[ ${BRANCH##*/} == "stable/euphrates" ]]; then
-        cmd_opt="prepare_env start && run_tests -r -t all"
-        [[ $BUILD_TAG =~ "suite" ]] && cmd_opt="prepare_env start && run_tests -t all"
-    else
-        cmd_opt="run_tests -r -t all"
-        [[ $BUILD_TAG =~ "suite" ]] && cmd_opt="run_tests -t all"
-    fi
+    cmd_opt="run_tests -r -t all"
+    [[ $BUILD_TAG =~ "suite" ]] && cmd_opt="run_tests -t all"
     ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
     echo 0 > ${ret_val_file}
 
@@ -58,11 +53,7 @@ run_tiers() {
 
 run_test() {
     test_name=$1
-    if [[ ${BRANCH##*/} == "stable/euphrates" ]]; then
-        cmd_opt="prepare_env start && run_tests -t ${test_name}"
-    else
-        cmd_opt="run_tests -t ${test_name}"
-    fi
+    cmd_opt="run_tests -t ${test_name}"
     ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
     echo 0 > ${ret_val_file}
     # Determine which Functest image should be used for the test case
@@ -115,11 +106,7 @@ elif [[ ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_TYPE} == 'baremetal' ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:/etc/ssl/certs/mcp_os_cacert"
 fi
 
-if [[ ${BRANCH} == "stable/euphrates" ]]; then
-    rc_file_vol="-v ${rc_file}:${FUNCTEST_DIR}/conf/openstack.creds"
-else
-    rc_file_vol="-v ${rc_file}:${FUNCTEST_DIR}/conf/env_file"
-fi
+rc_file_vol="-v ${rc_file}:${FUNCTEST_DIR}/conf/env_file"
 
 # Set iptables rule to allow forwarding return traffic for container
 if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FORWARD | awk 'NR==3' | grep RETURN 2> ${redirect}; then
