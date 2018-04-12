@@ -63,6 +63,7 @@ if [ "$(uname -m)" = 'aarch64' ]; then
 fi
 echo "Yardstick: Pulling image ${DOCKER_REPO}:${DOCKER_TAG}"
 docker pull ${DOCKER_REPO}:$DOCKER_TAG >$redirect
+docker images
 
 # map log directory
 branch=${BRANCH##*/}
