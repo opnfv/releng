@@ -315,6 +315,12 @@
           option: 'project'
 
     builders:
+      # yamllint disable rule:line-length
+      - shell: |
+          echo DEPLOY_SCENARIO=$(echo $GERRIT_EVENT_COMMENT_TEXT | grep -Eo 'start-gate-scenario:[[:space:]]*[^[:space:]]+' | awk '{print $2}') > detected_scenario
+      # yamllint enable rule:line-length
+      - inject:
+          properties-file: detected_scenario
       - multijob:
           name: deploy-virtual
           condition: SUCCESSFUL
@@ -323,7 +329,7 @@
               current-parameters: false
               predefined-parameters: |
                 ARTIFACT_VERSION=$ARTIFACT_VERSION
-                DEPLOY_SCENARIO=gate
+                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
                 OPNFV_CLEAN=yes
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
@@ -334,12 +340,6 @@
               kill-phase-on: FAILURE
               abort-all-job: true
               git-revision: true
-      # yamllint disable rule:line-length
-      - shell: |
-          echo DEPLOY_SCENARIO=$(echo $GERRIT_EVENT_COMMENT_TEXT | grep start-gate-scenario | grep -Eo 'os-.*') > detected_scenario
-      # yamllint enable rule:line-length
-      - inject:
-          properties-file: detected_scenario
       - multijob:
           name: functest-smoke
           condition: ALWAYS
