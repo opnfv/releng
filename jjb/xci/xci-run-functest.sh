@@ -52,8 +52,22 @@ echo "Running functest"
 ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "/root/run-functest.sh"
 # Record exit code
 functest_exit=$?
+
+case ${DEPLOY_SCENARIO[0]} in
+    os-*)
+        FUNCTEST_LOG=/root/results/functest.log
+        ;;
+    k8-*)
+        FUNCTEST_LOG=/root/results/functest-kubernetes.log
+        ;;
+    *)
+        echo "Unable to determine the installer. Exiting!"
+        exit 1
+        ;;
+esac
+
 echo "Functest log"
 echo "---------------------------------------------------------------------------------"
-ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "cat /root/results/functest.log"
+ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "cat $FUNCTEST_LOG"
 echo "---------------------------------------------------------------------------------"
 exit ${functest_exit}
