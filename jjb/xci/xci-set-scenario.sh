@@ -114,7 +114,7 @@ function determine_generic_scenario() {
     done
     # For all other changes, we only need to set a default scenario if it's not set already
     if git diff HEAD^..HEAD --name-only | grep -q -v 'xci/installer\|xci/scenario'; then
-         [[ ${#DEPLOY_SCENARIO[@]} -gt 0 ]] && DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='os-nosdn-nofeature'
+         [[ ${#DEPLOY_SCENARIO[@]} -eq 0 ]] && DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='os-nosdn-nofeature'
     fi
 
     # extract releng-xci sha
