@@ -40,6 +40,34 @@
           default: 'refs/heads/{branch}'
           description: "Default refspec needed for manually triggering."
 
+##
+# Reporting Deployment Results
+#
+# To report deployment results to
+# http://testresults.opnfv.org/test/#/deployresults, add the following
+# parameters, builders, and publishers to a deployment job:
+#
+#   parameters:
+#    - testapi-parameter
+#
+#   builders:
+#    - track-begin-timestamp
+#
+#   publishers:
+#    - report-provision-result
+#
+# Note: The following string parameter must also exist, as they are used
+#       when reporting the provision result:
+#
+#  * INSTALLER
+#  * INSTALLER_VERSION
+#  * DEPLOY_SCENARIO
+#
+# most installers include these but you should verify first before
+# adding the publisher, otherwise the deployment build may be marked
+# unstable.
+#
+##
 - parameter:
     name: testapi-parameter
     parameters:
@@ -47,10 +75,6 @@
           name: TESTAPI_URL
           default: 'http://testresults.opnfv.org/test/api/v1'
           description: "Default TestAPI URL, currently using v1"
-      - string:
-          name: DEPLOY_SCENARIO
-          default: 'os-nosdn-nofeature-ha'
-          description: "OPNFV deployment scenario"
       - string:
           name: INSTALLER_VERSION
           default: 'master'
