@@ -16,10 +16,15 @@
           docker-tag: 'stable'
           disabled: false
 
+    # feature projects' tests are not triggered by functest
+    # doctor verify Pods need to deploy with these scenario
     installer:
-      - 'apex'
-      - 'fuel'
-      - 'daisy'
+      - 'apex':
+          scenario: 'os-nosdn-kvm-ha'
+      - 'fuel':
+          scenario: 'os-nosdn-ovs-ha'
+      - 'daisy':
+          scenario: 'os-nosdn-ovs_dpdk-noha'
 
     arch:
       - 'x86_64'
@@ -162,7 +167,7 @@
           description: 'Remove downloaded docker images (opnfv/functest:*)'
       - string:
           name: DEPLOY_SCENARIO
-          default: 'os-nosdn-nofeature-ha'
+          default: '{scenario}'
           description: 'Scenario to deploy and test'
 
 - parameter:
