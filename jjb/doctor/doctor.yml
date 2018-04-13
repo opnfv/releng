@@ -68,7 +68,7 @@
          # in phase jobs
          echo "Triggering phase jobs!"
       - multijob:
-          name: 'doctor-verify-apex-inspector'
+          name: 'doctor-verify'
           execution-type: PARALLEL
           projects:
             - name: 'doctor-verify-apex-{inspector}-x86_64-{stream}'
@@ -79,12 +79,7 @@
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               kill-phase-on: FAILURE
-              current-parameters: true
               git-revision: true
-      - multijob:
-          name: 'doctor-verify-fuel-inspector'
-          execution-type: PARALLEL
-          projects:
             - name: 'doctor-verify-fuel-{inspector}-x86_64-{stream}'
               predefined-parameters: |
                 PROJECT=$PROJECT
@@ -93,12 +88,7 @@
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               kill-phase-on: FAILURE
-              current-parameters: true
               git-revision: true
-      - multijob:
-          name: 'doctor-verify-fuel-inspector'
-          execution-type: PARALLEL
-          projects:
             - name: 'doctor-verify-fuel-{inspector}-aarch64-{stream}'
               predefined-parameters: |
                 GERRIT_BRANCH=$GERRIT_BRANCH
@@ -106,12 +96,7 @@
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               kill-phase-on: FAILURE
-              current-parameters: true
               git-revision: true
-      - multijob:
-          name: 'doctor-verify-daisy-inspector'
-          execution-type: PARALLEL
-          projects:
             - name: 'doctor-verify-daisy-{inspector}-x86_64-{stream}'
               predefined-parameters: |
                 PROJECT=$PROJECT
@@ -120,7 +105,6 @@
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               kill-phase-on: FAILURE
-              current-parameters: true
               git-revision: true
 
 - job-template:
