@@ -48,9 +48,12 @@
       # -------------------------------
       #        None-CI PODs
       # -------------------------------
-      # - baremetal:
-      #     slave-label: zte-pod3
-      #     <<: *master
+      - zte-pod3:
+          slave-label: zte-pod3
+          <<: *master
+      - zte-pod3:
+          slave-label: zte-pod3
+          <<: *fraser
       - zte-pod9:
           slave-label: zte-pod9
           <<: *master
@@ -191,8 +194,8 @@
           blocking-jobs:
             - 'daisy-kolla-build-.*'
             - '{installer}-(build|deploy|test)-daily-(fraser|master)'
-            - '{installer}-deploy-(baremetal|virtual|zte-pod9)-daily-(fraser|master)'
-            - '(functest|yardstick)-{installer}-(baremetal|virtual|zte-pod9)-daily-(fraser|master)'
+            - '{installer}-deploy-(baremetal|virtual|zte-pod3|zte-pod9)-daily-(fraser|master)'
+            - '(functest|yardstick)-{installer}-(baremetal|virtual|zte-pod3|zte-pod9)-daily-(fraser|master)'
           block-level: 'NODE'
 
     parameters:
@@ -325,6 +328,54 @@
 # ovs_dpdk Scenarios
 - trigger:
     name: 'daisy-os-nosdn-ovs_dpdk-noha-virtual-daily-fraser-trigger'
+    triggers:
+      - timed: ''
+
+# ----------------------------------------------
+# Triggers for job running on zte-pod3 against master branch
+# ----------------------------------------------
+# Basic HA Scenarios
+- trigger:
+    name: 'daisy-os-nosdn-nofeature-ha-zte-pod3-daily-master-trigger'
+    triggers:
+      - timed: ''
+# Basic NOHA Scenarios
+- trigger:
+    name: 'daisy-os-nosdn-nofeature-noha-zte-pod3-daily-master-trigger'
+    triggers:
+      - timed: ''
+# ODL Scenarios
+- trigger:
+    name: 'daisy-os-odl-nofeature-ha-zte-pod3-daily-master-trigger'
+    triggers:
+      - timed: ''
+# ovs_dpdk Scenarios
+- trigger:
+    name: 'daisy-os-nosdn-ovs_dpdk-noha-zte-pod3-daily-master-trigger'
+    triggers:
+      - timed: ''
+
+# ----------------------------------------------
+# Triggers for job running on zte-pod3 against fraser branch
+# ----------------------------------------------
+# Basic HA Scenarios
+- trigger:
+    name: 'daisy-os-nosdn-nofeature-ha-zte-pod3-daily-fraser-trigger'
+    triggers:
+      - timed: ''
+# Basic NOHA Scenarios
+- trigger:
+    name: 'daisy-os-nosdn-nofeature-noha-zte-pod3-daily-fraser-trigger'
+    triggers:
+      - timed: ''
+# ODL Scenarios
+- trigger:
+    name: 'daisy-os-odl-nofeature-ha-zte-pod3-daily-fraser-trigger'
+    triggers:
+      - timed: '0 16,22 * * *'
+# ovs_dpdk Scenarios
+- trigger:
+    name: 'daisy-os-nosdn-ovs_dpdk-noha-zte-pod3-daily-fraser-trigger'
     triggers:
       - timed: ''
 
