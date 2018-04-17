@@ -317,7 +317,7 @@
     builders:
       # yamllint disable rule:line-length
       - shell: |
-          echo DEPLOY_SCENARIO=$(echo $GERRIT_EVENT_COMMENT_TEXT | grep start-gate-scenario | grep -Eo 'os|k8s-.*$') > detected_scenario
+          echo DEPLOY_SCENARIO=$(echo $GERRIT_EVENT_COMMENT_TEXT | grep start-gate-scenario | grep -Eo '(os|k8s)-.*$') > detected_scenario
       # yamllint enable rule:line-length
       - inject:
           properties-file: detected_scenario
