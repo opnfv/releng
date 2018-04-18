@@ -7,6 +7,8 @@ echo "Starting unit tests for Apex..."
 echo "---------------------------------------------------------------------------------------"
 echo
 
+PATH=$PATH:/usr/sbin
+
 
 pushd build/ > /dev/null
 for pkg in yamllint rpmlint iproute epel-release python34-devel python34-nose python34-PyYAML python-pep8 python34-mock python34-pip; do
