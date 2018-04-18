@@ -374,6 +374,7 @@
       - multijob:
           name: 'Baremetal Deploy'
           condition: SUCCESSFUL
+          execution-type: SEQUENTIALLY
           projects:
             - name: 'apex-deploy-baremetal-{scenario_stream}'
               node-parameters: true
@@ -383,7 +384,16 @@
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=
                 DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-              kill-phase-on: FAILURE
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
+            - name: 'apex-fetch-logs-{scenario_stream}'
+              current-parameters: true
+              predefined-parameters: |
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=
+              node-parameters: true
+              kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
       - multijob:

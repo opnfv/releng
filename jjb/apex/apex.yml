@@ -82,15 +82,9 @@
           <<: *fraser
       - 'os-nosdn-bar-noha':
           <<: *fraser
-      - 'os-nosdn-nofeature-ha-ipv6':
-          <<: *fraser
       - 'os-nosdn-ovs_dpdk-noha':
           <<: *fraser
       - 'os-nosdn-ovs_dpdk-ha':
-          <<: *fraser
-      - 'os-nosdn-kvm_ovs_dpdk-noha':
-          <<: *fraser
-      - 'os-nosdn-kvm_ovs_dpdk-ha':
           <<: *fraser
       - 'os-odl-sfc-noha':
           <<: *fraser
@@ -496,6 +490,7 @@
       - multijob:
           name: 'Baremetal Deploy'
           condition: SUCCESSFUL
+          execution-type: SEQUENTIALLY
           projects:
             - name: 'apex-deploy-baremetal-{scenario_stream}'
               node-parameters: true
@@ -505,7 +500,16 @@
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=
                 DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-              kill-phase-on: FAILURE
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
+            - name: 'apex-fetch-logs-{scenario_stream}'
+              current-parameters: true
+              predefined-parameters: |
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=
+              node-parameters: true
+              kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
       - multijob:
@@ -1224,14 +1228,6 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-nosdn-nofeature-ha-ipv6-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
             - name: 'apex-os-nosdn-ovs_dpdk-noha-baremetal-fraser'
               node-parameters: false
               current-parameters: false
@@ -1241,22 +1237,6 @@
               abort-all-job: true
               git-revision: false
             - name: 'apex-os-nosdn-ovs_dpdk-ha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-nosdn-kvm_ovs_dpdk-noha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-nosdn-kvm_ovs_dpdk-ha-baremetal-fraser'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
