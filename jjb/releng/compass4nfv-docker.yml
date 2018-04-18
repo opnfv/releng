@@ -19,6 +19,10 @@
     arch_tag:
       - 'amd64':
           slave_label: 'opnfv-build-ubuntu'
+          name_postfix: ''
+      - 'arm64':
+          slave_label: 'opnfv-build-ubuntu-arm'
+          name_postfix: '-arm64'
 
     # yamllint disable rule:key-duplicates
     image:
@@ -84,6 +88,8 @@
           projects:
             - name: 'compass-tasks-base-build-amd64-{stream}'
               <<: *build-job-settings
+            - name: 'compass-tasks-base-build-arm64-{stream}'
+              <<: *build-job-settings
       - multijob:
           name: 'build all compass images'
           condition: SUCCESSFUL
@@ -101,9 +107,18 @@
               <<: *build-job-settings
             - name: 'compass-tasks-osa-build-amd64-{stream}'
               <<: *build-job-settings
+            - name: 'compass-cobbler-build-arm64-{stream}'
+              <<: *build-job-settings
+            - name: 'compass-db-build-arm64-{stream}'
+              <<: *build-job-settings
+            - name: 'compass-deck-build-arm64-{stream}'
+              <<: *build-job-settings
+            - name: 'compass-tasks-k8s-build-arm64-{stream}'
+              <<: *build-job-settings
 
     publishers:
       - 'compass-amd64-recipients'
+      - 'compass-arm64-recipients'
 
 - job-template:
     name: 'compass-{image}-build-{arch_tag}-{stream}'
@@ -116,12 +131,16 @@
           arch_tag: '{arch_tag}'
       - string:
           name: DOCKER_REPO_NAME
-          default: "opnfv/compass-{image}"
+          default: "opnfv/compass-{image}{name_postfix}"
           description: "Dockerhub repo to be pushed to."
       - string:
           name: DOCKER_DIR
           default: "compass-{image}"
           description: "Directory containing files needed by the Dockerfile"
+      - string:
+          name: DOCKERFILE
+          default: "Dockerfile{name_postfix}"
+          description: "Dockerfile to use for creating the image."
     scm:
       - git-scm
     builders:
@@ -156,10 +175,6 @@
           default: ""
           description: "Docker tag to be built, e.g. refs/tags/5.0.0, refs/tags/opnfv-5.0.0, refs/tags/5.0.RC1"
       - string:
-          name: DOCKERFILE
-          default: "Dockerfile"
-          description: "Dockerfile to use for creating the image."
-      - string:
           name: ARCH_TAG
           default: ""
           description: "If set, this value will be added to the docker image tag as a prefix"
@@ -178,3 +193,10 @@
             huangxiangyui5@huawei.com
             xueyifei@huawei.com
             wutianwei1@huawei.com
+
+- publisher:
+    name: 'compass-arm64-recipients'
+    publishers:
+      - email:
+          recipients: >
+            yibo.cai@arm.com
