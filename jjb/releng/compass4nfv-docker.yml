@@ -19,6 +19,10 @@
     arch_tag:
       - 'amd64':
           slave_label: 'opnfv-build-ubuntu'
+          dockerfile: 'Dockerfile'
+      - 'arm64':
+          slave_label: 'opnfv-build-ubuntu-arm'
+          dockerfile: 'Dockerfile-arm64'
 
     # yamllint disable rule:key-duplicates
     image:
@@ -43,10 +47,20 @@
       kill-phase-on: FAILURE
       abort-all-jobs: false
 
+    manifest-job-settings: &manifest-job-settings
+      current-parameters: false
+      git-revision: true
+      node-parameters: false
+      predefined-parameters:
+        GERRIT_REFNAME=$GERRIT_REFNAME
+      kill-phase-on: FAILURE
+      abort-all-jobs: false
+
     # yamllint enable rule:key-duplicates
     jobs:
       - "compass-docker-{stream}"
       - "compass-{image}-build-{arch_tag}-{stream}"
+      - "compass-{image}-manifest-{stream}"
 
 ########################
 # job templates
@@ -63,7 +77,6 @@
           project: '{project}'
           branch: '{branch}'
           slave_label: 'opnfv-build-ubuntu'
-          arch_tag: 'amd64'
 
     properties:
       - throttle:
@@ -84,6 +97,14 @@
           projects:
             - name: 'compass-tasks-base-build-amd64-{stream}'
               <<: *build-job-settings
+            - name: 'compass-tasks-base-build-arm64-{stream}'
+              <<: *build-job-settings
+      - multijob:
+          name: 'publish compass-tasks-base manifests'
+          execution-type: PARALLEL
+          projects:
+            - name: 'compass-tasks-base-manifest-{stream}'
+              <<: *manifest-job-settings
       - multijob:
           name: 'build all compass images'
           condition: SUCCESSFUL
@@ -101,9 +122,38 @@
               <<: *build-job-settings
             - name: 'compass-tasks-osa-build-amd64-{stream}'
               <<: *build-job-settings
+            - name: 'compass-cobbler-build-arm64-{stream}'
+              <<: *build-job-settings
+            - name: 'compass-db-build-arm64-{stream}'
+              <<: *build-job-settings
+            - name: 'compass-deck-build-arm64-{stream}'
+              <<: *build-job-settings
+            - name: 'compass-tasks-build-arm64-{stream}'
+              <<: *build-job-settings
+            - name: 'compass-tasks-k8s-build-arm64-{stream}'
+              <<: *build-job-settings
+            - name: 'compass-tasks-osa-build-arm64-{stream}'
+              <<: *build-job-settings
+      - multijob:
+          name: 'publish all manifests'
+          execution-type: PARALLEL
+          projects:
+            - name: 'compass-cobbler-manifest-{stream}'
+              <<: *manifest-job-settings
+            - name: 'compass-db-manifest-{stream}'
+              <<: *manifest-job-settings
+            - name: 'compass-deck-manifest-{stream}'
+              <<: *manifest-job-settings
+            - name: 'compass-tasks-manifest-{stream}'
+              <<: *manifest-job-settings
+            - name: 'compass-tasks-k8s-manifest-{stream}'
+              <<: *manifest-job-settings
+            - name: 'compass-tasks-osa-manifest-{stream}'
+              <<: *manifest-job-settings
 
     publishers:
       - 'compass-amd64-recipients'
+      - 'compass-arm64-recipients'
 
 - job-template:
     name: 'compass-{image}-build-{arch_tag}-{stream}'
@@ -113,7 +163,6 @@
           project: '{project}'
           branch: '{branch}'
           slave_label: '{slave_label}'
-          arch_tag: '{arch_tag}'
       - string:
           name: DOCKER_REPO_NAME
           default: "opnfv/compass-{image}"
@@ -122,11 +171,42 @@
           name: DOCKER_DIR
           default: "compass-{image}"
           description: "Directory containing files needed by the Dockerfile"
+      - string:
+          name: DOCKERFILE
+          default: '{dockerfile}'
+          description: "Dockerfile to use for creating the image."
+      - string:
+          name: ARCH_TAG
+          default: "{arch_tag}"
+          description: "If set, this value will be added to the docker image tag as a prefix"
     scm:
       - git-scm
     builders:
       - shell:
           !include-raw-escape: ./opnfv-docker.sh
+
+- job-template:
+    name: 'compass-{image}-manifest-{stream}'
+    disabled: '{obj:disabled}'
+    parameters:
+      - compass-job-parameters:
+          project: '{project}'
+          branch: '{branch}'
+          slave_label: 'opnfv-build-ubuntu'
+    builders:
+      - shell: |
+          #!/bin/bash -ex
+          case "{stream}" in
+          "master")
+              tag="latest" ;;
+          *)
+              tag="{stream}" ;;
+          esac
+          sudo manifest-tool push from-args \
+              --platforms linux/amd64,linux/arm64 \
+              --template opnfv/compass-{image}:ARCH-$tag \
+              --target opnfv/compass-{image}:$tag
+          exit $?
 
 # parameter macro
 - parameter:
@@ -156,14 +236,6 @@
           default: ""
           description: "Docker tag to be built, e.g. refs/tags/5.0.0, refs/tags/opnfv-5.0.0, refs/tags/5.0.RC1"
       - string:
-          name: DOCKERFILE
-          default: "Dockerfile"
-          description: "Dockerfile to use for creating the image."
-      - string:
-          name: ARCH_TAG
-          default: ""
-          description: "If set, this value will be added to the docker image tag as a prefix"
-      - string:
           name: PROJECT
           default: "{project}"
           description: "Project name used to enable job conditions"
@@ -178,3 +250,10 @@
             huangxiangyui5@huawei.com
             xueyifei@huawei.com
             wutianwei1@huawei.com
+
+- publisher:
+    name: 'compass-arm64-recipients'
+    publishers:
+      - email:
+          recipients: >
+            yibo.cai@arm.com
