@@ -183,6 +183,16 @@
           installer: daisy
           auto-trigger-name: 'daily-trigger-disabled'
           <<: *fraser
+      - zte-pod9:
+          slave-label: '{pod}'
+          installer: daisy
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *master
+      - zte-pod9:
+          slave-label: '{pod}'
+          installer: daisy
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *fraser
       - orange-pod2:
           slave-label: '{pod}'
           installer: joid
@@ -453,6 +463,14 @@
 
 - parameter:
     name: 'yardstick-params-zte-pod3'
+    parameters:
+      - string:
+          name: YARDSTICK_DB_BACKEND
+          default: '-i 104.197.68.199:8086'
+          description: 'Arguments to use in order to choose the backend DB'
+
+- parameter:
+    name: 'yardstick-params-zte-pod9'
     parameters:
       - string:
           name: YARDSTICK_DB_BACKEND
