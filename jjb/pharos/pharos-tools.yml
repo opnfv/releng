@@ -1,0 +1,54 @@
+---
+- project:
+    name: pharos-dashboard-jobs
+
+    project: 'pharos-tools'
+
+    disabled: false
+
+    jobs:
+      - '{project}-verify-basic'
+      - 'pharos-dashboard-backup'
+      - 'pharos-dashboard-deploy'
+
+- job-template:
+    name: 'pharos-dashboard-backup'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - 'pharos-dashboard-defaults'
+
+    triggers:
+      - timed: '@daily'
+
+    builders:
+      - shell:
+          !include-raw: shell/backup-dashboard.sh
+
+- job-template:
+    name: 'pharos-dashboard-deploy'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: 'master'
+      - 'pharos-dashboard-defaults'
+
+    scm:
+      - git-scm-gerrit
+
+    triggers:
+      - gerrit-trigger-change-merged:
+          branch: 'master'
+          project: '{project}'
+          # In the future this should be switch to just the compose file
+          # for when tags are updated
+          #   files: 'dashboard/docker-compose.yml'
+          files: 'dashboard/**'
+
+    builders:
+      - shell:
+          !include-raw: shell/deploy-dashboard.sh
