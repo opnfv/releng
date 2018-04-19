@@ -250,6 +250,7 @@
           gs-pathname: '{gs-pathname}'
       - '{slave-label}-defaults':
           installer: '{installer}'
+      - testapi-parameter
       - string:
           name: DEPLOY_SCENARIO
           default: 'os-odl-nofeature-ha'
@@ -262,6 +263,7 @@
           name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
 
     builders:
+      - track-begin-timestamp
       - shell:
           !include-raw-escape: ../fuel/fuel-deploy.sh
 
@@ -269,6 +271,7 @@
       - email:
           recipients: armband@enea.com
       - email-jenkins-admins-on-failure
+      - report-provision-result
 
 ########################
 # trigger macros
