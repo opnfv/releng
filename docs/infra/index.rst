@@ -41,6 +41,7 @@ Jenkins
    jenkins/user-guide
    jenkins/jjb-usage
    jenkins/labels
+   jenkins/jjb-sandbox
 
 Source Control and Code Review
 ------------------------------
