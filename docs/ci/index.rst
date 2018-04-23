@@ -11,7 +11,6 @@ OPNFV CI
 TBD
 
 .. toctree::
-   :numbered:
    :maxdepth: 2
 
    user-guide
