@@ -9,7 +9,6 @@ Releasing OPNFV
 ===============
 
 .. toctree::
-   :numbered:
    :maxdepth: 2
 
    release-process
