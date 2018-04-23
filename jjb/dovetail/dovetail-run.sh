@@ -213,11 +213,19 @@ if [[ ! -f ${ubuntu_image} ]]; then
 fi
 sudo cp ${ubuntu_image} ${DOVETAIL_IMAGES}
 
-# functest needs to download this image first before running
+# yardstick and bottlenecks need to download this image first before running
 cirros_image=${image_path}/cirros-0.3.5-x86_64-disk.img
 if [[ ! -f ${cirros_image} ]]; then
     echo "Download image cirros-0.3.5-x86_64-disk.img ..."
     wget -q -nc http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img -P ${image_path}
+fi
+sudo cp ${cirros_image} ${DOVETAIL_IMAGES}
+
+# functest needs to download this image first before running
+cirros_image=${image_path}/cirros-0.4.0-x86_64-disk.img
+if [[ ! -f ${cirros_image} ]]; then
+    echo "Download image cirros-0.4.0-x86_64-disk.img ..."
+    wget -q -nc http://download.cirros-cloud.net/0.4.0/cirros-0.4.0-x86_64-disk.img -P ${image_path}
 fi
 sudo cp ${cirros_image} ${DOVETAIL_IMAGES}
 
