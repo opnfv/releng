@@ -113,54 +113,80 @@ Please follow below steps to connect a slave to OPNFV Jenkins.
 
   1. Create a user named **jenkins** on the machine you want to connect to OPNFV Jenkins and give the user sudo rights.
   2. Install needed software on the machine you want to connect to OPNFV Jenkins as slave.
+
     - openjdk 8
     - monit
+
   3. If the slave will be used for running virtual deployments, Functest, and Yardstick, install below software and make jenkins user the member of the groups.
+
     - docker
     - libvirt
+
   4. Create slave root in Jenkins user home directory.
+
     ``mkdir -p /home/jenkins/opnfv/slave_root``
+
   5. Clone OPNFV Releng Git repository.
+
     ``mkdir -p /home/jenkins/opnfv/repos``
 
     ``cd /home/jenkins/opnfv/repos``
 
     ``git clone https://gerrit.opnfv.org/gerrit/p/releng.git``
+
   6. Contact LF by sending mail to `OPNFV LF Helpdesk <opnfv-helpdesk@rt.linuxfoundation.org>`_ and request creation of a slave on OPNFV Jenkins. Include below information in your mail.
+
     - Slave root (/home/jenkins/opnfv/slave_root)
     - Public IP of the slave (You can get the IP by executing ``curl http://icanhazip.com/``)
     - PGP Key (attached to the mail or exported to a key server)
+
   7. Once you get confirmation from LF stating that your slave is created on OPNFV Jenkins, check if the firewall on LF is open for the server you are trying to connect to Jenkins.
+
     ``cp /home/jenkins/opnfv/repos/releng/utils/jenkins-jnlp-connect.sh /home/jenkins/``
     ``cd /home/jenkins/``
     ``sudo ./jenkins-jnlp-connect.sh -j /home/jenkins -u jenkins -n  <slave name on OPNFV Jenkins> -s <the token you received from LF> -f``
 
      - If you receive an error, follow the steps listed on the command output.
+
   8. Run the same script with test(-t) on foreground in order to make sure no problem on connection. You should see **INFO: Connected** in the console log.
+
     ``sudo ./jenkins-jnlp-connect.sh -j /home/jenkins -u jenkins -n <slave name on OPNFV Jenkins> -s <the token you received from LF> -t``
 
      - If you receive an error similar to the one shown `on this link <http://hastebin.com/ozadagirax.avrasm>`_, you need to check your firewall and allow outgoing connections for the port.
+
   9. Kill the Java slave.jar process.
   10. Run the same script normally without test(-t) in order to get monit script created.
+
     ``sudo ./jenkins-jnlp-connect.sh -j /home/jenkins -u jenkins -n <slave name on OPNFV Jenkins> -s <the token you received from LF>``
+
   11. Edit monit configuration and enable http interface. The file to edit is /etc/monit/monitrc on Ubuntu systems. Uncomment below lines.
+
     set httpd port 2812 and
         use address localhost  # only accept connection from localhost
         allow localhost        # allow localhost to connect to the server and
+
   12. Restart monit service.
+
     - Without systemd:
 
       ``sudo service monit restart``
+
     - With systemd: you have to enable monit service first and then restart it.
 
       ``sudo systemctl enable monit``
 
       ``sudo systemctl restart monit``
+
   13. Check to see if jenkins comes up as managed service in monit.
+
     ``sudo monit status``
+
   14. Connect slave to OPNFV Jenkins using monit.
+
     ``sudo monit start jenkins``
+
   15. Check slave on OPNFV Jenkins to verify the slave is reported as connected.
+
     - The slave on OPNFV Jenkins should have some executors in “Idle” state if the connection is successful.
 
 Notes
