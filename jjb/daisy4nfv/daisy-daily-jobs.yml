@@ -155,27 +155,20 @@
               build-step-failure-threshold: 'never'
               failure-threshold: 'never'
               unstable-threshold: 'FAILURE'
-      - conditional-step:
-          condition-kind: and
-          condition-operands:
-            - condition-kind: regex-match
-              regex: 'baremetal'
-              label: '{pod}'
-          steps:
-            - trigger-builds:
-                - project: 'yardstick-daisy-{pod}-daily-{stream}'
-                  current-parameters: false
-                  predefined-parameters: |
-                    DEPLOY_SCENARIO={scenario}
-                    INSTALLER_VERSION={stream}
-                    UPSTREAM_JOB_NAME=$JOB_NAME
-                    UPSTREAM_BUILD_ID=$BUILD_ID
-                  block: true
-                  same-node: true
-                  block-thresholds:
-                    build-step-failure-threshold: 'never'
-                    failure-threshold: 'never'
-                    unstable-threshold: 'FAILURE'
+      - trigger-builds:
+          - project: 'yardstick-daisy-{pod}-daily-{stream}'
+            current-parameters: false
+            predefined-parameters: |
+              DEPLOY_SCENARIO={scenario}
+              INSTALLER_VERSION={stream}
+              UPSTREAM_JOB_NAME=$JOB_NAME
+              UPSTREAM_BUILD_ID=$BUILD_ID
+            block: true
+            same-node: true
+            block-thresholds:
+              build-step-failure-threshold: 'never'
+              failure-threshold: 'never'
+              unstable-threshold: 'FAILURE'
 
 - job-template:
     name: '{project}-deploy-{pod}-daily-{stream}'
