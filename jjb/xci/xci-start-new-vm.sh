@@ -68,14 +68,23 @@ export BUILD_TAG=$BUILD_TAG
 export NODE_NAME=$NODE_NAME
 
 if [[ ! -z ${WORKSPACE+x} && $GERRIT_PROJECT != "releng-xci" ]]; then
-    git clone https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT xci/scenarios/$DEPLOY_SCENARIO && cd xci/scenarios/$DEPLOY_SCENARIO
-    git fetch https://gerrit.opnfv.org/gerrit/$GERRIT_PROJECT $GERRIT_REFSPEC && git checkout FETCH_HEAD
-    cd -
+    XCI_ANSIBLE_PARAMS="-e /home/devuser/releng-xci/scenario_overrides.yml"
 fi
 
 cd xci
 ./xci-deploy.sh | ts
 EOF
+
+if [[ ! -z ${WORKSPACE+x} && $GERRIT_PROJECT != "releng-xci" ]]; then
+    cat > scenario_overrides.yml <<-EOF
+    ---
+    xci_scenarios_overrides:
+      - scenario: $DEPLOY_SCENARIO
+        version: $GERRIT_CHANGE_ID
+        refspec: $GERRIT_REFSPEC
+EOF
+fi
+
 chmod a+x xci_test.sh
 
 export XCI_BUILD_CLEAN_VM_OS=false
