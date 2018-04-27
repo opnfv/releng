@@ -10,8 +10,11 @@
 - project:
     name: releng-release-jobs
 
+    build-node: 'opnfv-build'
+
     stream:
       - fraser
+    tag: opnfv-6.1.0
 
     jobs:
       - 'releng-release-{stream}-verify'
@@ -23,8 +26,10 @@
     name: 'releng-release-{stream}-verify'
 
     parameters:
+      - '{build-node}-defaults'
       - stream-parameter:
           stream: '{stream}'
+          tag: '{tag}'
       - project-parameter:
           project: '{project}'
           branch: 'master'
@@ -59,9 +64,9 @@
                   pattern: 'releases/scripts/verify_schema.py'
 
     builders:
-      - create-virtualenv
-      - shell:
-          !include-raw-escape: releng-release-verify.sh
+      - shell: !include-raw-escape:
+          - releng-release-create-venv.sh
+          - releng-release-tagging.sh
 
     publishers:
       - email-jenkins-admins-on-failure
@@ -79,9 +84,16 @@
           ignore-offline-nodes: true
       - stream-parameter:
           stream: '{stream}'
+          tag: '{tag}'
       - project-parameter:
           project: '{project}'
           branch: 'master'
+      # Override GIT_URL so we can send patches back to Gerrit and
+      # modify repos
+      - string:
+          name: GIT_URL
+          default: ssh://$USER@gerrit.opnfv.org:29418/gerrit/
+          description: 'Git URL to use on this Jenkins Slave'
 
     scm:
       - git-scm-gerrit
@@ -93,9 +105,10 @@
           files: 'releases/{stream}/*'
 
     builders:
-      - create-virtualenv
-      - shell:
-          !include-raw-escape: releng-release-create-branch.sh
+      - shell: !include-raw-escape:
+          - releng-release-create-venv.sh
+          - releng-release-tagging.sh
+          # - releng-release-create-branch.sh
 
     publishers:
       - email-jenkins-admins-on-failure
@@ -107,13 +120,7 @@
           name: STREAM
           default: '{stream}'
           description: "OPNFV Stable Stream"
-
-- builder:
-    name: create-virtualenv
-    builders:
-      - shell: |
-          #!/bin/bash
-          sudo pip install virtualenv
-          virtualenv $WORKSPACE/venv
-          . $WORKSPACE/venv/bin/activate
-          pip install --upgrade pip
+      - string:
+          name: TAG
+          default: '{tag}'
+          description: "Tag for the current OPNFV stream"
