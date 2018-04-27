@@ -172,7 +172,9 @@ elif [ ${FUNCTEST_MODE} == 'tier' ]; then
     tiers=(${FUNCTEST_TIER})
     run_tiers ${tiers}
 else
-    if [ ${DEPLOY_TYPE} == 'baremetal' ]; then
+    if [ ${DEPLOY_TYPE} == 'baremetal' ] && [ "${HOST_ARCH}" == "aarch64" ]; then
+        tiers=(healthcheck smoke features parser)
+    elif [ ${DEPLOY_TYPE} == 'baremetal' ]; then
         tiers=(healthcheck smoke features vnf parser)
     else
         tiers=(healthcheck smoke features)
