@@ -207,11 +207,17 @@
 
     publishers:
       - postbuildscript:
-          script-only-if-succeeded: false
-          script-only-if-failed: false
           builders:
-            - shell:
-                !include-raw: ./xci-cleanup.sh
+            - role: BOTH
+              build-on:
+                - ABORTED
+                - FAILURE
+                - NOT_BUILT
+                - SUCCESS
+                - UNSTABLE
+              build-steps:
+                - shell: !include-raw: ./xci-cleanup.sh
+          mark-unstable-if-failed: true
 
 
 - job-template:
