@@ -986,21 +986,31 @@
     name: 'report-provision-result'
     publishers:
       - postbuildscript:
-          script-only-if-succeeded: true
           builders:
-            - shell: |
-                echo "export PROVISION_RESULT=PASS" >> $WORKSPACE/installer_track.sh
-                echo "export INSTALLER=$INSTALLER_TYPE" >> $WORKSPACE/installer_track.sh
-                echo "export TIMESTAMP_END="\'`date '+%Y-%m-%d %H:%M:%S.%3N'`\' >> $WORKSPACE/installer_track.sh
-            - shell:
-                !include-raw: installer-report.sh
+            - role: BOTH
+              build-on:
+                - SUCCESS
+              build-steps:
+                - shell: |
+                    echo "export PROVISION_RESULT=PASS" >> $WORKSPACE/installer_track.sh
+                    echo "export INSTALLER=$INSTALLER_TYPE" >> $WORKSPACE/installer_track.sh
+                    echo "export TIMESTAMP_END="\'`date '+%Y-%m-%d %H:%M:%S.%3N'`\' >> $WORKSPACE/installer_track.sh
+                - shell:
+                    !include-raw: installer-report.sh
+          mark-unstable-if-failed: true
       - postbuildscript:
-          script-only-if-succeeded: false
-          script-only-if-failed: true
           builders:
-            - shell: |
-                echo "export PROVISION_RESULT=FAIL" >> $WORKSPACE/installer_track.sh
-                echo "export INSTALLER=$INSTALLER_TYPE" >> $WORKSPACE/installer_track.sh
-                echo "export TIMESTAMP_END="\'`date '+%Y-%m-%d %H:%M:%S.%3N'`\' >> $WORKSPACE/installer_track.sh
-            - shell:
-                !include-raw: installer-report.sh
+            - role: BOTH
+              build-on:
+                - ABORTED
+                - FAILURE
+                - NOT_BUILT
+                - UNSTABLE
+              build-steps:
+                - shell: |
+                    echo "export PROVISION_RESULT=FAIL" >> $WORKSPACE/installer_track.sh
+                    echo "export INSTALLER=$INSTALLER_TYPE" >> $WORKSPACE/installer_track.sh
+                    echo "export TIMESTAMP_END="\'`date '+%Y-%m-%d %H:%M:%S.%3N'`\' >> $WORKSPACE/installer_track.sh
+                - shell:
+                    !include-raw: installer-report.sh
+          mark-unstable-if-failed: true
