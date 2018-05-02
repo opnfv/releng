@@ -109,8 +109,8 @@ fi
 if [ "$ARTIFACT_TYPE" == 'snapshot' ]; then
   uploadsnap
 elif [ "$ARTIFACT_TYPE" == 'iso' ]; then
-  if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
-    echo "Skipping artifact upload for ${ARTIFACT_TYPE} due to dev build"
+  if [[ "$ARTIFACT_VERSION" =~ dev || "$BRANCH" == 'master' ]]; then
+    echo "Skipping ISO artifact upload for ${ARTIFACT_TYPE} due to dev/master build"
     exit 0
   fi
   if [[ -n "$SIGN_ARTIFACT" && "$SIGN_ARTIFACT" == "true" ]]; then
@@ -119,20 +119,28 @@ elif [ "$ARTIFACT_TYPE" == 'iso' ]; then
   uploadiso
 elif [ "$ARTIFACT_TYPE" == 'rpm' ]; then
   if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
-    echo "dev build detected, will upload image tarball"
-    ARTIFACT_TYPE=tarball
-    uploadimages
+    if [ "$BRANCH" == 'master' ]; then
+      echo "will not upload artifacts, master uses upstream"
+      ARTIFACT_TYPE=none
+    else
+      echo "dev build detected, will upload image tarball"
+      ARTIFACT_TYPE=tarball
+      uploadimages
+    fi
   else
     RPM_INSTALL_PATH=$BUILD_DIRECTORY/noarch
+    # RPM URL should be python package for master, and is only package we need
     RPM_LIST=$RPM_INSTALL_PATH/$(basename $OPNFV_RPM_URL)
-    VERSION_EXTENSION=$(echo $(basename $OPNFV_RPM_URL) | sed 's/opnfv-apex-//')
-    RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex-undercloud-${VERSION_EXTENSION}"
-    RPM_LIST+=" ${RPM_INSTALL_PATH}/python34-opnfv-apex-${VERSION_EXTENSION}"
     SRPM_INSTALL_PATH=$BUILD_DIRECTORY
     SRPM_LIST=$SRPM_INSTALL_PATH/$(basename $OPNFV_SRPM_URL)
-    VERSION_EXTENSION=$(echo $(basename $OPNFV_SRPM_URL) | sed 's/opnfv-apex-//')
-    SRPM_LIST+=" ${SRPM_INSTALL_PATH}/opnfv-apex-undercloud-${VERSION_EXTENSION}"
-    SRPM_LIST+=" ${SRPM_INSTALL_PATH}/python34-opnfv-apex-${VERSION_EXTENSION}"
+    if [ "$BRANCH" != 'master' ]; then
+      VERSION_EXTENSION=$(echo $(basename $OPNFV_RPM_URL) | sed 's/opnfv-apex-//')
+      RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex-undercloud-${VERSION_EXTENSION}"
+      RPM_LIST+=" ${RPM_INSTALL_PATH}/python34-opnfv-apex-${VERSION_EXTENSION}"
+      VERSION_EXTENSION=$(echo $(basename $OPNFV_SRPM_URL) | sed 's/opnfv-apex-//')
+      SRPM_LIST+=" ${SRPM_INSTALL_PATH}/opnfv-apex-undercloud-${VERSION_EXTENSION}"
+      SRPM_LIST+=" ${SRPM_INSTALL_PATH}/python34-opnfv-apex-${VERSION_EXTENSION}"
+    fi
 
     if [[ -n "$SIGN_ARTIFACT" && "$SIGN_ARTIFACT" == "true" ]]; then
       signrpm

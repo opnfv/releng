@@ -18,15 +18,22 @@ else
 fi
 
 # Dev or RPM/ISO build
-# For upstream deployments we currently only use git repo and not RPM
-# Need to decide after Fraser if we want to use RPM or not for upstream
-if [[ "$ARTIFACT_VERSION" =~ dev || "$DEPLOY_SCENARIO" =~ "upstream" ]]; then
+if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
   # Settings for deploying from git workspace
   DEPLOY_SETTINGS_DIR="${WORKSPACE}/config/deploy"
   NETWORK_SETTINGS_DIR="${WORKSPACE}/config/network"
   DEPLOY_CMD="opnfv-deploy --image-dir ${WORKSPACE}/.build"
   CLEAN_CMD="opnfv-clean"
-  RESOURCES="${WORKSPACE}/.build/"
+  # if we are using master, then we are downloading/caching upstream images
+  # we want to use that built in mechanism to avoid re-downloading every job
+  # so we use a dedicated folder to hold the upstream cache
+  UPSTREAM_CACHE=$HOME/upstream_cache
+  if [ "$BRANCH" == 'master' ]; then
+    mkdir -p ${UPSTREAM_CACHE}
+    RESOURCES=$UPSTREAM_CACHE
+  else
+    RESOURCES="${WORKSPACE}/.build/"
+  fi
   CONFIG="${WORKSPACE}/build"
   BASE=$CONFIG
   IMAGES=$RESOURCES
@@ -45,7 +52,15 @@ else
   NETWORK_SETTINGS_DIR="/etc/opnfv-apex/"
   DEPLOY_CMD="opnfv-deploy"
   CLEAN_CMD="opnfv-clean"
-  RESOURCES="/var/opt/opnfv/images"
+  # set to use different directory here because upon RPM removal this
+  # directory will be wiped in daily
+  UPSTREAM_CACHE=$HOME/upstream_cache
+  if [ "$BRANCH" == 'master' ]; then
+    mkdir -p ${UPSTREAM_CACHE}
+    RESOURCES=$UPSTREAM_CACHE
+  else
+    RESOURCES="/var/opt/opnfv/images"
+  fi
   CONFIG="/var/opt/opnfv"
   BASE=$CONFIG
   IMAGES=$RESOURCES
@@ -123,7 +138,7 @@ else
   DEPLOY_CMD="${DEPLOY_CMD} -i ${INVENTORY_FILE}"
 fi
 
-if [[ "$DEPLOY_SCENARIO" =~ "upstream" ]]; then
+if [[ "$BRANCH" == "master" ]]; then
   echo "Upstream deployment detected"
   DEPLOY_CMD="${DEPLOY_CMD} --upstream"
 fi
