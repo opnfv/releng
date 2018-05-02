@@ -22,7 +22,6 @@ if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
   # Settings for deploying from git workspace
   DEPLOY_SETTINGS_DIR="${WORKSPACE}/config/deploy"
   NETWORK_SETTINGS_DIR="${WORKSPACE}/config/network"
-  DEPLOY_CMD="opnfv-deploy --image-dir ${WORKSPACE}/.build"
   CLEAN_CMD="opnfv-clean"
   # if we are using master, then we are downloading/caching upstream images
   # we want to use that built in mechanism to avoid re-downloading every job
@@ -38,7 +37,7 @@ if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
   BASE=$CONFIG
   IMAGES=$RESOURCES
   LIB="${WORKSPACE}/lib"
-
+  DEPLOY_CMD="opnfv-deploy --image-dir ${RESOURCES}"
   # Ensure artifacts were downloaded and extracted correctly
   # TODO(trozet) add verification here
 
@@ -50,7 +49,6 @@ if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
 else
   DEPLOY_SETTINGS_DIR="/etc/opnfv-apex/"
   NETWORK_SETTINGS_DIR="/etc/opnfv-apex/"
-  DEPLOY_CMD="opnfv-deploy"
   CLEAN_CMD="opnfv-clean"
   # set to use different directory here because upon RPM removal this
   # directory will be wiped in daily
@@ -61,6 +59,7 @@ else
   else
     RESOURCES="/var/opt/opnfv/images"
   fi
+  DEPLOY_CMD="opnfv-deploy --image-dir ${RESOURCES}"
   CONFIG="/var/opt/opnfv"
   BASE=$CONFIG
   IMAGES=$RESOURCES
