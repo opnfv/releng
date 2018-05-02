@@ -21,14 +21,14 @@ dir_result="${HOME}/opnfv/$project/results/${branch}"
 # src: https://wiki.opnfv.org/display/INF/Hardware+Infrastructure
 # + intel-pod12 (vsperf)
 node_list=(\
-'lf-pod1' 'lf-pod2' 'intel-pod2' 'intel-pod12' \
+'lf-pod1' 'lf-pod2' \
 'lf-virtual2' 'lf-virtual3' \
-'intel-pod5' 'intel-pod6' 'intel-pod7' 'intel-pod8' 'intel-pod18' \
+'intel-pod12' 'intel-pod18' \
 'ericsson-pod1' 'ericsson-pod2' \
 'ericsson-virtual1' 'ericsson-virtual2'  'ericsson-virtual3' \
-'ericsson-virtual4' 'ericsson-virtual5' 'ericsson-virtual12' \
-'arm-pod1' 'arm-pod5' 'arm-pod6' \
-'huawei-pod1' 'huawei-pod2' 'huawei-pod3' 'huawei-pod4' 'huawei-pod5' \
+'ericsson-virtual4' 'ericsson-virtual5' \
+'arm-pod5' 'arm-pod6' \
+'huawei-pod1' 'huawei-pod2' 'huawei-pod3' 'huawei-pod4' \
 'huawei-pod6' 'huawei-pod7' 'huawei-pod12' \
 'huawei-virtual1' 'huawei-virtual2' 'huawei-virtual3' 'huawei-virtual4' \
 'huawei-virtual5' 'huawei-virtual8' 'huawei-virtual9' \
