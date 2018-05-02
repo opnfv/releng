@@ -162,8 +162,6 @@
           block-level: 'NODE'
 
     wrappers:
-      - build-name:
-          name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
       - fix-workspace-permissions
 
     parameters:
@@ -174,7 +172,6 @@
           installer: '{installer}'
           gs-pathname: '{gs-pathname}'
           ppa-pathname: '{ppa-pathname}'
-          scenario: '{scenario}'
       - '{slave-label}-defaults'
       - '{installer}-defaults'
 
@@ -362,7 +359,6 @@
           installer: '{installer}'
           gs-pathname: '{gs-pathname}'
           ppa-pathname: '{ppa-pathname}'
-          scenario: '{scenario}'
       - '{slave-label}-defaults'
       - '{installer}-defaults'
 
@@ -409,9 +405,9 @@
           installer: '{installer}'
           gs-pathname: '{gs-pathname}'
           ppa-pathname: '{ppa-pathname}'
-          scenario: '{scenario}'
       - '{slave-label}-defaults'
       - '{installer}-defaults'
+
 
     scm:
       - git-scm
@@ -457,7 +453,7 @@
           description: "Directory where the logs will be located upon the completion of the collection."
       - string:
           name: DEPLOY_SCENARIO
-          default: '{scenario}'
+          default: 'os-nosdn-nofeature-ha'
           description: "Scenario to deploy with."
       - string:
           name: COMPASS_OS_VERSION
