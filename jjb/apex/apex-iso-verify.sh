@@ -8,6 +8,11 @@ echo "Starting the Apex iso verify."
 echo "--------------------------------------------------------"
 echo
 
+if [ "$BRANCH" == 'master' ]; then
+  echo "Skipping Apex iso verify for master branch"
+  exit 0
+fi
+
 # Must be RPMs/ISO
 echo "Downloading latest properties file"
 
