@@ -21,11 +21,7 @@
     # patch verification phases
     #####################################
     phase:
-      - 'basic':
-          slave-label: 'armband-virtual'
       - 'deploy-virtual':
-          slave-label: 'armband-virtual'
-      - 'smoke-test':
           slave-label: 'armband-virtual'
     #####################################
     # jobs
@@ -105,24 +101,13 @@
           installer: '{installer}'
       - '{installer}-defaults':
           gs-pathname: '{gs-pathname}'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-nosdn-nofeature-ha'
 
     builders:
       - description-setter:
           description: "Built on $NODE_NAME"
-      - multijob:
-          name: basic
-          condition: SUCCESSFUL
-          projects:
-            - name: 'armband-verify-basic-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                BRANCH=$BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              node-parameters: false
-              kill-phase-on: FAILURE
-              abort-all-job: true
       - multijob:
           name: deploy-virtual
           condition: SUCCESSFUL
@@ -137,19 +122,39 @@
               node-parameters: false
               kill-phase-on: FAILURE
               abort-all-job: true
+
       - multijob:
           name: smoke-test
           condition: SUCCESSFUL
           projects:
-            - name: 'armband-verify-smoke-test-{stream}'
+            # Use Functest job definition from jjb/functest/functest-daily-jobs
+            - name: 'functest-fuel-armband-virtual-suite-{stream}'
               current-parameters: false
               predefined-parameters: |
+                FUNCTEST_MODE=tier
+                FUNCTEST_TIER=healthcheck
+                # Should be in sync with fuel-deploy.sh default scenario
+                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
                 BRANCH=$BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              node-parameters: false
-              kill-phase-on: FAILURE
+              node-parameters: true
+              kill-phase-on: NEVER
+              abort-all-job: true
+            - name: 'functest-fuel-armband-virtual-suite-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                FUNCTEST_MODE=testcase
+                FUNCTEST_SUITE_NAME=vping_ssh
+                # Should be in sync with fuel-deploy.sh default scenario
+                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: true
+              kill-phase-on: NEVER
               abort-all-job: true
 
 - job-template:
@@ -170,7 +175,6 @@
           use-build-blocker: true
           blocking-jobs:
             - 'armband-verify-deploy-.*'
-            - 'armband-verify-test-.*'
           block-level: 'NODE'
 
     scm:
@@ -200,23 +204,7 @@
 # builder macros
 #####################################
 - builder:
-    name: 'armband-verify-basic-macro'
-    builders:
-      - shell: |
-          #!/bin/bash
-
-          echo "Not activated!"
-
-- builder:
     name: 'armband-verify-deploy-virtual-macro'
     builders:
       - shell:
           !include-raw: ../fuel/fuel-deploy.sh
-
-- builder:
-    name: 'armband-verify-smoke-test-macro'
-    builders:
-      - shell: |
-          #!/bin/bash
-
-          echo "Not activated!"
