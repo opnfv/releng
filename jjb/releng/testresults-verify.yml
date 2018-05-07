@@ -12,6 +12,7 @@
     jobs:
       - '{module}-verify-{stream}'
       - '{module}-client-verify-{stream}'
+      - '{module}-ui-verify-{stream}'
 
     project: 'releng-testresults'
 
@@ -30,7 +31,7 @@
     triggers:
       - gerrit-trigger-patchset-created:
           server: 'gerrit.opnfv.org'
-          project: '**'
+          project: '{project}'
           branch: '{branch}'
           files: '{module}/**'
 
@@ -61,7 +62,7 @@
     triggers:
       - gerrit-trigger-patchset-created:
           server: 'gerrit.opnfv.org'
-          project: '**'
+          project: '{project}'
           branch: '{branch}'
           files: '{module}/{module}-client/**'
 
@@ -76,3 +77,57 @@
     publishers:
       - publish-coverage
       - email-jenkins-admins-on-failure
+
+- job-template:
+    name: '{module}-ui-verify-{stream}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+      - git-scm-gerrit
+
+    wrappers:
+      - nodejs-installator:
+          name: "testapi node"
+
+    triggers:
+      - gerrit-trigger-patchset-created:
+          server: 'gerrit.opnfv.org'
+          project: '{project}'
+          branch: '{branch}'
+          files: '{module}/opnfv_testapi/ui/**'
+
+    builders:
+      - shell: |
+          set -e
+
+          #Install Google Chrome
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          echo 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main' | sudo tee \
+              /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+          npm -v
+          node -v
+          cd ./{module}/opnfv_testapi/ui/
+          npm install -g grunt-cli
+          npm install
+          grunt e2e
+          rm -r node_modules
+
+    publishers:
+      - text-finder-failures
+      - email-jenkins-admins-on-failure
+
+- publisher:
+    name: 'text-finder-failures'
+    publishers:
+      - text-finder:
+          regexp: " 0 failures"
+          also-check-console-output: true
+          succeed-if-found: true
