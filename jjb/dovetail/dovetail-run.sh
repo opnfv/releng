@@ -322,14 +322,16 @@ docker exec $container_id ${run_cmd}
 
 sudo cp -r ${DOVETAIL_HOME}/results ./
 # To make sure the file owner is the current user, for the copied results files in the above line
-# if not, there will be error when next time to wipe workspace
+echo "Change owner of result files ..."
 CURRENT_USER=${SUDO_USER:-$USER}
 PRIMARY_GROUP=$(id -gn $CURRENT_USER)
-sudo chown -R ${CURRENT_USER}:${PRIMARY_GROUP} ${WORKSPACE}/results
+echo "Current user is ${CURRENT_USER}, group is ${PRIMARY_GROUP}"
+sudo chown -R ${CURRENT_USER}:${PRIMARY_GROUP} ./results
 
 #remove useless files to save disk space
 sudo rm -rf ./results/workspace
 sudo rm -f ./results/yardstick.img
+sudo rm -f ./results/tmp*
 
 echo "Dovetail: done!"
 
