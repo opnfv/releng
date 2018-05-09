@@ -80,7 +80,7 @@ if [[ ! -z ${WORKSPACE+x} && $GERRIT_PROJECT != "releng-xci" ]]; then
 ---
 xci_scenarios_overrides:
   - scenario: $DEPLOY_SCENARIO
-    version: $GERRIT_CHANGE_ID
+    version: $GERRIT_PATCHSET_REVISION
     refspec: $GERRIT_REFSPEC
 EOF
 fi
