@@ -68,7 +68,7 @@ export BUILD_TAG=$BUILD_TAG
 export NODE_NAME=$NODE_NAME
 
 if [[ ! -z ${WORKSPACE+x} && $GERRIT_PROJECT != "releng-xci" ]]; then
-    XCI_ANSIBLE_PARAMS="-e /home/devuser/releng-xci/scenario_overrides.yml"
+    export XCI_ANSIBLE_PARAMS="-e /home/devuser/releng-xci/scenario_overrides.yml"
 fi
 
 cd xci
@@ -80,7 +80,7 @@ if [[ ! -z ${WORKSPACE+x} && $GERRIT_PROJECT != "releng-xci" ]]; then
 ---
 xci_scenarios_overrides:
   - scenario: $DEPLOY_SCENARIO
-    version: $GERRIT_CHANGE_ID
+    version: $GERRIT_PATCHSET_REVISION
     refspec: $GERRIT_REFSPEC
 EOF
 fi
