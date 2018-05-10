@@ -81,6 +81,7 @@ if [[ -f $OPENRC ]]; then
             exit 1
         fi
     fi
+    echo "export EXTERNAL_NETWORK=${EXTERNAL_NETWORK}" >> ${OPENRC}
 else
     echo "ERROR: cannot find file $OPENRC. Please check if it is existing."
     sudo ls -al ${DOVETAIL_CONFIG}
