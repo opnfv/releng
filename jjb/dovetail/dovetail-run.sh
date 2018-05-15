@@ -145,7 +145,7 @@ if [[ ! -f ${DOVETAIL_CONFIG}/pod.yaml ]]; then
     elif [[ ${INSTALLER_TYPE} == fuel ]]; then
         options="-u root -p r00tme"
     elif [[ ${INSTALLER_TYPE} == apex ]]; then
-        options="-u stack -k /root/.ssh/id_rsa"
+        options="-u stack -k /home/opnfv/userconfig/pre_config/id_rsa"
     elif [[ ${INSTALLER_TYPE} == daisy ]]; then
         options="-u root -p r00tme"
     else
