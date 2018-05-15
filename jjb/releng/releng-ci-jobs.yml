@@ -1,101 +1,15 @@
 ---
 - project:
     name: releng-builder-jobs
-    jobs:
-      - 'releng-verify-jjb'
-      - 'releng-merge-jjb'
-
     project: 'releng'
+    project-name: 'releng'
 
-- job-template:
-    name: releng-verify-jjb
+    build-timeout: 10
+    build-node: 'lf-build1'
+    gerrit-server-name: 'gerrit.opnfv.org'
+    jenkins-ssh-credential: 'd42411ac011ad6f3dd2e1fa34eaa5d87f910eb2e'
+    jjb-version: '1.6.2'
+    lftools-version: '<1.0.0'
 
-    parameters:
-      - project-parameter:
-          project: '{project}'
-          branch: 'master'
-
-    scm:
-      - git-scm-gerrit-with-submodules
-
-    triggers:
-      - gerrit:
-          server-name: 'gerrit.opnfv.org'
-          trigger-on:
-            - patchset-created-event:
-                exclude-drafts: 'false'
-                exclude-trivial-rebase: 'false'
-                exclude-no-code-change: 'false'
-            - draft-published-event
-            - comment-added-contains-event:
-                comment-contains-value: 'recheck'
-            - comment-added-contains-event:
-                comment-contains-value: 'reverify'
-          projects:
-            - project-compare-type: 'ANT'
-              project-pattern: 'releng'
-              branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/master'
-              file-paths:
-                - compare-type: ANT
-                  pattern: jjb/**
-                - compare-type: ANT
-                  pattern: jjb-templates/**
-                - compare-type: ANT
-                  pattern: utils/**
-
-
-    builders:
-      - shell:
-          !include-raw: verify-releng.sh
-
-    publishers:
-      - archive-artifacts:
-          artifacts: 'job_output/*'
-      - email-jenkins-admins-on-failure
-
-- job-template:
-    name: 'releng-merge-jjb'
-
-    # builder-merge job to run JJB update
-    #
-    # This job's purpose is to update all the JJB
-
-    parameters:
-      - project-parameter:
-          project: '{project}'
-          branch: 'master'
-
-    properties:
-      - throttle:
-          max-per-node: 1
-          max-total: 1
-          option: 'project'
-
-    scm:
-      - git-scm-with-submodules
-
-    triggers:
-      - gerrit:
-          server-name: 'gerrit.opnfv.org'
-          trigger-on:
-            - change-merged-event
-            - comment-added-contains-event:
-                comment-contains-value: 'remerge'
-          projects:
-            - project-compare-type: 'ANT'
-              project-pattern: 'releng'
-              branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/master'
-              file-paths:
-                - compare-type: ANT
-                  pattern: jjb/**
-                - compare-type: ANT
-                  pattern: utils/**
-
-    builders:
-      - shell: |
-              source /opt/virtualenv/jenkins-job-builder/bin/activate
-              jenkins-jobs update -r --delete-old jjb/
+    jobs:
+      - '{project-name}-ci-jobs'
