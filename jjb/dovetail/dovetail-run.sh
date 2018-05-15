@@ -154,7 +154,8 @@ if [[ ! -f ${DOVETAIL_CONFIG}/pod.yaml ]]; then
     fi
 
     cmd="sudo python ${releng_repo}/utils/create_pod_file.py -t ${INSTALLER_TYPE} \
-         -i ${INSTALLER_IP} ${options} -f ${DOVETAIL_CONFIG}/pod.yaml"
+         -i ${INSTALLER_IP} ${options} -f ${DOVETAIL_CONFIG}/pod.yaml \
+         -s /home/opnfv/userconfig/pre_config/id_rsa"
     echo ${cmd}
     ${cmd}
 
