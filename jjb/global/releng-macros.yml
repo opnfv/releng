@@ -121,6 +121,32 @@
           choosing-strategy: 'gerrit'
           refspec: '$GERRIT_REFSPEC'
           <<: *git-scm-defaults
+
+- scm:
+    name: git-scm-gerrit-with-submodules
+    scm:
+      - git:
+          choosing-strategy: 'gerrit'
+          refspec: '$GERRIT_REFSPEC'
+          submodule:
+            recursive: true
+            timeout: 20
+          <<: *git-scm-defaults
+- scm:
+    name: git-scm-with-submodules
+    scm:
+      - git:
+          credentials-id: '$SSH_CREDENTIAL_ID'
+          url: '$GIT_BASE'
+          refspec: ''
+          branches:
+            - 'refs/heads/{branch}'
+          per-build-tag: false
+          skip-tag: true
+          wipe-workspace: true
+          submodule:
+            recursive: true
+            timeout: 20
 - scm:
     name: git-scm-with-submodules
     scm:

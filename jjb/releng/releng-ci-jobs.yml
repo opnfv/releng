@@ -4,7 +4,6 @@
     jobs:
       - 'releng-verify-jjb'
       - 'releng-merge-jjb'
-      - 'releng-comment-jjb'
 
     project: 'releng'
 
@@ -17,7 +16,7 @@
           branch: 'master'
 
     scm:
-      - git-scm-gerrit
+      - git-scm-gerrit-with-submodules
 
     triggers:
       - gerrit:
@@ -57,28 +56,6 @@
       - email-jenkins-admins-on-failure
 
 - job-template:
-    name: releng-comment-jjb
-
-    parameters:
-      - project-parameter:
-          project: '{project}'
-          branch: 'master'
-
-    scm:
-      - git-scm-gerrit
-
-    triggers:
-      - experimental:
-          project: '{project}'
-          branch: 'master'
-          files: 'jjb/**'
-
-    builders:
-      - shell:
-          !include-raw-escape: generate-job-list.sh
-      - report-build-result-to-gerrit
-
-- job-template:
     name: 'releng-merge-jjb'
 
     # builder-merge job to run JJB update
@@ -97,7 +74,7 @@
           option: 'project'
 
     scm:
-      - git-scm
+      - git-scm-with-submodules
 
     triggers:
       - gerrit:
