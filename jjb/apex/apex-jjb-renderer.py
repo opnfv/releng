@@ -25,7 +25,7 @@ def render_jjb():
     with open('scenarios.yaml.hidden') as _:
         scenarios = yaml.safe_load(_)
 
-    template = env.get_template('apex.yml.j2')
+    template = env.get_template('apex.yaml.j2')
 
     print("Scenarios are: ")
     pprint.pprint(scenarios)
@@ -42,7 +42,7 @@ def render_jjb():
     output = template.render(scenarios=scenarios, gspathname=gspathname,
                              branch=branch, build_slave=build_slave)
 
-    with open('./apex.yml', 'w') as fh:
+    with open('./apex.yaml', 'w') as fh:
         fh.write(output)
 
 if __name__ == "__main__":
