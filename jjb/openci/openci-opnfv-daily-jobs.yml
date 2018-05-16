@@ -1,0 +1,66 @@
+---
+###################################################
+# All the jobs except verify have been removed!
+# They will only be enabled on request by projects!
+###################################################
+- project:
+    name: openci-opnfv
+
+    project: '{name}'
+
+    stream:
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
+
+    scenario:
+      - os-odl-nofeature-ha
+      - k8-nosdn-onap-ha
+
+    phase:
+        - compose:
+            consume-event-type: ArtifactPublishedEvent
+            publish-event-type: CompositionDefinedEvent
+        - test:
+            consume-event-type: CompositionDefinedEvent
+            publish-event-type: ConfidenceLevelDefinedEvent
+
+    jobs:
+      - 'openci-opnfv-{scenario}-{phase}-daily-{stream}':
+
+- job-template:
+    name: 'openci-opnfv-{scenario}-{phase}-daily-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    parameters:
+      - string:
+          name: CONSUME_EVENT_TYPE
+          default: '{consume-event-type}'
+          description: 'The event type this job consumes'
+      - string:
+          name: PUBLISH_EVENT_TYPE
+          default: '{publish-event-type}'
+          description: 'The event type this job publishes'
+      - 'opnfv-build-defaults'
+
+    triggers:
+      - jms-messaging:
+          provider-name: openci.activemq
+          selector: CI_TYPE = 'custom'
+          checks:
+            - field: eventType
+              expected-value: $CONSUME_EVENT_TYPE
+
+    builders:
+      - shell: |
+          #!/bin/bash
+
+          echo
+          echo "Triggered by the event"
+          echo "----------------------------------"
+          echo $CI_MESSAGE
+          echo "----------------------------------"
