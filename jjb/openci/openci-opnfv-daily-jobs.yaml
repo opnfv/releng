@@ -1,0 +1,87 @@
+---
+- project:
+    name: openci-opnfv
+
+    project: '{name}'
+
+    stream:
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
+
+    scenario:
+      - os-odl-nofeature-ha:
+          origin: ODL
+      - k8-nosdn-onap-ha:
+          origin: ONAP
+
+    jobs:
+      - 'openci-opnfv-{scenario}-test-daily-{stream}'
+
+- job-template:
+    name: 'openci-opnfv-{scenario}-test-daily-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    parameters:
+      - string:
+          name: PUBLISH_EVENT_TYPE
+          default: ConfidenceLevelModifiedEvent
+          description: 'The type of the event this job publishes'
+      - string:
+          name: PUBLISH_EVENT_ORIGIN
+          default: OPNFV
+          description: 'Originating community'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: {scenario}
+          description: 'The scenario that is composed'
+      - string:
+          name: SCENARIO_METADATA_LOCATION
+          default: https://url/to/scenario/metadata/on/opnfv/artifact/repo/$BUILD_NUMBER
+          description: 'The location of the scenario metadata'
+      - string:
+          name: CONFIDENCE_LEVEL
+          default: "'opnfvdaily': 'SUCCESS'"
+          description: 'The confidence level the published artifact gained'
+      - 'opnfv-build-defaults'
+
+    triggers:
+      - jms-messaging:
+          provider-name: openci.activemq
+          selector: CI_TYPE = 'custom'
+          checks:
+            - field: origin
+              expected-value: 'OPNFV'
+            - field: type
+              expected-value: 'CompositionDefinedEvent'
+            - field: type
+              expected-value: '{scenario}'
+
+    builders:
+      - shell: |
+          #!/bin/bash
+
+          echo
+          echo "Triggered by $type"
+          echo "----------------------------------"
+          echo $CI_MESSAGE
+          echo "----------------------------------"
+      - shell:
+          !include-raw-escape: ./create-clme.sh
+      - inject:
+          properties-file: "$WORKSPACE/event.properties"
+
+    publishers:
+      - jms-messaging:
+          provider-name: openci.activemq
+          msg-type: Custom
+          msg-props: |
+            type=$type
+            origin=$origin
+            scenario=$scenario
+          msg-content:
+            $eventBody
