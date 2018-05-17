@@ -81,39 +81,52 @@ function override_scenario() {
     fi
 }
 
+# This function determines the default scenario for changes coming to releng-xci
+# by processing the Gerrit change and using diff to see what changed.
+#
+# The stuff in releng-xci is for the installer and other common things so the
+# determination is based on those.
+#
+# Pattern
+#   releng-xci/installer/<installer_type>/<impacted files>: <scenario>
+function determine_default_scenario() {
+    echo "Processing $GERRIT_PROJECT patchset $GERRIT_REFSPEC"
+
+    # get the changeset
+    # We need to set default scenario for changes that mess with installers
+    INSTALLERS=$(git diff HEAD^..HEAD --name-only -- 'xci/installer' | cut -d "/" -f 3 | uniq)
+    for CHANGED_INSTALLER in $INSTALLERS; do
+        case $CHANGED_INSTALLER in
+            kubespray)
+                DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='k8-nosdn-nofeature'
+                ;;
+            # Default case (including OSA changes)
+            *)
+                DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='os-nosdn-nofeature'
+                ;;
+        esac
+    done
+    # For all other changes, we only need to set a default scenario if it's not set already
+    if git diff HEAD^..HEAD --name-only | grep -q -v 'xci/installer'; then
+         [[ ${#DEPLOY_SCENARIO[@]} -eq 0 ]] && DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='os-nosdn-nofeature'
+    fi
+
+    # extract releng-xci sha
+    XCI_SHA=$(cd $WORKSPACE && git rev-parse HEAD)
+
+    # TODO: we need to fix this so we actually extract the scenario sha by cloning releng-xci-scenarios
+    # for the determined scenario. it is crucial for promotion...
+    SCENARIO_SHA=$XCI_SHA
+}
+
 # This function determines the impacted scenario by processing the Gerrit
 # change and using diff to see what changed. If changed files belong to a scenario
 # its name gets recorded for deploying and testing the right scenario.
-#
-# Please note that if the change is coming to releng-xci and the scenario is
-# not specified in commit message, we set the installer and scenario to default
-# ones; osa and os-nosdn-nofeature.
 #
 # Pattern
 #   <project-repo>/scenarios/<scenario>/<impacted files>: <scenario>
 function determine_scenario() {
     echo "Processing $GERRIT_PROJECT patchset $GERRIT_REFSPEC"
-
-    # if the change is coming to releng-xci, we just set the default installer
-    # and scenario.
-    # in most cases, the proposer of the change states the impacted scenario
-    # in commit message and we don't end up here very frequently
-    if [[ $GERRIT_PROJECT == "releng-xci" ]]; then
-        echo "Change is proposed to releng-xci. Setting default installer and scenario"
-        # ensure the metadata we record is consistent for all types of patches including skipped ones
-        # extract releng-xci sha
-        XCI_SHA=$(cd $WORKSPACE && git rev-parse HEAD)
-
-        # extract scenario sha which is same as releng-xci sha for generic scenarios
-        SCENARIO_SHA=$XCI_SHA
-
-        echo "INSTALLER_TYPE=osa" > $WORK_DIRECTORY/scenario.properties
-        echo "DEPLOY_SCENARIO=os-nosdn-nofeature" >> $WORK_DIRECTORY/scenario.properties
-        echo "XCI_SHA=$XCI_SHA" >> $WORK_DIRECTORY/scenario.properties
-        echo "SCENARIO_SHA=$SCENARIO_SHA" >> $WORK_DIRECTORY/scenario.properties
-        echo "PROJECT_NAME=$GERRIT_PROJECT" >> $WORK_DIRECTORY/scenario.properties
-        exit 0
-    fi
 
     # remove the clone that is done via jenkins and place releng-xci there so the
     # things continue functioning properly
@@ -150,6 +163,9 @@ GERRIT_TOPIC="${GERRIT_TOPIC:-''}"
 WORK_DIRECTORY=/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO
 /bin/rm -rf $WORK_DIRECTORY && mkdir -p $WORK_DIRECTORY
 
+if [[ $GERRIT_PROJECT == "releng-xci" ]]; then
+    determine_default_scenario
+fi
 override_scenario
 determine_scenario
 
