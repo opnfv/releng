@@ -1,8 +1,75 @@
 ---
+# jenkins job templates for Auto
 - project:
-    name: auto
+    name: 'auto-ci-jobs'
+    project: 'auto'
 
-    project: '{name}'
+    # -------------------------------
+    # BRANCH ANCHORS
+    # -------------------------------
+    master: &master
+      stream: master
+      branch: '{stream}'
+      gs-pathname: ''
+      disabled: false
+    fraser: &fraser
+      stream: fraser
+      branch: 'stable/{stream}'
+      gs-pathname: '/{stream}'
+      disabled: false
+    # -------------------------------
+    # DEPLOY TYPE ANCHORS
+    # -------------------------------
+    baremetal: &baremetal
+      installer: 'fuel'
+      deploy-type: 'baremetal'
+      slave-label: 'auto-{deploy-type}'
+    # -------------------------------
+    # POD, INSTALLER, AND BRANCH MAPPING
+    # -------------------------------
+    # CI POD's
+    # -------------------------------
+    #        fraser
+    # -------------------------------
+    pod:
+      # yamllint disable rule:key-duplicates
+      - auto-baremetal:
+          <<: *baremetal
+          <<: *fraser
+      # -------------------------------
+      #        master
+      # -------------------------------
+      - auto-baremetal:
+          <<: *baremetal
+          <<: *master
+    # yamllint enable rule:key-duplicates
+    # -------------------------------
+    #       scenarios
+    # -------------------------------
+    scenario:
+      # HA scenarios
+      - 'os-nosdn-nofeature-ha':
+          auto-trigger-name: '{installer}-{scenario}-{pod}-{stream}-trigger'
 
     jobs:
-      - '{project}-verify-basic'
+      - '{installer}-{scenario}-{pod}-daily-{stream}'
+      - '{installer}-deploy-{pod}-daily-{stream}'
+
+########################
+# trigger macros
+########################
+# CI PODs
+# ----------------------------------------------------------------
+# Auto CI Baremetal Triggers running against master branch
+# ----------------------------------------------------------------
+- trigger:
+    name: 'fuel-os-nosdn-nofeature-ha-auto-baremetal-master-trigger'
+    triggers:
+      - timed: '0 1 * * *'
+# ---------------------------------------------------------------------
+# Auto CI Baremetal Triggers running against fraser branch
+# ---------------------------------------------------------------------
+- trigger:
+    name: 'fuel-os-nosdn-nofeature-ha-auto-baremetal-fraser-trigger'
+    triggers:
+      - timed: ''
