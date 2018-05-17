@@ -1,8 +1,127 @@
 ---
+# jenkins job templates for Auto
 - project:
-    name: auto
+    name: 'auto-ci-jobs'
+    project: 'auto'
 
-    project: '{name}'
+    # -------------------------------
+    # BRANCH ANCHORS
+    # -------------------------------
+    master: &master
+      stream: master
+      branch: '{stream}'
+      gs-pathname: ''
+      disabled: false
+    fraser: &fraser
+      stream: fraser
+      branch: 'stable/{stream}'
+      gs-pathname: '/{stream}'
+      disabled: false
+    # -------------------------------
+    # DEPLOY TYPE ANCHORS
+    # -------------------------------
+    baremetal: &baremetal
+      installer: 'fuel'
+      deploy-type: 'baremetal'
+      slave-label: 'auto-{deploy-type}'
+    # -------------------------------
+    # POD, INSTALLER, AND BRANCH MAPPING
+    # -------------------------------
+    # CI POD's
+    # -------------------------------
+    #        fraser
+    # -------------------------------
+    pod:
+      # yamllint disable rule:key-duplicates
+      - auto-baremetal:
+          <<: *baremetal
+          <<: *fraser
+      # -------------------------------
+      #        master
+      # -------------------------------
+      - auto-baremetal:
+          <<: *baremetal
+          <<: *master
+    # yamllint enable rule:key-duplicates
+    # -------------------------------
+    #       scenarios
+    # -------------------------------
+    scenario:
+      # HA scenarios
+      - 'os-nosdn-onap-ha':
+          auto-trigger-name: '{installer}-{scenario}-{pod}-{stream}-trigger'
 
     jobs:
+      - '{installer}-{scenario}-{pod}-auto-daily-{stream}'
+      - '{installer}-deploy-{pod}-daily-{stream}'
       - '{project}-verify-basic'
+
+########################
+# job templates
+########################
+- job-template:
+    name: '{installer}-{scenario}-{pod}-auto-daily-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    properties:
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-total: 4
+          max-per-node: 1
+          option: 'project'
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - '{installer}-os-.*?-{pod}-auto-daily-.*'
+          block-level: 'NODE'
+
+    wrappers:
+      - build-name:
+          name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+
+    triggers:
+      - '{auto-trigger-name}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults':
+          gs-pathname: '{gs-pathname}'
+      - '{slave-label}-defaults':
+          installer: '{installer}'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: '{scenario}'
+
+    builders:
+      - trigger-builds:
+          - project: '{installer}-deploy-{pod}-daily-{stream}'
+            current-parameters: false
+            predefined-parameters:
+              DEPLOY_SCENARIO='os-nosdn-nofeature-ha'
+            same-node: true
+            block: true
+
+########################
+# trigger macros
+########################
+# CI PODs
+# ----------------------------------------------------------------
+# Auto CI Baremetal Triggers running against master branch
+# ----------------------------------------------------------------
+- trigger:
+    name: 'fuel-os-nosdn-onap-ha-auto-baremetal-master-trigger'
+    triggers:
+      - timed: '0 1 * * *'
+# ---------------------------------------------------------------------
+# Auto CI Baremetal Triggers running against fraser branch
+# ---------------------------------------------------------------------
+- trigger:
+    name: 'fuel-os-nosdn-onap-ha-auto-baremetal-fraser-trigger'
+    triggers:
+      - timed: ''
