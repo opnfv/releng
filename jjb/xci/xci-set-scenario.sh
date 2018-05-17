@@ -38,7 +38,7 @@ set -o pipefail
 #   skip-verify
 #   skip-deployment
 #   force-verify
-function override_generic_scenario() {
+function override_scenario() {
     echo "Processing $GERRIT_PROJECT patchset $GERRIT_REFSPEC"
 
     # ensure the metadata we record is consistent for all types of patches including skipped ones
@@ -81,56 +81,13 @@ function override_generic_scenario() {
     fi
 }
 
-# This function determines the impacted generic scenario by processing the
-# change and using diff to see what changed. If changed files belong to a scenario
-# its name gets recorded for deploying and testing the right scenario.
-#
-# Pattern to be searched in Changeset
-#   releng-xci/scenarios/<scenario>/<impacted files>: <scenario>
-#   releng-xci/xci/installer/osa/<impacted files>: os-nosdn-nofeature
-#   releng-xci/xci/installer/kubespray/<impacted files>: k8-nosdn-nofeature
-#   the rest: os-nosdn-nofeature
-function determine_generic_scenario() {
-    echo "Processing $GERRIT_PROJECT patchset $GERRIT_REFSPEC"
-
-    # get the changeset
-    cd $WORKSPACE
-    SCENARIOS=$(git diff HEAD^..HEAD --name-only -- 'xci/scenarios' | cut -d "/" -f 3 | uniq)
-    # We need to set default scenario for changes that mess with installers
-    INSTALLERS=$(git diff HEAD^..HEAD --name-only -- 'xci/installer' | cut -d "/" -f 3 | uniq)
-    for CHANGED_SCENARIO in $SCENARIOS; do
-        DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]=$CHANGED_SCENARIO
-    done
-    for CHANGED_INSTALLER in $INSTALLERS; do
-        case $CHANGED_INSTALLER in
-            kubespray)
-                DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='k8-nosdn-nofeature'
-                ;;
-            # Default case (including OSA changes)
-            *)
-                DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='os-nosdn-nofeature'
-                ;;
-        esac
-    done
-    # For all other changes, we only need to set a default scenario if it's not set already
-    if git diff HEAD^..HEAD --name-only | grep -q -v 'xci/installer\|xci/scenario'; then
-         [[ ${#DEPLOY_SCENARIO[@]} -eq 0 ]] && DEPLOY_SCENARIO[${#DEPLOY_SCENARIO[@]}]='os-nosdn-nofeature'
-    fi
-
-    # extract releng-xci sha
-    XCI_SHA=$(cd $WORKSPACE && git rev-parse HEAD)
-
-    # extract scenario sha which is same as releng-xci sha for generic scenarios
-    SCENARIO_SHA=$XCI_SHA
-}
-
-# This function determines the impacted external scenario by processing the Gerrit
+# This function determines the impacted scenario by processing the Gerrit
 # change and using diff to see what changed. If changed files belong to a scenario
 # its name gets recorded for deploying and testing the right scenario.
 #
 # Pattern
 #   <project-repo>/scenarios/<scenario>/<impacted files>: <scenario>
-function determine_external_scenario() {
+function determine_scenario() {
     echo "Processing $GERRIT_PROJECT patchset $GERRIT_REFSPEC"
 
     # remove the clone that is done via jenkins and place releng-xci there so the
@@ -169,10 +126,9 @@ WORK_DIRECTORY=/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO
 /bin/rm -rf $WORK_DIRECTORY && mkdir -p $WORK_DIRECTORY
 
 if [[ $GERRIT_PROJECT == "releng-xci" ]]; then
-    override_generic_scenario
-    determine_generic_scenario
+    override_scenario
 else
-    determine_external_scenario
+    determine_scenario
 fi
 
 # ensure single scenario is impacted
