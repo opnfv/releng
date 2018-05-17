@@ -1,0 +1,71 @@
+---
+- project:
+    name: openci-onap
+
+    project: '{name}'
+
+    stream:
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
+
+    jobs:
+      - 'openci-onap-autorelease-daily-{stream}':
+      - 'openci-onap-promote-daily-{stream}':
+
+# This job gets triggered manually for the demo purposes.
+#
+# In prototype, either what this job does needs to be integrated to
+# ONAP autorelease job or triggered by the upstream autorelease job.
+- job-template:
+    name: 'openci-onap-autorelease-daily-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    parameters:
+      - 'opnfv-build-defaults'
+
+    builders:
+      - shell: |
+          #!/bin/bash
+
+          echo "Will construct and publish an ArtifactPublishedEvent"
+
+# This job gets triggered by a ConfidenceLevelModifiedEvent published
+# by OPNFV jobs so ONAP can promote the autorelease artifact even further.
+#
+# This job is created for the demo purposes and might not be there for
+# the prototype.
+- job-template:
+    name: 'openci-onap-promote-daily-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    concurrent: false
+
+    parameters:
+      - 'opnfv-build-defaults'
+
+    triggers:
+      - jms-messaging:
+          provider-name: openci.activemq
+          selector: CI_TYPE = 'custom'
+          checks:
+            - field: origin
+              expected-value: 'OPNFV'
+            - field: type
+              expected-value: 'ConfidenceLevelModifiedEvent'
+
+    builders:
+      - shell: |
+          #!/bin/bash
+
+          echo
+          echo "Triggered by an event"
+          echo "----------------------------------"
+          echo $CI_MESSAGE
+          echo "----------------------------------"
+          echo " Promoted ONAP Autorelease artifact as release candidate!"
