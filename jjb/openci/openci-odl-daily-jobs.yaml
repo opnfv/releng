@@ -26,13 +26,39 @@
     concurrent: false
 
     parameters:
+      - string:
+          name: PUBLISH_EVENT_TYPE
+          default: ArtifactPublishedEvent
+          description: 'The type of the event this job publishes'
+      - string:
+          name: PUBLISH_EVENT_ORIGIN
+          default: ODL
+          description: 'Originating community'
+      - string:
+          name: ARTIFACT_LOCATION
+          default: https://url/to/artifact/on/odl/nexus/$BUILD_NUMBER
+          description: 'The location of the artifact on ODL Nexus'
+      - string:
+          name: CONFIDENCE_LEVEL
+          default: "'autorelease': 'SUCCESS'"
+          description: 'The confidence level the published artifact gained'
       - 'opnfv-build-defaults'
 
     builders:
-      - shell: |
-          #!/bin/bash
+      - shell:
+          !include-raw-escape: ./create-ane.sh
+      - inject:
+          properties-file: "$WORKSPACE/event.properties"
 
-          echo "Will construct and publish an ArtifactPublishedEvent"
+    publishers:
+      - jms-messaging:
+          provider-name: openci.activemq
+          msg-type: Custom
+          msg-props: |
+            type=$type
+            origin=$origin
+          msg-content:
+            $eventBody
 
 # This job gets triggered by a ConfidenceLevelModifiedEvent published
 # by OPNFV jobs so ODL can promote the autorelease artifact even further.
@@ -64,7 +90,7 @@
           #!/bin/bash
 
           echo
-          echo "Triggered by an event"
+          echo "Triggered by $type"
           echo "----------------------------------"
           echo $CI_MESSAGE
           echo "----------------------------------"
