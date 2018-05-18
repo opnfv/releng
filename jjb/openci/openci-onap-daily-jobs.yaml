@@ -26,13 +26,35 @@
     concurrent: false
 
     parameters:
+      - string:
+          name: EVENT_TYPE
+          default: ArtifactPublishedEvent
+          description: 'The type of the event this job publishes'
+      - string:
+          name: EVENT_ORIGIN
+          default: ONAP
+          description: 'Originating community'
+      - string:
+          name: CONFIDENCE_LEVEL
+          default: 'autorelease': 'SUCCESS'
+          description: 'The confidence level the published artifact gained'
       - 'opnfv-build-defaults'
 
     builders:
-      - shell: |
-          #!/bin/bash
+      - shell:
+          !include-raw: ./create-ane.sh
+      - inject:
+          properties-file: "$WORKSPACE/event.properties"
 
-          echo "Will construct and publish an ArtifactPublishedEvent"
+    publishers:
+      - jms-messaging:
+          provider-name: openci.activemq
+          msg-type: Custom
+          msg-props: |
+            eventType=$eventType
+            eventOrigin=$eventOrigin
+          msg-content:
+            $eventBody
 
 # This job gets triggered by a ConfidenceLevelModifiedEvent published
 # by OPNFV jobs so ONAP can promote the autorelease artifact even further.
