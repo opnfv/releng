@@ -60,6 +60,10 @@ releng_repo=${WORKSPACE}/releng
 [ -d ${releng_repo} ] && sudo rm -rf ${releng_repo}
 git clone https://gerrit.opnfv.org/gerrit/releng ${releng_repo} >/dev/null
 
+pharos_repo=${WORKSPACE}/pharos
+[ -d ${pharos_repo} ] && sudo rm -rf ${pharos_repo}
+git clone https://git.opnfv.org/pharos ${pharos_repo} >/dev/null
+
 if [[ ${INSTALLER_TYPE} != 'joid' ]]; then
     echo "SUT branch is $SUT_BRANCH"
     echo "dovetail branch is $BRANCH"
@@ -93,10 +97,14 @@ if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == "fuel" ]]; then
 fi
 cat $OPENRC
 
+# These packages are used for parsing yaml files and decrypting ipmi user and password.
+sudo pip install shyaml
+sudo yum install -y rubygems || sudo apt-get install -y ruby
+sudo gem install hiera-eyaml
+
 if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == "compass" ]]; then
     compass_repo=${WORKSPACE}/compass4nfv/
     git clone https://github.com/opnfv/compass4nfv.git ${compass_repo} >/dev/null
-    sudo pip install shyaml
     scenario_file=${compass_repo}/deploy/conf/hardware_environment/$NODE_NAME/os-nosdn-nofeature-ha.yml
     ipmiIp=$(cat ${scenario_file} | shyaml get-value hosts.0.ipmiIp)
     ipmiPass=$(cat ${scenario_file} | shyaml get-value hosts.0.ipmiPass)
@@ -120,11 +128,26 @@ if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_T
     fuel_ctl_ssh_options="${ssh_options} -i ${SSH_KEY}"
     ssh_user="ubuntu"
     fuel_ctl_ip=$(ssh 2>/dev/null ${fuel_ctl_ssh_options} "${ssh_user}@${INSTALLER_IP}" \
-            "sudo salt --out yaml 'ctl*' pillar.get _param:openstack_control_address | \
-                awk '{print \$2; exit}'") &> /dev/null
+            "sudo salt 'cfg*' pillar.get _param:openstack_control_address --out text| \
+                cut -f2 -d' '") &> /dev/null
+    ipmi_index=$(ssh 2>/dev/null ${fuel_ctl_ssh_options} "${ssh_user}@${INSTALLER_IP}" \
+            "sudo salt 'ctl*' network.ip_addrs cidr=${fuel_ctl_ip} --out text | grep ${fuel_ctl_ip} | cut -c 5")
+    organization="$(cut -d'-' -f1 <<< "${NODE_NAME}")"
+    pod_name="$(cut -d'-' -f2 <<< "${NODE_NAME}")"
+    pdf_file=${pharos_repo}/labs/${organization}/${pod_name}.yaml
+    ipmiIp=$(cat ${pdf_file} | shyaml get-value nodes.($ipmi_index-1).remote_management.address)
+    ipmiIp="$(cut -d'/' -f1 <<< "${ipmiIp}")"
+    ipmiPass=$(cat ${pdf_file} | shyaml get-value nodes.($ipmi_index-1).remote_params.pass)
+    ipmiUser=$(cat ${pdf_file} | shyaml get-value nodes.($ipmi_index-1).remote_params.user)
+    [[ $ipmiUser == ENC* ]] && ipmiUser=$(eyaml decrypt -s ${ipmiUser//[[:blank:]]/})
+    [[ $ipmiPass == ENC* ]] && ipmiPass=$(eyaml decrypt -s ${ipmiPass//[[:blank:]]/})
+
     cat << EOF >${DOVETAIL_CONFIG}/pod.yaml
 nodes:
-- {ip: ${fuel_ctl_ip}, name: node1, key_filename: /home/opnfv/userconfig/pre_config/id_rsa, role: controller, user: ${ssh_user}}
+- {ip: ${INSTALLER_IP}, name: node0, key_filename: /home/opnfv/userconfig/pre_config/id_rsa,
+   role: Jumpserver, user: ${ssh_user}}
+- {ip: ${fuel_ctl_ip}, name: node1, key_filename: /home/opnfv/userconfig/pre_config/id_rsa,
+   role: controller, user: ${ssh_user}, ipmi_ip: ${ipmiIp}, ipmi_user: ${ipmiUser}, ipmi_password: ${ipmiPass}}
 
 EOF
 fi
