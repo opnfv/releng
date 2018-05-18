@@ -124,7 +124,7 @@ if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_T
                 awk '{print \$2; exit}'") &> /dev/null
     cat << EOF >${DOVETAIL_CONFIG}/pod.yaml
 nodes:
-- {ip: ${fuel_ctl_ip}, name: node1, key_filename: /root/.ssh/id_rsa, role: controller, user: ${ssh_user}}
+- {ip: ${fuel_ctl_ip}, name: node1, key_filename: /home/opnfv/userconfig/pre_config/id_rsa, role: controller, user: ${ssh_user}}
 
 EOF
 fi
@@ -154,7 +154,8 @@ if [[ ! -f ${DOVETAIL_CONFIG}/pod.yaml ]]; then
     fi
 
     cmd="sudo python ${releng_repo}/utils/create_pod_file.py -t ${INSTALLER_TYPE} \
-         -i ${INSTALLER_IP} ${options} -f ${DOVETAIL_CONFIG}/pod.yaml"
+         -i ${INSTALLER_IP} ${options} -f ${DOVETAIL_CONFIG}/pod.yaml \
+         -s /home/opnfv/userconfig/pre_config/id_rsa"
     echo ${cmd}
     ${cmd}
 
