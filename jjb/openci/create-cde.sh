@@ -19,9 +19,9 @@ cat << EOF > $WORKSPACE/event.properties
 type=$PUBLISH_EVENT_TYPE
 origin=$PUBLISH_EVENT_ORIGIN
 scenario=$DEPLOY_SCENARIO
-eventBody="{ 'type': '$EVENT_TYPE', 'id': '$(uuidgen)', 'time': '$(date -u +%Y-%m-%d_%H:%M:%SUTC)', 'origin': '$EVENT_ORIGIN', 'buildUrl': '$BUILD_URL', 'branch': 'master', 'compositionName': '$DEPLOY_SCENARIO', 'compositionMetadataUrl': '$SCENARIO_METADATA' }"
+eventBody="{ 'type': '$PUBLISH_EVENT_TYPE', 'id': '$(uuidgen)', 'time': '$(date -u +%Y-%m-%d_%H:%M:%SUTC)', 'origin': '$PUBLISH_EVENT_ORIGIN', 'buildUrl': '$BUILD_URL', 'branch': 'master', 'compositionName': '$DEPLOY_SCENARIO', 'compositionMetadataUrl': '$SCENARIO_METADATA_LOCATION' }"
 EOF
-echo "Constructed $EVENT_TYPE"
+echo "Constructed $PUBLISH_EVENT_TYPE"
 echo "--------------------------------------------"
 cat $WORKSPACE/event.properties
 echo "--------------------------------------------"
