@@ -144,9 +144,13 @@
           <<: *danube
       - 'os-ovn-nofeature-noha':
           <<: *danube
-      - 'os-odl-master_upstream-noha':
+      - 'os-odl-nofeature-noha':
           <<: *master
-      - 'os-odl-queens_upstream-noha':
+      - 'os-odl-nofeature-ha':
+          <<: *master
+      - 'os-odl-queens-noha':
+          <<: *master
+      - 'os-odl-queens-ha':
           <<: *master
       - 'os-nosdn-nofeature-noha':
           <<: *euphrates
@@ -1494,7 +1498,7 @@
           name: Baremetal Deploy and Test Phase
           condition: SUCCESSFUL
           projects:
-            - name: 'apex-os-odl-master_upstream-noha-baremetal-master'
+            - name: 'apex-os-odl-nofeature-noha-baremetal-master'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1502,7 +1506,23 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-odl-queens_upstream-noha-baremetal-master'
+            - name: 'apex-os-odl-nofeature-ha-baremetal-master'
+              node-parameters: false
+              current-parameters: false
+              predefined-parameters: |
+                OPNFV_CLEAN=yes
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
+            - name: 'apex-os-odl-queens-noha-baremetal-master'
+              node-parameters: false
+              current-parameters: false
+              predefined-parameters: |
+                OPNFV_CLEAN=yes
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
+            - name: 'apex-os-odl-queens-ha-baremetal-master'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
