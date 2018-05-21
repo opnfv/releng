@@ -205,6 +205,14 @@
       - 'arm-daily':
           job-timeout: 480
 
+    exclude:
+      - testsuite: 'arm-daily'
+        installer: 'daisy'
+      - testsuite: 'arm-daily'
+        installer: 'joid'
+      - testsuite: 'arm-daily'
+        installer: 'compass'
+
     jobs:
       - 'functest-{installer}-{pod}-{testsuite}-{stream}'
 
@@ -236,7 +244,7 @@
           branch: '{branch}'
       - '{installer}-defaults'
       - '{slave-label}-defaults'
-      - 'functest-{testsuite}-parameter'
+      - 'functest-daily-parameter'
       - string:
           name: DEPLOY_SCENARIO
           default: 'os-odl_l2-nofeature-ha'
@@ -253,7 +261,7 @@
     builders:
       - description-setter:
           description: "Built on $NODE_NAME"
-      - 'functest-{testsuite}-builder'
+      - 'functest-daily-builder'
 
 
 ########################
@@ -266,14 +274,6 @@
           name: FUNCTEST_MODE
           default: 'daily'
           description: "Daily suite name to run"
-
-- parameter:
-    name: functest-arm-daily-parameter
-    parameters:
-      - string:
-          name: FUNCTEST_MODE
-          default: 'arm-daily'
-          description: "Daily suite name (Aarch64) to run"
 
 - parameter:
     name: functest-suite-parameter
@@ -368,14 +368,6 @@
       - 'functest-exit'
 
 - builder:
-    name: functest-arm-daily-builder
-    builders:
-      - 'functest-cleanup'
-      - 'functest-arm-daily'
-      - 'functest-store-results'
-      - 'functest-exit'
-
-- builder:
     name: functest-suite-builder
     builders:
       - 'functest-cleanup'
@@ -406,17 +398,6 @@
                 !include-raw:
                     - ../../utils/fetch_k8_conf.sh
                     - ./functest-k8.sh
-
-# yamllint enable rule:indentation
-- builder:
-    name: functest-arm-daily
-    builders:
-      # yamllint disable rule:indentation
-      - shell:
-          !include-raw:
-              - ./functest-env-presetup.sh
-              - ../../utils/fetch_os_creds.sh
-              - ./functest-alpine.sh
 
 # yamllint enable rule:indentation
 - builder:
