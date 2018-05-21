@@ -83,7 +83,7 @@ RELEASE_VERSION=${GERRIT_REFNAME/refs\/tags\/}
 # If we're being triggered by a comment-added job, then extract the tag
 # from the comment and use that as the release version.
 # Expected comment format: retag opnfv-x.y.z
-if [[ "$GERRIT_EVENT_TYPE" == "comment-added" ]]; then
+if [[ "${GERRIT_EVENT_TYPE:-}" == "comment-added" ]]; then
     RELEASE_VERSION=$(echo "$GERRIT_EVENT_COMMENT_TEXT" | grep 'retag' | awk '{print $2}')
 fi
 
