@@ -203,6 +203,7 @@
       - 'daily':
           job-timeout: 360
       - 'arm-daily':
+          pod: 'armband-{virtual,baremetal}'
           job-timeout: 480
 
     jobs:
@@ -269,6 +270,7 @@
 
 - parameter:
     name: functest-arm-daily-parameter
+    pod: 'armband-{virtual,baremetal}'
     parameters:
       - string:
           name: FUNCTEST_MODE
@@ -359,21 +361,16 @@
 ########################
 # builder macros
 ########################
-- builder:
+- builder: &daily-builder
     name: functest-daily-builder
     builders:
       - 'functest-cleanup'
       - 'functest-daily'
       - 'functest-store-results'
       - 'functest-exit'
-
 - builder:
     name: functest-arm-daily-builder
-    builders:
-      - 'functest-cleanup'
-      - 'functest-arm-daily'
-      - 'functest-store-results'
-      - 'functest-exit'
+    <<: *daily-builder
 
 - builder:
     name: functest-suite-builder
@@ -406,17 +403,6 @@
                 !include-raw:
                     - ../../utils/fetch_k8_conf.sh
                     - ./functest-k8.sh
-
-# yamllint enable rule:indentation
-- builder:
-    name: functest-arm-daily
-    builders:
-      # yamllint disable rule:indentation
-      - shell:
-          !include-raw:
-              - ./functest-env-presetup.sh
-              - ../../utils/fetch_os_creds.sh
-              - ./functest-alpine.sh
 
 # yamllint enable rule:indentation
 - builder:
