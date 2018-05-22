@@ -12,7 +12,12 @@ echo
 if echo $ARTIFACT_VERSION | grep "dev" 1> /dev/null; then
   GERRIT_PATCHSET_NUMBER=$(echo $GERRIT_REFSPEC | grep -Eo '[0-9]+$')
   export OPNFV_ARTIFACT_VERSION="dev${GERRIT_CHANGE_NUMBER}_${GERRIT_PATCHSET_NUMBER}"
-  export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY"
+  if [ "$BRANCH" == 'master' ]; then
+    # build rpm
+    export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY --rpms"
+  else
+    export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY"
+  fi
 elif echo $BUILD_TAG | grep "csit" 1> /dev/null; then
   export OPNFV_ARTIFACT_VERSION=csit${BUILD_NUMBER}
   export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY"
