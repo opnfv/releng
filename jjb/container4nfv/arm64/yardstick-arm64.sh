@@ -81,6 +81,11 @@ cmd='sudo docker exec yardstick sed -i.bak "/# execute tests/i\sed -i.bak \"s/op
 sshpass -p root ssh root@10.1.0.50 \
   ${cmd}
 
+echo "Replace the X86 libzmq shared object file to that of aarch64"
+cmd='sudo docker exec yardstick bash -c "if [  -f /opt/nsb_bin/trex/scripts/external_libs/pyzmq-14.5.0/python2/ucs4/64bit/zmq/libzmq.so.3 ]; then  cp /usr/lib/aarch64-linux-gnu/libzmq.so /opt/nsb_bin/trex/scripts/external_libs/pyzmq-14.5.0/python2/ucs4/64bit/zmq/libzmq.so.3; fi"'
+sshpass -p root ssh root@10.1.0.50 \
+  ${cmd}
+
 echo "Yardstick: run tests: ${YARDSTICK_SCENARIO_SUITE_NAME}"
 cmd="sudo docker exec yardstick exec_tests.sh ${YARDSTICK_DB_BACKEND} ${YARDSTICK_SCENARIO_SUITE_NAME}"
 sshpass -p root ssh root@10.1.0.50 \
