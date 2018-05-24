@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "1a494da4_d09f4002",
+        "filename": "jjb/dovetail/dovetail-run.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 6819
+      },
+      "writtenOn": "2018-05-24T11:38:10Z",
+      "side": 1,
+      "message": "There is a user and password ipmi information under each node. Generally they are the same and that is why this info is left under \"remote_params\" and then referenced. Instead of using that variable, read it from the node itself:\n\njumphost.remote_management.pass\njumphost.remote_management.user\nnodes.$i.remote_management.pass\nnodes.$i.remote_management.user",
+      "parentUuid": "1a494da4_89463822",
+      "range": {
+        "startLine": 136,
+        "startChar": 0,
+        "endLine": 137,
+        "endChar": 78
+      },
+      "revId": "301066503e82378a9478915682c2ea66e00246a5",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a494da4_0e5fce0f",
         "filename": "jjb/dovetail/dovetail-run.sh",
         "patchSetId": 2
@@ -131,6 +155,30 @@
       "side": 1,
       "message": "Line 130 gets a controller ip \u0027fuel_ctl_ip\u0027, then it needs to find its IMPI IP from the PDF. Here is trying to do that.\nI though it can be filtered out according to the MAC address. But it seems that I am wrong.\nDo you have any idea about this? How can I get the IPMI IP according to \u0027fuel_ctl_ip\u0027?",
       "parentUuid": "1a494da4_0eb6ae3d",
+      "range": {
+        "startLine": 142,
+        "startChar": 0,
+        "endLine": 143,
+        "endChar": 108
+      },
+      "revId": "301066503e82378a9478915682c2ea66e00246a5",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a494da4_b07274e3",
+        "filename": "jjb/dovetail/dovetail-run.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 143,
+      "author": {
+        "id": 6819
+      },
+      "writtenOn": "2018-05-24T11:38:10Z",
+      "side": 1,
+      "message": "Controllers in fuel are normally VMs running on top of the servers described on the PDF. Line 130 get you the ip of one of them (actually all of them, then filtered by awk), but as VMs they dont relate to the server IPMI described on the PDF. \n\nDepending on what actions you need to with that there may be other ways to interact with the controller vms or vm host",
+      "parentUuid": "1a494da4_c9f5e0cc",
       "range": {
         "startLine": 142,
         "startChar": 0,
