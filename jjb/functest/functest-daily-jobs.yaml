@@ -201,8 +201,6 @@
       - 'suite':
           job-timeout: 60
       - 'daily':
-          job-timeout: 360
-      - 'arm-daily':
           job-timeout: 480
 
     jobs:
@@ -266,14 +264,6 @@
           name: FUNCTEST_MODE
           default: 'daily'
           description: "Daily suite name to run"
-
-- parameter:
-    name: functest-arm-daily-parameter
-    parameters:
-      - string:
-          name: FUNCTEST_MODE
-          default: 'arm-daily'
-          description: "Daily suite name (Aarch64) to run"
 
 - parameter:
     name: functest-suite-parameter
@@ -368,14 +358,6 @@
       - 'functest-exit'
 
 - builder:
-    name: functest-arm-daily-builder
-    builders:
-      - 'functest-cleanup'
-      - 'functest-arm-daily'
-      - 'functest-store-results'
-      - 'functest-exit'
-
-- builder:
     name: functest-suite-builder
     builders:
       - 'functest-cleanup'
@@ -406,17 +388,6 @@
                 !include-raw:
                     - ../../utils/fetch_k8_conf.sh
                     - ./functest-k8.sh
-
-# yamllint enable rule:indentation
-- builder:
-    name: functest-arm-daily
-    builders:
-      # yamllint disable rule:indentation
-      - shell:
-          !include-raw:
-              - ./functest-env-presetup.sh
-              - ../../utils/fetch_os_creds.sh
-              - ./functest-alpine.sh
 
 # yamllint enable rule:indentation
 - builder:
