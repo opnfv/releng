@@ -7,6 +7,8 @@
     jobs:
       - 'nfvbench-build-{stream}'
       - 'nfvbench-verify-{stream}'
+      - 'nfvbench-docker-build-push-{stream}'
+
 
     stream:
       - master:
@@ -96,3 +98,65 @@
     builders:
       - shell: |
           cd $WORKSPACE && tox
+
+- job-template:
+    name: 'nfvbench-docker-build-push-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters: &parameters
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
+      - string:
+          name: PUSH_IMAGE
+          default: "true"
+          description: "To enable/disable pushing the image to Dockerhub."
+      - string:
+          name: DOCKER_REPO_NAME
+          default: "opnfv/{dockerrepo}"
+          description: "Dockerhub repo to be pushed to."
+      - string:
+          name: DOCKER_DIR
+          default: "{dockerdir}"
+          description: "Directory containing files needed by the Dockerfile"
+      - string:
+          name: COMMIT_ID
+          default: ""
+          description: "commit id to make a snapshot docker image"
+      - string:
+          name: GERRIT_REFNAME
+          default: ""
+          description: "Docker tag to be built, e.g. refs/tags/5.0.0, refs/tags/opnfv-5.0.0, refs/tags/5.0.RC1"
+      - string:
+          name: DOCKERFILE
+          default: "{dockerfile}"
+          description: "Dockerfile to use for creating the image."
+      - string:
+          name: ARCH_TAG
+          default: "{arch_tag}"
+          description: "If set, this value will be added to the docker image tag as a prefix"
+
+    properties:
+      - throttle:
+          max-per-node: 1
+          option: 'project'
+
+    scm:
+      - git-scm
+
+    builders: &builders
+      - shell:
+          !include-raw-escape: ./opnfv-docker.sh
+
+    triggers:
+      - pollscm:
+          cron: "*/30 * * * *"
+      - gerrit-trigger-tag-created:
+          project: '{project}'
+
+    publishers:
+      - email:
+          recipients: '{receivers}'
+      - email-jenkins-admins-on-failure
