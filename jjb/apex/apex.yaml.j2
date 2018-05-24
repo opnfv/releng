@@ -74,9 +74,12 @@
       - 'virtual'
 
     os_version:
-      - 'pike'
-      - 'queens'
-      - 'master'
+      - 'pike':
+          os_scenario: 'pike'
+      - 'queens':
+          os_scenario: 'queens'
+      - 'master':
+          os_scenario: 'nofeature'
 
 
 # Fetch Logs Job
@@ -684,7 +687,7 @@
             - name: 'apex-deploy-virtual-{stream}'
               current-parameters: false
               predefined-parameters: |
-                DEPLOY_SCENARIO=os-odl-{os_version}-noha
+                DEPLOY_SCENARIO=os-odl-{os_scenario}-noha
                 OPNFV_CLEAN=yes
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
@@ -702,7 +705,7 @@
             - name: 'functest-apex-virtual-suite-{stream}'
               current-parameters: false
               predefined-parameters: |
-                DEPLOY_SCENARIO=os-odl-{os_version}-noha
+                DEPLOY_SCENARIO=os-odl-{os_scenario}-noha
                 FUNCTEST_SUITE_NAME=tempest_smoke_serial
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
