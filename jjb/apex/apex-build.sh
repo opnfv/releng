@@ -24,14 +24,14 @@ elif echo $BUILD_TAG | grep "csit" 1> /dev/null; then
 elif [ "$ARTIFACT_VERSION" == "daily" ]; then
   export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d")
   if [ "$BRANCH" == 'master' ]; then
-    export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY"
+    export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY --rpms"
   else
     export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY --iso"
   fi
 else
   export OPNFV_ARTIFACT_VERSION=${ARTIFACT_VERSION}
   if [ "$BRANCH" == 'master' ]; then
-    export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY"
+    export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY --rpms"
   else
     export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY --iso"
   fi
