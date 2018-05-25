@@ -389,7 +389,6 @@
           block-level: 'NODE'
           blocking-jobs:
             - 'apex-runner.*'
-            - 'apex-.*-promote.*'
             - 'apex-run.*'
             - 'apex-virtual-.*'
             - 'apex-verify-gate-.*'
@@ -577,7 +576,6 @@
           blocking-jobs:
             - 'apex-verify.*'
             - 'apex-runner.*'
-            - 'apex-.*-promote.*'
             - 'apex-run.*'
             - 'apex-testsuite-.+-baremetal-.+'
       - throttle:
@@ -785,6 +783,10 @@
           branch: '{branch}'
       - apex-parameter:
           gs-pathname: '{gs-pathname}'
+      - string:
+          name: ARTIFACT_VERSION
+          default: dev
+          description: "Used for overriding the ARTIFACT_VERSION"
 
     properties:
       - build-blocker:
@@ -792,7 +794,6 @@
           block-level: 'NODE'
           blocking-jobs:
             - 'apex-verify.*'
-            - 'apex-deploy.*'
             - 'apex-runner.*'
             - 'apex-daily.*'
 
