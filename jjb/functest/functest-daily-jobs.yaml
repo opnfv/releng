@@ -14,10 +14,12 @@
       stream: master
       branch: '{stream}'
       gs-pathname: ''
+      disabled: false
     fraser: &fraser
       stream: fraser
       branch: 'stable/{stream}'
       gs-pathname: '/{stream}'
+      disabled: false
     # -------------------------------
     # POD, INSTALLER, AND BRANCH MAPPING
     # -------------------------------
@@ -197,20 +199,106 @@
     #       <<: *master
     # -------------------------------
 
-    testsuite:
-      - 'suite':
-          job-timeout: 60
-      - 'daily':
-          job-timeout: 480
+    functest-tier:
+      - 'healthcheck':
+          job-timeout: 20
+      - 'smoke':
+          job-timeout: 180
+      - 'components':
+          job-timeout: 240
+      - 'vnf':
+          job-timeout: 240
+
+    features-suite:
+      - 'doctor-notification'
+      - 'bgpvpn'
+      - 'functest-odl-sfc'
+      - 'fds'
+      - 'barometercollectd'
+
+    exclude:
+      - features-suite: 'promise'
+        stream: 'master'
+      - features-suite: 'domino-multinode'
+        stream: 'master'
+      - features-suite: 'fds'
+        stream: 'euphrates'
+
+    build-job-settings: &build-job-settings
+      current-parameter: false
+      git-revision: true
+      node-parameters: false
+      kill-phase-on: FAILURE
+      abort-all-jobs: false
+      predefined-parameters: |
+        FUNCTEST_MODE=$FUNCTEST_MODE
+        FUNCTEST_TIER=$FUNCTEST_TIER
+
+    features-job-settings: &features-job-settings
+      current-parameter: false
+      git-revision: true
+      node-parameters: false
+      kill-phase-on: FAILURE
+      abort-all-jobs: false
+      predefined-parameters: |
+        FUNCTEST_MODE=$FUNCTEST_MODE
+        FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
 
     jobs:
-      - 'functest-{installer}-{pod}-{testsuite}-{stream}'
+      - 'functest-{installer}-{pod}-suite-{stream}'
+      - 'functest-{installer}-{pod}-daily-{stream}'
+      - 'functest-{installer}-{pod}-daily-{functest-tier}-{stream}'
+      - 'functest-{installer}-{pod}-daily-features-{features-suite}-{stream}'
 
 ################################
 # job template
 ################################
+
 - job-template:
-    name: 'functest-{installer}-{pod}-{testsuite}-{stream}'
+
+    name: 'functest-{installer}-{pod}-daily-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - '{slave-label}-defaults'
+      - functest-parameter:
+          gs-pathname: '{gs-pathname}'
+
+    builders:
+      - multijob:
+          name: 'Run functest tests'
+          execution-type: SEQUENTIAL
+          projects:
+            - name: 'functest-{installer}-{pod}-daily-healthcheck-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-{installer}-{pod}-daily-smoke-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-{installer}-{pod}-daily-vnf-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-{installer}-{pod}-daily-features-doctor-notification-{stream}'
+              <<: *features-job-settings
+            - name: 'functest-{installer}-{pod}-daily-features-bgpvpn-{stream}'
+              <<: *features-job-settings
+            - name: 'functest-{installer}-{pod}-daily-features-functest-odl-sfc-{stream}'
+              <<: *features-job-settings
+            - name: 'functest-{installer}-{pod}-daily-features-barometercollectd-{stream}'
+              <<: *features-job-settings
+            - name: 'functest-{installer}-{pod}-daily-features-fds-{stream}'
+              <<: *features-job-settings
+            - name: 'functest-{installer}-{pod}-daily-features-promise-{stream}'
+              <<: *features-job-settings
+            - name: 'functest-{installer}-{pod}-daily-features-domino-multinode-{stream}'
+
+- job-template: &functest-installer-tier-job
+
+    name: 'functest-{installer}-{pod}-daily-{functest-tier}-{stream}'
 
     concurrent: true
 
@@ -234,10 +322,15 @@
           branch: '{branch}'
       - '{installer}-defaults'
       - '{slave-label}-defaults'
-      - 'functest-{testsuite}-parameter'
+      - string:
+          name: FUNCTEST_MODE
+          default: 'tier'
+      - string:
+          name: FUNCTEST_TIER
+          default: '{functest-tier}'
       - string:
           name: DEPLOY_SCENARIO
-          default: 'os-odl_l2-nofeature-ha'
+          default: 'os-nosdn-nofeature-noha'
       - string:
           name: CLEAN_DOCKER_IMAGES
           default: 'false'
@@ -251,8 +344,94 @@
     builders:
       - description-setter:
           description: "Built on $NODE_NAME"
-      - 'functest-{testsuite}-builder'
+      - 'functest-daily-builder'
 
+    publishers:
+      - 'functest-recipients'
+      - 'fuel-recipients'
+
+
+- job-template:
+
+    name: 'functest-{installer}-{pod}-daily-features-{features-suite}-{stream}'
+    concurrent: true
+    properties:
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-per-node: 1
+          option: 'project'
+    wrappers:
+      - build-name:
+          name: '$BUILD_NUMBER Suite: $FUNCTEST_MODE Scenario: $DEPLOY_SCENARIO'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - '{slave-label}-defaults'
+      - string:
+          name: FUNCTEST_MODE
+          default: 'testcase'
+      - string:
+          name: FUNCTEST_SUITE_NAME
+          default: '{features-suite}'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-nosdn-nofeature-noha'
+      - string:
+          name: CLEAN_DOCKER_IMAGES
+          default: 'false'
+          description: 'Remove downloaded docker images (opnfv/functest*:*)'
+      - functest-parameter:
+          gs-pathname: '{gs-pathname}'
+
+    scm:
+      - git-scm
+
+    builders:
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - 'functest-daily-builder'
+
+    publishers:
+      - 'functest-features-recipients'
+      - 'functest-recipients'
+      - 'fuel-recipients'
+
+- job-template:
+
+    name: 'functest-{installer}-{pod}-suite-{stream}'
+    <<: *functest-installer-tier-job
+
+    wrappers:
+      - build-name:
+          name: '$BUILD_NUMBER Suite: $FUNCTEST_MODE Scenario: $DEPLOY_SCENARIO'
+      - timeout:
+          timeout: '60'
+          abort: true
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - '{slave-label}-defaults'
+      - 'functest-suite-parameter'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-nosdn-nofeature-noha'
+      - string:
+          name: CLEAN_DOCKER_IMAGES
+          default: 'false'
+          description: 'Remove downloaded docker images (opnfv/functest*:*)'
+      - functest-parameter:
+          gs-pathname: '{gs-pathname}'
+
+    builders:
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - 'functest-suite-builder'
 
 ########################
 # parameter macros
@@ -407,3 +586,29 @@
     builders:
       - shell:
           !include-raw: ./functest-exit.sh
+
+- publisher:
+    name: 'functest-features-recipients'
+    publishers:
+      - email:
+          recipients:
+
+- publisher:
+    name: 'functest-recipients'
+    publishers:
+      - email:
+          recipients: >
+            jalausuch@suse.com morgan.richomme@orange.com
+            cedric.ollivier@orange.com feng.xiaowei@zte.com.cn
+            juha.kosonen@nokia.com wangwulin@huawei.com
+            delia.popescu@enea.com cristina.pauna@enea.com
+            valentin.boucher@kontron.com
+      - email-jenkins-admins-on-failure
+
+- publisher:
+    name: 'fuel-recipients'
+    publishers:
+      - email:
+          recipients: >
+            peter.barabas@ericsson.com mpolenchuck@mirantis.com
+            alexandru.avadanii@enea.com guillermo.herrero@enea.com
