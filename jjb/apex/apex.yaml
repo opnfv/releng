@@ -414,6 +414,7 @@
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                PROMOTE=$PROMOTE
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: true
@@ -787,6 +788,10 @@
           name: ARTIFACT_VERSION
           default: dev
           description: "Used for overriding the ARTIFACT_VERSION"
+      - string:
+          name: PROMOTE
+          default: 'True'
+          description: "Used for overriding the PROMOTE"
 
     properties:
       - build-blocker:
@@ -814,7 +819,6 @@
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                PROMOTE=True
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: true

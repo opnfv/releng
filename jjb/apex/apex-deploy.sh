@@ -118,11 +118,8 @@ if [[ "$JOB_NAME" =~ "virtual" ]]; then
   if [[ "${DEPLOY_SCENARIO}" =~ fdio|ovs ]]; then
     DEPLOY_CMD="${DEPLOY_CMD} --virtual-default-ram 12 --virtual-compute-ram 7"
   fi
-  if [[ "$JOB_NAME" == *csit* ]]; then
-    DEPLOY_CMD="${DEPLOY_CMD} -e csit-environment.yaml"
-  fi
   if [[ "$PROMOTE" == "True" ]]; then
-    DEPLOY_CMD="${DEPLOY_CMD} --virtual-computes 1"
+    DEPLOY_CMD="${DEPLOY_CMD} --virtual-computes 2 -e csit-environment.yaml"
   fi
 else
   # settings for bare metal deployment
@@ -144,6 +141,8 @@ fi
 
 if [ "$IPV6_FLAG" == "True" ]; then
   NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings_v6.yaml"
+elif [[ "$PROMOTE" == "True" ]]; then
+  NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings_csit.yaml"
 else
   NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings.yaml"
 fi
@@ -157,7 +156,7 @@ fi
 # start deployment
 sudo ${DEPLOY_CMD} -d ${DEPLOY_FILE} -n ${NETWORK_FILE} --debug
 
-if [[ "$JOB_NAME" == *csit* ]]; then
+if [[ "$PROMOTE" == 'True' ]]; then
   echo "CSIT job: setting host route for floating ip routing"
   # csit route to allow docker container to reach floating ips
   UNDERCLOUD=$(sudo virsh domifaddr undercloud | grep -Eo "[0-9\.]+{3}[0-9]+")
