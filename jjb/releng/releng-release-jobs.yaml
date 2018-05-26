@@ -10,6 +10,8 @@
 - project:
     name: releng-release-jobs
 
+    build-node: 'opnfv-build'
+
     stream:
       - fraser
 
@@ -23,6 +25,7 @@
     name: 'releng-release-{stream}-verify'
 
     parameters:
+      - '{build-node}-defaults'
       - stream-parameter:
           stream: '{stream}'
       - project-parameter:
@@ -59,9 +62,9 @@
                   pattern: 'releases/scripts/verify_schema.py'
 
     builders:
-      - create-virtualenv
-      - shell:
-          !include-raw-escape: releng-release-verify.sh
+      - shell: !include-raw-escape:
+          - releng-release-create-venv.sh
+          - releng-release-tagging.sh
 
     publishers:
       - email-jenkins-admins-on-failure
@@ -82,6 +85,12 @@
       - project-parameter:
           project: '{project}'
           branch: 'master'
+      # Override GIT_BASE so we can send patches back to Gerrit and
+      # modify repos
+      - string:
+          name: GIT_BASE
+          default: ssh://$USER@gerrit.opnfv.org:29418/$PROJECT
+          description: 'Git URL to use on this Jenkins Slave'
 
     scm:
       - git-scm-gerrit
@@ -93,9 +102,10 @@
           files: 'releases/{stream}/*'
 
     builders:
-      - create-virtualenv
-      - shell:
-          !include-raw-escape: releng-release-create-branch.sh
+      - shell: !include-raw-escape:
+          - releng-release-create-venv.sh
+          - releng-release-tagging.sh
+          # - releng-release-create-branch.sh
 
     publishers:
       - email-jenkins-admins-on-failure
@@ -107,13 +117,3 @@
           name: STREAM
           default: '{stream}'
           description: "OPNFV Stable Stream"
-
-- builder:
-    name: create-virtualenv
-    builders:
-      - shell: |
-          #!/bin/bash
-          sudo pip install virtualenv
-          virtualenv $WORKSPACE/venv
-          . $WORKSPACE/venv/bin/activate
-          pip install --upgrade pip
