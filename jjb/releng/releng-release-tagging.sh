@@ -57,7 +57,7 @@ for release_file in $RELEASE_FILES; do
               echo "--> Creating $tag tag for $repo at $ref"
               git tag -am "$tag" $tag $ref
               echo "--> Pushing tag"
-              echo "[noop] git push origin $tag"
+              git push origin "$tag"
           else
               # For non-merge jobs just output the ref info.
               git show -s --format="%h %s %d" $ref
