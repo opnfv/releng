@@ -212,6 +212,30 @@
       "revId": "301066503e82378a9478915682c2ea66e00246a5",
       "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a494da4_19742cce",
+        "filename": "jjb/dovetail/dovetail-run.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 143,
+      "author": {
+        "id": 6819
+      },
+      "writtenOn": "2018-05-30T15:11:50Z",
+      "side": 1,
+      "message": "In this case it would be easier to shut down the physical node even if the openstack controller is a VM into it.\n\nNormally there would be 3 controller VMs (ctl01 ctl02 ctl03) sharing a floating virtual IP. Each VM runs on a different baremetal node (kvm01 kvm02 kvm03)\n\nYou could ask for the control VIP getting the param _param:openstack_control_address as you did on line 131.  Only one node has that IP active so you can find out which one is the active filtering with that ip. The answer will have the master ctl host name and this can be trimmed to an N integer. \n\nThis integer could be used to point to the list of nodes of the pdf as you had there with $i but keep in mind this one goes from 1 to 3 and not 0 to 2. \n\n\nubuntu@cfg01:~$ sudo salt \"cfg*\" pillar.get _param:openstack_control_address --out text | cut -f 2 -d \" \"\n172.16.10.35\n\nubuntu@cfg01:~$ sudo salt \"ctl*\" network.ip_addrs cidr\u003d172.16.10.35  --out text | grep \"172.16.10.35\" | cut -c 5\n3\n\ncontrol address\u003d 172.16.10.35\nN\u003d3 (ctl03, 3rd baremetal node)\nnodes.(N-1).remote_management.address",
+      "parentUuid": "1a494da4_8118cc85",
+      "range": {
+        "startLine": 142,
+        "startChar": 0,
+        "endLine": 143,
+        "endChar": 108
+      },
+      "revId": "301066503e82378a9478915682c2ea66e00246a5",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
     }
   ]
 }
