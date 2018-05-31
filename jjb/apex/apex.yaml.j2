@@ -248,6 +248,7 @@
     parameters:
       - '{project}-defaults'
       - '{project}-virtual-{stream}-defaults'
+      - 'functest-suite-parameter'
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
@@ -307,7 +308,8 @@
               current-parameters: false
               predefined-parameters: |
                 DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-                FUNCTEST_SUITE_NAME=healthcheck
+                FUNCTEST_MODE=$FUNCTEST_MODE
+                FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
@@ -699,6 +701,8 @@
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                FUNCTEST_SUITE_NAME=tempest_smoke_serial
+                FUNCTEST_MODE=testcase
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: true
