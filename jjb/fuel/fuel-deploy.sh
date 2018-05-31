@@ -55,8 +55,8 @@ if [ "${PROJECT}" = 'fuel' ]; then
     fi
 else
     SUDO=
-    # Armband currently supports arm, enea labs
-    if [[ ! "${LAB_NAME}" =~ (arm|enea) ]]; then
+    # Armband currently supports arm, enea, unh labs
+    if [[ ! "${LAB_NAME}" =~ (arm|enea|unh) ]]; then
         echo "Unsupported/unidentified lab ${LAB_NAME}. Cannot continue!"
         exit 1
     fi
