@@ -78,9 +78,7 @@ for node in $nodes; do
 done
 
 # copy virsh net definitions
-for net in admin api external storage tenant; do
-  sudo virsh net-dumpxml ${net} > ${net}.xml
-done
+sudo virsh net-dumpxml admin > admin.xml
 
 sudo chown jenkins-ci:jenkins-ci *
 
