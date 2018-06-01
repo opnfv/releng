@@ -77,6 +77,8 @@
           project: '{project}'
           branch: '{branch}'
           slave_label: 'opnfv-build-ubuntu'
+          dockerfile: '{dockerfile}'
+          arch_tag: '{arch_tag}'
 
     properties:
       - throttle:
@@ -163,6 +165,8 @@
           project: '{project}'
           branch: '{branch}'
           slave_label: '{slave_label}'
+          dockerfile: '{dockerfile}'
+          arch_tag: '{arch_tag}'
       - string:
           name: DOCKER_REPO_NAME
           default: "opnfv/compass-{image}"
@@ -171,14 +175,6 @@
           name: DOCKER_DIR
           default: "compass-{image}"
           description: "Directory containing files needed by the Dockerfile"
-      - string:
-          name: DOCKERFILE
-          default: '{dockerfile}'
-          description: "Dockerfile to use for creating the image."
-      - string:
-          name: ARCH_TAG
-          default: "{arch_tag}"
-          description: "If set, this value will be added to the docker image tag as a prefix"
     scm:
       - git-scm
     builders:
@@ -193,6 +189,8 @@
           project: '{project}'
           branch: '{branch}'
           slave_label: 'opnfv-build-ubuntu'
+          dockerfile: '{dockerfile}'
+          arch_tag: '{arch_tag}'
     builders:
       - shell: |
           #!/bin/bash -ex
@@ -235,6 +233,14 @@
           name: GERRIT_REFNAME
           default: ""
           description: "Docker tag to be built, e.g. refs/tags/5.0.0, refs/tags/opnfv-5.0.0, refs/tags/5.0.RC1"
+      - string:
+          name: DOCKERFILE
+          default: '{dockerfile}'
+          description: "Dockerfile to use for creating the image."
+      - string:
+          name: ARCH_TAG
+          default: "{arch_tag}"
+          description: "If set, this value will be added to the docker image tag as a prefix"
       - string:
           name: PROJECT
           default: "{project}"
