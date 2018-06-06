@@ -14,6 +14,36 @@ List Release Repos
 import argparse
 import yaml
 
+class Repo(object):
+    """Object representing a repo listed in the release file.
+
+    Includes eq, hash, and ne methods so set comparisons work
+    """
+
+    def __init__(self, repo=None, ref=None, version=None):
+        self.repo = repo
+        self.ref = ref
+        self.version = version
+
+    def __repr__(self):
+        if self.version:
+            return "%s %s %s" % (self.repo, self.ref, self.version)
+        elif self.ref:
+            return "%s %s" % (self.repo, self.ref)
+        return "%s" % self.repo
+
+    def __eq__(self, obj):
+        if isinstance(obj, Repo):
+            return ((self.repo == obj.repo) and (self.ref == obj.ref)
+                    and (self.version == obj.version))
+        return False
+
+    def __ne__(self, obj):
+        return (not self.__eq__(obj))
+
+    def __hash__(self):
+        return hash(self.__repr__())
+
 
 def main():
     """Given a release yamlfile list the repos it contains"""
@@ -45,15 +75,17 @@ def list_repos(project, args):
     if 'releases' not in project:
         exit(0)
 
+    repos = set()
     for item in lookup:
         repo, ref = next(iter(item['location'].items()))
         if args.names:
-            print(repo)
+            repos.add(Repo(repo))
         elif args.release and item['version'] == args.release:
-            print("%s %s" % (repo, ref))
+            repos.add(Repo(repo, ref))
         elif not args.release:
-            # Print all releases
-            print("%s %s %s" % (repo, item['version'], ref))
+            repos.add(Repo(repo, ref, item['version']))
+    for repo in repos:
+        print repo
 
 
 if __name__ == "__main__":
