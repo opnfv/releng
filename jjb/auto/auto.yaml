@@ -87,7 +87,7 @@
 
     parameters:
       - project-parameter:
-          project: 'armband'
+          project: '{project}'
           branch: '{branch}'
       - '{installer}-defaults':
           gs-pathname: '{gs-pathname}'
@@ -96,6 +96,9 @@
       - string:
           name: DEPLOY_SCENARIO
           default: '{scenario}'
+      - string:
+          name: GERRIT_PROJECT
+          default: '{project}'
 
     builders:
       - trigger-builds:
@@ -103,6 +106,7 @@
             current-parameters: false
             predefined-parameters:
               DEPLOY_SCENARIO='os-nosdn-nofeature-ha'
+              GERRIT_PROJECT='armband'
             same-node: true
             block: true
 
