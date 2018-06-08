@@ -4,12 +4,13 @@ set -e
 set +u
 set +o pipefail
 
+REPO=${REPO:-opnfv}
 CI_LOOP=${CI_LOOP:-daily}
 TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results
 ENERGY_RECORDER_API_URL=http://energy.opnfv.fr/resources
 
 check_os_deployment() {
-    FUNCTEST_IMAGE=opnfv/functest-healthcheck:${DOCKER_TAG}
+    FUNCTEST_IMAGE=${REPO}/functest-healthcheck:${DOCKER_TAG}
     echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
     docker pull ${FUNCTEST_IMAGE}>/dev/null
     cmd="docker run --rm --privileged=true ${volumes} ${FUNCTEST_IMAGE} check_deployment"
@@ -34,7 +35,7 @@ run_tiers() {
     echo 0 > ${ret_val_file}
 
     for tier in ${tiers[@]}; do
-        FUNCTEST_IMAGE=opnfv/functest-${tier}:${DOCKER_TAG}
+        FUNCTEST_IMAGE=${REPO}/functest-${tier}:${DOCKER_TAG}
         echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
         docker pull ${FUNCTEST_IMAGE}>/dev/null
         cmd="docker run --rm  --privileged=true ${envs} ${volumes} ${TESTCASE_OPTIONS} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
@@ -59,17 +60,17 @@ run_test() {
     # Determine which Functest image should be used for the test case
     case ${test_name} in
         connection_check|api_check|snaps_health_check)
-            FUNCTEST_IMAGE=opnfv/functest-healthcheck:${DOCKER_TAG} ;;
+            FUNCTEST_IMAGE=${REPO}/functest-healthcheck:${DOCKER_TAG} ;;
         vping_ssh|vping_userdata|tempest_smoke_serial|rally_sanity|refstack_defcore|odl|odl_netvirt|snaps_smoke)
-            FUNCTEST_IMAGE=opnfv/functest-smoke:${DOCKER_TAG} ;;
+            FUNCTEST_IMAGE=${REPO}/functest-smoke:${DOCKER_TAG} ;;
         tempest_full_parallel|rally_full)
-            FUNCTEST_IMAGE=opnfv/functest-components:${DOCKER_TAG} ;;
+            FUNCTEST_IMAGE=${REPO}/functest-components:${DOCKER_TAG} ;;
         cloudify_ims|orchestra_openims|orchestra_clearwaterims|vyos_vrouter)
-            FUNCTEST_IMAGE=opnfv/functest-vnf:${DOCKER_TAG} ;;
+            FUNCTEST_IMAGE=${REPO}/functest-vnf:${DOCKER_TAG} ;;
         promise|doctor-notification|bgpvpn|functest-odl-sfc|domino-multinode|barometercollectd|fds)
-            FUNCTEST_IMAGE=opnfv/functest-features:${DOCKER_TAG} ;;
+            FUNCTEST_IMAGE=${REPO}/functest-features:${DOCKER_TAG} ;;
         parser-basics)
-            FUNCTEST_IMAGE=opnfv/functest-parser:${DOCKER_TAG} ;;
+            FUNCTEST_IMAGE=${REPO}/functest-parser:${DOCKER_TAG} ;;
         *)
             echo "Unkown test case $test_name"
             exit 1
