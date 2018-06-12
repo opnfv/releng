@@ -29,7 +29,7 @@ for PROJECT in "${PROJECT_LIST[@]}"; do
     git clone "https://gerrit.opnfv.org/gerrit/$PROJECT.git" $CLONE_PATH/$PROJECT
   else
     pushd "$CLONE_PATH/$PROJECT" &>/dev/null
-    git pull -f
+    git pull -f origin master
     popd &> /dev/null
   fi
 
