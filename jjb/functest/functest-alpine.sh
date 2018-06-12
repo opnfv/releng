@@ -109,11 +109,6 @@ fi
 
 rc_file_vol="-v ${rc_file}:${FUNCTEST_DIR}/conf/env_file"
 
-# Set iptables rule to allow forwarding return traffic for container
-if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FORWARD | awk 'NR==3' | grep RETURN 2> ${redirect}; then
-    sudo iptables -I FORWARD -j RETURN
-fi
-
 echo "Functest: Start Docker and prepare environment"
 
 echo "Functest: Download images that will be used by test cases"
