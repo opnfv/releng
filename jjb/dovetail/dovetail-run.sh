@@ -169,10 +169,14 @@ fi
 if [ -f ${DOVETAIL_CONFIG}/pod.yaml ]; then
     sudo chmod 666 ${DOVETAIL_CONFIG}/pod.yaml
     echo "Adapt process info for $INSTALLER_TYPE ..."
-    attack_process='rabbitmq'
+    if [ "$INSTALLER_TYPE" == "apex" ]; then
+        attack_process='rabbitmq_server'
+    else
+        attach_process='rabbitmq'
+    fi
     cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
 process_info:
-- {testcase_name: dovetail.ha.tc010, attack_process: ${attack_process}}
+- {testcase_name: dovetail.ha.rabbitmq, attack_process: ${attack_process}}
 
 EOF
     echo "file ${DOVETAIL_CONFIG}/pod.yaml:"
