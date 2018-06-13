@@ -122,10 +122,21 @@ if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_T
     fuel_ctl_ip=$(ssh 2>/dev/null ${fuel_ctl_ssh_options} "${ssh_user}@${INSTALLER_IP}" \
             "sudo salt --out yaml 'ctl*' pillar.get _param:openstack_control_address | \
                 awk '{print \$2; exit}'") &> /dev/null
+    fuel_cmp_ip=$(ssh 2>/dev/null ${fuel_ctl_ssh_options} "${ssh_user}@${INSTALLER_IP}" \
+            "sudo salt --out yaml 'cmp01*' pillar.get _param:openstack_control_address | \
+                awk '{print \$2; exit}'") &> /dev/null
+    fuel_dbs_ip=$(ssh 2>/dev/null ${fuel_ctl_ssh_options} "${ssh_user}@${INSTALLER_IP}" \
+            "sudo salt --out yaml 'dbs01*' pillar.get _param:openstack_control_address | \
+                awk '{print \$2; exit}'") &> /dev/null
+    fuel_msg_ip=$(ssh 2>/dev/null ${fuel_ctl_ssh_options} "${ssh_user}@${INSTALLER_IP}" \
+            "sudo salt --out yaml 'msg01*' pillar.get _param:openstack_control_address | \
+                awk '{print \$2; exit}'") &> /dev/null
     cat << EOF >${DOVETAIL_CONFIG}/pod.yaml
 nodes:
 - {ip: ${fuel_ctl_ip}, name: node1, key_filename: /home/opnfv/userconfig/pre_config/id_rsa, role: controller, user: ${ssh_user}}
-
+- {ip: ${fuel_msg_ip}, name: msg01, key_filename: /home/opnfv/userconfig/pre_config/id_rsa, role: controller, user: ${ssh_user}}
+- {ip: ${fuel_cmp_ip}, name: cmp01, key_filename: /home/opnfv/userconfig/pre_config/id_rsa, role: controller, user: ${ssh_user}}
+- {ip: ${fuel_dbs_ip}, name: dbs01, key_filename: /home/opnfv/userconfig/pre_config/id_rsa, role: controller, user: ${ssh_user}}
 EOF
 fi
 
@@ -170,15 +181,18 @@ if [ -f ${DOVETAIL_CONFIG}/pod.yaml ]; then
     sudo chmod 666 ${DOVETAIL_CONFIG}/pod.yaml
     echo "Adapt process info for $INSTALLER_TYPE ..."
     if [ "$INSTALLER_TYPE" == "apex" ]; then
-        attack_process='rabbitmq_server'
-    else
-        attach_process='rabbitmq'
-    fi
-    cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
+        cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
 process_info:
-- {testcase_name: dovetail.ha.rabbitmq, attack_process: ${attack_process}}
-
+- {testcase_name: dovetail.ha.rabbitmq, attack_process: rabbitmq_server}
 EOF
+    elif [ "$INSTALLER_TYPE" == "fuel" ]; then
+        cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
+process_info:
+- {testcase_name: dovetail.ha.rabbitmq, attack_process: rabbitmq-server, attack_host: msg01}
+- {testcase_name: dovetail.ha.neutron_l3_agent, attack_process: neutron-l3-agent, attack_host: cmp01}
+- {testcase_name: dovetail.ha.database, attack_process: mysqld, attack_host: dbs01}
+EOF
+
     echo "file ${DOVETAIL_CONFIG}/pod.yaml:"
     cat ${DOVETAIL_CONFIG}/pod.yaml
 else
