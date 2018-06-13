@@ -9,47 +9,29 @@
     # -------------------------------
     # BRANCH ANCHORS
     # -------------------------------
-    master: &master
-      stream: master
-      branch: '{stream}'
-      gs-pathname: ''
-      docker-tag: 'latest'
-    danube: &danube
-      stream: danube
-      branch: 'stable/{stream}'
-      gs-pathname: '/{stream}'
-      docker-tag: 'stable'
+    stream: master
+    branch: '{stream}'
+    gs-pathname: ''
+    docker-tag: 'latest'
 
-    # -------------------------------
-    # POD, INSTALLER, AND BRANCH MAPPING
-    # -------------------------------
-    pod:
-      # -------------------------------
-      #        master
-      # -------------------------------
-      - intel-pod2:
-          installer: apex
-          <<: *master
-      - intel-pod2:
-          installer: apex
-          <<: *danube
+    installer: apex
 
     testsuite:
-      - 'daily'
+      - csit
+      - cbench
 
     jobs:
-      - 'cperf-{installer}-{pod}-{testsuite}-{stream}'
+      - 'cperf-{installer}-{testsuite}-{stream}'
 
 ################################
 # job template
 ################################
 - job-template:
-    name: 'cperf-{installer}-{pod}-{testsuite}-{stream}'
+    name: 'cperf-{installer}-{testsuite}-{stream}'
 
     concurrent: true
 
     properties:
-      - logrotate-default
       - throttle:
           enabled: true
           max-per-node: 1
@@ -57,24 +39,17 @@
 
     wrappers:
       - build-name:
-          name: '$BUILD_NUMBER Suite: $CPERF_SUITE_NAME Scenario: $DEPLOY_SCENARIO'
+          name: '$BUILD_NUMBER Suite: $CPERF_SUITE_NAME ODL BRANCH: $ODL_BRANCH'
       - timeout:
           timeout: 400
           abort: true
 
     parameters:
-      - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - '{pod}-defaults'
-      - '{installer}-defaults'
       - cperf-parameter:
           testsuite: '{testsuite}'
           gs-pathname: '{gs-pathname}'
           docker-tag: '{docker-tag}'
-
-    scm:
-      - git-scm
+          stream: '{stream}'
 
     builders:
       - 'cperf-{testsuite}-builder'
@@ -90,6 +65,14 @@
           default: '{testsuite}'
           description: "Suite name to run"
       - string:
+          name: ODL_BRANCH
+          default: 'master'
+          description: "Branch that OpenDaylight is running"
+      - string:
+          name: OS_VERSION
+          default: 'master'
+          description: "OpenStack version (short name, no stable/ prefix)"
+      - string:
           name: GS_PATHNAME
           default: '{gs-pathname}'
           description: "Version directory where the opnfv documents will be stored in gs repository"
@@ -101,6 +84,22 @@
           name: DOCKER_TAG
           default: '{docker-tag}'
           description: 'Tag to pull docker image'
+      - string:
+          name: RC_FILE_PATH
+          default: ''
+          description: "Path to the OS credentials file if given"
+      - string:
+          name: SSH_KEY_PATH
+          default: ''
+          description: "Path to the private SSH key to access OPNFV nodes"
+      - string:
+          name: NODE_FILE_PATH
+          default: ''
+          description: "Path to the yaml file describing overcloud nodes"
+      - string:
+          name: ODL_CONTAINERIZED
+          default: 'true'
+          description: "boolean set true if ODL on overcloud is a container"
 
 ########################
 # trigger macros
@@ -110,10 +109,24 @@
 # builder macros
 ########################
 - builder:
-    name: cperf-daily-builder
+    name: cperf-csit-builder
     builders:
       - 'cperf-cleanup'
+      - 'cperf-prepare-robot'
+      - 'cperf-robot-netvirt-csit'
+
+- builder:
+    name: cperf-cbench-builder
+    builders:
+      - 'cperf-cleanup'
+      - 'cperf-prepare-robot'
       - 'cperf-robot-cbench'
+
+- builder:
+    name: cperf-prepare-robot
+    builders:
+      - shell:
+          !include-raw: ./cperf-prepare-robot.sh
 
 - builder:
     name: cperf-robot-cbench
@@ -123,23 +136,6 @@
           set -o errexit
           set -o nounset
           set -o pipefail
-          undercloud_mac=$(sudo virsh domiflist undercloud | grep default | \
-                            grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
-          INSTALLER_IP=$(/usr/sbin/arp -e | grep ${undercloud_mac} | awk {'print $1'})
-
-          sudo scp -o StrictHostKeyChecking=no root@$INSTALLER_IP:/home/stack/overcloudrc /tmp/overcloudrc
-          sudo chmod 755 /tmp/overcloudrc
-          source /tmp/overcloudrc
-
-          # robot suites need the ssh key to log in to controller nodes, so throwing it
-          # in tmp, and mounting /tmp as $HOME as far as robot is concerned
-          sudo rm -rf /tmp/.ssh
-          sudo mkdir /tmp/.ssh
-          sudo chmod 0700 /tmp/.ssh
-          sudo scp -o StrictHostKeyChecking=no root@$INSTALLER_IP:/home/stack/.ssh/id_rsa /tmp/.ssh/
-          sudo chown -R jenkins-ci:jenkins-ci /tmp/.ssh
-          # done with sudo. jenkins-ci is the user from this point
-          chmod 0600 /tmp/.ssh/id_rsa
 
           # cbench requires the openflow drop test feature to be installed.
           sshpass -p karaf ssh -o StrictHostKeyChecking=no \
@@ -147,8 +143,6 @@
                                -o LogLevel=error \
                                -p 8101 karaf@$SDN_CONTROLLER_IP \
                                 feature:install odl-openflowplugin-flow-services-ui odl-openflowplugin-drop-test
-
-          docker pull opnfv/cperf:$DOCKER_TAG
 
           robot_cmd="pybot -e exclude -L TRACE -d /tmp \
                       -v ODL_SYSTEM_1_IP:${SDN_CONTROLLER_IP} \
@@ -163,6 +157,12 @@
           robot_suite="/home/opnfv/repos/odl_test/csit/suites/openflowplugin/Performance/010_Cbench.robot"
 
           docker run -i -v /tmp:/tmp opnfv/cperf:$DOCKER_TAG ${robot_cmd} ${robot_suite}
+
+- builder:
+    name: cperf-robot-netvirt-csit
+    builders:
+      - shell:
+          !include-raw: ./cperf-robot-netvirt-csit.sh
 
 - builder:
     name: cperf-cleanup
