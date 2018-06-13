@@ -689,10 +689,10 @@
 
     builders:
       - multijob:
-          name: apex-virtual-deploy-test
+          name: apex-virtual-deploy
           condition: SUCCESSFUL
           projects:
-            - name: 'apex-virtual-{stream}'
+            - name: 'apex-deploy-virtual-{stream}'
               current-parameters: true
               predefined-parameters: |
                 DEPLOY_SCENARIO=os-odl-{os_scenario}-noha
@@ -701,12 +701,20 @@
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                FUNCTEST_SUITE_NAME=tempest_smoke_serial
-                FUNCTEST_MODE=testcase
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: true
               git-revision: true
+      - multijob:
+          name: cperf-csit-test
+          condition: SUCCESSFUL
+          projects:
+            - name: 'cperf-apex-intel-pod2-csit-{stream}'
+              current-parameters: false
+              node-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: true
+              git-revision: false
       - multijob:
           name: create snapshot
           condition: SUCCESSFUL
