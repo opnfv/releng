@@ -113,10 +113,11 @@
     name: cperf-daily-builder
     builders:
       - 'cperf-cleanup'
-      - 'cperf-robot-cbench'
+      - 'cperf-prepare-robot'
+      - 'cperf-robot-netvirt-csit'
 
 - builder:
-    name: cperf-robot-cbench
+    name: cperf-prepare-robot
     builders:
       - shell: |
           #!/bin/bash
@@ -150,6 +151,17 @@
 
           docker pull opnfv/cperf:$DOCKER_TAG
 
+          sudo mkdir -p /tmp/robot_results
+
+- builder:
+    name: cperf-robot-cbench
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+
           robot_cmd="pybot -e exclude -L TRACE -d /tmp \
                       -v ODL_SYSTEM_1_IP:${SDN_CONTROLLER_IP} \
                       -v ODL_SYSTEM_IP:${SDN_CONTROLLER_IP} \
@@ -163,6 +175,82 @@
           robot_suite="/home/opnfv/repos/odl_test/csit/suites/openflowplugin/Performance/010_Cbench.robot"
 
           docker run -i -v /tmp:/tmp opnfv/cperf:$DOCKER_TAG ${robot_cmd} ${robot_suite}
+
+- builder:
+    name: cperf-robot-netvirt-csit
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          source {{ overcloudrc }}
+          STACK_HOME=~stack
+          robot_cmd="pybot \
+                        --removekeywords wuks \
+                        --xunit robotxunit.xml \
+                        -c critical \
+                        -e exclude \
+                        -d /tmp/robot_results \
+                        -v BUNDLEFOLDER:/opt/opendaylight \
+                        -v CONTROLLER_USER:heat-admin \
+                        -v DEFAULT_LINUX_PROMPT:\$ \
+                        -v DEFAULT_LINUX_PROMPT_STRICT:]\$ \
+                        -v DEFAULT_USER:heat-admin \
+                        -v DEVSTACK_DEPLOY_PATH:/tmp \
+                        -v HA_PROXY_IP:$ODL_IP \
+                        -v HA_PROXY_1_IP:$ODL_IP \
+                        -v HA_PROXY_2_IP:$ODL_IP \
+                        -v HA_PROXY_3_IP:$ODL_IP \
+                        -v NUM_ODL_SYSTEM:3 \
+                        -v NUM_OS_SYSTEM:3 \
+                        -v NUM_TOOLS_SYSTEM:0 \
+                        -v ODL_SNAT_MODE:conntrack \
+                        -v ODL_STREAM:fluorine \
+                        -v ODL_SYSTEM_IP:$ODL_IP \
+                        -v ODL_SYSTEM_1_IP:$ODL_IP \
+                        -v OS_CONTROL_NODE_IP:$ODL_IP \
+                        -v OS_CONTROL_NODE_1_IP:$OPENSTACK_CONTROL_NODE_1_IP \
+                        -v OS_CONTROL_NODE_2_IP:$OPENSTACK_CONTROL_NODE_2_IP \
+                        -v OS_CONTROL_NODE_3_IP:$OPENSTACK_CONTROL_NODE_3_IP \
+                        -v OPENSTACK_BRANCH:stable/queens \
+                        -v OS_COMPUTE_1_IP:$OPENSTACK_COMPUTE_NODE_1_IP \
+                        -v OS_COMPUTE_2_IP:$OPENSTACK_COMPUTE_NODE_2_IP \
+                        -v ODL_SYSTEM_IP:$OPENSTACK_CONTROL_NODE_1_IP \
+                        -v ODL_SYSTEM_1_IP:$OPENSTACK_CONTROL_NODE_1_IP \
+                        -v ODL_SYSTEM_2_IP:$OPENSTACK_CONTROL_NODE_2_IP \
+                        -v ODL_SYSTEM_3_IP:$OPENSTACK_CONTROL_NODE_3_IP \
+                        -v OS_USER:heat-admin \
+                        -v ODL_ENABLE_L3_FWD:yes \
+                        -v ODL_SYSTEM_USER:heat-admin \
+                        -v ODL_SYSTEM_PROMPT:\$ \
+                        -v PRE_CLEAN_OPENSTACK_ALL:True \
+                        -v PUBLIC_PHYSICAL_NETWORK:datacentre \
+                        -v RESTCONFPORT:8081 \
+                        -v ODL_RESTCONF_USER:admin \
+                        -v ODL_RESTCONF_PASSWORD:admin \
+                        -v KARAF_PROMPT_LOGIN:'opendaylight-user' \
+                        -v KARAF_PROMPT:'opendaylight-user.*root.*>' \
+                        -v SECURITY_GROUP_MODE:stateful \
+                        -v USER_HOME:/home/stack \
+                        -v WORKSPACE:{{ workdir }}/workspace  \
+                        -v USER:heat-admin \
+                        -v TOOLS_SYSTEM_IP:localhost \
+                        -v NODE_KARAF_COUNT_COMMAND:\"sudo docker exec opendaylight_api /bin/bash -c 'ps axf | grep org.apache.karaf | grep -v grep | wc -l' || echo 0\" \
+                        -v NODE_START_COMMAND:\"sudo docker start opendaylight_api\" \
+                        -v NODE_KILL_COMMAND:\"sudo docker stop opendaylight_api\" \
+                        -v NODE_STOP_COMMAND:\"sudo docker stop opendaylight_api\" \
+                        -v NODE_FREEZE_COMMAND:\"sudo docker stop opendaylight_api\" \
+                        -v NODE_ROLE_INDEX_START:0 \
+                        -v of_port:6653 "
+
+          docker run -i --net=host -v {{ workdir }}:{{ workdir }}:Z \
+                                   -v /home/stack/.ssh:/home/stack/.ssh:Z \
+                                   -v $STACK_HOME:$STACK_HOME \
+                                   -v /tmp/overcloudrc:/tmp/overcloudrc \
+                                   opnfv/cperf:$DOCKER_TAG \
+                        /bin/bash -c "source /tmp/overcloudrc; \
+                                      $robot_cmd /home/opnfv/repos/odl_test/csit/suites/openstack/connectivity/l2.robot;"
 
 - builder:
     name: cperf-cleanup
