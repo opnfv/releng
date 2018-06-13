@@ -130,8 +130,18 @@ if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_T
     fuel_ctl_ip=$(ssh 2>/dev/null ${fuel_ctl_ssh_options} "${ssh_user}@${INSTALLER_IP}" \
             "sudo salt 'cfg*' pillar.get _param:openstack_control_address --out text| \
                 cut -f2 -d' '")
+    fuel_cmp_ip=$(ssh 2>/dev/null ${fuel_ctl_ssh_options} "${ssh_user}@${INSTALLER_IP}" \
+            "sudo salt 'cmp001*' pillar.get _param:openstack_control_address --out text| \
+                cut -f2 -d' '")
+    fuel_dbs_ip=$(ssh 2>/dev/null ${fuel_ctl_ssh_options} "${ssh_user}@${INSTALLER_IP}" \
+            "sudo salt 'dbs01*' pillar.get _param:openstack_control_address --out text| \
+                cut -f2 -d' '")
+    fuel_msg_ip=$(ssh 2>/dev/null ${fuel_ctl_ssh_options} "${ssh_user}@${INSTALLER_IP}" \
+            "sudo salt 'msg01*' pillar.get _param:openstack_control_address --out text| \
+                cut -f2 -d' '")
     ipmi_index=$(ssh 2>/dev/null ${fuel_ctl_ssh_options} "${ssh_user}@${INSTALLER_IP}" \
             "sudo salt 'ctl*' network.ip_addrs cidr=${fuel_ctl_ip} --out text | grep ${fuel_ctl_ip} | cut -c 5")
+
     organization="$(cut -d'-' -f1 <<< "${NODE_NAME}")"
     pod_name="$(cut -d'-' -f2 <<< "${NODE_NAME}")"
     pdf_file=${pharos_repo}/labs/${organization}/${pod_name}.yaml
@@ -148,7 +158,9 @@ nodes:
    role: Jumpserver, user: ${ssh_user}}
 - {ip: ${fuel_ctl_ip}, name: node1, key_filename: /home/opnfv/userconfig/pre_config/id_rsa,
    role: controller, user: ${ssh_user}, ipmi_ip: ${ipmiIp}, ipmi_user: ${ipmiUser}, ipmi_password: ${ipmiPass}}
-
+- {ip: ${fuel_msg_ip}, name: msg01, key_filename: /home/opnfv/userconfig/pre_config/id_rsa, role: controller, user: ${ssh_user}}
+- {ip: ${fuel_cmp_ip}, name: cmp01, key_filename: /home/opnfv/userconfig/pre_config/id_rsa, role: controller, user: ${ssh_user}}
+- {ip: ${fuel_dbs_ip}, name: dbs01, key_filename: /home/opnfv/userconfig/pre_config/id_rsa, role: controller, user: ${ssh_user}}
 EOF
 fi
 
@@ -193,15 +205,20 @@ if [ -f ${DOVETAIL_CONFIG}/pod.yaml ]; then
     sudo chmod 666 ${DOVETAIL_CONFIG}/pod.yaml
     echo "Adapt process info for $INSTALLER_TYPE ..."
     if [ "$INSTALLER_TYPE" == "apex" ]; then
-        attack_process='rabbitmq_server'
-    else
-        attack_process='rabbitmq'
-    fi
-    cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
+        cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
 process_info:
-- {testcase_name: dovetail.ha.rabbitmq, attack_process: ${attack_process}}
-
+- {testcase_name: dovetail.ha.rabbitmq, attack_process: rabbitmq_server}
 EOF
+    elif [ "$INSTALLER_TYPE" == "fuel" ]; then
+        cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
+process_info:
+- {testcase_name: dovetail.ha.cinder_api, attack_process: cinder_wsgi}
+- {testcase_name: dovetail.ha.rabbitmq, attack_process: rabbitmq-server, attack_host: msg01}
+- {testcase_name: dovetail.ha.neutron_l3_agent, attack_process: neutron-l3-agent, attack_host: cmp01}
+- {testcase_name: dovetail.ha.database, attack_process: mysqld, attack_host: dbs01}
+EOF
+    fi
+
     echo "file ${DOVETAIL_CONFIG}/pod.yaml:"
     cat ${DOVETAIL_CONFIG}/pod.yaml
 else
