@@ -172,7 +172,7 @@ if [ -f ${DOVETAIL_CONFIG}/pod.yaml ]; then
     if [ "$INSTALLER_TYPE" == "apex" ]; then
         attack_process='rabbitmq_server'
     else
-        attach_process='rabbitmq'
+        attack_process='rabbitmq'
     fi
     cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
 process_info:
