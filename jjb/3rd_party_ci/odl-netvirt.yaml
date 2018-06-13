@@ -104,6 +104,10 @@
     builders:
       - description-setter:
           description: "Built on $NODE_NAME"
+      - shell:
+          !include-raw: ./detect-snapshot.sh
+      - inject:
+          properties-file: detected_snapshot
       - multijob:
           name: create-apex-vms
           condition: SUCCESSFUL
@@ -120,6 +124,8 @@
                 NETVIRT_ARTIFACT=$NETVIRT_ARTIFACT
                 APEX_ENV_NUMBER=$APEX_ENV_NUMBER
                 GERRIT_EVENT_COMMENT_TEXT=$GERRIT_EVENT_COMMENT_TEXT
+                TOPOLOGY=$TOPOLOGY
+                OS_VERSION=$OS_VERSION
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: true
@@ -138,6 +144,8 @@
                 GERRIT_PATCHSET_NUMBER=$GERRIT_PATCHSET_NUMBER
                 GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION
                 NETVIRT_ARTIFACT=$NETVIRT_ARTIFACT
+                TOPOLOGY=$TOPOLOGY
+                OS_VERSION=$OS_VERSION
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: true
@@ -147,13 +155,28 @@
           projects:
             - name: 'functest-netvirt-virtual-suite-master'
               predefined-parameters: |
-                DEPLOY_SCENARIO=os-odl-nofeature-ha
+                DEPLOY_SCENARIO=os-odl-nofeature-${TOPOLOGY}
                 FUNCTEST_MODE=testcase
                 FUNCTEST_SUITE_NAME=tempest_smoke
                 RC_FILE_PATH=$HOME/cloner-info/overcloudrc
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: false
+      - multijob:
+          name: csit
+          condition: ALWAYS
+          projects:
+             - name: cperf-apex-csit-{stream}
+               predefined-parameters: |
+                 ODL_BRANCH=$BRANCH
+                 RC_FILE_PATH=$SNAP_CACHE/overcloudrc
+                 NODE_FILE_PATH=$SNAP_CACHE/node.yaml
+                 SSH_KEY_PATH=$SNAP_CACHE/id_rsa
+                 ODL_CONTAINERIZED=false
+                 OS_VERSION=$OS_VERSION
+               node-parameters: true
+               kill-phase-on: NEVER
+               abort-all-job: false
       - multijob:
           name: postprocess
           condition: ALWAYS

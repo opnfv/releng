@@ -3,7 +3,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-SNAP_CACHE=$HOME/snap_cache
+SNAP_CACHE=$HOME/snap_cache/$OS_VERSION/$TOPOLOGY
 # clone opnfv sdnvpn repo
 git clone https://gerrit.opnfv.org/gerrit/p/sdnvpn.git $WORKSPACE/sdnvpn
 
