@@ -69,8 +69,6 @@ run_test() {
             FUNCTEST_IMAGE=${REPO}/functest-vnf:${DOCKER_TAG} ;;
         promise|doctor-notification|bgpvpn|functest-odl-sfc|domino-multinode|barometercollectd|fds)
             FUNCTEST_IMAGE=${REPO}/functest-features:${DOCKER_TAG} ;;
-        parser-basics)
-            FUNCTEST_IMAGE=${REPO}/functest-parser:${DOCKER_TAG} ;;
         *)
             echo "Unkown test case $test_name"
             exit 1
@@ -169,9 +167,9 @@ elif [ ${FUNCTEST_MODE} == 'tier' ]; then
     run_tiers ${tiers}
 else
     if [ ${DEPLOY_TYPE} == 'baremetal' ] && [ "${HOST_ARCH}" != "aarch64" ]; then
-        tiers=(healthcheck smoke features vnf parser)
+        tiers=(healthcheck smoke features vnf)
     else
-        tiers=(healthcheck smoke features parser)
+        tiers=(healthcheck smoke features)
     fi
     run_tiers ${tiers}
 fi
