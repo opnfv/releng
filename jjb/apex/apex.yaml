@@ -144,9 +144,17 @@
           <<: *danube
       - 'os-ovn-nofeature-noha':
           <<: *danube
+      - 'os-nosdn-nofeature-noha':
+          <<: *master
+      - 'os-nosdn-nofeature-ha':
+          <<: *master
       - 'os-odl-nofeature-noha':
           <<: *master
       - 'os-odl-nofeature-ha':
+          <<: *master
+      - 'os-nosdn-queens-noha':
+          <<: *master
+      - 'os-nosdn-queens-ha':
           <<: *master
       - 'os-odl-queens-noha':
           <<: *master
@@ -1491,6 +1499,22 @@
           name: Baremetal Deploy and Test Phase
           condition: SUCCESSFUL
           projects:
+            - name: 'apex-os-nosdn-nofeature-noha-baremetal-master'
+              node-parameters: false
+              current-parameters: false
+              predefined-parameters: |
+                OPNFV_CLEAN=yes
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
+            - name: 'apex-os-nosdn-nofeature-ha-baremetal-master'
+              node-parameters: false
+              current-parameters: false
+              predefined-parameters: |
+                OPNFV_CLEAN=yes
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
             - name: 'apex-os-odl-nofeature-noha-baremetal-master'
               node-parameters: false
               current-parameters: false
@@ -1500,6 +1524,22 @@
               abort-all-job: true
               git-revision: false
             - name: 'apex-os-odl-nofeature-ha-baremetal-master'
+              node-parameters: false
+              current-parameters: false
+              predefined-parameters: |
+                OPNFV_CLEAN=yes
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
+            - name: 'apex-os-nosdn-queens-noha-baremetal-master'
+              node-parameters: false
+              current-parameters: false
+              predefined-parameters: |
+                OPNFV_CLEAN=yes
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
+            - name: 'apex-os-nosdn-queens-ha-baremetal-master'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
