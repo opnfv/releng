@@ -61,13 +61,13 @@ run_test() {
     case ${test_name} in
         connection_check|api_check|snaps_health_check)
             FUNCTEST_IMAGE=${REPO}/functest-healthcheck:${DOCKER_TAG} ;;
-        vping_ssh|vping_userdata|tempest_smoke_serial|rally_sanity|refstack_defcore|odl|odl_netvirt|snaps_smoke)
+        vping_ssh|vping_userdata|cinder_test|tempest_smoke_serial|rally_sanity|refstack_defcore|patrole|odl|snaps_smoke|neutron_trunk)
             FUNCTEST_IMAGE=${REPO}/functest-smoke:${DOCKER_TAG} ;;
         tempest_full_parallel|rally_full)
             FUNCTEST_IMAGE=${REPO}/functest-components:${DOCKER_TAG} ;;
-        cloudify_ims|orchestra_openims|orchestra_clearwaterims|vyos_vrouter)
+        cloudify_ims|vyos_vrouter|juju_epc)
             FUNCTEST_IMAGE=${REPO}/functest-vnf:${DOCKER_TAG} ;;
-        promise|doctor-notification|bgpvpn|functest-odl-sfc|domino-multinode|barometercollectd|fds)
+        doctor-notification|bgpvpn|functest-odl-sfc|domino-multinode|barometercollectd|fds)
             FUNCTEST_IMAGE=${REPO}/functest-features:${DOCKER_TAG} ;;
         parser-basics)
             FUNCTEST_IMAGE=${REPO}/functest-parser:${DOCKER_TAG} ;;
