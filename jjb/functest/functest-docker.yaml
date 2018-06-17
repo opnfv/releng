@@ -25,6 +25,7 @@
     # yamllint disable rule:key-duplicates
     image:
       - 'core'
+      - 'tempest'
       - 'healthcheck'
       - 'features'
       - 'components'
@@ -35,6 +36,8 @@
     exclude:
       - stream: 'master'
         image: 'parser'
+      - stream: 'fraser'
+        image: 'tempest'
 
     # settings for jobs run in multijob phases
     build-job-settings: &build-job-settings
@@ -109,6 +112,20 @@
           execution-type: PARALLEL
           projects:
             - name: 'functest-core-docker-manifest-{stream}'
+              <<: *manifest-job-settings
+      - multijob:
+          name: 'build functest-tempest images'
+          execution-type: PARALLEL
+          projects:
+            - name: 'functest-tempest-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-tempest-docker-build-arm64-{stream}'
+              <<: *build-job-settings
+      - multijob:
+          name: 'publish functest-tempest manifests'
+          execution-type: PARALLEL
+          projects:
+            - name: 'functest-tempest-docker-manifest-{stream}'
               <<: *manifest-job-settings
       - multijob:
           name: 'build all functest images'
