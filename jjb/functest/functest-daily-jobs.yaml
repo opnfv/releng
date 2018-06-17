@@ -237,7 +237,7 @@
       - 'functest-{testsuite}-parameter'
       - string:
           name: DEPLOY_SCENARIO
-          default: 'os-odl_l2-nofeature-ha'
+          default: 'os-nosdn-nofeature-noha'
       - string:
           name: CLEAN_DOCKER_IMAGES
           default: 'false'
@@ -281,25 +281,27 @@
             - 'connection_check'
             - 'api_check'
             - 'snaps_health_check'
-            - 'vping_userdata'
             - 'vping_ssh'
+            - 'vping_userdata'
+            - 'cinder_test'
             - 'tempest_smoke_serial'
             - 'rally_sanity'
-            - 'odl'
-            - 'odl_netvirt'
-            - 'snaps_smoke'
             - 'refstack_defcore'
-            - 'promise'
-            - 'doctor'
+            - 'patrole'
+            - 'odl'
+            - 'snaps_smoke'
+            - 'neutron_trunk'
+            - 'doctor-notification'
             - 'bgpvpn'
-            - 'parser'
-            - 'security_scan'
+            - 'functest-odl-sfc'
+            - 'barometercollectd'
+            - 'fds'
             - 'tempest_full_parallel'
             - 'rally_full'
             - 'cloudify_ims'
-            - 'cloudify_vrouter'
-            - 'orchestra_openims'
-            - 'orchestra_clearwaterims'
+            - 'vyos_vrouter'
+            - 'juju_epc'
+            - 'parser'
           default: 'connection_check'
       - choice:
           name: FUNCTEST_TIER
@@ -309,6 +311,7 @@
             - 'features'
             - 'components'
             - 'vnf'
+            - 'parser'
           default: 'healthcheck'
       - string:
           name: TESTCASE_OPTIONS
