@@ -343,6 +343,14 @@
               kill-phase-on: FAILURE
               abort-all-job: true
               git-revision: true
+      - shell: |
+          if echo $DEPLOY_SCENARIO | grep queens &> /dev/null; then
+          echo 'REPO=opnfv' > functest_repo
+          else
+          echo 'REPO=ollivier' > functest_repo
+          fi
+      - inject:
+          properties-file: functest_repo
       - multijob:
           name: functest-smoke
           condition: ALWAYS
@@ -353,6 +361,7 @@
                 DEPLOY_SCENARIO=$DEPLOY_SCENARIO
                 FUNCTEST_SUITE_NAME=tempest_smoke_serial
                 FUNCTEST_MODE=testcase
+                REPO=$REPO
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
