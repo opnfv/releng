@@ -10,7 +10,7 @@ Creating/Configuring/Verifying Jenkins Jobs
 
 Clone and setup the repo::
 
-    git clone ssh://YOU@gerrit.opnfv.org:29418/releng
+    git clone --recursive ssh://YOU@gerrit.opnfv.org:29418/releng
     cd releng
     git review -s
 
@@ -29,13 +29,13 @@ Make changes::
 
 Test with tox::
 
-    tox -v -ejjb
+    tox -e jjb
 
 .. note:: You can also test the jobs under a single jjb directory by
     specifying the directory. For example to test only the releng jobs, you
     could run:
 
-     tox -v -e jjb -- jjb/releng
+     tox -e jjb -- jjb/global:jjb/global-jjb:jjb/releng
 
 Submit the change to gerrit::
 
