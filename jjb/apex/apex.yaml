@@ -752,12 +752,10 @@
 - job-template:
     name: 'apex-create-snapshot'
 
-    # Job template for clean
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-
     disabled: false
+
+    parameters:
+      - '{project}-defaults'
 
     builders:
       - shell:
@@ -767,12 +765,10 @@
 - job-template:
     name: 'apex-upload-snapshot'
 
-    # Job template for clean
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-
     disabled: false
+
+    parameters:
+      - '{project}-defaults'
 
     builders:
       - inject:
@@ -847,7 +843,7 @@
           condition: SUCCESSFUL
           projects:
             - name: 'apex-create-snapshot'
-              current-parameters: false
+              current-parameters: true
               predefined-parameters: |
                 SNAP_TYPE=csit
               node-parameters: true
@@ -859,7 +855,7 @@
           condition: SUCCESSFUL
           projects:
             - name: 'apex-upload-snapshot'
-              current-parameters: false
+              current-parameters: true
               predefined-parameters: |
                 SNAP_TYPE=csit
               node-parameters: true
