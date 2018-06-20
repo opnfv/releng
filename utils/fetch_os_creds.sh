@@ -164,7 +164,13 @@ elif [ "$installer_type" == "apex" ]; then
     if [ -f /root/.ssh/id_rsa ]; then
         chmod 600 /root/.ssh/id_rsa
     fi
-    sudo scp $ssh_options root@$installer_ip:/home/stack/overcloudrc.v3 $dest_path
+
+    if [ "${BRANCH}" == "stable/fraser" ]; then
+      rc_file=overcloudrc.v3
+    else
+      rc_file=overcloudrc
+    fi
+    sudo scp $ssh_options root@$installer_ip:/home/stack/${rc_file} $dest_path
 
 elif [ "$installer_type" == "compass" ]; then
     if [ "${BRANCH}" == "stable/danube" ]; then
