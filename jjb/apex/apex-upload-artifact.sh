@@ -24,7 +24,9 @@ importkey () {
   git clone https://gerrit.opnfv.org/gerrit/releng $WORKSPACE/releng/ &> /dev/null
   #this is where we import the siging key
   if [ -f $WORKSPACE/releng/utils/gpg_import_key.sh ]; then
-    source $WORKSPACE/releng/utils/gpg_import_key.sh
+    if ! $WORKSPACE/releng/utils/gpg_import_key.sh; then
+      echo "WARNING: Failed to run gpg key import"
+    fi
   fi
 }
 
