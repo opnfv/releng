@@ -6,6 +6,7 @@ set -o pipefail
 echo "Starting the build of Apex using OpenStack Master packages. This will take some time..."
 echo "---------------------------------------------------------------------------------------"
 echo
+#
 # create the cache directory if it doesn't exist
 [[ -d $CACHE_DIRECTORY ]] || mkdir -p $CACHE_DIRECTORY
 # set OPNFV_ARTIFACT_VERSION
