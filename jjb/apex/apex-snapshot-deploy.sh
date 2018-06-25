@@ -141,7 +141,7 @@ done
 mkdir -p $HOME/cloner-info
 cp -f overcloudrc $HOME/cloner-info/
 
-admin_controller_ip=$(cat overcloudrc | grep -Eo -m 1 "192.0.2.[0-9]+")
+admin_controller_ip=$(cat overcloudrc | grep -Eo -m 1 "192.0.2.[0-9]+" | head -1)
 netvirt_url="http://${admin_controller_ip}:8081/restconf/operational/network-topology:network-topology/topology/netvirt:1"
 
 source overcloudrc
