@@ -147,8 +147,9 @@ netvirt_url="http://${admin_controller_ip}:8081/restconf/operational/network-top
 source overcloudrc
 counter=1
 while [ "$counter" -le 10 ]; do
-  if curl --fail --silent ${admin_controller_ip}:80 > /dev/null; then
-    echo "Overcloud Horizon is up...Checking if OpenDaylight NetVirt is up..."
+  echo "Checking if OpenStack is up"
+  if nc -z ${admin_controller_ip} 9696 > /dev/null; then
+    echo "Overcloud Neutron is up...Checking if OpenDaylight NetVirt is up..."
     if curl --fail --silent -u admin:admin ${netvirt_url} > /dev/null; then
       echo "OpenDaylight is up.  Overcloud deployment complete"
       exit 0
@@ -156,7 +157,7 @@ while [ "$counter" -le 10 ]; do
       echo "OpenDaylight not yet up, try ${counter}"
     fi
   else
-    echo "Horizon/Apache not yet up, try ${counter}"
+    echo "Neutron not yet up, try ${counter}"
   fi
   counter=$((counter+1))
   sleep 60
