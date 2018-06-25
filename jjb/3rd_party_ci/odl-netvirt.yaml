@@ -13,8 +13,8 @@
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
-      - carbon:
-          branch: 'stable/carbon'
+      - oxygen:
+          branch: 'stable/oxygen'
           gs-pathname: ''
           disabled: false
     #####################################
@@ -22,11 +22,11 @@
     #####################################
     phase:
       - 'create-apex-vms':
-          slave-label: 'odl-netvirt-virtual-intel'
+          slave-label: 'apex-virtual-master'
       - 'install-netvirt':
-          slave-label: 'odl-netvirt-virtual-intel'
+          slave-label: 'apex-virtual-master'
       - 'postprocess':
-          slave-label: 'odl-netvirt-virtual-intel'
+          slave-label: 'apex-virtual-master'
     #####################################
     # jobs
     #####################################
@@ -53,7 +53,17 @@
           max-total: 5
           max-per-node: 1
           option: 'project'
-
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - 'apex-verify.*'
+            - 'apex-.*-promote.*'
+            - 'apex-virtual.*'
+            - 'odl-netvirt-verify-virtual-create-apex-vms-.*'
+            - 'odl-netvirt-verify-virtual-install-netvirt-.*'
+            - 'functest-netvirt-virtual-suite-.*'
+            - 'odl-netvirt-verify-virtual-postprocess-.*'
+          block-level: 'NODE'
     scm:
       - git:
           url: https://gerrit.opnfv.org/gerrit/apex
@@ -69,7 +79,7 @@
       - string:
           name: NETVIRT_ARTIFACT
           default: distribution-karaf.tar.gz
-      - 'odl-netvirt-virtual-intel-defaults'
+      - 'apex-virtual-master-defaults'
 
     triggers:
       - gerrit:
@@ -136,7 +146,7 @@
           projects:
             - name: 'functest-netvirt-virtual-suite-master'
               predefined-parameters: |
-                DEPLOY_SCENARIO=os-odl_l3-nofeature-ha
+                DEPLOY_SCENARIO=os-odl-nofeature-ha
                 FUNCTEST_MODE=testcase
                 FUNCTEST_SUITE_NAME=odl_netvirt
                 RC_FILE_PATH=$HOME/cloner-info/overcloudrc
@@ -206,7 +216,7 @@
       - '{installer}-defaults'
       - string:
           name: DEPLOY_SCENARIO
-          default: 'os-odl_l2-bgpvpn-noha'
+          default: 'os-odl-nofeature-noha'
           description: 'Scenario to deploy and test'
       - string:
           name: GS_URL
