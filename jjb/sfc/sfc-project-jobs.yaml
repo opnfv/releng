@@ -60,14 +60,43 @@
                   pattern: 'docs/**|.gitignore'
 
     builders:
-      - sfc-unit-tests
+      - sfc-unit-tests-and-docs
+
+    publishers:
+      - sfc-unit-tests-and-docs-publisher
 
 ################################
 # job builders
 ################################
 
 - builder:
-    name: sfc-unit-tests
+    name: sfc-unit-tests-and-docs
     builders:
       - shell: |
-          cd $WORKSPACE && yamllint $(git ls-tree -r HEAD --name-only  | egrep 'yml$|yaml$' | egrep -v 'scenarios')
+          cd $WORKSPACE && tox
+
+################################
+# job publishers
+################################
+- publisher:
+    name: 'sfc-unit-tests-and-docs-publisher'
+    publishers:
+      - junit:
+          results: nosetests.xml
+      - cobertura:
+          report-file: "coverage.xml"
+          only-stable: "true"
+          fail-no-reports: "true"
+          health-auto-update: "true"
+          stability-auto-update: "true"
+          zoom-coverage-chart: "true"
+          targets:
+            - files:
+                healthy: 0
+                unhealthy: 0
+                failing: 0
+            - method:
+                healthy: 0
+                unhealthy: 0
+                failing: 0
+      - email-jenkins-admins-on-failure
