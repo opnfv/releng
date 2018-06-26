@@ -3,8 +3,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-ODL_ZIP=distribution-karaf-0.6.0-SNAPSHOT.zip
-
 echo "Attempting to fetch the artifact location from ODL Jenkins"
 if [ "$ODL_BRANCH" != 'master' ]; then
   DIST=$(echo ${ODL_BRANCH} | sed -rn 's#([a-zA-Z]+)/([a-zA-Z]+)#\2#p')
@@ -12,11 +10,14 @@ if [ "$ODL_BRANCH" != 'master' ]; then
 else
   DIST='fluorine'
 fi
+
+echo "ODL Distribution is ${DIST}"
+ODL_ZIP="karaf-SNAPSHOT.zip"
 CHANGE_DETAILS_URL="https://git.opendaylight.org/gerrit/changes/netvirt~${ODL_BRANCH}~${GERRIT_CHANGE_ID}/detail"
 # due to limitation with the Jenkins Gerrit Trigger, we need to use Gerrit REST API to get the change details
-ODL_BUILD_JOB_NUM=$(curl --fail -s ${CHANGE_DETAILS_URL} | grep -Eo "netvirt-distribution-check-${DIST}/[0-9]+" | tail -1 | grep -Eo [0-9]+)
-DISTRO_CHECK_CONSOLE_LOG="https://logs.opendaylight.org/releng/jenkins092/netvirt-distribution-check-${DIST}/${ODL_BUILD_JOB_NUM}/console.log.gz"
-NETVIRT_ARTIFACT_URL=$(curl --fail -s --compressed ${DISTRO_CHECK_CONSOLE_LOG} | grep 'BUNDLE_URL' | cut -d = -f 2)
+ODL_BUILD_JOB_NUM=$(curl --fail ${CHANGE_DETAILS_URL} | grep -Eo "netvirt-distribution-check-${DIST}/[0-9]+" | tail -1 | grep -Eo [0-9]+)
+DISTRO_CHECK_CONSOLE_LOG="https://logs.opendaylight.org/releng/vex-yul-odl-jenkins-1/netvirt-distribution-check-${DIST}/${ODL_BUILD_JOB_NUM}/console.log.gz"
+NETVIRT_ARTIFACT_URL=$(curl --fail --compressed ${DISTRO_CHECK_CONSOLE_LOG} | grep 'BUNDLE_URL' | cut -d = -f 2)
 
 echo -e "URL to artifact is\n\t$NETVIRT_ARTIFACT_URL"
 
@@ -30,8 +31,9 @@ fi
 
 #TODO(trozet) remove this once odl-pipeline accepts zip files
 echo "Converting artifact zip to tar.gz"
-unzip $ODL_ZIP
-tar czf /tmp/${NETVIRT_ARTIFACT} $(echo $ODL_ZIP | sed -n 's/\.zip//p')
+UNZIPPED_DIR=`dirname $(unzip -qql ${ODL_ZIP} | head -n1 | tr -s ' ' | cut -d' ' -f5-)`
+unzip ${ODL_ZIP}
+tar czf /tmp/${NETVIRT_ARTIFACT} ${UNZIPPED_DIR}
 
 echo "Download complete"
 ls -al /tmp/${NETVIRT_ARTIFACT}
