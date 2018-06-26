@@ -26,7 +26,7 @@ fi
 # but we really should check the cache here, and not use a single cache folder
 # for when we support multiple jobs on a single slave
 pushd sdnvpn/odl-pipeline/lib > /dev/null
-git fetch https://gerrit.opnfv.org/gerrit/sdnvpn refs/changes/17/59017/3 && git checkout FETCH_HEAD
+git fetch https://gerrit.opnfv.org/gerrit/sdnvpn refs/changes/17/59017/5 && git checkout FETCH_HEAD
 ./odl_reinstaller.sh --pod-config ${SNAP_CACHE}/node.yaml \
   --odl-artifact /tmp/${NETVIRT_ARTIFACT} --ssh-key-file ${SNAP_CACHE}/id_rsa
 popd > /dev/null

@@ -133,6 +133,10 @@ for node_def in ${virsh_vm_defs}; do
   sudo virsh define ${node_def}
   node=$(echo ${node_def} | awk -F '.' '{print $1}')
   sudo cp -f ${node}.qcow2 /var/lib/libvirt/images/
+  # FIXME (trozet) install java on each disk image as required to upgrade ODL
+  # should be added to Apex as part of the deployment. Remove this after that
+  # is complete
+  sudo LIBGUESTFS_BACKEND=direct virt-customize --install java-1.8.0-openjdk -a /var/lib/libvirt/images/${node}.qcow2
   sudo virsh start ${node}
   echo "Node: ${node} started"
 done
