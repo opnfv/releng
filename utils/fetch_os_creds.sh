@@ -149,29 +149,33 @@ if [ "$installer_type" == "fuel" ]; then
     echo $auth_url >> $dest_path
 
 elif [ "$installer_type" == "apex" ]; then
-    if ! ipcalc -c $installer_ip; then
-      installer_ip=$(sudo virsh domifaddr undercloud | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
-      if [ -z "$installer_ip" ] || ! $(ipcalc -c $installer_ip); then
-        echo "Unable to find valid IP for Apex undercloud: ${installer_ip}"
-        exit 1
-      fi
-    fi
-    verify_connectivity $installer_ip
-
-    # The credentials file is located in the Instack VM (192.0.2.1)
-    # NOTE: This might change for bare metal deployments
-    info "... from Instack VM $installer_ip..."
-    if [ -f /root/.ssh/id_rsa ]; then
-        chmod 600 /root/.ssh/id_rsa
-    fi
-
-    if [ "${BRANCH}" == "stable/fraser" ]; then
-      rc_file=overcloudrc.v3
+    if [ -n "$RC_FILE_PATH" ]; then
+        echo "RC_FILE_PATH is set: ${RC_FILE_PATH}. Copying RC FILE to ${dest_path}"
+        sudo cp -f ${RC_FILE_PATH} ${dest_path}
     else
-      rc_file=overcloudrc
-    fi
-    sudo scp $ssh_options root@$installer_ip:/home/stack/${rc_file} $dest_path
+        if ! ipcalc -c $installer_ip; then
+            installer_ip=$(sudo virsh domifaddr undercloud | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
+            if [ -z "$installer_ip" ] || ! $(ipcalc -c $installer_ip); then
+                echo "Unable to find valid IP for Apex undercloud: ${installer_ip}"
+                exit 1
+            fi
+        fi
+        verify_connectivity $installer_ip
 
+        # The credentials file is located in the Instack VM (192.0.2.1)
+        # NOTE: This might change for bare metal deployments
+        info "... from Instack VM $installer_ip..."
+        if [ -f /root/.ssh/id_rsa ]; then
+            chmod 600 /root/.ssh/id_rsa
+        fi
+
+        if [ "${BRANCH}" == "stable/fraser" ]; then
+            rc_file=overcloudrc.v3
+        else
+            rc_file=overcloudrc
+        fi
+        sudo scp $ssh_options root@$installer_ip:/home/stack/${rc_file} $dest_path
+    fi
 elif [ "$installer_type" == "compass" ]; then
     if [ "${BRANCH}" == "stable/danube" ]; then
         verify_connectivity $installer_ip
