@@ -13,7 +13,7 @@ check_os_deployment() {
     FUNCTEST_IMAGE=${REPO}/functest-healthcheck:${DOCKER_TAG}
     echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
     docker pull ${FUNCTEST_IMAGE}>/dev/null
-    cmd="docker run --rm ${volumes} ${FUNCTEST_IMAGE} check_deployment"
+    cmd="docker run --rm --privileged=true ${volumes} ${FUNCTEST_IMAGE} check_deployment"
     echo "Checking deployment, CMD: ${cmd}"
     eval ${cmd}
     ret_value=$?
@@ -38,7 +38,7 @@ run_tiers() {
         FUNCTEST_IMAGE=${REPO}/functest-${tier}:${DOCKER_TAG}
         echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
         docker pull ${FUNCTEST_IMAGE}>/dev/null
-        cmd="docker run --rm  ${envs} ${volumes} ${TESTCASE_OPTIONS} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
+        cmd="docker run --rm  --privileged=true ${envs} ${volumes} ${TESTCASE_OPTIONS} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
         echo "Running Functest tier '${tier}'. CMD: ${cmd}"
         eval ${cmd}
         ret_value=$?
@@ -76,7 +76,7 @@ run_test() {
     esac
     echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
     docker pull ${FUNCTEST_IMAGE}>/dev/null
-    cmd="docker run --rm ${envs} ${volumes} ${TESTCASE_OPTIONS} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
+    cmd="docker run --rm --privileged=true ${envs} ${volumes} ${TESTCASE_OPTIONS} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
     echo "Running Functest test case '${test_name}'. CMD: ${cmd}"
     eval ${cmd}
     ret_value=$?
@@ -167,8 +167,6 @@ elif [ ${FUNCTEST_MODE} == 'tier' ]; then
     run_tiers ${tiers}
 else
     if [ ${DEPLOY_TYPE} == 'baremetal' ] && [ "${HOST_ARCH}" != "aarch64" ]; then
-
-
         tiers=(healthcheck smoke features vnf)
     else
         tiers=(healthcheck smoke features)
