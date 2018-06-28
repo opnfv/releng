@@ -87,7 +87,7 @@ def list_repos(project, args):
         elif not args.release:
             repos.add(Repo(repo, ref, item['version']))
     for repo in repos:
-        print repo
+        print(repo)
 
 
 if __name__ == "__main__":
