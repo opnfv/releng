@@ -85,7 +85,7 @@ def list_repos(project, args):
         elif args.release and item['version'] == args.release:
             repos.add(Repo(repo, ref))
         elif not args.release:
-            repos.add(Repo(repo, ref, item['version']))
+            repos.add(Repo(repo, item['version'], ref))
     for repo in repos:
         print(repo)
 
