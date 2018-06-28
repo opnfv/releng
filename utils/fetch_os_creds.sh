@@ -149,7 +149,7 @@ if [ "$installer_type" == "fuel" ]; then
     echo $auth_url >> $dest_path
 
 elif [ "$installer_type" == "apex" ]; then
-    if [ -n "$RC_FILE_PATH" ]; then
+    if [ ! -z ${RC_FILE_PATH+x} ]; then
         echo "RC_FILE_PATH is set: ${RC_FILE_PATH}. Copying RC FILE to ${dest_path}"
         sudo cp -f ${RC_FILE_PATH} ${dest_path}
     else

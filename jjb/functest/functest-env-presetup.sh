@@ -5,7 +5,7 @@ set -o pipefail
 
 # Fetch INSTALLER_IP for APEX deployments
 if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
-    if [ -n "$RC_FILE_PATH" ]; then
+    if [ ! -z ${RC_FILE_PATH+x} ]; then
         echo "RC_FILE_PATH is set: ${RC_FILE_PATH}...skipping detecting UC IP"
     else
         echo "Gathering IP information for Apex installer VM"
