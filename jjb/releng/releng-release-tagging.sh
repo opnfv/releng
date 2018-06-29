@@ -34,7 +34,7 @@ for release_file in $RELEASE_FILES; do
           echo "$tag does not exist"
           TAG_EXISTS=false
       else
-          git cat-file tag $tag
+          git cat-file commit $tag
           TAG_EXISTS=true
       fi
 
