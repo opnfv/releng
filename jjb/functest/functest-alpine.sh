@@ -59,9 +59,9 @@ run_test() {
     echo 0 > ${ret_val_file}
     # Determine which Functest image should be used for the test case
     case ${test_name} in
-        connection_check|api_check|snaps_health_check)
+        connection_check|tenantnetwork1|tenantnetwork2|vmready1|vmready2|singlevm1|singlevm2|vping_ssh|vping_userdata|cinder_test|odl|api_check|snaps_health_check)
             FUNCTEST_IMAGE=${REPO}/functest-healthcheck:${DOCKER_TAG} ;;
-        vping_ssh|vping_userdata|cinder_test|tempest_smoke_serial|rally_sanity|refstack_defcore|patrole|odl|snaps_smoke|neutron_trunk)
+        tempest_smoke_serial|rally_sanity|refstack_defcore|patrole|shaker|snaps_smoke|neutron_trunk|barbican)
             FUNCTEST_IMAGE=${REPO}/functest-smoke:${DOCKER_TAG} ;;
         tempest_full_parallel|rally_full)
             FUNCTEST_IMAGE=${REPO}/functest-components:${DOCKER_TAG} ;;
@@ -69,8 +69,6 @@ run_test() {
             FUNCTEST_IMAGE=${REPO}/functest-vnf:${DOCKER_TAG} ;;
         doctor-notification|bgpvpn|functest-odl-sfc|barometercollectd|fds)
             FUNCTEST_IMAGE=${REPO}/functest-features:${DOCKER_TAG} ;;
-        parser-basics)
-            FUNCTEST_IMAGE=${REPO}/functest-parser:${DOCKER_TAG} ;;
         *)
             echo "Unkown test case $test_name"
             exit 1
