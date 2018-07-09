@@ -1,0 +1,101 @@
+---
+###################################################
+# Non-ci jobs for Dovetail project
+# They will only be enabled on request by projects!
+###################################################
+- project:
+    name: dovetail-webportal-project-jobs
+
+    project: 'dovetail-webportal'
+
+    jobs:
+      - 'dovetail-webportal-verify-{stream}'
+      - 'dovetail-webportal-merge-{stream}'
+
+    stream:
+      - master:
+          branch: '{stream}'
+          disabled: false
+
+################################
+# job templates
+################################
+
+- job-template:
+    name: 'dovetail-webportal-verify-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+      - git-scm-gerrit
+
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - draft-published-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+    builders:
+      - dovetail-unit-tests
+
+- job-template:
+    name: 'dovetail-webportal-merge-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+      - git-scm
+
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'remerge'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+
+    builders:
+      - dovetail-webportal-hello-world
+
+################################
+# builders for dovetail project
+###############################
+- builder:
+    name: dovetail-webportal-hello-world
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+
+          echo "hello world"
