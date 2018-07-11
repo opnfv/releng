@@ -43,7 +43,7 @@ LAB_NAME=${NODE_NAME/-*}
 # shellcheck disable=SC2153
 POD_NAME=${NODE_NAME/*-}
 # Armband might override LAB_CONFIG_URL, all others use the default
-LAB_CONFIG_URL=${LAB_CONFIG_URL:-'ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab'}
+LAB_CONFIG_URL=${LAB_CONFIG_URL:-'ssh://jenkins-ericsson@gerrit.opnfv.org:29418/pharos'}
 
 # Fuel requires deploy script to be ran with sudo, Armband does not
 SUDO='sudo -E'
@@ -70,6 +70,7 @@ chmod a+x "${HOME}" "${TMPDIR}"
 
 cd "${WORKSPACE}" || exit 1
 if [[ "$BRANCH" =~ (danube|euphrates) ]]; then
+    LAB_CONFIG_URL='ssh://jenkins-ericsson@gerrit.opnfv.org:29418/securedlab'
     if [[ "${LAB_CONFIG_URL}" =~ ^(git|ssh):// ]]; then
         echo "Cloning securedlab repo ${BRANCH}"
         LOCAL_CFG="${TMPDIR}/securedlab"
