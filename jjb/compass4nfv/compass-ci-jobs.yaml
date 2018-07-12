@@ -214,8 +214,8 @@
               unstable-threshold: 'FAILURE'
       # here the stream means the SUT stream, dovetail stream is defined in its own job
       # only run on os-(nosdn|odl_l3)-nofeature-ha scenario
-      # run with testsuite default, dovetail docker image with latest tag(Monday, Tuesday)
-      # run with testsuite proposed_tests, dovetail docker image with latest tag(Thursday, Friday)
+      # run with testsuite default, testarea mandatory, dovetail docker image with latest tag
+      # run with testsuite default, testarea optional, dovetail docker image with latest tag
       - conditional-step:
           condition-kind: and
           condition-operands:
@@ -229,6 +229,7 @@
                   predefined-parameters: |
                     DOCKER_TAG=latest
                     DEPLOY_SCENARIO={scenario}
+                    TESTAREA=mandatory
                   block: true
                   same-node: true
                   block-thresholds:
@@ -243,10 +244,12 @@
               label: '{scenario}'
           steps:
             - trigger-builds:
-                - project: 'dovetail-compass-{pod}-proposed_tests-{stream}'
+                - project: 'dovetail-compass-{pod}-default-{stream}'
                   current-parameters: false
                   predefined-parameters:
+                    DOCKER_TAG=latest
                     DEPLOY_SCENARIO={scenario}
+                    TESTAREA=optional
                   block: true
                   same-node: true
                   block-thresholds:
