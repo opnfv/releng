@@ -25,9 +25,31 @@ pushd ci > /dev/null
 sudo opnfv-clean
 popd > /dev/null
 
+echo "Detecting requested OpenStack branch and topology type in gerrit comment"
+parsed_comment=$(echo $GERRIT_EVENT_COMMENT_TEXT | sed -n 's/^opnfv-check\s*//p')
+parsed_comment=$(echo $parsed_comment | sed -n 's/\s*$//p')
+if [ ! -z "$parsed_comment" ]; then
+  if echo $parsed_comment | grep -E '^[a-z]+-(no)?ha'; then
+    IFS='-' read -r -a array <<< "$parsed_comment"
+    os_version=${array[0]}
+    topo=${array[1]}
+    echo "OS version detected in gerrit comment: ${os_version}"
+    echo "Topology type detected in gerrit comment: ${topo}"
+  else
+    echo "Invalid format given for scenario in gerrit comment: ${parsed_comment}...aborting"
+    exit 1
+  fi
+else
+  echo "No scenario given in gerrit comment, will use default (master OpenStack, noha)"
+  os_version='master'
+  topo='noha'
+fi
+
+full_snap_url=http://$GS_URL/${os_version}/${topo}
+
 echo "Downloading latest snapshot properties file"
-if ! wget -O $WORKSPACE/opnfv.properties http://$GS_URL/snapshot.properties; then
-  echo "ERROR: Unable to find snapshot.properties at ${GS_URL}...exiting"
+if ! wget -O $WORKSPACE/opnfv.properties ${full_snap_url}/snapshot.properties; then
+  echo "ERROR: Unable to find snapshot.properties at ${full_snap_url}...exiting"
   exit 1
 fi
 
@@ -39,6 +61,7 @@ if [ -z "$latest_snap_checksum" ]; then
 fi
 
 local_snap_checksum=""
+SNAP_CACHE=${SNAP_CACHE}/${os_version}/${topo}
 
 # check snap cache directory exists
 # if snapshot cache exists, find the checksum

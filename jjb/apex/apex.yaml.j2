@@ -8,7 +8,7 @@
       - 'apex-virtual-{stream}'
       - 'apex-deploy-{platform}-{stream}'
       - 'apex-daily-{stream}'
-      - 'apex-csit-promote-daily-{stream}-os-{os_version}'
+      - 'apex-csit-promote-daily-{stream}-os-{os_version}-{topology}'
       - 'apex-fdio-promote-daily-{stream}'
       - 'apex-{scenario}-baremetal-{scenario_stream}'
       - 'apex-testsuite-{scenario}-baremetal-{scenario_stream}'
@@ -81,6 +81,9 @@
       - 'master':
           os_scenario: 'nofeature'
 
+    topology:
+      - 'noha'
+      - 'ha'
 
 # Fetch Logs Job
 - job-template:
@@ -651,7 +654,7 @@
 
 # CSIT promote
 - job-template:
-    name: 'apex-csit-promote-daily-{stream}-os-{os_version}'
+    name: 'apex-csit-promote-daily-{stream}-os-{os_version}-{topology}'
 
     # Job template for promoting CSIT Snapshots
     #
@@ -679,6 +682,10 @@
           name: PROMOTE
           default: 'True'
           description: "Used for overriding the PROMOTE"
+      - string:
+          name: GS_URL
+          default: $GS_BASE{gs-pathname}/{os_version}/{topology}
+          description: "User for overriding GS_URL from apex params"
 
     properties:
       - build-blocker:
@@ -700,7 +707,7 @@
             - name: 'apex-virtual-{stream}'
               current-parameters: true
               predefined-parameters: |
-                DEPLOY_SCENARIO=os-odl-{os_scenario}-noha
+                DEPLOY_SCENARIO=os-odl-{os_scenario}-{topology}
                 OPNFV_CLEAN=yes
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
