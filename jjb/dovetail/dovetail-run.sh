@@ -345,7 +345,17 @@ else
     testsuite="--testsuite ${TESTSUITE}"
 fi
 
-run_cmd="dovetail run ${testsuite} -d"
+if [[ ${TESTAREA} == 'mandatory' ]]; then
+    testarea='--mandatory'
+elif [[ ${TESTAREA} == 'optional' ]]; then
+    testarea="--optional"
+elif [[ ${TESTAREA} == 'all' ]]; then
+    testarea=""
+else
+    testarea="--testarea ${TESTAREA}"
+fi
+
+run_cmd="dovetail run ${testsuite} ${testarea} -d"
 echo "Container exec command: ${run_cmd}"
 docker exec $container_id ${run_cmd}
 
