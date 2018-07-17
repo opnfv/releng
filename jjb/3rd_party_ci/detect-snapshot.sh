@@ -4,7 +4,7 @@ set -o nounset
 set -o pipefail
 
 echo "Detecting requested OpenStack branch and topology type in gerrit comment"
-parsed_comment=$(echo $GERRIT_EVENT_COMMENT_TEXT | sed -n 's/^opnfv-check\s*//p')
+parsed_comment=$(echo $GERRIT_EVENT_COMMENT_TEXT | sed -n 's/^.*check-opnfv\s*//p')
 parsed_comment=$(echo $parsed_comment | sed -n 's/\s*$//p')
 if [ ! -z "$parsed_comment" ]; then
   if echo $parsed_comment | grep -E '^[a-z]+-(no)?ha'; then
@@ -24,7 +24,7 @@ else
 fi
 
 echo "Writing variables to file"
-echo > detected_snapshot << EOI
+cat > detected_snapshot << EOI
 OS_VERSION=$os_version
 TOPOLOGY=$topo
 SNAP_CACHE=$HOME/snap_cache/$os_version/$topo
