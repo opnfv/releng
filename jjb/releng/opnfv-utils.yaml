@@ -41,6 +41,7 @@
       # yamllint disable rule:line-length
       - shell: |
           #!/bin/bash
+          sudo systemctl restart docker
           (docker ps -q; docker ps -aq) | sort | uniq -u | xargs --no-run-if-empty docker rm
           docker images -f dangling=true -q | xargs --no-run-if-empty docker rmi
 
