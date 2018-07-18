@@ -178,8 +178,13 @@
       - 'default'
       - 'proposed_tests'
 
+    testarea:
+      - 'mandatory'
+      - 'optional'
+
     jobs:
       - 'dovetail-{SUT}-{pod}-{testsuite}-{stream}'
+      - 'dovetail-{SUT}-{pod}-{testsuite}-{testarea}-{stream}'
 
 ################################
 # job templates
@@ -230,6 +235,85 @@
           name: TESTSUITE
           default: '{testsuite}'
           description: "dovetail testsuite to run"
+      - string:
+          name: TESTAREA
+          default: 'all'
+          description: "dovetail testarea to run"
+      - string:
+          name: DOVETAIL_REPO_DIR
+          default: "/home/opnfv/dovetail"
+          description: "Directory where the dovetail repository is cloned"
+      - string:
+          name: SUT_BRANCH
+          default: '{branch}'
+          description: "SUT branch"
+
+    scm:
+      - git-scm
+
+    builders:
+      - description-setter:
+          description: "POD: $NODE_NAME"
+      - 'dovetail-cleanup'
+      - 'dovetail-run'
+
+    publishers:
+      - archive:
+          artifacts: 'results/**/*'
+          allow-empty: true
+          fingerprint: true
+      - email-jenkins-admins-on-failure
+
+- job-template:
+    name: 'dovetail-{SUT}-{pod}-{testsuite}-{testarea}-{stream}'
+
+    disabled: false
+
+    concurrent: true
+
+    properties:
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-per-node: 1
+          option: 'project'
+
+    wrappers:
+      - build-name:
+          name: '$BUILD_NUMBER - Scenario: $DEPLOY_SCENARIO'
+      - timeout:
+          timeout: 300
+          abort: true
+      - fix-workspace-permissions
+
+    triggers:
+      - '{auto-trigger-name}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{dovetail-branch}'
+      - '{SUT}-defaults'
+      - '{slave-label}-defaults'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'os-nosdn-nofeature-ha'
+      - string:
+          name: DOCKER_TAG
+          default: '{docker-tag}'
+          description: 'Tag to pull dovetail docker image'
+      - string:
+          name: CI_DEBUG
+          default: 'true'
+          description: "Show debug output information"
+      - string:
+          name: TESTSUITE
+          default: '{testsuite}'
+          description: "dovetail testsuite to run"
+      - string:
+          name: TESTAREA
+          default: '{testarea}'
+          description: "dovetail testarea to run"
       - string:
           name: DOVETAIL_REPO_DIR
           default: "/home/opnfv/dovetail"
