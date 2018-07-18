@@ -194,27 +194,19 @@
               failure-threshold: 'never'
               unstable-threshold: 'FAILURE'
       # 1.here the stream means the SUT stream, dovetail stream is defined in its own job
-      # 2.testsuite proposed_tests here is for new test cases planning to add into OVP
-      # 3.run proposed_tests on Monday, Wednesday and Friday against ha scenario
-      # 4.testsuite default here is for the test cases already added into OVP
-      # 5.run default testsuite on Tuesday against ha scenario
-      # 6.not used for release criteria or compliance, only to debug the dovetail tool bugs
+      # 2.testsuite default here is for the test cases already added into OVP
+      # 3.run default testsuite mandatory test cases against ha scenario
+      # 4.run default testsuite optional test cases against ha scenario
+      # 5.not used for release criteria or compliance, only to debug the dovetail tool bugs
       - conditional-step:
           condition-kind: and
           condition-operands:
             - condition-kind: regex-match
               regex: '.*-ha'
               label: '{scenario}'
-            - condition-kind: day-of-week
-              day-selector: select-days
-              days:
-                MON: true
-                WED: true
-                FRI: true
-              use-build-time: true
           steps:
             - trigger-builds:
-                - project: 'dovetail-fuel-{pod}-proposed_tests-{stream}'
+                - project: 'dovetail-fuel-{pod}-default-mandatory-{stream}'
                   current-parameters: false
                   predefined-parameters:
                     DEPLOY_SCENARIO={scenario}
@@ -230,14 +222,9 @@
             - condition-kind: regex-match
               regex: '.*-ha'
               label: '{scenario}'
-            - condition-kind: day-of-week
-              day-selector: select-days
-              days:
-                TUES: true
-              use-build-time: true
           steps:
             - trigger-builds:
-                - project: 'dovetail-fuel-{pod}-default-{stream}'
+                - project: 'dovetail-fuel-{pod}-default-optional-{stream}'
                   current-parameters: false
                   predefined-parameters:
                     DEPLOY_SCENARIO={scenario}
