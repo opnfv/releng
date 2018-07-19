@@ -139,7 +139,8 @@ for node_def in ${virsh_vm_defs}; do
   # FIXME (trozet) install java on each disk image as required to upgrade ODL
   # should be added to Apex as part of the deployment. Remove this after that
   # is complete
-  sudo LIBGUESTFS_BACKEND=direct virt-customize --install java-1.8.0-openjdk -a /var/lib/libvirt/images/${node}.qcow2
+  sudo LIBGUESTFS_BACKEND=direct virt-customize --install java-1.8.0-openjdk \
+  --run-command "docker update --restart=always opendaylight_api" -a /var/lib/libvirt/images/${node}.qcow2
   sudo virsh start ${node}
   echo "Node: ${node} started"
 done
@@ -157,7 +158,7 @@ while [ "$counter" -le 10 ]; do
   echo "Checking if OpenStack is up"
   if nc -z ${admin_controller_ip} 9696 > /dev/null; then
     echo "Overcloud Neutron is up...Checking if OpenDaylight NetVirt is up..."
-    if curl --fail --silent -u admin:admin ${netvirt_url} > /dev/null; then
+    if curl --fail --silent -u admin:${SDN_CONTROLLER_PASSWORD} ${netvirt_url} > /dev/null; then
       echo "OpenDaylight is up.  Overcloud deployment complete"
       exit 0
     else
