@@ -545,6 +545,19 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
+      - shell: |
+          features=$(echo $DEPLOY_SCENARIO | sed -r -n 's/os-.+-(.+)-(noha|ha)/\1/p')
+          if [ "$features" == 'queens' ]; then
+            functest_scenario=$(echo $DEPLOY_SCENARIO | sed -r -n 's/(os-.+?)-queens-(noha|ha)/\1-nofeature-\2/p')
+          elif [[ "$features" =~ 'queens' ]]; then
+            functest_scenario=$(echo $DEPLOY_SCENARIO | sed -r -n 's/(os-.+?)-(.+)_queens-(noha|ha)/\1-\2-\3/p')
+          else
+            functest_scenario=$DEPLOY_SCENARIO
+          fi
+          echo "DEPLOY_SCENARIO=$functest_scenario" > functest_scenario
+      - inject:
+          properties-file: functest_scenario
+          override-build-parameters: true
       - multijob:
           name: 'OPNFV Test Suite'
           condition: ALWAYS
