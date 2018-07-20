@@ -119,7 +119,7 @@ if [[ "$JOB_NAME" =~ "virtual" ]]; then
     DEPLOY_CMD="${DEPLOY_CMD} --virtual-default-ram 12 --virtual-compute-ram 7"
   fi
   if [[ "$PROMOTE" == "True" ]]; then
-    if [[ "$JOB_NAME" =~ "queens" ]]; then
+    if [[ "$DEPLOY_SCENARIO" =~ "queens" ]]; then
       CSIT_ENV="csit-queens-environment.yaml"
     else
       CSIT_ENV="csit-environment.yaml"
