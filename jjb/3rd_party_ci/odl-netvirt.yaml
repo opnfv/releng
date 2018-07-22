@@ -149,19 +149,6 @@
               kill-phase-on: FAILURE
               abort-all-job: true
       - multijob:
-          name: functest
-          condition: SUCCESSFUL
-          projects:
-            - name: 'functest-netvirt-virtual-suite-master'
-              predefined-parameters: |
-                DEPLOY_SCENARIO=os-odl-nofeature-$TOPOLOGY
-                FUNCTEST_MODE=testcase
-                FUNCTEST_SUITE_NAME=tempest_smoke
-                RC_FILE_PATH=$HOME/cloner-info/overcloudrc
-              node-parameters: true
-              kill-phase-on: FAILURE
-              abort-all-job: false
-      - multijob:
           name: csit
           condition: ALWAYS
           projects:
@@ -175,6 +162,19 @@
                 OS_VERSION=$OS_VERSION
               node-parameters: true
               kill-phase-on: NEVER
+              abort-all-job: false
+      - multijob:
+          name: functest
+          condition: SUCCESSFUL
+          projects:
+            - name: 'functest-netvirt-virtual-suite-master'
+              predefined-parameters: |
+                DEPLOY_SCENARIO=os-odl-nofeature-$TOPOLOGY
+                FUNCTEST_MODE=testcase
+                FUNCTEST_SUITE_NAME=tempest_smoke
+                RC_FILE_PATH=$HOME/cloner-info/overcloudrc
+              node-parameters: true
+              kill-phase-on: FAILURE
               abort-all-job: false
       - multijob:
           name: postprocess
