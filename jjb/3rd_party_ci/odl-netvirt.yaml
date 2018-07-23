@@ -163,6 +163,14 @@
               node-parameters: true
               kill-phase-on: NEVER
               abort-all-job: false
+      - shell: |
+          if echo $OS_VERSION | grep queens &> /dev/null; then
+          echo 'REPO=opnfv' > functest_repo
+          else
+          echo 'REPO=ollivier' > functest_repo
+          fi
+      - inject:
+          properties-file: functest_repo
       - multijob:
           name: functest
           condition: SUCCESSFUL
@@ -173,6 +181,7 @@
                 FUNCTEST_MODE=testcase
                 FUNCTEST_SUITE_NAME=tempest_smoke
                 RC_FILE_PATH=$HOME/cloner-info/overcloudrc
+                REPO=$REPO
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: false
