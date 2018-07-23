@@ -16,18 +16,21 @@ else
   ODL_STREAM=${ODL_BRANCH}
 fi
 
+git clone https://gerrit.opnfv.org/gerrit/releng.git
+REL_PATH='releng/jjb/cperf'
+
 # NOTE: sourcing overcloudrc unsets any variable with OS_ prefix
 source ${WORKSPACE}/overcloudrc
 # note SDN_CONTROLLER_IP is set in overcloudrc, which is the VIP
 # for admin/public network (since we are running single network deployment)
 
-NUM_CONTROL_NODES=$(python ./parse-node-yaml.py num_nodes --file $NODE_FILE_PATH)
-NUM_COMPUTE_NODES=$(python ./parse-node-yaml.py num_nodes --node-type compute --file $NODE_FILE_PATH)
+NUM_CONTROL_NODES=$(python ${REL_PATH}/parse-node-yaml.py num_nodes --file $NODE_FILE_PATH)
+NUM_COMPUTE_NODES=$(python ${REL_PATH}/parse-node-yaml.py num_nodes --node-type compute --file $NODE_FILE_PATH)
 
 idx=1
 EXTRA_ROBOT_ARGS=""
 for idx in `seq 1 $NUM_CONTROL_NODES`; do
-  CONTROLLER_IP=$(python ./parse-node-yaml.py get_value -k address --node-number ${idx} --file $NODE_FILE_PATH)
+  CONTROLLER_IP=$(python ${REL_PATH}/parse-node-yaml.py get_value -k address --node-number ${idx} --file $NODE_FILE_PATH)
   EXTRA_ROBOT_ARGS+=" -v ODL_SYSTEM_${idx}_IP:${CONTROLLER_IP} \
                       -v OS_CONTROL_NODE_${idx}_IP:${CONTROLLER_IP} \
                       -v ODL_SYSTEM_${idx}_IP:${CONTROLLER_IP} \
@@ -36,11 +39,11 @@ done
 
 idx=1
 for idx in `seq 1 $NUM_COMPUTE_NODES`; do
-  COMPUTE_IP=$(python ./parse-node-yaml.py get_value -k address --node-type compute --node-number ${idx} --file $NODE_FILE_PATH)
+  COMPUTE_IP=$(python ${REL_PATH}/parse-node-yaml.py get_value -k address --node-type compute --node-number ${idx} --file $NODE_FILE_PATH)
   EXTRA_ROBOT_ARGS+=" -v OS_COMPUTE_${idx}_IP:${COMPUTE_IP}"
 done
 
-CONTROLLER_1_IP=$(python ./parse-node-yaml.py get_value -k address --node-number 1 --file $NODE_FILE_PATH)
+CONTROLLER_1_IP=$(python ${REL_PATH}/parse-node-yaml.py get_value -k address --node-number 1 --file $NODE_FILE_PATH)
 
 if [ "$ODL_CONTAINERIZED" == 'false' ]; then
   EXTRA_ROBOT_ARGS+=" -v NODE_KARAF_COUNT_COMMAND:'ps axf | grep org.apache.karaf | grep -v grep | wc -l || echo 0' \
