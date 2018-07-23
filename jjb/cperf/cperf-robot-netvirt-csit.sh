@@ -4,10 +4,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-source ${WORKSPACE}/overcloudrc
-# note SDN_CONTROLLER_IP is set in overcloudrc, which is the VIP
-# for admin/public network (since we are running single network deployment)
-
 if [ "$OS_VERSION" == 'master' ]; then
   FULL_OS_VER='master'
 else
@@ -19,6 +15,11 @@ if [ "$ODL_BRANCH" == 'master' ]; then
 else
   ODL_STREAM=${ODL_BRANCH}
 fi
+
+# NOTE: sourcing overcloudrc unsets any variable with OS_ prefix
+source ${WORKSPACE}/overcloudrc
+# note SDN_CONTROLLER_IP is set in overcloudrc, which is the VIP
+# for admin/public network (since we are running single network deployment)
 
 NUM_CONTROL_NODES=$(python ./parse-node-yaml.py num_nodes --file $NODE_FILE_PATH)
 NUM_COMPUTE_NODES=$(python ./parse-node-yaml.py num_nodes --node-type compute --file $NODE_FILE_PATH)
