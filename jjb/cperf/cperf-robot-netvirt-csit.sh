@@ -18,6 +18,7 @@ fi
 
 echo "ODL Branch set: ${ODL_BRANCH} and OS Version is ${FULL_OS_VER}"
 
+sudo rm -rf releng
 git clone https://gerrit.opnfv.org/gerrit/releng.git
 REL_PATH='releng/jjb/cperf'
 
