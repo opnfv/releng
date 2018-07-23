@@ -84,7 +84,7 @@ robot_cmd="pybot \
   -v NUM_TOOLS_SYSTEM:0 \
   -v ODL_SNAT_MODE:conntrack \
   -v ODL_STREAM:$ODL_STREAM \
-  -v ODL_SYSTEM_IP: $CONTROLLER_1_IP \
+  -v ODL_SYSTEM_IP:$CONTROLLER_1_IP \
   -v OS_CONTROL_NODE_IP:$CONTROLLER_1_IP \
   -v OPENSTACK_BRANCH:$FULL_OS_VER \
   -v OS_USER:heat-admin \
@@ -95,7 +95,7 @@ robot_cmd="pybot \
   -v PUBLIC_PHYSICAL_NETWORK:datacentre \
   -v RESTCONFPORT:8081 \
   -v ODL_RESTCONF_USER:admin \
-  -v ODL_RESTCONF_PASSWORD:admin \
+  -v ODL_RESTCONF_PASSWORD:$SDN_CONTROLLER_PASSWORD \
   -v KARAF_PROMPT_LOGIN:'opendaylight-user' \
   -v KARAF_PROMPT:'opendaylight-user.*root.*>' \
   -v SECURITY_GROUP_MODE:stateful \
