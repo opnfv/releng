@@ -16,6 +16,8 @@ else
   ODL_STREAM=${ODL_BRANCH}
 fi
 
+echo "ODL Branch set: ${ODL_BRANCH} and OS Version is ${FULL_OS_VER}"
+
 git clone https://gerrit.opnfv.org/gerrit/releng.git
 REL_PATH='releng/jjb/cperf'
 
@@ -26,6 +28,9 @@ source ${WORKSPACE}/overcloudrc
 
 NUM_CONTROL_NODES=$(python ${REL_PATH}/parse-node-yaml.py num_nodes --file $NODE_FILE_PATH)
 NUM_COMPUTE_NODES=$(python ${REL_PATH}/parse-node-yaml.py num_nodes --node-type compute --file $NODE_FILE_PATH)
+
+echo "Number of Control nodes found: ${NUM_CONTROL_NODES}"
+echo "Number of Compute nodes found: ${NUM_COMPUTE_NODES}"
 
 idx=1
 EXTRA_ROBOT_ARGS=""
@@ -101,6 +106,8 @@ robot_cmd="pybot \
   $EXTRA_ROBOT_ARGS \
   -v of_port:6653 "
 
+echo "Robot command set: ${robot_cmd}"
+echo "Running robot..."
 docker run -i --net=host \
   -v ${WORKSPACE}/id_rsa:/tmp/id_rsa \
   -v ${WORKSPACE}/overcloudrc:/tmp/overcloudrc \
