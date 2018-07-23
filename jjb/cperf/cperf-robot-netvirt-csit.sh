@@ -66,12 +66,14 @@ else
                       -v NODE_FREEZE_COMMAND:\"sudo docker stop opendaylight_api\" "
 fi
 
+LOGS_LOCATION=/tmp/robot_results
+
 robot_cmd="pybot \
   --removekeywords wuks \
   --xunit robotxunit.xml \
   -c critical \
   -e exclude \
-  -d /tmp/robot_results \
+  -d $LOGS_LOCATION \
   -v BUNDLEFOLDER:/opt/opendaylight \
   -v CONTROLLER_USER:heat-admin \
   -v DEFAULT_LINUX_PROMPT:\$ \
@@ -110,8 +112,12 @@ robot_cmd="pybot \
 echo "Robot command set: ${robot_cmd}"
 echo "Running robot..."
 docker run -i --net=host \
+  -v ${LOGS_LOCATION}:${LOGS_LOCATION} \
   -v ${WORKSPACE}/id_rsa:/tmp/id_rsa \
   -v ${WORKSPACE}/overcloudrc:/tmp/overcloudrc \
   opnfv/cperf:$DOCKER_TAG \
   /bin/bash -c "source /tmp/overcloudrc; mkdir -p \$HOME/.ssh; cp /tmp/id_rsa \$HOME/.ssh; \
   $robot_cmd /home/opnfv/repos/odl_test/csit/suites/openstack/connectivity/l2.robot;"
+
+UPLOAD_LOCATION=artifacts.opnfv.org/cperf/cperf-apex-csit-${ODL_BRANCH}/${BUILD_NUMBER}/
+gsutil -m cp -r ${LOGS_LOCATION} gs://${UPLOAD_LOCATION} > gsutil.latest_logs.log
