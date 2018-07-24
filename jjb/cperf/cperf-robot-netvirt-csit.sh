@@ -120,4 +120,5 @@ docker run -i --net=host \
   $robot_cmd /home/opnfv/repos/odl_test/csit/suites/openstack/connectivity/l2.robot;"
 
 UPLOAD_LOCATION=artifacts.opnfv.org/cperf/cperf-apex-csit-${ODL_BRANCH}/${BUILD_NUMBER}/
+echo "Uploading robot logs to ${UPLOAD_LOCATION}"
 gsutil -m cp -r ${LOGS_LOCATION} gs://${UPLOAD_LOCATION} > gsutil.latest_logs.log
