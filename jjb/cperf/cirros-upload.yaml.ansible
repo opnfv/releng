@@ -1,0 +1,17 @@
+---
+- hosts: all
+  tasks:
+    - copy:
+        src: "{{ item }}"
+        dest: "/home/heat-admin/{{ item }}"
+        owner: heat-admin
+        group: heat-admin
+        mode: 0775
+      with_items:
+        - cirros-0.3.5-x86_64-disk.img
+        - overcloudrc
+    - name: Upload cirros glance image
+      shell: >
+        source /home/heat-admin/overcloudrc && openstack image create cirros
+        --public --file /home/heat-admin/cirros-0.3.5-x86_64-disk.img
+        --disk-format qcow2 --container-format bare
