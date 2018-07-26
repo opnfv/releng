@@ -134,10 +134,10 @@ if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_T
             "sudo salt 'cmp001*' pillar.get _param:openstack_control_address --out text| \
                 cut -f2 -d' '")
     fuel_dbs_ip=$(ssh 2>/dev/null ${fuel_ctl_ssh_options} "${ssh_user}@${INSTALLER_IP}" \
-            "sudo salt 'dbs01*' pillar.get _param:openstack_control_address --out text| \
+            "sudo salt 'dbs01*' pillar.get _param:openstack_database_node01_address --out text| \
                 cut -f2 -d' '")
     fuel_msg_ip=$(ssh 2>/dev/null ${fuel_ctl_ssh_options} "${ssh_user}@${INSTALLER_IP}" \
-            "sudo salt 'msg01*' pillar.get _param:openstack_control_address --out text| \
+            "sudo salt 'msg01*' pillar.get _param:openstack_message_queue_node01_address --out text| \
                 cut -f2 -d' '")
     ipmi_index=$(ssh 2>/dev/null ${fuel_ctl_ssh_options} "${ssh_user}@${INSTALLER_IP}" \
             "sudo salt 'ctl*' network.ip_addrs cidr=${fuel_ctl_ip} --out text | grep ${fuel_ctl_ip} | cut -c 5")
