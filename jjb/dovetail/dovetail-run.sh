@@ -174,6 +174,7 @@ if [[ ! -f ${DOVETAIL_CONFIG}/pod.yaml ]]; then
     source venv/bin/activate
     sudo pip install -e ./ >/dev/null
     sudo pip install netaddr
+    pip install paramiko==2.1.1
 
     if [[ ${INSTALLER_TYPE} == compass ]]; then
         options="-u root -p root"
