@@ -69,6 +69,7 @@ fi
 # FIXME(trozet) remove this once it is fixed in csit
 # Upload glance image into openstack
 wget -O ${WORKSPACE}/cirros-0.3.5-x86_64-disk.img http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img
+export ANSIBLE_HOST_KEY_CHECKING=False
 ansible-playbook -i ${CONTROLLER_1_IP}, -u heat-admin --key-file ${WORKSPACE}/id_rsa ${REL_PATH}/cirros-upload.yaml.ansible -vvv
 
 LOGS_LOCATION=/tmp/robot_results

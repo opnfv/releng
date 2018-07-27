@@ -33,8 +33,11 @@ if ! wget -O $WORKSPACE/opnfv.properties ${full_snap_url}/snapshot.properties; t
   exit 1
 fi
 
+echo "Properties contents:"
+cat ${WORKSPACE}/opnfv.properties
+
 # find latest check sum
-latest_snap_checksum=$(cat opnfv.properties | grep OPNFV_SNAP_SHA512SUM | awk -F "=" '{print $2}')
+latest_snap_checksum=$(cat ${WORKSPACE}/opnfv.properties | grep OPNFV_SNAP_SHA512SUM | awk -F "=" '{print $2}')
 if [ -z "$latest_snap_checksum" ]; then
   echo "ERROR: checksum of latest snapshot from snapshot.properties is null!"
   exit 1
