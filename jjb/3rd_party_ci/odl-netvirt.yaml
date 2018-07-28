@@ -150,7 +150,7 @@
               abort-all-job: true
       - multijob:
           name: csit
-          condition: SUCCESSFUL
+          condition: ALWAYS
           projects:
             - name: cperf-apex-csit-master
               predefined-parameters: |
@@ -159,6 +159,17 @@
                 NODE_FILE_PATH=$SNAP_CACHE/node.yaml
                 SSH_KEY_PATH=$SNAP_CACHE/id_rsa
                 ODL_CONTAINERIZED=false
+                OS_VERSION=$OS_VERSION
+              node-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: false
+      - multijob:
+          name: csit
+          condition: ALWAYS
+          projects:
+            - name: cperf-upload-logs-csit
+              predefined-parameters: |
+                ODL_BRANCH=$BRANCH
                 OS_VERSION=$OS_VERSION
               node-parameters: true
               kill-phase-on: FAILURE
