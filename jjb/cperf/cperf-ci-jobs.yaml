@@ -22,6 +22,7 @@
 
     jobs:
       - 'cperf-{installer}-{testsuite}-{stream}'
+      - 'cperf-upload-logs-csit'
 
 ################################
 # job template
@@ -53,6 +54,32 @@
 
     builders:
       - 'cperf-{testsuite}-builder'
+
+- job-template:
+    name: 'cperf-upload-logs-csit'
+
+    concurrent: true
+
+    disabled: false
+    scm:
+      - git-scm-gerrit
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - cperf-parameter:
+          testsuite: 'csit'
+          gs-pathname: '{gs-pathname}'
+    # yamllint enable rule:line-length
+    properties:
+      - logrotate-default
+      - throttle:
+          max-per-node: 1
+          max-total: 10
+          option: 'project'
+
+    builders:
+      - 'cperf-upload-logs-csit'
 
 ########################
 # parameter macros
@@ -188,3 +215,8 @@
                   docker rmi opnfv/cperf:$tag >/dev/null
               done
           fi
+
+- builder:
+    name: 'cperf-upload-logs-csit
+    builders:
+      - shell: !include-raw: ./cperf-upload-logs-csit.sh
