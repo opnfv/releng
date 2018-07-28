@@ -35,6 +35,8 @@ export OPENSTACK_VERSION=${COMPASS_OPENSTACK_VERSION}
 
 if [[ "${DEPLOY_SCENARIO}" =~ "-ocl" ]]; then
     export NETWORK_CONF_FILE=network_ocl.yml
+elif [[ "${DEPLOY_SCENARIO}" =~ "-odl" ]]; then
+    export NETWORK_CONF_FILE=network_odl.yml
 elif [[ "${DEPLOY_SCENARIO}" =~ "-onos" ]]; then
     export NETWORK_CONF_FILE=network_onos.yml
 elif [[ "${DEPLOY_SCENARIO}" =~ "-openo" ]]; then
