@@ -52,6 +52,7 @@ if [ -d "$SNAP_CACHE" ]; then
   latest_snap=$(ls ${SNAP_CACHE} | grep tar.gz | tail -n 1)
   if [ -n "$latest_snap" ]; then
     local_snap_checksum=$(sha512sum ${SNAP_CACHE}/${latest_snap} | cut -d' ' -f1)
+    echo "Local snap checksum is: ${local_snap_checksum}"
   fi
 else
   mkdir -p ${SNAP_CACHE}
