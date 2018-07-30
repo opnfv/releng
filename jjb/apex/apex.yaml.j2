@@ -416,6 +416,11 @@
               abort-all-job: true
               git-revision: false
       - shell: |
+          if echo $DEPLOY_SCENARIO | grep queens &> /dev/null; then
+            echo 'REPO=opnfv' > functest_properties
+          else
+            echo 'REPO=ollivier' > functest_properties
+          fi
           features=$(echo $DEPLOY_SCENARIO | sed -r -n 's/os-.+-(.+)-(noha|ha)/\1/p')
           if [ "$features" == 'queens' ]; then
             functest_scenario=$(echo $DEPLOY_SCENARIO | sed -r -n 's/(os-.+?)-queens-(noha|ha)/\1-nofeature-\2/p')
@@ -424,9 +429,9 @@
           else
             functest_scenario=$DEPLOY_SCENARIO
           fi
-          echo "DEPLOY_SCENARIO=$functest_scenario" > functest_scenario
+          echo "DEPLOY_SCENARIO=$functest_scenario" >> functest_properties
       - inject:
-          properties-file: functest_scenario
+          properties-file: functest_properties
           override-build-parameters: true
       - multijob:
           name: 'OPNFV Test Suite'
@@ -1116,4 +1121,3 @@
     name: 'apex-danube'
     triggers:
       - timed: '0 3 1 1 7'
-
