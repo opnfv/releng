@@ -52,6 +52,13 @@
           docker-tag: '{docker-tag}'
           stream: '{stream}'
 
+    properties:
+      - logrotate-default
+      - throttle:
+          max-per-node: 1
+          max-total: 10
+          option: 'project'
+
     builders:
       - 'cperf-{testsuite}-builder'
 
@@ -61,12 +68,8 @@
     concurrent: true
 
     disabled: false
-    scm:
-      - git-scm-gerrit
+
     parameters:
-      - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
       - cperf-parameter:
           testsuite: 'csit'
           gs-pathname: '{gs-pathname}'
