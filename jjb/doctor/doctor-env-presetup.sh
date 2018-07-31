@@ -35,11 +35,5 @@ elif [[ ${INSTALLER_TYPE} == 'daisy' ]]; then
         echo "No available installer VM exists...exiting"
         exit 1
     fi
-
-elif [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
-    if [[ ! "${BRANCH}" =~ "danube" ]]; then
-        echo "Map mcp ssh_key"
-        export sshkey_vol="-v ${SSH_KEY:-/var/lib/opnfv/mcp.rsa}:/root/.ssh/id_rsa"
-    fi
 fi
 
