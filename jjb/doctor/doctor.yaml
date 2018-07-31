@@ -16,16 +16,6 @@
           docker-tag: 'stable'
           disabled: false
 
-    # feature projects' tests are not triggered by functest
-    # doctor verify Pods need to deploy with these scenario
-    installer:
-      - 'apex':
-          scenario: 'os-nosdn-kvm-ha'
-      - 'fuel':
-          scenario: 'os-nosdn-ovs-ha'
-      - 'daisy':
-          scenario: 'os-nosdn-ovs_dpdk-noha'
-
     arch:
       - 'x86_64'
       - 'aarch64'
@@ -42,8 +32,6 @@
       # disabling the following tests due to limitation of PoD owners
       # these would beenabled again once the PoDs are ready
       - installer: 'fuel'
-        arch: 'x86_64'
-      - installer: 'daisy'
         arch: 'x86_64'
 
     jobs:
@@ -127,16 +115,11 @@
           branch: '{branch}'
       - '{installer}-defaults'
       - 'doctor-slave-parameter'
-      - 'doctor-parameter':
-          docker-tag: '{docker-tag}'
-          scenario: '{scenario}'
-      - 'doctor-functest-parameter':
-          gs-pathname: '{gs-pathname}'
-          inspector: '{inspector}'
     scm:
       - git-scm-gerrit
     builders:
-      - 'doctor-verify-installer-inspector-builders-macro'
+      - 'doctor-verify-installer-inspector-builders-macro':
+          inspector: '{inspector}'
     publishers:
       - 'doctor-verify-publishers-macro'
 
@@ -144,61 +127,7 @@
 # -------------------------------
 # parameter macros
 # -------------------------------
-- parameter:
-    name: 'doctor-parameter'
-    parameters:
-      - string:
-          name: OS_CREDS
-          default: /home/jenkins/openstack.creds
-          description: 'OpenStack credentials'
-      - string:
-          name: DOCKER_TAG
-          default: '{docker-tag}'
-          description: 'Tag to pull docker image'
-      - string:
-          name: CLEAN_DOCKER_IMAGES
-          default: 'false'
-          description: 'Remove downloaded docker images (opnfv/functest:*)'
-      - string:
-          name: DEPLOY_SCENARIO
-          default: '{scenario}'
-          description: 'Scenario to deploy and test'
 
-- parameter:
-    name: 'doctor-functest-parameter'
-    parameters:
-      # functest-suite-parameter
-      - string:
-          name: FUNCTEST_MODE
-          default: 'testcase'
-      - string:
-          name: FUNCTEST_SUITE_NAME
-          default: 'doctor-notification'
-      - string:
-          name: TESTCASE_OPTIONS
-          # yamllint disable rule:line-length
-          default: '-e INSPECTOR_TYPE={inspector} -v $WORKSPACE:/home/opnfv/repos/doctor'
-          # yamllint enable rule:line-length
-          description: 'Addtional parameters specific to test case(s)'
-      # functest-parameter
-      - string:
-          name: GS_PATHNAME
-          default: '{gs-pathname}'
-          # yamllint disable rule:line-length
-          description: "Version directory where the opnfv documents will be stored in gs repository"
-          # yamllint enable rule:line-length
-      - string:
-          name: FUNCTEST_REPO_DIR
-          default: "/home/opnfv/repos/functest"
-          description: "Directory where the Functest repository is cloned"
-      - string:
-          name: PUSH_RESULTS_TO_DB
-          default: "true"
-          description: "Push the results of all the tests to the resultDB"
-      - string:
-          name: CI_DEBUG
-          default: 'true'
-          description: "Show debug output information"
 # -------------------------------
 # builder macros
 # -------------------------------
@@ -207,26 +136,14 @@
     name: 'doctor-verify-installer-inspector-builders-macro'
     builders:
       - 'clean-workspace-log'
-      # yamllint disable rule:line-length
       - shell: |
-          # NOTE: Create symbolic link, so that we can archive file outside
-          #       of $WORKSPACE .
-          # NOTE: We are printing all logs under 'tests/' during test run,
-          #       so this symbolic link should not be in 'tests/'. Otherwise,
-          #       we'll have the same log twice in jenkins console log.
-          ln -sfn $HOME/opnfv/functest/results/{stream} functest_results
-          # NOTE: Get functest script in $WORKSPACE. This functest script is
-          #       needed to perform VM image download in set-functest-env.sh
-          #       from E release cycle.
-          mkdir -p functest/ci
-          wget https://git.opnfv.org/functest/plain/functest/ci/download_images.sh -O functest/ci/download_images.sh
-      - 'functest-suite-builder'
-      - shell: |
-          functest_log="$HOME/opnfv/functest/results/{stream}/$FUNCTEST_SUITE_NAME.log"
-          # NOTE: checking the test result, as the previous job could return
-          #       0 regardless the result of doctor test scenario.
-          grep -e 'doctor test successfully' $functest_log || exit 1
-      # yamllint enable rule:line-length
+          export INSPECTOR_TYPE={inspector}
+          !include-raw:
+              - ./doctor-env-presetup.sh
+              - ../../utils/fetch_os_creds.sh
+          source $HOME/opnfv-openrc.sh
+          source $HOME/os_cacert
+          tox -e py35
 
 # -------------------------------
 # publisher macros
@@ -236,8 +153,6 @@
     publishers:
       - archive:
           artifacts: 'doctor_tests/*.log'
-      - archive:
-          artifacts: 'functest_results/$FUNCTEST_SUITE_NAME.log'
       - email-jenkins-admins-on-failure
 
 
