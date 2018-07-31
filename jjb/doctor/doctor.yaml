@@ -154,7 +154,9 @@
               - ../../utils/fetch_os_creds.sh
       - shell: |
           source $HOME/opnfv-openrc.sh
-          source $HOME/os_cacert
+          if [ -f $HOME/os_cacert ]; then
+              export OS_CACERT=$HOME/os_cacert
+          fi
           tox -e py35
 
 # -------------------------------
