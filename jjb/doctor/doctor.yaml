@@ -118,6 +118,8 @@
           branch: '{branch}'
       - '{installer}-defaults'
       - 'doctor-slave-parameter'
+      - 'doctor-parameter':
+          inspector: '{inspector}'
     scm:
       - git-scm-gerrit
     builders:
@@ -131,6 +133,13 @@
 # -------------------------------
 # parameter macros
 # -------------------------------
+- parameter:
+    name: 'doctor-parameter'
+    parameters:
+      - string:
+          name: INSPECTOR_TYPE
+          default: '{inspector}'
+          description: 'inspector component'
 
 # -------------------------------
 # builder macros
@@ -141,11 +150,10 @@
     builders:
       - 'clean-workspace-log'
       - shell: |
-          export INSTALLER_TYPE={installer}
-          export INSPECTOR_TYPE={inspector}
           !include-raw:
               - ./doctor-env-presetup.sh
               - ../../utils/fetch_os_creds.sh
+      - shell: |
           source $HOME/opnfv-openrc.sh
           source $HOME/os_cacert
           tox -e py35
