@@ -37,7 +37,7 @@
           baremetal-slave: 'apex-baremetal-master'
           verify-scenario: 'os-nosdn-nofeature-ha'
           scenario_stream: 'fraser'
-          disable_daily: true
+          disable_daily: false
           disable_promote: true
       - euphrates: &euphrates
           branch: 'stable/euphrates'
@@ -62,35 +62,9 @@
           disable_promote: true
 
     scenario:
-      - 'os-nosdn-nofeature-noha':
-          <<: *fraser
       - 'os-nosdn-nofeature-ha':
           <<: *fraser
-      - 'os-odl-nofeature-ha':
-          <<: *fraser
-      - 'os-odl-nofeature-noha':
-          <<: *fraser
       - 'os-odl-bgpvpn-ha':
-          <<: *fraser
-      - 'os-ovn-nofeature-noha':
-          <<: *fraser
-      - 'os-nosdn-fdio-noha':
-          <<: *fraser
-      - 'os-nosdn-fdio-ha':
-          <<: *fraser
-      - 'os-nosdn-bar-ha':
-          <<: *fraser
-      - 'os-nosdn-bar-noha':
-          <<: *fraser
-      - 'os-nosdn-ovs_dpdk-noha':
-          <<: *fraser
-      - 'os-nosdn-ovs_dpdk-ha':
-          <<: *fraser
-      - 'os-odl-sfc-noha':
-          <<: *fraser
-      - 'os-odl-sfc-ha':
-          <<: *fraser
-      - 'os-nosdn-calipso-noha':
           <<: *fraser
       - 'os-nosdn-nofeature-noha':
           <<: *danube
@@ -1193,14 +1167,6 @@
           name: Baremetal Deploy and Test Phase
           condition: SUCCESSFUL
           projects:
-            - name: 'apex-os-nosdn-nofeature-noha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
             - name: 'apex-os-nosdn-nofeature-ha-baremetal-fraser'
               node-parameters: false
               current-parameters: false
@@ -1209,103 +1175,7 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-odl-nofeature-ha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-odl-nofeature-noha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
             - name: 'apex-os-odl-bgpvpn-ha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-ovn-nofeature-noha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-nosdn-fdio-noha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-nosdn-fdio-ha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-nosdn-bar-ha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-nosdn-bar-noha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-nosdn-ovs_dpdk-noha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-nosdn-ovs_dpdk-ha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-odl-sfc-noha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-odl-sfc-ha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-nosdn-calipso-noha-baremetal-fraser'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
