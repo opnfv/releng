@@ -57,4 +57,6 @@ fi
 # Write the installer info to the file
 echo export INSTALLER_TYPE=${INSTALLER_TYPE} > $opnfv_installer
 echo export INSTALLER_IP=${INSTALLER_IP} >> $opnfv_installer
-echo export SSH_KEY=${installer_key_file} >> $opnfv_installer
+if [ -e ${installer_key_file} ]; then
+    echo export SSH_KEY=${installer_key_file} >> $opnfv_installer
+fi
