@@ -122,6 +122,7 @@ docker run -i --net=host \
   -v ${WORKSPACE}/overcloudrc:/tmp/overcloudrc \
   opnfv/cperf:$DOCKER_TAG \
   /bin/bash -c "source /tmp/overcloudrc; mkdir -p \$HOME/.ssh; cp /tmp/id_rsa \$HOME/.ssh; \
+  cd /home/opnfv/repos/odl_test/ && git pull origin master; \
   $robot_cmd /home/opnfv/repos/odl_test/csit/suites/openstack/connectivity/l2.robot;"
 
 UPLOAD_LOCATION=artifacts.opnfv.org/cperf/cperf-apex-csit-${ODL_BRANCH}/${BUILD_NUMBER}/
