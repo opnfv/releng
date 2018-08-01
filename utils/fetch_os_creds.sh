@@ -168,7 +168,7 @@ elif [ "$installer_type" == "apex" ]; then
             chmod 600 /root/.ssh/id_rsa
         fi
 
-        if [ "${BRANCH}" == "stable/fraser" ]; then
+        if [ "${BRANCH}" == "stable/fraser" -o "${BRANCH}" == "master" ]; then
             rc_file=overcloudrc.v3
         else
             rc_file=overcloudrc
