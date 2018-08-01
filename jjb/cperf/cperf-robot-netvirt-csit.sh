@@ -114,6 +114,9 @@ robot_cmd="pybot \
   $EXTRA_ROBOT_ARGS \
   -v of_port:6653 "
 
+suites="/home/opnfv/repos/odl_test/csit/suites/openstack/connectivity/l2.robot \
+        /home/opnfv/repos/odl_test/csit/suites/openstack/connectivity/l3.robot"
+
 echo "Robot command set: ${robot_cmd}"
 echo "Running robot..."
 docker run -i --net=host \
@@ -123,7 +126,7 @@ docker run -i --net=host \
   opnfv/cperf:$DOCKER_TAG \
   /bin/bash -c "source /tmp/overcloudrc; mkdir -p \$HOME/.ssh; cp /tmp/id_rsa \$HOME/.ssh; \
   cd /home/opnfv/repos/odl_test/ && git pull origin master; \
-  $robot_cmd /home/opnfv/repos/odl_test/csit/suites/openstack/connectivity/l2.robot;"
+  ${robot_cmd} ${suites};"
 
 UPLOAD_LOCATION=artifacts.opnfv.org/cperf/cperf-apex-csit-${ODL_BRANCH}/${BUILD_NUMBER}/
 echo "Uploading robot logs to ${UPLOAD_LOCATION}"
