@@ -25,10 +25,10 @@ pushd ci > /dev/null
 sudo opnfv-clean
 popd > /dev/null
 
-full_snap_url=http://$GS_URL/${OS_VERSION}/${TOPOLOGY}
+full_snap_url="gs://${GS_URL}/${OS_VERSION}/${TOPOLOGY}"
 
 echo "Downloading latest snapshot properties file"
-if ! wget -O $WORKSPACE/opnfv.properties ${full_snap_url}/snapshot.properties; then
+if ! gsutil cp ${full_snap_url}/snapshot.properties $WORKSPACE/opnfv.properties; then
   echo "ERROR: Unable to find snapshot.properties at ${full_snap_url}...exiting"
   exit 1
 fi
@@ -68,7 +68,7 @@ if [ "$local_snap_checksum" != "$latest_snap_checksum" ]; then
   echo "INFO: SHA mismatch, will download latest snapshot"
   # wipe cache
   rm -rf ${SNAP_CACHE}/*
-  wget --directory-prefix=${SNAP_CACHE}/ ${snap_url}
+  gsutil cp "gs://${snap_url}" ${SNAP_CACHE}/
   snap_tar=$(basename ${snap_url})
 else
   snap_tar=${latest_snap}
