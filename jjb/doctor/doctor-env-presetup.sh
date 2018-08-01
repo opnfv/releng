@@ -2,6 +2,10 @@
 set -o errexit
 set -o pipefail
 
+# set vars from env if not provided by user as options
+installer_key_file=${installer_key_file:-$HOME/installer_key_file}
+opnfv_installer=${opnfv_installer:-$HOME/opnfv-installer.sh}
+
 # Fetch INSTALLER_IP for APEX deployments
 if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
 
@@ -17,6 +21,9 @@ if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
         echo "No available installer VM exists and no credentials provided...exiting"
         exit 1
     fi
+
+    sudo cp /root/.ssh/id_rsa ${installer_key_file}
+    sudo chown `whoami`:`whoami` ${installer_key_file}
 
 elif [[ ${INSTALLER_TYPE} == 'daisy' ]]; then
     echo "Gathering IP information for Daisy installer VM"
@@ -37,3 +44,17 @@ elif [[ ${INSTALLER_TYPE} == 'daisy' ]]; then
     fi
 fi
 
+
+# Checking if destination path is valid
+if [ -d $opnfv_installer ]; then
+    error "Please provide the full destination path for the installer ip file including the filename"
+else
+    # Check if we can create the file (e.g. path is correct)
+    touch $opnfv_installer || error "Cannot create the file specified. Check that the path is correct and run the script again."
+fi
+
+
+# Write the installer info to the file
+echo export INSTALLER_TYPE=${INSTALLER_TYPE} > $opnfv_installer
+echo export INSTALLER_IP=${INSTALLER_IP} >> $opnfv_installer
+echo export SSH_KEY=${installer_key_file} >> $opnfv_installer
