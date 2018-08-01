@@ -2,6 +2,9 @@
 set -o errexit
 set -o pipefail
 
+# set vars from env if not provided by user as options
+installer_key_file=${installer_key_file:-$HOME/installer_key_file}
+
 # Fetch INSTALLER_IP for APEX deployments
 if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
 
@@ -17,6 +20,9 @@ if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
         echo "No available installer VM exists and no credentials provided...exiting"
         exit 1
     fi
+
+    sudo cp /root/.ssh/id_rsa ${installer_key_file}
+    sudo chown `whoami` `whoami` ${installer_key_file}
 
 elif [[ ${INSTALLER_TYPE} == 'daisy' ]]; then
     echo "Gathering IP information for Daisy installer VM"

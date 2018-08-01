@@ -153,11 +153,14 @@
               - ./doctor-env-presetup.sh
               - ../../utils/fetch_os_creds.sh
       - shell: |
+          # prepare the env for test
           source $HOME/opnfv-openrc.sh
           if [ -f $HOME/os_cacert ]; then
               export OS_CACERT=$HOME/os_cacert
           fi
+          export SSH_KEY=$HOME/installer_key_file
 
+          # run tox to trigger the test
           tox -e py34
 
 # -------------------------------
