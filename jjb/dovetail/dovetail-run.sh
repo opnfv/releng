@@ -213,7 +213,7 @@ EOF
         cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
 process_info:
 - {testcase_name: dovetail.ha.cinder_api, attack_process: cinder-wsgi}
-- {testcase_name: dovetail.ha.rabbitmq, attack_process: rabbitmq-server, attack_host: msg01}
+- {testcase_name: dovetail.ha.rabbitmq, attack_process: rabbitmq_server, attack_host: msg01}
 - {testcase_name: dovetail.ha.neutron_l3_agent, attack_process: neutron-l3-agent, attack_host: cmp01}
 - {testcase_name: dovetail.ha.database, attack_process: mysqld, attack_host: dbs01}
 EOF
