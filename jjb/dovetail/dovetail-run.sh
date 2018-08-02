@@ -372,11 +372,18 @@ else
     testarea="--testarea ${TESTAREA}"
 fi
 
-run_cmd="dovetail run ${testsuite} ${testarea} -d"
+run_cmd="dovetail run ${testsuite} ${testarea} -d -r"
 echo "Container exec command: ${run_cmd}"
 docker exec $container_id ${run_cmd}
 
 sudo cp -r ${DOVETAIL_HOME}/results ./
+result_package=$(ls ${DOVETAIL_HOME} | grep logs_)
+echo "Results package is ${result_package}"
+for item in ${result_package};
+do
+  sudo mv ${DOVETAIL_HOME}/${item} ./results
+done
+
 # To make sure the file owner is the current user, for the copied results files in the above line
 echo "Change owner of result files ..."
 CURRENT_USER=${SUDO_USER:-$USER}
