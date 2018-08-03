@@ -93,6 +93,7 @@ robot_cmd="pybot \
   -v ODL_STREAM:$ODL_STREAM \
   -v ODL_SYSTEM_IP:$CONTROLLER_1_IP \
   -v OS_CONTROL_NODE_IP:$CONTROLLER_1_IP \
+  -v OS_DEPLOY="0cmb-1ctl-2cmp" \
   -v OPENSTACK_BRANCH:$FULL_OS_VER \
   -v OS_USER:heat-admin \
   -v ODL_ENABLE_L3_FWD:yes \
