@@ -94,7 +94,7 @@ robot_cmd="pybot \
   -v ODL_SYSTEM_IP:$CONTROLLER_1_IP \
   -v OS_CONTROL_NODE_IP:$CONTROLLER_1_IP \
   -v OPENSTACK_BRANCH:$FULL_OS_VER \
-  -v OPENSTACK_TOPO="0cmb-1ctl-2cmp" \
+  -v OPENSTACK_TOPO:"0cmb-1ctl-2cmp" \
   -v OS_USER:heat-admin \
   -v ODL_ENABLE_L3_FWD:yes \
   -v ODL_SYSTEM_USER:heat-admin \
