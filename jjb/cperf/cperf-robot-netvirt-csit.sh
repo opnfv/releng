@@ -116,7 +116,8 @@ robot_cmd="pybot \
   -v of_port:6653 "
 
 suites="/home/opnfv/repos/odl_test/csit/suites/openstack/connectivity/l2.robot \
-        /home/opnfv/repos/odl_test/csit/suites/openstack/connectivity/l3.robot"
+        /home/opnfv/repos/odl_test/csit/suites/openstack/connectivity/l3.robot \
+        /home/opnfv/repos/odl_test/csit/suites/openstack/connectivity/external.robot"
 
 echo "Robot command set: ${robot_cmd}"
 echo "Running robot..."
