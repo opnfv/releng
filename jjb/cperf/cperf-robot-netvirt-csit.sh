@@ -85,6 +85,11 @@ robot_cmd="pybot \
   -v DEFAULT_LINUX_PROMPT_STRICT:]\$ \
   -v DEFAULT_USER:heat-admin \
   -v DEVSTACK_DEPLOY_PATH:/tmp \
+  -v EXTERNAL_GATEWAY:192.0.2.99 \
+  -v EXTERNAL_PNF:192.0.2.99 \
+  -v EXTERNAL_SUBNET:192.0.2.0/24 \
+  -v EXTERNAL_SUBNET_ALLOCATION_POOL:start=192.0.2.100,end=192.0.2.200 \
+  -v EXTERNAL_INTERNET_ADDR:$CONTROLLER_1_IP  \
   -v HA_PROXY_IP:$SDN_CONTROLLER_IP \
   -v NUM_ODL_SYSTEM:$NUM_CONTROL_NODES \
   -v NUM_OS_SYSTEM:$(($NUM_CONTROL_NODES + $NUM_COMPUTE_NODES)) \
@@ -118,6 +123,11 @@ robot_cmd="pybot \
 suites="/home/opnfv/repos/odl_test/csit/suites/openstack/connectivity/l2.robot \
         /home/opnfv/repos/odl_test/csit/suites/openstack/connectivity/l3.robot \
         /home/opnfv/repos/odl_test/csit/suites/openstack/connectivity/external_network.robot"
+
+# run nc on jumphost to for external_network suite to use gw address there, instead
+# of the control node
+nc -l -k 12345 -e "echo Test Server Data" &
+nc -l -k -u 12345 -e "echo Test Server Data" &
 
 echo "Robot command set: ${robot_cmd}"
 echo "Running robot..."
