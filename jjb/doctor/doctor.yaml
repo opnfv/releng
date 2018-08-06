@@ -186,7 +186,6 @@
     name: 'doctor-verify-installer-inspector-builders-macro'
     builders:
       # yamllint disable rule:indentation
-      - 'clean-workspace-log'
       - shell:
           !include-raw:
               - ./doctor-env-presetup.sh
@@ -203,6 +202,7 @@
           # As Jenkins user, it has no permission to send ICMP package
           sudo -E tox -e py34
 
+
 # -------------------------------
 # publisher macros
 # -------------------------------
@@ -212,6 +212,7 @@
       - archive:
           artifacts: 'doctor_tests/*.log'
       - email-jenkins-admins-on-failure
+      - 'post-clean-workspace'
 
 
 #####################################
