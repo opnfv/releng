@@ -1014,3 +1014,15 @@
                 - shell:
                     !include-raw: installer-report.sh
           mark-unstable-if-failed: true
+
+- publisher:
+    name: 'clean-workspace'
+    publishers:
+      - postbuildscript:
+          builders:
+            - shell: |
+                #!/bin/bash
+                set -o errexit
+                set -o nounset
+                set -o pipefail
+                sudo /bin/rm -rf "$WORKSPACE"
