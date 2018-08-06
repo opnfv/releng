@@ -13,10 +13,10 @@ fi
 if [ "$ODL_BRANCH" == 'master' ]; then
   ODL_STREAM='flourine'
 else
-  ODL_STREAM=${ODL_BRANCH}
+  ODL_STREAM=${ODL_BRANCH#"stable/"}
 fi
 
-echo "ODL Branch set: ${ODL_BRANCH} and OS Version is ${FULL_OS_VER}"
+echo "ODL Stream set: ${ODL_STREAM} and OS Version is ${FULL_OS_VER}"
 
 sudo rm -rf releng
 git clone https://gerrit.opnfv.org/gerrit/releng.git
@@ -128,7 +128,3 @@ docker run -i --net=host \
   /bin/bash -c "source /tmp/overcloudrc; mkdir -p \$HOME/.ssh; cp /tmp/id_rsa \$HOME/.ssh; \
   cd /home/opnfv/repos/odl_test/ && git pull origin master; \
   ${robot_cmd} ${suites};"
-
-UPLOAD_LOCATION=artifacts.opnfv.org/cperf/cperf-apex-csit-${ODL_BRANCH}/${BUILD_NUMBER}/
-echo "Uploading robot logs to ${UPLOAD_LOCATION}"
-gsutil -m cp -r -v ${LOGS_LOCATION} gs://${UPLOAD_LOCATION} > gsutil.latest_logs.log
