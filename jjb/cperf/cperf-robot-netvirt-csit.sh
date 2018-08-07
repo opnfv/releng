@@ -120,21 +120,21 @@ robot_cmd="pybot \
   $EXTRA_ROBOT_ARGS \
   -v of_port:6653 "
 
-SUITE_HOME='/home/opnfv/repos/odl_test/csit/suites/openstack/connectivity'
+SUITE_HOME='/home/opnfv/repos/odl_test/csit/suites'
 
-suites="${SUITE_HOME}/l2.robot \
-        ${SUITE_HOME}/l3.robot \
-        ${SUITE_HOME}/external_network.robot \
-        ${SUITE_HOME}/security_group.robot \
-        ${SUITE_HOME}/live_migration.robot \
-        ${SUITE_HOME}/neutron_security_group.robot \
-        ${SUITE_HOME}/security_group_l3bcast.robot \
-        ${SUITE_HOME}/vpn_basic.robot \
-        ${SUITE_HOME}/vpn_basic_ipv6.robot \
-        ${SUITE_HOME}/elan.robot \
-        ${SUITE_HOME}/arp_learning.robot \
-        ${SUITE_HOME}/l2l3_gatewaymac_arp.robot \
-        ${SUITE_HOME}/Create_JVM_Plots.robot"
+suites="${SUITE_HOME}/openstack/connectivity/l2.robot \
+        ${SUITE_HOME}/openstack/connectivity/l3.robot \
+        ${SUITE_HOME}/openstack/connectivity/external_network.robot \
+        ${SUITE_HOME}/openstack/connectivity/security_group.robot \
+        ${SUITE_HOME}/openstack/connectivity/live_migration.robot \
+        ${SUITE_HOME}/openstack/securitygroup/neutron_security_group.robot \
+        ${SUITE_HOME}/openstack/securitygroup/security_group_l3bcast.robot \
+        ${SUITE_HOME}/netvirt/vpnservice/vpn_basic.robot \
+        ${SUITE_HOME}/netvirt/vpnservice/vpn_basic_ipv6.robot \
+        ${SUITE_HOME}/netvirt/elan/elan.robot \
+        ${SUITE_HOME}/netvirt/vpnservice/arp_learning.robot \
+        ${SUITE_HOME}/netvirt/l2l3_gatewaymac_arp.robot \
+        ${SUITE_HOME}/integration/Create_JVM_Plots.robot"
 
 echo "Robot command set: ${robot_cmd}"
 echo "Running robot..."
