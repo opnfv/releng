@@ -20,3 +20,20 @@
       shell: >
         source /home/heat-admin/overcloudrc && openstack flavor create
         --id 42 --ram 64 --disk 0 --vcpus 1 m1.nano
+    - name: Open CSIT TCP port for netcat
+      iptables:
+        chain: INPUT
+        action: insert
+        protocol: tcp
+        destination_port: 12345
+        jump: ACCEPT
+      become: yes
+    - name: Open CSIT UDP port for netcat
+      iptables:
+        chain: INPUT
+        action: insert
+        protocol: udp
+        destination_port: 12345
+        jump: ACCEPT
+      become: yes
+
