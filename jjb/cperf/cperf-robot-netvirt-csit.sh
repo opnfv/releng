@@ -122,11 +122,17 @@ robot_cmd="pybot \
 
 SUITE_HOME='/home/opnfv/repos/odl_test/csit/suites'
 
+# Disabled suites
+#
+# ${SUITE_HOME}/openstack/connectivity/live_migration.robot
+# Live migration will not work unless we use a shared storage backend like
+# Ceph which we do not currently use with CSIT images
+#
+
 suites="${SUITE_HOME}/openstack/connectivity/l2.robot \
         ${SUITE_HOME}/openstack/connectivity/l3.robot \
         ${SUITE_HOME}/openstack/connectivity/external_network.robot \
         ${SUITE_HOME}/openstack/connectivity/security_group.robot \
-        ${SUITE_HOME}/openstack/connectivity/live_migration.robot \
         ${SUITE_HOME}/openstack/securitygroup/neutron_security_group.robot \
         ${SUITE_HOME}/openstack/securitygroup/security_group_l3bcast.robot \
         ${SUITE_HOME}/netvirt/vpnservice/vpn_basic.robot \
