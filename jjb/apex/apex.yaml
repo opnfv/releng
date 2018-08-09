@@ -188,10 +188,13 @@
     os_version:
       - 'pike':
           os_scenario: 'pike'
+          odl_branch: 'stable/carbon'
       - 'queens':
           os_scenario: 'queens'
+          odl_branch: 'stable/oxygen'
       - 'master':
           os_scenario: 'nofeature'
+          odl_branch: 'stable/oxygen'
 
     topology:
       - 'noha'
@@ -755,6 +758,19 @@
               git-revision: true
       - apex-builder-{stream}
 
+# snapshot info fetch
+- job-template:
+    name: 'apex-fetch-snap-info'
+
+    disabled: false
+
+    parameters:
+      - '{project}-defaults'
+
+    builders:
+      - shell:
+          !include-raw: ./apex-fetch-snap-info.sh
+
 # snapshot create
 - job-template:
     name: 'apex-create-snapshot'
@@ -816,6 +832,14 @@
           name: GS_URL
           default: $GS_BASE{gs-pathname}/{os_version}/{topology}
           description: "User for overriding GS_URL from apex params"
+      - string:
+          name: OS_VERSION
+          default: '{os_version}'
+          description: OpenStack version short name
+      - string:
+          name: ODL_BRANCH
+          default: '{odl_branch}'
+          description: ODL branch being used
 
     properties:
       - build-blocker:
@@ -837,10 +861,10 @@
 
     builders:
       - multijob:
-          name: apex-virtual-deploy-test
+          name: apex-virtual-deploy
           condition: SUCCESSFUL
           projects:
-            - name: 'apex-virtual-{stream}'
+            - name: 'apex-deploy-virtual-{stream}'
               current-parameters: true
               predefined-parameters: |
                 DEPLOY_SCENARIO=os-odl-{os_scenario}-{topology}
@@ -849,12 +873,35 @@
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                FUNCTEST_SUITE_NAME=tempest_smoke
-                FUNCTEST_MODE=testcase
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: true
               git-revision: true
+      - multijob:
+          name: fetch snapshot info
+          condition: SUCCESSFUL
+          projects:
+            - name: 'apex-fetch-snap-info'
+              current-parameters: true
+              node-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: true
+              git-revision: false
+      - multijob:
+          name: csit
+          condition: SUCCESSFUL
+          projects:
+            - name: cperf-apex-csit-master
+              predefined-parameters: |
+                ODL_BRANCH=$ODL_BRANCH
+                RC_FILE_PATH=/tmp/csit/overcloudrc
+                NODE_FILE_PATH=/tmp/csit/node.yaml
+                SSH_KEY_PATH=/tmp/csit/id_rsa
+                ODL_CONTAINERIZED=true
+                OS_VERSION=$OS_VERSION
+              node-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: false
       - multijob:
           name: create snapshot
           condition: SUCCESSFUL
