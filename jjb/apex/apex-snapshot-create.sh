@@ -27,22 +27,8 @@ echo
 tmp_dir=$(pwd)/.tmp
 mkdir -p ${tmp_dir}
 
-# TODO(trozet) remove this after fix goes in for tripleo_inspector to copy these
-pushd ${tmp_dir} > /dev/null
-echo "Copying overcloudrc and ssh key from Undercloud..."
-# Store overcloudrc
-UNDERCLOUD=$(sudo virsh domifaddr undercloud | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
-sudo scp ${SSH_OPTIONS[@]} stack@${UNDERCLOUD}:overcloudrc ./
-# Copy out ssh key of stack from undercloud
-sudo scp ${SSH_OPTIONS[@]} stack@${UNDERCLOUD}:.ssh/id_rsa ./
-popd > /dev/null
-
-echo "Gathering introspection information"
-git clone https://gerrit.opnfv.org/gerrit/sdnvpn.git
-pushd sdnvpn/odl-pipeline/lib > /dev/null
-sudo ./tripleo_introspector.sh --out-file ${tmp_dir}/node.yaml
-popd > /dev/null
-sudo rm -rf sdnvpn
+# info should have already been collected in apex-fetch-snap-info so copy it
+cp -r /tmp/csit/* ${tmp_dir}/
 
 echo "Shutting down nodes"
 # Shut down nodes
