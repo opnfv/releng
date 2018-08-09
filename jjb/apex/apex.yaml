@@ -188,10 +188,13 @@
     os_version:
       - 'pike':
           os_scenario: 'pike'
+          odl_branch: 'stable/carbon'
       - 'queens':
           os_scenario: 'queens'
+          odl_branch: 'stable/oxygen'
       - 'master':
           os_scenario: 'nofeature'
+          odl_branch: 'stable/oxygen'
 
     topology:
       - 'noha'
@@ -804,6 +807,7 @@
           branch: '{branch}'
       - apex-parameter:
           gs-pathname: '{gs-pathname}'
+      -
       - string:
           name: ARTIFACT_VERSION
           default: dev
@@ -816,6 +820,14 @@
           name: GS_URL
           default: $GS_BASE{gs-pathname}/{os_version}/{topology}
           description: "User for overriding GS_URL from apex params"
+      - string:
+          name: OS_VERSION
+          default: '{os_version}'
+          description: OpenStack version short name
+      - string:
+          name: ODL_BRANCH
+          default: '{odl_branch}'
+          description: ODL branch being used
 
     properties:
       - build-blocker:
@@ -837,10 +849,10 @@
 
     builders:
       - multijob:
-          name: apex-virtual-deploy-test
+          name: apex-virtual-deploy
           condition: SUCCESSFUL
           projects:
-            - name: 'apex-virtual-{stream}'
+            - name: 'apex-deploy-virtual-{stream}'
               current-parameters: true
               predefined-parameters: |
                 DEPLOY_SCENARIO=os-odl-{os_scenario}-{topology}
@@ -849,12 +861,42 @@
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                FUNCTEST_SUITE_NAME=tempest_smoke
-                FUNCTEST_MODE=testcase
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: true
               git-revision: true
+      - shell: |
+          echo "Fetching CSIT inputs"
+          sudo rm -f /tmp/overcloudrc /tmp/node.yaml /tmp/id_rsa
+          UNDERCLOUD=$(sudo virsh domifaddr undercloud | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
+          sudo scp ${SSH_OPTIONS[@]} stack@${UNDERCLOUD}:overcloudrc /tmp/
+          sudo chown jenkins-ci:jenkins-ci /tmp/overcloudrc
+          # Copy out ssh key of stack from undercloud
+          sudo scp ${SSH_OPTIONS[@]} stack@${UNDERCLOUD}:.ssh/id_rsa /tmp/
+          sudo chown jenkins-ci:jenkins-ci /tmp/id_rsa
+          sudo chmod 0600 /tmp/id_rsa
+          echo "Gathering introspection information"
+          git clone https://gerrit.opnfv.org/gerrit/sdnvpn.git
+          pushd sdnvpn/odl-pipeline/lib > /dev/null
+          sudo ./tripleo_introspector.sh --out-file /tmp/node.yaml
+          sudo chown jenkins-ci:jenkins-ci /tmp/node.yaml
+          popd > /dev/null
+          sudo rm -rf sdnvpn
+      - multijob:
+          name: csit
+          condition: SUCCESSFUL
+          projects:
+            - name: cperf-apex-csit-master
+              predefined-parameters: |
+                ODL_BRANCH=$ODL_BRANCH
+                RC_FILE_PATH=/tmp/overcloudrc
+                NODE_FILE_PATH=/tmp/node.yaml
+                SSH_KEY_PATH=/tmp/id_rsa
+                ODL_CONTAINERIZED=true
+                OS_VERSION=$OS_VERSION
+              node-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: false
       - multijob:
           name: create snapshot
           condition: SUCCESSFUL
