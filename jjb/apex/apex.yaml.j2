@@ -779,6 +779,7 @@
       - multijob:
           name: csit
           condition: SUCCESSFUL
+          execution-type: SEQUENTIALLY
           projects:
             - name: cperf-apex-csit-master
               predefined-parameters: |
@@ -787,6 +788,13 @@
                 NODE_FILE_PATH=/tmp/csit/node.yaml
                 SSH_KEY_PATH=/tmp/csit/id_rsa
                 ODL_CONTAINERIZED=true
+                OS_VERSION=$OS_VERSION
+              node-parameters: true
+              kill-phase-on: NEVER
+              abort-all-job: false
+            - name: cperf-upload-logs-csit
+              predefined-parameters: |
+                ODL_BRANCH=$ODL_BRANCH
                 OS_VERSION=$OS_VERSION
               node-parameters: true
               kill-phase-on: FAILURE

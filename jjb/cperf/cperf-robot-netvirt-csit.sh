@@ -33,6 +33,12 @@ NUM_COMPUTE_NODES=$(python ${REL_PATH}/parse-node-yaml.py num_nodes --node-type 
 echo "Number of Control nodes found: ${NUM_CONTROL_NODES}"
 echo "Number of Compute nodes found: ${NUM_COMPUTE_NODES}"
 
+if [ "$NUM_COMPUTE_NODES" -eq 0 ]; then
+  OPENSTACK_TOPO="${NUM_CONTROL_NODES}cmb-0ctl-0cmp"
+else
+  OPENSTACK_TOPO="0cmb-${NUM_CONTROL_NODES}ctl-${NUM_COMPUTE_NODES}cmp"
+fi
+
 idx=1
 EXTRA_ROBOT_ARGS=""
 for idx in `seq 1 $NUM_CONTROL_NODES`; do
@@ -58,12 +64,11 @@ if [ "$ODL_CONTAINERIZED" == 'false' ]; then
                       -v NODE_STOP_COMMAND:'sudo systemctl stop opendaylight_api' \
                       -v NODE_FREEZE_COMMAND:'sudo systemctl stop opendaylight_api' "
 else
-  EXTRA_ROBOT_ARGS+=" -v NODE_KARAF_COUNT_COMMAND:\"sudo docker exec opendaylight_api /bin/bash -c 'ps axf | \
-                                grep org.apache.karaf | grep -v grep | wc -l' || echo 0\" \
-                      -v NODE_START_COMMAND:\"sudo docker start opendaylight_api\" \
-                      -v NODE_KILL_COMMAND:\"sudo docker stop opendaylight_api\" \
-                      -v NODE_STOP_COMMAND:\"sudo docker stop opendaylight_api\" \
-                      -v NODE_FREEZE_COMMAND:\"sudo docker stop opendaylight_api\" "
+  EXTRA_ROBOT_ARGS+=" -v NODE_KARAF_COUNT_COMMAND:'sudo docker ps | grep opendaylight_api | wc -l || echo 0' \
+                      -v NODE_START_COMMAND:'sudo docker start opendaylight_api' \
+                      -v NODE_KILL_COMMAND:'sudo docker stop opendaylight_api' \
+                      -v NODE_STOP_COMMAND:'sudo docker stop opendaylight_api' \
+                      -v NODE_FREEZE_COMMAND:'sudo docker stop opendaylight_api' "
 fi
 
 # FIXME(trozet) remove this once it is fixed in csit
@@ -99,7 +104,7 @@ robot_cmd="pybot \
   -v ODL_SYSTEM_IP:$CONTROLLER_1_IP \
   -v OS_CONTROL_NODE_IP:$CONTROLLER_1_IP \
   -v OPENSTACK_BRANCH:$FULL_OS_VER \
-  -v OPENSTACK_TOPO:"0cmb-1ctl-2cmp" \
+  -v OPENSTACK_TOPO:$OPENSTACK_TOPO \
   -v OS_USER:heat-admin \
   -v ODL_ENABLE_L3_FWD:yes \
   -v ODL_SYSTEM_USER:heat-admin \
