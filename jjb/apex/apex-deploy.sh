@@ -4,6 +4,7 @@ set -o nounset
 set -o pipefail
 
 IPV6_FLAG=False
+ALLINONE_FLAG=False
 
 # log info to console
 echo "Starting the Apex deployment."
@@ -99,10 +100,16 @@ if [ "$OPNFV_CLEAN" == 'yes' ]; then
   sudo ${CLEAN_CMD} ${clean_opts}
 fi
 
+# These are add-ons to regular scenarios where you can do like
+# os-nosdn-nofeature-noha-ipv6, or os-nosdn-nofeature-noha-allinone
 if echo ${DEPLOY_SCENARIO} | grep ipv6; then
   IPV6_FLAG=True
   DEPLOY_SCENARIO=$(echo ${DEPLOY_SCENARIO} |  sed 's/-ipv6//')
   echo "INFO: IPV6 Enabled"
+elif echo ${DEPLOY_SCENARIO} | grep allinone; then
+  ALLINONE_FLAG=True
+  DEPLOY_SCENARIO=$(echo ${DEPLOY_SCENARIO} |  sed 's/-allinone//')
+  echo "INFO: All in one deployment detected"
 fi
 
 echo "Deploy Scenario set to ${DEPLOY_SCENARIO}"
@@ -118,13 +125,19 @@ if [[ "$JOB_NAME" =~ "virtual" ]]; then
   if [[ "${DEPLOY_SCENARIO}" =~ fdio|ovs ]]; then
     DEPLOY_CMD="${DEPLOY_CMD} --virtual-default-ram 12 --virtual-compute-ram 7"
   fi
+  if [[ "$ALLINONE_FLAG" == "True" ]]; then
+    DEPLOY_CMD="${DEPLOY_CMD} --virtual-computes 0"
+  elif [[ "$PROMOTE" == "True" ]]; then
+    DEPLOY_CMD="${DEPLOY_CMD} --virtual-computes 2"
+  fi
+
   if [[ "$PROMOTE" == "True" ]]; then
     if [[ "$DEPLOY_SCENARIO" =~ "queens" ]]; then
       CSIT_ENV="csit-queens-environment.yaml"
     else
       CSIT_ENV="csit-environment.yaml"
     fi
-    DEPLOY_CMD="${DEPLOY_CMD} --virtual-computes 2 -e ${CSIT_ENV}"
+    DEPLOY_CMD="${DEPLOY_CMD} -e ${CSIT_ENV}"
   fi
 else
   # settings for bare metal deployment
