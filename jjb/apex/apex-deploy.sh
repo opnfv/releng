@@ -5,6 +5,7 @@ set -o pipefail
 
 IPV6_FLAG=False
 ALLINONE_FLAG=False
+CSIT_ENV_FLAG=False
 
 # log info to console
 echo "Starting the Apex deployment."
@@ -106,10 +107,18 @@ if echo ${DEPLOY_SCENARIO} | grep ipv6; then
   IPV6_FLAG=True
   DEPLOY_SCENARIO=$(echo ${DEPLOY_SCENARIO} |  sed 's/-ipv6//')
   echo "INFO: IPV6 Enabled"
-elif echo ${DEPLOY_SCENARIO} | grep allinone; then
+fi
+
+if echo ${DEPLOY_SCENARIO} | grep allinone; then
   ALLINONE_FLAG=True
   DEPLOY_SCENARIO=$(echo ${DEPLOY_SCENARIO} |  sed 's/-allinone//')
   echo "INFO: All in one deployment detected"
+fi
+
+if echo ${DEPLOY_SCENARIO} | grep csit; then
+  CSIT_ENV_FLAG=True
+  DEPLOY_SCENARIO=$(echo ${DEPLOY_SCENARIO} |  sed 's/-csit//')
+  echo "INFO: CSIT env requested in deploy scenario"
 fi
 
 echo "Deploy Scenario set to ${DEPLOY_SCENARIO}"
@@ -131,7 +140,7 @@ if [[ "$JOB_NAME" =~ "virtual" ]]; then
     DEPLOY_CMD="${DEPLOY_CMD} --virtual-computes 2"
   fi
 
-  if [[ "$PROMOTE" == "True" ]]; then
+  if [[ "$PROMOTE" == "True"  || "$CSIT_ENV_FLAG" == "True" ]]; then
     if [[ "$DEPLOY_SCENARIO" =~ "queens" ]]; then
       CSIT_ENV="csit-queens-environment.yaml"
     else
