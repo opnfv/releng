@@ -49,11 +49,16 @@ for idx in `seq 1 $NUM_CONTROL_NODES`; do
                       -v HA_PROXY_${idx}_IP:${SDN_CONTROLLER_IP}"
 done
 
-idx=1
-for idx in `seq 1 $NUM_COMPUTE_NODES`; do
-  COMPUTE_IP=$(python ${REL_PATH}/parse-node-yaml.py get_value -k address --node-type compute --node-number ${idx} --file $NODE_FILE_PATH)
-  EXTRA_ROBOT_ARGS+=" -v OS_COMPUTE_${idx}_IP:${COMPUTE_IP}"
-done
+# In all-in-one these Compute IPs still need to be passed to robot
+if [ "$NUM_COMPUTE_NODES" -eq 0 ]; then
+  EXTRA_ROBOT_ARGS+=" -v OS_COMPUTE_1_IP:'' -v OS_COMPUTE_2_IP:''"
+else
+  idx=1
+  for idx in `seq 1 $NUM_COMPUTE_NODES`; do
+    COMPUTE_IP=$(python ${REL_PATH}/parse-node-yaml.py get_value -k address --node-type compute --node-number ${idx} --file $NODE_FILE_PATH)
+    EXTRA_ROBOT_ARGS+=" -v OS_COMPUTE_${idx}_IP:${COMPUTE_IP}"
+  done
+fi
 
 CONTROLLER_1_IP=$(python ${REL_PATH}/parse-node-yaml.py get_value -k address --node-number 1 --file $NODE_FILE_PATH)
 
