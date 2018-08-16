@@ -33,10 +33,11 @@ NUM_COMPUTE_NODES=$(python ${REL_PATH}/parse-node-yaml.py num_nodes --node-type 
 echo "Number of Control nodes found: ${NUM_CONTROL_NODES}"
 echo "Number of Compute nodes found: ${NUM_COMPUTE_NODES}"
 
+# Only 1 combo or ctrl node is specified, even for OS HA deployments
 if [ "$NUM_COMPUTE_NODES" -eq 0 ]; then
-  OPENSTACK_TOPO="${NUM_CONTROL_NODES}cmb-0ctl-0cmp"
+  OPENSTACK_TOPO="1cmb-0ctl-0cmp"
 else
-  OPENSTACK_TOPO="0cmb-${NUM_CONTROL_NODES}ctl-${NUM_COMPUTE_NODES}cmp"
+  OPENSTACK_TOPO="0cmb-1ctl-${NUM_COMPUTE_NODES}cmp"
 fi
 
 idx=1
