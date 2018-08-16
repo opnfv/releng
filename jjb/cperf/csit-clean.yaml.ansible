@@ -1,0 +1,11 @@
+---
+- hosts: all
+  tasks:
+    - name: Delete cirros glance image
+      shell: >
+        source /home/heat-admin/overcloudrc && openstack image delete
+        cirros-0.3.5-x86_64-disk
+    - name: Delete nano flavor
+      shell: >
+        source /home/heat-admin/overcloudrc && openstack flavor delete
+        m1.nano

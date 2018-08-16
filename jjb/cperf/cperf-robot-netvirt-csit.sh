@@ -167,3 +167,6 @@ docker run -i --net=host \
   /bin/bash -c "source /tmp/overcloudrc; mkdir -p \$HOME/.ssh; cp /tmp/id_rsa \$HOME/.ssh; \
   cd /home/opnfv/repos/odl_test/ && git pull origin master; \
   ${robot_cmd} ${suites};"
+
+echo "Running post CSIT clean"
+ansible-playbook -i ${CONTROLLER_1_IP}, -u heat-admin --key-file ${WORKSPACE}/id_rsa ${REL_PATH}/csit-clean.yaml.ansible -vvv
