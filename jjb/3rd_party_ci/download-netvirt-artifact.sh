@@ -13,9 +13,9 @@ fi
 
 echo "ODL Distribution is ${DIST}"
 ODL_ZIP="karaf-SNAPSHOT.zip"
-CHANGE_DETAILS_URL="https://git.opendaylight.org/gerrit/changes/netvirt~${ODL_BRANCH}~${GERRIT_CHANGE_ID}/detail"
+CHANGE_DETAILS_URL="https://git.opendaylight.org/gerrit/changes/${GERRIT_PROJECT}~${ODL_BRANCH}~${GERRIT_CHANGE_ID}/detail"
 # due to limitation with the Jenkins Gerrit Trigger, we need to use Gerrit REST API to get the change details
-ODL_BUILD_JOB_NUM=$(curl --fail ${CHANGE_DETAILS_URL} | grep -Eo "netvirt-distribution-check-${DIST}/[0-9]+" | tail -1 | grep -Eo [0-9]+)
+ODL_BUILD_JOB_NUM=$(curl --fail ${CHANGE_DETAILS_URL} | grep -Eo "${GERRIT_PROJECT}-distribution-check-${DIST}/[0-9]+" | tail -1 | grep -Eo [0-9]+)
 DISTRO_CHECK_CONSOLE_LOG="https://logs.opendaylight.org/releng/vex-yul-odl-jenkins-1/netvirt-distribution-check-${DIST}/${ODL_BUILD_JOB_NUM}/console.log.gz"
 NETVIRT_ARTIFACT_URL=$(curl --fail --compressed ${DISTRO_CHECK_CONSOLE_LOG} | grep 'BUNDLE_URL' | cut -d = -f 2)
 
