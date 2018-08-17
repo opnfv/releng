@@ -19,13 +19,15 @@
     arch_tag:
       - 'amd64':
           slave_label: 'opnfv-build-ubuntu'
+      - 'arm64':
+          slave_label: 'opnfv-build-ubuntu-arm'
 
     # yamllint disable rule:key-duplicates
     image:
       - 'core'
       - 'healthcheck'
-      - 'smoke'
       - 'features'
+      - 'smoke'
 
     # settings for jobs run in multijob phases
     build-job-settings: &build-job-settings
@@ -53,6 +55,7 @@
     jobs:
       - "functest-kubernetes-docker-{stream}"
       - "functest-kubernetes-{image}-docker-build-{arch_tag}-{stream}"
+      - "functest-kubernetes-{image}-docker-manifest-{stream}"
 
 ########################
 # job templates
@@ -92,23 +95,54 @@
           projects:
             - name: 'functest-kubernetes-core-docker-build-amd64-{stream}'
               <<: *build-job-settings
+            - name: 'functest-kubernetes-core-docker-build-arm64-{stream}'
+              <<: *build-job-settings
       - multijob:
-          name: 'build functest-kubernetes-[healthcheck,features] image'
+          name: 'publish functest-kubernetes-core manifests'
+          execution-type: PARALLEL
+          projects:
+            - name: 'functest-kubernetes-core-docker-manifest-{stream}'
+              <<: *manifest-job-settings
+      - multijob:
+          name: 'build functest-kubernetes-healthcheck images'
           execution-type: PARALLEL
           projects:
             - name: 'functest-kubernetes-healthcheck-docker-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-kubernetes-features-docker-build-amd64-{stream}'
+            - name: 'functest-kubernetes-healthcheck-docker-build-arm64-{stream}'
               <<: *build-job-settings
       - multijob:
-          name: 'build functest-kubernetes-smoke image'
+          name: 'publish functest-kubernetes-healthcheck manifests'
           execution-type: PARALLEL
           projects:
+            - name: 'functest-kubernetes-healthcheck-docker-manifest-{stream}'
+              <<: *manifest-job-settings
+      - multijob:
+          name: 'build all functest-kubernetes images'
+          condition: SUCCESSFUL
+          execution-type: PARALLEL
+          projects:
+            - name: 'functest-kubernetes-features-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-kubernetes-features-docker-build-arm64-{stream}'
+              <<: *build-job-settings
             - name: 'functest-kubernetes-smoke-docker-build-amd64-{stream}'
               <<: *build-job-settings
+            - name: 'functest-kubernetes-smoke-docker-build-arm64-{stream}'
+              <<: *build-job-settings
+      - multijob:
+          name: 'publish all manifests'
+          condition: SUCCESSFUL
+          execution-type: PARALLEL
+          projects:
+            - name: 'functest-kubernetes-features-docker-manifest-{stream}'
+              <<: *manifest-job-settings
+            - name: 'functest-kubernetes-smoke-docker-manifest-{stream}'
+              <<: *manifest-job-settings
 
     publishers:
       - 'functest-kubernetes-amd64-recipients'
+      - 'functest-kubernetes-arm64-recipients'
 
 - job-template:
     name: 'functest-kubernetes-{image}-docker-build-{arch_tag}-{stream}'
@@ -124,7 +158,54 @@
     builders:
       - shell: |
           #!/bin/bash -ex
-          sudo amd64_dirs=docker/{image} bash ./build.sh
+          case "{arch_tag}" in
+          "arm64")
+              sudo amd64_dirs= arm64_dirs=docker/{image} bash ./build.sh ;;
+          *)
+              sudo amd64_dirs=docker/{image} arm64_dirs= bash ./build.sh ;;
+          esac
+          exit $?
+
+- job-template:
+    name: 'functest-kubernetes-{image}-docker-manifest-{stream}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - label:
+          name: SLAVE_LABEL
+          default: 'opnfv-build-ubuntu'
+          description: 'Slave label on Jenkins'
+      - string:
+          name: PROJECT
+          default: "{project}"
+          description: "Project name used to enable job conditions"
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: 'Git URL to use on this Jenkins Slave'
+      - string:
+          name: REPO
+          default: "opnfv"
+          description: "Repository name for functest-kubernetes images"
+
+
+    disabled: '{obj:disabled}'
+
+    builders:
+      - shell: |
+          #!/bin/bash -ex
+          case "{stream}" in
+          "master")
+              tag="latest" ;;
+          *)
+              tag="{stream}" ;;
+          esac
+          sudo manifest-tool push from-args \
+              --platforms linux/amd64,linux/arm64 \
+              --template $REPO/functest-kubernetes-{image}:ARCH-$tag \
+              --target $REPO/functest-kubernetes-{image}:$tag
           exit $?
 
 # parameter macro
@@ -169,7 +250,17 @@
       - string:
           name: REPO
           default: "opnfv"
-          description: "Repository name for functest images"
+          description: "Repository name for functest-kubernetes images"
+
+# publisher macros
+- publisher:
+    name: 'functest-kubernetes-arm64-recipients'
+    publishers:
+      - email:
+          recipients: >
+            cristina.pauna@enea.com
+            alexandru.avadanii@enea.com
+            delia.popescu@enea.com
 
 - publisher:
     name: 'functest-kubernetes-amd64-recipients'
