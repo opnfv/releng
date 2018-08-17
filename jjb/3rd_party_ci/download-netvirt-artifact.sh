@@ -8,7 +8,7 @@ if [ "$ODL_BRANCH" != 'master' ]; then
   DIST=$(echo ${ODL_BRANCH} | sed -rn 's#([a-zA-Z]+)/([a-zA-Z]+)#\2#p')
   ODL_BRANCH=$(echo ${ODL_BRANCH} | sed -rn 's#([a-zA-Z]+)/([a-zA-Z]+)#\1%2F\2#p')
 else
-  DIST='fluorine'
+  DIST='neon'
 fi
 
 echo "ODL Distribution is ${DIST}"
