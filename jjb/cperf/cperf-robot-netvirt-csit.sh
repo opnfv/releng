@@ -11,7 +11,7 @@ else
 fi
 
 if [ "$ODL_BRANCH" == 'master' ]; then
-  ODL_STREAM='flourine'
+  ODL_STREAM='neon'
 else
   ODL_STREAM=${ODL_BRANCH#"stable/"}
 fi
