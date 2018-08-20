@@ -92,6 +92,7 @@ LOGS_LOCATION=/tmp/robot_results
 robot_cmd="pybot \
   --removekeywords wuks \
   --xunit robotxunit.xml \
+  --name 'CSIT' \
   -e exclude \
   -d $LOGS_LOCATION \
   -v BUNDLEFOLDER:/opt/opendaylight \
