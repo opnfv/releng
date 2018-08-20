@@ -1,0 +1,203 @@
+---
+##############################################
+# job configuration for docker build and push
+##############################################
+- project:
+
+    name: fuel-docker-jobs
+
+    project: fuel
+
+    stream:
+      - master:
+          branch: '{stream}'
+          disabled: false
+      - gambia:
+          branch: 'stable/{stream}'
+          disabled: true
+
+    arch_tag:
+      - 'amd64':
+          slave_label: 'opnfv-build-ubuntu'
+      - 'arm64':
+          slave_label: 'opnfv-build-ubuntu-arm'
+
+    # settings for jobs run in multijob phases
+    build-job-settings: &build-job-settings
+      current-parameters: false
+      git-revision: true
+      node-parameters: false
+      predefined-parameters: |
+        PUSH_IMAGE=$PUSH_IMAGE
+        COMMIT_ID=$COMMIT_ID
+        GERRIT_REFNAME=$GERRIT_REFNAME
+        DOCKERFILE=$DOCKERFILE
+      kill-phase-on: FAILURE
+      abort-all-jobs: false
+
+    manifest-job-settings: &manifest-job-settings
+      current-parameters: false
+      git-revision: true
+      node-parameters: false
+      predefined-parameters:
+        GERRIT_REFNAME=$GERRIT_REFNAME
+      kill-phase-on: FAILURE
+      abort-all-jobs: false
+
+    jobs:
+      - "fuel-docker-{stream}"
+      - "fuel-docker-build-{arch_tag}-{stream}"
+      - "fuel-docker-manifest-{stream}"
+
+########################
+# job templates
+########################
+- job-template:
+    name: 'fuel-docker-{stream}'
+
+    project-type: multijob
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - fuel-job-parameters:
+          project: '{project}'
+          branch: '{branch}'
+          slave_label: 'opnfv-build-ubuntu'
+          arch_tag: 'amd64'
+
+    properties:
+      - throttle:
+          max-per-node: 1
+          option: 'project'
+
+    scm:
+      - git-scm
+
+    triggers:
+      - pollscm:
+          cron: "*/30 * * * *"
+      - gerrit-trigger-tag-created:
+          project: '{project}'
+
+    builders:
+      - multijob:
+          name: 'build fuel images'
+          execution-type: PARALLEL
+          projects:
+            - name: 'fuel-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'fuel-docker-build-arm64-{stream}'
+              <<: *build-job-settings
+      - multijob:
+          name: 'publish fuel manifests'
+          condition: SUCCESSFUL
+          execution-type: PARALLEL
+          projects:
+            - name: 'fuel-docker-manifest-{stream}'
+              <<: *manifest-job-settings
+
+    publishers:
+      - email-fuel-ptl
+
+- job-template:
+    name: 'fuel-docker-build-{arch_tag}-{stream}'
+    disabled: '{obj:disabled}'
+    parameters:
+      - fuel-job-parameters:
+          project: '{project}'
+          branch: '{branch}'
+          slave_label: '{slave_label}'
+          arch_tag: '{arch_tag}'
+    scm:
+      - git-scm
+    builders:
+      - shell: |
+          #!/bin/bash -ex
+          sudo ./ci/build.sh
+
+- job-template:
+    name: 'fuel-docker-manifest-{stream}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - label:
+          name: SLAVE_LABEL
+          default: 'opnfv-build-ubuntu'
+          description: 'Slave label on Jenkins'
+      - string:
+          name: PROJECT
+          default: "{project}"
+          description: "Project name used to enable job conditions"
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: 'Git URL to use on this Jenkins Slave'
+      - string:
+          name: REPO
+          default: "opnfv"
+          description: "Repository name for fuel-docker images"
+
+
+    disabled: '{obj:disabled}'
+
+    builders:
+      - shell: |
+          #!/bin/bash -ex
+          case "{stream}" in
+          "master")
+              tag="latest" ;;
+          *)
+              tag="{stream}" ;;
+          esac
+          sudo manifest-tool push from-args \
+              --platforms linux/amd64,linux/arm64 \
+              --template $REPO/fuel:ARCH-$tag \
+              --target $REPO/fuel:$tag
+          exit $?
+
+# parameter macro
+- parameter:
+    name: fuel-job-parameters
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - label:
+          name: SLAVE_LABEL
+          default: '{slave_label}'
+          description: 'Slave label on Jenkins'
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: 'Git URL to use on this Jenkins Slave'
+      - string:
+          name: PUSH_IMAGE
+          default: "true"
+          description: "To enable/disable pushing the image to Dockerhub."
+      - string:
+          name: COMMIT_ID
+          default: ""
+          description: "commit id to make a snapshot docker image"
+      - string:
+          name: GERRIT_REFNAME
+          default: ""
+          description: "Docker tag to be built, e.g. refs/tags/5.0.0, refs/tags/opnfv-5.0.0, refs/tags/5.0.RC1"
+      - string:
+          name: DOCKERFILE
+          default: "Dockerfile"
+          description: "Dockerfile to use for creating the image."
+      - string:
+          name: ARCH_TAG
+          default: "{arch_tag}"
+          description: "If set, this value will be added to the docker image tag as a prefix"
+      - string:
+          name: PROJECT
+          default: "{project}"
+          description: "Project name used to enable job conditions"
+      - string:
+          name: REPO
+          default: "opnfv"
+          description: "Repository name for fuel-docker images"
