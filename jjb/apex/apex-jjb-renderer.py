@@ -20,7 +20,8 @@ def render_jjb():
     gspathname = dict()
     branch = dict()
     build_slave = dict()
-    env = Environment(loader=FileSystemLoader('./'), autoescape=True)
+    env = Environment(loader=FileSystemLoader('./'), autoescape=True,
+                      keep_trailing_newline=True)
 
     with open('scenarios.yaml.hidden') as _:
         scenarios = yaml.safe_load(_)
@@ -44,6 +45,7 @@ def render_jjb():
 
     with open('./apex.yaml', 'w') as fh:
         fh.write(output)
+
 
 if __name__ == "__main__":
     render_jjb()
