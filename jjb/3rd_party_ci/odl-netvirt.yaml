@@ -176,6 +176,16 @@
               kill-phase-on: FAILURE
               abort-all-job: false
       - multijob:
+          name: apex-fetch-logs
+          condition: ALWAYS
+          projects:
+            - name: 'apex-fetch-logs-{stream}'
+              current-parameters: false
+              node-parameters: true
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
+      - multijob:
           name: postprocess
           condition: ALWAYS
           projects:

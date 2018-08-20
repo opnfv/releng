@@ -800,6 +800,17 @@
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: false
+            - name: 'apex-fetch-logs-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: true
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
       - multijob:
           name: create snapshot
           condition: SUCCESSFUL

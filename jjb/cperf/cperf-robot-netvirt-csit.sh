@@ -166,6 +166,7 @@ docker run -i --net=host \
   opnfv/cperf:$DOCKER_TAG \
   /bin/bash -c "source /tmp/overcloudrc; mkdir -p \$HOME/.ssh; cp /tmp/id_rsa \$HOME/.ssh; \
   cd /home/opnfv/repos/odl_test/ && git pull origin master; \
+  pip install odltools; \
   ${robot_cmd} ${suites};"
 
 echo "Running post CSIT clean"
