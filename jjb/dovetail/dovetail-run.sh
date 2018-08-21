@@ -208,6 +208,7 @@ if [ -f ${DOVETAIL_CONFIG}/pod.yaml ]; then
         cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
 process_info:
 - {testcase_name: yardstick.ha.rabbitmq, attack_process: rabbitmq_server}
+- {testcase_name: yardstick.ha.cinder_api, attack_process: cinder_wsgi}
 EOF
     elif [ "$INSTALLER_TYPE" == "fuel" ]; then
         cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
