@@ -194,7 +194,11 @@
           max-per-node: 3
           max-total: 10
           option: 'project'
-
+      - build-blocker:
+          use-build-blocker: true
+          block-level: 'NODE'
+          blocking-jobs:
+            - 'apex-.*-promote.*'
     builders:
       - description-setter:
           description: "Built on $NODE_NAME"
@@ -245,7 +249,7 @@
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
                 FUNCTEST_SUITE_NAME=tempest_smoke
                 FUNCTEST_MODE=testcase
-              node-parameters: false
+              node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: true
               git-revision: true
