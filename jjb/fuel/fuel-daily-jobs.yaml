@@ -75,6 +75,8 @@
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
       - 'os-nosdn-kvm_ovs_dpdk_bar-ha':
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+      - 'os-nosdn-vpp-ha':
+          auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
       # NOHA scenarios
       - 'os-nosdn-nofeature-noha':
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
@@ -96,6 +98,8 @@
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
       - 'os-nosdn-kvm_ovs_dpdk_bar-noha':
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+      - 'os-nosdn-vpp-noha':
+          auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
       # danube scenario for Dovetail only
       - 'os-odl_l2-bgpvpn-ha':
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
@@ -111,6 +115,14 @@
         stream: danube
       - scenario: os-odl-ovs-noha
         stream: fraser
+      - scenario: os-nosdn-vpp-ha
+        stream: fraser
+      - scenario: os-nosdn-vpp-noha
+        stream: fraser
+      - scenario: os-nosdn-vpp-ha
+        stream: danube
+      - scenario: os-nosdn-vpp-noha
+        stream: danube
 
     jobs:
       - 'fuel-{scenario}-{pod}-daily-{stream}'
@@ -395,6 +407,11 @@
     name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-ha-baremetal-daily-master-trigger'
     triggers:
       - timed: ''  # '30 8 * * *'
+- trigger:
+    name: 'fuel-os-nosdn-vpp-ha-baremetal-daily-master-trigger'
+    triggers:
+      - timed: ''
+
 # NOHA Scenarios
 - trigger:
     name: 'fuel-os-nosdn-nofeature-noha-baremetal-daily-master-trigger'
@@ -434,6 +451,10 @@
       - timed: ''
 - trigger:
     name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-noha-baremetal-daily-master-trigger'
+    triggers:
+      - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-vpp-noha-baremetal-daily-master-trigger'
     triggers:
       - timed: ''
 # ----------------------------------------------
@@ -552,6 +573,10 @@
     name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-ha-virtual-daily-master-trigger'
     triggers:
       - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-vpp-ha-virtual-daily-master-trigger'
+    triggers:
+      - timed: ''
 # NOHA Scenarios
 - trigger:
     name: 'fuel-os-nosdn-nofeature-noha-virtual-daily-master-trigger'
@@ -593,6 +618,10 @@
     name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-noha-virtual-daily-master-trigger'
     triggers:
       - timed: ''  # '30 20 * * *'
+- trigger:
+    name: 'fuel-os-nosdn-vpp-noha-virtual-daily-master-trigger'
+    triggers:
+      - timed: ''
 # ----------------------------------------------
 # Triggers for job running on fuel-virtual against fraser branch
 # ----------------------------------------------
@@ -708,6 +737,10 @@
     name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-ha-zte-pod1-daily-master-trigger'
     triggers:
       - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-vpp-ha-zte-pod1-daily-master-trigger'
+    triggers:
+      - timed: ''
 # NOHA Scenarios
 - trigger:
     name: 'fuel-os-nosdn-nofeature-noha-zte-pod1-daily-master-trigger'
@@ -747,5 +780,9 @@
       - timed: ''
 - trigger:
     name: 'fuel-os-nosdn-kvm_ovs_dpdk_bar-noha-zte-pod1-daily-master-trigger'
+    triggers:
+      - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-vpp-noha-zte-pod1-daily-master-trigger'
     triggers:
       - timed: ''
