@@ -21,18 +21,12 @@
     # Scenarios
     # -------------------------------
     scenario:
-      - 'os-nosdn-nofeature-ha':
-          auto-trigger-name: 'daily-trigger-disabled'
-          xci-flavor: 'ha'
       - 'os-nosdn-nofeature-noha':
           auto-trigger-name: 'daily-trigger-disabled'
-          xci-flavor: 'noha'
-      - 'os-odl-sfc-ha':
-          auto-trigger-name: 'daily-trigger-disabled'
-          xci-flavor: 'ha'
+          xci-flavor: 'mini'
       - 'os-odl-sfc-noha':
           auto-trigger-name: 'daily-trigger-disabled'
-          xci-flavor: 'noha'
+          xci-flavor: 'mini'
     # -------------------------------
     # XCI PODs
     # -------------------------------
@@ -43,29 +37,15 @@
     # Supported Distros
     # -------------------------------
     distro:
-      - 'xenial':
+      - 'ubuntu':
           disabled: false
-          slave-label: xci-xenial-virtual
-          dib-os-release: 'xenial'
-          dib-os-element: 'ubuntu-minimal'
-          # yamllint disable rule:line-length
-          dib-os-packages: 'vlan,vim,less,bridge-utils,sudo,language-pack-en,iputils-ping,rsyslog,curl,python,debootstrap,ifenslave,ifenslave-2.6,lsof,lvm2,tcpdump,nfs-kernel-server,chrony,iptabls'
-          # yamllint enable rule:line-length
-          extra-dib-elements: 'openssh-server'
-      - 'centos7':
+          slave-label: xci-virtual
+      - 'centos':
           disabled: true
-          slave-label: xci-centos7-virtual
-          dib-os-release: '7'
-          dib-os-element: 'centos7'
-          dib-os-packages: 'vim,less,bridge-utils,iputils,rsyslog,curl'
-          extra-dib-elements: 'openssh-server'
-      - 'suse':
-          disabled: true
-          slave-label: xci-suse-virtual
-          dib-os-release: '42.3'
-          dib-os-element: 'opensuse-minimal'
-          dib-os-packages: 'vim,less,bridge-utils,iputils,rsyslog,curl'
-          extra-dib-elements: 'openssh-server'
+          slave-label: xci-virtual
+      - 'opensuse':
+          disabled: false
+          slave-label: xci-virtual
 
     # -------------------------------
     #        Phases
@@ -112,6 +92,19 @@
       - label:
           name: SLAVE_LABEL
           default: '{slave-label}'
+      - label:
+          name: DISTRO
+          default: '{distro}'
+      - string:
+          name: FUNCTEST_MODE
+          default: 'tier'
+      - string:
+          name: FUNCTEST_SUITE_NAME
+          default: 'healthcheck'
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: 'Git URL to use on this Jenkins Slave'
       - string:
           name: CI_LOOP
           default: 'daily'
@@ -124,7 +117,7 @@
 
     builders:
       - description-setter:
-          description: "Built on $NODE_NAME"
+          description: "Scenario: $DEPLOY_SCENARIO | Node: $NODE_NAME"
       - trigger-builds:
           - project: 'xci-deploy-{pod}-{distro}-daily-{stream}'
             current-parameters: false
@@ -132,6 +125,7 @@
               DEPLOY_SCENARIO=$DEPLOY_SCENARIO
               XCI_FLAVOR=$XCI_FLAVOR
               CI_LOOP=$CI_LOOP
+              DISTRO=$DISTRO
             same-node: true
             block: true
       - trigger-builds:
@@ -141,6 +135,8 @@
               DEPLOY_SCENARIO=$DEPLOY_SCENARIO
               XCI_FLAVOR=$XCI_FLAVOR
               CI_LOOP=$CI_LOOP
+              DISTRO=$DISTRO
+              FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
             same-node: true
             block: true
             block-thresholds:
@@ -150,8 +146,6 @@
 
     publishers:
       # yamllint disable rule:line-length
-      - email:
-          recipients: fatih.degirmenci@ericsson.com yroblamo@redhat.com mchandras@suse.de jack.morgan@intel.com julienjut@gmail.com
       # yamllint enable rule:line-length
       - email-jenkins-admins-on-failure
       - postbuildscript:
@@ -207,21 +201,6 @@
       - string:
           name: DISTRO
           default: '{distro}'
-      - string:
-          name: DIB_OS_RELEASE
-          default: '{dib-os-release}'
-      - string:
-          name: DIB_OS_ELEMENT
-          default: '{dib-os-element}'
-      - string:
-          name: DIB_OS_PACKAGES
-          default: '{dib-os-packages}'
-      - string:
-          name: EXTRA_DIB_ELEMENTS
-          default: '{extra-dib-elements}'
-      - string:
-          name: CLEAN_DIB_IMAGES
-          default: 'true'
       - label:
           name: SLAVE_LABEL
           default: '{slave-label}'
@@ -241,7 +220,7 @@
 
     builders:
       - description-setter:
-          description: "Built on $NODE_NAME - Scenario: $DEPLOY_SCENARIO"
+          description: "Scenario: $DEPLOY_SCENARIO | Node: $NODE_NAME"
       - 'xci-{phase}-builder'
 
 # --------------------------
@@ -260,12 +239,3 @@
           #!/bin/bash
 
           echo "Hello World!"
-
-# this will be enabled once the xci is prepared
-# - builder:
-#    name: xci-functest-builder
-#    builders:
-#        - shell:
-#            !include-raw:
-#                - ../../utils/fetch_os_creds.sh
-#                - ../functest/functest-alpine.sh
