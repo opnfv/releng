@@ -1,15 +1,9 @@
 ---
-# -------------------------------
-# These jobs run on a daily basis and deploy OpenStack
-# using the pinned versions of opnfv/releng, openstack/bifrost
-# and openstack/openstack-ansible. Due to this, there is no
-# version/branch is set/passed to jobs and instead the versions
-# are checked out based on what is configured.
-# -------------------------------
 - project:
     project: 'releng-xci'
 
     name: 'xci-daily'
+
     # -------------------------------
     # Branch Anchors
     # -------------------------------
@@ -17,55 +11,42 @@
       stream: master
       opnfv-releng-version: master
       gs-pathname: ''
+
     # -------------------------------
     # Scenarios
     # -------------------------------
     scenario:
-      - 'os-nosdn-nofeature-ha':
-          auto-trigger-name: 'daily-trigger-disabled'
-          xci-flavor: 'ha'
       - 'os-nosdn-nofeature-noha':
           auto-trigger-name: 'daily-trigger-disabled'
-          xci-flavor: 'noha'
-      - 'os-odl-sfc-ha':
-          auto-trigger-name: 'daily-trigger-disabled'
-          xci-flavor: 'ha'
+          deploy-scenario: 'os-nosdn-nofeature'
+          installer-type: 'osa'
+          xci-flavor: 'mini'
       - 'os-odl-sfc-noha':
           auto-trigger-name: 'daily-trigger-disabled'
-          xci-flavor: 'noha'
+          deploy-scenario: 'os-odl-sfc'
+          installer-type: 'osa'
+          xci-flavor: 'mini'
+
     # -------------------------------
     # XCI PODs
     # -------------------------------
     pod:
       - virtual:
           <<: *master
+
     # -------------------------------
     # Supported Distros
     # -------------------------------
     distro:
-      - 'xenial':
+      - 'ubuntu':
           disabled: false
-          slave-label: xci-xenial-virtual
-          dib-os-release: 'xenial'
-          dib-os-element: 'ubuntu-minimal'
-          # yamllint disable rule:line-length
-          dib-os-packages: 'vlan,vim,less,bridge-utils,sudo,language-pack-en,iputils-ping,rsyslog,curl,python,debootstrap,ifenslave,ifenslave-2.6,lsof,lvm2,tcpdump,nfs-kernel-server,chrony,iptabls'
-          # yamllint enable rule:line-length
-          extra-dib-elements: 'openssh-server'
-      - 'centos7':
+          slave-label: xci-virtual
+      - 'centos':
           disabled: true
-          slave-label: xci-centos7-virtual
-          dib-os-release: '7'
-          dib-os-element: 'centos7'
-          dib-os-packages: 'vim,less,bridge-utils,iputils,rsyslog,curl'
-          extra-dib-elements: 'openssh-server'
-      - 'suse':
-          disabled: true
-          slave-label: xci-suse-virtual
-          dib-os-release: '42.3'
-          dib-os-element: 'opensuse-minimal'
-          dib-os-packages: 'vim,less,bridge-utils,iputils,rsyslog,curl'
-          extra-dib-elements: 'openssh-server'
+          slave-label: xci-virtual
+      - 'opensuse':
+          disabled: false
+          slave-label: xci-virtual
 
     # -------------------------------
     #        Phases
@@ -73,6 +54,7 @@
     phase:
       - 'deploy'
       - 'functest'
+
     # -------------------------------
     # jobs
     # -------------------------------
@@ -94,6 +76,7 @@
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
+            - '^xci-verify.*'
             - '^xci-os.*'
             - '^xci-deploy.*'
             - '^xci-functest.*'
@@ -105,16 +88,32 @@
     parameters:
       - string:
           name: DEPLOY_SCENARIO
-          default: '{scenario}'
+          default: '{deploy-scenario}'
+      - string:
+          name: INSTALLER_TYPE
+          default: '{installer-type}'
       - string:
           name: XCI_FLAVOR
           default: '{xci-flavor}'
       - label:
           name: SLAVE_LABEL
           default: '{slave-label}'
+      - label:
+          name: XCI_DISTRO
+          default: '{distro}'
+      - string:
+          name: FUNCTEST_MODE
+          default: 'tier'
+      - string:
+          name: FUNCTEST_SUITE_NAME
+          default: 'healthcheck'
       - string:
           name: CI_LOOP
           default: 'daily'
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: 'Git URL to use on this Jenkins Slave'
 
     triggers:
       - '{auto-trigger-name}'
@@ -124,14 +123,16 @@
 
     builders:
       - description-setter:
-          description: "Built on $NODE_NAME"
+          description: "Scenario: $DEPLOY_SCENARIO | Node: $NODE_NAME"
       - trigger-builds:
           - project: 'xci-deploy-{pod}-{distro}-daily-{stream}'
             current-parameters: false
             predefined-parameters: |
               DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+              INSTALLER_TYPE=$INSTALLER_TYPE
               XCI_FLAVOR=$XCI_FLAVOR
               CI_LOOP=$CI_LOOP
+              XCI_DISTRO=$DISTRO
             same-node: true
             block: true
       - trigger-builds:
@@ -139,8 +140,12 @@
             current-parameters: false
             predefined-parameters: |
               DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+              INSTALLER_TYPE=$INSTALLER_TYPE
               XCI_FLAVOR=$XCI_FLAVOR
               CI_LOOP=$CI_LOOP
+              XCI_DISTRO=$DISTRO
+              FUNCTEST_MODE=$FUNCTEST_MODE
+              FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
             same-node: true
             block: true
             block-thresholds:
@@ -150,8 +155,6 @@
 
     publishers:
       # yamllint disable rule:line-length
-      - email:
-          recipients: fatih.degirmenci@ericsson.com yroblamo@redhat.com mchandras@suse.de jack.morgan@intel.com julienjut@gmail.com
       # yamllint enable rule:line-length
       - email-jenkins-admins-on-failure
       - postbuildscript:
@@ -178,6 +181,7 @@
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
+            - '^xci-verify.*'
             - '^xci-deploy.*'
             - '^xci-functest.*'
             - '^bifrost-.*periodic.*'
@@ -196,76 +200,70 @@
           project: '{project}'
           branch: '{opnfv-releng-version}'
       - string:
-          name: GIT_BASE
-          default: https://gerrit.opnfv.org/gerrit/$PROJECT
-      - string:
           name: DEPLOY_SCENARIO
-          default: 'os-nosdn-nofeature-ha'
-      - string:
-          name: XCI_FLAVOR
-          default: 'ha'
-      - string:
-          name: DISTRO
-          default: '{distro}'
-      - string:
-          name: DIB_OS_RELEASE
-          default: '{dib-os-release}'
-      - string:
-          name: DIB_OS_ELEMENT
-          default: '{dib-os-element}'
-      - string:
-          name: DIB_OS_PACKAGES
-          default: '{dib-os-packages}'
-      - string:
-          name: EXTRA_DIB_ELEMENTS
-          default: '{extra-dib-elements}'
-      - string:
-          name: CLEAN_DIB_IMAGES
-          default: 'true'
-      - label:
-          name: SLAVE_LABEL
-          default: '{slave-label}'
-      - string:
-          name: CI_LOOP
-          default: 'daily'
+          default: 'os-nosdn-nofeature-noha'
       - string:
           name: INSTALLER_TYPE
           default: 'osa'
       - string:
+          name: XCI_FLAVOR
+          default: 'mini'
+      - label:
+          name: XCI_DISTRO
+          default: 'ubuntu'
+      - label:
+          name: SLAVE_LABEL
+          default: '{slave-label}'
+      - string:
           name: FUNCTEST_MODE
-          default: 'daily'
+          default: 'tier'
       - string:
           name: FUNCTEST_SUITE_NAME
+          default: 'healthcheck'
+      - string:
+          name: CI_LOOP
           default: 'daily'
-          description: "Daily suite name to run"
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
 
     builders:
       - description-setter:
-          description: "Built on $NODE_NAME - Scenario: $DEPLOY_SCENARIO"
-      - 'xci-{phase}-builder'
+          description: "Scenario: $DEPLOY_SCENARIO | Node: $NODE_NAME"
+      - 'xci-daily-{phase}-macro'
 
 # --------------------------
 # builder macros
 # --------------------------
 - builder:
-    name: xci-deploy-builder
-    builders:
-      - shell:
-          !include-raw: ./xci-deploy.sh
-
-- builder:
-    name: xci-functest-builder
+    name: 'xci-daily-deploy-macro'
     builders:
       - shell: |
           #!/bin/bash
+          set -o errexit
+          set -o pipefail
 
-          echo "Hello World!"
+          cd $WORKSPACE/xci && ./xci-deploy.sh
 
-# this will be enabled once the xci is prepared
-# - builder:
-#    name: xci-functest-builder
-#    builders:
-#        - shell:
-#            !include-raw:
-#                - ../../utils/fetch_os_creds.sh
-#                - ../functest/functest-alpine.sh
+- builder:
+    name: 'xci-daily-healthcheck-macro'
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+
+          echo "Prepare OPNFV VM for Functest"
+          echo "---------------------------------------------------------------------------------"
+          export XCI_PATH=$WORKSPACE
+          export XCI_VENV=${XCI_PATH}/venv
+          source $XCI_VENV/bin/activate
+          while read var; do
+              declare -x "\${var}" 2>/dev/null
+              echo $var
+          done < ${XCI_PATH}/.cache/xci.env && cd $XCI_PATH/xci && \
+          ansible-playbook -i playbooks/dynamic_inventory.py playbooks/prepare-functest.yml
+
+          echo "Run Functest"
+          echo "---------------------------------------------------------------------------------"
+          ssh root@192.168.122.2 "/root/run-functest.sh"
