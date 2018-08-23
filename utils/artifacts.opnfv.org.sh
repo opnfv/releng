@@ -31,7 +31,7 @@ do
     for index in $(gsutil ls -l gs://artifacts.opnfv.org/logs/"$project"/ |awk 'NF==1'| sed s,gs://artifacts.opnfv.org/,, )
     do
     index="$(echo ${index%/*} | sed s,/,_,g)"
-      echo "<LI><a href=\"http://artifacts.opnfv.org/${index%/*}.html\">"$index"</a></LI>" >> $OUTPUT
+      echo "<LI><a href=\"https://artifacts.opnfv.org/${index%/*}.html\">"$index"</a></LI>" >> $OUTPUT
     done
 
 done
@@ -55,7 +55,7 @@ rm -f $OUTPUT
       echo "<LI>$path</LI>" >> $OUTPUT
       echo "</UL>" >> $OUTPUT
     else
-      echo "<LI><a href=\"http://artifacts.opnfv.org/$filepath\">"$filepath"</a></LI>" >> $OUTPUT
+      echo "<LI><a href=\"https://artifacts.opnfv.org/$filepath\">"$filepath"</a></LI>" >> $OUTPUT
     fi
 done
 
@@ -85,7 +85,7 @@ rm -f $OUTPUT
           echo "<LI>$path</LI>" >> $OUTPUT
           echo "</UL>" >> $OUTPUT
         else
-          echo "<LI><a href=\"http://artifacts.opnfv.org/$filepath\">"$filepath"</a></LI>" >> $OUTPUT
+          echo "<LI><a href=\"https://artifacts.opnfv.org/$filepath\">"$filepath"</a></LI>" >> $OUTPUT
         fi
 
 done
@@ -119,7 +119,7 @@ do
               echo "<LI>$path</LI>" >> $OUTPUT
               echo "</UL>" >> $OUTPUT
             else
-              echo "<LI><a href=\"http://artifacts.opnfv.org/$filepath\">"$filepath"</a></LI>" >> $OUTPUT
+              echo "<LI><a href=\"https://artifacts.opnfv.org/$filepath\">"$filepath"</a></LI>" >> $OUTPUT
             fi
 
 
