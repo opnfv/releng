@@ -77,6 +77,7 @@
           use-build-blocker: true
           blocking-jobs:
             - '^xci-verify.*'
+            - '^xci-merge.*'
             - '^xci-os.*'
             - '^xci-deploy.*'
             - '^xci-functest.*'
@@ -173,6 +174,7 @@
           use-build-blocker: true
           blocking-jobs:
             - '^xci-verify.*'
+            - '^xci-merge.*'
             - '^xci-deploy.*'
             - '^xci-functest.*'
             - '^bifrost-.*periodic.*'
@@ -233,6 +235,17 @@
 # --------------------------
 # builder macros
 # --------------------------
+# These need to be properly fixed once the basic deployment and functest
+# jobs are working outside of clean vm.
+# One of the ugly fixes is moving functest preparation step into the
+# deployment job itself since functest preparation requires some of the
+# things from deployment job. With clean VM, this wasn't an issue
+# since everything was on clean VM. When we move things out of clean
+# VM, things are done in workspaces of the jobs that are different.
+#
+# Apart from these things, we will need to go through the scripts
+# used for verify jobs and make them updated in order to be able to
+# use them for jobs that don't use clean VM.
 - builder:
     name: 'xci-daily-deploy-macro'
     builders:
@@ -243,14 +256,6 @@
 
           cd $WORKSPACE/xci && ./xci-deploy.sh
 
-- builder:
-    name: 'xci-daily-functest-macro'
-    builders:
-      - shell: |
-          #!/bin/bash
-          set -o errexit
-          set -o pipefail
-
           echo "Prepare OPNFV VM for Functest"
           echo "---------------------------------------------------------------------------------"
           export XCI_PATH=$WORKSPACE
@@ -259,9 +264,18 @@
           while read var; do
               declare -x "\${var}" 2>/dev/null
               echo $var
-          done < ${XCI_PATH}/.cache/xci.env && cd $XCI_PATH/xci && \
+          done < ${XCI_PATH}/.cache/xci.env && cd ${XCI_PATH}/xci && \
           ansible-playbook -i playbooks/dynamic_inventory.py playbooks/prepare-functest.yml
 
           echo "Run Functest"
           echo "---------------------------------------------------------------------------------"
+
+- builder:
+    name: 'xci-daily-functest-macro'
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+
           ssh root@192.168.122.2 "/root/run-functest.sh"
