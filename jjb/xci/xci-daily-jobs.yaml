@@ -98,7 +98,7 @@
       - label:
           name: SLAVE_LABEL
           default: '{slave-label}'
-      - label:
+      - string:
           name: XCI_DISTRO
           default: '{distro}'
       - string:
@@ -119,6 +119,9 @@
       - '{auto-trigger-name}'
 
     wrappers:
+      - ssh-agent-wrapper
+      - build-timeout:
+          timeout: 240
       - fix-workspace-permissions
 
     builders:
@@ -132,7 +135,7 @@
               INSTALLER_TYPE=$INSTALLER_TYPE
               XCI_FLAVOR=$XCI_FLAVOR
               CI_LOOP=$CI_LOOP
-              XCI_DISTRO=$DISTRO
+              XCI_DISTRO=$XCI_DISTRO
             same-node: true
             block: true
       - trigger-builds:
@@ -143,7 +146,7 @@
               INSTALLER_TYPE=$INSTALLER_TYPE
               XCI_FLAVOR=$XCI_FLAVOR
               CI_LOOP=$CI_LOOP
-              XCI_DISTRO=$DISTRO
+              XCI_DISTRO=$XCI_DISTRO
               FUNCTEST_MODE=$FUNCTEST_MODE
               FUNCTEST_SUITE_NAME=$FUNCTEST_SUITE_NAME
             same-node: true
@@ -166,8 +169,6 @@
                 - NOT_BUILT
                 - SUCCESS
                 - UNSTABLE
-              build-steps:
-                - shell: !include-raw: ./xci-cleanup.sh
           mark-unstable-if-failed: true
 
 - job-template:
@@ -194,6 +195,9 @@
       - logrotate-default
 
     wrappers:
+      - ssh-agent-wrapper
+      - build-timeout:
+          timeout: 240
       - fix-workspace-permissions
 
     scm:
@@ -212,7 +216,7 @@
       - string:
           name: XCI_FLAVOR
           default: 'mini'
-      - label:
+      - string:
           name: XCI_DISTRO
           default: 'ubuntu'
       - label:
