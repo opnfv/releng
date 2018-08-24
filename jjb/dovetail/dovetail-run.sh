@@ -256,7 +256,7 @@ fi
 ubuntu_image=${image_path}/ubuntu-16.04-server-cloudimg-amd64-disk1.img
 if [[ ! -f ${ubuntu_image} ]]; then
     echo "Download image ubuntu-16.04-server-cloudimg-amd64-disk1.img ..."
-    wget -q -nc http://artifacts.opnfv.org/sdnvpn/ubuntu-16.04-server-cloudimg-amd64-disk1.img -P ${image_path}
+    wget -q -nc https://artifacts.opnfv.org/sdnvpn/ubuntu-16.04-server-cloudimg-amd64-disk1.img -P ${image_path}
 fi
 sudo cp ${ubuntu_image} ${DOVETAIL_IMAGES}
 
