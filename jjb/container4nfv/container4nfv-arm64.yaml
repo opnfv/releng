@@ -14,20 +14,27 @@
           disabled: false
       - 'k8-sriov-nofeature-noha':
           disabled: false
+      - 'k8-vpp-nofeature-noha':
+          disabled: false
     pod:
       - virtual:
           slave-label: arm-packet01
       - baremetal:
           slave-label: compass-baremetal-arm
     jobs:
+      - 'container4nfv-arm-deploy-{pod}-daily-{stream}'
       - 'container4nfv-{scenario}-{pod}-daily-{stream}'
 
 
 - job-template:
-    name: 'container4nfv-{scenario}-{pod}-daily-{stream}'
-    disabled: '{obj:disabled}'
-    concurrent: false
+    name: 'container4nfv-arm-deploy-{pod}-daily-{stream}'
+    disabled: false
     node: '{slave-label}'
+
+    wrappers:
+      - timeout:
+          timeout: 210
+          fail: true
 
     scm:
       - git:
@@ -38,12 +45,7 @@
           wipe-workspace: true
 
     triggers:
-      - 'trigger-{scenario}-{pod}-{stream}'
-
-    wrappers:
-      - timeout:
-          timeout: 150
-          fail: true
+      - 'trigger-deploy-{pod}-{stream}'
 
     builders:
       - shell:
@@ -54,42 +56,65 @@
           - project: yardstick-arm64-compass-arm-virtual03-daily-master
             current-parameters: false
             same-node: true
-            block: false
+            block: true
+            block-thresholds:
+              build-step-failure-threshold: 'never'
+              failure-threshold: 'never'
+              unstable-threshold: 'Failure'
+          - project: container4nfv-k8-multus-nofeature-noha-{pod}-daily-{stream}
+            current-parameters: true
+            same-node: true
+            block: true
+            block-thresholds:
+              build-step-failure-threshold: 'never'
+              failure-threshold: 'never'
+              unstable-threshold: 'Failure'
+          - project: container4nfv-k8-sriov-nofeature-noha-{pod}-daily-{stream}
+            current-parameters: true
+            same-node: true
+            block: true
+            block-thresholds:
+              build-step-failure-threshold: 'never'
+              failure-threshold: 'never'
+              unstable-threshold: 'Failure'
+          - project: container4nfv-k8-vpp-nofeature-noha-{pod}-daily-{stream}
+            current-parameters: true
+            same-node: true
+            block: true
+            block-thresholds:
+              build-step-failure-threshold: 'never'
+              failure-threshold: 'never'
+              unstable-threshold: 'never'
+
+
+- job-template:
+    name: 'container4nfv-{scenario}-{pod}-daily-{stream}'
+    disabled: '{obj:disabled}'
+
+    scm:
+      - git:
+          url: https://gerrit.opnfv.org/gerrit/container4nfv
+          basedir: container4nfv
+          wipe-workspace: true
+
+    builders:
+      - shell:
+          !include-raw: arm64/deploy-cni.sh
 
 
 - trigger:
-    name: 'trigger-k8-multus-nofeature-noha-virtual-master'
+    name: 'trigger-deploy-virtual-master'
     triggers:
       - timed: '0 12 * * *'
 - trigger:
-    name: 'trigger-k8-sriov-nofeature-noha-virtual-master'
-    triggers:
-      - timed: '0 15 * * *'
-
-- trigger:
-    name: 'trigger-k8-multus-nofeature-noha-virtual-fraser'
+    name: 'trigger-deploy-virtual-fraser'
     triggers:
       - timed: '0 18 * * *'
 - trigger:
-    name: 'trigger-k8-sriov-nofeature-noha-virtual-fraser'
-    triggers:
-      - timed: '0 21 * * *'
-
-
-- trigger:
-    name: 'trigger-k8-multus-nofeature-noha-baremetal-master'
+    name: 'trigger-deploy-baremetal-master'
     triggers:
       - timed: '0 12 * * *'
 - trigger:
-    name: 'trigger-k8-sriov-nofeature-noha-baremetal-master'
-    triggers:
-      - timed: '0 15 * * *'
-
-- trigger:
-    name: 'trigger-k8-multus-nofeature-noha-baremetal-fraser'
+    name: 'trigger-deploy-baremetal-fraser'
     triggers:
       - timed: '0 18 * * *'
-- trigger:
-    name: 'trigger-k8-sriov-nofeature-noha-baremetal-fraser'
-    triggers:
-      - timed: '0 21 * * *'
