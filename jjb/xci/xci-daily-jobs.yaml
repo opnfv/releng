@@ -77,6 +77,7 @@
           use-build-blocker: true
           blocking-jobs:
             - '^xci-verify.*'
+            - '^xci-merge.*'
             - '^xci-os.*'
             - '^xci-deploy.*'
             - '^xci-functest.*'
@@ -173,6 +174,7 @@
           use-build-blocker: true
           blocking-jobs:
             - '^xci-verify.*'
+            - '^xci-merge.*'
             - '^xci-deploy.*'
             - '^xci-functest.*'
             - '^bifrost-.*periodic.*'
@@ -253,13 +255,13 @@
 
           echo "Prepare OPNFV VM for Functest"
           echo "---------------------------------------------------------------------------------"
-          export XCI_PATH=$WORKSPACE
-          export XCI_VENV=${XCI_PATH}/venv
+          export XCI_DEPLOYMENT_JOB_PATH=$WORKSPACE/../xci-deploy-virtual-${XCI_DISTRO}-daily-master
+          export XCI_VENV=${XCI_DEPLOYMENT_JOB_PATH}/venv
           source $XCI_VENV/bin/activate
           while read var; do
               declare -x "\${var}" 2>/dev/null
               echo $var
-          done < ${XCI_PATH}/.cache/xci.env && cd $XCI_PATH/xci && \
+          done < ${XCI_DEPLOYMENT_JOB_PATH}/.cache/xci.env && cd ${XCI_DEPLOYMENT_JOB_PATH}/xci && \
           ansible-playbook -i playbooks/dynamic_inventory.py playbooks/prepare-functest.yml
 
           echo "Run Functest"
