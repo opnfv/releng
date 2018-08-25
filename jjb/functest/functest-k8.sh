@@ -38,7 +38,11 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} \
     -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
     -e BUILD_TAG=${BUILD_TAG} -e DEPLOY_TYPE=${DEPLOY_TYPE}"
 
-DOCKER_TAG=`[[ ${BRANCH##*/} == "master" ]] && echo "latest" || echo ${BRANCH##*/}`
+if [ "$(uname -m)" = "aarch64" ] ; then
+    DOCKER_TAG=`[[ ${BRANCH##*/} == "master" ]] && echo "arm64-latest" || echo "arm64-${BRANCH##*/}"`
+else
+    DOCKER_TAG=`[[ ${BRANCH##*/} == "master" ]] && echo "latest" || echo ${BRANCH##*/}`
+fi
 
 set +e
 
