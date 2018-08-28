@@ -37,9 +37,16 @@
       - installer: 'fuel'
         arch: 'x86_64'
 
+    test_case:
+      - 'fault_management'
+      - 'maintenance'
+      - 'all'
+
     jobs:
       - 'doctor-verify-{stream}'
-      - 'doctor-verify-{installer}-{inspector}-{arch}-{stream}'
+      - 'doctor-verify-fault_management-{installer}-{inspector}-{arch}-{stream}'
+      - 'doctor-verify-maintenance-{installer}-{inspector}-{arch}-{stream}'
+      - 'doctor-verify-all-{installer}-{inspector}-{arch}-{stream}'
 
 - job-template:
     name: 'doctor-verify-{stream}'
@@ -68,7 +75,7 @@
           name: 'doctor-verify-sample'
           execution-type: PARALLEL
           projects:
-            - name: 'doctor-verify-apex-sample-x86_64-{stream}'
+            - name: 'doctor-verify-fault_management-apex-sample-x86_64-{stream}'
               predefined-parameters: |
                 PROJECT=$PROJECT
                 GERRIT_BRANCH=$GERRIT_BRANCH
@@ -77,7 +84,16 @@
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               kill-phase-on: FAILURE
               git-revision: true
-            - name: 'doctor-verify-daisy-sample-x86_64-{stream}'
+            - name: 'doctor-verify-fault_management-daisy-sample-x86_64-{stream}'
+              predefined-parameters: |
+                PROJECT=$PROJECT
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              kill-phase-on: FAILURE
+              git-revision: true
+            - name: 'doctor-verify-maintenance-apex-sample-x86_64-{stream}'
               predefined-parameters: |
                 PROJECT=$PROJECT
                 GERRIT_BRANCH=$GERRIT_BRANCH
@@ -90,7 +106,7 @@
           name: 'doctor-verify-congress'
           execution-type: PARALLEL
           projects:
-            - name: 'doctor-verify-apex-congress-x86_64-{stream}'
+            - name: 'doctor-verify-fault_management-apex-congress-x86_64-{stream}'
               predefined-parameters: |
                 PROJECT=$PROJECT
                 GERRIT_BRANCH=$GERRIT_BRANCH
@@ -101,7 +117,7 @@
               git-revision: true
 
 - job-template:
-    name: 'doctor-verify-{installer}-{inspector}-{arch}-{stream}'
+    name: 'doctor-verify-fault_management-{installer}-{inspector}-{arch}-{stream}'
     disabled: '{obj:disabled}'
     node: 'doctor-{installer}-{arch}'
     wrappers:
@@ -116,6 +132,55 @@
       - 'doctor-slave-parameter'
       - 'doctor-parameter':
           inspector: '{inspector}'
+          test_case: 'fault_management'
+    scm:
+      - git-scm-gerrit
+    builders:
+      - 'doctor-verify-installer-inspector-builders-macro'
+    publishers:
+      - 'doctor-verify-publishers-macro'
+
+- job-template:
+    name: 'doctor-verify-maintenance-{installer}-{inspector}-{arch}-{stream}'
+    disabled: '{obj:disabled}'
+    node: 'nokia-pod1'
+    wrappers:
+      - ssh-agent-wrapper
+      - build-timeout:
+          timeout: 40
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - 'doctor-slave-parameter'
+      - 'doctor-parameter':
+          inspector: '{inspector}'
+          test_case: 'maintenance'
+    scm:
+      - git-scm-gerrit
+    builders:
+      - 'doctor-verify-installer-inspector-builders-macro'
+    publishers:
+      - 'doctor-verify-publishers-macro'
+
+- job-template:
+    name: 'doctor-verify-all-{installer}-{inspector}-{arch}-{stream}'
+    disabled: '{obj:disabled}'
+    node: 'nokia-pod1'
+    wrappers:
+      - ssh-agent-wrapper
+      - build-timeout:
+          timeout: 50
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - 'doctor-slave-parameter'
+      - 'doctor-parameter':
+          inspector: '{inspector}'
+          test_case: 'all'
     scm:
       - git-scm-gerrit
     builders:
@@ -134,6 +199,11 @@
           name: INSPECTOR_TYPE
           default: '{inspector}'
           description: 'inspector component'
+      - string:
+          name: TEST_CASE
+          default: '{test_case}'
+          description: 'test case: all, fault_management or maintenance'
+
 
 # -------------------------------
 # builder macros
