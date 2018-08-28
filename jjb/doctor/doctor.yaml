@@ -37,9 +37,15 @@
       - installer: 'fuel'
         arch: 'x86_64'
 
+    test_case:
+      - 'fault_management'
+      - 'maintenance'
+      - 'all'
+
     jobs:
       - 'doctor-verify-{stream}'
       - 'doctor-verify-{installer}-{inspector}-{arch}-{stream}'
+      - 'doctor-{test_case}-{installer}-{inspector}-{arch}-{stream}'
 
 - job-template:
     name: 'doctor-verify-{stream}'
@@ -99,6 +105,19 @@
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               kill-phase-on: FAILURE
               git-revision: true
+      - multijob:
+          name: 'doctor-maintenance'
+          execution-type: PARALLEL
+          projects:
+            - name: 'doctor-maintenance-apex-sample-x86_64-{stream}'
+              predefined-parameters: |
+                PROJECT=$PROJECT
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              kill-phase-on: FAILURE
+              git-revision: true
 
 - job-template:
     name: 'doctor-verify-{installer}-{inspector}-{arch}-{stream}'
@@ -116,12 +135,62 @@
       - 'doctor-slave-parameter'
       - 'doctor-parameter':
           inspector: '{inspector}'
+          test_case: 'fault_management'
     scm:
       - git-scm-gerrit
     builders:
       - 'doctor-verify-installer-inspector-builders-macro'
     publishers:
       - 'doctor-verify-publishers-macro'
+
+- job-template:
+    name: 'doctor-maintenance-{installer}-{inspector}-{arch}-{stream}'
+    disabled: '{obj:disabled}'
+    node: 'nokia-pod1'
+    wrappers:
+      - ssh-agent-wrapper
+      - build-timeout:
+          timeout: 40
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - 'doctor-slave-parameter'
+      - 'doctor-parameter':
+          inspector: '{inspector}'
+          test_case: 'maintenance'
+    scm:
+      - git-scm-gerrit
+    builders:
+      - 'doctor-verify-installer-inspector-builders-macro'
+    publishers:
+      - 'doctor-verify-publishers-macro'
+
+- job-template:
+    name: 'doctor-all-{installer}-{inspector}-{arch}-{stream}'
+    disabled: '{obj:disabled}'
+    node: 'nokia-pod1'
+    wrappers:
+      - ssh-agent-wrapper
+      - build-timeout:
+          timeout: 50
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - 'doctor-slave-parameter'
+      - 'doctor-parameter':
+          inspector: '{inspector}'
+          test_case: 'all'
+    scm:
+      - git-scm-gerrit
+    builders:
+      - 'doctor-verify-installer-inspector-builders-macro'
+    publishers:
+      - 'doctor-verify-publishers-macro'
+
 
 
 # -------------------------------
@@ -134,6 +203,11 @@
           name: INSPECTOR_TYPE
           default: '{inspector}'
           description: 'inspector component'
+      - string:
+          name: TEST_CASE
+          default: '{test_case}'
+          description: 'test case: all, fault_management or maintenance'
+
 
 # -------------------------------
 # builder macros
