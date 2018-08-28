@@ -37,9 +37,13 @@
       - installer: 'fuel'
         arch: 'x86_64'
 
+    test_case:
+      - 'fault_management'
+      - 'maintenance'
+
     jobs:
       - 'doctor-verify-{stream}'
-      - 'doctor-verify-{installer}-{inspector}-{arch}-{stream}'
+      - 'doctor-verify-{test_case}-{installer}-{inspector}-{arch}-{stream}'
 
 - job-template:
     name: 'doctor-verify-{stream}'
@@ -65,10 +69,10 @@
          # in phase jobs
          echo "Triggering phase jobs!"
       - multijob:
-          name: 'doctor-verify-sample'
+          name: 'doctor-verify-fault_management-sample'
           execution-type: PARALLEL
           projects:
-            - name: 'doctor-verify-apex-sample-x86_64-{stream}'
+            - name: 'doctor-verify-fault_management-apex-sample-x86_64-{stream}'
               predefined-parameters: |
                 PROJECT=$PROJECT
                 GERRIT_BRANCH=$GERRIT_BRANCH
@@ -77,7 +81,7 @@
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               kill-phase-on: FAILURE
               git-revision: true
-            - name: 'doctor-verify-daisy-sample-x86_64-{stream}'
+            - name: 'doctor-verify-fault_management-daisy-sample-x86_64-{stream}'
               predefined-parameters: |
                 PROJECT=$PROJECT
                 GERRIT_BRANCH=$GERRIT_BRANCH
@@ -87,10 +91,10 @@
               kill-phase-on: FAILURE
               git-revision: true
       - multijob:
-          name: 'doctor-verify-congress'
+          name: 'doctor-verify-fault_management-congress'
           execution-type: PARALLEL
           projects:
-            - name: 'doctor-verify-apex-congress-x86_64-{stream}'
+            - name: 'doctor-verify-fault_management-apex-congress-x86_64-{stream}'
               predefined-parameters: |
                 PROJECT=$PROJECT
                 GERRIT_BRANCH=$GERRIT_BRANCH
@@ -99,7 +103,21 @@
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               kill-phase-on: FAILURE
               git-revision: true
-            - name: 'doctor-verify-daisy-congress-x86_64-{stream}'
+            - name: 'doctor-verify-fault_management-daisy-congress-x86_64-{stream}'
+              predefined-parameters: |
+                PROJECT=$PROJECT
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              kill-phase-on: FAILURE
+              git-revision: true
+      - multijob:
+          name: 'doctor-verify-maintenance'
+          node: 'nokia-pod1'
+          execution-type: PARALLEL
+          projects:
+            - name: 'doctor-verify-maintenance-apex-x86_64-{stream}'
               predefined-parameters: |
                 PROJECT=$PROJECT
                 GERRIT_BRANCH=$GERRIT_BRANCH
@@ -110,7 +128,7 @@
               git-revision: true
 
 - job-template:
-    name: 'doctor-verify-{installer}-{inspector}-{arch}-{stream}'
+    name: 'doctor-verify-{test_case}-{installer}-{inspector}-{arch}-{stream}'
     disabled: '{obj:disabled}'
     node: 'doctor-{installer}-{arch}'
     wrappers:
@@ -125,6 +143,7 @@
       - 'doctor-slave-parameter'
       - 'doctor-parameter':
           inspector: '{inspector}'
+          test_case: '{test_case}'
     scm:
       - git-scm-gerrit
     builders:
@@ -143,6 +162,11 @@
           name: INSPECTOR_TYPE
           default: '{inspector}'
           description: 'inspector component'
+      - string:
+          name: TEST_CASE
+          default: '{test_case}'
+          description: 'test case: all, fault_management or maintenance'
+
 
 # -------------------------------
 # builder macros
