@@ -395,7 +395,7 @@ sudo chown -R ${CURRENT_USER}:${PRIMARY_GROUP} ./results
 #remove useless files to save disk space
 sudo rm -rf ./results/workspace
 sudo rm -f ./results/yardstick.img
-sudo rm -f ./results/tmp*
+sudo rm -f ./results/bottlenecks/tmp*
 
 echo "Dovetail: done!"
 
