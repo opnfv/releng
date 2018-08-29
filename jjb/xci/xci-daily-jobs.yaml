@@ -307,6 +307,8 @@
               sudo virsh destroy $vm > /dev/null 2>&1 || true
               sudo virsh undefine $vm > /dev/null 2>&1 || true
           done
+          ssh-keygen -R opnfv > /dev/null 2>&1 || true
+          ssh-keygen -R 192.168.122.2 > /dev/null 2>&1 || true
           echo "---------------------------------------------------------------------------------"
 
           cd $WORKSPACE/xci && ./xci-deploy.sh
