@@ -300,6 +300,15 @@
           set -o errexit
           set -o pipefail
 
+          echo "Cleaning the leftovers from the earlier run"
+          echo "---------------------------------------------------------------------------------"
+          for vm in $(sudo virsh list --all --name | grep -v xci_vm); do
+              echo "Removing $vm"
+              sudo virsh destroy $vm > /dev/null 2>&1 || true
+              sudo virsh undefine $vm > /dev/null 2>&1 || true
+          done
+          echo "---------------------------------------------------------------------------------"
+
           cd $WORKSPACE/xci && ./xci-deploy.sh
 
           echo "Prepare OPNFV VM for Functest"
