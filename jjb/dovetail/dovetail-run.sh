@@ -373,7 +373,7 @@ else
     testarea="--testarea ${TESTAREA}"
 fi
 
-run_cmd="dovetail run ${testsuite} ${testarea} -d -r"
+run_cmd="dovetail run ${testsuite} ${testarea} --deploy-scenario ${DEPLOY_SCENARIO} -d -r"
 echo "Container exec command: ${run_cmd}"
 docker exec $container_id ${run_cmd}
 
