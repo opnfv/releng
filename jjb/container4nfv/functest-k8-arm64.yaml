@@ -1,0 +1,156 @@
+---
+###################################
+# job configuration for functest
+###################################
+- project:
+    name: functest-k8-arm64
+
+    project: functest
+
+    # -------------------------------
+    # BRANCH ANCHORS
+    # -------------------------------
+    master: &master
+      stream: master
+      branch: '{stream}'
+      gs-pathname: ''
+    fraser: &fraser
+      stream: fraser
+      branch: 'stable/{stream}'
+      gs-pathname: '/{stream}'
+    # -------------------------------
+    # POD, INSTALLER, AND BRANCH MAPPING
+    # -------------------------------
+    pod:
+      # compass CI PODs
+      - arm-virtual:
+          slave-label: arm-packet01
+          installer: compass
+          <<: *master
+      - arm-virtual:
+          slave-label: arm-packet01
+          installer: compass
+          <<: *fraser
+
+    testsuite:
+      - 'daily':
+          job-timeout: 480
+
+    jobs:
+      - 'functest-arm64-{installer}-{pod}-{testsuite}-{stream}'
+
+################################
+# job template
+################################
+- job-template:
+    name: 'functest-arm64-{installer}-{pod}-{testsuite}-{stream}'
+
+    concurrent: true
+
+    properties:
+      - logrotate-default
+      - throttle:
+          enabled: true
+          max-per-node: 1
+          option: 'project'
+
+    wrappers:
+      - build-name:
+          name: '$BUILD_NUMBER Suite: $FUNCTEST_MODE Scenario: $DEPLOY_SCENARIO'
+      - timeout:
+          timeout: '{job-timeout}'
+          abort: true
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - '{slave-label}-defaults'
+      - 'functest-arm64-{testsuite}-parameter' 
+      - string:
+          name: DEPLOY_SCENARIO
+          default: 'k8-nosdn-nofeature-ha'
+      - functest-arm64-parameter:
+          gs-pathname: '{gs-pathname}'
+
+    scm:
+      - git-scm
+
+    builders:
+      - description-setter:
+          description: "Built on $NODE_NAME"
+      - 'functest-arm64-{testsuite}-builder'
+
+
+########################
+# parameter macros
+########################
+- parameter:
+    name: functest-arm64-daily-parameter
+    parameters:
+      - string:
+          name: FUNCTEST_MODE
+          default: 'daily'
+          description: "Daily suite name to run"
+
+- parameter:
+    name: functest-arm64-parameter
+    parameters:
+      - string:
+          name: GS_PATHNAME
+          default: '{gs-pathname}'
+          description: "Version directory where the opnfv documents will be stored in gs repository"
+      - string:
+          name: FUNCTEST_REPO_DIR
+          default: "/home/opnfv/repos/functest"
+          description: "Directory where the Functest repository is cloned"
+      - string:
+          name: PUSH_RESULTS_TO_DB
+          default: "true"
+          description: "Push the results of all the tests to the resultDB"
+      - string:
+          name: CI_DEBUG
+          default: 'false'
+          description: "Show debug output information"
+      - string:
+          name: RC_FILE_PATH
+          default: ''
+          description: "Path to the OS credentials file if given"
+      - string:
+          name: REPO
+          default: "opnfv"
+          description: "Repository name for functest images"
+
+- parameter:
+    name: 'arm-packet01-defaults'
+    parameters:
+      - label:
+          name: SLAVE_LABEL
+          default: 'arm-packet01'
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: 'Git URL to use on this Jenkins Slave'
+########################
+# builder macros
+########################
+- builder:
+    name: functest-arm64-daily-builder
+    builders:
+      - 'functest-arm64-daily'
+
+
+- builder:
+    name: functest-arm64-daily
+    builders:
+      # yamllint disable rule:indentation
+      - conditional-step:
+          condition-kind: regex-match
+          regex: "k8-.*"
+          label: '$DEPLOY_SCENARIO'
+          steps:
+            - shell:
+                !include-raw:
+                    - ../../utils/fetch_k8_conf.sh
+                    - ./arm64/functest-k8-arm64.sh
