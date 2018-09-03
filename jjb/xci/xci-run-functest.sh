@@ -47,18 +47,22 @@ fi
 export XCI_PATH=/home/devuser/releng-xci
 export XCI_VENV=${XCI_PATH}/venv
 
-ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm "source $XCI_VENV/bin/activate; while read var; do declare -x \"\${var}\" 2>/dev/null; done < ${XCI_PATH}/.cache/xci.env && cd releng-xci/xci && ansible-playbook -i playbooks/dynamic_inventory.py playbooks/prepare-tests.yml"
-echo "Running functest"
+ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm "source $XCI_VENV/bin/activate; \
+    while read var; do declare -x \"\${var}\" 2>/dev/null; done < ${XCI_PATH}/.cache/xci.env && \
+    cd releng-xci/xci && ansible-playbook -i playbooks/dynamic_inventory.py playbooks/prepare-tests.yml"
+echo "Prepare OPNFV VM for Tests"
+ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "/root/prepare-tests.sh"
+echo "Running Functest"
 ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "/root/run-functest.sh"
 # Record exit code
 functest_exit=$?
 
 case ${DEPLOY_SCENARIO[0]} in
     os-*)
-        FUNCTEST_LOG=/root/results/functest.log
+        FUNCTEST_LOG=/root/functest-results/functest.log
         ;;
     k8-*)
-        FUNCTEST_LOG=/root/results/functest-kubernetes.log
+        FUNCTEST_LOG=/root/functest-results/functest-kubernetes.log
         ;;
     *)
         echo "Unable to determine the installer. Exiting!"

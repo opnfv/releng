@@ -311,7 +311,7 @@
 
           cd $WORKSPACE/xci && ./xci-deploy.sh
 
-          echo "Prepare OPNFV VM for Functest"
+          echo "Prepare OPNFV VM for Tests"
           echo "---------------------------------------------------------------------------------"
           export XCI_PATH=$WORKSPACE
           export XCI_VENV=${XCI_PATH}/venv
@@ -321,8 +321,7 @@
               echo $var
           done < ${XCI_PATH}/.cache/xci.env && cd ${XCI_PATH}/xci && \
           ansible-playbook -i playbooks/dynamic_inventory.py playbooks/prepare-tests.yml
-
-          echo "Run Functest"
+          ssh root@192.168.122.2 "/root/prepare-tests.sh"
           echo "---------------------------------------------------------------------------------"
 
 - builder:
