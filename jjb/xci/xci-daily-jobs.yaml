@@ -99,6 +99,7 @@
     phase:
       - 'deploy'
       - 'functest'
+      - 'yardstick'
 
     # -------------------------------
     # jobs
@@ -202,6 +203,21 @@
               build-step-failure-threshold: 'never'
               failure-threshold: 'never'
               unstable-threshold: 'FAILURE'
+      - trigger-builds:
+          - project: 'xci-yardstick-{pod}-{distro}-daily-{stream}'
+            current-parameters: false
+            predefined-parameters: |
+              DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+              INSTALLER_TYPE=$INSTALLER_TYPE
+              XCI_FLAVOR=$XCI_FLAVOR
+              CI_LOOP=$CI_LOOP
+              XCI_DISTRO=$XCI_DISTRO
+            same-node: true
+            block: true
+            block-thresholds:
+              build-step-failure-threshold: 'never'
+              failure-threshold: 'never'
+              unstable-threshold: 'FAILURE'
 
     publishers:
       # yamllint disable rule:line-length
@@ -281,10 +297,10 @@
 # --------------------------
 # builder macros
 # --------------------------
-# These need to be properly fixed once the basic deployment and functest
-# jobs are working outside of clean vm.
-# One of the ugly fixes is moving functest preparation step into the
-# deployment job itself since functest preparation requires some of the
+# These need to be properly fixed once the basic deployment, functest, and
+# yardstick jobs are working outside of clean vm.
+# One of the ugly fixes is moving test  preparation step into the
+# deployment job itself since test preparation requires some of the
 # things from deployment job. With clean VM, this wasn't an issue
 # since everything was on clean VM. When we move things out of clean
 # VM, things are done in workspaces of the jobs that are different.
@@ -333,3 +349,12 @@
           set -o pipefail
 
           ssh root@192.168.122.2 "/root/run-functest.sh"
+- builder:
+    name: 'xci-daily-yardstick-macro'
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -o errexit
+          set -o pipefail
+
+          ssh root@192.168.122.2 "/root/run-yardstick.sh"
