@@ -61,8 +61,10 @@ run_test() {
     case ${test_name} in
         connection_check|tenantnetwork1|tenantnetwork2|vmready1|vmready2|singlevm1|singlevm2|vping_ssh|vping_userdata|cinder_test|odl|api_check|snaps_health_check)
             FUNCTEST_IMAGE=${REPO}/functest-healthcheck:${DOCKER_TAG} ;;
-        tempest_smoke|rally_sanity|refstack_defcore|patrole|shaker|snaps_smoke|neutron_trunk|barbican)
+        tempest_smoke|rally_sanity|refstack_defcore|patrole|snaps_smoke|neutron_trunk|barbican)
             FUNCTEST_IMAGE=${REPO}/functest-smoke:${DOCKER_TAG} ;;
+        shaker|vmtp)
+            FUNCTEST_IMAGE=${REPO}/functest-benchmarking:${DOCKER_TAG} ;;
         tempest_full|rally_full)
             FUNCTEST_IMAGE=${REPO}/functest-components:${DOCKER_TAG} ;;
         cloudify_ims|vyos_vrouter|juju_epc)
@@ -170,13 +172,13 @@ else
         if [[ ${BRANCH} == "stable/fraser" ]]; then
             tiers=(healthcheck smoke features vnf parser)
         else
-            tiers=(healthcheck smoke features vnf)
+            tiers=(healthcheck smoke benchmarking features vnf)
         fi
     else
         if [[ ${BRANCH} == "stable/fraser" ]]; then
             tiers=(healthcheck smoke features parser)
         else
-            tiers=(healthcheck smoke features)
+            tiers=(healthcheck smoke benchmarking features)
         fi
     fi
     run_tiers ${tiers}
