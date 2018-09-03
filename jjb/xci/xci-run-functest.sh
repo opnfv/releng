@@ -55,10 +55,10 @@ functest_exit=$?
 
 case ${DEPLOY_SCENARIO[0]} in
     os-*)
-        FUNCTEST_LOG=/root/results/functest.log
+        FUNCTEST_LOG=/root/functest-results/functest.log
         ;;
     k8-*)
-        FUNCTEST_LOG=/root/results/functest-kubernetes.log
+        FUNCTEST_LOG=/root/functest-results/functest-kubernetes.log
         ;;
     *)
         echo "Unable to determine the installer. Exiting!"
