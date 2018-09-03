@@ -166,9 +166,10 @@ WORK_DIRECTORY=/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO
 
 if [[ $GERRIT_PROJECT == "releng-xci" ]]; then
     determine_default_scenario
+else
+    determine_scenario
 fi
 override_scenario
-determine_scenario
 
 # ensure single scenario is impacted
     if [[ $(IFS=$'\n' echo ${DEPLOY_SCENARIO[@]} | wc -w) != 1 ]]; then
