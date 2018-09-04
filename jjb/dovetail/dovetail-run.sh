@@ -218,6 +218,11 @@ process_info:
 - {testcase_name: yardstick.ha.neutron_l3_agent, attack_process: neutron-l3-agent, attack_host: cmp01}
 - {testcase_name: yardstick.ha.database, attack_process: mysqld, attack_host: dbs01}
 EOF
+    elif [ "$INSTALLER_TYPE" == "compass" ]; then
+        cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
+process_info:
+- {testcase_name: yardstick.ha.rabbitmq, attack_process: rabbitmq}
+EOF
     fi
 
     echo "file ${DOVETAIL_CONFIG}/pod.yaml:"
