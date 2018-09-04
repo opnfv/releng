@@ -61,15 +61,15 @@ run_test() {
     case ${test_name} in
         connection_check|tenantnetwork1|tenantnetwork2|vmready1|vmready2|singlevm1|singlevm2|vping_ssh|vping_userdata|cinder_test|odl|api_check|snaps_health_check)
             FUNCTEST_IMAGE=${REPO}/functest-healthcheck:${DOCKER_TAG} ;;
-        tempest_smoke|rally_sanity|refstack_defcore|patrole|snaps_smoke|neutron_trunk|barbican)
+        tempest_smoke|neutron-tempest-plugin-api|rally_sanity|refstack_defcore|patrole|snaps_smoke|neutron_trunk|networking-bgpvpn|networking-sfc|barbican)
             FUNCTEST_IMAGE=${REPO}/functest-smoke:${DOCKER_TAG} ;;
         shaker|vmtp)
             FUNCTEST_IMAGE=${REPO}/functest-benchmarking:${DOCKER_TAG} ;;
-        tempest_full|rally_full)
+        tempest_full|tempest_scenario|rally_full)
             FUNCTEST_IMAGE=${REPO}/functest-components:${DOCKER_TAG} ;;
-        cloudify_ims|vyos_vrouter|juju_epc)
+        cloudify|cloudify_ims|heat_ims|vyos_vrouter|juju_epc)
             FUNCTEST_IMAGE=${REPO}/functest-vnf:${DOCKER_TAG} ;;
-        doctor-notification|bgpvpn|functest-odl-sfc|barometercollectd|fds)
+        doctor-notification|bgpvpn|functest-odl-sfc|barometercollectd|fds|vgpu|stor4nfv_os)
             FUNCTEST_IMAGE=${REPO}/functest-features:${DOCKER_TAG} ;;
         *)
             echo "Unkown test case $test_name"
@@ -182,4 +182,7 @@ else
         fi
     fi
     run_tiers ${tiers}
+    for test in tempest_full tempest_scenario; do
+        run_test "$test"
+    done
 fi
