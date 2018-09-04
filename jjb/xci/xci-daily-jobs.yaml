@@ -347,10 +347,29 @@
     builders:
       - shell: |
           #!/bin/bash
-          set -o errexit
           set -o pipefail
 
           ssh root@192.168.122.2 "/root/run-functest.sh"
+          functest_exit=$?
+
+          case ${DEPLOY_SCENARIO[0]} in
+              os-*)
+                  FUNCTEST_LOG=/root/functest-results/functest.log
+                  ;;
+              k8-*)
+                  FUNCTEST_LOG=/root/functest-results/functest-kubernetes.log
+                  ;;
+              *)
+                  echo "Unable to determine the installer. Exiting!"
+                  exit $functest_exit
+                  ;;
+          esac
+
+          echo "Functest log"
+          echo "---------------------------------------------------------------------------------"
+          ssh root@192.168.122.2 "cat $FUNCTEST_LOG"
+          echo "---------------------------------------------------------------------------------"
+          exit ${functest_exit}
 - builder:
     name: 'xci-daily-yardstick-macro'
     builders:
