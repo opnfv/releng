@@ -130,6 +130,7 @@
           default-slaves:
             - lf-build1
             - lf-build2
+            - ericsson-build3
             - ericsson-build4
           allowed-multiselect: true
           ignore-offline-nodes: true
@@ -144,6 +145,8 @@
       - timed: '@midnight'
 
     builders:
+      - description-setter:
+          description: '$NODE_NAME'
       - install-ansible
       - run-ansible-build-server-playbook
 
