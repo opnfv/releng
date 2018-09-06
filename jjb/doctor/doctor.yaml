@@ -3,6 +3,7 @@
     name: doctor
 
     project: '{name}'
+    project-name: '{name}'
 
     stream:
       - master:
@@ -40,6 +41,11 @@
     jobs:
       - 'doctor-verify-{stream}'
       - 'doctor-verify-{installer}-{inspector}-{arch}-{stream}'
+      - '{project-name}-rtd-jobs'
+
+    rtd-build-url: 'https://readthedocs.org/api/v2/webhook/opnfv-doctor/47214/'
+    rtd-token: '13264f62c1a044e39e9aed22a0dc1853d5a0b196'
+    project-pattern: '{project}'
 
 - job-template:
     name: 'doctor-verify-{stream}'
