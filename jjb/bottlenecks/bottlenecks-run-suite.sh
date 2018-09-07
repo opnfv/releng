@@ -24,7 +24,26 @@ OPENRC=/tmp/admin_rc.sh
 OS_CACERT=/tmp/os_cacert
 
 BOTTLENECKS_CONFIG=/tmp
+KUBESTONE_TEST_DIR=/home/opnfv/bottlenecks/testsuites/kubestone/testcases
 
+# Pulling Bottlenecks docker and passing environment variables
+echo "INFO: pulling Bottlenecks docker ${DOCKER_TAG}"
+docker pull opnfv/bottlenecks:${DOCKER_TAG} >$redirect
+
+opts="--privileged=true -id"
+envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
+      -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NET=${EXTERNAL_NETWORK} \
+      -e BRANCH=${BRANCH} -e GERRIT_REFSPEC_DEBUG=${GERRIT_REFSPEC_DEBUG} \
+      -e BOTTLENECKS_DB_TARGET=${BOTTLENECKS_DB_TARGET} -e PACKAGE_URL=${PACKAGE_URL} \
+      -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} -e BUILD_TAG=${BUILD_TAG}"
+docker_volume="-v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp"
+
+cmd="docker run ${opts} ${envs} --name bottlenecks-load-master ${docker_volume} opnfv/bottlenecks:${DOCKER_TAG} /bin/bash"
+echo "BOTTLENECKS INFO: running docker run commond: ${cmd}"
+${cmd} >$redirect
+sleep 5
+
+# Run test suite
 if [[ $SUITE_NAME == *posca* ]]; then
     POSCA_SCRIPT=/home/opnfv/bottlenecks/testsuites/posca
     sudo rm -f ${OPENRC}
@@ -116,23 +135,6 @@ if [[ $SUITE_NAME == *posca* ]]; then
         sudo ls -al ${BOTTLENECKS_CONFIG}
     fi
 
-    # Pulling Bottlenecks docker and passing environment variables
-    echo "INFO: pulling Bottlenecks docker ${DOCKER_TAG}"
-    docker pull opnfv/bottlenecks:${DOCKER_TAG} >$redirect
-
-    opts="--privileged=true -id"
-    envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
-          -e NODE_NAME=${NODE_NAME} -e EXTERNAL_NET=${EXTERNAL_NETWORK} \
-          -e BRANCH=${BRANCH} -e GERRIT_REFSPEC_DEBUG=${GERRIT_REFSPEC_DEBUG} \
-          -e BOTTLENECKS_DB_TARGET=${BOTTLENECKS_DB_TARGET} -e PACKAGE_URL=${PACKAGE_URL} \
-          -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} -e BUILD_TAG=${BUILD_TAG}"
-    docker_volume="-v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp"
-
-    cmd="docker run ${opts} ${envs} --name bottlenecks-load-master ${docker_volume} opnfv/bottlenecks:${DOCKER_TAG} /bin/bash"
-    echo "BOTTLENECKS INFO: running docker run commond: ${cmd}"
-    ${cmd} >$redirect
-    sleep 5
-
     # Running test cases through Bottlenecks docker
     if [[ $SUITE_NAME == posca_stress_traffic ]]; then
         TEST_CASE=posca_factor_system_bandwidth
@@ -142,6 +144,13 @@ if [[ $SUITE_NAME == *posca* ]]; then
         TEST_CASE=$SUITE_NAME
     fi
     testcase_cmd="docker exec bottlenecks-load-master python ${POSCA_SCRIPT}/../run_testsuite.py testcase $TEST_CASE $REPORT"
+    echo "BOTTLENECKS INFO: running test case ${TEST_CASE} with report indicator: ${testcase_cmd}"
+    ${testcase_cmd} >$redirect
+elif [[ $SUITE_NAME == *kubestone* ]]; then
+    if [[ $SUITE_NAME == kubestone_deployment_capacity ]]; then
+        TEST_CASE = ${KUBESTONE_TEST_DIR}/deployment_capacity.yaml
+    fi
+    testcase_cmd="docker exec bottlenecks-load-master python ${KUBESTONE_TEST_DIR}/../stress_test.py -c $TEST_CASE"
     echo "BOTTLENECKS INFO: running test case ${TEST_CASE} with report indicator: ${testcase_cmd}"
     ${testcase_cmd} >$redirect
 fi
