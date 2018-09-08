@@ -172,14 +172,14 @@ else
     if [ ${DEPLOY_TYPE} == 'baremetal' ] && [ "${HOST_ARCH}" != "aarch64" ]; then
         if [[ ${BRANCH} == "stable/fraser" ]]; then
             tiers=(healthcheck smoke features vnf parser)
-            tests=(tempest_full)
+            tests=(tempest_full_parallel)
         else
             tiers=(healthcheck smoke benchmarking features vnf)
         fi
     else
         if [[ ${BRANCH} == "stable/fraser" ]]; then
             tiers=(healthcheck smoke features parser)
-            tests=(tempest_full)
+            tests=(tempest_full_parallel)
         else
             tiers=(healthcheck smoke benchmarking features)
         fi
