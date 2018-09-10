@@ -148,7 +148,7 @@ if [[ $SUITE_NAME == *posca* ]]; then
     ${testcase_cmd} >$redirect
 elif [[ $SUITE_NAME == *kubestone* ]]; then
     if [[ $SUITE_NAME == kubestone_deployment_capacity ]]; then
-        TEST_CASE = ${KUBESTONE_TEST_DIR}/deployment_capacity.yaml
+        TEST_CASE=${KUBESTONE_TEST_DIR}/deployment_capacity.yaml
     fi
     testcase_cmd="docker exec bottlenecks-load-master python ${KUBESTONE_TEST_DIR}/../stress_test.py -c $TEST_CASE"
     echo "BOTTLENECKS INFO: running test case ${TEST_CASE} with report indicator: ${testcase_cmd}"
