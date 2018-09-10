@@ -18,22 +18,32 @@
           gs-pathname: '/{stream}'
           disabled: false
     #####################################
+    # cluster architectures
+    #####################################
+    arch_tag:
+      - 'amd64':
+          slave-label: 'fuel-virtual'
+          functest-suite-label: 'fuel-virtual'
+      - 'arm64':
+          slave-label: 'armband-virtual'
+          functest-suite-label: 'fuel-armband-virtual'
+    #####################################
     # patch verification phases
     #####################################
     phase:
-      - 'deploy-virtual':
-          slave-label: 'fuel-virtual'
+      - 'docker-build'
+      - 'deploy-virtual'
     #####################################
     # jobs
     #####################################
     jobs:
-      - 'fuel-verify-{stream}'
-      - 'fuel-verify-{phase}-{stream}'
+      - 'fuel-verify-{arch_tag}-{stream}'
+      - 'fuel-verify-{phase}-{arch_tag}-{stream}'
 #####################################
 # job templates
 #####################################
 - job-template:
-    name: 'fuel-verify-{stream}'
+    name: 'fuel-verify-{arch_tag}-{stream}'
 
     project-type: multijob
 
@@ -97,7 +107,7 @@
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
-      - 'fuel-virtual-defaults':
+      - '{slave-label}-defaults':
           installer: '{installer}'
       - '{installer}-defaults':
           gs-pathname: '{gs-pathname}'
@@ -109,12 +119,28 @@
       - description-setter:
           description: "Built on $NODE_NAME"
       - multijob:
+          name: docker-build
+          condition: SUCCESSFUL
+          projects:
+            - name: 'fuel-verify-docker-build-{arch_tag}-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                BRANCH=$BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: true
+              kill-phase-on: FAILURE
+              abort-all-job: true
+
+      - multijob:
           name: deploy-virtual
           condition: SUCCESSFUL
           projects:
-            - name: 'fuel-verify-deploy-virtual-{stream}'
+            - name: 'fuel-verify-deploy-virtual-{arch_tag}-{stream}'
               current-parameters: false
               predefined-parameters: |
+                MCP_DOCKER_TAG=verify
                 BRANCH=$BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
@@ -128,7 +154,7 @@
           condition: SUCCESSFUL
           projects:
             # Use Functest job definition from jjb/functest/functest-daily-jobs
-            - name: 'functest-fuel-virtual-suite-{stream}'
+            - name: 'functest-{functest-suite-label}-suite-{stream}'
               current-parameters: false
               predefined-parameters: |
                 FUNCTEST_MODE=tier
@@ -143,7 +169,7 @@
               abort-all-job: true
 
 - job-template:
-    name: 'fuel-verify-{phase}-{stream}'
+    name: 'fuel-verify-{phase}-{arch_tag}-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -159,6 +185,7 @@
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
+            - 'fuel-verify-docker-build-.*'
             - 'fuel-verify-deploy-.*'
           block-level: 'NODE'
 
@@ -175,8 +202,7 @@
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
-      - '{slave-label}-defaults'
-      - 'fuel-virtual-defaults':
+      - '{slave-label}-defaults':
           installer: '{installer}'
       - '{installer}-defaults':
           gs-pathname: '{gs-pathname}'
@@ -193,3 +219,9 @@
     builders:
       - shell:
           !include-raw: ./fuel-deploy.sh
+- builder:
+    name: 'fuel-verify-docker-build-macro'
+    builders:
+      - shell: |
+          #!/bin/bash -ex
+          sudo ./ci/build.sh 'verify' ''
