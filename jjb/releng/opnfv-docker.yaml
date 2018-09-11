@@ -26,6 +26,11 @@
     storperf-receivers: &storperf-receivers
       receivers: >
           mark.beierl@emc.com
+    yardstick-receivers: &yardstick-receivers
+      receivers: >
+          limingjiang@huawei.com
+          rexlee8776@gmail.com
+          emma.l.foley@intel.com
     other-receivers: &other-receivers
       receivers: ''
 
@@ -179,7 +184,13 @@
       - 'yardstick':
           project: 'yardstick'
           <<: *master
-          <<: *other-receivers
+          <<: *yardstick-receivers
+      - 'yardstick-image-k8s':
+          project: 'yardstick'
+          dockerdir: 'docker/k8s'
+          <<: *master
+          <<: *yardstick-receivers
+
       # projects with jobs for euphrates
       - 'barometer-collectd':
           project: 'barometer'
