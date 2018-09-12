@@ -17,57 +17,46 @@
     # -------------------------------
     scenario:
       - 'os-nosdn-nofeature-noha':
-          auto-trigger-name: 'daily-trigger-disabled'
           deploy-scenario: 'os-nosdn-nofeature'
           installer-type: 'osa'
           xci-flavor: 'mini'
       - 'os-nosdn-osm-noha':
-          auto-trigger-name: 'daily-trigger-disabled'
           deploy-scenario: 'os-nosdn-osm'
           installer-type: 'osa'
           xci-flavor: 'mini'
       - 'os-odl-nofeature-noha':
-          auto-trigger-name: 'daily-trigger-disabled'
           deploy-scenario: 'os-odl-nofeature'
           installer-type: 'osa'
           xci-flavor: 'mini'
       - 'os-odl-bgpvpn-noha':
-          auto-trigger-name: 'daily-trigger-disabled'
           deploy-scenario: 'os-odl-bgpvpn'
           installer-type: 'osa'
           xci-flavor: 'mini'
       - 'os-odl-sfc-noha':
-          auto-trigger-name: 'daily-trigger-disabled'
           deploy-scenario: 'os-odl-sfc'
           installer-type: 'osa'
           xci-flavor: 'mini'
       - 'k8-nosdn-nofeature-noha':
-          auto-trigger-name: 'daily-trigger-disabled'
           deploy-scenario: 'k8-nosdn-nofeature'
           installer-type: 'kubespray'
           xci-flavor: 'mini'
       - 'k8-canal-nofeature-noha':
-          auto-trigger-name: 'daily-trigger-disabled'
           deploy-scenario: 'k8-canal-nofeature'
           installer-type: 'kubespray'
           xci-flavor: 'mini'
       - 'k8-calico-nofeature-noha':
-          auto-trigger-name: 'daily-trigger-disabled'
           deploy-scenario: 'k8-calico-nofeature'
           installer-type: 'kubespray'
           xci-flavor: 'mini'
       - 'k8-contiv-nofeature-noha':
-          auto-trigger-name: 'daily-trigger-disabled'
           deploy-scenario: 'k8-contiv-nofeature'
           installer-type: 'kubespray'
           xci-flavor: 'mini'
       - 'k8-flannel-nofeature-noha':
-          auto-trigger-name: 'daily-trigger-disabled'
           deploy-scenario: 'k8-flannel-nofeature'
           installer-type: 'kubespray'
           xci-flavor: 'mini'
       - 'k8-nosdn-istio-noha':
-          auto-trigger-name: 'daily-trigger-disabled'
           deploy-scenario: 'k8-nosdn-istio'
           installer-type: 'kubespray'
           xci-flavor: 'mini'
@@ -133,6 +122,9 @@
           block-level: 'NODE'
       - logrotate-default
 
+    triggers:
+      - timed: '@midnight'
+
     parameters:
       - string:
           name: DEPLOY_SCENARIO
@@ -162,9 +154,6 @@
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
           description: 'Git URL to use on this Jenkins Slave'
-
-    triggers:
-      - '{auto-trigger-name}'
 
     wrappers:
       - ssh-agent-wrapper
