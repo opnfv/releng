@@ -49,7 +49,7 @@ LAB_CONFIG_URL=${LAB_CONFIG_URL:-'ssh://jenkins-ericsson@gerrit.opnfv.org:29418/
 SUDO='sudo -E'
 if [ "${PROJECT}" = 'fuel' ]; then
     # Fuel currently supports ericsson, intel, lf and zte labs
-    if [[ ! "${LAB_NAME}" =~ (ericsson|intel|lf|zte) ]]; then
+    if [[ ! "${LAB_NAME}" =~ (arm|enea|ericsson|intel|lf|unh|zte) ]]; then
         echo "Unsupported/unidentified lab ${LAB_NAME}. Cannot continue!"
         exit 1
     fi
