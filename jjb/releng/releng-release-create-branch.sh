@@ -26,7 +26,20 @@ STREAM=${STREAM:-'nostream'}
 RELEASE_FILES=$(git diff HEAD^1 --name-only -- "releases/$STREAM")
 
 for release_file in $RELEASE_FILES; do
-    python releases/scripts/create_branch.py -f $release_file
+
+    while read -r repo branch ref; do
+
+        echo "$repo" "$branch" "$ref"
+        branches="$(git ls-remote "https://gerrit.opnfv.org/gerrit/$repo.git" "refs/heads/$branch")"
+
+        if ! [ -z "$branches" ]; then
+            echo "refs/heads/$branch already exists at $ref ($branches)"
+        else
+            ssh -n -f -p 29418 gerrit.opnfv.org gerrit create-branch "$repo" "$branch" "$ref"
+        fi
+
+    done < <(python releases/scripts/repos.py -b -f "$release_file")
+
     python releases/scripts/create_jobs.py -f $release_file
     NEW_FILES=$(git status --porcelain --untracked=no | cut -c4-)
     if [ -n "$NEW_FILES" ]; then
