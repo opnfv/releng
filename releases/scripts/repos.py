@@ -63,20 +63,28 @@ def main():
                         type=str,
                         help="Only print"
                              "SHAs for the specified release")
+    parser.add_argument('--branches', '-b',
+                        action='store_true',
+                        default=False,
+                        help="Print Branch info")
+
     args = parser.parse_args()
 
     project = yaml.safe_load(args.file)
 
-    list_repos(project, args)
+    if args.branches:
+        list_branches(project, args)
+    else:
+        list_repos(project, args)
 
 
 def list_repos(project, args):
     """List repositories in the project file"""
 
     lookup = project.get('releases', [])
+
     if 'releases' not in project:
         exit(0)
-
     repos = set()
     for item in lookup:
         repo, ref = next(iter(item['location'].items()))
@@ -89,6 +97,24 @@ def list_repos(project, args):
     for repo in repos:
         print(repo)
 
+def list_branches(project, args):
+    """List branches in the project file"""
+
+    lookup = project.get('branches', [])
+
+    if 'branches' not in project:
+        exit(0)
+    repos = set()
+    for item in lookup:
+        repo, ref = next(iter(item['location'].items()))
+        if args.names:
+            repos.add(Repo(repo))
+        elif args.release and item['name'] == args.release:
+            repos.add(Repo(repo, ref))
+        elif not args.release:
+            repos.add(Repo(repo, item['name'], ref))
+    for repo in repos:
+        print(repo)
 
 if __name__ == "__main__":
     main()
