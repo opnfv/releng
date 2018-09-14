@@ -161,6 +161,7 @@
           description: 'Git URL to use on this Jenkins Slave'
 
     builders:
+      - 'xci-verify-clean-vm-macro'
       - 'xci-verify-set-scenario-macro'
       - inject:
           properties-file: "/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO/scenario.properties"
@@ -213,7 +214,6 @@
             - role: BOTH
               build-on:
                 - ABORTED
-                - FAILURE
                 - NOT_BUILT
                 - SUCCESS
                 - UNSTABLE
@@ -289,6 +289,12 @@
 # -------------------------------
 # builder macros
 # -------------------------------
+- builder:
+    name: 'xci-verify-clean-vm-macro'
+    builders:
+      - shell:
+          !include-raw: ./xci-cleanup.sh
+
 - builder:
     name: 'xci-verify-set-scenario-macro'
     builders:
