@@ -40,7 +40,7 @@ echo "Using configuration for ${LAB_NAME}"
 
 # create TMPDIR if it doesn't exist, change permissions
 mkdir -p "${TMPDIR}"
-chmod a+x "${HOME}" "${TMPDIR}"
+sudo chmod a+x "${HOME}" "${TMPDIR}"
 
 cd "${WORKSPACE}" || exit 1
 
