@@ -31,7 +31,7 @@ if [[ "$BRANCH" =~ 'danube' ]]; then
 fi
 
 # shellcheck disable=SC2153
-if [[ "${JOB_NAME}" =~ 'verify' ]]; then
+if [ -z "${DEPLOY_SCENARIO:-}" ] && [[ "${JOB_NAME}" =~ 'verify' ]]; then
     # set simplest scenario for virtual deploys to run for verify
     DEPLOY_SCENARIO="os-nosdn-nofeature-noha"
 fi
