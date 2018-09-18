@@ -40,17 +40,20 @@ echo "Using configuration for ${LAB_NAME}"
 
 # create TMPDIR if it doesn't exist, change permissions
 mkdir -p "${TMPDIR}"
-chmod a+x "${HOME}" "${TMPDIR}"
+sudo chmod a+x "${HOME}" "${TMPDIR}"
 
 cd "${WORKSPACE}" || exit 1
 
 # log file name
 FUEL_LOG_FILENAME="${JOB_NAME}_${BUILD_NUMBER}.log.tar.gz"
 
+# Limited scope for vPOD verify jobs running on armband-virtual
+[[ ! "${JOB_NAME}" =~ verify-deploy-virtual-arm64 ]] || EXTRA_ARGS='-e'
+
 # construct the command
 DEPLOY_COMMAND="${SUDO} ${WORKSPACE}/ci/deploy.sh \
     -l ${LAB_NAME} -p ${POD_NAME} -s ${DEPLOY_SCENARIO} \
-    -S ${TMPDIR} \
+    -S ${TMPDIR} ${EXTRA_ARGS:-} \
     -L ${WORKSPACE}/${FUEL_LOG_FILENAME}"
 
 # log info to console
