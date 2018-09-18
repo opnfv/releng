@@ -22,28 +22,34 @@
     #####################################
     arch_tag:
       - 'amd64':
-          slave-label: 'fuel-virtual'
-          functest-suite-label: 'fuel-virtual'
+          slave-label: 'fuel'
+          functest-suite-label: 'fuel'
       - 'arm64':
-          slave-label: 'armband-virtual'
-          functest-suite-label: 'fuel-armband-virtual'
+          slave-label: 'armband'
+          functest-suite-label: 'fuel-armband'
+    #####################################
+    # cluster types
+    #####################################
+    type:
+      - 'virtual'
+      - 'baremetal'
     #####################################
     # patch verification phases
     #####################################
     phase:
       - 'docker-build'
-      - 'deploy-virtual'
+      - 'deploy'
     #####################################
     # jobs
     #####################################
     jobs:
-      - 'fuel-verify-{arch_tag}-{stream}'
-      - 'fuel-verify-{phase}-{arch_tag}-{stream}'
+      - 'fuel-verify-{type}-{arch_tag}-{stream}'
+      - 'fuel-verify-{phase}-{type}-{arch_tag}-{stream}'
 #####################################
 # job templates
 #####################################
 - job-template:
-    name: 'fuel-verify-{arch_tag}-{stream}'
+    name: 'fuel-verify-{type}-{arch_tag}-{stream}'
 
     project-type: multijob
 
@@ -60,7 +66,7 @@
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
-            - 'fuel-os-.*?-virtual-daily-.*'
+            - 'fuel-os-.*?-daily-.*'
             - 'fuel-verify-.*'
           block-level: 'NODE'
 
@@ -74,7 +80,7 @@
           fail: true
 
     triggers:
-      - 'fuel-verify-{arch_tag}-trigger':
+      - 'fuel-verify-{type}-{arch_tag}-trigger':
           project: '{project}'
           branch: '{branch}'
 
@@ -82,22 +88,22 @@
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
-      - '{slave-label}-defaults':
+      - '{slave-label}-{type}-defaults':
           installer: '{installer}'
       - '{installer}-defaults':
           gs-pathname: '{gs-pathname}'
-      - string:
-          name: DEPLOY_SCENARIO
-          default: 'os-nosdn-nofeature-ha'
 
     builders:
+      - 'fuel-verify-set-scenario-macro'
+      - inject:
+          properties-file: "/tmp/$GERRIT_CHANGE_NUMBER/scenario.properties"
       - description-setter:
-          description: "Built on $NODE_NAME"
+          description: "Scenario: $DEPLOY_SCENARIO | Node: $NODE_NAME"
       - multijob:
           name: docker-build
           condition: SUCCESSFUL
           projects:
-            - name: 'fuel-verify-docker-build-{arch_tag}-{stream}'
+            - name: 'fuel-verify-docker-build-{type}-{arch_tag}-{stream}'
               current-parameters: false
               predefined-parameters: |
                 BRANCH=$BRANCH
@@ -109,10 +115,10 @@
               abort-all-job: true
 
       - multijob:
-          name: deploy-virtual
+          name: deploy
           condition: SUCCESSFUL
           projects:
-            - name: 'fuel-verify-deploy-virtual-{arch_tag}-{stream}'
+            - name: 'fuel-verify-deploy-{type}-{arch_tag}-{stream}'
               current-parameters: false
               predefined-parameters: |
                 MCP_DOCKER_TAG={arch_tag}-verify
@@ -120,6 +126,7 @@
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: true
@@ -129,12 +136,11 @@
           condition: SUCCESSFUL
           projects:
             # Use Functest job definition from jjb/functest/functest-daily-jobs
-            - name: 'functest-{functest-suite-label}-suite-{stream}'
+            - name: 'functest-{functest-suite-label}-{type}-suite-{stream}'
               current-parameters: false
               predefined-parameters: |
                 FUNCTEST_MODE=tier
                 FUNCTEST_TIER=healthcheck
-                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
                 BRANCH=$BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
@@ -144,7 +150,7 @@
               abort-all-job: true
 
 - job-template:
-    name: 'fuel-verify-{phase}-{arch_tag}-{stream}'
+    name: 'fuel-verify-{phase}-{type}-{arch_tag}-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -177,7 +183,7 @@
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
-      - '{slave-label}-defaults':
+      - '{slave-label}-{type}-defaults':
           installer: '{installer}'
       - '{installer}-defaults':
           gs-pathname: '{gs-pathname}'
@@ -190,9 +196,9 @@
 # trigger macros
 ########################
 - trigger:
-    name: 'fuel-verify-amd64-trigger'
+    name: 'fuel-verify-virtual-amd64-trigger'
     triggers:
-      - gerrit: &fuel_verify_amd64_trigger
+      - gerrit: &fuel_verify_virtual_amd64_trigger
           server-name: 'gerrit.opnfv.org'
           trigger-on:
             - patchset-created-event:
@@ -201,9 +207,7 @@
                 exclude-no-code-change: 'false'
             - draft-published-event
             - comment-added-contains-event:
-                comment-contains-value: 'recheck'
-            - comment-added-contains-event:
-                comment-contains-value: 'reverify'
+                comment-contains-value: '(recheck|reverify)(\s|:\s*[-\w]+-noha)'
           projects:
             - project-compare-type: 'ANT'
               project-pattern: '{project}'
@@ -221,10 +225,55 @@
                   pattern: 'docs/**'
           readable-message: true
 - trigger:
-    name: 'fuel-verify-arm64-trigger'
+    name: 'fuel-verify-virtual-arm64-trigger'
     triggers:
       - gerrit:
-          <<: *fuel_verify_amd64_trigger
+          <<: *fuel_verify_virtual_amd64_trigger
+          skip-vote:
+            successful: true
+            failed: true
+            unstable: true
+            notbuilt: true
+- trigger:
+    name: 'fuel-verify-baremetal-amd64-trigger'
+    triggers:
+      - gerrit: &fuel_verify_baremetal_amd64_trigger
+          <<: *fuel_verify_virtual_amd64_trigger
+          trigger-on:
+            - comment-added-contains-event:
+                comment-contains-value: '(recheck|reverify):\s*[-\w]+-ha'
+      - gerrit: &fuel_verify_baremetal_amd64_topic_trigger
+          <<: *fuel_verify_virtual_amd64_trigger
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: ANT
+                  pattern: 'ci/**'
+                - compare-type: ANT
+                  pattern: 'mcp/**'
+              disable-strict-forbidden-file-verification: 'true'
+              topics:
+                - compare-type: ANT
+                  pattern: '**baremetal**'
+              forbidden-file-paths:
+                - compare-type: ANT
+                  pattern: 'docs/**'
+- trigger:
+    name: 'fuel-verify-baremetal-arm64-trigger'
+    triggers:
+      - gerrit:
+          <<: *fuel_verify_baremetal_amd64_trigger
+          skip-vote:
+            successful: true
+            failed: true
+            unstable: true
+            notbuilt: true
+      - gerrit:
+          <<: *fuel_verify_baremetal_amd64_topic_trigger
           skip-vote:
             successful: true
             failed: true
@@ -234,7 +283,12 @@
 # builder macros
 #####################################
 - builder:
-    name: 'fuel-verify-deploy-virtual-macro'
+    name: 'fuel-verify-set-scenario-macro'
+    builders:
+      - shell:
+          !include-raw: ./fuel-set-scenario.sh
+- builder:
+    name: 'fuel-verify-deploy-macro'
     builders:
       - shell:
           !include-raw: ./fuel-deploy.sh
