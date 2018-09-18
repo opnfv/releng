@@ -30,12 +30,6 @@ if [[ "$BRANCH" =~ 'danube' ]]; then
     ISO_FILE_ARG="-i file://${WORKSPACE}/opnfv.iso"
 fi
 
-# shellcheck disable=SC2153
-if [[ "${JOB_NAME}" =~ 'verify' ]]; then
-    # set simplest scenario for virtual deploys to run for verify
-    DEPLOY_SCENARIO="os-nosdn-nofeature-noha"
-fi
-
 # set deployment parameters
 export TMPDIR=${HOME}/tmpdir
 # shellcheck disable=SC2153
