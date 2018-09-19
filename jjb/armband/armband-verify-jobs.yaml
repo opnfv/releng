@@ -4,7 +4,6 @@
 
     project: 'armband'
 
-    installer: 'fuel'
     #####################################
     # branch definitions
     #####################################
@@ -18,24 +17,16 @@
           gs-pathname: '/{stream}'
           disabled: false
     #####################################
-    # patch verification phases
-    #####################################
-    phase:
-      - 'deploy-virtual':
-          slave-label: 'armband-virtual'
-    #####################################
     # jobs
     #####################################
     jobs:
       - 'armband-verify-{stream}'
-      - 'armband-verify-{phase}-{stream}'
+
 #####################################
 # job templates
 #####################################
 - job-template:
     name: 'armband-verify-{stream}'
-
-    project-type: multijob
 
     disabled: '{obj:disabled}'
 
@@ -45,14 +36,8 @@
       - logrotate-default
       - throttle:
           enabled: true
-          max-total: 4
+          max-total: 2
           option: 'project'
-      - build-blocker:
-          use-build-blocker: true
-          blocking-jobs:
-            - 'fuel-os-.*?-virtual-daily-.*'
-            - 'armband-verify-.*'
-          block-level: 'NODE'
 
     scm:
       - git-scm-gerrit
@@ -97,100 +82,19 @@
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
-      - 'armband-virtual-defaults':
-          installer: '{installer}'
-      - '{installer}-defaults':
-          gs-pathname: '{gs-pathname}'
-      - string:
-          name: DEPLOY_SCENARIO
-          default: 'os-nosdn-nofeature-ha'
+      - 'opnfv-build-ubuntu-arm-defaults'
 
     builders:
       - description-setter:
           description: "Built on $NODE_NAME"
-      - multijob:
-          name: deploy-virtual
-          condition: SUCCESSFUL
-          projects:
-            - name: 'armband-verify-deploy-virtual-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                BRANCH=$BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              node-parameters: true
-              kill-phase-on: FAILURE
-              abort-all-job: true
+      - 'armband-verify-builder-macro'
 
-      - multijob:
-          name: smoke-test
-          condition: SUCCESSFUL
-          projects:
-            # Use Functest job definition from jjb/functest/functest-daily-jobs
-            - name: 'functest-fuel-armband-virtual-suite-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                FUNCTEST_MODE=tier
-                FUNCTEST_TIER=healthcheck
-                # Should be in sync with fuel-deploy.sh default scenario
-                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-                BRANCH=$BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              node-parameters: true
-              kill-phase-on: NEVER
-              abort-all-job: true
-
-- job-template:
-    name: 'armband-verify-{phase}-{stream}'
-
-    disabled: '{obj:disabled}'
-
-    concurrent: true
-
-    properties:
-      - logrotate-default
-      - throttle:
-          enabled: true
-          max-total: 2
-          max-per-node: 1
-          option: 'project'
-      - build-blocker:
-          use-build-blocker: true
-          blocking-jobs:
-            - 'armband-verify-deploy-.*'
-          block-level: 'NODE'
-
-    scm:
-      - git-scm-gerrit
-
-    wrappers:
-      - ssh-agent-wrapper
-      - timeout:
-          timeout: 360
-          fail: true
-
-    parameters:
-      - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - '{slave-label}-defaults'
-      - 'armband-virtual-defaults':
-          installer: '{installer}'
-      - '{installer}-defaults':
-          gs-pathname: '{gs-pathname}'
-
-    builders:
-      - description-setter:
-          description: "Built on $NODE_NAME"
-      - '{project}-verify-{phase}-macro'
 #####################################
 # builder macros
 #####################################
 - builder:
-    name: 'armband-verify-deploy-virtual-macro'
+    name: 'armband-verify-builder-macro'
     builders:
-      - shell:
-          !include-raw: ../fuel/fuel-deploy.sh
+      - shell: |
+          #!/bin/bash
+          make fuel-patches-import
