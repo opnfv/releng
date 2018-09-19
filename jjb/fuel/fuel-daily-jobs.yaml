@@ -16,8 +16,8 @@
       branch: '{stream}'
       disabled: false
       gs-pathname: ''
-    fraser: &fraser
-      stream: fraser
+    gambia: &gambia
+      stream: gambia
       branch: 'stable/{stream}'
       disabled: false
       gs-pathname: '/{stream}'
@@ -35,10 +35,10 @@
           <<: *master
       - baremetal:
           slave-label: fuel-baremetal
-          <<: *fraser
+          <<: *gambia
       - virtual:
           slave-label: fuel-virtual
-          <<: *fraser
+          <<: *gambia
       # -------------------------------
       #        None-CI PODs
       # -------------------------------
@@ -73,14 +73,6 @@
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
       - 'os-nosdn-vpp-noha':
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
-
-    exclude:
-      - scenario: os-odl-ovs-noha
-        stream: fraser
-      - scenario: os-nosdn-vpp-ha
-        stream: fraser
-      - scenario: os-nosdn-vpp-noha
-        stream: fraser
 
     jobs:
       - 'fuel-{scenario}-{pod}-daily-{stream}'
@@ -363,40 +355,40 @@
     triggers:
       - timed: ''
 # ----------------------------------------------
-# Triggers for job running on fuel-baremetal against fraser branch
+# Triggers for job running on fuel-baremetal against gambia branch
 # ----------------------------------------------
 # HA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-baremetal-daily-fraser-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-baremetal-daily-gambia-trigger'
     triggers:
       - timed: '0 20 * * 1,3,7'
 - trigger:
-    name: 'fuel-os-odl-nofeature-ha-baremetal-daily-fraser-trigger'
+    name: 'fuel-os-odl-nofeature-ha-baremetal-daily-gambia-trigger'
     triggers:
       - timed: ''  # '0 2 * * *'
 - trigger:
-    name: 'fuel-os-ovn-nofeature-ha-baremetal-daily-fraser-trigger'
+    name: 'fuel-os-ovn-nofeature-ha-baremetal-daily-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-baremetal-daily-fraser-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-baremetal-daily-gambia-trigger'
     triggers:
       - timed: ''  # '0 20 * * *'
 # NOHA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-baremetal-daily-fraser-trigger'
+    name: 'fuel-os-nosdn-nofeature-noha-baremetal-daily-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-odl-nofeature-noha-baremetal-daily-fraser-trigger'
+    name: 'fuel-os-odl-nofeature-noha-baremetal-daily-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-ovn-nofeature-noha-baremetal-daily-fraser-trigger'
+    name: 'fuel-os-ovn-nofeature-noha-baremetal-daily-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-noha-baremetal-daily-fraser-trigger'
+    name: 'fuel-os-nosdn-ovs-noha-baremetal-daily-gambia-trigger'
     triggers:
       - timed: ''
 # ----------------------------------------------
@@ -448,39 +440,39 @@
     triggers:
       - timed: ''
 # ----------------------------------------------
-# Triggers for job running on fuel-virtual against fraser branch
+# Triggers for job running on fuel-virtual against gambia branch
 # ----------------------------------------------
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-virtual-daily-fraser-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-virtual-daily-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-odl-nofeature-ha-virtual-daily-fraser-trigger'
+    name: 'fuel-os-odl-nofeature-ha-virtual-daily-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-ovn-nofeature-ha-virtual-daily-fraser-trigger'
+    name: 'fuel-os-ovn-nofeature-ha-virtual-daily-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-virtual-daily-fraser-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-virtual-daily-gambia-trigger'
     triggers:
       - timed: ''
 # NOHA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-virtual-daily-fraser-trigger'
+    name: 'fuel-os-nosdn-nofeature-noha-virtual-daily-gambia-trigger'
     triggers:
       - timed: ''  # '0 13 * * *'
 - trigger:
-    name: 'fuel-os-odl-nofeature-noha-virtual-daily-fraser-trigger'
+    name: 'fuel-os-odl-nofeature-noha-virtual-daily-gambia-trigger'
     triggers:
       - timed: ''  # '0 18 * * *'
 - trigger:
-    name: 'fuel-os-ovn-nofeature-noha-virtual-daily-fraser-trigger'
+    name: 'fuel-os-ovn-nofeature-noha-virtual-daily-gambia-trigger'
     triggers:
       - timed: '5 23 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-ovs-noha-virtual-daily-fraser-trigger'
+    name: 'fuel-os-nosdn-ovs-noha-virtual-daily-gambia-trigger'
     triggers:
       - timed: ''  # '0 9 * * *'
 # ----------------------------------------------

@@ -12,8 +12,8 @@
       branch: '{stream}'
       gs-pathname: ''
       disabled: false
-    fraser: &fraser
-      stream: fraser
+    gambia: &gambia
+      stream: gambia
       branch: 'stable/{stream}'
       gs-pathname: '/{stream}'
       disabled: false
@@ -33,16 +33,16 @@
     # -------------------------------
     # CI POD's
     # -------------------------------
-    #        fraser
+    #        gambia
     # -------------------------------
     pod:
       # yamllint disable rule:key-duplicates
       - armband-baremetal:
           <<: *baremetal
-          <<: *fraser
+          <<: *gambia
       - armband-virtual:
           <<: *virtual
-          <<: *fraser
+          <<: *gambia
       # -------------------------------
       #        master
       # -------------------------------
@@ -72,10 +72,6 @@
       # NOHA scenarios
       - 'os-nosdn-nofeature-noha':
           auto-trigger-name: '{installer}-{scenario}-{pod}-{stream}-trigger'
-
-    exclude:
-      - scenario: os-nosdn-vpp-ha
-        stream: fraser
 
     jobs:
       - '{installer}-{scenario}-{pod}-daily-{stream}'
@@ -305,26 +301,26 @@
     triggers:
       - timed: ''
 # ---------------------------------------------------------------------
-# Enea Armband CI Baremetal Triggers running against fraser branch
+# Enea Armband CI Baremetal Triggers running against gambia branch
 # ---------------------------------------------------------------------
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-armband-baremetal-fraser-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-armband-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-armband-baremetal-fraser-trigger'
+    name: 'fuel-os-nosdn-nofeature-noha-armband-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-odl-nofeature-ha-armband-baremetal-fraser-trigger'
+    name: 'fuel-os-odl-nofeature-ha-armband-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-ovn-nofeature-ha-armband-baremetal-fraser-trigger'
+    name: 'fuel-os-ovn-nofeature-ha-armband-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-armband-baremetal-fraser-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-armband-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 # --------------------------------------------------------------
@@ -355,25 +351,25 @@
     triggers:
       - timed: ''
 # -------------------------------------------------------------------
-# Enea Armband CI Virtual Triggers running against fraser branch
+# Enea Armband CI Virtual Triggers running against gambia branch
 # -------------------------------------------------------------------
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-armband-virtual-fraser-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-armband-virtual-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-armband-virtual-fraser-trigger'
+    name: 'fuel-os-nosdn-nofeature-noha-armband-virtual-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-odl-nofeature-ha-armband-virtual-fraser-trigger'
+    name: 'fuel-os-odl-nofeature-ha-armband-virtual-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-ovn-nofeature-ha-armband-virtual-fraser-trigger'
+    name: 'fuel-os-ovn-nofeature-ha-armband-virtual-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-armband-virtual-fraser-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-armband-virtual-gambia-trigger'
     triggers:
       - timed: ''
