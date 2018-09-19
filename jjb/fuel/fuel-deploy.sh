@@ -117,7 +117,7 @@ echo "Deployment is done!"
 
 # upload logs for baremetal deployments
 # work with virtual deployments is still going on, so skip that for now
-if [[ "${JOB_NAME}" =~ (baremetal-daily|baremetal-weekly) ]]; then
+if [[ "${JOB_NAME}" =~ baremetal-daily ]]; then
     echo "Uploading deployment logs"
     gsutil cp "${WORKSPACE}/${FUEL_LOG_FILENAME}" \
         "gs://${GS_URL}/logs/${FUEL_LOG_FILENAME}" > /dev/null 2>&1
