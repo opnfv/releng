@@ -46,15 +46,17 @@
           description: 'The location of the scenario metadata'
       - 'opnfv-build-defaults'
 
+    wrappers:
+      - credentials-binding:
+          - username-password-separated:
+              credential-id: xxx
+              username: ACTIVEMQ_USER
+              password: ACTIVEMQ_PASSWORD
+
     triggers:
       - jms-messaging:
           provider-name: openci.activemq
-          selector: CI_TYPE = 'custom'
-          checks:
-            - field: origin
-              expected-value: '{origin}'
-            - field: type
-              expected-value: 'ArtifactPublishedEvent'
+          selector: JMSType = 'ArtifactPublishedEvent' and JMSOrigin = 'ODL'
 
     builders:
       - shell: |
@@ -69,17 +71,6 @@
           !include-raw-escape: ./create-cde.sh
       - inject:
           properties-file: "$WORKSPACE/event.properties"
-
-    publishers:
-      - jms-messaging:
-          provider-name: openci.activemq
-          msg-type: Custom
-          msg-props: |
-            type=$type
-            origin=$origin
-            scenario=$scenario
-          msg-content:
-            $eventBody
 
 - job-template:
     name: 'openci-opnfv-{scenario}-test-daily-{stream}'
