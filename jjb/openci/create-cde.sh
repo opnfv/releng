@@ -12,16 +12,33 @@ set -o nounset
 set -o pipefail
 
 # This script creates CompositionDefinedEvent
-# The JMS Messaging Plugin doesn't handle the newlines well so the eventBody is
-# constructed on a single line. This is something that needs to be fixed properly
 
-cat << EOF > $WORKSPACE/event.properties
-type=$PUBLISH_EVENT_TYPE
-origin=$PUBLISH_EVENT_ORIGIN
-scenario=$DEPLOY_SCENARIO
-eventBody="{ 'type': '$PUBLISH_EVENT_TYPE', 'id': '$(uuidgen)', 'time': '$(date -u +%Y-%m-%d_%H:%M:%SUTC)', 'origin': '$PUBLISH_EVENT_ORIGIN', 'buildUrl': '$BUILD_URL', 'branch': 'master', 'compositionName': '$DEPLOY_SCENARIO', 'compositionMetadataUrl': '$SCENARIO_METADATA_LOCATION' }"
+git clone https://gitlab.openci.io/openci/prototypes.git
+cd prototypes/federated-cicd
+virtualenv openci_publish
+cd openci_publish
+source bin/activate
+python setup.py install
+
+# generate event body
+cat <<EOF > ./json_body.txt
+{
+    "type": "$PUBLISH_EVENT_TYPE",
+    "id": "$(uuidgen)",
+    "time": "$(date -u +%Y-%m-%d_%H:%M:%SUTC)",
+    "buildUrl": "$BUILD_URL",
+    "branch": "master",
+    "origin": "$PUBLISH_EVENT_ORIGIN",
+    "compositionName": "$DEPLOY_SCENARIO",
+    "compositionMetadataUrl": "$SCENARIO_METADATA_LOCATION"
+}
 EOF
+
+openci_publish -H 129.192.69.55 -U ${ACTIVEMQ_USER} -p ${ACTIVEMQ_PASSWORD} -n openci.prototype -B ./json_body.txt
+
 echo "Constructed $PUBLISH_EVENT_TYPE"
 echo "--------------------------------------------"
-cat $WORKSPACE/event.properties
+cat  ./json_body.txt
 echo "--------------------------------------------"
+
+deactivate
