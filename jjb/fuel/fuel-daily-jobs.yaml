@@ -21,6 +21,11 @@
       branch: 'stable/{stream}'
       disabled: false
       gs-pathname: '/{stream}'
+    gambia: &gambia
+      stream: gambia
+      branch: 'stable/{stream}'
+      disabled: false
+      gs-pathname: '/{stream}'
     # -------------------------------
     # POD, INSTALLER, AND BRANCH MAPPING
     # -------------------------------
@@ -35,9 +40,12 @@
           <<: *master
       - baremetal:
           slave-label: fuel-baremetal
-          <<: *fraser
+          <<: *gambia
       - virtual:
           slave-label: fuel-virtual
+          <<: *gambia
+      - baremetal:
+          slave-label: fuel-baremetal
           <<: *fraser
       # -------------------------------
       #        None-CI PODs
@@ -75,11 +83,22 @@
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
 
     exclude:
+      # Dovetail (and only it) should run against Fraser HA baremetal scenarios
+      - scenario: os-nosdn-nofeature-noha
+        stream: fraser
+      - scenario: os-odl-nofeature-noha
+        stream: fraser
+      - scenario: os-ovn-nofeature-noha
+        stream: fraser
       - scenario: os-odl-ovs-noha
         stream: fraser
-      - scenario: os-nosdn-vpp-ha
+      - scenario: os-nosdn-ovs-noha
         stream: fraser
       - scenario: os-nosdn-vpp-noha
+        stream: fraser
+      - scenario: os-ovn-nofeature-ha
+        stream: fraser
+      - scenario: os-nosdn-vpp-ha
         stream: fraser
 
     jobs:
@@ -140,28 +159,42 @@
               DEPLOY_SCENARIO={scenario}
             same-node: true
             block: true
-      - trigger-builds:
-          - project: 'functest-fuel-{pod}-daily-{stream}'
-            current-parameters: false
-            predefined-parameters:
-              DEPLOY_SCENARIO={scenario}
-            same-node: true
-            block: true
-            block-thresholds:
-              build-step-failure-threshold: 'never'
-              failure-threshold: 'never'
-              unstable-threshold: 'FAILURE'
-      - trigger-builds:
-          - project: 'yardstick-fuel-{pod}-daily-{stream}'
-            current-parameters: false
-            predefined-parameters:
-              DEPLOY_SCENARIO={scenario}
-            block: true
-            same-node: true
-            block-thresholds:
-              build-step-failure-threshold: 'never'
-              failure-threshold: 'never'
-              unstable-threshold: 'FAILURE'
+      - conditional-step:
+          condition-kind: not
+          condition-operand:
+            condition-kind: regex-match
+            regex: 'fraser'
+            label: '{stream}'
+          steps:
+            - trigger-builds:
+                - project: 'functest-fuel-{pod}-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO={scenario}
+                  same-node: true
+                  block: true
+                  block-thresholds:
+                    build-step-failure-threshold: 'never'
+                    failure-threshold: 'never'
+                    unstable-threshold: 'FAILURE'
+      - conditional-step:
+          condition-kind: not
+          condition-operand:
+            condition-kind: regex-match
+            regex: 'fraser'
+            label: '{stream}'
+          steps:
+            - trigger-builds:
+                - project: 'yardstick-fuel-{pod}-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO={scenario}
+                  block: true
+                  same-node: true
+                  block-thresholds:
+                    build-step-failure-threshold: 'never'
+                    failure-threshold: 'never'
+                    unstable-threshold: 'FAILURE'
       # 1.here the stream means the SUT stream, dovetail stream is defined in its own job
       # 2.testsuite default here is for the test cases already added into OVP
       # 3.run default testsuite mandatory test cases against ha scenario
@@ -173,6 +206,9 @@
             - condition-kind: regex-match
               regex: '.*-ha'
               label: '{scenario}'
+            - condition-kind: regex-match
+              regex: 'fraser'
+              label: '{stream}'
           steps:
             - trigger-builds:
                 - project: 'dovetail-fuel-{pod}-default-mandatory-{stream}'
@@ -191,6 +227,9 @@
             - condition-kind: regex-match
               regex: '.*-ha'
               label: '{scenario}'
+            - condition-kind: regex-match
+              regex: 'fraser'
+              label: '{stream}'
           steps:
             - trigger-builds:
                 - project: 'dovetail-fuel-{pod}-default-optional-{stream}'
@@ -363,40 +402,52 @@
     triggers:
       - timed: ''
 # ----------------------------------------------
-# Triggers for job running on fuel-baremetal against fraser branch
+# Triggers for job running on fuel-baremetal against gambia branch
 # ----------------------------------------------
 # HA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-baremetal-daily-fraser-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-baremetal-daily-gambia-trigger'
     triggers:
-      - timed: '0 20 * * 1,3,7'
+      - timed: '0 20 * * *'
 - trigger:
-    name: 'fuel-os-odl-nofeature-ha-baremetal-daily-fraser-trigger'
+    name: 'fuel-os-odl-nofeature-ha-baremetal-daily-gambia-trigger'
     triggers:
-      - timed: ''  # '0 2 * * *'
+      - timed: '0 2 * * *'
 - trigger:
-    name: 'fuel-os-ovn-nofeature-ha-baremetal-daily-fraser-trigger'
+    name: 'fuel-os-ovn-nofeature-ha-baremetal-daily-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-baremetal-daily-fraser-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-baremetal-daily-gambia-trigger'
     triggers:
-      - timed: ''  # '0 20 * * *'
+      - timed: '0 5 * * *'
+- trigger:
+    name: 'fuel-os-nosdn-vpp-ha-baremetal-daily-gambia-trigger'
+    triggers:
+      - timed: ''
 # NOHA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-baremetal-daily-fraser-trigger'
+    name: 'fuel-os-nosdn-nofeature-noha-baremetal-daily-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-odl-nofeature-noha-baremetal-daily-fraser-trigger'
+    name: 'fuel-os-odl-nofeature-noha-baremetal-daily-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-ovn-nofeature-noha-baremetal-daily-fraser-trigger'
+    name: 'fuel-os-ovn-nofeature-noha-baremetal-daily-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-noha-baremetal-daily-fraser-trigger'
+    name: 'fuel-os-odl-ovs-noha-baremetal-daily-gambia-trigger'
+    triggers:
+      - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-ovs-noha-baremetal-daily-gambia-trigger'
+    triggers:
+      - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-vpp-noha-baremetal-daily-gambia-trigger'
     triggers:
       - timed: ''
 # ----------------------------------------------
@@ -448,41 +499,68 @@
     triggers:
       - timed: ''
 # ----------------------------------------------
-# Triggers for job running on fuel-virtual against fraser branch
+# Triggers for job running on fuel-baremetal against fraser branch (for Dovetail)
 # ----------------------------------------------
 - trigger:
     name: 'fuel-os-nosdn-nofeature-ha-virtual-daily-fraser-trigger'
     triggers:
-      - timed: ''
+      - timed: '5 13 * * 6,7'
 - trigger:
     name: 'fuel-os-odl-nofeature-ha-virtual-daily-fraser-trigger'
     triggers:
-      - timed: ''
+      - timed: '0 13 * * 6'
 - trigger:
-    name: 'fuel-os-ovn-nofeature-ha-virtual-daily-fraser-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-virtual-daily-fraser-trigger'
+    triggers:
+      - timed: '0 13 * * 7'
+# ----------------------------------------------
+# Triggers for job running on fuel-virtual against gambia branch
+# ----------------------------------------------
+- trigger:
+    name: 'fuel-os-nosdn-nofeature-ha-virtual-daily-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-virtual-daily-fraser-trigger'
+    name: 'fuel-os-odl-nofeature-ha-virtual-daily-gambia-trigger'
+    triggers:
+      - timed: ''
+- trigger:
+    name: 'fuel-os-ovn-nofeature-ha-virtual-daily-gambia-trigger'
+    triggers:
+      - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-ovs-ha-virtual-daily-gambia-trigger'
+    triggers:
+      - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-vpp-ha-virtual-daily-gambia-trigger'
     triggers:
       - timed: ''
 # NOHA Scenarios
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-virtual-daily-fraser-trigger'
+    name: 'fuel-os-nosdn-nofeature-noha-virtual-daily-gambia-trigger'
     triggers:
-      - timed: ''  # '0 13 * * *'
+      - timed: '0 13 * * *'
 - trigger:
-    name: 'fuel-os-odl-nofeature-noha-virtual-daily-fraser-trigger'
+    name: 'fuel-os-odl-nofeature-noha-virtual-daily-gambia-trigger'
     triggers:
-      - timed: ''  # '0 18 * * *'
+      - timed: '0 18 * * *'
 - trigger:
-    name: 'fuel-os-ovn-nofeature-noha-virtual-daily-fraser-trigger'
+    name: 'fuel-os-ovn-nofeature-noha-virtual-daily-gambia-trigger'
     triggers:
-      - timed: '5 23 * * *'
+      - timed: '0 23 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-ovs-noha-virtual-daily-fraser-trigger'
+    name: 'fuel-os-odl-ovs-noha-virtual-daily-gambia-trigger'
     triggers:
-      - timed: ''  # '0 9 * * *'
+      - timed: '0 2 * * *'
+- trigger:
+    name: 'fuel-os-nosdn-ovs-noha-virtual-daily-gambia-trigger'
+    triggers:
+      - timed: '0 9 * * *'
+- trigger:
+    name: 'fuel-os-nosdn-vpp-noha-virtual-daily-gambia-trigger'
+    triggers:
+      - timed: ''
 # ----------------------------------------------
 # ZTE POD1 Triggers running against master branch
 # ----------------------------------------------
