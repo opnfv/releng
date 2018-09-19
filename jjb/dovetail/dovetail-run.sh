@@ -51,11 +51,6 @@ elif [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     # replace the default one by the customized one provided by jenkins config
 fi
 
-# Set iptables rule to allow forwarding return traffic for container
-if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FORWARD | awk 'NR==3' | grep RETURN 2> ${redirect}; then
-    sudo iptables -I FORWARD -j RETURN
-fi
-
 releng_repo=${WORKSPACE}/releng
 [ -d ${releng_repo} ] && sudo rm -rf ${releng_repo}
 git clone https://gerrit.opnfv.org/gerrit/releng ${releng_repo} >/dev/null

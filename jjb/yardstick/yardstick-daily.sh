@@ -41,10 +41,6 @@ elif [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:/etc/ssl/certs/mcp_os_cacert"
     sshkey="-v ${SSH_KEY}:/root/.ssh/mcp.rsa"
 fi
-# Set iptables rule to allow forwarding return traffic for container
-if ! sudo iptables -C FORWARD -j RETURN 2> ${redirect} || ! sudo iptables -L FORWARD | awk 'NR==3' | grep RETURN 2> ${redirect}; then
-    sudo iptables -I FORWARD -j RETURN
-fi
 
 opts="--privileged=true --rm"
 envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
