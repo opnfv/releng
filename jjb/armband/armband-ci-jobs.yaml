@@ -15,6 +15,11 @@
     fraser: &fraser
       stream: fraser
       branch: 'stable/{stream}'
+      disabled: false
+      gs-pathname: '/{stream}'
+    gambia: &gambia
+      stream: gambia
+      branch: 'stable/{stream}'
       gs-pathname: '/{stream}'
       disabled: false
     # -------------------------------
@@ -33,16 +38,23 @@
     # -------------------------------
     # CI POD's
     # -------------------------------
-    #        fraser
-    # -------------------------------
+    # yamllint disable rule:key-duplicates
     pod:
-      # yamllint disable rule:key-duplicates
+      # -------------------------------
+      #        fraser
+      # -------------------------------
       - armband-baremetal:
           <<: *baremetal
           <<: *fraser
+      # -------------------------------
+      #        gambia
+      # -------------------------------
+      - armband-baremetal:
+          <<: *baremetal
+          <<: *gambia
       - armband-virtual:
           <<: *virtual
-          <<: *fraser
+          <<: *gambia
       # -------------------------------
       #        master
       # -------------------------------
@@ -74,6 +86,11 @@
           auto-trigger-name: '{installer}-{scenario}-{pod}-{stream}-trigger'
 
     exclude:
+      # Dovetail (and only it) should run against Fraser HA baremetal scenarios
+      - scenario: os-nosdn-nofeature-noha
+        stream: fraser
+      - scenario: os-ovn-nofeature-ha
+        stream: fraser
       - scenario: os-nosdn-vpp-ha
         stream: fraser
 
@@ -132,28 +149,42 @@
               DEPLOY_SCENARIO={scenario}
             same-node: true
             block: true
-      - trigger-builds:
-          - project: 'functest-{installer}-{pod}-daily-{stream}'
-            current-parameters: false
-            predefined-parameters:
-              DEPLOY_SCENARIO={scenario}
-            same-node: true
-            block: true
-            block-thresholds:
-              build-step-failure-threshold: 'never'
-              failure-threshold: 'never'
-              unstable-threshold: 'FAILURE'
-      - trigger-builds:
-          - project: 'yardstick-{installer}-{pod}-daily-{stream}'
-            current-parameters: false
-            predefined-parameters:
-              DEPLOY_SCENARIO={scenario}
-            block: true
-            same-node: true
-            block-thresholds:
-              build-step-failure-threshold: 'never'
-              failure-threshold: 'never'
-              unstable-threshold: 'FAILURE'
+      - conditional-step:
+          condition-kind: not
+          condition-operands:
+            - condition-kind: regex-match
+              regex: 'fraser'
+              label: '{stream}'
+          steps:
+            - trigger-builds:
+                - project: 'functest-{installer}-{pod}-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO={scenario}
+                  same-node: true
+                  block: true
+                  block-thresholds:
+                    build-step-failure-threshold: 'never'
+                    failure-threshold: 'never'
+                    unstable-threshold: 'FAILURE'
+      - conditional-step:
+          condition-kind: not
+          condition-operands:
+            - condition-kind: regex-match
+              regex: 'fraser'
+              label: '{stream}'
+          steps:
+            - trigger-builds:
+                - project: 'yardstick-{installer}-{pod}-daily-{stream}'
+                  current-parameters: false
+                  predefined-parameters:
+                    DEPLOY_SCENARIO={scenario}
+                  block: true
+                  same-node: true
+                  block-thresholds:
+                    build-step-failure-threshold: 'never'
+                    failure-threshold: 'never'
+                    unstable-threshold: 'FAILURE'
       # 1.here the stream means the SUT stream, dovetail stream is defined in its own job
       # 2.testsuite proposed_tests here is for new test cases planning to add into OVP
       # 3.run proposed_tests on Monday, Wednesday and Friday against ha scenario
@@ -167,11 +198,9 @@
             - condition-kind: regex-match
               regex: '.*-ha'
               label: '{scenario}'
-            - condition-kind: day-of-week
-              day-selector: select-days
-              days:
-                SAT: true
-              use-build-time: true
+            - condition-kind: regex-match
+              regex: 'fraser'
+              label: '{stream}'
           steps:
             - trigger-builds:
                 - project: 'dovetail-{installer}-{pod}-proposed_tests-{stream}'
@@ -190,11 +219,9 @@
             - condition-kind: regex-match
               regex: '.*-ha'
               label: '{scenario}'
-            - condition-kind: day-of-week
-              day-selector: select-days
-              days:
-                SUN: true
-              use-build-time: true
+            - condition-kind: regex-match
+              regex: 'fraser'
+              label: '{stream}'
           steps:
             - trigger-builds:
                 - project: 'dovetail-{installer}-{pod}-default-{stream}'
@@ -283,7 +310,7 @@
 - trigger:
     name: 'fuel-os-nosdn-nofeature-ha-armband-baremetal-master-trigger'
     triggers:
-      - timed: '10 1 * * 2,4,6,7'
+      - timed: '0 1 * * 2,7'
 - trigger:
     name: 'fuel-os-nosdn-nofeature-noha-armband-baremetal-master-trigger'
     triggers:
@@ -291,42 +318,61 @@
 - trigger:
     name: 'fuel-os-odl-nofeature-ha-armband-baremetal-master-trigger'
     triggers:
-      - timed: '0 1 * * 2,4,6,7'
+      - timed: '0 1 * * 4,6'
 - trigger:
     name: 'fuel-os-ovn-nofeature-ha-armband-baremetal-master-trigger'
     triggers:
-      - timed: '10 1 * * 1,3,5'
+      - timed: '0 1 * * 1'
 - trigger:
     name: 'fuel-os-nosdn-ovs-ha-armband-baremetal-master-trigger'
     triggers:
-      - timed: '0 1 * * 1,3,5'
+      - timed: '0 1 * * 3,5'
 - trigger:
     name: 'fuel-os-nosdn-vpp-ha-armband-baremetal-master-trigger'
     triggers:
       - timed: ''
 # ---------------------------------------------------------------------
-# Enea Armband CI Baremetal Triggers running against fraser branch
+# Enea Armband CI Baremetal Triggers running against gambia branch
 # ---------------------------------------------------------------------
+- trigger:
+    name: 'fuel-os-nosdn-nofeature-ha-armband-baremetal-gambia-trigger'
+    triggers:
+      - timed: '10 1 * * 1,3'
+- trigger:
+    name: 'fuel-os-nosdn-nofeature-noha-armband-baremetal-gambia-trigger'
+    triggers:
+      - timed: ''
+- trigger:
+    name: 'fuel-os-odl-nofeature-ha-armband-baremetal-gambia-trigger'
+    triggers:
+      - timed: '10 1 * * 5,7'
+- trigger:
+    name: 'fuel-os-ovn-nofeature-ha-armband-baremetal-gambia-trigger'
+    triggers:
+      - timed: '10 1 * * 2'
+- trigger:
+    name: 'fuel-os-nosdn-ovs-ha-armband-baremetal-gambia-trigger'
+    triggers:
+      - timed: '10 1 * * 4,6'
+- trigger:
+    name: 'fuel-os-nosdn-vpp-ha-armband-baremetal-gambia-trigger'
+    triggers:
+      - timed: ''
+# -------------------------------------------------------------------
+# Enea Armband CI Baremetal Triggers running against fraser branch (for Dovetail)
+# -------------------------------------------------------------------
 - trigger:
     name: 'fuel-os-nosdn-nofeature-ha-armband-baremetal-fraser-trigger'
     triggers:
-      - timed: ''
-- trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-armband-baremetal-fraser-trigger'
-    triggers:
-      - timed: ''
+      - timed: '5 13 * * 6,7'
 - trigger:
     name: 'fuel-os-odl-nofeature-ha-armband-baremetal-fraser-trigger'
     triggers:
-      - timed: ''
-- trigger:
-    name: 'fuel-os-ovn-nofeature-ha-armband-baremetal-fraser-trigger'
-    triggers:
-      - timed: ''
+      - timed: '0 13 * * 6'
 - trigger:
     name: 'fuel-os-nosdn-ovs-ha-armband-baremetal-fraser-trigger'
     triggers:
-      - timed: ''
+      - timed: '0 13 * * 7'
 # --------------------------------------------------------------
 # Enea Armband CI Virtual Triggers running against master branch
 # --------------------------------------------------------------
@@ -355,25 +401,29 @@
     triggers:
       - timed: ''
 # -------------------------------------------------------------------
-# Enea Armband CI Virtual Triggers running against fraser branch
+# Enea Armband CI Virtual Triggers running against gambia branch
 # -------------------------------------------------------------------
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-ha-armband-virtual-fraser-trigger'
+    name: 'fuel-os-nosdn-nofeature-ha-armband-virtual-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-nofeature-noha-armband-virtual-fraser-trigger'
+    name: 'fuel-os-nosdn-nofeature-noha-armband-virtual-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-odl-nofeature-ha-armband-virtual-fraser-trigger'
+    name: 'fuel-os-odl-nofeature-ha-armband-virtual-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-ovn-nofeature-ha-armband-virtual-fraser-trigger'
+    name: 'fuel-os-ovn-nofeature-ha-armband-virtual-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-ovs-ha-armband-virtual-fraser-trigger'
+    name: 'fuel-os-nosdn-ovs-ha-armband-virtual-gambia-trigger'
+    triggers:
+      - timed: ''
+- trigger:
+    name: 'fuel-os-nosdn-vpp-ha-armband-virtual-gambia-trigger'
     triggers:
       - timed: ''
