@@ -208,24 +208,17 @@
                     failure-threshold: 'never'
                     unstable-threshold: 'FAILURE'
       # Armband uses Fuel's log collection project job, no need to duplicate
-      - conditional-step:
-          condition-kind: not
-          condition-operand:
-            condition-kind: regex-match
-            regex: 'danube'
-            label: '{stream}'
-          steps:
-            - trigger-builds:
-                - project: 'fuel-collect-logs-{deploy-type}-daily-{stream}'
-                  current-parameters: false
-                  predefined-parameters:
-                    DEPLOY_SCENARIO={scenario}
-                  block: true
-                  same-node: true
-                  block-thresholds:
-                    build-step-failure-threshold: 'never'
-                    failure-threshold: 'never'
-                    unstable-threshold: 'FAILURE'
+      - trigger-builds:
+          - project: 'fuel-collect-logs-{deploy-type}-daily-{stream}'
+            current-parameters: false
+            predefined-parameters:
+              DEPLOY_SCENARIO={scenario}
+            block: true
+            same-node: true
+            block-thresholds:
+              build-step-failure-threshold: 'never'
+              failure-threshold: 'never'
+              unstable-threshold: 'FAILURE'
 
 - job-template:
     name: '{installer}-deploy-{pod}-daily-{stream}'
