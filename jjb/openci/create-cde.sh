@@ -36,11 +36,7 @@ cat <<EOF > ./json_body.txt
 }
 EOF
 
-# temporary: until we can embed credentials plugin
-ACTIVEMQ_USER="openci"
-ACTIVEMQ_PASSWORD="openciP@ssw0rd"
-
-openci_publish -H 129.192.69.55 -U ${ACTIVEMQ_USER} -p ${ACTIVEMQ_PASSWORD} -n openci.prototype -B ./json_body.txt
+python openci_publish -H 129.192.69.55 -U ${ACTIVEMQ_USER} -p ${ACTIVEMQ_PASSWORD} -n openci.prototype -B ./json_body.txt
 
 echo "Constructed $PUBLISH_EVENT_TYPE"
 echo "--------------------------------------------"
