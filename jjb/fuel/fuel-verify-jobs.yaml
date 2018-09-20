@@ -5,21 +5,25 @@
     project: 'fuel'
 
     installer: 'fuel'
-    #####################################
-    # branch definitions
-    #####################################
+  #####################################
+  # branch definitions
+  #####################################
     stream:
       - master:
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
+      - gambia: &gambia
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
       - fraser:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           disabled: false
-    #####################################
-    # cluster architectures
-    #####################################
+  #####################################
+  # cluster architectures
+  #####################################
     arch_tag:
       - 'amd64':
           slave-label: 'fuel-virtual'
@@ -27,15 +31,15 @@
       - 'arm64':
           slave-label: 'armband-virtual'
           functest-suite-label: 'fuel-armband-virtual'
-    #####################################
-    # patch verification phases
-    #####################################
+  #####################################
+  # patch verification phases
+  #####################################
     phase:
       - 'docker-build'
       - 'deploy-virtual'
-    #####################################
-    # jobs
-    #####################################
+  #####################################
+  # jobs
+  #####################################
     jobs:
       - 'fuel-verify-{arch_tag}-{stream}'
       - 'fuel-verify-{phase}-{arch_tag}-{stream}'
@@ -128,7 +132,7 @@
           name: smoke-test
           condition: SUCCESSFUL
           projects:
-            # Use Functest job definition from jjb/functest/functest-daily-jobs
+          # Use Functest job definition from jjb/functest/functest-daily-jobs
             - name: 'functest-{functest-suite-label}-suite-{stream}'
               current-parameters: false
               predefined-parameters: |
@@ -236,8 +240,7 @@
 - builder:
     name: 'fuel-verify-deploy-virtual-macro'
     builders:
-      - shell:
-          !include-raw: ./fuel-deploy.sh
+      - shell: !include-raw: ./fuel-deploy.sh
 - builder:
     name: 'fuel-verify-docker-build-macro'
     builders:

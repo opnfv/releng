@@ -14,6 +14,10 @@
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
+      - gambia: &gambia
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
       - fraser:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
@@ -82,5 +86,4 @@
           name: '$BUILD_NUMBER - POD: $NODE_NAME Scenario: $DEPLOY_SCENARIO'
 
     builders:
-      - shell:
-          !include-raw-escape: ./fuel-deploy.sh
+      - shell: !include-raw-escape: ./fuel-deploy.sh
