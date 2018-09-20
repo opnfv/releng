@@ -70,8 +70,6 @@
           echo "----------------------------------"
       - shell:
           !include-raw-escape: ./create-cde.sh
-      - inject:
-          properties-file: "$WORKSPACE/event.properties"
 
 - job-template:
     name: 'openci-opnfv-{scenario}-test-daily-{stream}'
@@ -128,14 +126,3 @@
           !include-raw-escape: ./create-clme.sh
       - inject:
           properties-file: "$WORKSPACE/event.properties"
-
-    publishers:
-      - jms-messaging:
-          provider-name: openci.activemq
-          msg-type: Custom
-          msg-props: |
-            type=$type
-            origin=$origin
-            scenario=$scenario
-          msg-content:
-            $eventBody
