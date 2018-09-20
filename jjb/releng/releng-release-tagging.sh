@@ -13,6 +13,8 @@ GIT_URL=${GIT_URL:-https://gerrit.opnfv.org/gerrit}
 STREAM=${STREAM:-'nostream'}
 RELEASE_FILES=$(git diff HEAD^1 --name-only -- "releases/$STREAM")
 
+#determine if we are looking at a branch or a tag
+
 echo "--> Verifying $RELEASE_FILES."
 for release_file in $RELEASE_FILES; do
     # Verify the release file schema
