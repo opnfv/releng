@@ -5,27 +5,31 @@
     project: 'armband'
 
     installer: 'fuel'
-    #####################################
-    # branch definitions
-    #####################################
+  #####################################
+  # branch definitions
+  #####################################
     stream:
       - master:
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
+      - gambia: &gambia
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
       - fraser:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           disabled: false
-    #####################################
-    # patch verification phases
-    #####################################
+  #####################################
+  # patch verification phases
+  #####################################
     phase:
       - 'deploy-virtual':
           slave-label: 'armband-virtual'
-    #####################################
-    # jobs
-    #####################################
+  #####################################
+  # jobs
+  #####################################
     jobs:
       - 'armband-verify-{stream}'
       - 'armband-verify-{phase}-{stream}'
@@ -127,7 +131,7 @@
           name: smoke-test
           condition: SUCCESSFUL
           projects:
-            # Use Functest job definition from jjb/functest/functest-daily-jobs
+          # Use Functest job definition from jjb/functest/functest-daily-jobs
             - name: 'functest-fuel-armband-virtual-suite-{stream}'
               current-parameters: false
               predefined-parameters: |
@@ -192,5 +196,4 @@
 - builder:
     name: 'armband-verify-deploy-virtual-macro'
     builders:
-      - shell:
-          !include-raw: ../fuel/fuel-deploy.sh
+      - shell: !include-raw: ../fuel/fuel-deploy.sh
