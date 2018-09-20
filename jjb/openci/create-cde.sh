@@ -31,6 +31,7 @@ cat <<EOF > ./json_body.txt
     "buildUrl": "$BUILD_URL",
     "branch": "master",
     "origin": "$PUBLISH_EVENT_ORIGIN",
+    "scenario": "$DEPLOY_SCENARIO",
     "compositionName": "$DEPLOY_SCENARIO",
     "compositionMetadataUrl": "$SCENARIO_METADATA_LOCATION"
 }
