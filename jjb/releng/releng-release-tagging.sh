@@ -13,13 +13,6 @@ GIT_URL=${GIT_URL:-https://gerrit.opnfv.org/gerrit}
 STREAM=${STREAM:-'nostream'}
 RELEASE_FILES=$(git diff HEAD^1 --name-only -- "releases/$STREAM")
 
-echo "--> Verifying $RELEASE_FILES."
-for release_file in $RELEASE_FILES; do
-    # Verify the release file schema
-    python releases/scripts/verify_schema.py \
-    -s releases/schema.yaml \
-    -y $release_file
-
     # Verify tag for each repo exist and are attached to commits on stable-branch
     while read -r repo tag ref
     do
