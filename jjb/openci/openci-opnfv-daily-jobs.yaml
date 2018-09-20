@@ -101,17 +101,18 @@
           description: 'The confidence level the published artifact gained'
       - 'opnfv-build-defaults'
 
+    wrappers:
+      - credentials-binding:
+          - username-password-separated:
+              credential-id: openci-connect-activemq
+              username: ACTIVEMQ_USER
+              password: ACTIVEMQ_PASSWORD
+      - workspace-cleanup
+
     triggers:
       - jms-messaging:
           provider-name: openci.activemq
-          selector: CI_TYPE = 'custom'
-          checks:
-            - field: origin
-              expected-value: 'OPNFV'
-            - field: type
-              expected-value: 'CompositionDefinedEvent'
-            - field: scenario
-              expected-value: '{scenario}'
+          selector: JMSType = 'CompositionDefinedEvent' and JMSOrigin = 'OPNFV'
 
     builders:
       - shell: |
@@ -124,5 +125,3 @@
           echo "----------------------------------"
       - shell:
           !include-raw-escape: ./create-clme.sh
-      - inject:
-          properties-file: "$WORKSPACE/event.properties"
