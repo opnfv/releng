@@ -11,6 +11,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+export PS1=${PS1:-}
+
 # This script creates CompositionDefinedEvent
 
 git clone https://gitlab.openci.io/openci/prototypes.git
