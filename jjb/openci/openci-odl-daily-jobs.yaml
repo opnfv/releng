@@ -46,19 +46,7 @@
 
     builders:
       - shell:
-          !include-raw-escape: ./create-ane.sh
-      - inject:
-          properties-file: "$WORKSPACE/event.properties"
-
-    publishers:
-      - jms-messaging:
-          provider-name: openci.activemq
-          msg-type: Custom
-          msg-props: |
-            type=$type
-            origin=$origin
-          msg-content:
-            $eventBody
+          !include-raw-escape: ./create-ape.sh
 
 # This job gets triggered by a ConfidenceLevelModifiedEvent published
 # by OPNFV jobs so ODL can promote the autorelease artifact even further.
@@ -78,14 +66,7 @@
     triggers:
       - jms-messaging:
           provider-name: openci.activemq
-          selector: CI_TYPE = 'custom'
-          checks:
-            - field: origin
-              expected-value: 'OPNFV'
-            - field: type
-              expected-value: 'ConfidenceLevelModifiedEvent'
-            - field: scenario
-              expected-value: 'os-odl-nofeature'
+          selector: JMSType = 'ConfidenceLevelModifiedEvent' and JMSOrigin = 'OPNFV' and JMSScenario = 'os-odl-nofeature-ha'
 
     builders:
       - shell: |
