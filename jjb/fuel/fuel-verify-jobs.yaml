@@ -147,6 +147,7 @@
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               node-parameters: true
+              enable-condition: "def m = '$NODE_NAME' !=~ 'arm-virtual'"
               kill-phase-on: NEVER
               abort-all-job: true
 
@@ -230,11 +231,6 @@
     triggers:
       - gerrit:
           <<: *fuel_verify_virtual_amd64_trigger
-          skip-vote:
-            successful: true
-            failed: true
-            unstable: true
-            notbuilt: true
 - trigger:
     name: 'fuel-verify-baremetal-amd64-trigger'
     triggers:
