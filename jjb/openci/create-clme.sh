@@ -34,7 +34,7 @@ cat <<EOF > ./json_body.txt
     "scenario": "$DEPLOY_SCENARIO",
     "compositionName": "$DEPLOY_SCENARIO",
     "compositionMetadataUrl": "$SCENARIO_METADATA_LOCATION",
-    "confidenceLevel": "$CONFIDENCE_LEVEL",
+    "confidenceLevel": "$CONFIDENCE_LEVEL"
 }
 EOF
 
