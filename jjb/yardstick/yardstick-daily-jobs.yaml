@@ -15,11 +15,28 @@
       branch: '{stream}'
       gs-pathname: ''
       docker-tag: 'latest'
+    gambia: &gambia
+      stream: gambia
+      branch: 'stable/{stream}'
+      gs-pathname: '{stream}'
+      docker-tag: 'stable'
+    # Temporary fraser entry, until all fraser-tied PODs below migrate to gambia
     fraser: &fraser
       stream: fraser
       branch: 'stable/{stream}'
       gs-pathname: '{stream}'
-      docker-tag: 'stable'
+      # In the meantime, docker image 'stable' will carry gambia contents, and
+      # there is no implemented way to build a docker image with 'fraser' tag.
+      # Available docker image tag options, as of 2018-10-03:
+      # - 'opnfv-6.2.1', built on 2018-07-02, is rather old.
+      # - 'ovp-2.0.0', built on 2018-09-21, is a good fit despite its name: it
+      #   was built using SHA1 6c10a2d9cc3fe10e0bdd73a0985ab767b9479afc, which
+      #   is the same as used for the most recent 'stable' docker image carrying
+      #   fraser contents, built on 2018-09-13 and used so far by the fraser-
+      #   tied PODs below.
+      # The alternative would be to create a new 'opnfv-6.2.2' git tag, but that
+      # would just build another image using the same SHA1 as for 'ovp-2.0.0'.
+      docker-tag: 'ovp-2.0.0'
     # -------------------------------
     # POD, INSTALLER, AND BRANCH MAPPING
     # -------------------------------
