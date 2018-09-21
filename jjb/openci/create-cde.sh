@@ -37,11 +37,11 @@ cat <<EOF > ./json_body.txt
 }
 EOF
 
-python openci_publish -H 129.192.69.55 -U ${ACTIVEMQ_USER} -p ${ACTIVEMQ_PASSWORD} -n openci.prototype -B ./json_body.txt
-
 echo "Constructed $PUBLISH_EVENT_TYPE"
 echo "--------------------------------------------"
 cat  ./json_body.txt
 echo "--------------------------------------------"
+
+python openci_publish -H 129.192.69.55 -U ${ACTIVEMQ_USER} -p ${ACTIVEMQ_PASSWORD} -n openci.prototype -B ./json_body.txt
 
 deactivate
