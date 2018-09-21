@@ -209,7 +209,7 @@
                 exclude-no-code-change: 'false'
             - draft-published-event
             - comment-added-contains-event:
-                comment-contains-value: '(recheck|reverify)(\s|:\s*[-\w]+-noha)'
+                comment-contains-value: '(recheck|reverify)(\s|$|:\s*[-\w]+-noha)'
           projects:
             - project-compare-type: 'ANT'
               project-pattern: '{project}'
@@ -267,4 +267,4 @@
     builders:
       - shell: |
           #!/bin/bash -ex
-          sudo ./ci/build.sh 'verify' ''
+          sudo -E ./ci/build.sh 'verify' ''
