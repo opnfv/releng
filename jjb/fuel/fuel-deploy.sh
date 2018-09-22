@@ -19,24 +19,17 @@ LAB_NAME=${NODE_NAME/-*}
 # shellcheck disable=SC2153
 POD_NAME=${NODE_NAME/*-}
 
-# Fuel requires deploy script to be ran with sudo, Armband does not
-SUDO='sudo -E'
-if [ "${PROJECT}" = 'fuel' ]; then
-    # Fuel currently supports ericsson, intel, lf and zte labs
-    if [[ ! "${LAB_NAME}" =~ (arm|enea|ericsson|intel|lf|unh|zte) ]]; then
-        echo "Unsupported/unidentified lab ${LAB_NAME}. Cannot continue!"
-        exit 1
-    fi
-else
-    SUDO=
-    # Armband currently supports arm, enea, unh labs
-    if [[ ! "${LAB_NAME}" =~ (arm|enea|unh) ]]; then
-        echo "Unsupported/unidentified lab ${LAB_NAME}. Cannot continue!"
-        exit 1
-    fi
+# Fuel currently supports arm, enea, ericsson, intel, lf, unh and zte labs
+if [[ ! "${LAB_NAME}" =~ (arm|enea|ericsson|intel|lf|unh|zte) ]]; then
+    echo "Unsupported/unidentified lab ${LAB_NAME}. Cannot continue!"
+    exit 1
 fi
 
 echo "Using configuration for ${LAB_NAME}"
+
+# Certain labs do not require the deploy script to be ran with sudo
+SUDO='sudo -E'
+[[ ! "${LAB_NAME}" =~ (arm|enea|unh) ]] || SUDO=
 
 # create TMPDIR if it doesn't exist, change permissions
 mkdir -p "${TMPDIR}"
