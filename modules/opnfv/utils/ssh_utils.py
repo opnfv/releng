@@ -49,10 +49,11 @@ def get_ssh_client(hostname,
             client = paramiko.SSHClient()
         else:
             client = ProxyHopClient()
+            proxy_password = proxy.get('password', None)
             proxy_pkey_file = proxy.get('pkey_file', '/root/.ssh/id_rsa')
             client.configure_jump_host(proxy['ip'],
                                        proxy['username'],
-                                       proxy['password'],
+                                       proxy_password,
                                        proxy_pkey_file)
         if client is None:
             raise Exception('Could not connect to client')
