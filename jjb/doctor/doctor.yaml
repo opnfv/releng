@@ -9,7 +9,11 @@
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
-      - fraser: &fraser
+      - gambia: &gambia
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
+      - fraser:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           disabled: false
@@ -32,8 +36,8 @@
         arch: 'aarch64'
       - installer: 'daisy'
         arch: 'aarch64'
-      # disabling the following tests due to limitation of PoD owners
-      # these would beenabled again once the PoDs are ready
+    # disabling the following tests due to limitation of PoD owners
+    # these would beenabled again once the PoDs are ready
       - installer: 'fuel'
         arch: 'x86_64'
 
@@ -62,10 +66,10 @@
 
     builders:
       - shell: |
-         #!/bin/bash
-         # we do nothing here as the main stuff will be done
-         # in phase jobs
-         echo "Triggering phase jobs!"
+          #!/bin/bash
+          # we do nothing here as the main stuff will be done
+          # in phase jobs
+          echo "Triggering phase jobs!"
       - multijob:
           name: 'doctor-verify-sample'
           execution-type: PARALLEL
@@ -113,11 +117,11 @@
       - multijob:
           name: 'doctor-verify-sample-all'
           execution-type: PARALLEL
-          # This would be for running all test cases with sample inspector
+        # This would be for running all test cases with sample inspector
       - multijob:
           name: 'doctor-verify-congress-all'
           execution-type: PARALLEL
-          # This would be for running all test cases with congress inspector
+        # This would be for running all test cases with congress inspector
 
 - job-template:
     name: 'doctor-verify-fault_management-{installer}-{inspector}-{arch}-{stream}'
@@ -215,11 +219,10 @@
 - builder:
     name: 'doctor-verify-installer-inspector-builders-macro'
     builders:
-      # yamllint disable rule:indentation
-      - shell:
-          !include-raw:
-              - ./doctor-env-presetup.sh
-              - ../../utils/fetch_os_creds.sh
+    # yamllint disable rule:indentation
+      - shell: !include-raw:
+          - ./doctor-env-presetup.sh
+          - ../../utils/fetch_os_creds.sh
       - shell: |
           # prepare the env for test
           source $HOME/opnfv-openrc.sh
