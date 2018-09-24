@@ -4,37 +4,41 @@
     name: 'auto-ci-jobs'
     project: 'auto'
 
-    # -------------------------------
-    # BRANCH ANCHORS
-    # -------------------------------
+  # -------------------------------
+  # BRANCH ANCHORS
+  # -------------------------------
     stream:
       - master:
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
-      - fraser: &fraser
+      - gambia: &gambia
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           disabled: false
-    # -------------------------------
-    # DEPLOY TYPE ANCHORS
-    # -------------------------------
+      - fraser:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
+  # -------------------------------
+  # DEPLOY TYPE ANCHORS
+  # -------------------------------
     baremetal: &baremetal
       installer: 'fuel'
       slave-label: 'auto-baremetal'
-    # -------------------------------
-    # POD, INSTALLER, AND BRANCH MAPPING
-    # -------------------------------
-    # CI POD's
-    # -------------------------------
+  # -------------------------------
+  # POD, INSTALLER, AND BRANCH MAPPING
+  # -------------------------------
+  # CI POD's
+  # -------------------------------
     pod:
       - auto-baremetal:
           <<: *baremetal
-    # -------------------------------
-    #       scenarios
-    # -------------------------------
+  # -------------------------------
+  #       scenarios
+  # -------------------------------
     scenario:
-      # HA scenarios
+    # HA scenarios
       - 'os-nosdn-onap-ha':
           auto-trigger-name: 'fuel-{scenario}-{pod}-{stream}-trigger'
 
