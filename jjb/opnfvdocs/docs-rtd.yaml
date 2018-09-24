@@ -82,7 +82,12 @@
     builders:
       - shell: |
           if [ "$GERRIT_PROJECT" != "opnfvdocs" ]; then
-              cd docs/submodules/$GERRIT_PROJECT
+              # Temporary hacky solution to handle local builds for projects
+              # that already moved away from submodules
+              if ! cd docs/submodules/$GERRIT_PROJECT 2 > /dev/null; then
+                  rm -rf .* * 2 > /dev/null
+                  git clone ${{GIT_BASE/opnfvdocs/$GERRIT_PROJECT}} .
+              fi
               git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
           else
               git fetch origin $GERRIT_REFSPEC && git checkout FETCH_HEAD
