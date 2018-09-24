@@ -23,15 +23,17 @@ print(handler.get_deployment_info())
 
 
 print("########## FUEL ##########")
+# NOTE: If you get traces containing <paramiko.ecdsakey.ECDSAKey object [...]>
+# make sure 10.20.0.2 is not already in ~/.ssh/known_hosts with another sig
 handler = factory.Factory.get_handler('fuel',
                                       '10.20.0.2',
-                                      'root',
-                                      installer_pwd='r00tme')
+                                      'ubuntu',
+                                      pkey_file='/var/lib/opnfv/mcp.rsa')
 
 print(handler.get_deployment_info())
 
-print("List of nodes in cluster 4:")
-nodes = handler.get_nodes({'cluster': '4'})
+print("List of nodes in cluster")
+nodes = handler.get_nodes()
 for node in nodes:
     print(node)
 
