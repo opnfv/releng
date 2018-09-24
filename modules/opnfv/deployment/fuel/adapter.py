@@ -22,8 +22,8 @@ class FuelAdapter(manager.DeploymentHandler):
         super(FuelAdapter, self).__init__(installer='fuel',
                                           installer_ip=installer_ip,
                                           installer_user=installer_user,
-                                          installer_pwd=installer_pwd,
-                                          pkey_file=None)
+                                          installer_pwd=None,
+                                          pkey_file=pkey_file)
 
     def _get_clusters(self):
         environments = []

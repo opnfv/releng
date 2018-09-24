@@ -25,8 +25,8 @@ print(handler.get_deployment_info())
 print("########## FUEL ##########")
 handler = factory.Factory.get_handler('fuel',
                                       '10.20.0.2',
-                                      'root',
-                                      installer_pwd='r00tme')
+                                      'ubuntu',
+                                      pkey_file='/var/lib/opnfv/mcp.rsa')
 
 print(handler.get_deployment_info())
 
