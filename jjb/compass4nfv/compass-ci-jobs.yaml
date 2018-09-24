@@ -21,6 +21,13 @@
       gs-pathname: '/{stream}'
       ppa-pathname: '/{stream}'
       openstack-version: pike
+    gambia: &gambia
+      stream: gambia
+      branch: 'stable/{stream}'
+      disabled: false
+      gs-pathname: '/{stream}'
+      ppa-pathname: '/{stream}'
+      openstack-version: pike
     danube: &danube
       stream: danube
       branch: 'stable/{stream}'
@@ -45,11 +52,11 @@
       - baremetal:
           slave-label: compass-baremetal-branch
           os-version: 'xenial'
-          <<: *fraser
+          <<: *gambia
       - virtual:
           slave-label: compass-virtual-branch
           os-version: 'xenial'
-          <<: *fraser
+          <<: *gambia
       # -------------------------------
       #        master
       # -------------------------------
@@ -389,7 +396,7 @@
                 !include-raw-escape: ./compass-deploy.sh
       - conditional-step:
           condition-kind: regex-match
-          regex: (danube|fraser)
+          regex: (danube|fraser|gambia)
           label: '{stream}'
           steps:
             - shell:
@@ -767,98 +774,98 @@
       - timed: ''
 
 # -------------------
-# ha-baremetal-fraser
+# ha-baremetal-gambia
 # -------------------
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-baremetal-fraser-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-baremetal-gambia-trigger'
     triggers:
       - timed: '0 1 1-29/2 * *'
 - trigger:
-    name: 'compass-os-nosdn-openo-ha-baremetal-fraser-trigger'
+    name: 'compass-os-nosdn-openo-ha-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-baremetal-fraser-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-baremetal-gambia-trigger'
     triggers:
       - timed: '0 21 2-30/2 * *'
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-baremetal-fraser-trigger'
+    name: 'compass-os-onos-nofeature-ha-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-baremetal-fraser-trigger'
+    name: 'compass-os-ocl-nofeature-ha-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'compass-os-onos-sfc-ha-baremetal-fraser-trigger'
+    name: 'compass-os-onos-sfc-ha-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'compass-os-odl_l2-moon-ha-baremetal-fraser-trigger'
+    name: 'compass-os-odl_l2-moon-ha-baremetal-gambia-trigger'
     triggers:
       - timed: ''  # '0 5 1-29/2 * *'
 - trigger:
-    name: 'compass-os-nosdn-kvm-ha-baremetal-fraser-trigger'
+    name: 'compass-os-nosdn-kvm-ha-baremetal-gambia-trigger'
     triggers:
       - timed: '0 13 2-30/2 * *'
 - trigger:
-    name: 'compass-os-nosdn-ovs_dpdk-ha-baremetal-fraser-trigger'
+    name: 'compass-os-nosdn-ovs_dpdk-ha-baremetal-gambia-trigger'
     triggers:
       - timed: '0 9 1-29/2 * *'
 - trigger:
-    name: 'compass-k8-nosdn-nofeature-ha-baremetal-fraser-trigger'
+    name: 'compass-k8-nosdn-nofeature-ha-baremetal-gambia-trigger'
     triggers:
       - timed: '0 5 1-29/2 * *'
 - trigger:
-    name: 'compass-os-odl-sfc-ha-baremetal-fraser-trigger'
+    name: 'compass-os-odl-sfc-ha-baremetal-gambia-trigger'
     triggers:
       - timed: '0 17 2-30/2 * *'
 - trigger:
-    name: 'compass-os-nosdn-bar-ha-baremetal-fraser-trigger'
+    name: 'compass-os-nosdn-bar-ha-baremetal-gambia-trigger'
     triggers:
       - timed: '0 21 1-29/2 * *'
 - trigger:
-    name: 'compass-k8-nosdn-stor4nfv-ha-baremetal-fraser-trigger'
+    name: 'compass-k8-nosdn-stor4nfv-ha-baremetal-gambia-trigger'
     triggers:
       - timed: '0 7 2-30/2 * *'
 - trigger:
-    name: 'compass-os-nosdn-stor4nfv-ha-baremetal-fraser-trigger'
+    name: 'compass-os-nosdn-stor4nfv-ha-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 
 # ---------------------
-# noha-baremetal-fraser
+# noha-baremetal-gambia
 # ---------------------
 - trigger:
-    name: 'compass-os-nosdn-kvm-noha-baremetal-fraser-trigger'
+    name: 'compass-os-nosdn-kvm-noha-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'compass-os-nosdn-nofeature-noha-baremetal-fraser-trigger'
+    name: 'compass-os-nosdn-nofeature-noha-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-noha-baremetal-fraser-trigger'
+    name: 'compass-os-odl_l3-nofeature-noha-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'compass-os-odl_l2-moon-noha-baremetal-fraser-trigger'
+    name: 'compass-os-odl_l2-moon-noha-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'compass-os-odl-sfc-noha-baremetal-fraser-trigger'
+    name: 'compass-os-odl-sfc-noha-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'compass-os-nosdn-ovs_dpdk-noha-baremetal-fraser-trigger'
+    name: 'compass-os-nosdn-ovs_dpdk-noha-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'compass-os-nosdn-bar-noha-baremetal-fraser-trigger'
+    name: 'compass-os-nosdn-bar-noha-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'compass-k8-nosdn-stor4nfv-noha-baremetal-fraser-trigger'
+    name: 'compass-k8-nosdn-stor4nfv-noha-baremetal-gambia-trigger'
     triggers:
       - timed: ''
 
@@ -959,97 +966,97 @@
       - timed: '0 10 2-30/2 * *'
 
 # -----------------
-# ha-virtual-fraser
+# ha-virtual-gambia
 # -----------------
 - trigger:
-    name: 'compass-os-nosdn-nofeature-ha-virtual-fraser-trigger'
+    name: 'compass-os-nosdn-nofeature-ha-virtual-gambia-trigger'
     triggers:
       - timed: '0 23 1-29/2 * *'
 - trigger:
-    name: 'compass-os-nosdn-openo-ha-virtual-fraser-trigger'
+    name: 'compass-os-nosdn-openo-ha-virtual-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-ha-virtual-fraser-trigger'
+    name: 'compass-os-odl_l3-nofeature-ha-virtual-gambia-trigger'
     triggers:
       - timed: '0 22 2-30/2 * *'
 - trigger:
-    name: 'compass-os-onos-nofeature-ha-virtual-fraser-trigger'
+    name: 'compass-os-onos-nofeature-ha-virtual-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'compass-os-ocl-nofeature-ha-virtual-fraser-trigger'
+    name: 'compass-os-ocl-nofeature-ha-virtual-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'compass-os-onos-sfc-ha-virtual-fraser-trigger'
+    name: 'compass-os-onos-sfc-ha-virtual-gambia-trigger'
     triggers:
       - timed: ''
 - trigger:
-    name: 'compass-os-odl_l2-moon-ha-virtual-fraser-trigger'
+    name: 'compass-os-odl_l2-moon-ha-virtual-gambia-trigger'
     triggers:
       - timed: '0 20 1-29/2 * *'
 - trigger:
-    name: 'compass-os-nosdn-kvm-ha-virtual-fraser-trigger'
+    name: 'compass-os-nosdn-kvm-ha-virtual-gambia-trigger'
     triggers:
       - timed: '0 16 2-30/2 * *'
 - trigger:
-    name: 'compass-os-nosdn-ovs_dpdk-ha-virtual-fraser-trigger'
+    name: 'compass-os-nosdn-ovs_dpdk-ha-virtual-gambia-trigger'
     triggers:
       - timed: '0 14 1-29/2 * *'
 - trigger:
-    name: 'compass-os-odl-sfc-ha-virtual-fraser-trigger'
+    name: 'compass-os-odl-sfc-ha-virtual-gambia-trigger'
     triggers:
       - timed: '0 18 2-30/2 * *'
 - trigger:
-    name: 'compass-k8-nosdn-nofeature-ha-virtual-fraser-trigger'
+    name: 'compass-k8-nosdn-nofeature-ha-virtual-gambia-trigger'
     triggers:
       - timed: '5 1 2-30/2 * *'
 - trigger:
-    name: 'compass-os-nosdn-bar-ha-virtual-fraser-trigger'
+    name: 'compass-os-nosdn-bar-ha-virtual-gambia-trigger'
     triggers:
       - timed: '0 19 1-29/2 * *'
 - trigger:
-    name: 'compass-k8-nosdn-stor4nfv-ha-virtual-fraser-trigger'
+    name: 'compass-k8-nosdn-stor4nfv-ha-virtual-gambia-trigger'
     triggers:
       - timed: '0 15 1-29/2 * *'
 - trigger:
-    name: 'compass-os-nosdn-stor4nfv-ha-virtual-fraser-trigger'
+    name: 'compass-os-nosdn-stor4nfv-ha-virtual-gambia-trigger'
     triggers:
       - timed: ''
 
 # -------------------
-# noha-virtual-fraser
+# noha-virtual-gambia
 # -------------------
 - trigger:
-    name: 'compass-os-nosdn-kvm-noha-virtual-fraser-trigger'
+    name: 'compass-os-nosdn-kvm-noha-virtual-gambia-trigger'
     triggers:
       - timed: '0 15 1-29/2 * *'
 - trigger:
-    name: 'compass-os-nosdn-nofeature-noha-virtual-fraser-trigger'
+    name: 'compass-os-nosdn-nofeature-noha-virtual-gambia-trigger'
     triggers:
       - timed: '0 17 2-30/2 * *'
 - trigger:
-    name: 'compass-os-odl_l3-nofeature-noha-virtual-fraser-trigger'
+    name: 'compass-os-odl_l3-nofeature-noha-virtual-gambia-trigger'
     triggers:
       - timed: '0 23 1-29/2 * *'
 - trigger:
-    name: 'compass-os-odl_l2-moon-noha-virtual-fraser-trigger'
+    name: 'compass-os-odl_l2-moon-noha-virtual-gambia-trigger'
     triggers:
       - timed: '0 21 2-30/2 * *'
 - trigger:
-    name: 'compass-os-odl-sfc-noha-virtual-fraser-trigger'
+    name: 'compass-os-odl-sfc-noha-virtual-gambia-trigger'
     triggers:
       - timed: '0 19 1-29/2 * *'
 - trigger:
-    name: 'compass-os-nosdn-ovs_dpdk-noha-virtual-fraser-trigger'
+    name: 'compass-os-nosdn-ovs_dpdk-noha-virtual-gambia-trigger'
     triggers:
       - timed: '0 12 2-30/2 * *'
 - trigger:
-    name: 'compass-os-nosdn-bar-noha-virtual-fraser-trigger'
+    name: 'compass-os-nosdn-bar-noha-virtual-gambia-trigger'
     triggers:
       - timed: '0 12 1-29/2 * *'
 - trigger:
-    name: 'compass-k8-nosdn-stor4nfv-noha-virtual-fraser-trigger'
+    name: 'compass-k8-nosdn-stor4nfv-noha-virtual-gambia-trigger'
     triggers:
       - timed: '0 13 2-30/2 * *'
