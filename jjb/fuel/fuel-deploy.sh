@@ -27,10 +27,6 @@ fi
 
 echo "Using configuration for ${LAB_NAME}"
 
-# Certain labs do not require the deploy script to be ran with sudo
-SUDO='sudo -E'
-[[ ! "${LAB_NAME}" =~ (arm|enea|unh) ]] || SUDO=
-
 # create TMPDIR if it doesn't exist, change permissions
 mkdir -p "${TMPDIR}"
 sudo chmod a+x "${HOME}" "${TMPDIR}"
@@ -44,7 +40,7 @@ FUEL_LOG_FILENAME="${JOB_NAME}_${BUILD_NUMBER}.log.tar.gz"
 [[ ! "${JOB_NAME}" =~ verify-deploy-virtual-arm64 ]] || EXTRA_ARGS='-e'
 
 # construct the command
-DEPLOY_COMMAND="${SUDO} ${WORKSPACE}/ci/deploy.sh \
+DEPLOY_COMMAND="${WORKSPACE}/ci/deploy.sh \
     -l ${LAB_NAME} -p ${POD_NAME} -s ${DEPLOY_SCENARIO} \
     -S ${TMPDIR} ${EXTRA_ARGS:-} \
     -L ${WORKSPACE}/${FUEL_LOG_FILENAME}"
