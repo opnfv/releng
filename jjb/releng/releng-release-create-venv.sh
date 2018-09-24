@@ -10,7 +10,7 @@
 set -e -o pipefail
 echo "---> Create virtualenv"
 
-sudo pip install virtualenv
+sudo -H pip install virtualenv
 virtualenv $WORKSPACE/venv
 # shellcheck source=$WORKSPACE/venv/bin/activate disable=SC1091
 source $WORKSPACE/venv/bin/activate
