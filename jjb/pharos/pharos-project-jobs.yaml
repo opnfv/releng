@@ -1,0 +1,27 @@
+---
+########################
+# Job configuration for pharos
+########################
+- project:
+    name: pharos-project-jobs
+
+    project: 'pharos'
+
+    stream:
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          disabled: false
+      - fraser:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
+
+    project-name: '{project}'
+    project-pattern: '{project}'
+    submodule-recursive: false
+    rtd-build-url: https://readthedocs.org/api/v2/webhook/opnfv-pharos/FIXME/
+    rtd-token: FIXME
+
+    jobs:
+      - '{project-name}-rtd-jobs'
