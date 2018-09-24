@@ -15,6 +15,10 @@
           gs-pathname: ''
           ppa-pathname: '/{stream}'
           disabled: false
+      - gambia: &gambia
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
       - danube:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
@@ -66,10 +70,8 @@
       - timed: 'H 8 * * *'
 
     builders:
-      - shell:
-          !include-raw-escape: ./compass-build.sh
-      - shell:
-          !include-raw-escape: ./compass-upload-artifact.sh
+      - shell: !include-raw-escape: ./compass-build.sh
+      - shell: !include-raw-escape: ./compass-upload-artifact.sh
       - 'clean-workspace'
 
 - job-template:
@@ -105,8 +107,7 @@
       - git-scm
 
     builders:
-      - shell:
-          !include-raw-escape: ./compass-makeppa.sh
+      - shell: !include-raw-escape: ./compass-makeppa.sh
 
 
 ########################
@@ -118,11 +119,13 @@
       - string:
           name: BUILD_DIRECTORY
           default: $WORKSPACE/build_output
-          description: "Directory where the build artifact will be located upon the completion of the build."
+          description: "Directory where the build artifact will be located upon\
+            \ the completion of the build."
       - string:
           name: CACHE_DIRECTORY
           default: "$HOME/opnfv/cache/$PROJECT{gs-pathname}"
-          description: "Directory where the cache to be used during the build is located."
+          description: "Directory where the cache to be used during the build is\
+            \ located."
       - string:
           name: GS_URL
           default: '$GS_BASE{gs-pathname}'

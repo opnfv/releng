@@ -5,9 +5,9 @@
     project: 'compass4nfv'
 
     installer: 'compass'
-    #####################################
-    # branch definitions
-    #####################################
+  #####################################
+  # branch definitions
+  #####################################
     stream:
       - master:
           branch: '{stream}'
@@ -16,6 +16,10 @@
           disabled: false
           openstack-version: 'pike'
           branch-type: 'master'
+      - gambia: &gambia
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
       - fraser:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
@@ -33,15 +37,15 @@
           disabled: true
           os-version: 'centos7'
           openstack-os-version: ''
-    #####################################
-    # patch verification phases
-    #####################################
+  #####################################
+  # patch verification phases
+  #####################################
     phase:
       - 'basic'
       - 'deploy-virtual'
-    #####################################
-    # jobs
-    #####################################
+  #####################################
+  # jobs
+  #####################################
     jobs:
       - 'compass-verify-{distro}-{stream}'
       - 'compass-verify-k8-{distro}-{stream}'
@@ -310,10 +314,8 @@
 - builder:
     name: 'compass4nfv-verify-deploy-virtual-macro'
     builders:
-      - shell:
-          !include-raw: ./compass-build.sh
-      - shell:
-          !include-raw: ./compass-deploy.sh
+      - shell: !include-raw: ./compass-build.sh
+      - shell: !include-raw: ./compass-deploy.sh
 #####################################
 # parameter macros
 #####################################
@@ -323,11 +325,13 @@
       - string:
           name: BUILD_DIRECTORY
           default: $WORKSPACE/build_output
-          description: "Directory where the build artifact will be located upon the completion of the build."
+          description: "Directory where the build artifact will be located upon\
+            \ the completion of the build."
       - string:
           name: CACHE_DIRECTORY
           default: "$HOME/opnfv/cache/$PROJECT{gs-pathname}"
-          description: "Directory where the cache to be used during the build is located."
+          description: "Directory where the cache to be used during the build is\
+            \ located."
       - string:
           name: GS_URL
           default: '$GS_BASE{gs-pathname}'
