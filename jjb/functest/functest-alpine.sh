@@ -26,14 +26,10 @@ check_os_deployment() {
 
 }
 
-
 run_tiers() {
     tiers=$1
     cmd_opt="run_tests -r -t all"
     [[ $BUILD_TAG =~ "suite" ]] && cmd_opt="run_tests -t all"
-    ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
-    echo 0 > ${ret_val_file}
-
     for tier in ${tiers[@]}; do
         FUNCTEST_IMAGE=${REPO}/functest-${tier}:${DOCKER_TAG}
         echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
@@ -55,8 +51,6 @@ run_tiers() {
 run_test() {
     test_name=$1
     cmd_opt="run_tests -t ${test_name}"
-    ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
-    echo 0 > ${ret_val_file}
     # Determine which Functest image should be used for the test case
     case ${test_name} in
         connection_check|tenantnetwork1|tenantnetwork2|vmready1|vmready2|singlevm1|singlevm2|vping_ssh|vping_userdata|cinder_test|odl|api_check|snaps_health_check)
@@ -157,6 +151,9 @@ fi
 
 
 volumes="${images_vol} ${results_vol} ${sshkey_vol} ${userconfig_vol} ${rc_file_vol} ${cacert_file_vol}"
+
+ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
+echo 0 > ${ret_val_file}
 
 set +e
 
