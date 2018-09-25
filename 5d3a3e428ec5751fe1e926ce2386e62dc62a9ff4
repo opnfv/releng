@@ -1,0 +1,61 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a682502_d97917fe",
+        "filename": "jjb/yardstick/yardstick-daily-jobs.yaml",
+        "patchSetId": 3
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 7067
+      },
+      "writtenOn": "2018-09-25T13:02:36Z",
+      "side": 1,
+      "message": "Assuming this is meant to pull the gambia image from docker hub, we will first have to:\n- create and push gambia image to docker hub, under reused \u0027stable\u0027 tag\n- create and push fraser image to docker hub, under new \u0027fraser\u0027 tag (for L27)\n\nThis will make the \u0027stable\u0027 tag suddenly jump from previous-stable (i.e. fraser contents) to new-stable (i.e. gambia contents \u003d master/latest contents at cut-off date). Not so \"stable\" ;-)\n\nQuestion: shouldn\u0027t we get rid of \u0027stable\u0027 tag on docker hub, and instead use explicit \u0027gambia\u0027 tag here?\nThat would make L22 already consistent with L27 and future-proof for gambia when hunter will be prepared.\n\nIn terms of users of the \u0027stable\u0027 tag, I see this YAML file. There might be other users that I\u0027m not aware of, but I didn\u0027t dig further for them.\nRegarding Yarstick/NSB, in ansible/nsb_setup.yml:\n- Yarstick master defaults to \u0027opnfv/yardstick:latest\u0027 tag [1]\n- Yarstick stable/fraser uses hard-coded \u0027opnfv/yardstick:opnfv-6.2.1\u0027 tag [2]\n\n[1] https://gerrit.opnfv.org/gerrit/gitweb?p\u003dyardstick.git;a\u003dblob;f\u003dansible/nsb_setup.yml;h\u003dfcde1d1b233254336e8575003954974300325019;hb\u003drefs/heads/master#l40\n[2] https://gerrit.opnfv.org/gerrit/gitweb?p\u003dyardstick.git;a\u003dblob;f\u003dansible/nsb_setup.yml;h\u003dd1ebfa3db1cd098e5b101ec80f626afae8d7403f;hb\u003drefs/heads/stable/fraser#l40",
+      "revId": "5d3a3e428ec5751fe1e926ce2386e62dc62a9ff4",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a682502_794603c1",
+        "filename": "jjb/yardstick/yardstick-project-jobs.yaml",
+        "patchSetId": 3
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 7067
+      },
+      "writtenOn": "2018-09-25T13:02:36Z",
+      "side": 1,
+      "message": "This anchor does not seem to be used by any alias in this file, so we should be safe not creating it.",
+      "range": {
+        "startLine": 20,
+        "startChar": 16,
+        "endLine": 20,
+        "endChar": 23
+      },
+      "revId": "5d3a3e428ec5751fe1e926ce2386e62dc62a9ff4",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a682502_d912b7b3",
+        "filename": "jjb/yardstick/yardstick-project-jobs.yaml",
+        "patchSetId": 3
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 7067
+      },
+      "writtenOn": "2018-09-25T13:02:36Z",
+      "side": 1,
+      "message": "Similarly, the fraser anchor was not used and just got deleted.",
+      "revId": "5d3a3e428ec5751fe1e926ce2386e62dc62a9ff4",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    }
+  ]
+}
