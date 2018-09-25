@@ -23,6 +23,10 @@
       stream: fraser
       branch: 'stable/{stream}'
       disabled: false
+    pharos-tools-receivers: &pharos_tools_receivers
+      receivers: >
+          pberberian@iol.unh.edu
+          sbergeron@iol.unh.edu
     storperf-receivers: &storperf-receivers
       receivers: >
           mark.beierl@emc.com
@@ -140,6 +144,21 @@
           project: 'nfvbench'
           <<: *master
           <<: *other-receivers
+      - 'pharos-tools-laas-dashboard':
+          project: 'pharos-tools'
+          dockerdir: 'dashboard/web'
+          <<: *master
+          <<: *pharos_tools_receivers
+      - 'pharos-tools-laas-mq':
+          project: 'pharos-tools'
+          dockerdir: 'dashboard/rabbitmq'
+          <<: *master
+          <<: *pharos_tools_receivers
+      - 'pharos-tools-laas-celery':
+          project: 'pharos-tools'
+          dockerdir: 'dashboard/worker'
+          <<: *master
+          <<: *pharos_tools_receivers
       - 'qtip':
           project: 'qtip'
           dockerdir: '.'
