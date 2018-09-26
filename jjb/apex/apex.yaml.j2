@@ -30,6 +30,16 @@
           scenario_stream: 'master'
           disable_daily: false
           disable_promote: false
+      - gambia: &gambia
+          branch: 'stable/gambia'
+          gs-pathname: '/gambia'
+          build-slave: 'apex-build-master'
+          virtual-slave: 'apex-virtual-master'
+          baremetal-slave: 'apex-baremetal-master'
+          verify-scenario: 'os-nosdn-nofeature-ha'
+          scenario_stream: 'gambia'
+          disable_daily: false
+          disable_promote: true
       - fraser: &fraser
           branch: 'stable/fraser'
           gs-pathname: '/fraser'
@@ -1174,6 +1184,11 @@
     name: 'apex-master'
     triggers:
       - timed: '0 0 1-31/2 * *'
+
+- trigger:
+    name: 'apex-gambia'
+    triggers:
+      - timed: '0 0 2-30/2 * *'
 
 - trigger:
     name: 'apex-fraser'

@@ -30,6 +30,16 @@
           scenario_stream: 'master'
           disable_daily: false
           disable_promote: false
+      - gambia: &gambia
+          branch: 'stable/gambia'
+          gs-pathname: '/gambia'
+          build-slave: 'apex-build-master'
+          virtual-slave: 'apex-virtual-master'
+          baremetal-slave: 'apex-baremetal-master'
+          verify-scenario: 'os-nosdn-nofeature-ha'
+          scenario_stream: 'gambia'
+          disable_daily: false
+          disable_promote: true
       - fraser: &fraser
           branch: 'stable/fraser'
           gs-pathname: '/fraser'
@@ -67,6 +77,10 @@
           <<: *fraser
       - 'os-odl-bgpvpn-ha':
           <<: *fraser
+      - 'os-nosdn-nofeature-ha':
+          <<: *gambia
+      - 'os-odl-bgpvpn-ha':
+          <<: *gambia
       - 'os-nosdn-nofeature-noha':
           <<: *danube
       - 'os-nosdn-nofeature-ha':
@@ -1274,6 +1288,31 @@
               abort-all-job: true
               git-revision: false
 
+# gambia Builder
+- builder:
+    name: apex-builder-gambia
+    builders:
+      - multijob:
+          name: Baremetal Deploy and Test Phase
+          condition: SUCCESSFUL
+          projects:
+            - name: 'apex-os-nosdn-nofeature-ha-baremetal-gambia'
+              node-parameters: false
+              current-parameters: false
+              predefined-parameters: |
+                OPNFV_CLEAN=yes
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
+            - name: 'apex-os-odl-bgpvpn-ha-baremetal-gambia'
+              node-parameters: false
+              current-parameters: false
+              predefined-parameters: |
+                OPNFV_CLEAN=yes
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
+
 # danube Builder
 - builder:
     name: apex-builder-danube
@@ -1843,6 +1882,11 @@
     name: 'apex-master'
     triggers:
       - timed: '0 0 1-31/2 * *'
+
+- trigger:
+    name: 'apex-gambia'
+    triggers:
+      - timed: '0 0 2-30/2 * *'
 
 - trigger:
     name: 'apex-fraser'
