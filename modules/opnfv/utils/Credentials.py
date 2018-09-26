@@ -7,9 +7,9 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-# Usage example:
+# Usage example (note: Fuel actually uses key-based auth, not user/pass):
 #   from opnfv.utils.Credentials import Credentials as credentials
-#   credentials("fuel", "10.20.0.2", "root", "r00tme").fetch('./openrc')
+#   credentials("fuel", "10.20.0.2", "user", "password").fetch('./openrc')
 #
 
 import os
@@ -74,12 +74,7 @@ class Credentials(object):
         pass
 
     def __fetch_creds_fuel(self, target_path):
-        creds_file = '/root/openrc'
-        try:
-            self.handler.get_file_from_controller(creds_file, target_path)
-        except Exception as e:
-            self.logger.error(
-                "Cannot get %s from controller. %e" % (creds_file, e))
+        # TODO
         pass
 
     def __fetch_creds_joid(self, target_path):

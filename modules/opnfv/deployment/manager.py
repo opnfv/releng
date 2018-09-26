@@ -241,13 +241,13 @@ class Node(object):
         Returns the ovs version installed
         '''
         if self.is_active():
-            cmd = "ovs-vsctl --version|head -1| sed 's/^.*) //'"
-            return self.run_cmd(cmd)
+            cmd = "ovs-vsctl --version 2>/dev/null|head -1| sed 's/^.*) //'"
+            return self.run_cmd(cmd) or None
         return None
 
     def get_system_info(self):
         '''
-        Returns the ovs version installed
+        Returns system information
         '''
         cmd = 'grep MemTotal /proc/meminfo'
         memory = self.run_cmd(cmd).partition('MemTotal:')[-1].strip().encode()
