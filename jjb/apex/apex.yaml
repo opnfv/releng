@@ -17,8 +17,8 @@
       - 'apex-fetch-snap-info'
       - 'apex-flex-daily-os-nosdn-nofeature-ha-{stream}'
       - 'apex-dovetail-daily-os-nosdn-nofeature-ha-baremetal-danube'
-    # stream:    branch with - in place of / (eg. stable-arno)
-    # branch:    branch (eg. stable/arno)
+  # stream:    branch with - in place of / (eg. stable-arno)
+  # branch:    branch (eg. stable/arno)
     stream:
       - master: &master
           branch: 'master'
@@ -30,6 +30,10 @@
           scenario_stream: 'master'
           disable_daily: false
           disable_promote: false
+      - gambia: &gambia
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
       - fraser: &fraser
           branch: 'stable/fraser'
           gs-pathname: '/fraser'
@@ -231,7 +235,7 @@
           branch: '{branch}'
       - apex-parameter:
           gs-pathname: '{gs-pathname}'
-    # yamllint enable rule:line-length
+  # yamllint enable rule:line-length
     properties:
       - logrotate-default
       - throttle:
@@ -245,7 +249,7 @@
 - job-template:
     name: 'apex-runner-cperf-{stream}'
 
-    # runner cperf job
+  # runner cperf job
     project-type: 'multijob'
     node: 'intel-pod2'
 
@@ -302,8 +306,7 @@
             - name: 'cperf-apex-intel-pod2-daily-master'
               node-parameters: true
               current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO={verify-scenario}
+              predefined-parameters: DEPLOY_SCENARIO={verify-scenario}
               kill-phase-on: NEVER
               abort-all-job: false
               git-revision: false
@@ -335,13 +338,14 @@
           name: DEPLOY_SCENARIO
           default: '{verify-scenario}'
           description: "Scenario to deploy with."
-      # yamllint disable rule:line-length
+    # yamllint disable rule:line-length
       - string:
           name: OPNFV_CLEAN
           default: 'no'
-          description: "Use yes in lower case to invoke clean. Indicates if the deploy environment should be cleaned before deployment"
+          description: "Use yes in lower case to invoke clean. Indicates if the\
+            \ deploy environment should be cleaned before deployment"
 
-    # yamllint enable rule:line-length
+  # yamllint enable rule:line-length
     properties:
       - logrotate-default
       - build-blocker:
@@ -571,8 +575,7 @@
             - name: 'apex-testsuite-{scenario}-baremetal-{scenario_stream}'
               node-parameters: true
               current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+              predefined-parameters: DEPLOY_SCENARIO=$DEPLOY_SCENARIO
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
@@ -590,8 +593,7 @@
               git-revision: false
     publishers:
       - groovy-postbuild:
-          script:
-            !include-raw-escape: ./update-build-result.groovy
+          script: !include-raw-escape: ./update-build-result.groovy
 
 # Baremetal test job
 - job-template:
@@ -639,8 +641,7 @@
             - name: 'functest-apex-baremetal-daily-{scenario_stream}'
               node-parameters: true
               current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+              predefined-parameters: DEPLOY_SCENARIO=$DEPLOY_SCENARIO
               kill-phase-on: NEVER
               abort-all-job: false
               git-revision: false
@@ -651,8 +652,7 @@
             - name: 'yardstick-apex-baremetal-daily-{scenario_stream}'
               node-parameters: true
               current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+              predefined-parameters: DEPLOY_SCENARIO=$DEPLOY_SCENARIO
               kill-phase-on: NEVER
               abort-all-job: false
               git-revision: false
@@ -663,8 +663,7 @@
             - name: 'dovetail-apex-baremetal-default-mandatory-{scenario_stream}'
               node-parameters: true
               current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+              predefined-parameters: DEPLOY_SCENARIO=$DEPLOY_SCENARIO
               kill-phase-on: NEVER
               enable-condition: "def m = '$DEPLOY_SCENARIO' ==~ /os-(nosdn-nofeature|odl-bgpvpn)-ha/"
               abort-all-job: false
@@ -676,8 +675,7 @@
             - name: 'dovetail-apex-baremetal-default-optional-{scenario_stream}'
               node-parameters: true
               current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+              predefined-parameters: DEPLOY_SCENARIO=$DEPLOY_SCENARIO
               kill-phase-on: NEVER
               enable-condition: "def m = '$DEPLOY_SCENARIO' ==~ /os-(nosdn-nofeature|odl-bgpvpn)-ha/"
               abort-all-job: false
@@ -689,8 +687,7 @@
             - name: 'storperf-apex-baremetal-daily-{scenario_stream}'
               node-parameters: true
               current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+              predefined-parameters: DEPLOY_SCENARIO=$DEPLOY_SCENARIO
               enable-condition: "def m = '$DEPLOY_SCENARIO' ==~ /os-nosdn-nofeature-ha/"
               kill-phase-on: NEVER
               abort-all-job: false
@@ -708,11 +705,11 @@
 - job-template:
     name: 'apex-daily-{stream}'
 
-    # Job template for daily build
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
+  # Job template for daily build
+  #
+  # Required Variables:
+  #     stream:    branch with - in place of / (eg. stable)
+  #     branch:    branch (eg. stable)
     project-type: 'multijob'
 
     disabled: '{obj:disable_daily}'
@@ -784,8 +781,7 @@
       - '{project}-defaults'
 
     builders:
-      - shell:
-          !include-raw-escape: ./apex-fetch-snap-info.sh
+      - shell: !include-raw-escape: ./apex-fetch-snap-info.sh
 
 # snapshot create
 - job-template:
@@ -797,8 +793,7 @@
       - '{project}-defaults'
 
     builders:
-      - shell:
-          !include-raw-escape: ./apex-snapshot-create.sh
+      - shell: !include-raw-escape: ./apex-snapshot-create.sh
 
 # snapshot upload
 - job-template:
@@ -818,11 +813,11 @@
 - job-template:
     name: 'apex-csit-promote-daily-{stream}-os-{os_version}-{topology}'
 
-    # Job template for promoting CSIT Snapshots
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
+  # Job template for promoting CSIT Snapshots
+  #
+  # Required Variables:
+  #     stream:    branch with - in place of / (eg. stable)
+  #     branch:    branch (eg. stable)
     node: '{virtual-slave}'
     project-type: 'multijob'
     disabled: '{disable_promote}'
@@ -966,11 +961,11 @@
 - job-template:
     name: 'apex-fdio-promote-daily-{stream}'
 
-    # Job template for promoting CSIT Snapshots
-    #
-    # Required Variables:
-    #     stream:    branch with - in place of / (eg. stable)
-    #     branch:    branch (eg. stable)
+  # Job template for promoting CSIT Snapshots
+  #
+  # Required Variables:
+  #     stream:    branch with - in place of / (eg. stable)
+  #     branch:    branch (eg. stable)
     node: '{virtual-slave}'
     project-type: 'multijob'
     disabled: false
@@ -1131,8 +1126,7 @@
             - name: 'yardstick-apex-baremetal-daily-{stream}'
               node-parameters: true
               current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+              predefined-parameters: DEPLOY_SCENARIO=$DEPLOY_SCENARIO
               kill-phase-on: NEVER
               abort-all-job: false
               git-revision: false
@@ -1171,7 +1165,7 @@
             - 'apex-run.*'
 
     triggers:
-      - timed: ''  # '0 1 * * *'
+      - timed: '' # '0 1 * * *'
 
     builders:
       - description-setter:
@@ -1198,8 +1192,7 @@
             - name: 'dovetail-apex-baremetal-proposed_tests-danube'
               node-parameters: true
               current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+              predefined-parameters: DEPLOY_SCENARIO=$DEPLOY_SCENARIO
               kill-phase-on: NEVER
               abort-all-job: false
               git-revision: false
@@ -1213,7 +1206,8 @@
       - string:
           name: ARTIFACT_NAME
           default: 'latest'
-          description: "RPM Artifact name that will be appended to GS_URL to deploy a specific artifact"
+          description: "RPM Artifact name that will be appended to GS_URL to deploy\
+            \ a specific artifact"
       - string:
           name: ARTIFACT_VERSION
           default: 'daily'
@@ -1221,21 +1215,25 @@
       - string:
           name: BUILD_DIRECTORY
           default: $WORKSPACE/.build
-          description: "Directory where the build artifact will be located upon the completion of the build."
+          description: "Directory where the build artifact will be located upon\
+            \ the completion of the build."
       - string:
           name: CACHE_DIRECTORY
           default: $HOME/opnfv/apex-cache{gs-pathname}
-          description: "Directory where the cache to be used during the build is located."
-      # yamllint disable rule:line-length
+          description: "Directory where the cache to be used during the build is\
+            \ located."
+    # yamllint disable rule:line-length
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
-          description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
-      # yamllint enable rule:line-length
+          description: "Used for overriding the GIT URL coming from Global Jenkins\
+            \ configuration in case if the stuff is done on none-LF HW."
+    # yamllint enable rule:line-length
       - string:
           name: GS_PATHNAME
           default: '{gs-pathname}'
-          description: "Version directory where opnfv artifacts are stored in gs repository"
+          description: "Version directory where opnfv artifacts are stored in gs\
+            \ repository"
       - string:
           name: GS_URL
           default: $GS_BASE{gs-pathname}
@@ -1815,26 +1813,22 @@
 - builder:
     name: 'apex-upload-artifact'
     builders:
-      - shell:
-          !include-raw: ./apex-upload-artifact.sh
+      - shell: !include-raw: ./apex-upload-artifact.sh
 
 - builder:
     name: 'apex-download-artifact'
     builders:
-      - shell:
-          !include-raw: ./apex-download-artifact.sh
+      - shell: !include-raw: ./apex-download-artifact.sh
 
 - builder:
     name: 'apex-deploy'
     builders:
-      - shell:
-          !include-raw: ./apex-deploy.sh
+      - shell: !include-raw: ./apex-deploy.sh
 
 - builder:
     name: 'apex-fetch-logs'
     builders:
-      - shell:
-          !include-raw: ./apex-fetch-logs.sh
+      - shell: !include-raw: ./apex-fetch-logs.sh
 
 #######################
 # trigger macros
