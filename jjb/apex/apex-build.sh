@@ -12,7 +12,7 @@ echo
 if echo $ARTIFACT_VERSION | grep "dev" 1> /dev/null; then
   GERRIT_PATCHSET_NUMBER=$(echo $GERRIT_REFSPEC | grep -Eo '[0-9]+$')
   export OPNFV_ARTIFACT_VERSION="dev${GERRIT_CHANGE_NUMBER}_${GERRIT_PATCHSET_NUMBER}"
-  if [ "$BRANCH" == 'master' ]; then
+  if [[ "$BRANCH" != 'stable/fraser' ]]; then
     # build rpm
     export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY --rpms"
   else
@@ -23,14 +23,14 @@ elif echo $BUILD_TAG | grep "csit" 1> /dev/null; then
   export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY"
 elif [ "$ARTIFACT_VERSION" == "daily" ]; then
   export OPNFV_ARTIFACT_VERSION=$(date -u +"%Y-%m-%d")
-  if [ "$BRANCH" == 'master' ]; then
+  if [[ "$BRANCH" != 'stable/fraser' ]]; then
     export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY --rpms"
   else
     export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY --iso"
   fi
 else
   export OPNFV_ARTIFACT_VERSION=${ARTIFACT_VERSION}
-  if [ "$BRANCH" == 'master' ]; then
+  if [[ "$BRANCH" != 'stable/fraser' ]]; then
     export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY --rpms"
   else
     export BUILD_ARGS="-r $OPNFV_ARTIFACT_VERSION -c $CACHE_DIRECTORY --iso"
@@ -59,7 +59,7 @@ echo "Cache Directory Contents:"
 echo "-------------------------"
 ls -al $CACHE_DIRECTORY
 
-if [[ "$BUILD_ARGS" =~ '--iso' && "$BRANCH" != 'master' ]]; then
+if [[ "$BUILD_ARGS" =~ '--iso' && "$BRANCH" == 'stable/fraser' ]]; then
   mkdir -p /tmp/apex-iso/
   rm -f /tmp/apex-iso/*.iso
   cp -f $BUILD_DIRECTORY/../.build/release/OPNFV-CentOS-7-x86_64-$OPNFV_ARTIFACT_VERSION.iso /tmp/apex-iso/

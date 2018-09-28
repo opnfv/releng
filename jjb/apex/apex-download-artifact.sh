@@ -18,8 +18,8 @@ else
 fi
 
 if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
-  if [ "$BRANCH" == 'master' ]; then
-    echo "Skipping download of artifacts for master branch"
+  if [[ "$BRANCH" != 'stable/fraser' ]]; then
+    echo "Skipping download of artifacts for master/gambia branch"
   else
     # dev build
     GERRIT_PATCHSET_NUMBER=$(echo $GERRIT_REFSPEC | grep -Eo '[0-9]+$')

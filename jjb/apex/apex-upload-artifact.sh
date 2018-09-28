@@ -114,8 +114,8 @@ fi
 if [ "$ARTIFACT_TYPE" == 'snapshot' ]; then
   uploadsnap
 elif [ "$ARTIFACT_TYPE" == 'iso' ]; then
-  if [[ "$ARTIFACT_VERSION" =~ dev || "$BRANCH" == 'master' ]]; then
-    echo "Skipping ISO artifact upload for ${ARTIFACT_TYPE} due to dev/master build"
+  if [[ "$ARTIFACT_VERSION" =~ dev || "$BRANCH" != 'stable/fraser' ]]; then
+    echo "Skipping ISO artifact upload for ${ARTIFACT_TYPE} due to dev/${BRANCH} build"
     exit 0
   fi
   if [[ -n "$SIGN_ARTIFACT" && "$SIGN_ARTIFACT" == "true" ]]; then
@@ -124,8 +124,8 @@ elif [ "$ARTIFACT_TYPE" == 'iso' ]; then
   uploadiso
 elif [ "$ARTIFACT_TYPE" == 'rpm' ]; then
   if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
-    if [ "$BRANCH" == 'master' ]; then
-      echo "will not upload artifacts, master uses upstream"
+    if [[ "$BRANCH" != 'stable/fraser' ]]; then
+      echo "will not upload artifacts, ${BRANCH} uses upstream"
       ARTIFACT_TYPE=none
     else
       echo "dev build detected, will upload image tarball"
@@ -138,7 +138,7 @@ elif [ "$ARTIFACT_TYPE" == 'rpm' ]; then
     RPM_LIST=$RPM_INSTALL_PATH/$(basename $OPNFV_RPM_URL)
     SRPM_INSTALL_PATH=$BUILD_DIRECTORY
     SRPM_LIST=$SRPM_INSTALL_PATH/$(basename $OPNFV_SRPM_URL)
-    if [ "$BRANCH" != 'master' ]; then
+    if [[ "$BRANCH" == 'stable/fraser' ]]; then
       VERSION_EXTENSION=$(echo $(basename $OPNFV_RPM_URL) | sed 's/opnfv-apex-//')
       RPM_LIST+=" ${RPM_INSTALL_PATH}/opnfv-apex-undercloud-${VERSION_EXTENSION}"
       RPM_LIST+=" ${RPM_INSTALL_PATH}/python34-opnfv-apex-${VERSION_EXTENSION}"

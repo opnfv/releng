@@ -29,7 +29,7 @@ if [[ "$ARTIFACT_VERSION" =~ dev ]]; then
   # we want to use that built in mechanism to avoid re-downloading every job
   # so we use a dedicated folder to hold the upstream cache
   UPSTREAM_CACHE=$HOME/upstream_cache
-  if [ "$BRANCH" == 'master' ]; then
+  if [[ "$BRANCH" != 'stable/fraser' ]]; then
     mkdir -p ${UPSTREAM_CACHE}
     RESOURCES=$UPSTREAM_CACHE
   else
@@ -55,7 +55,7 @@ else
   # set to use different directory here because upon RPM removal this
   # directory will be wiped in daily
   UPSTREAM_CACHE=$HOME/upstream_cache
-  if [ "$BRANCH" == 'master' ]; then
+  if [[ "$BRANCH" != 'stable/fraser' ]]; then
     mkdir -p ${UPSTREAM_CACHE}
     RESOURCES=$UPSTREAM_CACHE
   else
@@ -159,11 +159,6 @@ else
   fi
   # include inventory file for bare metal deployment
   DEPLOY_CMD="${DEPLOY_CMD} -i ${INVENTORY_FILE}"
-fi
-
-if [[ "$BRANCH" == "master" ]]; then
-  echo "Upstream deployment detected"
-  DEPLOY_CMD="${DEPLOY_CMD} --upstream"
 fi
 
 if [ "$IPV6_FLAG" == "True" ]; then

@@ -8,8 +8,8 @@ echo "Starting the Apex iso verify."
 echo "--------------------------------------------------------"
 echo
 
-if [ "$BRANCH" == 'master' ]; then
-  echo "Skipping Apex iso verify for master branch"
+if [ "$BRANCH" != 'stable/fraser' ]; then
+  echo "Skipping Apex iso verify for ${BRANCH} branch"
   exit 0
 fi
 
