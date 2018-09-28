@@ -99,6 +99,8 @@
           <<: *gambia
       - 'os-nosdn-calipso-noha':
           <<: *gambia
+      - 'os-ovn-nofeature-ha':
+          <<: *gambia
       - 'os-nosdn-nofeature-noha':
           <<: *danube
       - 'os-nosdn-nofeature-ha':
@@ -165,7 +167,7 @@
           <<: *master
       - 'os-nosdn-rocky-ha':
           <<: *master
-      - 'os-nosdn-queens-ha-ipv6':
+      - 'os-nosdn-rocky-ha-ipv6':
           <<: *master
       - 'os-odl-rocky-noha':
           <<: *master
@@ -192,6 +194,10 @@
       - 'os-nosdn-calipso-noha':
           <<: *master
       - 'os-nosdn-calipso_rocky-noha':
+          <<: *master
+      - 'os-ovn-nofeature-ha':
+          <<: *master
+      - 'os-ovn-rocky-ha':
           <<: *master
       - 'os-nosdn-nofeature-noha':
           <<: *euphrates
@@ -1405,6 +1411,14 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
+            - name: 'apex-os-ovn-nofeature-ha-baremetal-gambia'
+              node-parameters: false
+              current-parameters: false
+              predefined-parameters: |
+                OPNFV_CLEAN=yes
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
 
 # danube Builder
 - builder:
@@ -1687,7 +1701,7 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-nosdn-queens-ha-ipv6-baremetal-master'
+            - name: 'apex-os-nosdn-rocky-ha-ipv6-baremetal-master'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1792,6 +1806,22 @@
               abort-all-job: true
               git-revision: false
             - name: 'apex-os-nosdn-calipso_rocky-noha-baremetal-master'
+              node-parameters: false
+              current-parameters: false
+              predefined-parameters: |
+                OPNFV_CLEAN=yes
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
+            - name: 'apex-os-ovn-nofeature-ha-baremetal-master'
+              node-parameters: false
+              current-parameters: false
+              predefined-parameters: |
+                OPNFV_CLEAN=yes
+              kill-phase-on: NEVER
+              abort-all-job: true
+              git-revision: false
+            - name: 'apex-os-ovn-rocky-ha-baremetal-master'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
