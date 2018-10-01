@@ -55,6 +55,41 @@
     },
     {
       "key": {
+        "uuid": "5a682502_73c45c92",
+        "filename": "jjb/yardstick/yardstick-daily-jobs.yaml",
+        "patchSetId": 3
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 7067
+      },
+      "writtenOn": "2018-10-01T23:05:30Z",
+      "side": 1,
+      "message": "Agreed, the docker tag we need to pull for gambia daily jobs is \u0027stable\u0027, because that\u0027s what jjb/releng/opnfv-docker.sh will push by default (when neither from master branch, nor for a specific release tag).\nSo I acknowledge your point, and agree that L18-L22 are correct.\nUntil the logic in jjb/releng/opnfv-docker.sh is reworked, but that\u0027s another story...",
+      "parentUuid": "5a682502_9fdbff1a",
+      "revId": "5d3a3e428ec5751fe1e926ce2386e62dc62a9ff4",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a682502_135ec8e6",
+        "filename": "jjb/yardstick/yardstick-daily-jobs.yaml",
+        "patchSetId": 3
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 7067
+      },
+      "writtenOn": "2018-10-01T23:05:30Z",
+      "side": 1,
+      "message": "However, I could not find how/when this \u0027fraser\u0027 docker tag would be pushed. Sorry to be a pain ;-)\nEven with GERRIT_REFNAME set to \u0027fraser\u0027, or with a \"retag fraser\" gerrit comment, which both would properly set RELEASE_VERSION then DOCKER_TAG to \u0027fraser\u0027, the \"git checkout fraser\" command would fail. Using \u0027stable/fraser\u0027 would work for git, but would not be a valid docker tag according to [2].\nThis is an issue, because the \u0026fraser anchor on L23 is aliased for several PODs below on L52, L57, L73, L78, L94, L99, L115, L120, L136, L141, L152, L175, L190 and L200.\n\nI think that L23-L27 should ultimately be removed, and that s/fraser/gambia/ should be applied on the whole file. This would be consistent with what was done for previous releases, see [3] and [4].\n\nBut in turn, this will require [5] to have been merged, then [6] to be modified (or duplicated) for gambia (and \u0027*other-receivers\u0027 to be changed to \u0027*yardstick-receivers\u0027), in order to have the gambia docker image built and pushed with \u0027stable\u0027 tag, as needed by L22.\n\nDuring this transition phase, and in order to have this commit merged soon, so that the yardstick-verify-gambia and yardstick-merge-gambia jobs are made available to Jenkins, I suggest to temporarily use \u0027ovp-2.0.0\u0027 as the docker tag on L27. This is currently a synonym for most recent \u0027stable/fraser\u0027, see [7] and [8].\n\n[2] https://docs.docker.com/engine/reference/commandline/tag/\n[3] https://gerrit.opnfv.org/gerrit/42257\n[4] https://gerrit.opnfv.org/gerrit/54737\n[5] https://gerrit.opnfv.org/gerrit/63047\n[6] https://gerrit.opnfv.org/gerrit/#/c/63047/1/jjb/releng/opnfv-docker.yaml@292\n[7] https://gerrit.opnfv.org/gerrit/gitweb?p\u003dyardstick.git;a\u003dshortlog;h\u003drefs/heads/stable/fraser\n[8] https://hub.docker.com/r/opnfv/yardstick/tags/",
+      "revId": "5d3a3e428ec5751fe1e926ce2386e62dc62a9ff4",
+      "serverId": "bbac25d2-bf60-4904-9ba8-a72fc000d6c5",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a682502_794603c1",
         "filename": "jjb/yardstick/yardstick-project-jobs.yaml",
         "patchSetId": 3
