@@ -145,14 +145,14 @@ SUITE_HOME='/home/opnfv/repos/odl_test/csit/suites'
 # Ceph which we do not currently use with CSIT images
 #
 
-suites="${SUITE_HOME}/openstack/connectivity/l2.robot \
+suites="${SUITE_HOME}/netvirt/vpnservice/vpn_basic_ipv6.robot \
+        ${SUITE_HOME}/openstack/connectivity/l2.robot \
         ${SUITE_HOME}/openstack/connectivity/l3.robot \
         ${SUITE_HOME}/openstack/connectivity/external_network.robot \
         ${SUITE_HOME}/openstack/connectivity/security_group.robot \
         ${SUITE_HOME}/openstack/securitygroup/neutron_security_group.robot \
         ${SUITE_HOME}/openstack/securitygroup/security_group_l3bcast.robot \
         ${SUITE_HOME}/netvirt/vpnservice/vpn_basic.robot \
-        ${SUITE_HOME}/netvirt/vpnservice/vpn_basic_ipv6.robot \
         ${SUITE_HOME}/netvirt/elan/elan.robot \
         ${SUITE_HOME}/netvirt/vpnservice/arp_learning.robot \
         ${SUITE_HOME}/netvirt/l2l3_gatewaymac_arp.robot \
@@ -166,7 +166,7 @@ docker run -i --net=host \
   -v ${WORKSPACE}/overcloudrc:/tmp/overcloudrc \
   opnfv/cperf:$DOCKER_TAG \
   /bin/bash -c "source /tmp/overcloudrc; mkdir -p \$HOME/.ssh; cp /tmp/id_rsa \$HOME/.ssh; \
-  cd /home/opnfv/repos/odl_test/ && git pull origin master && git checkout ffa04403057d7d354ca0a2261b6bc7eabf5aeb1d; \
+  cd /home/opnfv/repos/odl_test/ && git pull origin master; \
   pip install odltools; \
   ${robot_cmd} ${suites};"
 
