@@ -166,7 +166,7 @@ docker run -i --net=host \
   -v ${WORKSPACE}/overcloudrc:/tmp/overcloudrc \
   opnfv/cperf:$DOCKER_TAG \
   /bin/bash -c "source /tmp/overcloudrc; mkdir -p \$HOME/.ssh; cp /tmp/id_rsa \$HOME/.ssh; \
-  cd /home/opnfv/repos/odl_test/ && git pull origin master; \
+  cd /home/opnfv/repos/odl_test/ && git pull origin master && git checkout ffa04403057d7d354ca0a2261b6bc7eabf5aeb1d; \
   pip install odltools; \
   ${robot_cmd} ${suites};"
 
