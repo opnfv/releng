@@ -337,7 +337,9 @@
               declare -x "\${var}" 2>/dev/null
               echo $var
           done < ${XCI_PATH}/.cache/xci.env && cd ${XCI_PATH}/xci && \
-          ansible-playbook -i playbooks/dynamic_inventory.py playbooks/prepare-tests.yml
+          ansible-playbook -i playbooks/dynamic_inventory.py \
+          -i /root/releng-xci/.cache/repos/openstack-ansible/inventory/dynamic_inventory.py \
+          playbooks/prepare-tests.yml
           ssh root@192.168.122.2 "/root/prepare-tests.sh"
           echo "---------------------------------------------------------------------------------"
 
