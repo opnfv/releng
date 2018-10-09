@@ -16,7 +16,7 @@ set -e
 DEPLOY_TYPE=baremetal
 [[ $BUILD_TAG =~ "virtual" ]] && DEPLOY_TYPE=virt
 
-DOVETAIL_HOME=${WORKSPACE}/cvp
+DOVETAIL_HOME=${WORKSPACE}/ovp
 [ -d ${DOVETAIL_HOME} ] && sudo rm -rf ${DOVETAIL_HOME}
 
 mkdir -p ${DOVETAIL_HOME}
@@ -27,13 +27,43 @@ mkdir -p ${DOVETAIL_CONFIG}
 DOVETAIL_IMAGES=${DOVETAIL_HOME}/images
 mkdir -p ${DOVETAIL_IMAGES}
 
+OPENRC=${DOVETAIL_CONFIG}/env_config.sh
+CACERT=${DOVETAIL_CONFIG}/os_cacert
+
 ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 sshkey=""
-# The path of openrc.sh is defined in fetch_os_creds.sh
-OPENRC=${DOVETAIL_CONFIG}/env_config.sh
-CACERT=${DOVETAIL_CONFIG}/os_cacert
-if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
+
+check_file_exists() {
+    if [[ -f $1 ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+get_cred_file_with_scripts() {
+    echo "INFO: clone releng repo..."
+    releng_repo=${WORKSPACE}/releng
+    [ -d ${releng_repo} ] && sudo rm -rf ${releng_repo}
+    git clone https://gerrit.opnfv.org/gerrit/releng ${releng_repo} >/dev/null
+
+    echo "INFO: clone pharos repo..."
+    pharos_repo=${WORKSPACE}/pharos
+    [ -d ${pharos_repo} ] && sudo rm -rf ${pharos_repo}
+    git clone https://git.opnfv.org/pharos ${pharos_repo} >/dev/null
+
+    echo "INFO: SUT branch is $SUT_BRANCH"
+    echo "INFO: dovetail branch is $BRANCH"
+    BRANCH_BACKUP=$BRANCH
+    export BRANCH=$SUT_BRANCH
+    cmd="${releng_repo}/utils/fetch_os_creds.sh -d ${OPENRC} -i ${INSTALLER_TYPE} -a ${INSTALLER_IP} -o ${CACERT} >${redirect}"
+    echo "INFO: cmd is ${cmd}"
+    ${cmd}
+    export BRANCH=$BRANCH_BACKUP
+}
+
+get_apex_cred_file() {
     instack_mac=$(sudo virsh domiflist undercloud | grep default | \
                   grep -Eo "[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+")
     INSTALLER_IP=$(/usr/sbin/arp -e | grep ${instack_mac} | awk {'print $1'})
@@ -43,54 +73,79 @@ if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
         sudo iptables -D FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable
         sudo iptables -D FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable
     fi
-elif [[ ${INSTALLER_TYPE} == 'joid' ]]; then
+    get_cred_file_with_scripts
+}
+
+get_compass_cred_file() {
+    get_cred_file_with_scripts
+}
+
+get_fuel_cred_file() {
+    get_cred_file_with_scripts
+}
+
+get_joid_cred_file() {
     # If production lab then creds may be retrieved dynamically
     # creds are on the jumphost, always in the same folder
     sudo cp $LAB_CONFIG/admin-openrc $OPENRC
-    # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
-    # replace the default one by the customized one provided by jenkins config
-fi
+}
 
-releng_repo=${WORKSPACE}/releng
-[ -d ${releng_repo} ] && sudo rm -rf ${releng_repo}
-git clone https://gerrit.opnfv.org/gerrit/releng ${releng_repo} >/dev/null
-
-pharos_repo=${WORKSPACE}/pharos
-[ -d ${pharos_repo} ] && sudo rm -rf ${pharos_repo}
-git clone https://git.opnfv.org/pharos ${pharos_repo} >/dev/null
-
-if [[ ${INSTALLER_TYPE} != 'joid' ]]; then
-    echo "SUT branch is $SUT_BRANCH"
-    echo "dovetail branch is $BRANCH"
-    BRANCH_BACKUP=$BRANCH
-    export BRANCH=$SUT_BRANCH
-    ${releng_repo}/utils/fetch_os_creds.sh -d ${OPENRC} -i ${INSTALLER_TYPE} -a ${INSTALLER_IP} -o ${CACERT} >${redirect}
-    export BRANCH=$BRANCH_BACKUP
-fi
-
-if [[ -f $OPENRC ]]; then
-    echo "INFO: openstack credentials path is $OPENRC"
-    if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == "compass" ]]; then
-        if [[ -f ${CACERT} ]]; then
-            echo "INFO: ${INSTALLER_TYPE} openstack cacert file is ${CACERT}"
+change_cred_file_cacert_path() {
+    check_file_exists ${CACERT}
+    if [[ $? == 0 ]]; then
+        echo "INFO: set ${INSTALLER_TYPE} openstack cacert file to be ${CACERT}"
+        if [[ ${INSTALLER_TYPE} == "compass" ]]; then
             echo "export OS_CACERT=${CACERT}" >> ${OPENRC}
-        else
-            echo "ERROR: Can't find ${INSTALLER_TYPE} openstack cacert file. Please check if it is existing."
-            sudo ls -al ${DOVETAIL_CONFIG}
-            exit 1
+        elif [[ ${INSTALLER_TYPE} == "fuel" ]]; then
+            sed -i "s#/etc/ssl/certs/mcp_os_cacert#${CACERT}#g" ${OPENRC}
         fi
+    else
+        echo "ERROR: cannot find file $OPENRC. Please check if it is existing."
+        sudo ls -al ${DOVETAIL_CONFIG}
+        exit 1
     fi
-    echo "export EXTERNAL_NETWORK=${EXTERNAL_NETWORK}" >> ${OPENRC}
-else
-    echo "ERROR: cannot find file $OPENRC. Please check if it is existing."
-    sudo ls -al ${DOVETAIL_CONFIG}
-    exit 1
-fi
+}
 
-if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == "fuel" ]]; then
-    sed -i "s#/etc/ssl/certs/mcp_os_cacert#${CACERT}#g" ${OPENRC}
-fi
-cat $OPENRC
+change_cred_file_ext_net() {
+    check_file_exists ${OPENRC}
+    if [[ $? == 0 ]]; then
+        echo "export EXTERNAL_NETWORK=${EXTERNAL_NETWORK}" >> ${OPENRC}
+    else
+        echo "ERROR: cannot find file $OPENRC. Please check if it is existing."
+        sudo ls -al ${DOVETAIL_CONFIG}
+        exit 1
+    fi
+}
+
+get_cred_file() {
+    if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
+        get_apex_cred_file
+    elif [[ ${INSTALLER_TYPE} == 'compass' ]]; then
+        get_compass_cred_file
+    elif [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
+        get_fuel_cred_file
+    elif [[ ${INSTALLER_TYPE} == 'joid' ]]; then
+        get_joid_cred_file
+    fi
+
+    check_file_exists ${OPENRC}
+    if [[ $? == 0 ]]; then
+        echo "INFO: original openstack credentials file is"
+        cat $OPENRC
+        echo "INFO: change cacert file path in credentials file"
+        change_cred_file_cacert_path
+        echo "INFO: set external network in credentials file"
+        change_cred_file_ext_net
+        echo "INFO: final openstack credentials file is"
+        cat $OPENRC
+    else
+        echo "ERROR: cannot find file $OPENRC. Please check if it is existing."
+        sudo ls -al ${DOVETAIL_CONFIG}
+        exit 1
+    fi
+}
+
+get_cred_file
 
 # These packages are used for parsing yaml files and decrypting ipmi user and password.
 sudo pip install shyaml
