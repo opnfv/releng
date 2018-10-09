@@ -67,7 +67,7 @@ fi
 
 if ! echo $ARTIFACT_VERSION | grep "dev" 1> /dev/null; then
   echo "Writing opnfv.properties file"
-  if [ "$BRANCH" != master ]; then
+  if [ "$BRANCH" == 'stable/fraser' ]; then
     # save information regarding artifact into file
     (
       echo "OPNFV_ARTIFACT_VERSION=$OPNFV_ARTIFACT_VERSION"
