@@ -150,6 +150,15 @@ if [[ ${INSTALLER_TYPE} == 'compass' && ${DEPLOY_SCENARIO} =~ 'sfc' ]]; then
     envs="${envs} -e EXTERNAL_NETWORK=${EXTERNAL_NETWORK}"
 fi
 
+if [[ ${DEPLOY_SCENARIO} == *"ovs"* ]] || [[ ${DEPLOY_SCENARIO} == *"fdio"* ]]; then
+    if [[ -n ${IMAGE_PROPERTIES} ]]; then
+        IMAGE_PROPERTIES="${IMAGE_PROPERTIES}, hw_mem_page_size: large"
+    else
+        IMAGE_PROPERTIES="hw_mem_page_size: large"
+    fi
+    FLAVOR_EXTRA_SPECS="hw:mem_page_size: large"
+    envs="${envs} -e IMAGE_PROPERTIES=\"${IMAGE_PROPERTIES}\" -e FLAVOR_EXTRA_SPECS=\"${FLAVOR_EXTRA_SPECS}\""
+fi
 
 volumes="${images_vol} ${results_vol} ${sshkey_vol} ${userconfig_vol} ${rc_file_vol} ${cacert_file_vol}"
 
