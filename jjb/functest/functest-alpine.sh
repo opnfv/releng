@@ -136,7 +136,7 @@ if [ "${INSTALLER_TYPE}" == 'fuel' ]; then
     COMPUTE_ARCH=$(ssh -l ubuntu ${INSTALLER_IP} -i ${SSH_KEY} ${ssh_options} \
         "sudo salt 'cmp*' grains.get cpuarch --out yaml | awk '{print \$2; exit}'")
     IMAGE_PROPERTIES="hw_disk_bus: scsi, hw_scsi_model: virtio-scsi"
-    envs="${envs} -e POD_ARCH=${COMPUTE_ARCH} -e ${IMAGE_PROPERTIES}"
+    envs="${envs} -e POD_ARCH=${COMPUTE_ARCH} -e IMAGE_PROPERTIES=\"${IMAGE_PROPERTIES}\""
 fi
 
 
