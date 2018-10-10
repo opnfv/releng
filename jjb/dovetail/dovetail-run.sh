@@ -29,6 +29,7 @@ mkdir -p ${DOVETAIL_IMAGES}
 
 OPENRC=${DOVETAIL_CONFIG}/env_config.sh
 CACERT=${DOVETAIL_CONFIG}/os_cacert
+POD=${DOVETAIL_CONFIG}/pod.yaml
 
 ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
@@ -100,7 +101,7 @@ change_cred_file_cacert_path() {
             sed -i "s#/etc/ssl/certs/mcp_os_cacert#${CACERT}#g" ${OPENRC}
         fi
     else
-        echo "ERROR: cannot find file $OPENRC. Please check if it is existing."
+        echo "ERROR: cannot find file $OPENRC. Please check if it exists."
         sudo ls -al ${DOVETAIL_CONFIG}
         exit 1
     fi
@@ -111,7 +112,7 @@ change_cred_file_ext_net() {
     if [[ $exists == 0 ]]; then
         echo "export EXTERNAL_NETWORK=${EXTERNAL_NETWORK}" >> ${OPENRC}
     else
-        echo "ERROR: cannot find file $OPENRC. Please check if it is existing."
+        echo "ERROR: cannot find file $OPENRC. Please check if it exists."
         sudo ls -al ${DOVETAIL_CONFIG}
         exit 1
     fi
@@ -130,30 +131,24 @@ get_cred_file() {
 
     exists=`check_file_exists ${OPENRC}`
     if [[ $exists == 0 ]]; then
-        echo "INFO: original openstack credentials file is"
+        echo "INFO: original openstack credentials file is:"
         cat $OPENRC
         echo "INFO: change cacert file path in credentials file"
         change_cred_file_cacert_path
         echo "INFO: set external network in credentials file"
         change_cred_file_ext_net
-        echo "INFO: final openstack credentials file is"
+        echo "INFO: final openstack credentials file is:"
         cat $OPENRC
     else
-        echo "ERROR: cannot find file $OPENRC. Please check if it is existing."
+        echo "ERROR: cannot find file $OPENRC. Please check if it exists."
         sudo ls -al ${DOVETAIL_CONFIG}
         exit 1
     fi
 }
 
-get_cred_file
-
-# These packages are used for parsing yaml files and decrypting ipmi user and password.
-sudo pip install shyaml
-sudo yum install -y rubygems || sudo apt-get install -y ruby
-sudo gem install hiera-eyaml
-
-if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == "compass" ]]; then
+get_compass_pod_file() {
     compass_repo=${WORKSPACE}/compass4nfv/
+    echo "INFO: clone compass repo..."
     git clone https://github.com/opnfv/compass4nfv.git ${compass_repo} >/dev/null
     scenario_file=${compass_repo}/deploy/conf/hardware_environment/$NODE_NAME/os-nosdn-nofeature-ha.yml
     ipmiIp=$(cat ${scenario_file} | shyaml get-value hosts.0.ipmiIp)
@@ -161,7 +156,7 @@ if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == "compass" ]]; then
     ipmiUser=root
     jumpserver_ip=$(ifconfig | grep -A 5 docker0 | grep "inet addr" | cut -d ':' -f 2 | cut -d ' ' -f 1)
 
-    cat << EOF >${DOVETAIL_CONFIG}/pod.yaml
+    cat << EOF >${POD}
 nodes:
 - {ip: ${jumpserver_ip}, name: node0, password: root, role: Jumpserver, user: root}
 - {ip: 10.1.0.50, name: node1, password: root, role: controller, user: root,
@@ -172,9 +167,10 @@ nodes:
 - {ip: 10.1.0.54, name: node5, password: root, role: compute, user: root}
 
 EOF
-fi
 
-if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_TYPE} == 'baremetal' ]]; then
+}
+
+get_fuel_baremetal_pod_file() {
     fuel_ctl_ssh_options="${ssh_options} -i ${SSH_KEY}"
     ssh_user="ubuntu"
     fuel_ctl_ip=$(ssh 2>/dev/null ${fuel_ctl_ssh_options} "${ssh_user}@${INSTALLER_IP}" \
@@ -202,7 +198,7 @@ if [[ ! "${SUT_BRANCH}" =~ "danube" && ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_T
     [[ $ipmiUser == ENC* ]] && ipmiUser=$(eyaml decrypt -s ${ipmiUser//[[:blank:]]/})
     [[ $ipmiPass == ENC* ]] && ipmiPass=$(eyaml decrypt -s ${ipmiPass//[[:blank:]]/})
 
-    cat << EOF >${DOVETAIL_CONFIG}/pod.yaml
+    cat << EOF >${POD}
 nodes:
 - {ip: ${INSTALLER_IP}, name: node0, key_filename: /home/opnfv/userconfig/pre_config/id_rsa,
    role: Jumpserver, user: ${ssh_user}}
@@ -212,11 +208,10 @@ nodes:
 - {ip: ${fuel_cmp_ip}, name: cmp01, key_filename: /home/opnfv/userconfig/pre_config/id_rsa, role: controller, user: ${ssh_user}}
 - {ip: ${fuel_dbs_ip}, name: dbs01, key_filename: /home/opnfv/userconfig/pre_config/id_rsa, role: controller, user: ${ssh_user}}
 EOF
-fi
+}
 
-if [[ ! -f ${DOVETAIL_CONFIG}/pod.yaml ]]; then
+get_pod_file_with_scripts() {
     set +e
-
     sudo pip install virtualenv
 
     cd ${releng_repo}/modules
@@ -228,60 +223,95 @@ if [[ ! -f ${DOVETAIL_CONFIG}/pod.yaml ]]; then
     if [[ ${INSTALLER_TYPE} == compass ]]; then
         options="-u root -p root"
     elif [[ ${INSTALLER_TYPE} == fuel ]]; then
-        options="-u root -p r00tme"
+        options="-u ubuntu -k /root/.ssh/id_rsa"
     elif [[ ${INSTALLER_TYPE} == apex ]]; then
         options="-u stack -k /root/.ssh/id_rsa"
     elif [[ ${INSTALLER_TYPE} == daisy ]]; then
         options="-u root -p r00tme"
     else
-        echo "Don't support to generate pod.yaml on ${INSTALLER_TYPE} currently."
-        echo "HA test cases may not run properly."
+        echo "WARNING: Don't support to generate ${POD} on ${INSTALLER_TYPE} currently."
+        echo "WARNING: HA test cases may not run properly."
     fi
 
     cmd="sudo python ${releng_repo}/utils/create_pod_file.py -t ${INSTALLER_TYPE} \
-         -i ${INSTALLER_IP} ${options} -f ${DOVETAIL_CONFIG}/pod.yaml \
+         -i ${INSTALLER_IP} ${options} -f ${POD} \
          -s /home/opnfv/userconfig/pre_config/id_rsa"
-    echo ${cmd}
+    echo "INFO: cmd is ${cmd}"
     ${cmd}
 
     deactivate
-
     set -e
-
     cd ${WORKSPACE}
-fi
+}
 
-if [ -f ${DOVETAIL_CONFIG}/pod.yaml ]; then
-    sudo chmod 666 ${DOVETAIL_CONFIG}/pod.yaml
-    echo "Adapt process info for $INSTALLER_TYPE ..."
-    if [ "$INSTALLER_TYPE" == "apex" ]; then
-        cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
+change_apex_pod_file_process_info() {
+    cat << EOF >> ${POD}
 process_info:
 - {testcase_name: yardstick.ha.rabbitmq, attack_process: rabbitmq_server}
 - {testcase_name: yardstick.ha.cinder_api, attack_process: cinder_wsgi}
 EOF
-    elif [ "$INSTALLER_TYPE" == "fuel" ]; then
-        cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
+}
+
+change_fuel_pod_file_process_info() {
+    cat << EOF >> ${POD}
 process_info:
 - {testcase_name: yardstick.ha.cinder_api, attack_process: cinder-wsgi}
 - {testcase_name: yardstick.ha.rabbitmq, attack_process: rabbitmq_server, attack_host: msg01}
 - {testcase_name: yardstick.ha.neutron_l3_agent, attack_process: neutron-l3-agent, attack_host: cmp01}
 - {testcase_name: yardstick.ha.database, attack_process: mysqld, attack_host: dbs01}
 EOF
-    elif [ "$INSTALLER_TYPE" == "compass" ]; then
-        cat << EOF >> ${DOVETAIL_CONFIG}/pod.yaml
+}
+
+change_compass_pod_file_process_info() {
+    cat << EOF >> ${POD}
 process_info:
 - {testcase_name: yardstick.ha.rabbitmq, attack_process: rabbitmq}
 EOF
+}
+
+change_pod_file_process_info() {
+    sudo chmod 666 ${POD}
+    echo "INFO: adapt process info for $INSTALLER_TYPE ..."
+    if [ "$INSTALLER_TYPE" == "apex" ]; then
+        change_apex_pod_file_process_info
+    elif [ "$INSTALLER_TYPE" == "fuel" ]; then
+        change_fuel_pod_file_process_info
+    elif [ "$INSTALLER_TYPE" == "compass" ]; then
+        change_compass_pod_file_process_info
+    fi
+}
+
+get_pod_file() {
+    # These packages are used for parsing yaml files and decrypting ipmi user and password.
+    sudo pip install shyaml
+    sudo yum install -y rubygems || sudo apt-get install -y ruby
+    sudo gem install hiera-eyaml
+    if [[ ${INSTALLER_TYPE} == 'compass' ]]; then
+        get_compass_pod_file
+    elif [[ ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_TYPE} == 'baremetal' ]]; then
+        get_fuel_baremetal_pod_file
     fi
 
-    echo "file ${DOVETAIL_CONFIG}/pod.yaml:"
-    cat ${DOVETAIL_CONFIG}/pod.yaml
-else
-    echo "Error: cannot find file ${DOVETAIL_CONFIG}/pod.yaml. Please check if it is existing."
-    sudo ls -al ${DOVETAIL_CONFIG}
-    echo "HA test cases may not run properly."
-fi
+    exists=`check_file_exists ${POD}`
+    if [[ $exists == 1 ]]; then
+        get_pod_file_with_scripts
+    fi
+
+    exists=`check_file_exists ${POD}`
+    if [[ $exists == 0 ]]; then
+        change_pod_file_process_info
+    else
+        echo "ERROR: cannot find file ${POD}. Please check if it exists."
+        sudo ls -al ${DOVETAIL_CONFIG}
+        exit 1
+    fi
+
+    echo "INFO: file ${POD} is:"
+    cat ${POD}
+}
+
+get_cred_file
+get_pod_file
 
 if [ "$INSTALLER_TYPE" == "fuel" ]; then
     if [[ "${SUT_BRANCH}" =~ "danube" ]]; then
@@ -376,7 +406,7 @@ sleep 5
 container_id=$(docker ps | grep "${DOCKER_REPO}:${DOCKER_TAG}" | awk '{print $1}' | head -1)
 echo "Container ID=${container_id}"
 if [ -z ${container_id} ]; then
-    echo "Cannot find ${DOCKER_REPO} container ID ${container_id}. Please check if it is existing."
+    echo "Cannot find ${DOCKER_REPO} container ID ${container_id}. Please check if it exists."
     docker ps -a
     exit 1
 fi
