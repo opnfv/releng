@@ -39,7 +39,7 @@
           verify-scenario: 'os-nosdn-nofeature-ha'
           scenario_stream: 'gambia'
           disable_daily: false
-          disable_promote: true
+          disable_promote: false
       - fraser: &fraser
           branch: 'stable/fraser'
           gs-pathname: '/fraser'
@@ -239,18 +239,15 @@
       - 'virtual'
 
     os_version:
-      - 'pike':
-          os_scenario: 'pike'
-          odl_branch: 'stable/carbon'
       - 'queens':
           os_scenario: 'queens'
           odl_branch: 'stable/oxygen'
       - 'rocky':
           os_scenario: 'rocky'
-          odl_branch: 'stable/fluorine'
+          odl_branch: 'stable/oxygen'
       - 'master':
           os_scenario: 'nofeature'
-          odl_branch: 'stable/oxygen'
+          odl_branch: 'stable/fluorine'
 
     topology:
       - 'noha'
@@ -914,7 +911,7 @@
           option: 'project'
 
     triggers:
-      - timed: '0 12 * * 0'
+      - '{stream}-{os_version}'
 
     builders:
       - multijob:
@@ -2026,3 +2023,78 @@
     name: 'apex-danube'
     triggers:
       - timed: '0 3 1 1 7'
+
+- trigger:
+    name: 'master-master'
+    triggers:
+      - timed: '0 12 * * *'
+
+- trigger:
+    name: 'master-rocky'
+    triggers:
+      - timed: '0 12 * * *'
+
+- trigger:
+    name: 'master-queens'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'gambia-master'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'gambia-rocky'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'gambia-queens'
+    triggers:
+      - timed: '0 12 * * *'
+
+- trigger:
+    name: 'fraser-master'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'fraser-rocky'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'fraser-queens'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'euphrates-master'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'euphrates-rocky'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'euphrates-queens'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'danube-master'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'danube-rocky'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'danube-queens'
+    triggers:
+      - timed: ''
