@@ -204,17 +204,6 @@
               docker ps -a | grep opnfv/cperf | awk '{print $1}' | xargs docker rm -f >${redirect}
           fi
 
-          # Remove existing images if exist
-          if [[ ! -z $(docker images | grep opnfv/cperf) ]]; then
-              echo "Docker images to remove:"
-              docker images | head -1 && docker images | grep opnfv/cperf >${redirect}
-              image_tags=($(docker images | grep opnfv/cperf | awk '{print $2}'))
-              for tag in "${image_tags[@]}"; do
-                  echo "Removing docker image opnfv/cperf:$tag..."
-                  docker rmi opnfv/cperf:$tag >/dev/null
-              done
-          fi
-
 - builder:
     name: cperf-upload-logs-csit
     builders:
