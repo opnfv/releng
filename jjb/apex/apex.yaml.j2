@@ -39,7 +39,7 @@
           verify-scenario: 'os-nosdn-nofeature-ha'
           scenario_stream: 'gambia'
           disable_daily: false
-          disable_promote: true
+          disable_promote: false
       - fraser: &fraser
           branch: 'stable/fraser'
           gs-pathname: '/fraser'
@@ -85,18 +85,15 @@
       - 'virtual'
 
     os_version:
-      - 'pike':
-          os_scenario: 'pike'
-          odl_branch: 'stable/carbon'
       - 'queens':
           os_scenario: 'queens'
           odl_branch: 'stable/oxygen'
       - 'rocky':
           os_scenario: 'rocky'
-          odl_branch: 'stable/fluorine'
+          odl_branch: 'stable/oxygen'
       - 'master':
           os_scenario: 'nofeature'
-          odl_branch: 'stable/oxygen'
+          odl_branch: 'stable/fluorine'
 
     topology:
       - 'noha'
@@ -760,7 +757,7 @@
           option: 'project'
 
     triggers:
-      - timed: '0 12 * * 0'
+      - '{stream}-{os_version}'
 
     builders:
       - multijob:
@@ -1208,3 +1205,47 @@
     name: 'apex-danube'
     triggers:
       - timed: '0 3 1 1 7'
+
+- trigger: &promote
+    triggers:
+      - timed: '0 12 * * *'
+
+- trigger: &disable_promote
+    triggers:
+      - timed: '0 0 5 31 2'
+
+- trigger:
+    name: 'master-master'
+    <<: *promote
+
+- trigger:
+    name: 'master-rocky'
+    <<: *promote
+
+- trigger:
+    name: 'master-queens'
+    <<: *disable_promote
+
+- trigger:
+    name: 'gambia-master'
+    <<: *disable_promote
+
+- trigger:
+    name: 'gambia-rocky'
+    <<: *disable_promote
+
+- trigger:
+    name: 'gambia-queens'
+    <<: *promote
+
+- trigger:
+    name: 'fraser-master'
+    <<: *disable_promote
+
+- trigger:
+    name: 'fraser-rocky'
+    <<: *disable_promote
+
+- trigger:
+    name: 'fraser-queens'
+    <<: *disable_promote
