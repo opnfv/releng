@@ -55,7 +55,7 @@
                 - branch-compare-type: 'ANT'
                   branch-pattern: '**/{branch}'
     builders:
-      - dovetail-webportal-hello-world
+      - dovetail-webportal-unit-tests
 
 - job-template:
     name: 'dovetail-webportal-merge-{stream}'
@@ -86,16 +86,17 @@
                   branch-pattern: '**/{branch}'
 
     builders:
-      - dovetail-webportal-hello-world
+      - dovetail-webportal-unit-tests
 
 ################################
 # builders for dovetail project
 ###############################
 - builder:
-    name: dovetail-webportal-hello-world
+    name: dovetail-webportal-unit-tests
     builders:
       - shell: |
           #!/bin/bash
           set -o errexit
+          set -o pipefail
 
-          echo "hello world"
+          tox
