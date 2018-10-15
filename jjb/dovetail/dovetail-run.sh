@@ -36,9 +36,9 @@ sshkey=""
 
 check_file_exists() {
     if [[ -f $1 ]]; then
-        return 0
+        echo 0
     else
-        return 1
+        echo 1
     fi
 }
 
@@ -91,8 +91,8 @@ get_joid_cred_file() {
 }
 
 change_cred_file_cacert_path() {
-    check_file_exists ${CACERT}
-    if [[ $? == 0 ]]; then
+    exists=`check_file_exists ${CACERT}`
+    if [[ $exists == 0 ]]; then
         echo "INFO: set ${INSTALLER_TYPE} openstack cacert file to be ${CACERT}"
         if [[ ${INSTALLER_TYPE} == "compass" ]]; then
             echo "export OS_CACERT=${CACERT}" >> ${OPENRC}
@@ -107,8 +107,8 @@ change_cred_file_cacert_path() {
 }
 
 change_cred_file_ext_net() {
-    check_file_exists ${OPENRC}
-    if [[ $? == 0 ]]; then
+    exists=`check_file_exists ${OPENRC}`
+    if [[ $exists == 0 ]]; then
         echo "export EXTERNAL_NETWORK=${EXTERNAL_NETWORK}" >> ${OPENRC}
     else
         echo "ERROR: cannot find file $OPENRC. Please check if it is existing."
@@ -128,8 +128,8 @@ get_cred_file() {
         get_joid_cred_file
     fi
 
-    check_file_exists ${OPENRC}
-    if [[ $? == 0 ]]; then
+    exists=`check_file_exists ${OPENRC}`
+    if [[ $exists == 0 ]]; then
         echo "INFO: original openstack credentials file is"
         cat $OPENRC
         echo "INFO: change cacert file path in credentials file"
