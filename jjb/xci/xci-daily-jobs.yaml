@@ -333,12 +333,22 @@
           export XCI_PATH=$WORKSPACE
           export XCI_VENV=${XCI_PATH}/venv
           source $XCI_VENV/bin/activate
+
+          # ODL scenarios require ODL parameters to run its healthcheck tests. Those parameters are provided by
+          # the playbook: prepare-odl-tests.yml.
+          if [[ $DEPLOY_SCENARIO == *"-odl-"* ]]; then
+            ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv \
+            "export PDF=/root/releng-xci/xci/var/pdf.yml && export IDF=/root/releng-xci/xci/var/idf.yml && \
+            cd releng-xci/xci && ansible-playbook \
+            -i ../.cache/repos/openstack-ansible/inventory/dynamic_inventory.py \
+            playbooks/prepare-odl-tests.yml"
+          fi
+
           while read var; do
               declare -x "\${var}" 2>/dev/null
               echo $var
           done < ${XCI_PATH}/.cache/xci.env && cd ${XCI_PATH}/xci && \
           ansible-playbook -i playbooks/dynamic_inventory.py \
-          -i ${XCI_PATH}/.cache/repos/openstack-ansible/inventory/dynamic_inventory.py \
           playbooks/prepare-tests.yml
           ssh root@192.168.122.2 "/root/prepare-tests.sh"
           echo "---------------------------------------------------------------------------------"
