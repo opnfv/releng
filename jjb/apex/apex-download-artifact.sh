@@ -47,7 +47,7 @@ else
   RPM_LIST=$(basename $OPNFV_RPM_URL)
   # find version of RPM
   VERSION_EXTENSION=$(echo $(basename $RPM_LIST) | grep -Eo '[0-9]+\.[0-9]+-([0-9]{8}|[a-z]+-[0-9]\.[0-9]+)')
-  if [ "$BRANCH" != 'master' ]; then
+  if [ "$BRANCH" == 'stable/fraser' ]; then
     # build RPM List which already includes base Apex RPM
     RPM_LIST+=" opnfv-apex-undercloud-${VERSION_EXTENSION}.noarch.rpm"
     RPM_LIST+=" python34-opnfv-apex-${VERSION_EXTENSION}.noarch.rpm"
