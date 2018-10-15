@@ -119,7 +119,7 @@
             - '^xci-functest.*'
             - '^bifrost-.*periodic.*'
             - '^osa-.*periodic.*'
-          blocking-level: 'NODE'
+          block-level: 'NODE'
       - logrotate-default
 
     triggers:
@@ -237,7 +237,7 @@
             - '^xci-functest.*'
             - '^bifrost-.*periodic.*'
             - '^osa-.*periodic.*'
-          blocking-level: 'NODE'
+          block-level: 'NODE'
       - throttle:
           enabled: true
           max-per-node: 1
@@ -333,6 +333,17 @@
           export XCI_PATH=$WORKSPACE
           export XCI_VENV=${XCI_PATH}/venv
           source $XCI_VENV/bin/activate
+
+          # ODL scenarios require ODL parameters to run its healthcheck tests. Those parameters are provided by
+          # the playbook: prepare-odl-tests.yml.
+          if [[ $DEPLOY_SCENARIO == *"-odl-"* ]]; then
+            ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv \
+            "export PDF=/root/releng-xci/xci/var/pdf.yml && export IDF=/root/releng-xci/xci/var/idf.yml && \
+            cd releng-xci/xci && ansible-playbook \
+            -i ../.cache/repos/openstack-ansible/inventory/dynamic_inventory.py \
+            playbooks/prepare-odl-tests.yml"
+          fi
+
           while read var; do
               declare -x "\${var}" 2>/dev/null
               echo $var
