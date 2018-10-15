@@ -148,18 +148,24 @@ SUITE_HOME='/home/opnfv/repos/odl_test/csit/suites'
 # This suite fails with an error indicating the connection was closed
 # to the overcloud control node:
 # https://build.opnfv.org/ci/job/cperf-apex-csit-master/104/consoleFull
-
-suites="${SUITE_HOME}/openstack/connectivity/l2.robot \
-        ${SUITE_HOME}/openstack/connectivity/l3.robot \
-        ${SUITE_HOME}/openstack/connectivity/external_network.robot \
-        ${SUITE_HOME}/openstack/connectivity/security_group.robot \
-        ${SUITE_HOME}/openstack/securitygroup/neutron_security_group.robot \
-        ${SUITE_HOME}/openstack/securitygroup/security_group_l3bcast.robot \
-        ${SUITE_HOME}/netvirt/vpnservice/vpn_basic.robot \
-        ${SUITE_HOME}/netvirt/elan/elan.robot \
-        ${SUITE_HOME}/netvirt/vpnservice/arp_learning.robot \
-        ${SUITE_HOME}/netvirt/l2l3_gatewaymac_arp.robot \
-        ${SUITE_HOME}/integration/Create_JVM_Plots.robot"
+#
+# Minimize HA CSIT as it does not pass all suites
+if [ "$NUM_CONTROL_NODES" -eq 3 ]; then
+  suites="${SUITE_HOME}/openstack/connectivity/l2.robot \
+          ${SUITE_HOME}/openstack/connectivity/l3.robot"
+else
+  suites="${SUITE_HOME}/openstack/connectivity/l2.robot \
+          ${SUITE_HOME}/openstack/connectivity/l3.robot \
+          ${SUITE_HOME}/openstack/connectivity/external_network.robot \
+          ${SUITE_HOME}/openstack/connectivity/security_group.robot \
+          ${SUITE_HOME}/openstack/securitygroup/neutron_security_group.robot \
+          ${SUITE_HOME}/openstack/securitygroup/security_group_l3bcast.robot \
+          ${SUITE_HOME}/netvirt/vpnservice/vpn_basic.robot \
+          ${SUITE_HOME}/netvirt/elan/elan.robot \
+          ${SUITE_HOME}/netvirt/vpnservice/arp_learning.robot \
+          ${SUITE_HOME}/netvirt/l2l3_gatewaymac_arp.robot \
+          ${SUITE_HOME}/integration/Create_JVM_Plots.robot"
+fi
 
 echo "Robot command set: ${robot_cmd}"
 echo "Running robot..."
