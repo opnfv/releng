@@ -141,8 +141,8 @@ if [[ "$JOB_NAME" =~ "virtual" ]]; then
   fi
 
   if [[ "$PROMOTE" == "True"  || "$CSIT_ENV_FLAG" == "True" ]]; then
-    if [[ "$DEPLOY_SCENARIO" =~ "queens" ]]; then
-      CSIT_ENV="csit-queens-environment.yaml"
+    if [[ "$OS_VERSION" != "master" ]]; then
+      CSIT_ENV="csit-${OS_VERSION}-environment.yaml"
     else
       CSIT_ENV="csit-environment.yaml"
     fi
