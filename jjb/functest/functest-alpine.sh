@@ -139,6 +139,10 @@ if [ "${INSTALLER_TYPE}" == 'fuel' ]; then
     envs="${envs} -e POD_ARCH=${COMPUTE_ARCH} -e IMAGE_PROPERTIES=\"${IMAGE_PROPERTIES}\""
 fi
 
+if [[ ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_SCENARIO} == 'os-nosdn-nofeature-noha' ]]; then
+    libvirt_vol="-v ${ssh_key}:${FUNCTEST_DIR}/conf/libvirt_key"
+    envs="${envs} -e LIBVIRT_USER=ubuntu -e LIBVIRT_KEY_PATH=${FUNCTEST_DIR}/conf/libvirt_key"
+fi
 
 if [[ ${INSTALLER_TYPE} == 'compass' && ${DEPLOY_SCENARIO} =~ 'sfc' ]]; then
     ssh_key="/tmp/id_rsa"
@@ -160,7 +164,7 @@ if [[ ${DEPLOY_SCENARIO} == *"ovs"* ]] || [[ ${DEPLOY_SCENARIO} == *"fdio"* ]]; 
     envs="${envs} -e IMAGE_PROPERTIES=\"${IMAGE_PROPERTIES}\" -e FLAVOR_EXTRA_SPECS=\"${FLAVOR_EXTRA_SPECS}\""
 fi
 
-volumes="${images_vol} ${results_vol} ${sshkey_vol} ${userconfig_vol} ${rc_file_vol} ${cacert_file_vol}"
+volumes="${images_vol} ${results_vol} ${sshkey_vol} ${libvirt_vol} ${userconfig_vol} ${rc_file_vol} ${cacert_file_vol}"
 
 ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
 echo 0 > ${ret_val_file}
