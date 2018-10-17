@@ -198,14 +198,16 @@
           #!/bin/bash -ex
           case "{stream}" in
           "master")
-              tag="latest" ;;
+              sudo manifest-tool push from-args \
+                  --platforms linux/amd64,linux/arm64 \
+                  --template opnfv/compass-{image}:ARCH-latest \
+                  --target opnfv/compass-{image}:latest ;;
           *)
-              tag="{stream}" ;;
+              sudo manifest-tool push from-args \
+                  --platforms linux/amd64,linux/arm64 \
+                  --template opnfv/compass-{image}:ARCH-stable \
+                  --target opnfv/compass-{image}:{stream} ;;
           esac
-          sudo manifest-tool push from-args \
-              --platforms linux/amd64,linux/arm64 \
-              --template opnfv/compass-{image}:ARCH-$tag \
-              --target opnfv/compass-{image}:$tag
           exit $?
 
 # parameter macro
@@ -256,9 +258,7 @@
     publishers:
       - email:
           recipients: >
-            chigang@huawei.com
-            huangxiangyui5@huawei.com
-            xueyifei@huawei.com
+            huangxiangyu5@huawei.com
             wutianwei1@huawei.com
 
 - publisher:
