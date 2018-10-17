@@ -136,7 +136,7 @@ if [ "${INSTALLER_TYPE}" == 'fuel' ]; then
     COMPUTE_ARCH=$(ssh -l ubuntu ${INSTALLER_IP} -i ${SSH_KEY} ${ssh_options} \
         "sudo salt 'cmp*' grains.get cpuarch --out yaml | awk '{print \$2; exit}'")
     IMAGE_PROPERTIES="hw_disk_bus:scsi,hw_scsi_model:virtio-scsi"
-    envs="${envs} -e POD_ARCH=${COMPUTE_ARCH} -e IMAGE_PROPERTIES=${IMAGE_PROPERTIES}"
+    envs="${envs} -e POD_ARCH=${COMPUTE_ARCH}"
 fi
 
 if [[ ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_SCENARIO} == 'os-nosdn-nofeature-noha' ]]; then
@@ -156,12 +156,15 @@ fi
 
 if [[ ${DEPLOY_SCENARIO} == *"ovs"* ]] || [[ ${DEPLOY_SCENARIO} == *"fdio"* ]]; then
     if [[ -n ${IMAGE_PROPERTIES} ]]; then
-        IMAGE_PROPERTIES="${IMAGE_PROPERTIES}, hw_mem_page_size: large"
+        IMAGE_PROPERTIES="${IMAGE_PROPERTIES},hw_mem_page_size:large"
     else
-        IMAGE_PROPERTIES="hw_mem_page_size: large"
+        IMAGE_PROPERTIES="hw_mem_page_size:large"
     fi
-    FLAVOR_EXTRA_SPECS="hw:mem_page_size: large"
-    envs="${envs} -e IMAGE_PROPERTIES=\"${IMAGE_PROPERTIES}\" -e FLAVOR_EXTRA_SPECS=\"${FLAVOR_EXTRA_SPECS}\""
+    FLAVOR_EXTRA_SPECS="hw:mem_page_size:large"
+fi
+
+if [[ -n ${IMAGE_PROPERTIES} ]] || [[ ${FLAVOR_EXTRA_SPECS} ]]; then
+    envs="${envs} -e IMAGE_PROPERTIES=${IMAGE_PROPERTIES} -e FLAVOR_EXTRA_SPECS=${FLAVOR_EXTRA_SPECS}"
 fi
 
 volumes="${images_vol} ${results_vol} ${sshkey_vol} ${libvirt_vol} ${userconfig_vol} ${rc_file_vol} ${cacert_file_vol}"
