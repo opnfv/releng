@@ -741,7 +741,10 @@
           name: ODL_BRANCH
           default: '{odl_branch}'
           description: ODL branch being used
-
+      - string:
+          name: FORCE_PROMOTE
+          default: 'False'
+          description: "Used to force promotion and skip CSIT"
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -801,6 +804,7 @@
                 SSH_KEY_PATH=/tmp/csit/id_rsa
                 ODL_CONTAINERIZED=true
                 OS_VERSION=$OS_VERSION
+                SKIP_CSIT=$FORCE_PROMOTE
               node-parameters: true
               kill-phase-on: NEVER
               abort-all-job: false

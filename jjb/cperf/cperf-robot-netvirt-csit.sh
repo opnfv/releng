@@ -4,6 +4,11 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+if [[ ! -z ${SKIP_CSIT+x} && "$SKIP_CSIT" == "True" ]]; then
+  echo "Skipping csit run"
+  exit 0
+fi
+
 if [ "$OS_VERSION" == 'master' ]; then
   FULL_OS_VER='master'
 else
