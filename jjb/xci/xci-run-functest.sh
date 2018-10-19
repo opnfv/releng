@@ -49,9 +49,7 @@ export XCI_VENV=${XCI_PATH}/venv
 
 ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm "source $XCI_VENV/bin/activate; \
     while read var; do declare -x \"\${var}\" 2>/dev/null; done < ${XCI_PATH}/.cache/xci.env && \
-    cd releng-xci/xci && ansible-playbook -i playbooks/dynamic_inventory.py \
-    -i ${XCI_PATH}/.cache/repos/openstack-ansible/inventory/dynamic_inventory.py \
-    playbooks/prepare-tests.yml"
+    cd releng-xci/xci && ansible-playbook -i playbooks/dynamic_inventory.py playbooks/prepare-tests.yml"
 echo "Prepare OPNFV VM for Tests"
 ssh -F $HOME/.ssh/${DISTRO}-xci-vm-config ${DISTRO}_xci_vm_opnfv "/root/prepare-tests.sh"
 echo "Running Functest"
