@@ -424,14 +424,16 @@
               git-revision: false
       - shell: |
           features=$(echo $DEPLOY_SCENARIO | sed -r -n 's/os-.+-(.+)-(noha|ha)/\1/p')
-          if [ "$features" == 'queens' ]; then
-            functest_scenario=$(echo $DEPLOY_SCENARIO | sed -r -n 's/(os-.+?)-queens-(noha|ha)/\1-nofeature-\2/p')
-          elif [[ "$features" =~ 'queens' ]]; then
-            functest_scenario=$(echo $DEPLOY_SCENARIO | sed -r -n 's/(os-.+?)-(.+)_queens-(noha|ha)/\1-\2-\3/p')
+          if [ "$features" == 'rocky' ]; then
+            functest_scenario=$(echo $DEPLOY_SCENARIO | sed -r -n 's/(os-.+?)-rocky-(noha|ha)/\1-nofeature-\2/p')
+            echo "DOCKER_TAG=hunter" > functest_scenario
+          elif [[ "$features" =~ 'rocky' ]]; then
+            functest_scenario=$(echo $DEPLOY_SCENARIO | sed -r -n 's/(os-.+?)-(.+)_rocky-(noha|ha)/\1-\2-\3/p')
+            echo "DOCKER_TAG=hunter" > functest_scenario
           else
             functest_scenario=$DEPLOY_SCENARIO
           fi
-          echo "DEPLOY_SCENARIO=$functest_scenario" > functest_scenario
+          echo "DEPLOY_SCENARIO=$functest_scenario" >> functest_scenario
       - inject:
           properties-file: functest_scenario
           override-build-parameters: true
