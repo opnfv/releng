@@ -353,6 +353,16 @@
               kill-phase-on: FAILURE
               abort-all-job: true
               git-revision: true
+      - shell: |
+          features=$(echo $DEPLOY_SCENARIO | sed -r -n 's/os-.+-(.+)-(noha|ha)/\1/p')
+          if [ "$features" == 'rocky' ]; then
+            echo "DOCKER_TAG=hunter" > functest_tag
+          elif [[ "$features" =~ 'rocky' ]]; then
+            echo "DOCKER_TAG=hunter" > functest_tag
+          fi
+      - inject:
+          properties-file: functest_tag
+          override-build-parameters: true
       - multijob:
           name: functest-smoke
           condition: ALWAYS
