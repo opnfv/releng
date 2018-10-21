@@ -8,6 +8,7 @@ REPO=${REPO:-opnfv}
 CI_LOOP=${CI_LOOP:-daily}
 TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results
 ENERGY_RECORDER_API_URL=http://energy.opnfv.fr/resources
+DOCKER_TAG=${DOCKER_TAG:-$([[ ${BRANCH##*/} == "master" ]] && echo "latest" || echo ${BRANCH##*/})}
 
 check_os_deployment() {
     FUNCTEST_IMAGE=${REPO}/functest-healthcheck:${DOCKER_TAG}
@@ -87,7 +88,6 @@ FUNCTEST_DIR=/home/opnfv/functest
 DEPLOY_TYPE=baremetal
 [[ $BUILD_TAG =~ "virtual" ]] && DEPLOY_TYPE=virt
 HOST_ARCH=$(uname -m)
-DOCKER_TAG=`[[ ${BRANCH##*/} == "master" ]] && echo "latest" || echo ${BRANCH##*/}`
 
 # Prepare OpenStack credentials volume
 rc_file=${HOME}/opnfv-openrc.sh
