@@ -43,6 +43,7 @@ run_tiers() {
             echo ${ret_value} > ${ret_val_file}
             if [ ${tier} == 'healthcheck' ]; then
                 echo "Healthcheck tier failed. Exiting Functest..."
+                skip_tests=1
                 break
             fi
         fi
@@ -186,6 +187,7 @@ elif [ ${FUNCTEST_MODE} == 'tier' ]; then
     run_tiers ${tiers}
 else
     tests=(tempest_full tempest_scenario)
+    skip_tests=0
     if [ ${DEPLOY_TYPE} == 'baremetal' ] && [ "${HOST_ARCH}" != "aarch64" ]; then
         if [[ ${BRANCH} == "stable/fraser" ]]; then
             tiers=(healthcheck smoke features vnf parser)
@@ -202,7 +204,9 @@ else
         fi
     fi
     run_tiers ${tiers}
-    for test in "${tests[@]}"; do
-        run_test "$test"
-    done
+    if [ ${skip_tests} -eq 0 ]; then
+        for test in "${tests[@]}"; do
+            run_test "$test"
+        done
+    fi
 fi
