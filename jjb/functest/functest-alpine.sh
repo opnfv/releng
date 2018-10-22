@@ -131,6 +131,9 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
 
 ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
+if [ "${INSTALLER_TYPE}" == 'apex' ]; then
+    envs="${envs} -e STORAGE_PROTOCOL=ceph"
+fi
 
 if [ "${INSTALLER_TYPE}" == 'fuel' ]; then
     COMPUTE_ARCH=$(ssh -l ubuntu ${INSTALLER_IP} -i ${SSH_KEY} ${ssh_options} \
