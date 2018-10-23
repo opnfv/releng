@@ -132,7 +132,7 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
 
 ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
-if [ "${INSTALLER_TYPE}" == 'apex' ]; then
+if [[ "${INSTALLER_TYPE}" == 'apex' ]] || [[ "${INSTALLER_TYPE}" == 'compass' ]]; then
     envs="${envs} -e STORAGE_PROTOCOL=ceph"
 fi
 
