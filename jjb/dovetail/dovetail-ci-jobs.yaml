@@ -26,6 +26,12 @@
       dovetail-branch: 'stable/{stream}'
       gs-pathname: '/{stream}'
       docker-tag: 'ovp-2.0.0'
+    gambia: &gambia
+      stream: gambia
+      branch: 'stable/{stream}'
+      dovetail-branch: 'master'
+      gs-pathname: '/{stream}'
+      docker-tag: 'latest'
 
     # ----------------------------------
     # POD, PLATFORM, AND BRANCH MAPPING
@@ -81,6 +87,16 @@
           SUT: compass
           auto-trigger-name: 'daily-trigger-disabled'
           <<: *fraser
+      - baremetal:
+          slave-label: compass-baremetal
+          SUT: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *gambia
+      - virtual:
+          slave-label: compass-virtual
+          SUT: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *gambia
       # -------------------------------
       #    Installers not using labels
       #            CI PODs
