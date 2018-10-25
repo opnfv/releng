@@ -25,6 +25,12 @@
       gs-pathname: '/{stream}'
       gs-packagepath: '/{stream}/{suite}'
       docker-tag: 'stable'
+    fraser: &gambia
+      stream: gambia
+      branch: 'stable/{stream}'
+      gs-pathname: '/{stream}'
+      gs-packagepath: '/{stream}/{suite}'
+      docker-tag: 'stable'
     # -------------------------------
     # POD, INSTALLER, AND BRANCH MAPPING
     # -------------------------------
@@ -55,6 +61,16 @@
           installer: compass
           auto-trigger-name: 'daily-trigger-disabled'
           <<: *fraser
+      - baremetal:
+          slave-label: compass-baremetal-branch
+          installer: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *gambia
+      - virtual:
+          slave-label: compass-virtual-branch
+          installer: compass
+          auto-trigger-name: 'daily-trigger-disabled'
+          <<: *gambia
 
     # -------------------------------
     #        None-CI PODs
