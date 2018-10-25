@@ -39,6 +39,9 @@ FUEL_LOG_FILENAME="${JOB_NAME}_${BUILD_NUMBER}.log.tar.gz"
 # Limited scope for vPOD verify jobs running on armband-virtual
 [[ ! "${JOB_NAME}" =~ verify-deploy-virtual-arm64 ]] || EXTRA_ARGS='-e'
 
+# turn on DEBUG mode
+[[ ${CI_DEBUG,,} == true ]] && EXTRA_ARGS="-D ${EXTRA_ARGS:-}"
+
 # construct the command
 DEPLOY_COMMAND="${WORKSPACE}/ci/deploy.sh \
     -l ${LAB_NAME} -p ${POD_NAME} -s ${DEPLOY_SCENARIO} \
