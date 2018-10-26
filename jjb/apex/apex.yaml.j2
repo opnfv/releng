@@ -432,6 +432,7 @@
             echo "DOCKER_TAG=hunter" > functest_scenario
           else
             functest_scenario=$DEPLOY_SCENARIO
+            DOCKER_TAG=''
           fi
           echo "DEPLOY_SCENARIO=$functest_scenario" >> functest_scenario
       - inject:
@@ -487,6 +488,10 @@
           name: DEPLOY_SCENARIO
           default: '{scenario}'
           description: "Scenario to deploy with."
+      - string:
+          name: DOCKER_TAG
+          default: ''
+          description: Default docker tag to pass to functest
 
     properties:
       - logrotate-default
@@ -515,6 +520,7 @@
               current-parameters: false
               predefined-parameters:
                 DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                DOCKER_TAG=$DOCKER_TAG
               kill-phase-on: NEVER
               abort-all-job: false
               git-revision: false
