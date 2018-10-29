@@ -94,15 +94,6 @@
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               kill-phase-on: FAILURE
               git-revision: true
-            - name: 'doctor-verify-maintenance-apex-sample-x86_64-{stream}'
-              predefined-parameters: |
-                PROJECT=$PROJECT
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              kill-phase-on: FAILURE
-              git-revision: true
       - multijob:
           name: 'doctor-verify-congress'
           execution-type: PARALLEL
@@ -119,7 +110,16 @@
       - multijob:
           name: 'doctor-verify-sample-all'
           execution-type: PARALLEL
-          # This would be for running all test cases with sample inspector
+          projects:
+            - name: 'doctor-verify-all-apex-sample-x86_64-{stream}'
+              predefined-parameters: |
+                PROJECT=$PROJECT
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              kill-phase-on: FAILURE
+              git-revision: true
       - multijob:
           name: 'doctor-verify-congress-all'
           execution-type: PARALLEL
