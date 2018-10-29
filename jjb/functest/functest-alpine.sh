@@ -132,10 +132,6 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
 
 ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
-if [[ "${INSTALLER_TYPE}" == 'apex' ]] || [[ "${INSTALLER_TYPE}" == 'compass' ]]; then
-    envs="${envs} -e STORAGE_PROTOCOL=ceph"
-fi
-
 if [ "${INSTALLER_TYPE}" == 'fuel' ]; then
     COMPUTE_ARCH=$(ssh -l ubuntu ${INSTALLER_IP} -i ${SSH_KEY} ${ssh_options} \
         "sudo salt 'cmp*' grains.get cpuarch --out yaml | awk '{print \$2; exit}'")
@@ -171,7 +167,88 @@ if [[ -n ${IMAGE_PROPERTIES} ]] || [[ -n ${FLAVOR_EXTRA_SPECS} ]]; then
     envs="${envs} -e IMAGE_PROPERTIES=${IMAGE_PROPERTIES} -e FLAVOR_EXTRA_SPECS=${FLAVOR_EXTRA_SPECS}"
 fi
 
-volumes="${images_vol} ${results_vol} ${sshkey_vol} ${libvirt_vol} ${userconfig_vol} ${rc_file_vol} ${cacert_file_vol}"
+tempest_conf_yaml=$(mktemp)
+case ${INSTALLER_TYPE} in
+apex)
+    cat << EOF > "${tempest_conf_yaml}"
+---
+compute-feature-enabled:
+    shelve: false
+    vnc_console: true
+identity-feature-enabled:
+    api_v2: false
+    api_v2_admin: false
+image-feature-enabled:
+    api_v2: true
+    api_v1: false
+volume:
+    storage_protocol: ceph
+volume-feature-enabled:
+    backup: false
+EOF
+    ;;
+compass)
+    cat << EOF > "${tempest_conf_yaml}"
+---
+compute-feature-enabled:
+    shelve: false
+    vnc_console: false
+    spice_console: true
+identity-feature-enabled:
+    api_v2: false
+    api_v2_admin: false
+image-feature-enabled:
+    api_v2: true
+    api_v1: false
+volume:
+    storage_protocol: ceph
+volume-feature-enabled:
+    backup: false
+EOF
+    ;;
+fuel)
+    cat << EOF > "${tempest_conf_yaml}"
+---
+compute-feature-enabled:
+    shelve: false
+    vnc_console: false
+    spice_console: true
+identity-feature-enabled:
+    api_v2: false
+    api_v2_admin: false
+image-feature-enabled:
+    api_v2: true
+    api_v1: false
+volume:
+    storage_protocol: iSCSI
+volume-feature-enabled:
+    backup: false
+EOF
+    ;;
+*)
+    cat << EOF > "${tempest_conf_yaml}"
+---
+compute-feature-enabled:
+    shelve: false
+    vnc_console: false
+identity-feature-enabled:
+    api_v2: false
+    api_v2_admin: false
+image-feature-enabled:
+    api_v2: true
+    api_v1: false
+volume:
+    storage_protocol: iSCSI
+volume-feature-enabled:
+    backup: false
+EOF
+    ;;
+esac
+echo "tempest_conf.yaml:" && cat "${tempest_conf_yaml}"
+
+volumes="${images_vol} ${results_vol} ${sshkey_vol} ${libvirt_vol} \
+    ${userconfig_vol} ${rc_file_vol} ${cacert_file_vol} \
+    -v ${tempest_conf_yaml}:/usr/lib/python2.7/site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/tempest_conf.yaml"
 
 ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
 echo 0 > ${ret_val_file}
