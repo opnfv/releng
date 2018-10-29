@@ -21,7 +21,12 @@
           # This is used for different test suite dependent packages storage
           gs-packagepath: '/{suite}'
           disabled: false
-      - fraser: &fraser
+      - gambia:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          gs-packagepath: '/{stream}/{suite}'
+          disabled: false
+      - fraser:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           gs-packagepath: '/{stream}/{suite}'
@@ -70,7 +75,6 @@
                   branch-pattern: '**/{branch}'
 
     builders:
-      # - bottlenecks-hello
       - bottlenecks-unit-tests
 
 - job-template:
@@ -103,7 +107,6 @@
 
     builders:
       - bottlenecks-hello
-      # - bottlenecks-unit-tests
 
 - job-template:
     name: 'bottlenecks-{suite}-upload-artifacts-{stream}'
