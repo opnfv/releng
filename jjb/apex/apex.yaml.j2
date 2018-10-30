@@ -432,7 +432,7 @@
             echo "DOCKER_TAG=hunter" > functest_scenario
           else
             functest_scenario=$DEPLOY_SCENARIO
-            echo "DOCKER_TAG=''" > functest_scenario
+            echo "DOCKER_TAG=$([[ ${BRANCH##*/} == "master" ]] && echo "latest" || echo ${BRANCH##*/})" > functest_scenario
           fi
           echo "DEPLOY_SCENARIO=$functest_scenario" >> functest_scenario
       - inject:
