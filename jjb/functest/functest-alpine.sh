@@ -157,6 +157,10 @@ if [[ ${INSTALLER_TYPE} == 'compass' && ${DEPLOY_SCENARIO} =~ 'sfc' ]]; then
     envs="${envs} -e EXTERNAL_NETWORK=${EXTERNAL_NETWORK}"
 fi
 
+if [[ ${INSTALLER_TYPE} == 'compass' ]] || [[ ${DEPLOY_SCENARIO} == *"odl"* ]]; then
+      envs="${envs} -e SDN_CONTROLLER_RESTCONFPORT=8080"
+fi
+
 if [[ ${DEPLOY_SCENARIO} == *"ovs"* ]] || [[ ${DEPLOY_SCENARIO} == *"fdio"* ]]; then
     if [[ -n ${IMAGE_PROPERTIES} ]]; then
         IMAGE_PROPERTIES="${IMAGE_PROPERTIES},hw_mem_page_size:large"
