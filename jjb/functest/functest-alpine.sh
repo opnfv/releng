@@ -8,13 +8,10 @@ REPO=${REPO:-opnfv}
 CI_LOOP=${CI_LOOP:-daily}
 TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results
 ENERGY_RECORDER_API_URL=http://energy.opnfv.fr/resources
-
-if [ -z $DOCKER_TAG ]; then
-    DOCKER_TAG=$([[ ${BRANCH##*/} == "master" ]] && echo "latest" || echo ${BRANCH##*/})
-fi
+DOCKER_TAG=${DOCKER_TAG:-$([[ ${BRANCH##*/} == "master" ]] && echo "latest" || echo ${BRANCH##*/})}
 
 check_os_deployment() {
-    FUNCTEST_IMAGE=${REPO}/functest-healthcheck:$DOCKER_TAG
+    FUNCTEST_IMAGE=${REPO}/functest-healthcheck:${DOCKER_TAG}
     echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
     docker pull ${FUNCTEST_IMAGE}>/dev/null
     cmd="docker run --rm ${volumes} ${FUNCTEST_IMAGE} check_deployment"
@@ -35,7 +32,7 @@ run_tiers() {
     cmd_opt="run_tests -r -t all"
     [[ $BUILD_TAG =~ "suite" ]] && cmd_opt="run_tests -t all"
     for tier in ${tiers[@]}; do
-        FUNCTEST_IMAGE=${REPO}/functest-${tier}:$DOCKER_TAG
+        FUNCTEST_IMAGE=${REPO}/functest-${tier}:${DOCKER_TAG}
         echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
         docker pull ${FUNCTEST_IMAGE}>/dev/null
         cmd="docker run --rm  ${envs} ${volumes} ${TESTCASE_OPTIONS} ${FUNCTEST_IMAGE} /bin/bash -c '${cmd_opt}'"
@@ -59,17 +56,17 @@ run_test() {
     # Determine which Functest image should be used for the test case
     case ${test_name} in
         connection_check|tenantnetwork1|tenantnetwork2|vmready1|vmready2|singlevm1|singlevm2|vping_ssh|vping_userdata|cinder_test|odl|api_check|snaps_health_check)
-            FUNCTEST_IMAGE=${REPO}/functest-healthcheck:$DOCKER_TAG ;;
+            FUNCTEST_IMAGE=${REPO}/functest-healthcheck:${DOCKER_TAG} ;;
         tempest_smoke_serial|tempest_smoke|neutron-tempest-plugin-api|rally_sanity|refstack_defcore|patrole|snaps_smoke|neutron_trunk|networking-bgpvpn|networking-sfc|barbican)
-            FUNCTEST_IMAGE=${REPO}/functest-smoke:$DOCKER_TAG ;;
+            FUNCTEST_IMAGE=${REPO}/functest-smoke:${DOCKER_TAG} ;;
         shaker|vmtp)
-            FUNCTEST_IMAGE=${REPO}/functest-benchmarking:$DOCKER_TAG ;;
+            FUNCTEST_IMAGE=${REPO}/functest-benchmarking:${DOCKER_TAG} ;;
         tempest_full_parallel|tempest_full|tempest_scenario|rally_full)
-            FUNCTEST_IMAGE=${REPO}/functest-components:$DOCKER_TAG ;;
+            FUNCTEST_IMAGE=${REPO}/functest-components:${DOCKER_TAG} ;;
         cloudify|cloudify_ims|heat_ims|vyos_vrouter|juju_epc)
-            FUNCTEST_IMAGE=${REPO}/functest-vnf:$DOCKER_TAG ;;
+            FUNCTEST_IMAGE=${REPO}/functest-vnf:${DOCKER_TAG} ;;
         doctor-notification|bgpvpn|functest-odl-sfc|barometercollectd|fds|vgpu|stor4nfv_os)
-            FUNCTEST_IMAGE=${REPO}/functest-features:$DOCKER_TAG ;;
+            FUNCTEST_IMAGE=${REPO}/functest-features:${DOCKER_TAG} ;;
         *)
             echo "Unkown test case $test_name"
             exit 1
@@ -126,7 +123,7 @@ mkdir -p ${dir_result}
 sudo rm -rf ${dir_result}/*
 results_vol="-v ${dir_result}:${FUNCTEST_DIR}/results"
 custom_params=
-test -f ${HOME}/opnfv/functest/custom/params_$DOCKER_TAG && custom_params=$(cat ${HOME}/opnfv/functest/custom/params_$DOCKER_TAG)
+test -f ${HOME}/opnfv/functest/custom/params_${DOCKER_TAG} && custom_params=$(cat ${HOME}/opnfv/functest/custom/params_${DOCKER_TAG})
 
 envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} -e INSTALLER_IP=${INSTALLER_IP} \
     -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
