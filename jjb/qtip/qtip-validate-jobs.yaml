@@ -14,11 +14,13 @@
       branch: '{stream}'
       gs-pathname: ''
       docker-tag: latest
+      disabled: false
     fraser: &fraser
       stream: fraser
       branch: 'stable/{stream}'
       gs-pathname: '{stream}'
       docker-tag: 'stable'
+      disabled: false
 
     # -------------------------------
     # JOB VARIABLES
@@ -27,16 +29,19 @@
       - compute:
           installer: apex
           pod: zte-virtual5
+          disabled: true
           sut: node
           <<: *master
       - storage:
           installer: apex
           pod: zte-virtual5
+          disabled: true
           sut: ''
           <<: *master
       - network:
           installer: apex
           pod: zte-virtual5
+          disabled: true
           sut: ''
           <<: *master
       - compute:
@@ -47,11 +52,13 @@
       - compute:
           installer: apex
           pod: zte-virtual5
+          disabled: true
           sut: node
           <<: *fraser
       - storage:
           installer: apex
           pod: zte-virtual5
+          disabled: true
           sut: ''
           <<: *fraser
       - compute:
@@ -72,7 +79,7 @@
 ################################
 - job-template:
     name: 'qtip-{qpi}-{installer}-{pod}-{stream}'
-    disabled: false
+    disabled: '{obj:disabled}'
 
     parameters:
       - project-parameter:
