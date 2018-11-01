@@ -360,7 +360,7 @@
           elif [[ "$features" =~ 'rocky' ]]; then
             echo "DOCKER_TAG=hunter" > functest_tag
           else
-            echo "DOCKER_TAG=''" > functest_tag
+            echo "DOCKER_TAG=latest" > functest_tag
           fi
       - inject:
           properties-file: functest_tag
@@ -373,7 +373,7 @@
               current-parameters: false
               predefined-parameters: |
                 DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-                DOCKER_TAG=""
+                DOCKER_TAG=$DOCKER_TAG
                 FUNCTEST_SUITE_NAME=tempest_smoke
                 FUNCTEST_MODE=testcase
                 GERRIT_BRANCH=$GERRIT_BRANCH
