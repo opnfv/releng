@@ -1,0 +1,193 @@
+---
+- job-template:
+    name: '{repo}-functest-{container}-{tag}-{test}'
+    node: 'functest-virtual'
+    builders:
+      - shell: |
+          cat << EOF > tempest_conf.yaml
+          ---
+          compute-feature-enabled:
+            resize: false
+            shelve: false
+            vnc_console: true
+          identity-feature-enabled:
+            api_v2: false
+            api_v2_admin: false
+          image-feature-enabled:
+            api_v2: true
+            api_v1: false
+          volume:
+            storage_protocol: iSCSI
+          volume-feature-enabled:
+            backup: false
+          EOF
+          sudo docker run \
+            --network=host \
+            -e DEPLOY_SCENARIO=os-odl-nofeature-noha \
+            -v $(pwd)/../deploy-apex/snap_cache/queens/noha-allinone/\
+          overcloudrc:/home/opnfv/functest/conf/env_file \
+            -v $(pwd)/tempest_conf.yaml:/usr/lib/python2.7/site-packages/functest/\
+          opnfv_tests/openstack/tempest/custom_tests/tempest_conf.yaml \
+            -v $(pwd)/../pull-images/images:/home/opnfv/functest/images \
+            -v $(pwd)/results:/home/opnfv/functest/results \
+            {repo}/functest-{container}:{tag} run_tests -t {test}
+
+- project:
+    name: 'opnfv-functest-healthcheck'
+    container: healthcheck
+    repo: opnfv
+    tag:
+      - gambia
+      - hunter
+      - latest
+    test:
+      - connection_check
+      - tenantnetwork1
+      - tenantnetwork2
+      - vmready1
+      - vmready2
+      - singlevm1
+      - singlevm2
+      - vping_ssh
+      - vping_userdata
+      - odl
+      - snaps_health_check
+    jobs:
+      - '{repo}-functest-{container}-{tag}-{test}'
+
+- project:
+    name: 'opnfv-functest-smoke'
+    container: smoke
+    repo: opnfv
+    tag:
+      - gambia
+      - hunter
+      - latest
+    test:
+      - tempest_smoke
+      - refstack_defcore
+      - patrole
+    jobs:
+      - '{repo}-functest-{container}-{tag}-{test}'
+
+- project:
+    name: 'opnfv-functest-components'
+    container: components
+    repo: opnfv
+    tag:
+      - gambia
+      - hunter
+      - latest
+    test:
+      - tempest_full
+    jobs:
+      - '{repo}-functest-{container}-{tag}-{test}'
+
+- job-template:
+    name: 'deploy-apex'
+    node: 'functest-virtual'
+    builders:
+      - shell: |
+          sudo usermod --append --groups libvirt $(whoami)
+          sudo setenforce 0
+          python3 -m virtualenv env
+          source env/bin/activate
+          pip install python-openstackclient \
+            git+https://gerrit.opnfv.org/gerrit/apex \
+            -c https://raw.githubusercontent.com/openstack/requirements/\
+          master/upper-constraints.txt
+          sudo env/bin/opnfv-clean | true
+          sudo ovs-vsctl del-br br-admin | true
+          sudo virsh net-destroy admin | true
+          sudo env/bin/opnfv-deploy --debug --virtual-computes 0 -v \
+            -d env/share/opnfv-apex/config/deploy/os-odl-queens-noha.yaml -s \
+            --snap-cache snap_cache --no-fetch
+          source snap_cache/queens/noha-allinone/overcloudrc
+          openstack network create --external --provider-network-type flat \
+            --provider-physical-network datacentre external
+          openstack subnet create \
+            --allocation-pool start=192.0.2.100,end=192.0.2.150 \
+            --network external --subnet-range 192.0.2.0/24 subnet
+          deactivate
+
+- job-template:
+    name: 'pull-images'
+    node: 'functest-virtual'
+    builders:
+      - shell: |
+          mkdir -p images
+          cd images
+          wget -N --progress=dot:giga \
+            http://download.cirros-cloud.net/0.4.0/cirros-0.4.0-x86_64-disk.img
+
+- job-template:
+    name: 'functest-virtual'
+    project-type: multijob
+    node: 'functest-virtual'
+    builders:
+      - multijob:
+          name: dependencies
+          projects:
+            - name: 'deploy-apex'
+            - name: 'pull-images'
+      - multijob:
+          name: functest gambia
+          projects:
+            - name: 'opnfv-functest-healthcheck-gambia-connection_check'
+            - name: 'opnfv-functest-healthcheck-gambia-tenantnetwork1'
+            - name: 'opnfv-functest-healthcheck-gambia-tenantnetwork2'
+            - name: 'opnfv-functest-healthcheck-gambia-vmready1'
+            - name: 'opnfv-functest-healthcheck-gambia-vmready2'
+            - name: 'opnfv-functest-healthcheck-gambia-singlevm1'
+            - name: 'opnfv-functest-healthcheck-gambia-singlevm2'
+            - name: 'opnfv-functest-healthcheck-gambia-vping_ssh'
+            - name: 'opnfv-functest-healthcheck-gambia-vping_userdata'
+            - name: 'opnfv-functest-healthcheck-gambia-odl'
+            - name: 'opnfv-functest-healthcheck-gambia-snaps_health_check'
+            - name: 'opnfv-functest-smoke-gambia-tempest_smoke'
+            - name: 'opnfv-functest-smoke-gambia-refstack_defcore'
+            - name: 'opnfv-functest-smoke-gambia-patrole'
+            - name: 'opnfv-functest-components-gambia-tempest_full'
+      - multijob:
+          name: functest hunter
+          projects:
+            - name: 'opnfv-functest-healthcheck-hunter-connection_check'
+            - name: 'opnfv-functest-healthcheck-hunter-tenantnetwork1'
+            - name: 'opnfv-functest-healthcheck-hunter-tenantnetwork2'
+            - name: 'opnfv-functest-healthcheck-hunter-vmready1'
+            - name: 'opnfv-functest-healthcheck-hunter-vmready2'
+            - name: 'opnfv-functest-healthcheck-hunter-singlevm1'
+            - name: 'opnfv-functest-healthcheck-hunter-singlevm2'
+            - name: 'opnfv-functest-healthcheck-hunter-vping_ssh'
+            - name: 'opnfv-functest-healthcheck-hunter-vping_userdata'
+            - name: 'opnfv-functest-healthcheck-hunter-odl'
+            - name: 'opnfv-functest-healthcheck-hunter-snaps_health_check'
+            - name: 'opnfv-functest-smoke-hunter-tempest_smoke'
+            - name: 'opnfv-functest-smoke-hunter-refstack_defcore'
+            - name: 'opnfv-functest-smoke-hunter-patrole'
+            - name: 'opnfv-functest-components-hunter-tempest_full'
+      - multijob:
+          name: functest latest
+          projects:
+            - name: 'opnfv-functest-healthcheck-latest-connection_check'
+            - name: 'opnfv-functest-healthcheck-latest-tenantnetwork1'
+            - name: 'opnfv-functest-healthcheck-latest-tenantnetwork2'
+            - name: 'opnfv-functest-healthcheck-latest-vmready1'
+            - name: 'opnfv-functest-healthcheck-latest-vmready2'
+            - name: 'opnfv-functest-healthcheck-latest-singlevm1'
+            - name: 'opnfv-functest-healthcheck-latest-singlevm2'
+            - name: 'opnfv-functest-healthcheck-latest-vping_ssh'
+            - name: 'opnfv-functest-healthcheck-latest-vping_userdata'
+            - name: 'opnfv-functest-healthcheck-latest-odl'
+            - name: 'opnfv-functest-healthcheck-latest-snaps_health_check'
+            - name: 'opnfv-functest-smoke-latest-tempest_smoke'
+            - name: 'opnfv-functest-smoke-latest-refstack_defcore'
+            - name: 'opnfv-functest-smoke-latest-patrole'
+            - name: 'opnfv-functest-components-latest-tempest_full'
+
+- project:
+    name: 'functest-virtual'
+    jobs:
+      - 'functest-virtual'
+      - 'deploy-apex'
+      - 'pull-images'
