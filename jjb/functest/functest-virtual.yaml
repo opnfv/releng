@@ -1,0 +1,123 @@
+---
+- job-template:
+    name: '{repo}-functest-{container}-{tag}-{test}'
+    parameters:
+      - functest-virtual-defaults
+    builders:
+      - shell: |
+          sudo docker run \
+            -e EXTERNAL_NETWORK=public1 \
+            -v /home/opnfv/functest/results/$JOB_NAME-$BUILD_ID:\
+          /home/opnfv/functest/results \
+            -v /home/opnfv/functest/openstack.creds:\
+          /home/opnfv/functest/conf/env_file \
+            -v /home/opnfv/functest/images:/home/opnfv/functest/images \
+            {repo}/functest-{container}:{tag} run_tests -t {test}
+
+- project:
+    name: 'opnfv-functest-healthcheck'
+    container: healthcheck
+    repo: opnfv
+    tag:
+      - gambia
+      - hunter
+      - latest
+    test:
+      - connection_check
+      - tenantnetwork1
+      - tenantnetwork2
+      - vmready1
+      - vmready2
+      - singlevm1
+      - singlevm2
+      - vping_ssh
+      - vping_userdata
+      - cinder_test
+      - odl
+      - api_check
+      - snaps_health_check
+    jobs:
+      - '{repo}-functest-{container}-{tag}-{test}'
+
+- project:
+    name: 'opnfv-functest-smoke'
+    container: smoke
+    repo: opnfv
+    tag:
+      - gambia
+      - hunter
+      - latest
+    test:
+      - tempest_smoke
+      - refstack_defcore
+      - patrole
+    jobs:
+      - '{repo}-functest-{container}-{tag}-{test}'
+
+- job-template:
+    name: 'functest-virtual'
+    project-type: multijob
+    node: 'functest-virtual'
+    builders:
+      - multijob:
+          name: functest gambia
+          projects:
+            - name: 'opnfv-functest-healthcheck-gambia-connection_check'
+            - name: 'opnfv-functest-healthcheck-gambia-tenantnetwork1'
+            - name: 'opnfv-functest-healthcheck-gambia-tenantnetwork2'
+            - name: 'opnfv-functest-healthcheck-gambia-vmready1'
+            - name: 'opnfv-functest-healthcheck-gambia-vmready2'
+            - name: 'opnfv-functest-healthcheck-gambia-singlevm1'
+            - name: 'opnfv-functest-healthcheck-gambia-singlevm2'
+            - name: 'opnfv-functest-healthcheck-gambia-vping_ssh'
+            - name: 'opnfv-functest-healthcheck-gambia-vping_userdata'
+            - name: 'opnfv-functest-healthcheck-gambia-cinder_test'
+            - name: 'opnfv-functest-healthcheck-gambia-odl'
+            - name: 'opnfv-functest-healthcheck-gambia-api_check'
+            - name: 'opnfv-functest-healthcheck-gambia-snaps_health_check'
+            - name: 'opnfv-functest-smoke-gambia-tempest_smoke'
+            - name: 'opnfv-functest-smoke-gambia-refstack_defcore'
+            - name: 'opnfv-functest-smoke-gambia-patrole'
+      - multijob:
+          name: functest hunter
+          projects:
+            - name: 'opnfv-functest-healthcheck-hunter-connection_check'
+            - name: 'opnfv-functest-healthcheck-hunter-tenantnetwork1'
+            - name: 'opnfv-functest-healthcheck-hunter-tenantnetwork2'
+            - name: 'opnfv-functest-healthcheck-hunter-vmready1'
+            - name: 'opnfv-functest-healthcheck-hunter-vmready2'
+            - name: 'opnfv-functest-healthcheck-hunter-singlevm1'
+            - name: 'opnfv-functest-healthcheck-hunter-singlevm2'
+            - name: 'opnfv-functest-healthcheck-hunter-vping_ssh'
+            - name: 'opnfv-functest-healthcheck-hunter-vping_userdata'
+            - name: 'opnfv-functest-healthcheck-hunter-cinder_test'
+            - name: 'opnfv-functest-healthcheck-hunter-odl'
+            - name: 'opnfv-functest-healthcheck-hunter-api_check'
+            - name: 'opnfv-functest-healthcheck-hunter-snaps_health_check'
+            - name: 'opnfv-functest-smoke-hunter-tempest_smoke'
+            - name: 'opnfv-functest-smoke-hunter-refstack_defcore'
+            - name: 'opnfv-functest-smoke-hunter-patrole'
+      - multijob:
+          name: functest latest
+          projects:
+            - name: 'opnfv-functest-healthcheck-latest-connection_check'
+            - name: 'opnfv-functest-healthcheck-latest-tenantnetwork1'
+            - name: 'opnfv-functest-healthcheck-latest-tenantnetwork2'
+            - name: 'opnfv-functest-healthcheck-latest-vmready1'
+            - name: 'opnfv-functest-healthcheck-latest-vmready2'
+            - name: 'opnfv-functest-healthcheck-latest-singlevm1'
+            - name: 'opnfv-functest-healthcheck-latest-singlevm2'
+            - name: 'opnfv-functest-healthcheck-latest-vping_ssh'
+            - name: 'opnfv-functest-healthcheck-latest-vping_userdata'
+            - name: 'opnfv-functest-healthcheck-hunter-cinder_test'
+            - name: 'opnfv-functest-healthcheck-latest-odl'
+            - name: 'opnfv-functest-healthcheck-hunter-api_check'
+            - name: 'opnfv-functest-healthcheck-latest-snaps_health_check'
+            - name: 'opnfv-functest-smoke-latest-tempest_smoke'
+            - name: 'opnfv-functest-smoke-latest-refstack_defcore'
+            - name: 'opnfv-functest-smoke-latest-patrole'
+
+- project:
+    name: 'functest-virtual'
+    jobs:
+      - 'functest-virtual'
