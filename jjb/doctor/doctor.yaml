@@ -76,15 +76,6 @@
           name: 'doctor-verify-sample'
           execution-type: PARALLEL
           projects:
-            - name: 'doctor-verify-fault_management-apex-sample-x86_64-{stream}'
-              predefined-parameters: |
-                PROJECT=$PROJECT
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              kill-phase-on: FAILURE
-              git-revision: true
             - name: 'doctor-verify-fault_management-daisy-sample-x86_64-{stream}'
               predefined-parameters: |
                 PROJECT=$PROJECT
@@ -94,6 +85,18 @@
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               kill-phase-on: FAILURE
               git-revision: true
+            - name: 'doctor-verify-sample-all'
+              execution-type: PARALLEL
+              projects:
+                - name: 'doctor-verify-all-apex-sample-x86_64-{stream}'
+                  predefined-parameters: |
+                    PROJECT=$PROJECT
+                    GERRIT_BRANCH=$GERRIT_BRANCH
+                    GERRIT_REFSPEC=$GERRIT_REFSPEC
+                    GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                    GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                  kill-phase-on: FAILURE
+                  git-revision: true
       - multijob:
           name: 'doctor-verify-congress'
           execution-type: PARALLEL
@@ -120,10 +123,6 @@
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
               kill-phase-on: FAILURE
               git-revision: true
-      - multijob:
-          name: 'doctor-verify-congress-all'
-          execution-type: PARALLEL
-          # This would be for running all test cases with congress inspector
 
 - job-template:
     name: 'doctor-verify-fault_management-{installer}-{inspector}-{arch}-{stream}'
@@ -176,7 +175,7 @@
 - job-template:
     name: 'doctor-verify-all-{installer}-{inspector}-{arch}-{stream}'
     disabled: '{obj:disabled}'
-    node: 'nokia-pod1'
+    node: 'doctor-{installer}-{arch}'
     wrappers:
       - ssh-agent-wrapper
       - build-timeout:
