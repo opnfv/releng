@@ -77,8 +77,9 @@
     name: sfc-unit-tests-and-docs
     builders:
       - shell: |
-          virtualenv /var/cache/sfc
-          source /var/cache/sfc
+          #!/bin/bash
+          virtualenv /var/tmp/sfc
+          source /var/tmp/sfc/bin/activate
           pip install tox
           cd $WORKSPACE && tox
 
