@@ -206,7 +206,7 @@
       # 1.here the stream means the SUT stream, dovetail stream is defined in its own job
       # 2.testsuite default here is for the test cases already added into OVP
       # 3.run default testsuite mandatory test cases against ha scenario
-      # 4.run default testsuite optional test cases against ha scenario
+      # 4.run default testsuite optional test cases against ha scenario twice one week
       # 5.not used for release criteria or compliance, only to debug the dovetail tool bugs
       - conditional-step:
           condition-kind: and
@@ -214,9 +214,6 @@
             - condition-kind: regex-match
               regex: '.*-ha'
               label: '{scenario}'
-            - condition-kind: regex-match
-              regex: 'fraser'
-              label: '{stream}'
           steps:
             - trigger-builds:
                 - project: 'dovetail-fuel-{pod}-default-mandatory-{stream}'
@@ -235,9 +232,12 @@
             - condition-kind: regex-match
               regex: '.*-ha'
               label: '{scenario}'
-            - condition-kind: regex-match
-              regex: 'fraser'
-              label: '{stream}'
+            - condition-kind: day-of-week
+              day-selector: select-days
+              days:
+                MON: true
+                WED: true
+              use-build-time: true
           steps:
             - trigger-builds:
                 - project: 'dovetail-fuel-{pod}-default-optional-{stream}'
