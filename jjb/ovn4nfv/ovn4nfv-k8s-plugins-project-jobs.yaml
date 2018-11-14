@@ -1,12 +1,12 @@
 ---
 - project:
-    name: ovn4nfv-k8s-plugins-project-jobs
+    name: ovn4nfv-k8s-plugin-project-jobs
 
-    project: 'ovn4nfv-k8s-plugins'
+    project: 'ovn4nfv-k8s-plugin'
 
     jobs:
-      - 'ovn4nfv-k8s-plugins-verify-{stream}'
-      - 'ovn4nfv-k8s-plugins-merge-{stream}'
+      - 'ovn4nfv-k8s-plugin-verify-{stream}'
+      - 'ovn4nfv-k8s-plugin-merge-{stream}'
 
     stream:
       - master:
@@ -19,7 +19,7 @@
 ################################
 
 - job-template:
-    name: 'ovn4nfv-k8s-plugins-verify-{stream}'
+    name: 'ovn4nfv-k8s-plugin-verify-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -59,10 +59,10 @@
           fail: true
 
     builders:
-      - ovn4nfv-k8s-plugins-unit-tests-golang
+      - ovn4nfv-k8s-plugin-unit-tests-golang
 
 - job-template:
-    name: 'ovn4nfv-k8s-plugins-merge-{stream}'
+    name: 'ovn4nfv-k8s-plugin-merge-{stream}'
 
     disabled: '{obj:disabled}'
 
@@ -96,14 +96,14 @@
           fail: true
 
     builders:
-      - ovn4nfv-k8s-plugins-unit-tests-golang
+      - ovn4nfv-k8s-plugin-unit-tests-golang
 
 ################################
 # job builders
 ################################
 
 - builder:
-    name: ovn4nfv-k8s-plugins-unit-tests-golang
+    name: ovn4nfv-k8s-plugin-unit-tests-golang
     builders:
       - shell: |
           !include-raw: ./golang-make-test.sh
