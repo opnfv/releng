@@ -222,10 +222,15 @@
       - functest-gerrit
     builders:
       - shell: |
+          case "{container}" in
+          "components")
+              args="" ;;
+          *)
+              args="--build-arg BRANCH=${{branch}}" ;;
+          esac
           cd docker/$(echo {container} |cut -d\- -f 2)
           sudo docker build \
-            --pull=false --no-cache --force-rm=true \
-            --build-arg BRANCH=${{branch}} \
+            ${{args}} --pull=false --no-cache --force-rm=true \
             -t {repo}/functest-{container}:{tag} .
 
 - project:
@@ -250,8 +255,7 @@
 - job-template:
     name: '{repo}-functest-{tag}-gate'
     project-type: multijob
-    functest-buildparameters: *functest-buildparameters
-    functest-defaultparameters: *functest-defaultparameters
+    <<: *functest-buildparameters
     builders:
       - multijob:
           name: build functest-core
