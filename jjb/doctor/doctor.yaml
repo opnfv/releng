@@ -112,9 +112,33 @@
               git-revision: true
 
 - job-template:
-    name: 'doctor-verify-fault_management-{installer}-{inspector}-{arch}-{stream}'
+    name: 'doctor-verify-fault_management-daisy-{inspector}-{arch}-{stream}'
     disabled: '{obj:disabled}'
     node: 'doctor-{installer}-{arch}'
+    wrappers:
+      - ssh-agent-wrapper
+      - build-timeout:
+          timeout: 30
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - '{installer}-defaults'
+      - 'doctor-slave-parameter'
+      - 'doctor-parameter':
+          inspector: '{inspector}'
+          test_case: 'fault_management'
+    scm:
+      - git-scm-gerrit
+    builders:
+      - 'doctor-verify-installer-inspector-builders-macro'
+    publishers:
+      - 'doctor-verify-publishers-macro'
+
+- job-template:
+    name: 'doctor-verify-fault_management-apex-{inspector}-{arch}-{stream}'
+    disabled: '{obj:disabled}'
+    node: 'nokia-pod1'
     wrappers:
       - ssh-agent-wrapper
       - build-timeout:
@@ -162,7 +186,7 @@
 - job-template:
     name: 'doctor-verify-all-{installer}-{inspector}-{arch}-{stream}'
     disabled: '{obj:disabled}'
-    node: 'doctor-{installer}-{arch}'
+    node: 'nokia-pod1'
     wrappers:
       - ssh-agent-wrapper
       - build-timeout:
