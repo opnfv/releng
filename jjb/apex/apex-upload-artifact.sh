@@ -85,9 +85,7 @@ uploadsnap () {
     exit 1
   fi
   gsutil cp ${snapshot_dir}/apex-${SNAP_TYPE}-snap-`date +%Y-%m-%d`.tar.gz gs://$GS_URL/ > gsutil.iso.log
-  if [ "$SNAP_TYPE" == 'csit' ]; then
-    gsutil cp ${snapshot_dir}/snapshot.properties gs://$GS_URL/snapshot.properties > gsutil.latest.log
-  fi
+  gsutil cp ${snapshot_dir}/snapshot.properties gs://$GS_URL/snapshot.properties > gsutil.latest.log
   echo "Upload complete for Snapshot"
 }
 

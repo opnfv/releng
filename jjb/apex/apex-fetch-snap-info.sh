@@ -17,7 +17,7 @@ echo "Fetching overcloudrc, ssh key, and node.yaml from deployment..."
 
 SSH_OPTIONS=(-o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null -o LogLevel=error)
 
-tmp_dir=/tmp/csit
+tmp_dir=/tmp/snap
 rm -rf ${tmp_dir}
 mkdir -p ${tmp_dir}
 
