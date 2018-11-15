@@ -6,6 +6,7 @@ set -o pipefail
 IPV6_FLAG=False
 ALLINONE_FLAG=False
 CSIT_ENV_FLAG=False
+FUNCTEST_ENV_FLAG=False
 
 # log info to console
 echo "Starting the Apex deployment."
@@ -119,6 +120,10 @@ if echo ${DEPLOY_SCENARIO} | grep csit; then
   CSIT_ENV_FLAG=True
   DEPLOY_SCENARIO=$(echo ${DEPLOY_SCENARIO} |  sed 's/-csit//')
   echo "INFO: CSIT env requested in deploy scenario"
+elif echo ${DEPLOY_SCENARIO} | grep functest; then
+  FUNCTEST_ENV_FLAG=True
+  DEPLOY_SCENARIO=$(echo ${DEPLOY_SCENARIO} |  sed 's/-functest//')
+  echo "INFO: Functest env requested in deploy scenario"
 fi
 
 echo "Deploy Scenario set to ${DEPLOY_SCENARIO}"
@@ -140,13 +145,18 @@ if [[ "$JOB_NAME" =~ "virtual" ]]; then
     DEPLOY_CMD="${DEPLOY_CMD} --virtual-computes 2"
   fi
 
-  if [[ "$PROMOTE" == "True"  || "$CSIT_ENV_FLAG" == "True" ]]; then
-    if [[ "$OS_VERSION" != "master" ]]; then
-      CSIT_ENV="csit-${OS_VERSION}-environment.yaml"
+  if [[ "$FUNCTEST_ENV_FLAG" == "True"  || "$CSIT_ENV_FLAG" == "True" ]]; then
+    if [[ "$CSIT_ENV_FLAG" == "True" ]]; then
+      ENV_TYPE="csit"
     else
-      CSIT_ENV="csit-environment.yaml"
+      ENV_TYPE="functest"
     fi
-    DEPLOY_CMD="${DEPLOY_CMD} -e ${CSIT_ENV}"
+    if [[ "$OS_VERSION" != "master" ]]; then
+      SNAP_ENV="${ENV_TYPE}-${OS_VERSION}-environment.yaml"
+    else
+      SNAP_ENV="${ENV_TYPE}-environment.yaml"
+    fi
+    DEPLOY_CMD="${DEPLOY_CMD} -e ${SNAP_ENV}"
   fi
 else
   # settings for bare metal deployment
@@ -163,7 +173,8 @@ fi
 
 if [ "$IPV6_FLAG" == "True" ]; then
   NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings_v6.yaml"
-elif [[ "$PROMOTE" == "True" ]]; then
+elif [[ "$CSIT_ENV_FLAG" == "True"  || "$FUNCTEST_ENV_FLAG" == "True" ]]; then
+  # We use csit network settings which is single network for snapshots
   NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings_csit.yaml"
 else
   NETWORK_FILE="${NETWORK_SETTINGS_DIR}/network_settings.yaml"

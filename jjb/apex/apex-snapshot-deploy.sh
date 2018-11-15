@@ -20,6 +20,11 @@ echo "Deploying Apex snapshot..."
 echo "--------------------------"
 echo
 
+if [ -z "$SNAP_TYPE" ]; then
+  echo "ERROR: SNAP_TYPE not provided...exiting"
+  exit 1
+fi
+
 echo "Cleaning server"
 pushd ci > /dev/null
 sudo opnfv-clean
@@ -37,7 +42,7 @@ echo "Properties contents:"
 cat ${WORKSPACE}/opnfv.properties
 
 # find latest check sum
-latest_snap_checksum=$(cat ${WORKSPACE}/opnfv.properties | grep OPNFV_SNAP_SHA512SUM | awk -F "=" '{print $2}')
+latest_snap_checksum=$(cat ${WORKSPACE}/opnfv.properties | grep ${SNAP_TYPE}_SNAP_SHA512SUM | awk -F "=" '{print $2}')
 if [ -z "$latest_snap_checksum" ]; then
   echo "ERROR: checksum of latest snapshot from snapshot.properties is null!"
   exit 1
@@ -49,7 +54,7 @@ SNAP_CACHE=${SNAP_CACHE}/${OS_VERSION}/${TOPOLOGY}
 # check snap cache directory exists
 # if snapshot cache exists, find the checksum
 if [ -d "$SNAP_CACHE" ]; then
-  latest_snap=$(ls ${SNAP_CACHE} | grep tar.gz | tail -n 1)
+  latest_snap=$(ls ${SNAP_CACHE} | grep tar.gz | grep $SNAP_TYPE | tail -n 1)
   if [ -n "$latest_snap" ]; then
     local_snap_checksum=$(sha512sum ${SNAP_CACHE}/${latest_snap} | cut -d' ' -f1)
     echo "Local snap checksum is: ${local_snap_checksum}"
@@ -60,7 +65,12 @@ fi
 
 # compare check sum and download latest snap if not up to date
 if [ "$local_snap_checksum" != "$latest_snap_checksum" ]; then
-  snap_url=$(cat opnfv.properties | grep OPNFV_SNAP_URL | awk -F "=" '{print $2}')
+  snap_url=$(cat opnfv.properties | grep ${SNAP_TYPE}_SNAP_URL | awk -F "=" '{print $2}')
+  # TODO(trozet): Remove this once OPNFV url is deprecated
+  if [[ -z "$snap_url" && "$SNAP_TYPE" == 'csit' ]]; then
+      echo "WARN: Unable to find snap url for ${SNAP_TYPE}, attempting to use OPNFV"
+      snap_url=$(cat opnfv.properties | grep OPNFV_SNAP_URL | awk -F "=" '{print $2}')
+  fi
   if [ -z "$snap_url" ]; then
     echo "ERROR: Snap URL from snapshot.properties is null!"
     exit 1

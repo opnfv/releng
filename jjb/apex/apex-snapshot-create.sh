@@ -28,7 +28,7 @@ tmp_dir=$(pwd)/.tmp
 mkdir -p ${tmp_dir}
 
 # info should have already been collected in apex-fetch-snap-info so copy it
-cp -r /tmp/csit/* ${tmp_dir}/
+cp -r /tmp/snap/* ${tmp_dir}/
 
 echo "Shutting down nodes"
 # Shut down nodes
@@ -76,19 +76,30 @@ sudo rm -rf ${tmp_dir}
 echo "Snapshot saved as apex-${SNAP_TYPE}-snap-${DATE}.tar.gz"
 
 # update opnfv properties file
-if [ "$SNAP_TYPE" == 'csit' ]; then
-  snap_sha=$(sha512sum apex-csit-snap-${DATE}.tar.gz | cut -d' ' -f1)
-  if curl --fail -O -L http://$GS_URL/snapshot.properties; then
+snap_sha=$(sha512sum apex-${SNAP_TYPE}-snap-${DATE}.tar.gz | cut -d' ' -f1)
+
+if curl --fail -O -L http://$GS_URL/snapshot.properties; then
+  # TODO(trozet): deprecate OPNFV_SNAP_URL for CSIT_SNAP_URL
+  if [ "$SNAP_TYPE" == 'csit' ]; then
     sed -i '/^OPNFV_SNAP_URL=/{h;s#=.*#='${GS_URL}'/apex-csit-snap-'${DATE}'.tar.gz#};${x;/^$/{s##OPNFV_SNAP_URL='${GS_URL}'/apex-csit-snap-'${DATE}'.tar.gz#;H};x}' snapshot.properties
     sed -i '/^OPNFV_SNAP_SHA512SUM=/{h;s/=.*/='${snap_sha}'/};${x;/^$/{s//OPNFV_SNAP_SHA512SUM='${snap_sha}'/;H};x}' snapshot.properties
-  else
-    cat << EOF > snapshot.properties
+  fi
+  sed -i '/^'${SNAP_TYPE}'_SNAP_URL=/{h;s#=.*#='${GS_URL}'/apex-'${SNAP_TYPE}'-snap-'${DATE}'.tar.gz#};${x;/^$/{s##'${SNAP_TYPE}'_SNAP_URL='${GS_URL}'/apex-'${SNAP_TYPE}'-snap-'${DATE}'.tar.gz#;H};x}' snapshot.properties
+  sed -i '/^'${SNAP_TYPE}'_SNAP_SHA512SUM=/{h;s/=.*/='${snap_sha}'/};${x;/^$/{s//'${SNAP_TYPE}'_SNAP_SHA512SUM='${snap_sha}'/;H};x}' snapshot.properties
+else
+  cat << EOF > snapshot.properties
+${SNAP_TYPE}_SNAP_URL=${GS_URL}/apex-${SNAP_TYPE}-snap-${DATE}.tar.gz
+${SNAP_TYPE}_SNAP_SHA512SUM=${snap_sha}
+EOF
+  # TODO(trozet): deprecate OPNFV_SNAP_URL for CSIT_SNAP_URL
+  if [ "$SNAP_TYPE" == 'csit' ]; then
+    cat << EOF >> snapshot.properties
 OPNFV_SNAP_URL=${GS_URL}/apex-csit-snap-${DATE}.tar.gz
 OPNFV_SNAP_SHA512SUM=${snap_sha}
 EOF
   fi
-  echo "OPNFV_SNAP_URL=$GS_URL/apex-csit-snap-${DATE}.tar.gz"
-  echo "OPNFV_SNAP_SHA512SUM=$(sha512sum apex-csit-snap-${DATE}.tar.gz | cut -d' ' -f1)"
-  echo "Updated properties file: "
-  cat snapshot.properties
 fi
+echo "${SNAP_TYPE}_SNAP_URL=$GS_URL/apex-${SNAP_TYPE}-snap-${DATE}.tar.gz"
+echo "${SNAP_TYPE}_SNAP_SHA512SUM=$(sha512sum apex-${SNAP_TYPE}-snap-${DATE}.tar.gz | cut -d' ' -f1)"
+echo "Updated properties file: "
+cat snapshot.properties
