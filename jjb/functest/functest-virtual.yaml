@@ -12,7 +12,7 @@
     parameters:
       - functest-virtual-defaults
     builders:
-      - shell: docker pull {repo}/functest-{container}:{tag}
+      - shell: sudo docker pull {repo}/functest-{container}:{tag}
 
 - project:
     name: repo-functest-container-tag-pull
@@ -58,10 +58,10 @@
             -v /home/opnfv/functest/openstack.creds:\
           /home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
-            -v $(pwd)/tempest_blacklist.yaml:\
+            -v /home/opnfv/functest/tempest_blacklist.yaml:\
           /usr/lib/python2.7/site-packages/functest/opnfv_tests/openstack/\
           tempest/custom_tests/blacklist.yaml \
-            -v $(pwd)/rally_blacklist.yaml:\
+            -v /home/opnfv/functest/images/rally_blacklist.yaml:\
           /usr/lib/python2.7/site-packages/functest/opnfv_tests/openstack/\
           rally/blacklist.yaml \
             {repo}/functest-{container}:{tag} run_tests -t {test}
