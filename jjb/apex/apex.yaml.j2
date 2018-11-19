@@ -8,7 +8,7 @@
       - 'apex-virtual-{stream}'
       - 'apex-deploy-{platform}-{stream}'
       - 'apex-daily-{stream}'
-      - 'apex-csit-promote-daily-{stream}-os-{os_version}-{topology}'
+      - 'apex-{snap_type}-promote-daily-{stream}-os-{os_version}-{topology}'
       - 'apex-fdio-promote-daily-{stream}'
       - 'apex-{scenario}-baremetal-{scenario_stream}'
       - 'apex-testsuite-{scenario}-baremetal-{scenario_stream}'
@@ -100,6 +100,11 @@
       - 'ha'
       - 'noha-allinone'
 
+    snap_type:
+      - csit:
+          sdn: 'odl'
+      - functest:
+          sdn: 'nosdn'
 # Fetch Logs Job
 - job-template:
     name: 'apex-fetch-logs-{stream}'
@@ -685,7 +690,7 @@
 
 # CSIT promote
 - job-template:
-    name: 'apex-csit-promote-daily-{stream}-os-{os_version}-{topology}'
+    name: 'apex-{snap_type}-promote-daily-{stream}-os-{os_version}-{topology}'
 
     # Job template for promoting CSIT Snapshots
     #
@@ -729,6 +734,10 @@
           name: FORCE_PROMOTE
           default: 'False'
           description: "Used to force promotion and skip CSIT"
+      - string:
+          name: SNAP_TYPE
+          default: '{snap_type}'
+          description: Type of snapshot to promote
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -737,7 +746,7 @@
             - 'apex-verify.*'
             - 'apex-runner.*'
             - 'apex-daily.*'
-            - 'apex-csit-promote.*'
+            - 'apex-.*-promote.*'
             - 'odl-netvirt.*'
       - throttle:
           max-per-node: 1
@@ -745,7 +754,7 @@
           option: 'project'
 
     triggers:
-      - '{stream}-{os_version}'
+      - '{stream}-{snap_type}-{os_version}'
 
     builders:
       - multijob:
@@ -755,7 +764,7 @@
             - name: 'apex-deploy-virtual-{stream}'
               current-parameters: true
               predefined-parameters: |
-                DEPLOY_SCENARIO=os-odl-{os_scenario}-{topology}
+                DEPLOY_SCENARIO=os-{sdn}-{os_scenario}-{topology}
                 OPNFV_CLEAN=yes
                 GERRIT_BRANCH=$GERRIT_BRANCH
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
@@ -776,7 +785,7 @@
               abort-all-job: true
               git-revision: false
       - multijob:
-          name: csit
+          name: test phase
           condition: SUCCESSFUL
           execution-type: SEQUENTIALLY
           projects:
@@ -789,16 +798,36 @@
                 ODL_CONTAINERIZED=true
                 OS_VERSION=$OS_VERSION
                 SKIP_CSIT=$FORCE_PROMOTE
+                SNAP_TYPE=$SNAP_TYPE
               node-parameters: true
               kill-phase-on: NEVER
               abort-all-job: false
+              enable-condition: "def m = '$SNAP_TYPE' ==~ /csit/"
             - name: cperf-upload-logs-csit
               predefined-parameters: |
                 ODL_BRANCH=$ODL_BRANCH
                 OS_VERSION=$OS_VERSION
+                SNAP_TYPE=$SNAP_TYPE
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: false
+              enable-condition: "def m = '$SNAP_TYPE' ==~ /csit/"
+            - name: 'functest-apex-virtual-suite-{stream}'
+              current-parameters: false
+              predefined-parameters: |
+                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+                DOCKER_TAG=$DOCKER_TAG
+                FUNCTEST_SUITE_NAME=tempest_smoke
+                FUNCTEST_MODE=testcase
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              node-parameters: true
+              kill-phase-on: NEVER
+              enable-condition: "def m = '$SNAP_TYPE' ==~ /functest/"
+              abort-all-job: true
+              git-revision: false
             - name: 'apex-fetch-logs-{stream}'
               current-parameters: false
               predefined-parameters: |
@@ -816,8 +845,6 @@
           projects:
             - name: 'apex-create-snapshot'
               current-parameters: true
-              predefined-parameters: |
-                SNAP_TYPE=csit
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: true
@@ -828,8 +855,6 @@
           projects:
             - name: 'apex-upload-snapshot'
               current-parameters: true
-              predefined-parameters: |
-                SNAP_TYPE=csit
               node-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: true
@@ -1196,76 +1221,150 @@
       - timed: '0 3 1 1 7'
 
 - trigger:
-    name: 'master-master'
+    name: 'master-csit-master'
     triggers:
       - timed: '0 5 * * *'
 
 - trigger:
-    name: 'master-rocky'
+    name: 'master-csit-rocky'
     triggers:
       - timed: '0 5 * * *'
 
 - trigger:
-    name: 'master-queens'
+    name: 'master-csit-queens'
     triggers:
       - timed: ''
 
 - trigger:
-    name: 'gambia-master'
+    name: 'gambia-csit-master'
     triggers:
       - timed: ''
 
 - trigger:
-    name: 'gambia-rocky'
+    name: 'gambia-csit-rocky'
     triggers:
       - timed: ''
 
 - trigger:
-    name: 'gambia-queens'
+    name: 'gambia-csit-queens'
     triggers:
       - timed: '0 5 * * *'
 
 - trigger:
-    name: 'fraser-master'
+    name: 'fraser-csit-master'
     triggers:
       - timed: ''
 
 - trigger:
-    name: 'fraser-rocky'
+    name: 'fraser-csit-rocky'
     triggers:
       - timed: ''
 
 - trigger:
-    name: 'fraser-queens'
+    name: 'fraser-csit-queens'
     triggers:
       - timed: ''
 
 - trigger:
-    name: 'euphrates-master'
+    name: 'euphrates-csit-master'
     triggers:
       - timed: ''
 
 - trigger:
-    name: 'euphrates-rocky'
+    name: 'euphrates-csit-rocky'
     triggers:
       - timed: ''
 
 - trigger:
-    name: 'euphrates-queens'
+    name: 'euphrates-csit-queens'
     triggers:
       - timed: ''
 
 - trigger:
-    name: 'danube-master'
+    name: 'danube-csit-master'
     triggers:
       - timed: ''
 
 - trigger:
-    name: 'danube-rocky'
+    name: 'danube-csit-rocky'
     triggers:
       - timed: ''
 
 - trigger:
-    name: 'danube-queens'
+    name: 'danube-csit-queens'
+    triggers:
+      - timed: ''
+- trigger:
+    name: 'master-functest-master'
+    triggers:
+      - timed: '0 3 * * *'
+
+- trigger:
+    name: 'master-functest-rocky'
+    triggers:
+      - timed: '0 3 * * *'
+
+- trigger:
+    name: 'master-functest-queens'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'gambia-functest-master'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'gambia-functest-rocky'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'gambia-functest-queens'
+    triggers:
+      - timed: '0 3 * * *'
+
+- trigger:
+    name: 'fraser-functest-master'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'fraser-functest-rocky'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'fraser-functest-queens'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'euphrates-functest-master'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'euphrates-functest-rocky'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'euphrates-functest-queens'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'danube-functest-master'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'danube-functest-rocky'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'danube-functest-queens'
     triggers:
       - timed: ''
