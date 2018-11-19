@@ -7,6 +7,36 @@
       - hunter
       - latest
 
+- job-template:
+    name: '{repo}-functest-{container}-{tag}-pull'
+    parameters:
+      - functest-virtual-defaults
+    builders:
+      - shell: docker pull {repo}/functest-{container}:{tag}
+
+- project:
+    name: repo-functest-container-tag-pull
+    <<: *functest-defaultparameters
+    container:
+      - healthcheck
+      - smoke
+      - benchmarking
+      - components
+      - vnf
+      - features
+    jobs:
+      - '{repo}-functest-{container}-{tag}-pull'
+
+- functest-pulljobs: &functest-pulljobs
+    name: 'functest-pulljobs'
+    projects:
+      - name: '{repo}-functest-healthcheck-{tag}-pull'
+      - name: '{repo}-functest-smoke-{tag}-pull'
+      - name: '{repo}-functest-benchmarking-{tag}-pull'
+      - name: '{repo}-functest-components-{tag}-pull'
+      - name: '{repo}-functest-vnf-{tag}-pull'
+      - name: '{repo}-functest-features-{tag}-pull'
+
 - functest-buildparameters: &functest-buildparameters
     name: 'functest-buildparameters'
     parameters:
@@ -21,7 +51,7 @@
       - functest-virtual-defaults
     builders:
       - shell: |
-          sudo docker run --rm true \
+          sudo docker run --rm \
             -e EXTERNAL_NETWORK=public1 \
             -v /home/opnfv/functest/results/$JOB_NAME-$BUILD_ID:\
           /home/opnfv/functest/results \
@@ -193,6 +223,9 @@
     parameters:
       - functest-virtual-defaults
     builders:
+      - multijob:
+          name: pull containers
+          <<: *functest-pulljobs
       - multijob:
           name: healthcheck
           <<: *functest-healthcheckjobs
