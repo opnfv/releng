@@ -151,6 +151,25 @@ if [[ "$JOB_NAME" =~ "virtual" ]]; then
     else
       ENV_TYPE="functest"
     fi
+    if [ -z "$OS_VERSION" ]; then
+      echo "INFO: OS_VERSION not passed to deploy, detecting based on branch and scenario"
+      case $BRANCH in
+        master)
+          if [[ "$DEPLOY_SCENARIO" =~ "rocky" ]]; then
+            OS_VERSION=rocky
+          else
+            OS_VERSION=master
+          fi
+          ;;
+        *gambia)
+          OS_VERSION=queens
+          ;;
+        *)
+          echo "Unable to detection OS_VERSION, aborting"
+          exit 1
+          ;;
+      esac
+    fi
     if [[ "$OS_VERSION" != "master" ]]; then
       SNAP_ENV="${ENV_TYPE}-${OS_VERSION}-environment.yaml"
     else
