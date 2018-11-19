@@ -21,13 +21,19 @@
       - functest-virtual-defaults
     builders:
       - shell: |
-          sudo docker run \
+          sudo docker run --rm true \
             -e EXTERNAL_NETWORK=public1 \
             -v /home/opnfv/functest/results/$JOB_NAME-$BUILD_ID:\
           /home/opnfv/functest/results \
             -v /home/opnfv/functest/openstack.creds:\
           /home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
+            -v $(pwd)/tempest_blacklist.yaml:\
+          /usr/lib/python2.7/site-packages/functest/opnfv_tests/openstack/\
+          tempest/custom_tests/blacklist.yaml \
+            -v $(pwd)/rally_blacklist.yaml:\
+          /usr/lib/python2.7/site-packages/functest/opnfv_tests/openstack/\
+          rally/blacklist.yaml \
             {repo}/functest-{container}:{tag} run_tests -t {test}
 
 - project:
@@ -75,6 +81,7 @@
     test:
       - tempest_smoke
       - neutron-tempest-plugin-api
+      - rally_sanity
       - rally_jobs
       - refstack_defcore
       - patrole
@@ -91,6 +98,7 @@
     projects:
       - name: '{repo}-functest-smoke-tempest_smoke-{tag}-run'
       - name: '{repo}-functest-smoke-neutron-tempest-plugin-api-{tag}-run'
+      - name: '{repo}-functest-smoke-rally_sanity-{tag}-run'
       - name: '{repo}-functest-smoke-rally_jobs-{tag}-run'
       - name: '{repo}-functest-smoke-refstack_defcore-{tag}-run'
       - name: '{repo}-functest-smoke-patrole-{tag}-run'
@@ -123,7 +131,6 @@
     test:
       - tempest_full
       - tempest_scenario
-      - rally_full
     jobs:
       - '{repo}-functest-{container}-{test}-{tag}-run'
 
@@ -132,7 +139,6 @@
     projects:
       - name: '{repo}-functest-components-tempest_full-{tag}-run'
       - name: '{repo}-functest-components-tempest_scenario-{tag}-run'
-      - name: '{repo}-functest-components-rally_full-{tag}-run'
 
 - project:
     name: repo-functest-vnf-{test}-{tag}-run
@@ -196,6 +202,12 @@
       - multijob:
           name: benchmarking
           <<: *functest-benchmarkingjobs
+      - multijob:
+          name: components
+          <<: *functest-componentsjobs
+      - multijob:
+          name: vnf
+          <<: *functest-vnfjobs
       - multijob:
           name: features
           <<: *functest-featuresjobs
@@ -291,6 +303,12 @@
       - multijob:
           name: benchmarking
           <<: *functest-benchmarkingjobs
+      - multijob:
+          name: components
+          <<: *functest-componentsjobs
+      - multijob:
+          name: vnf
+          <<: *functest-vnfjobs
       - multijob:
           name: features
           <<: *functest-featuresjobs
