@@ -13,7 +13,7 @@ echo "Starting the Apex deployment."
 echo "--------------------------------------------------------"
 echo
 
-if [ -z "$DEPLOY_SCENARIO" ]; then
+if [ -z ${DEPLOY_SCENARIO+x} ]; then
   echo "Deploy scenario not set!"
   exit 1
 else
@@ -151,7 +151,7 @@ if [[ "$JOB_NAME" =~ "virtual" ]]; then
     else
       ENV_TYPE="functest"
     fi
-    if [ -z "$OS_VERSION" ]; then
+    if [ -z ${OS_VERSION+x} ]; then
       echo "INFO: OS_VERSION not passed to deploy, detecting based on branch and scenario"
       case $BRANCH in
         master)
