@@ -29,6 +29,7 @@
       node-parameters: false
       predefined-parameters: |
         PUSH_IMAGE=$PUSH_IMAGE
+        CACHE_INVALIDATE=$CACHE_INVALIDATE
         COMMIT_ID=$COMMIT_ID
         GERRIT_REFNAME=$GERRIT_REFNAME
       kill-phase-on: FAILURE
@@ -186,6 +187,10 @@
           name: PUSH_IMAGE
           default: "true"
           description: "To enable/disable pushing the image to Dockerhub."
+      - string:
+          name: CACHE_INVALIDATE
+          default: "0"
+          description: "Set to any non-zero value to force a Docker cache cleanup"
       - string:
           name: COMMIT_ID
           default: ""
