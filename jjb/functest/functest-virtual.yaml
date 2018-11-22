@@ -3,9 +3,12 @@
     name: 'functest-defaultparameters'
     repo: opnfv
     tag:
-      - gambia
-      - hunter
-      - latest
+      - gambia:
+          branch: stable/gambia
+      - hunter:
+          branch: stable/hunter
+      - master:
+          branch: master
 
 - job-template:
     name: '{repo}-functest-{container}-{tag}-pull'
@@ -36,14 +39,6 @@
       - name: '{repo}-functest-components-{tag}-pull'
       - name: '{repo}-functest-vnf-{tag}-pull'
       - name: '{repo}-functest-features-{tag}-pull'
-
-- functest-buildparameters: &functest-buildparameters
-    name: 'functest-buildparameters'
-    parameters:
-      - functest-virtual-defaults
-      - string:
-          name: branch
-          default: master
 
 - job-template:
     name: '{repo}-functest-{container}-{test}-{tag}-run'
@@ -161,6 +156,7 @@
     test:
       - tempest_full
       - tempest_scenario
+      - rall_full
     jobs:
       - '{repo}-functest-{container}-{test}-{tag}-run'
 
@@ -169,6 +165,7 @@
     projects:
       - name: '{repo}-functest-components-tempest_full-{tag}-run'
       - name: '{repo}-functest-components-tempest_scenario-{tag}-run'
+      # - name: '{repo}-functest-components-rally_full-{tag}-run'
 
 - project:
     name: repo-functest-vnf-{test}-{tag}-run
@@ -251,29 +248,32 @@
     jobs:
       - '{repo}-functest-{tag}-daily'
 
-- scm:
-    name: functest-gerrit
-    scm:
-      - git:
-          url: https://gerrit.opnfv.org/gerrit/functest
-          refspec: '+refs/changes/*:refs/changes/*'
-          branches:
-            - ${branch}
+- functest-buildparameters: &functest-buildparameters
+    name: 'functest-buildparameters'
+    parameters:
+      - functest-virtual-defaults
+      - string:
+          name: BRANCH
+          default: '{branch}'
 
 - job-template:
     name: '{repo}-functest-{container}-{tag}-build'
     <<: *functest-buildparameters
     scm:
-      - functest-gerrit
+      - git:
+          url: https://gerrit.opnfv.org/gerrit/functest
+          refspec: '+refs/changes/*:refs/changes/*'
+          branches:
+            - $GERRIT_REFSPEC
     builders:
       - shell: |
           case "{container}" in
           "components")
               args="" ;;
           *)
-              args="--build-arg BRANCH=${{branch}}" ;;
+              args="--build-arg BRANCH=$GERRIT_REFSPEC" ;;
           esac
-          cd docker/$(echo {container} |cut -d\- -f 2)
+          cd docker/{container}
           sudo docker build \
             ${{args}} --pull=false --no-cache --force-rm=true \
             -t {repo}/functest-{container}:{tag} .
@@ -301,6 +301,11 @@
     name: '{repo}-functest-{tag}-gate'
     project-type: multijob
     <<: *functest-buildparameters
+    triggers:
+      - gerrit-trigger-patchset-created:
+          project: 'functest'
+          branch: '{branch}'
+          files: '**'
     builders:
       - multijob:
           name: build functest-core
@@ -339,9 +344,9 @@
       - multijob:
           name: components
           <<: *functest-componentsjobs
-      - multijob:
-          name: vnf
-          <<: *functest-vnfjobs
+      # - multijob:
+      #     name: vnf
+      #     <<: *functest-vnfjobs
       - multijob:
           name: features
           <<: *functest-featuresjobs
