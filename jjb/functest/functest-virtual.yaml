@@ -248,35 +248,70 @@
     jobs:
       - '{repo}-functest-{tag}-daily'
 
-- functest-buildparameters: &functest-buildparameters
-    name: 'functest-buildparameters'
+- functest-gateparameters: &functest-gateparameters
+    name: 'functest-gateparameters'
+    parameters:
+      - functest-virtual-defaults
+
+- functest-checkparameters: &functest-checkparameters
+    name: 'functest-checkparameters'
     parameters:
       - functest-virtual-defaults
       - string:
           name: BRANCH
           default: '{branch}'
 
-- job-template:
-    name: '{repo}-functest-{container}-{tag}-build'
-    <<: *functest-buildparameters
+- builder:
+    name: build-containers
+    builders:
+     - shell: |
+         case "{container}" in
+         "components")
+             args="" ;;
+         *)
+             args="--build-arg BRANCH={ref}" ;;
+         esac
+         cd docker/{container}
+         sudo docker build \
+           ${{args}} --pull=false --no-cache --force-rm=true \
+           -t {repo}/functest-{container}:{tag} .
+
+- scm:
+    name: functest-scm
     scm:
       - git:
           url: https://gerrit.opnfv.org/gerrit/functest
           refspec: '+refs/changes/*:refs/changes/*'
           branches:
-            - $GERRIT_REFSPEC
+            - '{ref}'
+
+- functest-buildparameters: &functest-buildparameters
+    name: 'functest-buildparameters'
+    container: '{container}'
+    repo: '{repo}'
+    tag: '{tag}'
+
+- job-template:
+    name: '{repo}-functest-{container}-{tag}-gate'
+    <<: *functest-gateparameters
+    scm:
+      - functest-scm:
+          ref: $GERRIT_REFSPEC
     builders:
-      - shell: |
-          case "{container}" in
-          "components")
-              args="" ;;
-          *)
-              args="--build-arg BRANCH=$GERRIT_REFSPEC" ;;
-          esac
-          cd docker/{container}
-          sudo docker build \
-            ${{args}} --pull=false --no-cache --force-rm=true \
-            -t {repo}/functest-{container}:{tag} .
+      - build-containers:
+          ref: $GERRIT_REFSPEC
+          <<: *functest-buildparameters
+
+- job-template:
+    name: '{repo}-functest-{container}-{tag}-check'
+    <<: *functest-checkparameters
+    scm:
+      - functest-scm:
+          ref: $BRANCH
+    builders:
+      - build-containers:
+          ref: $BRANCH
+          <<: *functest-buildparameters
 
 - project:
     name: repo-functest-container-tag-build
@@ -291,7 +326,8 @@
       - vnf
       - features
     jobs:
-      - '{repo}-functest-{container}-{tag}-build'
+      - '{repo}-functest-{container}-{tag}-gate'
+      - '{repo}-functest-{container}-{tag}-check'
 
 - functest-projectparameters: &functest-projectparameters
     name: 'functest-projectparameters'
@@ -300,7 +336,7 @@
 - job-template:
     name: '{repo}-functest-{tag}-gate'
     project-type: multijob
-    <<: *functest-buildparameters
+    <<: *functest-gateparameters
     triggers:
       - gerrit-trigger-patchset-created:
           project: 'functest'
@@ -310,27 +346,76 @@
       - multijob:
           name: build functest-core
           projects:
-            - name: '{repo}-functest-core-{tag}-build'
+            - name: '{repo}-functest-core-{tag}-gate'
               <<: *functest-projectparameters
       - multijob:
           name: build functest-tempest
           projects:
-            - name: '{repo}-functest-tempest-{tag}-build'
+            - name: '{repo}-functest-tempest-{tag}-gate'
               <<: *functest-projectparameters
       - multijob:
           name: build all remaining contrainers
           projects:
-            - name: '{repo}-functest-healthcheck-{tag}-build'
+            - name: '{repo}-functest-healthcheck-{tag}-gate'
               <<: *functest-projectparameters
-            - name: '{repo}-functest-smoke-{tag}-build'
+            - name: '{repo}-functest-smoke-{tag}-gate'
               <<: *functest-projectparameters
-            - name: '{repo}-functest-benchmarking-{tag}-build'
+            - name: '{repo}-functest-benchmarking-{tag}-gate'
               <<: *functest-projectparameters
-            - name: '{repo}-functest-components-{tag}-build'
+            - name: '{repo}-functest-components-{tag}-gate'
               <<: *functest-projectparameters
-            - name: '{repo}-functest-vnf-{tag}-build'
+            - name: '{repo}-functest-vnf-{tag}-gate'
               <<: *functest-projectparameters
-            - name: '{repo}-functest-features-{tag}-build'
+            - name: '{repo}-functest-features-{tag}-gate'
+              <<: *functest-projectparameters
+      - multijob:
+          name: healthcheck
+          <<: *functest-healthcheckjobs
+      - multijob:
+          name: smoke
+          <<: *functest-smokejobs
+      - multijob:
+          name: benchmarking
+          <<: *functest-benchmarkingjobs
+      - multijob:
+          name: components
+          <<: *functest-componentsjobs
+      # - multijob:
+      #     name: vnf
+      #     <<: *functest-vnfjobs
+      - multijob:
+          name: features
+          <<: *functest-featuresjobs
+
+- job-template:
+    name: '{repo}-functest-{tag}-check'
+    project-type: multijob
+    <<: *functest-checkparameters
+    builders:
+      - multijob:
+          name: build functest-core
+          projects:
+            - name: '{repo}-functest-core-{tag}-check'
+              <<: *functest-projectparameters
+      - multijob:
+          name: build functest-tempest
+          projects:
+            - name: '{repo}-functest-tempest-{tag}-check'
+              <<: *functest-projectparameters
+      - multijob:
+          name: build all remaining contrainers
+          projects:
+            - name: '{repo}-functest-healthcheck-{tag}-check'
+              <<: *functest-projectparameters
+            - name: '{repo}-functest-smoke-{tag}-check'
+              <<: *functest-projectparameters
+            - name: '{repo}-functest-benchmarking-{tag}-check'
+              <<: *functest-projectparameters
+            - name: '{repo}-functest-components-{tag}-check'
+              <<: *functest-projectparameters
+            - name: '{repo}-functest-vnf-{tag}-check'
+              <<: *functest-projectparameters
+            - name: '{repo}-functest-features-{tag}-check'
               <<: *functest-projectparameters
       - multijob:
           name: healthcheck
@@ -352,7 +437,8 @@
           <<: *functest-featuresjobs
 
 - project:
-    name: repo-functest-tag-gate
+    name: repo-functest-tag-build
     <<: *functest-defaultparameters
     jobs:
       - '{repo}-functest-{tag}-gate'
+      - '{repo}-functest-{tag}-check'
