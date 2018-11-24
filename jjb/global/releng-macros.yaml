@@ -200,6 +200,32 @@
             notbuilt: false
 
 - trigger:
+    name: gerrit-trigger-patchset-approved
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - comment-added-event:
+                approval-category: 'CRVW'
+                approval-value: 2
+            - comment-added-contains-event:
+                comment-contains-value: 'gate'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+              file-paths:
+                - compare-type: 'ANT'
+                  pattern: '{files}'
+          skip-vote:
+            successful: false
+            failed: false
+            unstable: false
+            notbuilt: false
+
+- trigger:
     name: gerrit-trigger-change-merged
     triggers:
       - gerrit:
