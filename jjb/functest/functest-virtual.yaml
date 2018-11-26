@@ -57,14 +57,14 @@
     parameters:
       - functest-virtual-defaults
     builders:
-      - shell: sudo docker rmi alpine:3.8
+      - shell: sudo docker rmi alpine:3.8 || true
 
 - job-template:
     name: '{repo}-functest-{container}-{tag}-rmi'
     parameters:
       - functest-virtual-defaults
     builders:
-      - shell: sudo docker rmi {repo}/functest-{container}:{tag}
+      - shell: sudo docker rmi {repo}/functest-{container}:{tag} || true
 
 - project:
     name: repo-functest-container-tag-rmi
@@ -106,7 +106,7 @@
             gs://artifacts.opnfv.org/functest/ > /dev/null
           find /home/opnfv/functest/results/$JOB_NAME-$BUILD_ID -type f \
             -printf \
-            "http://artifacts.opnfv.org/functest/$JOB_NAME-$BUILD_ID/%f\n"
+            "http://artifacts.opnfv.org/functest/$JOB_NAME-$BUILD_ID/%P\n"
           sudo rm -rf /home/opnfv/functest/results/$JOB_NAME-$BUILD_ID
           exit $RES
 
@@ -262,36 +262,36 @@
       - name: '{repo}-functest-features-vgpu-{tag}-run'
       - name: '{repo}-functest-features-stor4nfv_os-{tag}-run'
 
-- job-template:
-    name: '{repo}-functest-{tag}-run'
-    project-type: multijob
-    parameters:
-      - functest-virtual-defaults
-    builders:
-      - multijob:
-          name: healthcheck
-          <<: *functest-healthcheckjobs
-      - multijob:
-          name: smoke
-          <<: *functest-smokejobs
-      - multijob:
-          name: benchmarking
-          <<: *functest-benchmarkingjobs
-      - multijob:
-          name: components
-          <<: *functest-componentsjobs
-      # - multijob:
-      #     name: vnf
-      #     <<: *functest-vnfjobs
-      - multijob:
-          name: features
-          <<: *functest-featuresjobs
-
-- project:
-    name: repo-functest-tag-run
-    <<: *functest-defaultparameters
-    jobs:
-      - '{repo}-functest-{tag}-run'
+- functest-advjobs: &functest-advjobs
+    name: '&functest-advjobs'
+    projects:
+      - name: '{repo}-functest-smoke-tempest_smoke-{tag}-run'
+      - name: '{repo}-functest-smoke-neutron-tempest-plugin-api-{tag}-run'
+      - name: '{repo}-functest-smoke-rally_sanity-{tag}-run'
+      - name: '{repo}-functest-smoke-rally_jobs-{tag}-run'
+      - name: '{repo}-functest-smoke-refstack_defcore-{tag}-run'
+      - name: '{repo}-functest-smoke-patrole-{tag}-run'
+      - name: '{repo}-functest-smoke-snaps_smoke-{tag}-run'
+      - name: '{repo}-functest-smoke-neutron_trunk-{tag}-run'
+      - name: '{repo}-functest-smoke-networking-bgpvpn-{tag}-run'
+      - name: '{repo}-functest-smoke-networking-sfc-{tag}-run'
+      - name: '{repo}-functest-smoke-barbican-{tag}-run'
+      - name: '{repo}-functest-benchmarking-vmtp-{tag}-run'
+      - name: '{repo}-functest-benchmarking-shaker-{tag}-run'
+      - name: '{repo}-functest-components-tempest_full-{tag}-run'
+      - name: '{repo}-functest-components-tempest_scenario-{tag}-run'
+      # - name: '{repo}-functest-components-rally_full-{tag}-run'
+      - name: '{repo}-functest-vnf-cloudify-{tag}-run'
+      # - name: '{repo}-functest-vnf-cloudify_ims-{tag}-run'
+      # - name: '{repo}-functest-vnf-heat_ims-{tag}-run'
+      # - name: '{repo}-functest-vnf-vyos_vrouter-{tag}-run'
+      # - name: '{repo}-functest-vnf-juju_epc-{tag}-run'
+      - name: '{repo}-functest-features-doctor-notification-{tag}-run'
+      - name: '{repo}-functest-features-bgpvpn-{tag}-run'
+      - name: '{repo}-functest-features-functest-odl-sfc-{tag}-run'
+      - name: '{repo}-functest-features-barometercollectd-{tag}-run'
+      - name: '{repo}-functest-features-vgpu-{tag}-run'
+      - name: '{repo}-functest-features-stor4nfv_os-{tag}-run'
 
 - functest-advcontainers-rmi: &functest-advcontainers-rmi
     name: 'functest-advcontainers-rmi'
@@ -319,31 +319,29 @@
       - functest-virtual-defaults
     builders:
       - multijob:
-          name: pull containers
-          <<: *functest-pulljobs
-      - multijob:
-          name: run containers
-          condition: ALWAYS
-          projects:
-            - name: '{repo}-functest-{tag}-run'
-      - multijob:
           name: remove advanced functest containers
-          condition: ALWAYS
           <<: *functest-advcontainers-rmi
       - multijob:
           name: remove functest-tempest
-          condition: ALWAYS
           projects:
             - name: '{repo}-functest-tempest-{tag}-rmi'
       - multijob:
           name: remove functest-core
-          condition: ALWAYS
           projects:
             - name: '{repo}-functest-core-{tag}-rmi'
       - multijob:
           name: remove alpine
           projects:
             - name: 'alpine-rmi'
+      - multijob:
+          name: pull containers
+          <<: *functest-pulljobs
+      - multijob:
+          name: healthcheck
+          <<: *functest-healthcheckjobs
+      - multijob:
+          name: advanced suites
+          <<: *functest-advjobs
 
 - project:
     name: repo-functest-tag-daily
@@ -454,6 +452,24 @@
             - '{repo}-functest-.*-.*'
     builders:
       - multijob:
+          name: remove advanced functest containers
+          <<: *functest-advcontainers-rmi
+      - multijob:
+          name: remove functest-tempest
+          projects:
+            - name: '{repo}-functest-tempest-{tag}-rmi'
+              <<: *functest-projectparameters
+      - multijob:
+          name: remove functest-core
+          projects:
+            - name: '{repo}-functest-core-{tag}-rmi'
+              <<: *functest-projectparameters
+      - multijob:
+          name: remove alpine
+          projects:
+            - name: 'alpine-rmi'
+              <<: *functest-projectparameters
+      - multijob:
           name: pull alpine
           projects:
             - name: 'alpine-pull'
@@ -483,32 +499,11 @@
             - name: '{repo}-functest-features-{tag}-gate'
               <<: *functest-projectparameters
       - multijob:
-          name: run containers
-          condition: ALWAYS
-          projects:
-            - name: '{repo}-functest-{tag}-run'
+          name: healthcheck
+          <<: *functest-healthcheckjobs
       - multijob:
-          name: remove advanced functest containers
-          condition: ALWAYS
-          <<: *functest-advcontainers-rmi
-      - multijob:
-          name: remove functest-tempest
-          condition: ALWAYS
-          projects:
-            - name: '{repo}-functest-tempest-{tag}-rmi'
-              <<: *functest-projectparameters
-      - multijob:
-          name: remove functest-core
-          condition: ALWAYS
-          projects:
-            - name: '{repo}-functest-core-{tag}-rmi'
-              <<: *functest-projectparameters
-      - multijob:
-          name: remove alpine
-          condition: ALWAYS
-          projects:
-            - name: 'alpine-rmi'
-              <<: *functest-projectparameters
+          name: advanced suites
+          <<: *functest-advjobs
 
 - job-template:
     name: '{repo}-functest-{tag}-check'
@@ -522,6 +517,24 @@
           blocking-jobs:
             - '{repo}-functest-.*-.*'
     builders:
+      - multijob:
+          name: remove advanced functest containers
+          <<: *functest-advcontainers-rmi
+      - multijob:
+          name: remove functest-tempest
+          projects:
+            - name: '{repo}-functest-tempest-{tag}-rmi'
+              <<: *functest-projectparameters
+      - multijob:
+          name: remove functest-core
+          projects:
+            - name: '{repo}-functest-core-{tag}-rmi'
+              <<: *functest-projectparameters
+      - multijob:
+          name: remove alpine
+          projects:
+            - name: 'alpine-rmi'
+              <<: *functest-projectparameters
       - multijob:
           name: pull alpine
           projects:
@@ -552,32 +565,11 @@
             - name: '{repo}-functest-features-{tag}-check'
               <<: *functest-projectparameters
       - multijob:
-          name: run containers
-          condition: ALWAYS
-          projects:
-            - name: '{repo}-functest-{tag}-run'
+          name: healthcheck
+          <<: *functest-healthcheckjobs
       - multijob:
-          name: remove advanced functest containers
-          condition: ALWAYS
-          <<: *functest-advcontainers-rmi
-      - multijob:
-          name: remove functest-tempest
-          condition: ALWAYS
-          projects:
-            - name: '{repo}-functest-tempest-{tag}-rmi'
-              <<: *functest-projectparameters
-      - multijob:
-          name: remove functest-core
-          condition: ALWAYS
-          projects:
-            - name: '{repo}-functest-core-{tag}-rmi'
-              <<: *functest-projectparameters
-      - multijob:
-          name: remove alpine
-          condition: ALWAYS
-          projects:
-            - name: 'alpine-rmi'
-              <<: *functest-projectparameters
+          name: advanced suites
+          <<: *functest-advjobs
 
 - project:
     name: repo-functest-tag-build
