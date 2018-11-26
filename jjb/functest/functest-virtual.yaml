@@ -217,6 +217,15 @@
     name: '{repo}-functest-{tag}-daily'
     <<: *functest-defaultparameters
     project-type: multijob
+    triggers:
+      - timed: '@daily'
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          block-level: 'NODE'
+          queue-scanning: 'BUILDABLE'
+          blocking-jobs:
+            - '{repo}-functest-.*-.*'
     parameters:
       - functest-virtual-defaults
     builders:
@@ -338,10 +347,17 @@
     project-type: multijob
     <<: *functest-gateparameters
     triggers:
-      - gerrit-trigger-patchset-approved:
+      - gerrit-trigger-patchset-created:
           project: 'functest'
           branch: '{branch}'
           files: '**'
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          block-level: 'NODE'
+          queue-scanning: 'BUILDABLE'
+          blocking-jobs:
+            - '{repo}-functest-.*-.*'
     builders:
       - multijob:
           name: build functest-core
@@ -391,6 +407,13 @@
     name: '{repo}-functest-{tag}-check'
     project-type: multijob
     <<: *functest-checkparameters
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          block-level: 'NODE'
+          queue-scanning: 'BUILDABLE'
+          blocking-jobs:
+            - '{repo}-functest-.*-.*'
     builders:
       - multijob:
           name: build functest-core
