@@ -19,53 +19,53 @@
       - 'os-nosdn-nofeature-noha':
           deploy-scenario: 'os-nosdn-nofeature'
           installer-type: 'osa'
-          xci-flavor: 'mini'
-      - 'os-nosdn-osm-noha':
-          deploy-scenario: 'os-nosdn-osm'
-          installer-type: 'osa'
-          xci-flavor: 'mini'
-      - 'os-odl-nofeature-noha':
-          deploy-scenario: 'os-odl-nofeature'
-          installer-type: 'osa'
-          xci-flavor: 'mini'
-      - 'os-odl-bgpvpn-noha':
-          deploy-scenario: 'os-odl-bgpvpn'
-          installer-type: 'osa'
-          xci-flavor: 'mini'
-      - 'os-odl-sfc-noha':
-          deploy-scenario: 'os-odl-sfc'
-          installer-type: 'osa'
-          xci-flavor: 'mini'
-      - 'k8-nosdn-nofeature-noha':
-          deploy-scenario: 'k8-nosdn-nofeature'
-          installer-type: 'kubespray'
-          xci-flavor: 'mini'
-      - 'k8-canal-nofeature-noha':
-          deploy-scenario: 'k8-canal-nofeature'
-          installer-type: 'kubespray'
-          xci-flavor: 'mini'
+          xci-flavor: 'noha'
+      # - 'os-nosdn-osm-noha':
+      #     deploy-scenario: 'os-nosdn-osm'
+      #     installer-type: 'osa'
+      #     xci-flavor: 'noha'
+      # - 'os-odl-nofeature-noha':
+      #     deploy-scenario: 'os-odl-nofeature'
+      #     installer-type: 'osa'
+      #     xci-flavor: 'noha'
+      # - 'os-odl-bgpvpn-noha':
+      #     deploy-scenario: 'os-odl-bgpvpn'
+      #     installer-type: 'osa'
+      #     xci-flavor: 'noha'
+      # - 'os-odl-sfc-noha':
+      #     deploy-scenario: 'os-odl-sfc'
+      #     installer-type: 'osa'
+      #     xci-flavor: 'noha'
+      # - 'k8-nosdn-nofeature-noha':
+      #     deploy-scenario: 'k8-nosdn-nofeature'
+      #     installer-type: 'kubespray'
+      #     xci-flavor: 'noha'
+      # - 'k8-canal-nofeature-noha':
+      #     deploy-scenario: 'k8-canal-nofeature'
+      #     installer-type: 'kubespray'
+      #     xci-flavor: 'noha'
       - 'k8-calico-nofeature-noha':
           deploy-scenario: 'k8-calico-nofeature'
           installer-type: 'kubespray'
-          xci-flavor: 'mini'
-      - 'k8-contiv-nofeature-noha':
-          deploy-scenario: 'k8-contiv-nofeature'
-          installer-type: 'kubespray'
-          xci-flavor: 'mini'
-      - 'k8-flannel-nofeature-noha':
-          deploy-scenario: 'k8-flannel-nofeature'
-          installer-type: 'kubespray'
-          xci-flavor: 'mini'
-      - 'k8-nosdn-istio-noha':
-          deploy-scenario: 'k8-nosdn-istio'
-          installer-type: 'kubespray'
-          xci-flavor: 'mini'
+          xci-flavor: 'noha'
+      # - 'k8-contiv-nofeature-noha':
+      #     deploy-scenario: 'k8-contiv-nofeature'
+      #     installer-type: 'kubespray'
+      #     xci-flavor: 'noha'
+      # - 'k8-flannel-nofeature-noha':
+      #     deploy-scenario: 'k8-flannel-nofeature'
+      #     installer-type: 'kubespray'
+      #     xci-flavor: 'noha'
+      # - 'k8-nosdn-istio-noha':
+      #     deploy-scenario: 'k8-nosdn-istio'
+      #     installer-type: 'kubespray'
+      #     xci-flavor: 'noha'
 
     # -------------------------------
     # XCI PODs
     # -------------------------------
     pod:
-      - virtual:
+      - baremetal:
           <<: *master
 
     # -------------------------------
@@ -74,13 +74,13 @@
     distro:
       - 'ubuntu':
           disabled: false
-          slave-label: xci-virtual
+          slave-label: xci-baremetal
       - 'centos':
           disabled: true
-          slave-label: xci-virtual
+          slave-label: xci-baremetal
       - 'opensuse':
           disabled: false
-          slave-label: xci-virtual
+          slave-label: xci-baremetal
 
     # -------------------------------
     #        Phases
@@ -267,7 +267,7 @@
           default: 'osa'
       - string:
           name: XCI_FLAVOR
-          default: 'mini'
+          default: 'noha'
       - string:
           name: XCI_DISTRO
           default: 'ubuntu'
@@ -330,7 +330,15 @@
           done
           echo "---------------------------------------------------------------------------------"
 
-          cd $WORKSPACE/xci && ./xci-deploy.sh
+          # select the right pdf/idf
+          pdf=$WORKSPACE/xci/var/pdf.yml
+          idf=$WORKSPACE/xci/var/idf.yml
+          if [[ "$NODE_NAME" !~ virtual ]]; then
+              pdf=$WORKSPACE/xci/var/${NODE_NAME}-pdf.yml
+              idf=$WORKSPACE/xci/var/${NODE_NAME}-idf.yml
+          fi
+
+          cd $WORKSPACE/xci && ./xci-deploy.sh -p $pdf -i $idf
 
           echo "Prepare OPNFV VM for Tests"
           echo "---------------------------------------------------------------------------------"
