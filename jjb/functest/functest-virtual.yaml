@@ -403,6 +403,42 @@
           ref: $GERRIT_REFSPEC
           <<: *functest-buildparameters
 
+- builder:
+    name: run-tox
+    builders:
+      - shell: tox
+
+- job-template:
+    name: '{repo}-functest-{tag}-ut-gate'
+    <<: *functest-gateparameters
+    scm:
+      - functest-scm:
+          ref: $GERRIT_REFSPEC
+    builders:
+      - run-tox:
+          ref: $GERRIT_REFSPEC
+          repo: '{repo}'
+          tag: '{tag}'
+
+- job-template:
+    name: '{repo}-functest-{tag}-ut-check'
+    <<: *functest-checkparameters
+    scm:
+      - functest-scm:
+          ref: $BRANCH
+    builders:
+      - run-tox:
+          ref: $BRANCH
+          repo: '{repo}'
+          tag: '{tag}'
+
+- project:
+    name: repo-functest-tag-ut-build
+    <<: *functest-defaultparameters
+    jobs:
+      - '{repo}-functest-{tag}-ut-gate'
+      - '{repo}-functest-{tag}-ut-check'
+
 - job-template:
     name: '{repo}-functest-{container}-{tag}-check'
     <<: *functest-checkparameters
@@ -451,6 +487,11 @@
           blocking-jobs:
             - '{repo}-functest-.*-.*'
     builders:
+      - multijob:
+          name: run tox
+          projects:
+            - name: '{repo}-functest-{tag}-ut-gate'
+              <<: *functest-projectparameters
       - multijob:
           name: remove advanced functest containers
           <<: *functest-advcontainers-rmi
@@ -517,6 +558,11 @@
           blocking-jobs:
             - '{repo}-functest-.*-.*'
     builders:
+      - multijob:
+          name: run tox
+          projects:
+            - name: '{repo}-functest-{tag}-ut-check'
+              <<: *functest-projectparameters
       - multijob:
           name: remove advanced functest containers
           <<: *functest-advcontainers-rmi
