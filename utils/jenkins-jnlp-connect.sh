@@ -8,7 +8,7 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-#Monit setup script for opnfv jnlp slave connections
+#Monit setup script for opnfv jnlp agent connections
 
 test_firewall() {
 jenkins_hostname="${jenkins_hostname:-build.opnfv.org}"
@@ -25,7 +25,7 @@ LF firewall not open, please send a report to helpdesk with your gpg key attache
 opnfv-helpdesk@rt.linuxfoundation.org
 Jenkins Home: $jenkinshome
 Jenkins User: $jenkinsuser
-Slave Name: $slave_name
+Slave Name: $agent_name
 IP Address: $(curl -s http://icanhazip.com)
 EOF
         exit 1
@@ -44,8 +44,8 @@ main () {
         exit 1
     fi
 
-    if [[ -z $slave_name || -z $slave_secret ]]; then
-        echo "slave name or secret not defined, please edit this file to define it"
+    if [[ -z $agent_name || -z $agent_secret ]]; then
+        echo "agent name or secret not defined, please edit this file to define it"
         exit 1
     fi
 
@@ -141,8 +141,8 @@ depends on jenkins_piddir\
     fi
 
     if [[ $started_monit == "true" ]]; then
-        wget --timestamping https://"$jenkins_hostname"/jnlpJars/slave.jar && true
-        chown $jenkinsuser:$jenkinsuser slave.jar
+        wget --timestamping https://"$jenkins_hostname"/jnlpJars/agent.jar && true
+        chown $jenkinsuser:$jenkinsuser agent.jar
 
         if [[ -f /var/run/$jenkinsuser/jenkins_jnlp_pid ]]; then
             echo "pid file found"
@@ -173,8 +173,8 @@ usage() {
     cat << EOF
 
 **this file must be copied to the jenkins home directory to work**
-jenkins-jnlp-connect.sh configures monit to keep slave connection up
-Checks for new versions of slave.jar
+jenkins-jnlp-connect.sh configures monit to keep agent connection up
+Checks for new versions of agent.jar
 run as root to create pid directory and create monit config.
 can be run as root additional times if you change variables and need to update monit config.
 after running as root you should see "you are ready to start monit"
@@ -183,7 +183,7 @@ usage: $0 [OPTIONS]
  -h  show this message
  -j  set jenkins home
  -u  set jenkins user
- -n  set slave name
+ -n  set agent name
  -s  set secret key
  -l  set host, default is build.opnfv.org/ci
  -t  test the connection string by connecting without monit
@@ -205,8 +205,8 @@ do
     case $OPTION in
         j ) jenkinshome="$OPTARG" ;;
         u ) jenkinsuser="$OPTARG" ;;
-        n ) slave_name="$OPTARG" ;;
-        s ) slave_secret="$OPTARG";;
+        n ) agent_name="$OPTARG" ;;
+        s ) agent_secret="$OPTARG";;
         l ) jenkins_hostname="$OPTARG" ;;
         h ) usage ;;
         t ) started_monit=true
@@ -218,5 +218,5 @@ do
 done
 
 jenkins_hostname="${jenkins_hostname:-build.opnfv.org/ci}"
-connectionstring="java -jar slave.jar -jnlpUrl https://"$jenkins_hostname"/computer/"$slave_name"/slave-agent.jnlp -secret "$slave_secret" -noCertificateCheck "
+connectionstring="java -jar agent.jar -jnlpUrl https://"$jenkins_hostname"/computer/"$agent_name"/agent-agent.jnlp -secret "$agent_secret" -noCertificateCheck "
 main "$@"
