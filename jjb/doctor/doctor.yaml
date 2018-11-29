@@ -38,10 +38,6 @@
         arch: 'aarch64'
       - installer: 'daisy'
         arch: 'aarch64'
-      # disabling the following tests due to limitation of PoD owners
-      # these would beenabled again once the PoDs are ready
-      - installer: 'fuel'
-        arch: 'x86_64'
 
     jobs:
       - 'doctor-verify-{stream}'
@@ -86,6 +82,15 @@
               kill-phase-on: FAILURE
               git-revision: true
             - name: 'doctor-verify-all-apex-sample-x86_64-{stream}'
+              predefined-parameters: |
+                PROJECT=$PROJECT
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              kill-phase-on: FAILURE
+              git-revision: true
+            - name: 'doctor-verify-fault_management-fuel-sample-x86_64-{stream}'
               predefined-parameters: |
                 PROJECT=$PROJECT
                 GERRIT_BRANCH=$GERRIT_BRANCH
