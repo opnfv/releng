@@ -145,10 +145,6 @@ SUITE_HOME='/home/opnfv/repos/odl_test/csit/suites'
 
 # Disabled suites
 #
-# ${SUITE_HOME}/openstack/connectivity/live_migration.robot
-# Live migration will not work unless we use a shared storage backend like
-# Ceph which we do not currently use with CSIT images
-#
 # ${SUITE_HOME}/netvirt/vpnservice/vpn_basic_ipv6.robot
 # This suite fails with an error indicating the connection was closed
 # to the overcloud control node:
@@ -161,6 +157,7 @@ if [ "$NUM_CONTROL_NODES" -eq 3 ]; then
 else
   suites="${SUITE_HOME}/openstack/connectivity/l2.robot \
           ${SUITE_HOME}/openstack/connectivity/l3.robot \
+          ${SUITE_HOME}/openstack/connectivity/live_migration.robot \
           ${SUITE_HOME}/openstack/connectivity/external_network.robot \
           ${SUITE_HOME}/openstack/connectivity/security_group.robot \
           ${SUITE_HOME}/openstack/securitygroup/neutron_security_group.robot \
