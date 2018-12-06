@@ -45,6 +45,7 @@
     jobs:
       - '{installer}-{scenario}-{pod}-auto-daily-{stream}'
       - '{installer}-deploy-{pod}-daily-{stream}'
+      - 'auto-daily-{stream}'
       - 'auto-verify-{stream}'
       - 'auto-merge-{stream}'
 
@@ -99,6 +100,33 @@
               PROJECT=armband
             same-node: true
             block: true
+
+- job-template:
+    name: 'auto-daily-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    properties:
+      - logrotate-default
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - 'auto-daily-.*'
+          blocking-level: 'NODE'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      - 'intel-pod18-defaults'
+
+    triggers:
+      - timed: '0 16 * * *'
+
+    builders:
+      - shell: |
+          pwd
+          ./ci/build-auto.sh daily
 
 - job-template:
     name: 'auto-verify-{stream}'
