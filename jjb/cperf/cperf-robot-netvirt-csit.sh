@@ -102,6 +102,7 @@ robot_cmd="pybot \
   -d $LOGS_LOCATION \
   -v BUNDLEFOLDER:/opt/opendaylight \
   -v CONTROLLER_USER:heat-admin \
+  -v CMP_INSTANCES_SHARED_PATH:/var/lib/nova/instances/ \
   -v DEFAULT_LINUX_PROMPT:\$ \
   -v DEFAULT_LINUX_PROMPT_STRICT:]\$ \
   -v DEFAULT_USER:heat-admin \
