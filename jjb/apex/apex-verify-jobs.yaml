@@ -355,15 +355,8 @@
               kill-phase-on: FAILURE
               abort-all-job: true
               git-revision: true
-      - shell: |
-          features=$(echo $DEPLOY_SCENARIO | sed -r -n 's/os-.+-(.+)-(noha|ha)/\1/p')
-          if [ "$features" == 'rocky' ]; then
-            echo "DOCKER_TAG=hunter" > functest_tag
-          elif [[ "$features" =~ 'rocky' ]]; then
-            echo "DOCKER_TAG=hunter" > functest_tag
-          else
-            echo "DOCKER_TAG=''" > functest_tag
-          fi
+      - shell:
+          !include-raw-escape: ./apex-functest-scenario.sh
       - inject:
           properties-file: functest_tag
           override-build-parameters: true

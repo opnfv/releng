@@ -11,7 +11,7 @@ elif [[ "$features" =~ 'rocky' ]]; then
   functest_scenario=$(echo $DEPLOY_SCENARIO | sed -r -n 's/(os-.+?)-(.+)_rocky-(noha|ha)/\1-\2-\3/p')
   echo "DOCKER_TAG=hunter" > functest_scenario
 else
-  functest_scenario=$DEPLOY_SCENARIO
+  functest_scenario=$(echo $DEPLOY_SCENARIO | sed -r -n 's/-(noha|ha).*/-\1/p')
   echo "DOCKER_TAG=$([[ ${BRANCH##*/} == "master" ]] && \
     echo "latest" || echo ${BRANCH##*/})" > functest_scenario
 fi
