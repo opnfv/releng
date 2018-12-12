@@ -113,7 +113,7 @@ if [ "$installer_type" == "fuel" ]; then
         ssh ${ssh_options} "${ssh_user}@${controller_ip}" \
             "sudo cat /root/keystonercv3" > "${dest_path}"
 
-        if [[ ! "${BUILD_TAG}" =~ 'virtual' ]]; then
+        if [[ ! "${DEPLOY_SCENARIO}" =~ -noha$ ]]; then
             ssh ${ssh_options} "${ssh_user}@${installer_ip}" \
                 "cat /etc/ssl/certs/os_cacert" > "${os_cacert}"
         fi

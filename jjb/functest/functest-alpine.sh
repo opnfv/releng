@@ -98,7 +98,7 @@ if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
 elif [[ ${INSTALLER_TYPE} == 'compass' ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:${FUNCTEST_DIR}/conf/os_cacert"
     echo "export OS_CACERT=${FUNCTEST_DIR}/conf/os_cacert" >> ${HOME}/opnfv-openrc.sh
-elif [[ ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_TYPE} == 'baremetal' ]]; then
+elif [[ ${INSTALLER_TYPE} == 'fuel' ]] && [[ "${DEPLOY_SCENARIO}" =~ -ha$ ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:/etc/ssl/certs/mcp_os_cacert"
 fi
 
