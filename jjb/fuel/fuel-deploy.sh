@@ -19,9 +19,6 @@ LAB_NAME=${NODE_NAME/-*}
 # shellcheck disable=SC2153
 POD_NAME=${NODE_NAME/*-}
 
-# define Docker tag for stable branches
-[[ "${BRANCH}" != master ]] && export MCP_DOCKER_TAG=${BRANCH##*/}
-
 # Fuel currently supports arm, enea, ericsson, intel, lf, unh and zte labs
 if [[ ! "${LAB_NAME}" =~ (arm|enea|ericsson|intel|lf|unh|zte) ]]; then
     echo "Unsupported/unidentified lab ${LAB_NAME}. Cannot continue!"
