@@ -21,8 +21,10 @@
           disabled: false
 
     installer:
-      - 'apex'
-      - 'fuel'
+      - 'apex':
+          scenario: 'os-nosdn-nofeature-ha'
+      - 'fuel':
+          scenario: 'os-nosdn-nofeature-noha'
 
     arch:
       - 'x86_64'
@@ -117,6 +119,7 @@
       - 'doctor-slave-parameter'
       - 'doctor-parameter':
           inspector: '{inspector}'
+          scenario: '{scenario}'
           test_case: 'fault_management'
     scm:
       - git-scm-gerrit
@@ -141,6 +144,7 @@
       - 'doctor-slave-parameter'
       - 'doctor-parameter':
           inspector: '{inspector}'
+          scenario: '{scenario}'
           test_case: 'maintenance'
     scm:
       - git-scm-gerrit
@@ -165,6 +169,7 @@
       - 'doctor-slave-parameter'
       - 'doctor-parameter':
           inspector: '{inspector}'
+          scenario: '{scenario}'
           test_case: 'all'
     scm:
       - git-scm-gerrit
@@ -188,6 +193,10 @@
           name: TEST_CASE
           default: '{test_case}'
           description: 'test case: all, fault_management or maintenance'
+      - string:
+          name: DEPLOY_SCENARIO
+          default: '{scenario}'
+          description: 'Scenario to deploy and test'
 
 
 # -------------------------------
