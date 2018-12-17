@@ -42,6 +42,13 @@ elif [[ ${INSTALLER_TYPE} == 'daisy' ]]; then
         echo "No available installer VM exists...exiting"
         exit 1
     fi
+
+elif [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
+    if [[ ! "${BRANCH}" =~ "danube" ]]; then
+        export SSH_KEY=${SSH_KEY:-/var/lib/opnfv/mcp.rsa}
+        sudo cp ${SSH_KEY} ${installer_key_file}
+        sudo chown `whoami`:`whoami` ${installer_key_file}
+    fi
 fi
 
 
