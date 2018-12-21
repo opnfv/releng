@@ -90,6 +90,19 @@
               kill-phase-on: FAILURE
               git-revision: true
       - multijob:
+          name: 'doctor-verify-fenix'
+          execution-type: PARALLEL
+          projects:
+            - name: 'doctor-verify-maintenance-apex-sample-x86_64-{stream}'
+              predefined-parameters: |
+                PROJECT=$PROJECT
+                GERRIT_BRANCH=$GERRIT_BRANCH
+                GERRIT_REFSPEC=$GERRIT_REFSPEC
+                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+              kill-phase-on: FAILURE
+              git-revision: true
+      - multijob:
           name: 'doctor-verify-congress'
           execution-type: PARALLEL
           projects:
@@ -121,6 +134,7 @@
           inspector: '{inspector}'
           scenario: '{scenario}'
           test_case: 'fault_management'
+          admin_tool_type: 'sample'
     scm:
       - git-scm-gerrit
     builders:
@@ -131,7 +145,7 @@
 - job-template:
     name: 'doctor-verify-maintenance-{installer}-{inspector}-{arch}-{stream}'
     disabled: '{obj:disabled}'
-    node: 'nokia-pod1'
+    node: 'doctor-{installer}-{arch}'
     wrappers:
       - ssh-agent-wrapper
       - build-timeout:
@@ -146,6 +160,7 @@
           inspector: '{inspector}'
           scenario: '{scenario}'
           test_case: 'maintenance'
+          admin_tool_type: 'fenix'
     scm:
       - git-scm-gerrit
     builders:
@@ -171,6 +186,7 @@
           inspector: '{inspector}'
           scenario: '{scenario}'
           test_case: 'all'
+          admin_tool_type: 'sample'
     scm:
       - git-scm-gerrit
     builders:
@@ -197,6 +213,10 @@
           name: DEPLOY_SCENARIO
           default: '{scenario}'
           description: 'Scenario to deploy and test'
+      - string:
+          name: ADMIN_TOOL_TYPE
+          default: '{admin_tool_type}'
+          description: 'admin_tool_type: sample, fenix'
 
 
 # -------------------------------
