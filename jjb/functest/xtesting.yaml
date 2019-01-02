@@ -1,0 +1,150 @@
+---
+- xtesting-jobs: &xtesting-jobs
+    name: 'xtesting-jobs'
+    current-parameters: true
+
+- xtesting-params: &xtesting-params
+    name: 'xtesting-params'
+    tag:
+      - latest
+      - gambia
+      - hunter
+
+- parameter:
+    name: xtesting-slave
+    parameters:
+      - label:
+          name: slave
+          default: opnfv-build-ubuntu
+
+- job-template:
+    name: '{repo}-{container}-{tag}-pull'
+    parameters:
+      - xtesting-slave
+    builders:
+      - shell: |
+          if [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          sudo docker pull $image
+
+- project:
+    name: 'opnfv-xtesting-pull'
+    <<: *xtesting-params
+    repo: 'opnfv'
+    port:
+    container: 'xtesting'
+    jobs:
+      - '{repo}-{container}-{tag}-pull'
+
+- job-template:
+    name: '{repo}-{container}-{tag}-rmi'
+    parameters:
+      - xtesting-slave
+    builders:
+      - shell: sudo docker rmi {repo}/{container}:{tag} || true
+
+- project:
+    name: 'opnfv-xtesting-rmi'
+    <<: *xtesting-params
+    repo: 'opnfv'
+    port:
+    container: 'xtesting'
+    jobs:
+      - '{repo}-{container}-{tag}-rmi'
+
+- job-template:
+    name: '{repo}-{container}-{tag}-{test}-run'
+    parameters:
+      - xtesting-slave
+    builders:
+      - shell: |
+          set +ex
+          rm -rf /var/jenkins_home/workspace/$JOB_NAME/*
+          if [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          sudo docker run --rm \
+            --link testapi:testapi \
+            -v /data/jenkins/workspace/$JOB_NAME/results:/var/lib/xtesting/results \
+            $image run_tests -t {test}
+          res=$?
+          gsutil -m cp -r /var/jenkins_home/workspace/$JOB_NAME/ \
+            gs://artifacts.opnfv.org/xtesting/$JOB_NAME-$BUILD_ID > /dev/null
+          find /var/jenkins_home/workspace/$JOB_NAME/ -type f \
+            -printf \
+            "http://artifacts.opnfv.org/xtesting/$JOB_NAME-$BUILD_ID/%P\n"
+          exit $res
+
+- project:
+    name: 'opnfv-xtesting'
+    <<: *xtesting-params
+    repo: 'opnfv'
+    port:
+    container: 'xtesting'
+    test:
+      - first
+      - second
+      - third
+      - fourth
+      - fifth
+    jobs:
+      - '{repo}-{container}-{tag}-{test}-run'
+
+- job-template:
+    name: 'xtesting-{tag}'
+    project-type: multijob
+    triggers:
+      - timed: '@daily'
+    parameters:
+      - xtesting-slave
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - 'xtesting-.*'
+    builders:
+      - multijob:
+          name: remove former images
+          projects:
+            - name: 'opnfv-xtesting-{tag}-rmi'
+      - multijob:
+          name: pull containers
+          projects:
+            - name: 'opnfv-xtesting-{tag}-pull'
+      - multijob:
+          name: opnfv/xtesting:{tag}
+          projects:
+            - name: 'opnfv-xtesting-{tag}-first-run'
+              <<: *xtesting-jobs
+            - name: 'opnfv-xtesting-{tag}-second-run'
+              <<: *xtesting-jobs
+            - name: 'opnfv-xtesting-{tag}-third-run'
+              <<: *xtesting-jobs
+            - name: 'opnfv-xtesting-{tag}-fourth-run'
+              <<: *xtesting-jobs
+            - name: 'opnfv-xtesting-{tag}-fifth-run'
+              <<: *xtesting-jobs
+
+- project:
+    name: 'xtesting'
+    <<: *xtesting-params
+    jobs:
+      - 'xtesting-{tag}'
+
+- view:
+    name: xtesting
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: xtesting-.*
