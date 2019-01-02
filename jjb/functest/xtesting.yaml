@@ -69,13 +69,12 @@
             image={repo}:{port}/{container}:{tag}
           fi
           sudo docker run --rm \
-            --link testapi:testapi \
-            -v /data/jenkins/workspace/$JOB_NAME/results:/var/lib/xtesting/results \
+            -v /var/lib/jenkins/workspace/$JOB_NAME/results:/var/lib/xtesting/results \
             $image run_tests -t {test}
           res=$?
-          gsutil -m cp -r /var/jenkins_home/workspace/$JOB_NAME/ \
+          gsutil -m cp -r /var/lib/jenkins/workspace/$JOB_NAME/ \
             gs://artifacts.opnfv.org/xtesting/$JOB_NAME-$BUILD_ID > /dev/null
-          find /var/jenkins_home/workspace/$JOB_NAME/ -type f \
+          find /var/lib/jenkins/workspace/$JOB_NAME/ -type f \
             -printf \
             "http://artifacts.opnfv.org/xtesting/$JOB_NAME-$BUILD_ID/%P\n"
           exit $res
