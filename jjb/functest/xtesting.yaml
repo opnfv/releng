@@ -62,19 +62,19 @@
     builders:
       - shell: |
           set +ex
-          rm -rf /var/lib/jenkins/workspace/$JOB_NAME/*
+          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
           if [ "{port}" = "None" ]; then
             image={repo}/{container}:{tag}
           else
             image={repo}:{port}/{container}:{tag}
           fi
           sudo docker run --rm \
-            -v /var/lib/jenkins/workspace/$JOB_NAME/results:/var/lib/xtesting/results \
+            -v $WORKSPACE/results:/var/lib/xtesting/results \
             $image run_tests -t {test}
           res=$?
-          gsutil -m cp -r /var/lib/jenkins/workspace/$JOB_NAME/ \
+          gsutil -m cp -r $WORKSPACE/ \
             gs://artifacts.opnfv.org/xtesting/$JOB_NAME-$BUILD_ID > /dev/null
-          find /var/lib/jenkins/workspace/$JOB_NAME/ -type f \
+          find $WORKSPACE -type f \
             -printf \
             "http://artifacts.opnfv.org/xtesting/$JOB_NAME-$BUILD_ID/%P\n"
           exit $res
@@ -112,10 +112,12 @@
           name: remove former images
           projects:
             - name: 'opnfv-xtesting-{tag}-rmi'
+              <<: *xtesting-jobs
       - multijob:
           name: pull containers
           projects:
             - name: 'opnfv-xtesting-{tag}-pull'
+              <<: *xtesting-jobs
       - multijob:
           name: opnfv/xtesting:{tag}
           projects:
