@@ -16,6 +16,16 @@
      - Ubuntu 16.04
      - `PDF <https://git.opnfv.org/pharos/plain/labs/arm/pod6.yaml>`__
      - `IDF <https://git.opnfv.org/pharos/plain/labs/arm/idf-pod6.yaml>`__
+   * - `arm-pod9 <https://build.opnfv.org/ci/computer/arm-pod9>`_
+     - Armband
+     - Ubuntu 16.04
+     - `PDF <https://git.opnfv.org/pharos/plain/labs/arm/pod9.yaml>`__
+     - `IDF <https://git.opnfv.org/pharos/plain/labs/arm/idf-pod9.yaml>`__
+   * - `arm-pod10 <https://build.opnfv.org/ci/computer/arm-pod10>`_
+     - Fuel
+     - Ubuntu 16.04
+     - `PDF <https://git.opnfv.org/pharos/plain/labs/arm/pod10.yaml>`__
+     - `IDF <https://git.opnfv.org/pharos/plain/labs/arm/idf-pod10.yaml>`__
    * - `ericsson-pod1 <https://build.opnfv.org/ci/computer/ericsson-pod1>`_
      - Fuel
      - Ubuntu 16.04
