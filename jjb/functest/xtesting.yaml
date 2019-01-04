@@ -5,10 +5,15 @@
 
 - xtesting-params: &xtesting-params
     name: 'xtesting-params'
+    repo: 'opnfv'
+    port:
     tag:
-      - latest
-      - gambia
-      - hunter
+      - latest:
+          branch: master
+      - hunter:
+          branch: stable/hunter
+      - gambia:
+          branch: stable/gambia
 
 - parameter:
     name: xtesting-slave
@@ -17,59 +22,77 @@
           name: slave
           default: lf-build2
 
-- job-template:
-    name: '{repo}-{container}-{tag}-pull'
+- parameter:
+    name: xtesting-branch
     parameters:
-      - xtesting-slave
+      - string:
+          name: branch
+          default: '{branch}'
+
+- xtesting-containers: &xtesting-containers
+    name: 'xtesting-containers'
+    repo: '{repo}'
+    port: '{port}'
+    container: '{container}'
+    tag: '{tag}'
+
+- xtesting-run-containers: &xtesting-run-containers
+    name: 'xtesting-build-containers'
+    <<: *xtesting-containers
+    test: '{test}'
+
+- xtesting-build-containers: &xtesting-build-containers
+    name: 'xtesting-build-containers'
+    <<: *xtesting-containers
+    ref_arg: '{ref_arg}'
+    path: '{path}'
+
+- builder:
+    name: xtesting-pull-containers
     builders:
       - shell: |
-          if [ "{port}" = "None" ]; then
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
             image={repo}/{container}:{tag}
           else
             image={repo}:{port}/{container}:{tag}
           fi
           sudo docker pull $image
 
-- project:
-    name: 'opnfv-xtesting-pull'
-    <<: *xtesting-params
-    repo: 'opnfv'
-    port:
-    container: 'xtesting'
-    jobs:
-      - '{repo}-{container}-{tag}-pull'
-
-- job-template:
-    name: '{repo}-{container}-{tag}-rmi'
-    parameters:
-      - xtesting-slave
+- builder:
+    name: xtesting-build-containers
     builders:
-      - shell: sudo docker rmi {repo}/{container}:{tag} || true
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          cd {path}
+          sudo docker build --build-arg {ref_arg}={ref} \
+            --pull=false --no-cache --force-rm=true \
+            -t $image .
 
-- project:
-    name: 'opnfv-xtesting-rmi'
-    <<: *xtesting-params
-    repo: 'opnfv'
-    port:
-    container: 'xtesting'
-    jobs:
-      - '{repo}-{container}-{tag}-rmi'
-
-- job-template:
-    name: '{repo}-{container}-{tag}-{test}-run'
-    parameters:
-      - xtesting-slave
+- builder:
+    name: xtesting-run-containers
     builders:
       - shell: |
           set +ex
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
-          if [ "{port}" = "None" ]; then
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
             image={repo}/{container}:{tag}
           else
             image={repo}:{port}/{container}:{tag}
           fi
           sudo docker run --rm \
-            -v $WORKSPACE/results:/var/lib/xtesting/results \
+            -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             $image run_tests -t {test}
           res=$?
           gsutil -m cp -r $WORKSPACE/ \
@@ -79,11 +102,70 @@
             "http://artifacts.opnfv.org/xtesting/$JOB_NAME-$BUILD_ID/%P\n"
           exit $res
 
+- builder:
+    name: xtesting-remove-images
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          sudo docker rmi $image || true
+
+- scm:
+    name: xtesting-scm
+    scm:
+      - git:
+          url: https://gerrit.opnfv.org/gerrit/functest-xtesting
+          refspec: '+refs/changes/*:refs/changes/*'
+          branches:
+            - '{ref}'
+
+- job-template:
+    name: '{repo}-{container}-{tag}-pull'
+    parameters:
+      - xtesting-slave
+    builders:
+      - xtesting-pull-containers:
+          <<: *xtesting-containers
+
+- project:
+    name: 'opnfv-xtesting-pull'
+    <<: *xtesting-params
+    container: 'xtesting'
+    jobs:
+      - '{repo}-{container}-{tag}-pull'
+
+- job-template:
+    name: '{repo}-{container}-{tag}-rmi'
+    parameters:
+      - xtesting-slave
+    builders:
+      - xtesting-remove-images:
+          <<: *xtesting-containers
+
+- project:
+    name: 'opnfv-xtesting-rmi'
+    <<: *xtesting-params
+    container: 'xtesting'
+    jobs:
+      - '{repo}-{container}-{tag}-rmi'
+
+- job-template:
+    name: '{repo}-{container}-{tag}-{test}-run'
+    parameters:
+      - xtesting-slave
+    builders:
+      - xtesting-run-containers:
+          <<: *xtesting-run-containers
+
 - project:
     name: 'opnfv-xtesting'
     <<: *xtesting-params
-    repo: 'opnfv'
-    port:
     container: 'xtesting'
     test:
       - first
@@ -95,7 +177,7 @@
       - '{repo}-{container}-{tag}-{test}-run'
 
 - job-template:
-    name: 'xtesting-{tag}'
+    name: 'xtesting-{tag}-daily'
     project-type: multijob
     triggers:
       - timed: '@daily'
@@ -106,7 +188,7 @@
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - 'xtesting-.*'
+            - '^xtesting-.*-[a-z0-9]*$'
     builders:
       - multijob:
           name: remove former images
@@ -132,11 +214,187 @@
             - name: 'opnfv-xtesting-{tag}-fifth-run'
               <<: *xtesting-jobs
 
+- job-template:
+    name: '{repo}-{container}-{tag}-gate'
+    parameters:
+      - xtesting-slave
+    scm:
+      - xtesting-scm:
+          ref: $GERRIT_REFSPEC
+    builders:
+      - xtesting-build-containers:
+          <<: *xtesting-build-containers
+          ref: $GERRIT_REFSPEC
+
+- job-template:
+    name: '{repo}-{container}-{tag}-check'
+    parameters:
+      - xtesting-slave
+      - xtesting-branch:
+          branch: '{branch}'
+    scm:
+      - xtesting-scm:
+          ref: $branch
+    builders:
+      - xtesting-build-containers:
+          <<: *xtesting-build-containers
+          ref: $branch
+
+- project:
+    name: '_-alpine-3.8-rmi'
+    repo: _
+    port:
+    container: alpine
+    tag: 3.8
+    jobs:
+      - '{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: '_-alpine-3.8-pull'
+    repo: _
+    port:
+    container: alpine
+    tag: 3.8
+    jobs:
+      - '{repo}-{container}-{tag}-pull'
+
+- project:
+    name: opnfv-xtesting-{tag}-build
+    <<: *xtesting-params
+    container: xtesting
+    ref_arg: BRANCH
+    path: docker
+    jobs:
+      - '{repo}-{container}-{tag}-gate'
+      - '{repo}-{container}-{tag}-check'
+
+- job-template:
+    name: 'xtesting-{tag}-check'
+    project-type: multijob
+    parameters:
+      - xtesting-slave
+      - xtesting-branch:
+          branch: '{branch}'
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^xtesting-.*-[a-z0-9]*$'
+    builders:
+      - multijob:
+          name: remove former images
+          projects:
+            - name: 'opnfv-xtesting-{tag}-rmi'
+              <<: *xtesting-jobs
+      - multijob:
+          name: remove dependencies
+          projects:
+            - name: '_-alpine-3.8-rmi'
+              <<: *xtesting-jobs
+      - multijob:
+          name: pull dependencies
+          projects:
+            - name: '_-alpine-3.8-pull'
+              <<: *xtesting-jobs
+      - multijob:
+          name: opnfv/functest-xtesting
+          projects:
+            - name: 'opnfv-xtesting-{tag}-check'
+              <<: *xtesting-jobs
+      - multijob:
+          name: opnfv/xtesting:{tag}
+          projects:
+            - name: 'opnfv-xtesting-{tag}-first-run'
+              <<: *xtesting-jobs
+            - name: 'opnfv-xtesting-{tag}-second-run'
+              <<: *xtesting-jobs
+            - name: 'opnfv-xtesting-{tag}-third-run'
+              <<: *xtesting-jobs
+            - name: 'opnfv-xtesting-{tag}-fourth-run'
+              <<: *xtesting-jobs
+            - name: 'opnfv-xtesting-{tag}-fifth-run'
+              <<: *xtesting-jobs
+
+- trigger:
+    name: xtesting-patchset-created
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'functest-xtesting'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+          skip-vote:
+            successful: false
+            failed: false
+            unstable: false
+            notbuilt: false
+
+- job-template:
+    name: 'xtesting-{tag}-gate'
+    project-type: multijob
+    triggers:
+      - xtesting-patchset-created:
+          branch: '{branch}'
+    parameters:
+      - xtesting-slave
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^xtesting-.*-[a-z0-9]*$'
+    builders:
+      - multijob:
+          name: remove former images
+          projects:
+            - name: 'opnfv-xtesting-{tag}-rmi'
+              <<: *xtesting-jobs
+      - multijob:
+          name: remove dependencies
+          projects:
+            - name: '_-alpine-3.8-rmi'
+              <<: *xtesting-jobs
+      - multijob:
+          name: pull dependencies
+          projects:
+            - name: '_-alpine-3.8-pull'
+              <<: *xtesting-jobs
+      - multijob:
+          name: opnfv/functest-xtesting
+          projects:
+            - name: 'opnfv-xtesting-{tag}-gate'
+              <<: *xtesting-jobs
+      - multijob:
+          name: opnfv/xtesting:{tag}
+          projects:
+            - name: 'opnfv-xtesting-{tag}-first-run'
+              <<: *xtesting-jobs
+            - name: 'opnfv-xtesting-{tag}-second-run'
+              <<: *xtesting-jobs
+            - name: 'opnfv-xtesting-{tag}-third-run'
+              <<: *xtesting-jobs
+            - name: 'opnfv-xtesting-{tag}-fourth-run'
+              <<: *xtesting-jobs
+            - name: 'opnfv-xtesting-{tag}-fifth-run'
+              <<: *xtesting-jobs
+
 - project:
     name: 'xtesting'
     <<: *xtesting-params
     jobs:
-      - 'xtesting-{tag}'
+      - 'xtesting-{tag}-daily'
+      - 'xtesting-{tag}-check'
+      - 'xtesting-{tag}-gate'
 
 - view:
     name: xtesting
@@ -148,4 +406,4 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^xtesting-[a-z0-9]*$
+    regex: ^xtesting-.*-[a-z0-9]*$
