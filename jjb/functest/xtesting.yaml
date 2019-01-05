@@ -73,8 +73,13 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
+          if [ "{ref_arg}" = "None" ]; then
+            build_arg=""
+          else
+            build_arg="--build-arg {ref_arg}={ref}"
+          fi
           cd {path}
-          sudo docker build --build-arg {ref_arg}={ref} \
+          sudo docker build $build_arg \
             --pull=false --no-cache --force-rm=true \
             -t $image .
 
