@@ -66,7 +66,7 @@
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
       - 'os-nosdn-ovs-ha':
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
-      - 'os-nosdn-vpp-ha':
+      - 'os-nosdn-fdio-ha':
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
       # NOHA scenarios
       - 'os-nosdn-nofeature-noha':
@@ -83,7 +83,7 @@
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
       - 'os-nosdn-ovs-noha':
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
-      - 'os-nosdn-vpp-noha':
+      - 'os-nosdn-fdio-noha':
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
 
     exclude:
@@ -102,11 +102,11 @@
         stream: fraser
       - scenario: os-nosdn-ovs-noha
         stream: fraser
-      - scenario: os-nosdn-vpp-noha
+      - scenario: os-nosdn-fdio-noha
         stream: fraser
       - scenario: os-ovn-nofeature-ha
         stream: fraser
-      - scenario: os-nosdn-vpp-ha
+      - scenario: os-nosdn-fdio-ha
         stream: fraser
 
     jobs:
@@ -366,7 +366,7 @@
 - trigger:
     name: 'fuel-os-nosdn-nofeature-ha-baremetal-daily-master-trigger'
     triggers:
-      - timed: '5 20 * * *'
+      - timed: '5 20 * * 1,2,4,6,7'
 - trigger:
     name: 'fuel-os-odl-nofeature-ha-baremetal-daily-master-trigger'
     triggers:
@@ -380,7 +380,7 @@
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-vpp-ha-baremetal-daily-master-trigger'
+    name: 'fuel-os-nosdn-fdio-ha-baremetal-daily-master-trigger'
     triggers:
       - timed: ''
 
@@ -414,9 +414,9 @@
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-vpp-noha-baremetal-daily-master-trigger'
+    name: 'fuel-os-nosdn-fdio-noha-baremetal-daily-master-trigger'
     triggers:
-      - timed: ''
+      - timed: '5 20 * * 3,5'
 # ----------------------------------------------
 # Triggers for job running on fuel-baremetal against gambia branch
 # ----------------------------------------------
@@ -424,7 +424,7 @@
 - trigger:
     name: 'fuel-os-nosdn-nofeature-ha-baremetal-daily-gambia-trigger'
     triggers:
-      - timed: '0 20 * * *'
+      - timed: '0 20 * * 1,2,4,6,7'
 - trigger:
     name: 'fuel-os-odl-nofeature-ha-baremetal-daily-gambia-trigger'
     triggers:
@@ -438,7 +438,7 @@
     triggers:
       - timed: '0 5 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-vpp-ha-baremetal-daily-gambia-trigger'
+    name: 'fuel-os-nosdn-fdio-ha-baremetal-daily-gambia-trigger'
     triggers:
       - timed: ''
 # NOHA Scenarios
@@ -471,9 +471,9 @@
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-vpp-noha-baremetal-daily-gambia-trigger'
+    name: 'fuel-os-nosdn-fdio-noha-baremetal-daily-gambia-trigger'
     triggers:
-      - timed: ''
+      - timed: '0 20 * * 3,5'
 # ----------------------------------------------
 # Triggers for job running on fuel-virtual against master branch
 # ----------------------------------------------
@@ -494,7 +494,7 @@
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-vpp-ha-virtual-daily-master-trigger'
+    name: 'fuel-os-nosdn-fdio-ha-virtual-daily-master-trigger'
     triggers:
       - timed: ''
 # NOHA Scenarios
@@ -527,7 +527,7 @@
     triggers:
       - timed: '5 9 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-vpp-noha-virtual-daily-master-trigger'
+    name: 'fuel-os-nosdn-fdio-noha-virtual-daily-master-trigger'
     triggers:
       - timed: ''
 # ----------------------------------------------
@@ -565,7 +565,7 @@
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-vpp-ha-virtual-daily-gambia-trigger'
+    name: 'fuel-os-nosdn-fdio-ha-virtual-daily-gambia-trigger'
     triggers:
       - timed: ''
 # NOHA Scenarios
@@ -598,7 +598,7 @@
     triggers:
       - timed: '0 9 * * *'
 - trigger:
-    name: 'fuel-os-nosdn-vpp-noha-virtual-daily-gambia-trigger'
+    name: 'fuel-os-nosdn-fdio-noha-virtual-daily-gambia-trigger'
     triggers:
       - timed: ''
 # ----------------------------------------------
@@ -621,7 +621,7 @@
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-vpp-ha-zte-pod1-daily-master-trigger'
+    name: 'fuel-os-nosdn-fdio-ha-zte-pod1-daily-master-trigger'
     triggers:
       - timed: ''
 # NOHA Scenarios
@@ -654,6 +654,6 @@
     triggers:
       - timed: ''
 - trigger:
-    name: 'fuel-os-nosdn-vpp-noha-zte-pod1-daily-master-trigger'
+    name: 'fuel-os-nosdn-fdio-noha-zte-pod1-daily-master-trigger'
     triggers:
       - timed: ''
