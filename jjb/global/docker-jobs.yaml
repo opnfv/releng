@@ -10,35 +10,16 @@
 
     disabled: '{obj:disabled}'
 
-    parameters: &arm_parameters
+    parameters:
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
       - 'opnfv-build-ubuntu-arm-defaults'
-      - string:
-          name: PUSH_IMAGE
-          default: "true"
-          description: "To enable/disable pushing the image to Dockerhub."
-      - string:
-          name: DOCKER_REPO_NAME
-          default: "{docker_repo_name}"
-          description: "Dockerhub repo to be pushed to."
-      - string:
-          name: GERRIT_REFNAME
-          default: ""
-          description: "Docker tag to be built, e.g. refs/tags/5.0.0, refs/tags/opnfv-5.0.0, refs/tags/5.0.RC1"
-      - string:
-          name: DOCKER_DIR
-          default: "{dockerdir}"
-          description: "Directory containing files needed by the Dockerfile"
-      - string:
-          name: DOCKERFILE
-          default: "{dockerfile}"
-          description: "Dockerfile to use for creating the image."
-      - string:
-          name: ARCH_TAG
-          default: "{arch_tag}"
-          description: "If set, this value will be added to the docker image tag"
+      - docker-parameters:
+          dockerdir: '{dockerdir}'
+          arch_tag: '{arch_tag}'
+          dockerfile: '{dockerfile}'
+          docker_repo_name: '{docker_repo_name}'
 
     properties:
       - throttle:
@@ -48,7 +29,7 @@
     scm:
       - git-scm
 
-    builders: &arm_builders
+    builders:
       - shell:
           !include-raw-escape: ./shell/opnfv-docker.sh
 
@@ -73,34 +54,11 @@
           project: '{project}'
           branch: '{branch}'
       - 'opnfv-build-ubuntu-defaults'
-      - string:
-          name: PUSH_IMAGE
-          default: "true"
-          description: "To enable/disable pushing the image to Dockerhub."
-      - string:
-          name: DOCKER_REPO_NAME
-          default: "opnfv/{dockerrepo}"
-          description: "Dockerhub repo to be pushed to."
-      - string:
-          name: DOCKER_DIR
-          default: "{dockerdir}"
-          description: "Directory containing files needed by the Dockerfile"
-      - string:
-          name: COMMIT_ID
-          default: ""
-          description: "commit id to make a snapshot docker image"
-      - string:
-          name: GERRIT_REFNAME
-          default: ""
-          description: "Docker tag to be built, e.g. refs/tags/5.0.0, refs/tags/opnfv-5.0.0, refs/tags/5.0.RC1"
-      - string:
-          name: DOCKERFILE
-          default: "{dockerfile}"
-          description: "Dockerfile to use for creating the image."
-      - string:
-          name: ARCH_TAG
-          default: "{arch_tag}"
-          description: "If set, this value will be added to the docker image tag as a prefix"
+      - docker-parameters:
+          dockerdir: '{dockerdir}'
+          arch_tag: '{arch_tag}'
+          dockerfile: '{dockerfile}'
+          docker_repo_name: 'opnfv/{dockerrepo}'
 
     properties:
       - throttle:
@@ -110,7 +68,7 @@
     scm:
       - git-scm
 
-    builders: &push_builders
+    builders:
       - shell:
           !include-raw-escape: ./shell/opnfv-docker.sh
 
@@ -133,7 +91,9 @@
     scm:
       - git-scm
 
-    builders: *push_builders
+    builders:
+      - shell:
+          !include-raw-escape: ./shell/opnfv-docker.sh
 
     # trigger only matching the file name
     triggers:
@@ -151,3 +111,35 @@
               file-paths:
                 - compare-type: ANT
                   pattern: 'docker/**'
+
+- parameter:
+    name: docker-parameters
+    parameters:
+      - string:
+          name: PUSH_IMAGE
+          default: "true"
+          description: "To enable/disable pushing the image to Dockerhub."
+      - string:
+          name: DOCKER_REPO_NAME
+          default: "{docker_repo_name}"
+          description: "Dockerhub repo to be pushed to."
+      - string:
+          name: DOCKER_DIR
+          default: "{dockerdir}"
+          description: "Directory containing files needed by the Dockerfile"
+      - string:
+          name: COMMIT_ID
+          default: ""
+          description: "commit id to make a snapshot docker image"
+      - string:
+          name: GERRIT_REFNAME
+          default: ""
+          description: "Docker tag to be built, e.g. refs/tags/5.0.0, refs/tags/opnfv-5.0.0, refs/tags/5.0.RC1"
+      - string:
+          name: DOCKERFILE
+          default: "{dockerfile}"
+          description: "Dockerfile to use for creating the image."
+      - string:
+          name: ARCH_TAG
+          default: "{arch_tag}"
+          description: "If set, this value will be added to the docker image tag as a prefix"
