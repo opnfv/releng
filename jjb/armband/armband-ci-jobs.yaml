@@ -12,16 +12,19 @@
       branch: '{stream}'
       gs-pathname: ''
       disabled: false
+      functest_docker_tag: hunter
     fraser: &fraser
       stream: fraser
       branch: 'stable/{stream}'
       disabled: false
       gs-pathname: '/{stream}'
+      functest_docker_tag: '{stream}'
     gambia: &gambia
       stream: gambia
       branch: 'stable/{stream}'
       gs-pathname: '/{stream}'
       disabled: false
+      functest_docker_tag: '{stream}'
     # -------------------------------
     # DEPLOY TYPE ANCHORS
     # -------------------------------
@@ -161,6 +164,7 @@
                   current-parameters: false
                   predefined-parameters:
                     DEPLOY_SCENARIO={scenario}
+                    DOCKER_TAG={functest_docker_tag}
                   same-node: true
                   block: true
                   block-thresholds:
