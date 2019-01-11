@@ -13,10 +13,12 @@
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
+          functest_docker_tag: hunter
       - gambia:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           disabled: false
+          functest_docker_tag: '{stream}'
     #####################################
     # cluster architectures
     #####################################
@@ -144,6 +146,7 @@
                 GERRIT_REFSPEC=$GERRIT_REFSPEC
                 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
                 GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
+                DOCKER_TAG={functest_docker_tag}
               node-parameters: true
               enable-condition: "def m = ! ('$NODE_LABELS' =~ /armband-virtual/)"
               kill-phase-on: NEVER
