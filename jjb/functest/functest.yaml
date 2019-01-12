@@ -1,0 +1,971 @@
+---
+- functest-jobs: &functest-jobs
+    name: 'functest-jobs'
+    current-parameters: true
+
+- functest-params: &functest-params
+    name: 'functest-params'
+    repo: 'opnfv'
+    port:
+    tag:
+      - latest:
+          branch: master
+      - hunter:
+          branch: stable/hunter
+      - gambia:
+          branch: stable/gambia
+
+- parameter:
+    name: functest-slave
+    parameters:
+      - label:
+          name: slave
+          default: functest-virtual
+
+- parameter:
+    name: functest-branch
+    parameters:
+      - string:
+          name: branch
+          default: '{branch}'
+
+- functest-containers: &functest-containers
+    name: 'functest-containers'
+    repo: '{repo}'
+    port: '{port}'
+    container: '{container}'
+    tag: '{tag}'
+
+- functest-run-containers: &functest-run-containers
+    name: 'functest-build-containers'
+    <<: *functest-containers
+    test: '{test}'
+
+- functest-build-containers: &functest-build-containers
+    name: 'functest-build-containers'
+    <<: *functest-containers
+    ref_arg: '{ref_arg}'
+    path: '{path}'
+
+- builder:
+    name: functest-pull-containers
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          sudo docker pull $image
+
+- builder:
+    name: functest-build-containers
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          if [ "{ref_arg}" = "None" ]; then
+            build_arg=""
+          else
+            build_arg="--build-arg {ref_arg}={ref}"
+          fi
+          cd {path}
+          sudo docker build $build_arg \
+            --pull=false --no-cache --force-rm=true \
+            -t $image .
+
+- builder:
+    name: functest-run-containers
+    builders:
+      - shell: |
+          set +ex
+          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          sudo docker run --rm \
+            -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            $image run_tests -t {test}
+          res=$?
+          gsutil -m cp -r $WORKSPACE/ \
+            gs://artifacts.opnfv.org/functest/$JOB_NAME-$BUILD_ID > /dev/null 2>&1
+          find $WORKSPACE -type f \
+            -printf \
+            "http://artifacts.opnfv.org/functest/$JOB_NAME-$BUILD_ID/%P\n"
+          exit $res
+
+- builder:
+    name: functest-remove-images
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          sudo docker rmi $image || true
+
+- scm:
+    name: functest-scm
+    scm:
+      - git:
+          url: https://gerrit.opnfv.org/gerrit/functest
+          refspec: '+refs/changes/*:refs/changes/*'
+          branches:
+            - '{ref}'
+
+- job-template:
+    name: 'functest-{repo}-{container}-{tag}-pull'
+    parameters:
+      - functest-slave
+    builders:
+      - functest-pull-containers:
+          <<: *functest-containers
+
+- project:
+    name: 'functest-opnfv-functest-healthcheck-pull'
+    <<: *functest-params
+    container: 'functest-healthcheck'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'functest-opnfv-functest-smoke-pull'
+    <<: *functest-params
+    container: 'functest-smoke'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'functest-opnfv-functest-benchmarking-pull'
+    <<: *functest-params
+    container: 'functest-benchmarking'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'functest-opnfv-functest-components-pull'
+    <<: *functest-params
+    container: 'functest-components'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'functest-opnfv-functest-vnf-pull'
+    <<: *functest-params
+    container: 'functest-vnf'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'functest-opnfv-functest-features-pull'
+    <<: *functest-params
+    container: 'functest-features'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-pull'
+
+- job-template:
+    name: 'functest-{repo}-{container}-{tag}-rmi'
+    parameters:
+      - functest-slave
+    builders:
+      - functest-remove-images:
+          <<: *functest-containers
+
+- project:
+    name: 'functest-opnfv-functest-healthcheck-rmi'
+    <<: *functest-params
+    container: 'functest-healthcheck'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-opnfv-functest-smoke-rmi'
+    <<: *functest-params
+    container: 'functest-smoke'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-opnfv-functest-benchmarking-rmi'
+    <<: *functest-params
+    container: 'functest-benchmarking'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-opnfv-functest-components-rmi'
+    <<: *functest-params
+    container: 'functest-components'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-opnfv-functest-vnf-rmi'
+    <<: *functest-params
+    container: 'functest-vnf'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-opnfv-functest-features-rmi'
+    <<: *functest-params
+    container: 'functest-features'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-rmi'
+
+- job-template:
+    name: 'functest-{repo}-{container}-{tag}-{test}-run'
+    parameters:
+      - functest-slave
+    builders:
+      - functest-run-containers:
+          <<: *functest-run-containers
+
+- project:
+    name: 'functest-opnfv-functest-healthcheck'
+    <<: *functest-params
+    container: 'functest-healthcheck'
+    test:
+      - connection_check
+      - tenantnetwork1
+      - tenantnetwork2
+      - vmready1
+      - vmready2
+      - singlevm1
+      - singlevm2
+      - vping_ssh
+      - vping_userdata
+      - cinder_test
+      - odl
+      - api_check
+      - snaps_health_check
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-opnfv-functest-smoke'
+    <<: *functest-params
+    container: 'functest-smoke'
+    test:
+      - tempest_smoke
+      - neutron-tempest-plugin-api
+      - rally_sanity
+      - rally_jobs
+      - refstack_defcore
+      - patrole
+      - snaps_smoke
+      - neutron_trunk
+      - networking-bgpvpn
+      - networking-sfc
+      - barbican
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-opnfv-functest-benchmarking'
+    <<: *functest-params
+    container: 'functest-benchmarking'
+    test:
+      - vmtp
+      - shaker
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-opnfv-functest-components'
+    <<: *functest-params
+    container: 'functest-components'
+    test:
+      - tempest_full
+      - tempest_scenario
+      - rally_full
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-opnfv-functest-vnf'
+    <<: *functest-params
+    container: 'functest-vnf'
+    test:
+      - cloudify
+      - cloudify_ims
+      - heat_ims
+      - vyos_vrouter
+      - juju_epc
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-opnfv-functest-features'
+    <<: *functest-params
+    container: 'functest-features'
+    test:
+      - doctor-notification
+      - bgpvpn
+      - functest-odl-sfc
+      - barometercollectd
+      - fds
+      - vgpu
+      - stor4nfv_os
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-{test}-run'
+
+- job-template:
+    name: 'functest-{tag}-daily'
+    project-type: multijob
+    triggers:
+      - timed: '@daily'
+    parameters:
+      - functest-slave
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^functest-[a-z]+-(daily|check|gate)$'
+    builders:
+      - multijob:
+          name: remove former images
+          projects:
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-rmi'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-rmi'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-benchmarking-{tag}-rmi'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-components-{tag}-rmi'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-rmi'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-rmi'
+              <<: *functest-jobs
+      - multijob:
+          name: pull containers
+          projects:
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-pull'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-pull'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-benchmarking-{tag}-pull'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-components-{tag}-pull'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-pull'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-pull'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-healthcheck:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-connection_check-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-tenantnetwork1-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-tenantnetwork2-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-vmready1-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-vmready2-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-singlevm1-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-singlevm2-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-vping_ssh-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-vping_userdata-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-cinder_test-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-odl-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-api_check-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-snaps_health_check-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-smoke:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_smoke-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-neutron-tempest-plugin-api-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-rally_jobs-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-refstack_defcore-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-patrole-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-snaps_smoke-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-neutron_trunk-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-networking-bgpvpn-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-networking-sfc-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-barbican-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-benchmarking:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-benchmarking-{tag}-vmtp-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-benchmarking-{tag}-shaker-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-components:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-components-{tag}-tempest_full-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-components-{tag}-tempest_scenario-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-components-{tag}-rally_full-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-vnf:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-vnf-{tag}-cloudify-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-cloudify_ims-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-heat_ims-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-vyos_vrouter-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-juju_epc-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-features:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-features-{tag}-doctor-notification-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-bgpvpn-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-functest-odl-sfc-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-barometercollectd-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-fds-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-vgpu-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-stor4nfv_os-run'
+              <<: *functest-jobs
+
+- job-template:
+    name: 'functest-{repo}-{container}-{tag}-gate'
+    parameters:
+      - functest-slave
+    scm:
+      - functest-scm:
+          ref: $GERRIT_REFSPEC
+    builders:
+      - functest-build-containers:
+          <<: *functest-build-containers
+          ref: $GERRIT_REFSPEC
+
+- job-template:
+    name: 'functest-{repo}-{container}-{tag}-check'
+    parameters:
+      - functest-slave
+      - functest-branch:
+          branch: '{branch}'
+    scm:
+      - functest-scm:
+          ref: $branch
+    builders:
+      - functest-build-containers:
+          <<: *functest-build-containers
+          ref: $branch
+
+- project:
+    name: 'functest-_-alpine-3.8-rmi'
+    repo: _
+    port:
+    container: alpine
+    tag: 3.8
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-_-alpine-3.8-pull'
+    repo: _
+    port:
+    container: alpine
+    tag: 3.8
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: functest-opnfv-functest-core-{tag}-build
+    <<: *functest-params
+    container: functest-core
+    ref_arg: BRANCH
+    path: docker/core
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-gate'
+      - 'functest-{repo}-{container}-{tag}-check'
+
+- project:
+    name: functest-opnfv-functest-tempest-{tag}-build
+    <<: *functest-params
+    container: functest-tempest
+    ref_arg: BRANCH
+    path: docker/tempest
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-gate'
+      - 'functest-{repo}-{container}-{tag}-check'
+
+- project:
+    name: functest-opnfv-functest-healthcheck-{tag}-build
+    <<: *functest-params
+    container: functest-healthcheck
+    ref_arg: BRANCH
+    path: docker/healthcheck
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-gate'
+      - 'functest-{repo}-{container}-{tag}-check'
+
+- project:
+    name: functest-opnfv-functest-smoke-{tag}-build
+    <<: *functest-params
+    container: functest-smoke
+    ref_arg: BRANCH
+    path: docker/smoke
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-gate'
+      - 'functest-{repo}-{container}-{tag}-check'
+
+- project:
+    name: functest-opnfv-functest-benchmarking-{tag}-build
+    <<: *functest-params
+    container: functest-benchmarking
+    ref_arg: BRANCH
+    path: docker/benchmarking
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-gate'
+      - 'functest-{repo}-{container}-{tag}-check'
+
+- project:
+    name: functest-opnfv-functest-components-{tag}-build
+    <<: *functest-params
+    container: functest-components
+    ref_arg:
+    path: docker/components
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-gate'
+      - 'functest-{repo}-{container}-{tag}-check'
+
+- project:
+    name: functest-opnfv-functest-vnf-{tag}-build
+    <<: *functest-params
+    container: functest-vnf
+    ref_arg:
+    path: docker/vnf
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-gate'
+      - 'functest-{repo}-{container}-{tag}-check'
+
+- project:
+    name: functest-opnfv-functest-features-{tag}-build
+    <<: *functest-params
+    container: functest-features
+    ref_arg: BRANCH
+    path: docker/features
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-gate'
+      - 'functest-{repo}-{container}-{tag}-check'
+
+- job-template:
+    name: 'functest-{tag}-check'
+    project-type: multijob
+    parameters:
+      - functest-slave
+      - functest-branch:
+          branch: '{branch}'
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^functest-[a-z]+-(daily|check|gate)$'
+    builders:
+      - multijob:
+          name: remove former images
+          projects:
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-rmi'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-rmi'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-benchmarking-{tag}-rmi'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-components-{tag}-rmi'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-rmi'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-rmi'
+              <<: *functest-jobs
+      - multijob:
+          name: remove dependencies
+          projects:
+            - name: 'functest-_-alpine-3.8-rmi'
+              <<: *functest-jobs
+      - multijob:
+          name: pull dependencies
+          projects:
+            - name: 'functest-_-alpine-3.8-pull'
+              <<: *functest-jobs
+      - multijob:
+          name: build opnfv/functest-core
+          projects:
+            - name: 'functest-opnfv-functest-core-{tag}-check'
+              <<: *functest-jobs
+      - multijob:
+          name: build opnfv/functest-tempest
+          projects:
+            - name: 'functest-opnfv-functest-tempest-{tag}-check'
+              <<: *functest-jobs
+      - multijob:
+          name: build containers
+          projects:
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-check'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-check'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-benchmarking-{tag}-check'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-components-{tag}-check'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-check'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-check'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-healthcheck:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-connection_check-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-tenantnetwork1-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-tenantnetwork2-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-vmready1-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-vmready2-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-singlevm1-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-singlevm2-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-vping_ssh-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-vping_userdata-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-cinder_test-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-odl-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-api_check-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-snaps_health_check-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-smoke:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_smoke-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-neutron-tempest-plugin-api-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-rally_jobs-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-refstack_defcore-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-patrole-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-snaps_smoke-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-neutron_trunk-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-networking-bgpvpn-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-networking-sfc-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-barbican-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-benchmarking:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-benchmarking-{tag}-vmtp-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-benchmarking-{tag}-shaker-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-components:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-components-{tag}-tempest_full-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-components-{tag}-tempest_scenario-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-components-{tag}-rally_full-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-vnf:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-vnf-{tag}-cloudify-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-cloudify_ims-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-heat_ims-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-vyos_vrouter-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-juju_epc-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-features:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-features-{tag}-doctor-notification-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-bgpvpn-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-functest-odl-sfc-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-barometercollectd-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-fds-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-vgpu-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-stor4nfv_os-run'
+              <<: *functest-jobs
+
+- trigger:
+    name: functest-patchset-created
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'functest'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+          skip-vote:
+            successful: false
+            failed: false
+            unstable: false
+            notbuilt: false
+
+- job-template:
+    name: 'functest-{tag}-gate'
+    project-type: multijob
+    triggers:
+      - functest-patchset-created:
+          branch: '{branch}'
+    parameters:
+      - functest-slave
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^functest-[a-z]+-(daily|check|gate)$'
+    builders:
+      - multijob:
+          name: remove former images
+          projects:
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-rmi'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-rmi'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-benchmarking-{tag}-rmi'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-components-{tag}-rmi'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-rmi'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-rmi'
+              <<: *functest-jobs
+      - multijob:
+          name: remove dependencies
+          projects:
+            - name: 'functest-_-alpine-3.8-rmi'
+              <<: *functest-jobs
+      - multijob:
+          name: pull dependencies
+          projects:
+            - name: 'functest-_-alpine-3.8-pull'
+              <<: *functest-jobs
+      - multijob:
+          name: build opnfv/functest-core
+          projects:
+            - name: 'functest-opnfv-functest-core-{tag}-gate'
+              <<: *functest-jobs
+      - multijob:
+          name: build opnfv/functest-tempest
+          projects:
+            - name: 'functest-opnfv-functest-tempest-{tag}-gate'
+              <<: *functest-jobs
+      - multijob:
+          name: build containers
+          projects:
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-gate'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-gate'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-benchmarking-{tag}-gate'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-components-{tag}-gate'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-gate'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-gate'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-healthcheck:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-connection_check-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-tenantnetwork1-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-tenantnetwork2-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-vmready1-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-vmready2-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-singlevm1-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-singlevm2-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-vping_ssh-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-vping_userdata-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-cinder_test-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-odl-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-api_check-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-snaps_health_check-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-smoke:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_smoke-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-neutron-tempest-plugin-api-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-rally_jobs-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-refstack_defcore-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-patrole-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-snaps_smoke-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-neutron_trunk-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-networking-bgpvpn-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-networking-sfc-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-barbican-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-benchmarking:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-benchmarking-{tag}-vmtp-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-benchmarking-{tag}-shaker-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-components:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-components-{tag}-tempest_full-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-components-{tag}-tempest_scenario-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-components-{tag}-rally_full-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-vnf:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-vnf-{tag}-cloudify-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-cloudify_ims-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-heat_ims-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-vyos_vrouter-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-vnf-{tag}-juju_epc-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-features:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-features-{tag}-doctor-notification-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-bgpvpn-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-functest-odl-sfc-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-barometercollectd-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-fds-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-vgpu-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-features-{tag}-stor4nfv_os-run'
+              <<: *functest-jobs
+
+- project:
+    name: 'functest'
+    <<: *functest-params
+    jobs:
+      - 'functest-{tag}-daily'
+      - 'functest-{tag}-check'
+      - 'functest-{tag}-gate'
+
+- view:
+    name: functest
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^functest-[a-z]+-(daily|check|gate)$
