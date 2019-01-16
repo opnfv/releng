@@ -148,8 +148,9 @@
       - trigger-builds:
           - project: '{installer}-deploy-{pod}-daily-{stream}'
             current-parameters: false
-            predefined-parameters:
+            predefined-parameters: |
               DEPLOY_SCENARIO={scenario}
+              INSTALLER_VERSION={stream}
             same-node: true
             block: true
       - conditional-step:
@@ -164,6 +165,7 @@
                   current-parameters: false
                   predefined-parameters: |
                     DEPLOY_SCENARIO={scenario}
+                    INSTALLER_VERSION={stream}
                     DOCKER_TAG={functest_docker_tag}
                   same-node: true
                   block: true
@@ -181,8 +183,9 @@
             - trigger-builds:
                 - project: 'yardstick-{installer}-{pod}-daily-{stream}'
                   current-parameters: false
-                  predefined-parameters:
+                  predefined-parameters: |
                     DEPLOY_SCENARIO={scenario}
+                    INSTALLER_VERSION={stream}
                   block: true
                   same-node: true
                   block-thresholds:
@@ -209,8 +212,9 @@
             - trigger-builds:
                 - project: 'dovetail-{installer}-{pod}-proposed_tests-{stream}'
                   current-parameters: false
-                  predefined-parameters:
+                  predefined-parameters: |
                     DEPLOY_SCENARIO={scenario}
+                    INSTALLER_VERSION={stream}
                   block: true
                   same-node: true
                   block-thresholds:
@@ -230,8 +234,9 @@
             - trigger-builds:
                 - project: 'dovetail-{installer}-{pod}-default-{stream}'
                   current-parameters: false
-                  predefined-parameters:
+                  predefined-parameters: |
                     DEPLOY_SCENARIO={scenario}
+                    INSTALLER_VERSION={stream}
                   block: true
                   same-node: true
                   block-thresholds:
@@ -242,8 +247,9 @@
       - trigger-builds:
           - project: 'fuel-collect-logs-{deploy-type}-daily-{stream}'
             current-parameters: false
-            predefined-parameters:
+            predefined-parameters: |
               DEPLOY_SCENARIO={scenario}
+              INSTALLER_VERSION={stream}
             block: true
             same-node: true
             block-thresholds:
