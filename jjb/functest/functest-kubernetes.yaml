@@ -331,9 +331,9 @@
       - 'functest-kubernetes-{repo}-{container}-{tag}-check'
 
 - project:
-    name: functest-kubernetes-opnfv-functest-functest-kubernetes-healthcheck-{tag}-build
+    name: functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-build
     <<: *functest-kubernetes-params
-    container: functest-functest-kubernetes-healthcheck
+    container: functest-kubernetes-healthcheck
     ref_arg:
     path: docker/healthcheck
     jobs:
@@ -341,9 +341,9 @@
       - 'functest-kubernetes-{repo}-{container}-{tag}-check'
 
 - project:
-    name: functest-kubernetes-opnfv-functest-functest-kubernetes-smoke-{tag}-build
+    name: functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-build
     <<: *functest-kubernetes-params
-    container: functest-functest-kubernetes-smoke
+    container: functest-kubernetes-smoke
     ref_arg:
     path: docker/smoke
     jobs:
@@ -351,9 +351,9 @@
       - 'functest-kubernetes-{repo}-{container}-{tag}-check'
 
 - project:
-    name: functest-kubernetes-opnfv-functest-functest-kubernetes-features-{tag}-build
+    name: functest-kubernetes-opnfv-functest-kubernetes-features-{tag}-build
     <<: *functest-kubernetes-params
-    container: functest-functest-kubernetes-features
+    container: functest-kubernetes-features
     ref_arg:
     path: docker/features
     jobs:
@@ -401,14 +401,14 @@
       - multijob:
           name: build opnfv/functest-kubernetes-healthcheck
           projects:
-            - name: 'functest-kubernetes-opnfv-functest-functest-kubernetes-healthcheck-{tag}-check'
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-check'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: build containers
           projects:
-            - name: 'functest-kubernetes-opnfv-functest-functest-kubernetes-smoke-{tag}-check'
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-check'
               <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-functest-kubernetes-features-{tag}-check'
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-features-{tag}-check'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-healthcheck:{tag}
@@ -493,14 +493,14 @@
       - multijob:
           name: build opnfv/functest-kubernetes-healthcheck
           projects:
-            - name: 'functest-kubernetes-opnfv-functest-functest-kubernetes-healthcheck-{tag}-gate'
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-gate'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: build containers
           projects:
-            - name: 'functest-kubernetes-opnfv-functest-functest-kubernetes-smoke-{tag}-gate'
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-gate'
               <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-functest-kubernetes-features-{tag}-gate'
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-features-{tag}-gate'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-healthcheck:{tag}
