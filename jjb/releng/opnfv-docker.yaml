@@ -61,6 +61,12 @@
           dockerdir: 'docker/barometer-collectd'
           <<: *master
           <<: *other-receivers
+      - 'barometer-collectd-master':
+          project: 'barometer'
+          dockerdir: '.'
+          dockerfile: 'docker/barometer-collectd-master/Dockerfile'
+          <<: *master
+          <<: *other-receivers
       - 'barometer-dma':
           project: 'barometer'
           dockerdir: 'docker/barometer-dma'
@@ -278,6 +284,12 @@
       - 'barometer-collectd':
           project: 'barometer'
           dockerdir: 'docker/barometer-collectd'
+          <<: *gambia
+          <<: *other-receivers
+      - 'barometer-collectd-master':
+          project: 'barometer'
+          dockerdir: '.'
+          dockerfile: 'docker/barometer-collectd-master/Dockerfile'
           <<: *gambia
           <<: *other-receivers
       - 'barometer-grafana':
