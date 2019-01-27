@@ -10,10 +10,6 @@
     tag:
       - latest:
           branch: master
-      - hunter:
-          branch: stable/hunter
-      - gambia:
-          branch: stable/gambia
 
 - parameter:
     name: functest-slave
@@ -98,9 +94,10 @@
           fi
           sudo docker run --rm \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
-            -e EXTERNAL_NETWORK=public1 \
+            -e EXTERNAL_NETWORK=public \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
+            -v /home/opnfv/functest/tempest_blacklist.yaml:/usr/lib/python2.7/site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/blacklist.yaml \ \
             $image run_tests -t {test}
           res=$?
           gsutil -m cp -r $WORKSPACE/ \
@@ -298,6 +295,7 @@
     test:
       - tempest_full
       - tempest_scenario
+      - rally_full
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -439,6 +437,8 @@
             - name: 'functest-opnfv-functest-components-{tag}-tempest_full-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-components-{tag}-tempest_scenario-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-components-{tag}-rally_full-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-vnf:{tag}
@@ -725,6 +725,8 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-components-{tag}-tempest_scenario-run'
               <<: *functest-jobs
+            - name: 'functest-opnfv-functest-components-{tag}-rally_full-run'
+              <<: *functest-jobs
       - multijob:
           name: opnfv/functest-vnf:{tag}
           projects:
@@ -909,6 +911,8 @@
             - name: 'functest-opnfv-functest-components-{tag}-tempest_full-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-components-{tag}-tempest_scenario-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-components-{tag}-rally_full-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-vnf:{tag}
