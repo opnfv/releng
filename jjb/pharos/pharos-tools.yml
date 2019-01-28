@@ -3,13 +3,32 @@
     name: pharos-dashboard-jobs
 
     project: 'pharos-tools'
+    project-name: 'pharos-tools'
+
+    stream:
+      - master
 
     disabled: false
 
     jobs:
-      - '{project}-verify-basic'
       - 'pharos-dashboard-backup'
       - 'pharos-dashboard-deploy'
+
+- project:
+    name: pharos-dashboard-verify
+
+    project: 'pharos-tools'
+    project-name: 'pharos-tools'
+    build-days-to-keep: 7
+    tox-dir: 'dashboard'
+
+    stream:
+       - master
+
+    disabled: false
+
+    jobs:
+      - 'gerrit-tox-verify'
 
 - job-template:
     name: 'pharos-dashboard-backup'
