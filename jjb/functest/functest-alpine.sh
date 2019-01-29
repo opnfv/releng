@@ -267,21 +267,21 @@ elif [ ${FUNCTEST_MODE} == 'tier' ]; then
     tiers=(${FUNCTEST_TIER})
     run_tiers ${tiers}
 else
-    tests=(tempest_full tempest_scenario)
+    tests=()
     skip_tests=0
     if [ ${DEPLOY_TYPE} == 'baremetal' ] && [ "${HOST_ARCH}" != "aarch64" ]; then
         if [[ ${BRANCH} == "stable/fraser" ]]; then
             tiers=(healthcheck smoke features vnf parser)
             tests=(tempest_full_parallel)
         else
-            tiers=(healthcheck smoke benchmarking features vnf)
+            tiers=(healthcheck smoke benchmarking features vnf components)
         fi
     else
         if [[ ${BRANCH} == "stable/fraser" ]]; then
             tiers=(healthcheck smoke features parser)
             tests=(tempest_full_parallel)
         else
-            tiers=(healthcheck smoke benchmarking features)
+            tiers=(healthcheck smoke benchmarking features components)
         fi
     fi
     run_tiers ${tiers}
