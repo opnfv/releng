@@ -266,7 +266,6 @@
       - tempest_smoke
       - neutron-tempest-plugin-api
       - rally_sanity
-      - rally_jobs
       - refstack_defcore
       - patrole
       - snaps_smoke
@@ -274,6 +273,15 @@
       - networking-bgpvpn
       - networking-sfc
       - barbican
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-opnfv-functest-smoke-2'
+    <<: *functest-params
+    container: 'functest-smoke'
+    test:
+      - rally_jobs
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -407,8 +415,6 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-jobs
-            - name: 'functest-opnfv-functest-smoke-{tag}-rally_jobs-run'
-              <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-refstack_defcore-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-patrole-run'
@@ -422,6 +428,11 @@
             - name: 'functest-opnfv-functest-smoke-{tag}-networking-sfc-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-barbican-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-smoke:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-smoke-{tag}-rally_jobs-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{tag}
@@ -694,8 +705,6 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-jobs
-            - name: 'functest-opnfv-functest-smoke-{tag}-rally_jobs-run'
-              <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-refstack_defcore-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-patrole-run'
@@ -709,6 +718,11 @@
             - name: 'functest-opnfv-functest-smoke-{tag}-networking-sfc-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-barbican-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-smoke:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-smoke-{tag}-rally_jobs-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{tag}
@@ -881,8 +895,6 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-jobs
-            - name: 'functest-opnfv-functest-smoke-{tag}-rally_jobs-run'
-              <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-refstack_defcore-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-patrole-run'
@@ -896,6 +908,11 @@
             - name: 'functest-opnfv-functest-smoke-{tag}-networking-sfc-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-barbican-run'
+              <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-smoke:{tag}
+          projects:
+            - name: 'functest-opnfv-functest-smoke-{tag}-rally_jobs-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{tag}
