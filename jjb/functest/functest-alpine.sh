@@ -107,12 +107,11 @@ rc_file_vol="-v ${rc_file}:${FUNCTEST_DIR}/conf/env_file"
 echo "Functest: Start Docker and prepare environment"
 
 echo "Functest: Download images that will be used by test cases"
+env
+pwd
+ls -l
 images_dir="${HOME}/opnfv/functest/images"
 download_script=${WORKSPACE}/functest/ci/download_images.sh
-if [[ ! -f ${download_script} ]]; then
-    # to support Danube as well
-    wget https://git.opnfv.org/functest/plain/functest/ci/download_images.sh -O ${download_script} 2> ${redirect}
-fi
 chmod +x ${download_script}
 ${download_script} ${images_dir} ${DEPLOY_SCENARIO} ${HOST_ARCH} 2> ${redirect}
 
