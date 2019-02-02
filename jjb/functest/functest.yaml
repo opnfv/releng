@@ -302,6 +302,14 @@
     test:
       - tempest_full
       - tempest_scenario
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-opnfv-functest-components-2'
+    <<: *functest-params
+    container: 'functest-components'
+    test:
       - rally_full
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
@@ -448,6 +456,9 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-components-{tag}-tempest_scenario-run'
               <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-components:{tag}
+          projects:
             - name: 'functest-opnfv-functest-components-{tag}-rally_full-run'
               <<: *functest-jobs
       - multijob:
@@ -738,6 +749,9 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-components-{tag}-tempest_scenario-run'
               <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-components:{tag}
+          projects:
             - name: 'functest-opnfv-functest-components-{tag}-rally_full-run'
               <<: *functest-jobs
       - multijob:
@@ -928,6 +942,9 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-components-{tag}-tempest_scenario-run'
               <<: *functest-jobs
+      - multijob:
+          name: opnfv/functest-components:{tag}
+          projects:
             - name: 'functest-opnfv-functest-components-{tag}-rally_full-run'
               <<: *functest-jobs
       - multijob:
