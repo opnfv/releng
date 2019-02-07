@@ -55,13 +55,13 @@ run_test() {
     cmd_opt="run_tests -t ${test_name}"
     # Determine which Functest image should be used for the test case
     case ${test_name} in
-        connection_check|tenantnetwork1|tenantnetwork2|vmready1|vmready2|singlevm1|singlevm2|vping_ssh|vping_userdata|cinder_test|odl|api_check|snaps_health_check)
+        connection_check|tenantnetwork1|tenantnetwork2|vmready1|vmready2|singlevm1|singlevm2|vping_ssh|vping_userdata|cinder_test|odl|api_check|snaps_health_check|tempest_smoke)
             FUNCTEST_IMAGE=${REPO}/functest-healthcheck:${DOCKER_TAG} ;;
-        tempest_smoke_serial|tempest_smoke|neutron-tempest-plugin-api|rally_sanity|refstack_defcore|patrole|snaps_smoke|neutron_trunk|networking-bgpvpn|networking-sfc|barbican)
+        neutron-tempest-plugin-api|rally_sanity|refstack_defcore|tempest_full|tempest_scenario|patrole|snaps_smoke|neutron_trunk|networking-bgpvpn|networking-sfc|barbican)
             FUNCTEST_IMAGE=${REPO}/functest-smoke:${DOCKER_TAG} ;;
-        shaker|vmtp)
+        rally_jobs|shaker|vmtp)
             FUNCTEST_IMAGE=${REPO}/functest-benchmarking:${DOCKER_TAG} ;;
-        tempest_full_parallel|tempest_full|tempest_scenario|rally_full)
+        rally_full)
             FUNCTEST_IMAGE=${REPO}/functest-components:${DOCKER_TAG} ;;
         cloudify|cloudify_ims|heat_ims|vyos_vrouter|juju_epc)
             FUNCTEST_IMAGE=${REPO}/functest-vnf:${DOCKER_TAG} ;;
