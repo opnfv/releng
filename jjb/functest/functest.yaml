@@ -161,13 +161,6 @@
       - 'functest-{repo}-{container}-{tag}-pull'
 
 - project:
-    name: 'functest-opnfv-functest-components-pull'
-    <<: *functest-params
-    container: 'functest-components'
-    jobs:
-      - 'functest-{repo}-{container}-{tag}-pull'
-
-- project:
     name: 'functest-opnfv-functest-vnf-pull'
     <<: *functest-params
     container: 'functest-vnf'
@@ -207,13 +200,6 @@
     name: 'functest-opnfv-functest-benchmarking-rmi'
     <<: *functest-params
     container: 'functest-benchmarking'
-    jobs:
-      - 'functest-{repo}-{container}-{tag}-rmi'
-
-- project:
-    name: 'functest-opnfv-functest-components-rmi'
-    <<: *functest-params
-    container: 'functest-components'
     jobs:
       - 'functest-{repo}-{container}-{tag}-rmi'
 
@@ -285,18 +271,10 @@
     <<: *functest-params
     container: 'functest-benchmarking'
     test:
+      - rally_full
       - rally_jobs
       - vmtp
       - shaker
-    jobs:
-      - 'functest-{repo}-{container}-{tag}-{test}-run'
-
-- project:
-    name: 'functest-opnfv-functest-components'
-    <<: *functest-params
-    container: 'functest-components'
-    test:
-      - rally_full
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -350,8 +328,6 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-benchmarking-{tag}-rmi'
               <<: *functest-jobs
-            - name: 'functest-opnfv-functest-components-{tag}-rmi'
-              <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-rmi'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-features-{tag}-rmi'
@@ -364,8 +340,6 @@
             - name: 'functest-opnfv-functest-smoke-{tag}-pull'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-benchmarking-{tag}-pull'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-components-{tag}-pull'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-pull'
               <<: *functest-jobs
@@ -430,16 +404,13 @@
       - multijob:
           name: opnfv/functest-benchmarking:{tag}
           projects:
+            - name: 'functest-opnfv-functest-benchmarking-{tag}-rally_full-run'
+              <<: *functest-jobs
             - name: 'functest-opnfv-functest-benchmarking-{tag}-rally_jobs-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-benchmarking-{tag}-vmtp-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-benchmarking-{tag}-shaker-run'
-              <<: *functest-jobs
-      - multijob:
-          name: opnfv/functest-components:{tag}
-          projects:
-            - name: 'functest-opnfv-functest-components-{tag}-rally_full-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-vnf:{tag}
@@ -565,16 +536,6 @@
       - 'functest-{repo}-{container}-{tag}-check'
 
 - project:
-    name: functest-opnfv-functest-components-{tag}-build
-    <<: *functest-params
-    container: functest-components
-    ref_arg:
-    path: docker/components
-    jobs:
-      - 'functest-{repo}-{container}-{tag}-gate'
-      - 'functest-{repo}-{container}-{tag}-check'
-
-- project:
     name: functest-opnfv-functest-vnf-{tag}-build
     <<: *functest-params
     container: functest-vnf
@@ -617,8 +578,6 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-benchmarking-{tag}-rmi'
               <<: *functest-jobs
-            - name: 'functest-opnfv-functest-components-{tag}-rmi'
-              <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-rmi'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-features-{tag}-rmi'
@@ -651,8 +610,6 @@
             - name: 'functest-opnfv-functest-smoke-{tag}-check'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-benchmarking-{tag}-check'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-components-{tag}-check'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-check'
               <<: *functest-jobs
@@ -717,16 +674,13 @@
       - multijob:
           name: opnfv/functest-benchmarking:{tag}
           projects:
+            - name: 'functest-opnfv-functest-benchmarking-{tag}-rally_full-run'
+              <<: *functest-jobs
             - name: 'functest-opnfv-functest-benchmarking-{tag}-rally_jobs-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-benchmarking-{tag}-vmtp-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-benchmarking-{tag}-shaker-run'
-              <<: *functest-jobs
-      - multijob:
-          name: opnfv/functest-components:{tag}
-          projects:
-            - name: 'functest-opnfv-functest-components-{tag}-rally_full-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-vnf:{tag}
@@ -804,8 +758,6 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-benchmarking-{tag}-rmi'
               <<: *functest-jobs
-            - name: 'functest-opnfv-functest-components-{tag}-rmi'
-              <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-rmi'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-features-{tag}-rmi'
@@ -838,8 +790,6 @@
             - name: 'functest-opnfv-functest-smoke-{tag}-gate'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-benchmarking-{tag}-gate'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-components-{tag}-gate'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-gate'
               <<: *functest-jobs
@@ -904,16 +854,13 @@
       - multijob:
           name: opnfv/functest-benchmarking:{tag}
           projects:
+            - name: 'functest-opnfv-functest-benchmarking-{tag}-rally_full-run'
+              <<: *functest-jobs
             - name: 'functest-opnfv-functest-benchmarking-{tag}-rally_jobs-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-benchmarking-{tag}-vmtp-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-benchmarking-{tag}-shaker-run'
-              <<: *functest-jobs
-      - multijob:
-          name: opnfv/functest-components:{tag}
-          projects:
-            - name: 'functest-opnfv-functest-components-{tag}-rally_full-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-vnf:{tag}
