@@ -11,11 +11,6 @@
      - Jumphost OS / Version
      - PDF
      - IDF
-   * - `arm-pod5 <https://build.opnfv.org/ci/computer/arm-pod5>`_
-     - Armband
-     - Ubuntu 16.04
-     - `PDF <https://git.opnfv.org/pharos/plain/labs/arm/pod5.yaml>`__
-     - `IDF <https://git.opnfv.org/pharos/plain/labs/arm/idf-pod5.yaml>`__
    * - cacti-pod1
      -
      -

@@ -16,15 +16,7 @@
      - `Armband ENEA Team`_
    * - `arm-build4 <https://build.opnfv.org/ci/computer/arm-build4>`_
      - aarch64
-     - CentOS 7.4
-     - `Armband ENEA Team`_
-   * - `arm-build5 <https://build.opnfv.org/ci/computer/arm-build5>`_
-     - aarch64
-     - CentOS 7.4
-     - `Armband ENEA Team`_
-   * - `arm-build6 <https://build.opnfv.org/ci/computer/arm-build6>`_
-     - aarch64
-     - CentOS 7.4
+     - Ubuntu 16.04
      - `Armband ENEA Team`_
    * - `ericsson-build3 <https://build.opnfv.org/ci/computer/ericsson-build3>`_
      - x86_64
