@@ -59,9 +59,7 @@ run_test() {
             FUNCTEST_IMAGE=${REPO}/functest-healthcheck:${DOCKER_TAG} ;;
         neutron-tempest-plugin-api|rally_sanity|refstack_defcore|tempest_full|tempest_scenario|patrole|snaps_smoke|neutron_trunk|networking-bgpvpn|networking-sfc|barbican)
             FUNCTEST_IMAGE=${REPO}/functest-smoke:${DOCKER_TAG} ;;
-        rally_jobs|shaker|vmtp)
-            FUNCTEST_IMAGE=${REPO}/functest-benchmarking:${DOCKER_TAG} ;;
-        rally_full)
+        rally_full|rally_jobs|shaker|vmtp)
             FUNCTEST_IMAGE=${REPO}/functest-components:${DOCKER_TAG} ;;
         cloudify|cloudify_ims|heat_ims|vyos_vrouter|juju_epc)
             FUNCTEST_IMAGE=${REPO}/functest-vnf:${DOCKER_TAG} ;;
@@ -273,15 +271,19 @@ else
         if [[ ${BRANCH} == "stable/fraser" ]]; then
             tiers=(healthcheck smoke features vnf parser)
             tests=(tempest_full_parallel)
-        else
+        elif [[ ${BRANCH} == "stable/gambia" ]]; then
             tiers=(healthcheck smoke benchmarking features vnf components)
+        else
+            tiers=(healthcheck smoke benchmarking features vnf)
         fi
     else
         if [[ ${BRANCH} == "stable/fraser" ]]; then
             tiers=(healthcheck smoke features parser)
             tests=(tempest_full_parallel)
+        elif [[ ${BRANCH} == "stable/gambia" ]]; then
+            tiers=(healthcheck smoke benchmarking features vnf components)
         else
-            tiers=(healthcheck smoke benchmarking features components)
+            tiers=(healthcheck smoke benchmarking features)
         fi
     fi
     run_tiers ${tiers}
