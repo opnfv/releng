@@ -83,7 +83,6 @@ run_test() {
 
 
 [[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
-redirect="/dev/stdout"
 FUNCTEST_DIR=/home/opnfv/functest
 DEPLOY_TYPE=baremetal
 [[ $BUILD_TAG =~ "virtual" ]] && DEPLOY_TYPE=virt
@@ -106,9 +105,6 @@ rc_file_vol="-v ${rc_file}:${FUNCTEST_DIR}/conf/env_file"
 echo "Functest: Start Docker and prepare environment"
 
 echo "Functest: Download images that will be used by test cases"
-env
-pwd
-ls -l
 images_dir="${HOME}/opnfv/functest/images"
 download_script=${WORKSPACE}/functest/ci/download_images.sh
 chmod +x ${download_script}
