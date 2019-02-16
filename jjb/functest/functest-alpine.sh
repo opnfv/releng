@@ -82,7 +82,7 @@ run_test() {
 }
 
 
-[[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
+redirect="/dev/stdout"
 FUNCTEST_DIR=/home/opnfv/functest
 DEPLOY_TYPE=baremetal
 [[ $BUILD_TAG =~ "virtual" ]] && DEPLOY_TYPE=virt
