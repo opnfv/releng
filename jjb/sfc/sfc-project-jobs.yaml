@@ -78,8 +78,8 @@
     builders:
       - shell: |
           #!/bin/bash
-          virtualenv /var/tmp/sfc
-          source /var/tmp/sfc/bin/activate
+          virtualenv $WORKSPACE/sfc
+          source $WORKSPACE/sfc/bin/activate
           pip install tox
           cd $WORKSPACE && tox
 
@@ -108,3 +108,12 @@
                 unhealthy: 0
                 failing: 0
       - email-jenkins-admins-on-failure
+
+################################
+# project-view
+################################
+- project:
+    name: sfc-view
+    views:
+      - project-view
+    project-name: sfc
