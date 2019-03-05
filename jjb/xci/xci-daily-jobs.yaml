@@ -294,15 +294,15 @@
           done
           echo "---------------------------------------------------------------------------------"
 
-          # select the right pdf/idf
-          pdf=$WORKSPACE/xci/var/${NODE_NAME}-pdf.yml
-          idf=$WORKSPACE/xci/var/${NODE_NAME}-idf.yml
+          # select the right PDF/IDF
+          export PDF=$WORKSPACE/xci/var/${NODE_NAME}-pdf.yml
+          export IDF=$WORKSPACE/xci/var/${NODE_NAME}-idf.yml
           if [[ "$NODE_NAME" =~ "virtual" ]]; then
-              pdf=$WORKSPACE/xci/var/pdf.yml
-              idf=$WORKSPACE/xci/var/idf.yml
+              export PDF=$WORKSPACE/xci/var/pdf.yml
+              export IDF=$WORKSPACE/xci/var/idf.yml
           fi
 
-          cd $WORKSPACE/xci && ./xci-deploy.sh -p $pdf -i $idf
+          cd $WORKSPACE/xci && ./xci-deploy.sh -p $PDF -i $IDF
 
           echo "Prepare OPNFV VM for Tests"
           echo "---------------------------------------------------------------------------------"
