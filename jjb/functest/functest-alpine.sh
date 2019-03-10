@@ -263,21 +263,15 @@ elif [ ${FUNCTEST_MODE} == 'tier' ]; then
 else
     tests=()
     skip_tests=0
-    if [ ${DEPLOY_TYPE} == 'baremetal' ] && [ "${HOST_ARCH}" != "aarch64" ]; then
-        if [[ ${BRANCH} == "stable/fraser" ]]; then
-            tiers=(healthcheck smoke features vnf parser)
-            tests=(tempest_full_parallel)
-        elif [[ ${BRANCH} == "stable/gambia" ]]; then
+    if [ "${HOST_ARCH}" != "aarch64" ]; then
+        if [[ ${BRANCH} == "stable/gambia" ]]; then
             tiers=(healthcheck smoke benchmarking features vnf components)
         else
             tiers=(healthcheck smoke benchmarking features vnf)
         fi
     else
-        if [[ ${BRANCH} == "stable/fraser" ]]; then
-            tiers=(healthcheck smoke features parser)
-            tests=(tempest_full_parallel)
-        elif [[ ${BRANCH} == "stable/gambia" ]]; then
-            tiers=(healthcheck smoke benchmarking features vnf components)
+        if [[ ${BRANCH} == "stable/gambia" ]]; then
+            tiers=(healthcheck smoke benchmarking features components)
         else
             tiers=(healthcheck smoke benchmarking features)
         fi
