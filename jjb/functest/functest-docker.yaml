@@ -18,9 +18,6 @@
       - gambia:
           branch: 'stable/{stream}'
           disabled: false
-      - fraser:
-          branch: 'stable/{stream}'
-          disabled: false
 
     arch_tag:
       - 'amd64':
@@ -35,7 +32,6 @@
       - 'healthcheck'
       - 'features'
       - 'components'
-      - 'parser'
       - 'smoke'
       - 'benchmarking'
       - 'vnf'
@@ -45,16 +41,6 @@
         image: 'components'
       - stream: 'hunter'
         image: 'components'
-      - stream: 'master'
-        image: 'parser'
-      - stream: 'hunter'
-        image: 'parser'
-      - stream: 'gambia'
-        image: 'parser'
-      - stream: 'fraser'
-        image: 'tempest'
-      - stream: 'fraser'
-        image: 'benchmarking'
 
     # settings for jobs run in multijob phases
     build-job-settings: &build-job-settings
@@ -161,10 +147,6 @@
               <<: *build-job-settings
             - name: 'functest-components-docker-build-arm64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-parser-docker-build-amd64-{stream}'
-              <<: *build-job-settings
-            - name: 'functest-parser-docker-build-arm64-{stream}'
-              <<: *build-job-settings
             - name: 'functest-smoke-docker-build-amd64-{stream}'
               <<: *build-job-settings
             - name: 'functest-smoke-docker-build-arm64-{stream}'
@@ -187,8 +169,6 @@
             - name: 'functest-features-docker-manifest-{stream}'
               <<: *manifest-job-settings
             - name: 'functest-components-docker-manifest-{stream}'
-              <<: *manifest-job-settings
-            - name: 'functest-parser-docker-manifest-{stream}'
               <<: *manifest-job-settings
             - name: 'functest-smoke-docker-manifest-{stream}'
               <<: *manifest-job-settings
