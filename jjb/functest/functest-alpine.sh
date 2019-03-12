@@ -10,23 +10,6 @@ TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results
 ENERGY_RECORDER_API_URL=http://energy.opnfv.fr/resources
 DOCKER_TAG=${DOCKER_TAG:-$([[ ${BRANCH##*/} == "master" ]] && echo "latest" || echo ${BRANCH##*/})}
 
-check_os_deployment() {
-    FUNCTEST_IMAGE=${REPO}/functest-healthcheck:${DOCKER_TAG}
-    echo "Functest: Pulling Functest Docker image ${FUNCTEST_IMAGE} ..."
-    docker pull ${FUNCTEST_IMAGE}>/dev/null
-    cmd="docker run --rm ${volumes} ${FUNCTEST_IMAGE} check_deployment"
-    echo "Checking deployment, CMD: ${cmd}"
-    eval ${cmd}
-    ret_value=$?
-    if [ ${ret_value} != 0 ]; then
-        echo "ERROR: Problem while checking OpenStack deployment."
-        exit 1
-    else
-        echo "OpenStack deployment OK."
-    fi
-
-}
-
 run_tiers() {
     tiers=$1
     cmd_opt="run_tests -r -t all"
