@@ -16,7 +16,6 @@
       - 'apex-create-snapshot'
       - 'apex-fetch-snap-info'
       - 'apex-flex-daily-os-nosdn-nofeature-ha-{stream}'
-      - 'apex-dovetail-daily-os-nosdn-nofeature-ha-baremetal-danube'
     # stream:    branch with - in place of / (eg. stable-arno)
     # branch:    branch (eg. stable/arno)
     stream:
@@ -685,7 +684,7 @@
               abort-all-job: false
               git-revision: false
       - multijob:
-          name: Dovetail-proposed_tests
+          name: Dovetail-default-mandatory
           condition: ALWAYS
           projects:
             - name: 'dovetail-apex-baremetal-default-mandatory-{scenario_stream}'
@@ -698,10 +697,23 @@
               abort-all-job: false
               git-revision: false
       - multijob:
-          name: Dovetail-default
+          name: Dovetail-default-optional
           condition: ALWAYS
           projects:
             - name: 'dovetail-apex-baremetal-default-optional-{scenario_stream}'
+              node-parameters: true
+              current-parameters: false
+              predefined-parameters:
+                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+              kill-phase-on: NEVER
+              enable-condition: "def m = '$DEPLOY_SCENARIO' ==~ /os-(nosdn-nofeature|odl-bgpvpn)-ha/"
+              abort-all-job: false
+              git-revision: false
+      - multijob:
+          name: Dovetail-proposed_tests
+          condition: ALWAYS
+          projects:
+            - name: 'dovetail-apex-baremetal-proposed_tests-optional-{scenario_stream}'
               node-parameters: true
               current-parameters: false
               predefined-parameters:
@@ -1189,72 +1201,6 @@
               abort-all-job: false
               git-revision: false
 
-# Dovetail Danube test job
-- job-template:
-    name: 'apex-dovetail-daily-os-nosdn-nofeature-ha-baremetal-danube'
-
-    project-type: 'multijob'
-
-    node: 'huawei-pod4'
-
-    disabled: false
-
-    parameters:
-      - '{project}-defaults'
-      - project-parameter:
-          project: '{project}'
-          branch: 'stable/danube'
-      - apex-parameter:
-          gs-pathname: '/danube'
-      - string:
-          name: DEPLOY_SCENARIO
-          default: 'os-nosdn-nofeature-ha'
-          description: "Scenario to deploy with."
-
-    properties:
-      - logrotate-default
-      - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
-          blocking-jobs:
-            - 'apex-verify.*'
-            - 'apex-runner.*'
-            - 'apex-.*-promote.*'
-            - 'apex-run.*'
-
-    triggers:
-      - timed: ''  # '0 1 * * *'
-
-    builders:
-      - description-setter:
-          description: "Testing on $NODE_NAME - Scenario: $DEPLOY_SCENARIO"
-      - multijob:
-          name: 'Baremetal Deploy'
-          condition: SUCCESSFUL
-          projects:
-            - name: 'apex-deploy-baremetal-danube'
-              node-parameters: true
-              current-parameters: true
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=
-                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-              kill-phase-on: FAILURE
-              abort-all-job: true
-              git-revision: false
-      - multijob:
-          name: Dovetail
-          condition: ALWAYS
-          projects:
-            - name: 'dovetail-apex-baremetal-proposed_tests-danube'
-              node-parameters: true
-              current-parameters: false
-              predefined-parameters:
-                DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-              kill-phase-on: NEVER
-              abort-all-job: false
-              git-revision: false
 
 ########################
 # parameter macros
