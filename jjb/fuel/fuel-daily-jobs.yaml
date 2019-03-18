@@ -234,6 +234,17 @@
                     build-step-failure-threshold: 'never'
                     failure-threshold: 'never'
                     unstable-threshold: 'FAILURE'
+                - project: 'dovetail-fuel-{pod}-proposed_tests-optional-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    DEPLOY_SCENARIO={scenario}
+                    INSTALLER_VERSION={stream}
+                  block: true
+                  same-node: true
+                  block-thresholds:
+                    build-step-failure-threshold: 'never'
+                    failure-threshold: 'never'
+                    unstable-threshold: 'FAILURE'
       - conditional-step:
           condition-kind: and
           condition-operands:
