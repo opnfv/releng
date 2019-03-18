@@ -219,6 +219,7 @@
       # only run on os-(nosdn|odl_l3)-nofeature-ha scenario
       # run with testsuite default, testarea mandatory, dovetail docker image with latest tag
       # run with testsuite default, testarea optional, dovetail docker image with latest tag
+      # run with testsuite proposed_tests, testarea optional, dovetail docker image with latest tag
       - conditional-step:
           condition-kind: and
           condition-operands:
@@ -238,15 +239,18 @@
                     build-step-failure-threshold: 'never'
                     failure-threshold: 'never'
                     unstable-threshold: 'FAILURE'
-      - conditional-step:
-          condition-kind: and
-          condition-operands:
-            - condition-kind: regex-match
-              regex: os-(nosdn|odl_l3)-nofeature-ha
-              label: '{scenario}'
-          steps:
-            - trigger-builds:
                 - project: 'dovetail-compass-{pod}-default-optional-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    DOCKER_TAG=latest
+                    DEPLOY_SCENARIO={scenario}
+                  block: true
+                  same-node: true
+                  block-thresholds:
+                    build-step-failure-threshold: 'never'
+                    failure-threshold: 'never'
+                    unstable-threshold: 'FAILURE'
+                - project: 'dovetail-compass-{pod}-proposed_tests-optional-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     DOCKER_TAG=latest
