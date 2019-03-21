@@ -162,6 +162,8 @@ identity-feature-enabled:
 image-feature-enabled:
     api_v2: true
     api_v1: false
+object-storage:
+    operator_role: SwiftOperator
 volume:
     storage_protocol: ceph
 volume-feature-enabled:
