@@ -20,6 +20,13 @@ if [[ ${INSTALLER_TYPE} == 'compass' ]]; then
 elif [[ ${INSTALLER_TYPE} == 'joid' && ${BRANCH} == 'master' ]]; then
     admin_conf_file_vol="-v ${HOME}/joid_config/config:/root/.kube/config"
     rc_file=${HOME}/joid_config/k8config
+elif [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
+    admin_conf_file_vol="-v ${HOME}/admin.conf:/root/.kube/config"
+    KUBE_MASTER_URL=$(awk '/server:/ {print $2}' ${HOME}/admin.conf | grep -Fv localhost)
+    KUBE_MASTER_IP=$(echo $KUBE_MASTER_URL | grep -Po '(\d+\.){3}\d+')
+    for k in KUBERNETES_PROVIDER KUBE_MASTER_URL KUBE_MASTER_IP; do
+        echo "export $k=${!k}" >> $rc_file
+    done
 else
     echo "Not supported by other installers yet"
     exit 1

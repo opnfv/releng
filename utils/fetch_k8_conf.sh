@@ -59,6 +59,9 @@ if [ "$installer_type" == "compass" ]; then
     info "Fetch admin.conf successfully"
 elif [ "$installer_type" == "joid" ]; then
     info "Do nothing, config file has been provided in $HOME/joid_config/config for joid"
+elif [ "$installer_type" == "fuel" ]; then
+    info "Getting kubernetes config ..."
+    docker cp fuel:/opt/kubernetes.config $dest_path
 else
     error "Installer $installer_type is not supported by this script"
 fi
