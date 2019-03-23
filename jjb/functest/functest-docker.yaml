@@ -108,6 +108,8 @@
           projects:
             - name: 'functest-core-docker-build-amd64-{stream}'
               <<: *build-job-settings
+            - name: 'functest-core-docker-build-arm64-{stream}'
+              <<: *build-job-settings
       - multijob:
           name: 'publish functest-core manifests'
           execution-type: PARALLEL
@@ -119,6 +121,8 @@
           execution-type: PARALLEL
           projects:
             - name: 'functest-tempest-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-tempest-docker-build-arm64-{stream}'
               <<: *build-job-settings
       - multijob:
           name: 'publish functest-tempest manifests'
@@ -133,15 +137,27 @@
           projects:
             - name: 'functest-healthcheck-docker-build-amd64-{stream}'
               <<: *build-job-settings
+            - name: 'functest-healthcheck-docker-build-arm64-{stream}'
+              <<: *build-job-settings
             - name: 'functest-features-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-features-docker-build-arm64-{stream}'
               <<: *build-job-settings
             - name: 'functest-components-docker-build-amd64-{stream}'
               <<: *build-job-settings
+            - name: 'functest-components-docker-build-arm64-{stream}'
+              <<: *build-job-settings
             - name: 'functest-smoke-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-smoke-docker-build-arm64-{stream}'
               <<: *build-job-settings
             - name: 'functest-benchmarking-docker-build-amd64-{stream}'
               <<: *build-job-settings
+            - name: 'functest-benchmarking-docker-build-arm64-{stream}'
+              <<: *build-job-settings
             - name: 'functest-vnf-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-vnf-docker-build-arm64-{stream}'
               <<: *build-job-settings
       - multijob:
           name: 'publish all manifests'
