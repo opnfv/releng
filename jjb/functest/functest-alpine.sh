@@ -227,6 +227,26 @@ volume-feature-enabled:
 EOF
     ;;
 esac
+case ${BRANCH} in
+master)
+    cat << EOF >> "${tempest_conf_yaml}"
+compute:
+    max_microversion: latest
+EOF
+    ;;
+stable/hunter)
+    cat << EOF >> "${tempest_conf_yaml}"
+compute:
+    max_microversion: 2.65
+EOF
+    ;;
+stable/gambia)
+    cat << EOF >> "${tempest_conf_yaml}"
+compute:
+    max_microversion: 2.60
+EOF
+    ;;
+esac
 echo "tempest_conf.yaml:" && cat "${tempest_conf_yaml}"
 
 volumes="${images_vol} ${results_vol} ${sshkey_vol} ${libvirt_vol} \
