@@ -12,6 +12,8 @@
           branch: master
       - hunter:
           branch: stable/hunter
+      - gambia:
+          branch: stable/gambia
 
 - parameter:
     name: functest-kubernetes-slave
@@ -301,20 +303,20 @@
           ref: $branch
 
 - project:
-    name: 'functest-kubernetes-_-golang-alpine3.8-rmi'
+    name: 'functest-kubernetes-_-golang-alpine3.9-rmi'
     repo: _
     port:
     container: golang
-    tag: alpine3.8
+    tag: alpine3.9
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
 
 - project:
-    name: 'functest-kubernetes-_-golang-alpine3.8-pull'
+    name: 'functest-kubernetes-_-golang-alpine3.9-pull'
     repo: _
     port:
     container: golang
-    tag: alpine3.8
+    tag: alpine3.9
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
 
@@ -384,12 +386,12 @@
       - multijob:
           name: remove dependencies
           projects:
-            - name: 'functest-kubernetes-_-golang-alpine3.8-rmi'
+            - name: 'functest-kubernetes-_-golang-alpine3.9-rmi'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: pull dependencies
           projects:
-            - name: 'functest-kubernetes-_-golang-alpine3.8-pull'
+            - name: 'functest-kubernetes-_-golang-alpine3.9-pull'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: build opnfv/functest-kubernetes-core
@@ -476,12 +478,12 @@
       - multijob:
           name: remove dependencies
           projects:
-            - name: 'functest-kubernetes-_-golang-alpine3.8-rmi'
+            - name: 'functest-kubernetes-_-golang-alpine3.9-rmi'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: pull dependencies
           projects:
-            - name: 'functest-kubernetes-_-golang-alpine3.8-pull'
+            - name: 'functest-kubernetes-_-golang-alpine3.9-pull'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: build opnfv/functest-kubernetes-core
