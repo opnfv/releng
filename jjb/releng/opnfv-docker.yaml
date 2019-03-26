@@ -45,6 +45,7 @@
     dockerfile: "Dockerfile"
     dockerdir: "docker"
     arch_tag: ""
+    extra_build_args: ""
 
     # This is the dockerhub repo the image will be pushed to as
     # 'opnfv/{dockerrepo}. See: DOCKER_REPO_NAME parameter.
@@ -415,6 +416,7 @@
     dockerfile: "Dockerfile"
     dockerdir: "docker"
     arch_tag: ""
+    extra_build_args: ""
 
     project:
       # projects with jobs for master
@@ -466,6 +468,10 @@
           name: ARCH_TAG
           default: "{arch_tag}"
           description: "If set, this value will be added to the docker image tag as a prefix"
+      - string:
+          name: EXTRA_BUILD_ARGS
+          default: "{extra_build_args}"
+          description: "Whitespace separated key=value pairs. If set, these args will be used to build docker image"
 
     properties:
       - throttle:
