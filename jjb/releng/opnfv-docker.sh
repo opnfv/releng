@@ -130,12 +130,21 @@ if [[ -n "${ARCH_TAG}" ]]; then
     ARCH_BUILD_ARG="--build-arg ARCH=${ARCH_TAG}"
 fi
 
+EXTRA_ARGS=""
+EXTRA_BUILD_ARGS=${EXTRA_BUILD_ARGS:-}
+if [[ -n "${EXTRA_BUILD_ARGS}" ]]; then
+    eval "EXTRA_BUILD_ARGS=($EXTRA_BUILD_ARGS)"
+    for EXTRA_ARG in "${EXTRA_BUILD_ARGS[@]}"; do
+        EXTRA_ARGS="$EXTRA_ARGS --build-arg $EXTRA_ARG"
+    done
+fi
+
 # Start the build
 echo "Building docker image: $DOCKER_REPO_NAME:$DOCKER_TAG"
 echo "--------------------------------------------------------"
 echo
 cmd="docker build --pull=true --no-cache -t $DOCKER_REPO_NAME:$DOCKER_TAG --build-arg BRANCH=$BUILD_BRANCH
-    $ARCH_BUILD_ARG
+    $ARCH_BUILD_ARG $EXTRA_ARGS
     -f $DOCKERFILE $DOCKER_PATH"
 
 echo ${cmd}
