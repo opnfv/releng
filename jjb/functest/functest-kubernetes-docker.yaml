@@ -12,6 +12,10 @@
       - master:
           branch: '{stream}'
           disabled: false
+      - iruya: &iruya
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
       - hunter:
           branch: 'stable/{stream}'
           disabled: false
@@ -25,14 +29,14 @@
       - 'arm64':
           slave_label: 'opnfv-build-ubuntu-arm'
 
-    # yamllint disable rule:key-duplicates
+  # yamllint disable rule:key-duplicates
     image:
       - 'core'
       - 'healthcheck'
       - 'features'
       - 'smoke'
 
-    # settings for jobs run in multijob phases
+  # settings for jobs run in multijob phases
     build-job-settings: &build-job-settings
       current-parameters: false
       git-revision: true
@@ -49,12 +53,11 @@
       current-parameters: false
       git-revision: true
       node-parameters: false
-      predefined-parameters:
-        GERRIT_REFNAME=$GERRIT_REFNAME
+      predefined-parameters: GERRIT_REFNAME=$GERRIT_REFNAME
       kill-phase-on: FAILURE
       abort-all-jobs: false
 
-    # yamllint enable rule:key-duplicates
+  # yamllint enable rule:key-duplicates
     jobs:
       - "functest-kubernetes-docker-{stream}"
       - "functest-kubernetes-{image}-docker-build-{arch_tag}-{stream}"
@@ -241,7 +244,8 @@
       - string:
           name: GERRIT_REFNAME
           default: ""
-          description: "Docker tag to be built, e.g. refs/tags/5.0.0, refs/tags/opnfv-5.0.0, refs/tags/5.0.RC1"
+          description: "Docker tag to be built, e.g. refs/tags/5.0.0, refs/tags/opnfv-5.0.0,\
+            \ refs/tags/5.0.RC1"
       - string:
           name: DOCKERFILE
           default: "Dockerfile"
@@ -249,7 +253,8 @@
       - string:
           name: ARCH_TAG
           default: "{arch_tag}"
-          description: "If set, this value will be added to the docker image tag as a prefix"
+          description: "If set, this value will be added to the docker image tag\
+            \ as a prefix"
       - string:
           name: PROJECT
           default: "{project}"
