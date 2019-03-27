@@ -214,7 +214,8 @@
       # 2.testsuite default here is for the test cases already added into OVP
       # 3.run default testsuite mandatory test cases against ha scenario
       # 4.run default testsuite optional test cases against ha scenario twice one week
-      # 5.not used for release criteria or compliance, only to debug the dovetail tool bugs
+      # 5.run proposed_tests testsuite optional test cases against ha scenario
+      # 6.not used for release criteria or compliance, only to debug the dovetail tool bugs
       - conditional-step:
           condition-kind: and
           condition-operands:
@@ -224,6 +225,17 @@
           steps:
             - trigger-builds:
                 - project: 'dovetail-fuel-{pod}-default-mandatory-{stream}'
+                  current-parameters: false
+                  predefined-parameters: |
+                    DEPLOY_SCENARIO={scenario}
+                    INSTALLER_VERSION={stream}
+                  block: true
+                  same-node: true
+                  block-thresholds:
+                    build-step-failure-threshold: 'never'
+                    failure-threshold: 'never'
+                    unstable-threshold: 'FAILURE'
+                - project: 'dovetail-fuel-{pod}-proposed_tests-optional-{stream}'
                   current-parameters: false
                   predefined-parameters: |
                     DEPLOY_SCENARIO={scenario}
