@@ -24,7 +24,7 @@ elif [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
     admin_conf_file_vol="-v ${HOME}/admin.conf:/root/.kube/config"
     KUBE_MASTER_URL=$(awk '/server:/ {print $2}' ${HOME}/admin.conf | grep -Fv localhost)
     KUBE_MASTER_IP=$(echo $KUBE_MASTER_URL | grep -Po '(\d+\.){3}\d+')
-    for k in KUBERNETES_PROVIDER KUBE_MASTER_URL KUBE_MASTER_IP; do
+    for k in KUBE_MASTER_URL KUBE_MASTER_IP; do
         echo "export $k=${!k}" >> $rc_file
     done
 else
