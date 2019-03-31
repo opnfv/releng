@@ -18,6 +18,10 @@
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
+      - hunter: &hunter
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
       - gambia:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
@@ -36,13 +40,13 @@
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
-      # yamllint disable rule:line-length
+    # yamllint disable rule:line-length
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
           description: "Used for overriding the GIT URL coming from Global Jenkins\
             \ configuration in case if the stuff is done on none-LF HW."
-      # yamllint enable rule:line-length
+    # yamllint enable rule:line-length
       - 'opnfv-build-ubuntu-defaults'
 
     scm:
@@ -138,13 +142,13 @@
       - project-parameter:
           project: '{project}'
           branch: '{branch}'
-      # yamllint disable rule:line-length
+    # yamllint disable rule:line-length
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
           description: "Used for overriding the GIT URL coming from Global Jenkins\
             \ configuration in case if the stuff is done on none-LF HW."
-      # yamllint enable rule:line-length
+    # yamllint enable rule:line-length
       - node:
           name: SLAVE_NAME
           description: 'Slave name on Jenkins'
