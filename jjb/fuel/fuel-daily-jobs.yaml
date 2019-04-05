@@ -88,6 +88,8 @@
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
       - 'os-nosdn-fdio-noha':
           auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
+      - 'k8-calico-nofeature-noha':
+          auto-trigger-name: 'fuel-{scenario}-{pod}-daily-{stream}-trigger'
 
     exclude:
       # Dovetail (and only it) should run against Fraser HA baremetal scenarios
@@ -106,6 +108,8 @@
       - scenario: os-nosdn-ovs-noha
         stream: fraser
       - scenario: os-nosdn-fdio-noha
+        stream: fraser
+      - scenario: k8-calico-nofeature-noha
         stream: fraser
       - scenario: os-ovn-nofeature-ha
         stream: fraser
@@ -137,7 +141,7 @@
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
-            - 'fuel-os-.*?-{pod}-daily-.*'
+            - 'fuel-(os|k8)-.*?-{pod}-daily-.*'
             - 'fuel-verify-.*'
           blocking-level: 'NODE'
 
@@ -439,6 +443,10 @@
     name: 'fuel-os-nosdn-fdio-noha-baremetal-daily-master-trigger'
     triggers:
       - timed: '5 20 * * 3,5'
+- trigger:
+    name: 'fuel-k8-calico-nofeature-noha-baremetal-daily-master-trigger'
+    triggers:
+      - timed: ''
 # ----------------------------------------------
 # Triggers for job running on fuel-baremetal against gambia branch
 # ----------------------------------------------
@@ -496,6 +504,10 @@
     name: 'fuel-os-nosdn-fdio-noha-baremetal-daily-gambia-trigger'
     triggers:
       - timed: '0 20 * * 3,5'
+- trigger:
+    name: 'fuel-k8-calico-nofeature-noha-baremetal-daily-gambia-trigger'
+    triggers:
+      - timed: ''
 # ----------------------------------------------
 # Triggers for job running on fuel-virtual against master branch
 # ----------------------------------------------
@@ -552,6 +564,10 @@
     name: 'fuel-os-nosdn-fdio-noha-virtual-daily-master-trigger'
     triggers:
       - timed: ''
+- trigger:
+    name: 'fuel-k8-calico-nofeature-noha-virtual-daily-master-trigger'
+    triggers:
+      - timed: '5 16 * * *'
 # ----------------------------------------------
 # Triggers for job running on fuel-baremetal against fraser branch (for Dovetail)
 # ----------------------------------------------
@@ -623,6 +639,10 @@
     name: 'fuel-os-nosdn-fdio-noha-virtual-daily-gambia-trigger'
     triggers:
       - timed: ''
+- trigger:
+    name: 'fuel-k8-calico-nofeature-noha-virtual-daily-gambia-trigger'
+    triggers:
+      - timed: ''
 # ----------------------------------------------
 # ZTE POD1 Triggers running against master branch
 # ----------------------------------------------
@@ -677,5 +697,9 @@
       - timed: ''
 - trigger:
     name: 'fuel-os-nosdn-fdio-noha-zte-pod1-daily-master-trigger'
+    triggers:
+      - timed: ''
+- trigger:
+    name: 'fuel-k8-calico-nofeature-noha-zte-pod1-daily-master-trigger'
     triggers:
       - timed: ''
