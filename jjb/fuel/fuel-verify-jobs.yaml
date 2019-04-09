@@ -5,43 +5,47 @@
     project: 'fuel'
 
     installer: 'fuel'
-    #####################################
-    # branch definitions
-    #####################################
+  #####################################
+  # branch definitions
+  #####################################
     stream:
       - master:
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
           functest_docker_tag: hunter
+      - hunter: &hunter
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
       - gambia:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           disabled: true
           functest_docker_tag: '{stream}'
-    #####################################
-    # cluster architectures
-    #####################################
-    # Note: arm64 was removed since it was basically a no-op
+  #####################################
+  # cluster architectures
+  #####################################
+  # Note: arm64 was removed since it was basically a no-op
     arch_tag:
       - 'amd64':
           slave-label: 'fuel'
           functest-suite-label: 'fuel'
-    #####################################
-    # cluster types
-    #####################################
+  #####################################
+  # cluster types
+  #####################################
     type:
       - 'virtual'
       - 'baremetal'
-    #####################################
-    # patch verification phases
-    #####################################
+  #####################################
+  # patch verification phases
+  #####################################
     phase:
       - 'docker-build'
       - 'deploy'
-    #####################################
-    # jobs
-    #####################################
+  #####################################
+  # jobs
+  #####################################
     jobs:
       - 'fuel-verify-{type}-{arch_tag}-{stream}'
       - 'fuel-verify-{phase}-{type}-{arch_tag}-{stream}'
@@ -135,7 +139,7 @@
           name: smoke-test
           condition: SUCCESSFUL
           projects:
-            # Use Functest job definition from jjb/functest/functest-daily-jobs
+          # Use Functest job definition from jjb/functest/functest-daily-jobs
             - name: 'functest-{functest-suite-label}-{type}-suite-{stream}'
               current-parameters: false
               predefined-parameters: |
@@ -256,13 +260,11 @@
 - builder:
     name: 'fuel-verify-set-scenario-macro'
     builders:
-      - shell:
-          !include-raw: ./fuel-set-scenario.sh
+      - shell: !include-raw: ./fuel-set-scenario.sh
 - builder:
     name: 'fuel-verify-deploy-macro'
     builders:
-      - shell:
-          !include-raw: ./fuel-deploy.sh
+      - shell: !include-raw: ./fuel-deploy.sh
 - builder:
     name: 'fuel-verify-docker-build-macro'
     builders:

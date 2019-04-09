@@ -12,6 +12,10 @@
       - master:
           branch: '{stream}'
           disabled: false
+      - hunter: &hunter
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
       - gambia:
           branch: 'stable/{stream}'
           disabled: true
@@ -22,7 +26,7 @@
       - 'arm64':
           slave_label: 'opnfv-build-ubuntu-arm'
 
-    # settings for jobs run in multijob phases
+  # settings for jobs run in multijob phases
     build-job-settings: &build-job-settings
       current-parameters: false
       git-revision: true
@@ -39,8 +43,7 @@
       current-parameters: false
       git-revision: true
       node-parameters: false
-      predefined-parameters:
-        GERRIT_REFNAME=$GERRIT_REFNAME
+      predefined-parameters: GERRIT_REFNAME=$GERRIT_REFNAME
       kill-phase-on: FAILURE
       abort-all-jobs: false
 
@@ -213,7 +216,8 @@
       - string:
           name: GERRIT_REFNAME
           default: ""
-          description: "Docker tag to be built, e.g. refs/tags/5.0.0, refs/tags/opnfv-5.0.0, refs/tags/5.0.RC1"
+          description: "Docker tag to be built, e.g. refs/tags/5.0.0, refs/tags/opnfv-5.0.0,\
+            \ refs/tags/5.0.RC1"
       - string:
           name: PROJECT
           default: "{project}"
