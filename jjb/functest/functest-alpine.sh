@@ -253,6 +253,37 @@ volumes="${images_vol} ${results_vol} ${sshkey_vol} ${libvirt_vol} \
     ${userconfig_vol} ${rc_file_vol} ${cacert_file_vol} \
     -v ${tempest_conf_yaml}:/usr/lib/python2.7/site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/tempest_conf.yaml"
 
+if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
+    blacklist_yaml=$(mktemp)
+    cat << EOF >> "${blacklist_yaml}"
+---
+-
+    scenarios:
+        - os-ovn-nofeature-ha
+    tests:
+        - neutron_tempest_plugin.api.admin.test_agent_management
+        - neutron_tempest_plugin.api.admin.test_dhcp_agent_scheduler
+        - patrole_tempest_plugin.tests.api.network.test_agents_rbac
+        - patrole_tempest_plugin.tests.api.network.test_networks_rbac.NetworksRbacTest.test_create_network_provider_network_type
+        - patrole_tempest_plugin.tests.api.network.test_networks_rbac.NetworksRbacTest.test_create_network_provider_segmentation_id
+        - tempest.api.network.admin.test_agent_management
+        - tempest.api.network.admin.test_dhcp_agent_scheduler
+        - tempest.api.object_storage.test_crossdomain.CrossdomainTest.test_get_crossdomain_policy
+-
+    scenarios:
+        - os-nosdn-nofeature-ha
+    tests:
+        - tempest.api.object_storage.test_crossdomain.CrossdomainTest.test_get_crossdomain_policy
+-
+    scenarios:
+        - os-nosdn-nofeature-noha
+    tests:
+        - tempest.api.object_storage.test_crossdomain.CrossdomainTest.test_get_crossdomain_policy
+EOF
+    volumes="${volumes} -v ${blacklist_yaml}:/usr/lib/python2.7/site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/blacklist.yaml"
+fi
+
+
 ret_val_file="${HOME}/opnfv/functest/results/${BRANCH##*/}/return_value"
 echo 0 > ${ret_val_file}
 
