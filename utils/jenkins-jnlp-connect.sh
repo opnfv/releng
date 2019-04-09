@@ -218,5 +218,5 @@ do
 done
 
 jenkins_hostname="${jenkins_hostname:-build.opnfv.org/ci}"
-connectionstring="java -jar agent.jar -jnlpUrl https://"$jenkins_hostname"/computer/"$agent_name"/agent-agent.jnlp -secret "$agent_secret" -noCertificateCheck "
+connectionstring="java -jar agent.jar -jnlpUrl https://"$jenkins_hostname"/computer/"$agent_name"/slave-agent.jnlp -secret "$agent_secret" -noCertificateCheck "
 main "$@"
