@@ -15,28 +15,11 @@
       branch: '{stream}'
       gs-pathname: ''
       docker-tag: 'latest'
-    gambia: &gambia
-      stream: gambia
+    hunter: &hunter
+      stream: hunter
       branch: 'stable/{stream}'
       gs-pathname: '{stream}'
       docker-tag: 'stable'
-    # Temporary fraser entry, until all fraser-tied PODs below migrate to gambia
-    fraser: &fraser
-      stream: fraser
-      branch: 'stable/{stream}'
-      gs-pathname: '{stream}'
-      # In the meantime, docker image 'stable' will carry gambia contents, and
-      # there is no implemented way to build a docker image with 'fraser' tag.
-      # Available docker image tag options, as of 2018-10-03:
-      # - 'opnfv-6.2.1', built on 2018-07-02, is rather old.
-      # - 'ovp-2.0.0', built on 2018-09-21, is a good fit despite its name: it
-      #   was built using SHA1 6c10a2d9cc3fe10e0bdd73a0985ab767b9479afc, which
-      #   is the same as used for the most recent 'stable' docker image carrying
-      #   fraser contents, built on 2018-09-13 and used so far by the fraser-
-      #   tied PODs below.
-      # The alternative would be to create a new 'opnfv-6.2.2' git tag, but that
-      # would just build another image using the same SHA1 as for 'ovp-2.0.0'.
-      docker-tag: 'ovp-2.0.0'
     # -------------------------------
     # POD, INSTALLER, AND BRANCH MAPPING
     # -------------------------------
@@ -61,22 +44,12 @@
           slave-label: apex-virtual-master
           installer: apex
           auto-trigger-name: 'daily-trigger-disabled'
-          <<: *gambia
+          <<: *hunter
       - baremetal:
           slave-label: apex-baremetal-master
           installer: apex
           auto-trigger-name: 'daily-trigger-disabled'
-          <<: *gambia
-      - virtual:
-          slave-label: apex-virtual-fraser
-          installer: apex
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *fraser
-      - baremetal:
-          slave-label: apex-baremetal-fraser
-          installer: apex
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *fraser
+          <<: *hunter
       # fuel CI PODs
       - baremetal:
           slave-label: fuel-baremetal
@@ -92,12 +65,12 @@
           slave-label: fuel-baremetal
           installer: fuel
           auto-trigger-name: 'daily-trigger-disabled'
-          <<: *gambia
+          <<: *hunter
       - virtual:
           slave-label: fuel-virtual
           installer: fuel
           auto-trigger-name: 'daily-trigger-disabled'
-          <<: *gambia
+          <<: *hunter
       # armband CI PODs
       - armband-baremetal:
           slave-label: armband-baremetal
@@ -113,12 +86,12 @@
           slave-label: armband-baremetal
           installer: fuel
           auto-trigger-name: 'daily-trigger-disabled'
-          <<: *gambia
+          <<: *hunter
       - armband-virtual:
           slave-label: armband-virtual
           installer: fuel
           auto-trigger-name: 'daily-trigger-disabled'
-          <<: *gambia
+          <<: *hunter
       # joid CI PODs
       - baremetal:
           slave-label: joid-baremetal
@@ -134,12 +107,12 @@
           slave-label: joid-baremetal
           installer: joid
           auto-trigger-name: 'daily-trigger-disabled'
-          <<: *fraser
+          <<: *hunter
       - virtual:
           slave-label: joid-virtual
           installer: joid
           auto-trigger-name: 'daily-trigger-disabled'
-          <<: *fraser
+          <<: *hunter
       # compass CI PODs
       - baremetal:
           slave-label: compass-baremetal
@@ -155,22 +128,12 @@
           slave-label: compass-baremetal
           installer: compass
           auto-trigger-name: 'daily-trigger-disabled'
-          <<: *fraser
+          <<: *hunter
       - virtual:
           slave-label: compass-virtual
           installer: compass
           auto-trigger-name: 'daily-trigger-disabled'
-          <<: *fraser
-      - baremetal:
-          slave-label: compass-baremetal
-          installer: compass
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *gambia
-      - virtual:
-          slave-label: compass-virtual
-          installer: compass
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *gambia
+          <<: *hunter
       # daisy CI PODs
       - baremetal:
           slave-label: daisy-baremetal
@@ -181,7 +144,7 @@
           slave-label: daisy-baremetal
           installer: daisy
           auto-trigger-name: 'daily-trigger-disabled'
-          <<: *fraser
+          <<: *hunter
       - virtual:
           slave-label: daisy-virtual
           installer: daisy
@@ -204,7 +167,7 @@
           slave-label: '{pod}'
           installer: fuel
           auto-trigger-name: 'daily-trigger-disabled'
-          <<: *gambia
+          <<: *hunter
       - zte-pod2:
           slave-label: '{pod}'
           installer: daisy
@@ -219,7 +182,7 @@
           slave-label: '{pod}'
           installer: daisy
           auto-trigger-name: 'daily-trigger-disabled'
-          <<: *fraser
+          <<: *hunter
       - zte-pod9:
           slave-label: '{pod}'
           installer: daisy
@@ -229,7 +192,7 @@
           slave-label: '{pod}'
           installer: daisy
           auto-trigger-name: 'daily-trigger-disabled'
-          <<: *fraser
+          <<: *hunter
       - orange-pod2:
           slave-label: '{pod}'
           installer: joid
@@ -387,7 +350,7 @@
           description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
-    name: 'yardstick-params-apex-virtual-fraser'
+    name: 'yardstick-params-apex-virtual-hunter'
     parameters:
       - string:
           name: YARDSTICK_DB_BACKEND
@@ -395,7 +358,7 @@
           description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
-    name: 'yardstick-params-apex-baremetal-fraser'
+    name: 'yardstick-params-apex-baremetal-hunter'
     parameters:
       - string:
           name: YARDSTICK_DB_BACKEND
