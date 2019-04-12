@@ -45,7 +45,7 @@ envs="-e INSTALLER_TYPE=${INSTALLER_TYPE} \
     -e NODE_NAME=${NODE_NAME} -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} \
     -e BUILD_TAG=${BUILD_TAG} -e DEPLOY_TYPE=${DEPLOY_TYPE}"
 
-DOCKER_TAG=`[[ ${BRANCH##*/} == "master" ]] && echo "latest" || echo ${BRANCH##*/}`
+DOCKER_TAG=${DOCKER_TAG:-$([[ ${BRANCH##*/} == "master" ]] && echo "latest" || echo ${BRANCH##*/})}
 
 set +e
 
