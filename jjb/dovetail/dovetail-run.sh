@@ -35,6 +35,8 @@ ssh_options="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 sshkey=""
 
+TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results
+
 check_file_exists() {
     if [[ -f $1 ]]; then
         echo 0
@@ -402,7 +404,10 @@ fi
 echo "Dovetail: Pulling image ${DOCKER_REPO}:${DOCKER_TAG}"
 docker pull ${DOCKER_REPO}:$DOCKER_TAG >$redirect
 
-cmd="docker run ${opts} -e DOVETAIL_HOME=${DOVETAIL_HOME} ${docker_volume} ${dovetail_home_volume} \
+cmd="docker run ${opts} -e DOVETAIL_HOME=${DOVETAIL_HOME} -e INSTALLER_TYPE=${INSTALLER_TYPE} \
+     -e DEPLOY_SCENARIO=${DEPLOY_SCENARIO} -e NODE_NAME=${NODE_NAME} -e BUILD_TAG=${BUILD_TAG} \
+     -e TEST_DB_URL=${TEST_DB_URL} -e VERSION=${SUT_BRANCH} \
+     ${docker_volume} ${dovetail_home_volume} \
      ${sshkey} ${DOCKER_REPO}:${DOCKER_TAG} /bin/bash"
 echo "Dovetail: running docker run command: ${cmd}"
 ${cmd} >${redirect}
@@ -462,7 +467,7 @@ else
     testarea="--testarea ${TESTAREA}"
 fi
 
-run_cmd="dovetail run ${testsuite} ${testarea} --deploy-scenario ${DEPLOY_SCENARIO} -d -r"
+run_cmd="dovetail run ${testsuite} ${testarea} --deploy-scenario ${DEPLOY_SCENARIO} -d -r --opnfv-ci"
 echo "Container exec command: ${run_cmd}"
 docker exec $container_id ${run_cmd}
 
