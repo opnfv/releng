@@ -38,7 +38,11 @@ elif [[ ${INSTALLER_TYPE} == 'compass' ]]; then
         echo "export OS_CACERT=/etc/yardstick/os_cacert" >> ${HOME}/opnfv-openrc.sh
     fi
 elif [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
-    cacert_file_vol="-v ${HOME}/os_cacert:/etc/ssl/certs/mcp_os_cacert"
+    if [[ "${DEPLOY_SCENARIO:0:2}" == 'k8' ]]; then
+        rc_file_vol="-v ${HOME}/admin.conf:/etc/yardstick/admin.conf"
+    else
+        cacert_file_vol="-v ${HOME}/os_cacert:/etc/ssl/certs/mcp_os_cacert"
+    fi
     sshkey="-v ${SSH_KEY}:/root/.ssh/mcp.rsa"
 fi
 
