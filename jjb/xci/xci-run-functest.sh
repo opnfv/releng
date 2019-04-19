@@ -36,10 +36,12 @@ if [[ $GERRIT_PROJECT != "releng-xci" ]]; then
     chmod -R go-rwx $WORKSPACE/xci/scripts/vm
 fi
 
-# skip the deployment if the scenario is not supported on this distro
+# skip the deployment if the scenario is not supported on this distro and installer combination
 OPNFV_SCENARIO_REQUIREMENTS=$WORKSPACE/xci/opnfv-scenario-requirements.yml
-if ! sed -n "/^- scenario: $DEPLOY_SCENARIO$/,/^$/p" $OPNFV_SCENARIO_REQUIREMENTS | grep -q $DISTRO; then
-    echo "# SKIPPED: Scenario $DEPLOY_SCENARIO is NOT supported on $DISTRO"
+if ! sed -n "/^- scenario: $DEPLOY_SCENARIO$/,/^$/p" $OPNFV_SCENARIO_REQUIREMENTS | \
+     sed -n "/- installer: $INSTALLER_TYPE$/,/^$/p" | \
+     grep -q $DISTRO; then
+    echo "# SKIPPED: Scenario $DEPLOY_SCENARIO is NOT supported on $DISTRO and $INSTALLER_TYPE installer"
     exit 0
 fi
 
