@@ -11,7 +11,6 @@
     jobs:
       - 'functest-verify-{stream}'
       - 'functest-verify-{phase}-{stream}'
-      - 'functest-docs-upload-{stream}'
 
     stream:
       - master:
@@ -34,10 +33,6 @@
     phase:
       - 'unit-tests-and-docs':
           slave-label: 'opnfv-build-ubuntu'
-      - 'build-x86_64':
-          slave-label: 'opnfv-build-ubuntu'
-      - 'build-aarch64':
-          slave-label: 'opnfv-build-ubuntu-arm'
 
 - job-template:
     name: 'functest-verify-{stream}'
@@ -107,28 +102,6 @@
     publishers:
       - 'functest-verify-{phase}-publishers-macro'
 
-- job-template:
-    name: 'functest-docs-upload-{stream}'
-
-    disabled: '{obj:disabled}'
-
-    parameters:
-      - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - 'opnfv-build-ubuntu-defaults'
-
-    scm:
-      - git-scm
-
-    triggers:
-      - 'functest-docs-upload-triggers-macro':
-          project: '{project}'
-          branch: '{branch}'
-
-    builders:
-      - functest-upload-doc-artifact
-
 ################################
 # job triggers
 ################################
@@ -158,25 +131,6 @@
                 - compare-type: ANT
                   pattern: 'docs/**|.gitignore'
 
-- trigger:
-    name: 'functest-docs-upload-triggers-macro'
-    triggers:
-      - gerrit:
-          server-name: 'gerrit.opnfv.org'
-          trigger-on:
-            - change-merged-event
-            - comment-added-contains-event:
-                comment-contains-value: 'remerge'
-          projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{project}'
-              branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
-              disable-strict-forbidden-file-verification: 'true'
-              forbidden-file-paths:
-                - compare-type: ANT
-                  pattern: 'docs/**|.gitignore'
 ################################
 # job builders
 ################################
@@ -187,24 +141,6 @@
       - shell: |
           cd $WORKSPACE && tox
 
-- builder:
-    name: 'functest-verify-build-x86_64-builders-macro'
-    builders:
-      - shell: |
-          echo "Not activated!"
-
-- builder:
-    name: 'functest-verify-build-aarch64-builders-macro'
-    builders:
-      - shell: |
-          echo "Not activated!"
-
-- builder:
-    name: 'functest-upload-doc-artifact'
-    builders:
-      - shell: |
-          cd $WORKSPACE && tox -edocs
-            wget -O - https://git.opnfv.org/releng/plain/utils/upload-artifact.sh | bash -s "api/build" "docs"
 ################################
 # job publishers
 ################################
@@ -228,14 +164,4 @@
                 healthy: 50
                 unhealthy: 40
                 failing: 30
-      - email-jenkins-admins-on-failure
-
-- publisher:
-    name: 'functest-verify-build-x86_64-publishers-macro'
-    publishers:
-      - email-jenkins-admins-on-failure
-
-- publisher:
-    name: 'functest-verify-build-aarch64-publishers-macro'
-    publishers:
       - email-jenkins-admins-on-failure
