@@ -11,7 +11,6 @@
     jobs:
       - 'xtesting-verify-{stream}'
       - 'xtesting-verify-{phase}-{stream}'
-      - 'xtesting-docs-upload-{stream}'
 
     stream:
       - master:
@@ -34,10 +33,6 @@
     phase:
       - 'unit-tests-and-docs':
           slave-label: 'opnfv-build-ubuntu'
-      - 'build-x86_64':
-          slave-label: 'opnfv-build-ubuntu'
-      - 'build-aarch64':
-          slave-label: 'opnfv-build-ubuntu-arm'
 
 - job-template:
     name: 'xtesting-verify-{stream}'
@@ -81,30 +76,6 @@
               node-parameters: false
               kill-phase-on: FAILURE
               abort-all-job: false
-            - name: 'xtesting-verify-build-x86_64-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                ARCH=x86_64
-              git-revision: true
-              node-parameters: false
-              kill-phase-on: FAILURE
-              abort-all-job: false
-            - name: 'xtesting-verify-build-aarch64-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-                ARCH=aarch64
-              git-revision: true
-              node-parameters: false
-              kill-phase-on: FAILURE
-              abort-all-job: false
 
 - job-template:
     name: 'xtesting-verify-{phase}-{stream}'
@@ -130,28 +101,6 @@
 
     publishers:
       - 'xtesting-verify-{phase}-publishers-macro'
-
-- job-template:
-    name: 'xtesting-docs-upload-{stream}'
-
-    disabled: '{obj:disabled}'
-
-    parameters:
-      - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - 'opnfv-build-ubuntu-defaults'
-
-    scm:
-      - git-scm
-
-    triggers:
-      - 'xtesting-docs-upload-triggers-macro':
-          project: '{project}'
-          branch: '{branch}'
-
-    builders:
-      - xtesting-upload-doc-artifact
 
 ################################
 # job triggers
@@ -182,25 +131,6 @@
                 - compare-type: ANT
                   pattern: 'docs/**|.gitignore'
 
-- trigger:
-    name: 'xtesting-docs-upload-triggers-macro'
-    triggers:
-      - gerrit:
-          server-name: 'gerrit.opnfv.org'
-          trigger-on:
-            - change-merged-event
-            - comment-added-contains-event:
-                comment-contains-value: 'remerge'
-          projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{project}'
-              branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
-              disable-strict-forbidden-file-verification: 'true'
-              forbidden-file-paths:
-                - compare-type: ANT
-                  pattern: 'docs/**|.gitignore'
 ################################
 # job builders
 ################################
@@ -211,24 +141,6 @@
       - shell: |
           cd $WORKSPACE && tox
 
-- builder:
-    name: 'xtesting-verify-build-x86_64-builders-macro'
-    builders:
-      - shell: |
-          echo "Not activated!"
-
-- builder:
-    name: 'xtesting-verify-build-aarch64-builders-macro'
-    builders:
-      - shell: |
-          echo "Not activated!"
-
-- builder:
-    name: 'xtesting-upload-doc-artifact'
-    builders:
-      - shell: |
-          cd $WORKSPACE && tox -edocs
-            wget -O - https://git.opnfv.org/releng/plain/utils/upload-artifact.sh | bash -s "api/_build" "docs"
 ################################
 # job publishers
 ################################
@@ -252,14 +164,4 @@
                 healthy: 50
                 unhealthy: 40
                 failing: 30
-      - email-jenkins-admins-on-failure
-
-- publisher:
-    name: 'xtesting-verify-build-x86_64-publishers-macro'
-    publishers:
-      - email-jenkins-admins-on-failure
-
-- publisher:
-    name: 'xtesting-verify-build-aarch64-publishers-macro'
-    publishers:
       - email-jenkins-admins-on-failure
