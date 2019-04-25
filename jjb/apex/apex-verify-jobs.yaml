@@ -7,27 +7,31 @@
       - 'apex-verify-gate-{stream}'
       - 'apex-verify-unit-tests-{stream}'
     stream:
-      - master: &master
+      - master:
           branch: '{stream}'
           gs-pathname: ''
           verify-scenario: 'os-nosdn-nofeature-noha'
           disabled: false
-      - gambia: &gambia
+      - hunter: &hunter
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
+      - gambia:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           verify-scenario: 'os-nosdn-nofeature-ha'
           disabled: false
-      - fraser: &fraser
+      - fraser:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           verify-scenario: 'os-nosdn-nofeature-ha'
           disabled: false
-      - danube: &danube
+      - danube:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           verify-scenario: 'os-odl_l3-nofeature-ha'
           disabled: true
-      - euphrates: &euphrates
+      - euphrates:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           verify-scenario: 'os-odl-nofeature-ha'
@@ -330,10 +334,10 @@
           option: 'project'
 
     builders:
-      # yamllint disable rule:line-length
+    # yamllint disable rule:line-length
       - shell: |
           echo DEPLOY_SCENARIO=$(echo $GERRIT_EVENT_COMMENT_TEXT | grep start-gate-scenario | grep -Eo '(os|k8s)-.*$') > detected_scenario
-      # yamllint enable rule:line-length
+    # yamllint enable rule:line-length
       - inject:
           properties-file: detected_scenario
       - multijob:
@@ -355,8 +359,7 @@
               kill-phase-on: FAILURE
               abort-all-job: true
               git-revision: true
-      - shell:
-          !include-raw-escape: ./apex-functest-scenario.sh
+      - shell: !include-raw-escape: ./apex-functest-scenario.sh
       - inject:
           properties-file: functest_scenario
           override-build-parameters: true
@@ -400,5 +403,4 @@
 - builder:
     name: apex-unit-test
     builders:
-      - shell:
-          !include-raw: ./apex-unit-test.sh
+      - shell: !include-raw: ./apex-unit-test.sh
