@@ -98,6 +98,7 @@
           fi
           sudo docker run --rm \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -e DEBUG=true \
             $image run_tests -t {test}
           res=$?
           gsutil -m cp -r $WORKSPACE/ \
