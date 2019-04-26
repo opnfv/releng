@@ -28,7 +28,17 @@
           verify-scenario: 'os-nosdn-nofeature-noha'
           scenario_stream: 'master'
           disable_daily: false
-          disable_promote: false
+          disable_promote: true
+      - hunter: &hunter
+          branch: 'stable/hunter'
+          gs-pathname: '/hunter'
+          build-slave: 'apex-build-master'
+          virtual-slave: 'apex-virtual-master'
+          baremetal-slave: 'apex-baremetal-master'
+          verify-scenario: 'os-nosdn-nofeature-ha'
+          scenario_stream: 'hunter'
+          disable_daily: false
+          disable_promote: true
       - gambia: &gambia
           branch: 'stable/gambia'
           gs-pathname: '/gambia'
@@ -38,7 +48,7 @@
           verify-scenario: 'os-nosdn-nofeature-ha'
           scenario_stream: 'gambia'
           disable_daily: true
-          disable_promote: false
+          disable_promote: true
       - fraser: &fraser
           branch: 'stable/fraser'
           gs-pathname: '/fraser'
@@ -72,34 +82,6 @@
           disable_promote: true
 
     scenario:
-      - 'os-nosdn-nofeature-ha':
-          <<: *fraser
-      - 'os-odl-bgpvpn-ha':
-          <<: *fraser
-      - 'os-nosdn-nofeature-noha':
-          <<: *gambia
-      - 'os-nosdn-nofeature-ha':
-          <<: *gambia
-      - 'os-nosdn-nofeature-ha-ipv6':
-          <<: *gambia
-      - 'os-odl-nofeature-noha':
-          <<: *gambia
-      - 'os-odl-nofeature-ha':
-          <<: *gambia
-      - 'k8s-nosdn-nofeature-noha':
-          <<: *gambia
-      - 'os-odl-bgpvpn-ha':
-          <<: *gambia
-      - 'os-odl-bgpvpn-noha':
-          <<: *gambia
-      - 'os-odl-sfc-ha':
-          <<: *gambia
-      - 'os-odl-sfc-noha':
-          <<: *gambia
-      - 'os-nosdn-calipso-noha':
-          <<: *gambia
-      - 'os-ovn-nofeature-ha':
-          <<: *gambia
       - 'os-nosdn-nofeature-noha':
           <<: *danube
       - 'os-nosdn-nofeature-ha':
@@ -156,48 +138,40 @@
           <<: *master
       - 'os-nosdn-nofeature-ha':
           <<: *master
+      - 'os-nosdn-nofeature-noha':
+          <<: *gambia
+      - 'os-nosdn-nofeature-ha':
+          <<: *gambia
       - 'os-nosdn-nofeature-ha-ipv6':
-          <<: *master
+          <<: *gambia
       - 'os-odl-nofeature-noha':
-          <<: *master
+          <<: *gambia
       - 'os-odl-nofeature-ha':
-          <<: *master
-      - 'os-nosdn-rocky-noha':
-          <<: *master
-      - 'os-nosdn-rocky-ha':
-          <<: *master
-      - 'os-nosdn-rocky-ha-ipv6':
-          <<: *master
-      - 'os-odl-rocky-noha':
-          <<: *master
-      - 'os-odl-rocky-ha':
-          <<: *master
+          <<: *gambia
       - 'k8s-nosdn-nofeature-noha':
-          <<: *master
+          <<: *gambia
       - 'os-odl-bgpvpn-ha':
-          <<: *master
+          <<: *gambia
       - 'os-odl-bgpvpn-noha':
-          <<: *master
-      - 'os-odl-bgpvpn_queens-ha':
-          <<: *master
-      - 'os-odl-bgpvpn_queens-noha':
-          <<: *master
+          <<: *gambia
       - 'os-odl-sfc-ha':
-          <<: *master
+          <<: *gambia
       - 'os-odl-sfc-noha':
-          <<: *master
-      - 'os-odl-sfc_rocky-ha':
-          <<: *master
-      - 'os-odl-sfc_rocky-noha':
-          <<: *master
+          <<: *gambia
       - 'os-nosdn-calipso-noha':
-          <<: *master
-      - 'os-nosdn-calipso_rocky-noha':
-          <<: *master
+          <<: *gambia
       - 'os-ovn-nofeature-ha':
-          <<: *master
-      - 'os-ovn-rocky-ha':
-          <<: *master
+          <<: *gambia
+      - 'os-nosdn-nofeature-ha':
+          <<: *fraser
+      - 'os-odl-bgpvpn-ha':
+          <<: *fraser
+      - 'os-nosdn-nofeature-noha':
+          <<: *hunter
+      - 'os-nosdn-nofeature-ha':
+          <<: *hunter
+      - 'os-ovn-nofeature-ha':
+          <<: *hunter
       - 'os-nosdn-nofeature-noha':
           <<: *euphrates
       - 'os-nosdn-nofeature-ha':
@@ -1247,136 +1221,6 @@
 # builder macros
 ########################
 
-# fraser Builder
-- builder:
-    name: apex-builder-fraser
-    builders:
-      - multijob:
-          name: Baremetal Deploy and Test Phase
-          condition: SUCCESSFUL
-          projects:
-            - name: 'apex-os-nosdn-nofeature-ha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-odl-bgpvpn-ha-baremetal-fraser'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-
-# gambia Builder
-- builder:
-    name: apex-builder-gambia
-    builders:
-      - multijob:
-          name: Baremetal Deploy and Test Phase
-          condition: SUCCESSFUL
-          projects:
-            - name: 'apex-os-nosdn-nofeature-noha-baremetal-gambia'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-nosdn-nofeature-ha-baremetal-gambia'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-nosdn-nofeature-ha-ipv6-baremetal-gambia'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-odl-nofeature-noha-baremetal-gambia'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-odl-nofeature-ha-baremetal-gambia'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-k8s-nosdn-nofeature-noha-baremetal-gambia'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-odl-bgpvpn-ha-baremetal-gambia'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-odl-bgpvpn-noha-baremetal-gambia'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-odl-sfc-ha-baremetal-gambia'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-odl-sfc-noha-baremetal-gambia'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-nosdn-calipso-noha-baremetal-gambia'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-ovn-nofeature-ha-baremetal-gambia'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-
 # danube Builder
 - builder:
     name: apex-builder-danube
@@ -1618,7 +1462,16 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-nosdn-nofeature-ha-ipv6-baremetal-master'
+
+# gambia Builder
+- builder:
+    name: apex-builder-gambia
+    builders:
+      - multijob:
+          name: Baremetal Deploy and Test Phase
+          condition: SUCCESSFUL
+          projects:
+            - name: 'apex-os-nosdn-nofeature-noha-baremetal-gambia'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1626,7 +1479,7 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-odl-nofeature-noha-baremetal-master'
+            - name: 'apex-os-nosdn-nofeature-ha-baremetal-gambia'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1634,7 +1487,7 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-odl-nofeature-ha-baremetal-master'
+            - name: 'apex-os-nosdn-nofeature-ha-ipv6-baremetal-gambia'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1642,7 +1495,7 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-nosdn-rocky-noha-baremetal-master'
+            - name: 'apex-os-odl-nofeature-noha-baremetal-gambia'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1650,7 +1503,7 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-nosdn-rocky-ha-baremetal-master'
+            - name: 'apex-os-odl-nofeature-ha-baremetal-gambia'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1658,7 +1511,7 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-nosdn-rocky-ha-ipv6-baremetal-master'
+            - name: 'apex-k8s-nosdn-nofeature-noha-baremetal-gambia'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1666,7 +1519,7 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-odl-rocky-noha-baremetal-master'
+            - name: 'apex-os-odl-bgpvpn-ha-baremetal-gambia'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1674,7 +1527,7 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-odl-rocky-ha-baremetal-master'
+            - name: 'apex-os-odl-bgpvpn-noha-baremetal-gambia'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1682,7 +1535,7 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-k8s-nosdn-nofeature-noha-baremetal-master'
+            - name: 'apex-os-odl-sfc-ha-baremetal-gambia'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1690,7 +1543,7 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-odl-bgpvpn-ha-baremetal-master'
+            - name: 'apex-os-odl-sfc-noha-baremetal-gambia'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1698,7 +1551,7 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-odl-bgpvpn-noha-baremetal-master'
+            - name: 'apex-os-nosdn-calipso-noha-baremetal-gambia'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1706,7 +1559,7 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-odl-bgpvpn_queens-ha-baremetal-master'
+            - name: 'apex-os-ovn-nofeature-ha-baremetal-gambia'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1714,7 +1567,16 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-odl-bgpvpn_queens-noha-baremetal-master'
+
+# fraser Builder
+- builder:
+    name: apex-builder-fraser
+    builders:
+      - multijob:
+          name: Baremetal Deploy and Test Phase
+          condition: SUCCESSFUL
+          projects:
+            - name: 'apex-os-nosdn-nofeature-ha-baremetal-fraser'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1722,7 +1584,7 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-odl-sfc-ha-baremetal-master'
+            - name: 'apex-os-odl-bgpvpn-ha-baremetal-fraser'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1730,7 +1592,16 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-odl-sfc-noha-baremetal-master'
+
+# hunter Builder
+- builder:
+    name: apex-builder-hunter
+    builders:
+      - multijob:
+          name: Baremetal Deploy and Test Phase
+          condition: SUCCESSFUL
+          projects:
+            - name: 'apex-os-nosdn-nofeature-noha-baremetal-hunter'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1738,7 +1609,7 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-odl-sfc_rocky-ha-baremetal-master'
+            - name: 'apex-os-nosdn-nofeature-ha-baremetal-hunter'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1746,39 +1617,7 @@
               kill-phase-on: NEVER
               abort-all-job: true
               git-revision: false
-            - name: 'apex-os-odl-sfc_rocky-noha-baremetal-master'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-nosdn-calipso-noha-baremetal-master'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-nosdn-calipso_rocky-noha-baremetal-master'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-ovn-nofeature-ha-baremetal-master'
-              node-parameters: false
-              current-parameters: false
-              predefined-parameters: |
-                OPNFV_CLEAN=yes
-              kill-phase-on: NEVER
-              abort-all-job: true
-              git-revision: false
-            - name: 'apex-os-ovn-rocky-ha-baremetal-master'
+            - name: 'apex-os-ovn-nofeature-ha-baremetal-hunter'
               node-parameters: false
               current-parameters: false
               predefined-parameters: |
@@ -1963,6 +1802,11 @@
     name: 'apex-master'
     triggers:
       - timed: '0 0 1-31/2 * *'
+
+- trigger:
+    name: 'apex-hunter'
+    triggers:
+      - timed: '0 4 2-30/2 * *'
 
 - trigger:
     name: 'apex-gambia'
