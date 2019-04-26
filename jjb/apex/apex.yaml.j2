@@ -28,7 +28,17 @@
           verify-scenario: 'os-nosdn-nofeature-noha'
           scenario_stream: 'master'
           disable_daily: false
-          disable_promote: false
+          disable_promote: true
+      - hunter: &hunter
+          branch: 'stable/hunter'
+          gs-pathname: '/hunter'
+          build-slave: 'apex-build-master'
+          virtual-slave: 'apex-virtual-master'
+          baremetal-slave: 'apex-baremetal-master'
+          verify-scenario: 'os-nosdn-nofeature-ha'
+          scenario_stream: 'hunter'
+          disable_daily: false
+          disable_promote: true
       - gambia: &gambia
           branch: 'stable/gambia'
           gs-pathname: '/gambia'
@@ -38,7 +48,7 @@
           verify-scenario: 'os-nosdn-nofeature-ha'
           scenario_stream: 'gambia'
           disable_daily: true
-          disable_promote: false
+          disable_promote: true
       - fraser: &fraser
           branch: 'stable/fraser'
           gs-pathname: '/fraser'
@@ -1147,6 +1157,11 @@
       - timed: '0 0 1-31/2 * *'
 
 - trigger:
+    name: 'apex-hunter'
+    triggers:
+      - timed: '0 4 2-30/2 * *'
+
+- trigger:
     name: 'apex-gambia'
     triggers:
       - timed: '0 4 2-30/2 * *'
@@ -1178,6 +1193,21 @@
 
 - trigger:
     name: 'master-csit-queens'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'hunter-csit-master'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'hunter-csit-rocky'
+    triggers:
+      - timed: '0 5 * * *'
+
+- trigger:
+    name: 'hunter-csit-queens'
     triggers:
       - timed: ''
 
@@ -1252,6 +1282,21 @@
 
 - trigger:
     name: 'master-functest-queens'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'hunter-functest-master'
+    triggers:
+      - timed: ''
+
+- trigger:
+    name: 'hunter-functest-rocky'
+    triggers:
+      - timed: '0 3 * * *'
+
+- trigger:
+    name: 'hunter-functest-queens'
     triggers:
       - timed: ''
 
