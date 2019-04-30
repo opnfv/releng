@@ -156,6 +156,7 @@ apex)
 compute-feature-enabled:
     shelve: false
     vnc_console: true
+    block_migration_for_live_migration: false
 identity-feature-enabled:
     api_v2: false
     api_v2_admin: false
@@ -176,6 +177,7 @@ compass)
 compute-feature-enabled:
     shelve: false
     vnc_console: false
+    block_migration_for_live_migration: false
     spice_console: true
 identity-feature-enabled:
     api_v2: false
