@@ -90,7 +90,8 @@
     name: functest-run-containers
     builders:
       - shell: |
-          set +ex
+          set +e
+          set -x
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
