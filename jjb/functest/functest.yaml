@@ -108,8 +108,8 @@
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
             $image run_tests -t {test}
           res=$?
-          gsutil -D -m cp -r $WORKSPACE/ \
-            gs://artifacts.opnfv.org/functest/$JOB_NAME-$BUILD_ID
+          gsutil -m cp -r $WORKSPACE/ \
+            gs://artifacts.opnfv.org/functest/$JOB_NAME-$BUILD_ID > /dev/null 2>&1
           find $WORKSPACE -type f \
             -printf \
             "http://artifacts.opnfv.org/functest/$JOB_NAME-$BUILD_ID/%P\n"
