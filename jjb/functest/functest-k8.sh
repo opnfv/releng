@@ -4,10 +4,11 @@ set -e
 set +u
 set +o pipefail
 
-[[ $CI_DEBUG == true ]] && redirect="/dev/stdout" || redirect="/dev/null"
+redirect="/dev/stdout"
 FUNCTEST_DIR=/home/opnfv/functest
 
 admin_conf_file_vol="-v ${HOME}/admin.conf:/root/.kube/config"
+cat ${HOME}/admin.conf
 
 dir_result="${HOME}/opnfv/functest/results/${BRANCH##*/}"
 mkdir -p ${dir_result}
