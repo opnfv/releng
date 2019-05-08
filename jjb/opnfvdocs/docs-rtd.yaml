@@ -1,7 +1,13 @@
 ---
 - project:
     name: docs-rtd
+    project: 'opnfvdocs'
+    project-name: 'opnfvdocs'
+    rtd-build-url: 'https://readthedocs.org/api/v2/webhook/opnfv-releng/38594/'
+    rtd-token: '291c6a0109493b4457e566d06141212452c65784'
+    project-pattern: 'opnfvdocs'
     jobs:
+      - '{project-name}-rtd-jobs'
       - 'docs-merge-rtd-{stream}'
       - 'docs-verify-rtd-{stream}'
 
@@ -14,10 +20,6 @@
           branch: 'stable/{stream}'
       - danube:
           branch: 'stable/{stream}'
-
-    project: 'opnfvdocs'
-    rtdproject: 'opnfv'
-    # TODO: Archive Artifacts
 
 - job-template:
     name: 'docs-merge-rtd-{stream}'
@@ -43,14 +45,6 @@
 
     builders:
       - 'remove-old-docs-from-opnfv-artifacts'
-      - shell: |
-          if [ $GERRIT_BRANCH == "master" ]; then
-            RTD_BUILD_VERSION=latest
-          else
-            RTD_BUILD_VERSION=${{GERRIT_BRANCH/\//-}}
-          fi
-          curl -X POST --data "version_slug=$RTD_BUILD_VERSION" https://readthedocs.org/build/opnfvdocsdemo
-
 
 - job-template:
     name: 'docs-verify-rtd-{stream}'
