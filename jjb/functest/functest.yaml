@@ -103,7 +103,6 @@
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEBUG=True \
             -e EXTERNAL_NETWORK=public \
-            -e DEBUG=true \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
             -v /home/opnfv/functest/blacklist.yaml:/usr/lib/python2.7/\
@@ -265,6 +264,9 @@
       - neutron-tempest-plugin-api
       - rally_sanity
       - refstack_defcore
+      - refstack_compute
+      - refstack_object
+      - refstack_platform
       - tempest_full
       - tempest_scenario
       - patrole
@@ -272,6 +274,17 @@
       - networking-bgpvpn
       - networking-sfc
       - barbican
+    exclude:
+      - tag: latest
+        test: refstack_defcore
+      - tag: iruya
+        test: refstack_defcore
+      - tag: hunter
+        test: refstack_compute
+      - tag: hunter
+        test: refstack_object
+      - tag: hunter
+        test: refstack_platform
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -356,6 +369,8 @@
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-healthcheck:{tag}
+          execution-type: PARALLEL
+          condition: ALWAYS
           projects:
             - name: 'functest-opnfv-functest-healthcheck-{tag}-connection_check-run'
               <<: *functest-jobs
@@ -383,12 +398,20 @@
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-smoke:{tag}
+          execution-type: PARALLEL
+          condition: SUCCESSFUL
           projects:
             - name: 'functest-opnfv-functest-smoke-{tag}-neutron-tempest-plugin-api-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-refstack_defcore-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-refstack_compute-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-refstack_object-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-refstack_platform-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_full-run'
               <<: *functest-jobs
@@ -406,6 +429,8 @@
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{tag}
+          execution-type: PARALLEL
+          condition: ALWAYS
           projects:
             - name: 'functest-opnfv-functest-benchmarking-{tag}-rally_full-run'
               <<: *functest-jobs
@@ -418,6 +443,7 @@
       - multijob:
           name: opnfv/functest-vnf:{tag}
           execution-type: SEQUENTIALLY
+          condition: ALWAYS
           projects:
             - name: 'functest-opnfv-functest-vnf-{tag}-cloudify-run'
               <<: *functest-jobs
@@ -431,6 +457,8 @@
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-features:{tag}
+          execution-type: PARALLEL
+          condition: ALWAYS
           projects:
             - name: 'functest-opnfv-functest-features-{tag}-doctor-notification-run'
               <<: *functest-jobs
@@ -624,6 +652,8 @@
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-healthcheck:{tag}
+          execution-type: PARALLEL
+          condition: ALWAYS
           projects:
             - name: 'functest-opnfv-functest-healthcheck-{tag}-connection_check-run'
               <<: *functest-jobs
@@ -651,12 +681,20 @@
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-smoke:{tag}
+          execution-type: PARALLEL
+          condition: SUCCESSFUL
           projects:
             - name: 'functest-opnfv-functest-smoke-{tag}-neutron-tempest-plugin-api-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-refstack_defcore-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-refstack_compute-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-refstack_object-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-refstack_platform-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_full-run'
               <<: *functest-jobs
@@ -674,6 +712,8 @@
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{tag}
+          execution-type: PARALLEL
+          condition: ALWAYS
           projects:
             - name: 'functest-opnfv-functest-benchmarking-{tag}-rally_full-run'
               <<: *functest-jobs
@@ -686,6 +726,7 @@
       - multijob:
           name: opnfv/functest-vnf:{tag}
           execution-type: SEQUENTIALLY
+          condition: ALWAYS
           projects:
             - name: 'functest-opnfv-functest-vnf-{tag}-cloudify-run'
               <<: *functest-jobs
@@ -699,6 +740,8 @@
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-features:{tag}
+          execution-type: PARALLEL
+          condition: ALWAYS
           projects:
             - name: 'functest-opnfv-functest-features-{tag}-doctor-notification-run'
               <<: *functest-jobs
@@ -798,6 +841,8 @@
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-healthcheck:{tag}
+          execution-type: PARALLEL
+          condition: ALWAYS
           projects:
             - name: 'functest-opnfv-functest-healthcheck-{tag}-connection_check-run'
               <<: *functest-jobs
@@ -825,12 +870,20 @@
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-smoke:{tag}
+          execution-type: PARALLEL
+          condition: SUCCESSFUL
           projects:
             - name: 'functest-opnfv-functest-smoke-{tag}-neutron-tempest-plugin-api-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-refstack_defcore-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-refstack_compute-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-refstack_object-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-refstack_platform-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_full-run'
               <<: *functest-jobs
@@ -848,6 +901,8 @@
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{tag}
+          execution-type: PARALLEL
+          condition: ALWAYS
           projects:
             - name: 'functest-opnfv-functest-benchmarking-{tag}-rally_full-run'
               <<: *functest-jobs
@@ -860,6 +915,7 @@
       - multijob:
           name: opnfv/functest-vnf:{tag}
           execution-type: SEQUENTIALLY
+          condition: ALWAYS
           projects:
             - name: 'functest-opnfv-functest-vnf-{tag}-cloudify-run'
               <<: *functest-jobs
@@ -873,6 +929,8 @@
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-features:{tag}
+          execution-type: PARALLEL
+          condition: ALWAYS
           projects:
             - name: 'functest-opnfv-functest-features-{tag}-doctor-notification-run'
               <<: *functest-jobs
