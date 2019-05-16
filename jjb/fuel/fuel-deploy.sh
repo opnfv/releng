@@ -19,8 +19,8 @@ LAB_NAME=${NODE_NAME/-*}
 # shellcheck disable=SC2153
 POD_NAME=${NODE_NAME/*-}
 
-# Fuel currently supports arm, enea, ericsson, intel, lf, unh and zte labs
-if [[ ! "${LAB_NAME}" =~ (arm|enea|ericsson|intel|lf|unh|zte) ]]; then
+# Fuel currently supports arm, enea, ericsson, intel, lf, unh, zte and itri labs
+if [[ ! "${LAB_NAME}" =~ (arm|enea|ericsson|intel|lf|unh|zte|itri) ]]; then
     echo "Unsupported/unidentified lab ${LAB_NAME}. Cannot continue!"
     exit 1
 fi
