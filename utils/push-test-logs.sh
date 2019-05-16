@@ -24,6 +24,7 @@ node_list=(\
 'lf-pod1' 'lf-pod2' \
 'lf-virtual2' 'lf-virtual3' \
 'intel-pod12' 'intel-pod18' \
+'itri-pod1' \
 'ericsson-pod1' 'ericsson-pod2' \
 'ericsson-virtual1' 'ericsson-virtual2'  'ericsson-virtual3' \
 'ericsson-virtual4' 'ericsson-virtual5' \
