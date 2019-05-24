@@ -243,12 +243,6 @@ compute:
     max_microversion: 2.65
 EOF
     ;;
-stable/gambia)
-    cat << EOF >> "${tempest_conf_yaml}"
-compute:
-    max_microversion: 2.60
-EOF
-    ;;
 esac
 echo "tempest_conf.yaml:" && cat "${tempest_conf_yaml}"
 
@@ -302,17 +296,9 @@ else
     tests=()
     skip_tests=0
     if [ "${HOST_ARCH}" != "aarch64" ]; then
-        if [[ ${BRANCH} == "stable/gambia" ]]; then
-            tiers=(healthcheck smoke benchmarking features vnf components)
-        else
-            tiers=(healthcheck smoke benchmarking features vnf)
-        fi
+        tiers=(healthcheck smoke benchmarking features vnf)
     else
-        if [[ ${BRANCH} == "stable/gambia" ]]; then
-            tiers=(healthcheck smoke benchmarking features components)
-        else
-            tiers=(healthcheck smoke benchmarking features)
-        fi
+        tiers=(healthcheck smoke benchmarking features)
     fi
     run_tiers ${tiers}
     if [ ${skip_tests} -eq 0 ]; then

@@ -14,8 +14,8 @@
       stream: master
       branch: '{stream}'
       gs-pathname: ''
-    gambia: &gambia
-      stream: gambia
+    iruya: &iruya
+      stream: iruya
       branch: 'stable/{stream}'
       gs-pathname: '/{stream}'
     hunter: &hunter
@@ -48,15 +48,6 @@
           slave-label: fuel-virtual
           installer: fuel
           <<: *hunter
-      # compass CI PODs
-      - baremetal:
-          slave-label: compass-baremetal
-          installer: compass
-          <<: *gambia
-      - virtual:
-          slave-label: compass-virtual
-          installer: compass
-          <<: *gambia
       # apex CI PODs
       - virtual:
           slave-label: apex-virtual-master
@@ -74,14 +65,6 @@
           slave-label: apex-baremetal-master
           installer: apex
           <<: *hunter
-      - virtual:
-          slave-label: apex-virtual-master
-          installer: apex
-          <<: *gambia
-      - baremetal:
-          slave-label: apex-baremetal-master
-          installer: apex
-          <<: *gambia
       # armband CI PODs
       - armband-baremetal:
           slave-label: armband-baremetal
