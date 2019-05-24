@@ -7,8 +7,8 @@
     stream:
       - master:
           branch: master
-      - gambia:
-          branch: stable/gambia
+      - hunter:
+          branch: stable/hunter
     scenario:
       - 'k8-multus-nofeature-noha':
           disabled: false
@@ -48,10 +48,8 @@
       - 'trigger-deploy-{pod}-{stream}'
 
     builders:
-      - shell:
-          !include-raw: arm64/compass-build.sh
-      - shell:
-          !include-raw: arm64/compass-deploy.sh
+      - shell: !include-raw: arm64/compass-build.sh
+      - shell: !include-raw: arm64/compass-deploy.sh
       - trigger-builds:
           - project: yardstick-arm64-compass-arm-virtual03-daily-master
             current-parameters: false
@@ -63,8 +61,7 @@
               unstable-threshold: 'Failure'
           - project: functest-compass-arm-virtual-daily-master
             current-parameters: false
-            predefined-parameters:
-              DEPLOY_SCENARIO='k8-nosdn-nofeature-ha'
+            predefined-parameters: DEPLOY_SCENARIO='k8-nosdn-nofeature-ha'
             same-node: true
             block: true
             block-thresholds:
@@ -111,8 +108,7 @@
           wipe-workspace: true
 
     builders:
-      - shell:
-          !include-raw: arm64/deploy-cni.sh
+      - shell: !include-raw: arm64/deploy-cni.sh
 
 
 - trigger:
@@ -120,7 +116,7 @@
     triggers:
       - timed: '0 12 * * *'
 - trigger:
-    name: 'trigger-deploy-virtual-gambia'
+    name: 'trigger-deploy-virtual-hunter'
     triggers:
       - timed: '0 18 * * *'
 - trigger:
@@ -128,6 +124,6 @@
     triggers:
       - timed: '0 12 * * *'
 - trigger:
-    name: 'trigger-deploy-baremetal-gambia'
+    name: 'trigger-deploy-baremetal-hunter'
     triggers:
       - timed: '0 18 * * *'
