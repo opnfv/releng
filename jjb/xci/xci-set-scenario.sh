@@ -28,12 +28,15 @@ set -x
 # Pattern to be searched in Commit Message
 #   deploy-scenario:<scenario-name>
 #   installer-type:<installer-type>
+#   xci-flavor:<xci-flavor>
 # Examples:
 #   deploy-scenario:os-odl-nofeature
 #   installer-type:osa
 #
 #   deploy-scenario:k8-nosdn-nofeature
 #   installer-type:kubespray
+#
+#   xci-flavor:mini
 #
 # Patterns to be searched in topic branch name
 #   skip-verify
@@ -80,6 +83,28 @@ function override_scenario() {
     else
         echo "Installer type or deploy scenario is not specified. Falling back to programmatically determining them."
     fi
+
+    # process commit message for XCI Flavor
+    if [[ "$GERRIT_CHANGE_COMMIT_MESSAGE" =~ "xci-flavor:" ]]; then
+        XCI_FLAVOR=$(echo $GERRIT_CHANGE_COMMIT_MESSAGE | awk '/xci-flavor:/' RS=" " | cut -d":" -f2)
+
+        if [[ -z "$XCI_FLAVOR" ]]; then
+            XCI_FLAVOR='mini'
+            echo "XCI flavor is not specified. The default is specified instead (i.e. mini). Falling back to programmatically determining them."
+            echo "XCI_FLAVOR=mini" >> $WORK_DIRECTORY/scenario.properties
+            exit 0
+        else
+            echo "Recording the XCI flavor '$XCI_FLAVOR' for downstream jobs"
+            echo "XCI_FLAVOR=$XCI_FLAVOR" >> $WORK_DIRECTORY/scenario.properties
+            exit 0
+        fi
+    else
+        XCI_FLAVOR='mini'
+        echo "XCI flavor is not specified. The default is specified instead (i.e. mini). Falling back to programmatically determining them."
+        echo "XCI_FLAVOR=mini" >> $WORK_DIRECTORY/scenario.properties
+        exit 0
+    fi
+
 }
 
 # This function determines the default scenario for changes coming to releng-xci
@@ -194,11 +219,12 @@ case ${DEPLOY_SCENARIO[0]} in
         ;;
 esac
 
-# save the installer and scenario names into java properties file
+# save the installer, scenario and XCI flavor names into java properties file
 # so they can be injected to downstream jobs via envInject
 echo "Recording the installer '$INSTALLER_TYPE' and scenario '${DEPLOY_SCENARIO[0]}' and SHAs for downstream jobs"
 echo "INSTALLER_TYPE=$INSTALLER_TYPE" > $WORK_DIRECTORY/scenario.properties
 echo "DEPLOY_SCENARIO=$DEPLOY_SCENARIO" >> $WORK_DIRECTORY/scenario.properties
+echo "XCI_FLAVOR=$XCI_FLAVOR" >> $WORK_DIRECTORY/scenario.properties
 echo "XCI_SHA=$XCI_SHA" >> $WORK_DIRECTORY/scenario.properties
 echo "SCENARIO_SHA=$SCENARIO_SHA" >> $WORK_DIRECTORY/scenario.properties
 echo "PROJECT_NAME=$GERRIT_PROJECT" >> $WORK_DIRECTORY/scenario.properties
