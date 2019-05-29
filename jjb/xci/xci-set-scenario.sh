@@ -28,12 +28,15 @@ set -x
 # Pattern to be searched in Commit Message
 #   deploy-scenario:<scenario-name>
 #   installer-type:<installer-type>
+#   xci-flavor:<xci-flavor>
 # Examples:
 #   deploy-scenario:os-odl-nofeature
 #   installer-type:osa
 #
 #   deploy-scenario:k8-nosdn-nofeature
 #   installer-type:kubespray
+#
+#   xci-flavor:mini
 #
 # Patterns to be searched in topic branch name
 #   skip-verify
@@ -153,6 +156,45 @@ function determine_scenario() {
     SCENARIO_SHA=$(cd $WORK_DIRECTORY/$GERRIT_PROJECT && git rev-parse HEAD)
 }
 
+# This function allows developers to specify the specific XCI flavor for the
+# impacted scenario by adding the XCI Flavor info about the specific scenario.
+# This results in either skipping the real verification
+# totally or skipping the determining the installer and scenario programmatically.
+# It is important to note that this feature is only available to generic scenarios
+# and only single installer/scenario pair is allowed.
+# The input in commit message should be placed at the end of the commit message body,
+# before the signed-off and change-id lines.
+#
+# Pattern to be searched in Commit Message
+#   xci-flavor:<xci-flavor>
+# Examples:
+#   xci-flavor:noha
+function override_xci_flavor() {
+    echo "Processing $GERRIT_PROJECT patchset $GERRIT_REFSPEC"
+
+    # process commit message for XCI Flavor
+    if [[ "$GERRIT_CHANGE_COMMIT_MESSAGE" =~ "xci-flavor:" ]]; then
+        XCI_FLAVOR=$(echo $GERRIT_CHANGE_COMMIT_MESSAGE | awk '/xci-flavor:/' RS=" " | cut -d":" -f2)
+
+        if [[ -z "$XCI_FLAVOR" ]]; then
+            XCI_FLAVOR='mini'
+            echo "XCI flavor is not specified. The default is specified instead (i.e. mini). Falling back to programmatically determining them."
+            echo "XCI_FLAVOR=mini" >> $WORK_DIRECTORY/scenario.properties
+            exit 0
+        else
+            echo "Recording the XCI flavor '$XCI_FLAVOR' for downstream jobs"
+            echo "XCI_FLAVOR=$XCI_FLAVOR" >> $WORK_DIRECTORY/scenario.properties
+            exit 0
+        fi
+    else
+        XCI_FLAVOR='mini'
+        echo "XCI flavor is not specified. The default is specified instead (i.e. mini). Falling back to programmatically determining them."
+        echo "XCI_FLAVOR=mini" >> $WORK_DIRECTORY/scenario.properties
+        exit 0
+    fi
+
+}
+
 echo "Determining the impacted scenario"
 
 declare -a DEPLOY_SCENARIO
@@ -169,6 +211,7 @@ if [[ $GERRIT_PROJECT == "releng-xci" ]]; then
     determine_default_scenario
 else
     determine_scenario
+    override_xci_flavor
 fi
 override_scenario
 
