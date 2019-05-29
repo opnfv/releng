@@ -28,12 +28,15 @@ set -x
 # Pattern to be searched in Commit Message
 #   deploy-scenario:<scenario-name>
 #   installer-type:<installer-type>
+#   xci-flavor:<xci-flavor>
 # Examples:
 #   deploy-scenario:os-odl-nofeature
 #   installer-type:osa
 #
 #   deploy-scenario:k8-nosdn-nofeature
 #   installer-type:kubespray
+#
+#   xci-flavor:mini
 #
 # Patterns to be searched in topic branch name
 #   skip-verify
@@ -62,23 +65,25 @@ function override_scenario() {
     fi
 
     # process commit message
-    if [[ "$GERRIT_CHANGE_COMMIT_MESSAGE" =~ "installer-type:" && "$GERRIT_CHANGE_COMMIT_MESSAGE" =~ "deploy-scenario:" ]]; then
+    if [[ "$GERRIT_CHANGE_COMMIT_MESSAGE" =~ "installer-type:" && "$GERRIT_CHANGE_COMMIT_MESSAGE" =~ "deploy-scenario:" && "$GERRIT_CHANGE_COMMIT_MESSAGE" =~ "xci-flavor:" ]]; then
         INSTALLER_TYPE=$(echo $GERRIT_CHANGE_COMMIT_MESSAGE | awk '/installer-type:/' RS=" " | cut -d":" -f2)
         DEPLOY_SCENARIO=$(echo $GERRIT_CHANGE_COMMIT_MESSAGE | awk '/deploy-scenario:/' RS=" " | cut -d":" -f2)
+        XCI_FLAVOR=$(echo $GERRIT_CHANGE_COMMIT_MESSAGE | awk '/xci-flavor:/' RS=" " | cut -d":" -f2)
 
-        if [[ -z "$INSTALLER_TYPE" || -z "$DEPLOY_SCENARIO" ]]; then
-            echo "Installer type or deploy scenario is not specified. Falling back to programmatically determining them."
+        if [[ -z "$INSTALLER_TYPE" || -z "$DEPLOY_SCENARIO" || -z "$XCI_FLAVOR" ]]; then
+            echo "Installer type or deploy scenario or XCI flavor is not specified. Falling back to programmatically determining them."
         else
-            echo "Recording the installer '$INSTALLER_TYPE' and scenario '$DEPLOY_SCENARIO' for downstream jobs"
+            echo "Recording the installer '$INSTALLER_TYPE' and scenario '$DEPLOY_SCENARIO' and XCI flavor '$XCI_FLAVOR' for downstream jobs"
             echo "INSTALLER_TYPE=$INSTALLER_TYPE" > $WORK_DIRECTORY/scenario.properties
             echo "DEPLOY_SCENARIO=$DEPLOY_SCENARIO" >> $WORK_DIRECTORY/scenario.properties
+            echo "XCI_FLAVOR=$XCI_FLAVOR" >> $WORK_DIRECTORY/scenario.properties
             echo "XCI_SHA=$XCI_SHA" >> $WORK_DIRECTORY/scenario.properties
             echo "SCENARIO_SHA=$SCENARIO_SHA" >> $WORK_DIRECTORY/scenario.properties
             echo "PROJECT_NAME=$GERRIT_PROJECT" >> $WORK_DIRECTORY/scenario.properties
             exit 0
         fi
     else
-        echo "Installer type or deploy scenario is not specified. Falling back to programmatically determining them."
+        echo "Installer type or deploy scenario or XCI flavor is not specified. Falling back to programmatically determining them."
     fi
 }
 
@@ -194,11 +199,12 @@ case ${DEPLOY_SCENARIO[0]} in
         ;;
 esac
 
-# save the installer and scenario names into java properties file
+# save the installer, scenario and XCI flavor names into java properties file
 # so they can be injected to downstream jobs via envInject
 echo "Recording the installer '$INSTALLER_TYPE' and scenario '${DEPLOY_SCENARIO[0]}' and SHAs for downstream jobs"
 echo "INSTALLER_TYPE=$INSTALLER_TYPE" > $WORK_DIRECTORY/scenario.properties
 echo "DEPLOY_SCENARIO=$DEPLOY_SCENARIO" >> $WORK_DIRECTORY/scenario.properties
+echo "XCI_FLAVOR=$XCI_FLAVOR" >> $WORK_DIRECTORY/scenario.properties
 echo "XCI_SHA=$XCI_SHA" >> $WORK_DIRECTORY/scenario.properties
 echo "SCENARIO_SHA=$SCENARIO_SHA" >> $WORK_DIRECTORY/scenario.properties
 echo "PROJECT_NAME=$GERRIT_PROJECT" >> $WORK_DIRECTORY/scenario.properties
