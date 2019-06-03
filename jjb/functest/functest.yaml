@@ -99,13 +99,18 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
+          if [ "{tag}" = "latest" ]; then
+            py=3.6
+          else
+            py=2.7
+          fi
           sudo docker run --rm \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEBUG=True \
             -e EXTERNAL_NETWORK=public \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
-            -v /home/opnfv/functest/blacklist.yaml:/usr/lib/python2.7/\
+            -v /home/opnfv/functest/blacklist.yaml:/usr/lib/python$py/\
           site-packages/functest/opnfv_tests/openstack/rally/blacklist.yaml \
             $image run_tests -t {test}
           res=$?
