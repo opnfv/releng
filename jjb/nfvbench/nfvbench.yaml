@@ -44,8 +44,7 @@
       - gerrit:
           server-name: 'gerrit.opnfv.org'
           trigger-on:
-            - comment-added-contains-event:
-                comment-contains-value: 'buildvm'
+            - change-merged-event
           projects:
             - project-compare-type: 'ANT'
               project-pattern: '{project}'
@@ -96,3 +95,5 @@
     builders:
       - shell: |
           cd $WORKSPACE && tox
+          cd $WORKSPACE/nfvbenchvm/dib
+          bash verify-image.sh -v
