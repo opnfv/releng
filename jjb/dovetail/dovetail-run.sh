@@ -206,13 +206,13 @@ get_fuel_baremetal_pod_file() {
 
     cat << EOF >${POD}
 nodes:
-- {ip: ${INSTALLER_IP}, name: node0, key_filename: /home/opnfv/userconfig/pre_config/id_rsa,
+- {ip: ${INSTALLER_IP}, name: node0, key_filename: ${DOVETAIL_CONFIG}/id_rsa,
    role: Jumpserver, user: ${ssh_user}}
-- {ip: ${fuel_ctl_ip}, name: node1, key_filename: /home/opnfv/userconfig/pre_config/id_rsa,
+- {ip: ${fuel_ctl_ip}, name: node1, key_filename: ${DOVETAIL_CONFIG}/id_rsa,
    role: controller, user: ${ssh_user}, ipmi_ip: ${ipmiIp}, ipmi_user: ${ipmiUser}, ipmi_password: ${ipmiPass}}
-- {ip: ${fuel_msg_ip}, name: msg01, key_filename: /home/opnfv/userconfig/pre_config/id_rsa, role: controller, user: ${ssh_user}}
-- {ip: ${fuel_cmp_ip}, name: cmp01, key_filename: /home/opnfv/userconfig/pre_config/id_rsa, role: controller, user: ${ssh_user}}
-- {ip: ${fuel_dbs_ip}, name: dbs01, key_filename: /home/opnfv/userconfig/pre_config/id_rsa, role: controller, user: ${ssh_user}}
+- {ip: ${fuel_msg_ip}, name: msg01, key_filename: ${DOVETAIL_CONFIG}/id_rsa, role: controller, user: ${ssh_user}}
+- {ip: ${fuel_cmp_ip}, name: cmp01, key_filename: ${DOVETAIL_CONFIG}/id_rsa, role: controller, user: ${ssh_user}}
+- {ip: ${fuel_dbs_ip}, name: dbs01, key_filename: ${DOVETAIL_CONFIG}/id_rsa, role: controller, user: ${ssh_user}}
 EOF
 }
 
@@ -241,7 +241,7 @@ get_pod_file_with_scripts() {
 
     cmd="sudo python ${releng_repo}/utils/create_pod_file.py -t ${INSTALLER_TYPE} \
          -i ${INSTALLER_IP} ${options} -f ${POD} \
-         -s /home/opnfv/userconfig/pre_config/id_rsa"
+         -s ${DOVETAIL_CONFIG}/id_rsa"
     echo "INFO: cmd is ${cmd}"
     ${cmd}
 
