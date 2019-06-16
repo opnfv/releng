@@ -99,7 +99,7 @@
           docker run --rm \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEPLOY_SCENARIO=k8-nosdn-nofeature-noha \
-            -v /home/opnfv/functest-kubernetes/config:/root/.kube/config \
+            -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
             $image run_tests -t {test}
           res=$?
           gsutil -m cp -r $WORKSPACE/ \
