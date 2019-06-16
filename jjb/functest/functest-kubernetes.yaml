@@ -8,17 +8,22 @@
     repo: 'opnfv'
     port:
     tag:
+      - latest:
+          branch: master
+          slave: lf-virtual8
       - iruya:
           branch: stable/iruya
+          slave: lf-virtual7
       - hunter:
           branch: stable/hunter
+          slave: lf-virtual5
 
 - parameter:
     name: functest-kubernetes-slave
     parameters:
       - label:
           name: slave
-          default: functest-virtual
+          default: '{slave}'
 
 - parameter:
     name: functest-kubernetes-branch
@@ -85,9 +90,7 @@
     name: functest-kubernetes-run-containers
     builders:
       - shell: |
-          set +e
-          set -x
-          echo $WORKSPACE
+          set +ex
           [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -103,7 +106,7 @@
             $image run_tests -t {test}
           res=$?
           gsutil -m cp -r $WORKSPACE/ \
-            gs://artifacts.opnfv.org/functest-kubernetes/$JOB_NAME-$BUILD_ID
+            gs://artifacts.opnfv.org/functest-kubernetes/$JOB_NAME-$BUILD_ID > /dev/null 2>&1
           find $WORKSPACE -type f \
             -printf \
             "http://artifacts.opnfv.org/functest-kubernetes/$JOB_NAME-$BUILD_ID/%P\n"
@@ -135,7 +138,8 @@
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-pull'
     parameters:
-      - functest-kubernetes-slave
+      - functest-kubernetes-slave:
+          slave: '{slave}'
     builders:
       - functest-kubernetes-pull-containers:
           <<: *functest-kubernetes-containers
@@ -164,7 +168,8 @@
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
     parameters:
-      - functest-kubernetes-slave
+      - functest-kubernetes-slave:
+          slave: '{slave}'
     builders:
       - functest-kubernetes-remove-images:
           <<: *functest-kubernetes-containers
@@ -193,7 +198,8 @@
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
     parameters:
-      - functest-kubernetes-slave
+      - functest-kubernetes-slave:
+          slave: '{slave}'
     builders:
       - functest-kubernetes-run-containers:
           <<: *functest-kubernetes-run-containers
@@ -232,13 +238,14 @@
     triggers:
       - timed: '@daily'
     parameters:
-      - functest-kubernetes-slave
+      - functest-kubernetes-slave:
+          slave: '{slave}'
     properties:
       - build-blocker:
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^(functest|functest-kubernetes)-[a-z]+-(daily|check|gate)$'
+            - '^functest-kubernetes-{tag}-(daily|check|gate)$'
     builders:
       - multijob:
           name: remove former images
@@ -279,7 +286,8 @@
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-gate'
     parameters:
-      - functest-kubernetes-slave
+      - functest-kubernetes-slave:
+          slave: '{slave}'
     scm:
       - functest-kubernetes-scm:
           ref: $GERRIT_REFSPEC
@@ -291,7 +299,8 @@
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-check'
     parameters:
-      - functest-kubernetes-slave
+      - functest-kubernetes-slave:
+          slave: '{slave}'
       - functest-kubernetes-branch:
           branch: '{branch}'
     scm:
@@ -308,6 +317,7 @@
     port:
     container: golang
     tag: alpine3.9
+    slave: master
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
 
@@ -317,6 +327,7 @@
     port:
     container: golang
     tag: alpine3.9
+    slave: master
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
 
@@ -364,7 +375,8 @@
     name: 'functest-kubernetes-{tag}-check'
     project-type: multijob
     parameters:
-      - functest-kubernetes-slave
+      - functest-kubernetes-slave:
+          slave: '{slave}'
       - functest-kubernetes-branch:
           branch: '{branch}'
     properties:
@@ -372,7 +384,7 @@
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^(functest|functest-kubernetes)-[a-z]+-(daily|check|gate)$'
+            - '^functest-kubernetes-{tag}-(daily|check|gate)$'
     builders:
       - multijob:
           name: remove former images
@@ -458,13 +470,14 @@
       - functest-kubernetes-patchset-created:
           branch: '{branch}'
     parameters:
-      - functest-kubernetes-slave
+      - functest-kubernetes-slave:
+          slave: '{slave}'
     properties:
       - build-blocker:
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^(functest|functest-kubernetes)-[a-z]+-(daily|check|gate)$'
+            - '^functest-kubernetes-{tag}-(daily|check|gate)$'
     builders:
       - multijob:
           name: remove former images
