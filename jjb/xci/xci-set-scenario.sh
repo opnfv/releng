@@ -208,8 +208,8 @@ if [[ $GERRIT_PROJECT == "releng-xci" ]]; then
     determine_default_scenario
 else
     determine_scenario
-    override_xci_flavor
 fi
+override_xci_flavor
 override_scenario
 
 # ensure single scenario is impacted
