@@ -106,7 +106,7 @@
             -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
             $image run_tests -t {test}
           res=$?
-          gsutil -m cp -r $WORKSPACE/ \
+          gsutil -dd -m cp -r $WORKSPACE/ \
             gs://artifacts.opnfv.org/functest-kubernetes/$JOB_NAME-$BUILD_ID
           find $WORKSPACE -type f \
             -printf \
