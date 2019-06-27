@@ -11,22 +11,6 @@
       stream: master
       branch: '{stream}'
       disabled: false
-    danube: &danube
-      stream: danube
-      branch: 'stable/{stream}'
-      disabled: false
-    euphrates: &euphrates
-      stream: euphrates
-      branch: 'stable/{stream}'
-      disabled: false
-    fraser: &fraser
-      stream: fraser
-      branch: 'stable/{stream}'
-      disabled: false
-    gambia: &gambia
-      stream: gambia
-      branch: 'stable/{stream}'
-      disabled: false
     hunter: &hunter
       stream: hunter
       branch: 'stable/{stream}'
@@ -284,135 +268,90 @@
           <<: *master
           <<: *yardstick-receivers
 
-      # projects with jobs for euphrates
+      # projects with jobs for hunter
       - 'barometer-dma':
           project: 'barometer'
           dockerdir: 'docker/barometer-dma'
-          <<: *gambia
+          <<: *hunter
           <<: *other-receivers
       - 'barometer-collectd':
           project: 'barometer'
           dockerdir: 'docker/barometer-collectd'
-          <<: *gambia
+          <<: *hunter
           <<: *other-receivers
       - 'barometer-collectd-master':
           project: 'barometer'
           dockerdir: '.'
           dockerfile: 'docker/barometer-collectd-master/Dockerfile'
-          <<: *gambia
+          <<: *hunter
           <<: *other-receivers
       - 'barometer-grafana':
           project: 'barometer'
           dockerdir: 'docker/barometer-grafana'
-          <<: *gambia
+          <<: *hunter
           <<: *other-receivers
       - 'barometer-influxdb':
           project: 'barometer'
           dockerdir: 'docker/barometer-influxdb'
-          <<: *gambia
+          <<: *hunter
           <<: *other-receivers
       - 'barometer-kafka':
           project: 'barometer'
           dockerdir: 'docker/barometer-kafka'
-          <<: *gambia
+          <<: *hunter
           <<: *other-receivers
       - 'barometer-ves':
           project: 'barometer'
           dockerdir: 'docker/barometer-ves'
-          <<: *gambia
+          <<: *hunter
           <<: *other-receivers
       - 'barometer-snmp':
           project: 'barometer'
           dockerdir: 'docker/barometer-snmp'
-          <<: *gambia
+          <<: *hunter
           <<: *other-receivers
       - 'bottlenecks':
           project: 'bottlenecks'
-          <<: *gambia
+          <<: *hunter
           <<: *other-receivers
       - 'nfvbench':
           project: 'nfvbench'
-          <<: *fraser
-          <<: *other-receivers
-      - 'qtip':
-          project: 'qtip'
-          dockerdir: '.'
-          dockerfile: 'docker/Dockerfile.local'
-          <<: *fraser
+          <<: *hunter
           <<: *other-receivers
       - 'storperf-master':
           project: 'storperf'
           dockerdir: 'docker/storperf-master'
           arch_tag: 'x86_64'
-          <<: *gambia
+          <<: *hunter
           <<: *storperf-receivers
       - 'storperf-graphite':
           project: 'storperf'
           dockerdir: 'docker/storperf-graphite'
           arch_tag: 'x86_64'
-          <<: *gambia
+          <<: *hunter
           <<: *storperf-receivers
       - 'storperf-httpfrontend':
           project: 'storperf'
           dockerdir: 'docker/storperf-httpfrontend'
           arch_tag: 'x86_64'
-          <<: *gambia
+          <<: *hunter
           <<: *storperf-receivers
       - 'storperf-reporting':
           project: 'storperf'
           dockerdir: 'docker/storperf-reporting'
           arch_tag: 'x86_64'
-          <<: *gambia
+          <<: *hunter
           <<: *storperf-receivers
       - 'storperf-swaggerui':
           project: 'storperf'
           dockerdir: 'docker/storperf-swaggerui'
           arch_tag: 'x86_64'
-          <<: *gambia
+          <<: *hunter
           <<: *storperf-receivers
       - 'yardstick':
           project: 'yardstick'
           <<: *hunter
           <<: *yardstick-receivers
-      # projects with jobs for fraser
-      - 'bottlenecks':
-          project: 'bottlenecks'
-          <<: *hunter
-          <<: *other-receivers
-      - 'clover':
-          project: 'clover'
-          dockerdir: '.'
-          dockerfile: 'docker/Dockerfile'
-          <<: *fraser
-          <<: *other-receivers
-      - 'clover-ns-nginx-lb':
-          project: 'clover'
-          dockerdir: 'samples/services/nginx/docker'
-          dockerfile: 'subservices/lb/Dockerfile'
-          <<: *fraser
-          <<: *other-receivers
-      - 'clover-ns-nginx-proxy':
-          project: 'clover'
-          dockerdir: 'samples/services/nginx/docker'
-          dockerfile: 'subservices/proxy/Dockerfile'
-          <<: *fraser
-          <<: *other-receivers
-      - 'clover-ns-nginx-server':
-          project: 'clover'
-          dockerdir: 'samples/services/nginx/docker'
-          dockerfile: 'subservices/server/Dockerfile'
-          <<: *fraser
-          <<: *other-receivers
-      - 'clover-ns-snort-ids':
-          project: 'clover'
-          dockerdir: 'samples/services/snort_ids/docker'
-          dockerfile: 'Dockerfile'
-          <<: *fraser
-          <<: *other-receivers
-      - 'dovetail':
-          project: 'dovetail'
-          <<: *fraser
-          <<: *other-receivers
     # yamllint enable rule:key-duplicates
     jobs:
       - "{dockerrepo}-docker-build-push-{stream}"
