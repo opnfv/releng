@@ -11,11 +11,7 @@
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
-      - gambia: &gambia
-          branch: 'stable/{stream}'
-          gs-pathname: '/{stream}'
-          disabled: false
-      - fraser:
+      - hunter:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           disabled: false
@@ -63,10 +59,10 @@
 
     builders:
       - shell: |
-         #!/bin/bash
-         # we do nothing here as the main stuff will be done
-         # in phase jobs
-         echo "Triggering phase jobs!"
+          #!/bin/bash
+          # we do nothing here as the main stuff will be done
+          # in phase jobs
+          echo "Triggering phase jobs!"
       - multijob:
           name: 'doctor-verify-sample'
           execution-type: PARALLEL
@@ -227,10 +223,9 @@
     name: 'doctor-verify-installer-inspector-builders-macro'
     builders:
       # yamllint disable rule:indentation
-      - shell:
-          !include-raw:
-              - ./doctor-env-presetup.sh
-              - ../../utils/fetch_os_creds.sh
+      - shell: !include-raw:
+          - ./doctor-env-presetup.sh
+          - ../../utils/fetch_os_creds.sh
       - shell: |
           # prepare the env for test
           source $HOME/opnfv-openrc.sh
