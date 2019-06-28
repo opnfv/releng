@@ -15,5 +15,5 @@ docker-compose up -d
 
 # Copy JIRA keys into web container
 WEB_CONTAINER="$(docker ps --filter 'name=dg01' -q)"
-docker cp $HOME/rsa.pub $WEB_CONTAINER:/pharos_dashboard/account/
-docker cp $HOME/rsa.pem $WEB_CONTAINER:/pharos_dashboard/account/
+docker cp $HOME/rsa.pub $WEB_CONTAINER:/laas_dashboard/account/
+docker cp $HOME/rsa.pem $WEB_CONTAINER:/laas_dashboard/account/
