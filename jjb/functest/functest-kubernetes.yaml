@@ -90,8 +90,7 @@
     name: functest-kubernetes-run-containers
     builders:
       - shell: |
-          set +e
-          set -x
+          set +ex
           [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -106,8 +105,8 @@
             -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
             $image run_tests -t {test}
           res=$?
-          gsutil -dd -m cp -r $WORKSPACE/ \
-            gs://artifacts.opnfv.org/functest-kubernetes/$JOB_NAME-$BUILD_ID
+          gsutil -m cp -r $WORKSPACE/ \
+            gs://artifacts.opnfv.org/functest-kubernetes/$JOB_NAME-$BUILD_ID > /dev/null 2>&1
           find $WORKSPACE -type f \
             -printf \
             "http://artifacts.opnfv.org/functest-kubernetes/$JOB_NAME-$BUILD_ID/%P\n"
