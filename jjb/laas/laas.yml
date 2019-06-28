@@ -1,9 +1,9 @@
 ---
 - project:
-    name: pharos-dashboard-jobs
+    name: laas-dashboard-jobs
 
-    project: 'pharos-tools'
-    project-name: 'pharos-tools'
+    project: 'laas'
+    project-name: 'laas'
 
     stream:
       - master
@@ -11,14 +11,14 @@
     disabled: false
 
     jobs:
-      - 'pharos-dashboard-backup'
-      - 'pharos-dashboard-deploy'
+      - 'laas-dashboard-backup'
+      - 'las-dashboard-deploy'
 
 - project:
-    name: pharos-dashboard-verify
+    name: laas-dashboard-verify
 
-    project: 'pharos-tools'
-    project-name: 'pharos-tools'
+    project: 'laas'
+    project-name: 'laas'
     build-days-to-keep: 7
     tox-dir: 'dashboard'
 
@@ -31,12 +31,12 @@
       - 'gerrit-tox-verify'
 
 - job-template:
-    name: 'pharos-dashboard-backup'
+    name: 'laas-dashboard-backup'
 
     disabled: '{obj:disabled}'
 
     parameters:
-      - 'pharos-dashboard-defaults'
+      - 'laas-dashboard-defaults'
 
     triggers:
       - timed: '@daily'
@@ -46,7 +46,7 @@
           !include-raw: shell/backup-dashboard.sh
 
 - job-template:
-    name: 'pharos-dashboard-deploy'
+    name: 'laas-dashboard-deploy'
 
     disabled: '{obj:disabled}'
 
@@ -54,7 +54,7 @@
       - project-parameter:
           project: '{project}'
           branch: 'master'
-      - 'pharos-dashboard-defaults'
+      - 'laas-dashboard-defaults'
 
     scm:
       - git-scm-gerrit
