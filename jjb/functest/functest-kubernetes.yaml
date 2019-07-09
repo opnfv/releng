@@ -219,6 +219,7 @@
     container: 'functest-kubernetes-smoke'
     test:
       - k8s_conformance
+      - xrally_kubernetes
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
 
@@ -274,6 +275,8 @@
           name: opnfv/functest-kubernetes-smoke:{tag}
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-features:{tag}
@@ -432,6 +435,8 @@
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
               <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
+              <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-features:{tag}
           projects:
@@ -524,6 +529,8 @@
           name: opnfv/functest-kubernetes-smoke:{tag}
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-features:{tag}
