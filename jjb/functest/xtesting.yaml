@@ -10,17 +10,20 @@
     tag:
       - latest:
           branch: master
+          slave: lf-build2
       - iruya:
           branch: stable/iruya
+          slave: lf-build2
       - hunter:
           branch: stable/hunter
+          slave: lf-build2
 
 - parameter:
     name: xtesting-slave
     parameters:
       - label:
           name: slave
-          default: lf-build2
+          default: '{slave}'
 
 - parameter:
     name: xtesting-branch
@@ -134,7 +137,8 @@
 - job-template:
     name: 'xtesting-{repo}-{container}-{tag}-pull'
     parameters:
-      - xtesting-slave
+      - xtesting-slave:
+          slave: '{slave}'
     builders:
       - xtesting-pull-containers:
           <<: *xtesting-containers
@@ -149,7 +153,8 @@
 - job-template:
     name: 'xtesting-{repo}-{container}-{tag}-rmi'
     parameters:
-      - xtesting-slave
+      - xtesting-slave:
+          slave: '{slave}'
     builders:
       - xtesting-remove-images:
           <<: *xtesting-containers
@@ -164,7 +169,8 @@
 - job-template:
     name: 'xtesting-{repo}-{container}-{tag}-{test}-run'
     parameters:
-      - xtesting-slave
+      - xtesting-slave:
+          slave: '{slave}'
     builders:
       - xtesting-run-containers:
           <<: *xtesting-run-containers
@@ -179,6 +185,7 @@
       - third
       - fourth
       - fifth
+      - sixth
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-{test}-run'
 
@@ -188,13 +195,14 @@
     triggers:
       - timed: '@daily'
     parameters:
-      - xtesting-slave
+      - xtesting-slave:
+          slave: '{slave}'
     properties:
       - build-blocker:
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-[a-z]+-(daily|check|gate)$'
+            - '^xtesting-{tag}-(daily|check|gate)$'
     builders:
       - multijob:
           name: remove former images
@@ -219,11 +227,14 @@
               <<: *xtesting-jobs
             - name: 'xtesting-opnfv-xtesting-{tag}-fifth-run'
               <<: *xtesting-jobs
+            - name: 'xtesting-opnfv-xtesting-{tag}-sixth-run'
+              <<: *xtesting-jobs
 
 - job-template:
     name: 'xtesting-{repo}-{container}-{tag}-gate'
     parameters:
-      - xtesting-slave
+      - xtesting-slave:
+          slave: '{slave}'
     scm:
       - xtesting-scm:
           ref: $GERRIT_REFSPEC
@@ -235,7 +246,8 @@
 - job-template:
     name: 'xtesting-{repo}-{container}-{tag}-check'
     parameters:
-      - xtesting-slave
+      - xtesting-slave:
+          slave: '{slave}'
       - xtesting-branch:
           branch: '{branch}'
     scm:
@@ -252,6 +264,7 @@
     port:
     container: alpine
     tag: 3.9
+    slave: master
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-rmi'
 
@@ -261,6 +274,7 @@
     port:
     container: alpine
     tag: 3.9
+    slave: master
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-pull'
 
@@ -278,7 +292,8 @@
     name: 'xtesting-{tag}-check'
     project-type: multijob
     parameters:
-      - xtesting-slave
+      - xtesting-slave:
+          slave: '{slave}'
       - xtesting-branch:
           branch: '{branch}'
     properties:
@@ -286,7 +301,7 @@
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-[a-z]+-(daily|check|gate)$'
+            - '^xtesting-{tag}-(daily|check|gate)$'
     builders:
       - multijob:
           name: remove former images
@@ -304,7 +319,7 @@
             - name: 'xtesting-_-alpine-3.9-pull'
               <<: *xtesting-jobs
       - multijob:
-          name: opnfv/functest-xtesting
+          name: opnfv/xtesting
           projects:
             - name: 'xtesting-opnfv-xtesting-{tag}-check'
               <<: *xtesting-jobs
@@ -320,6 +335,8 @@
             - name: 'xtesting-opnfv-xtesting-{tag}-fourth-run'
               <<: *xtesting-jobs
             - name: 'xtesting-opnfv-xtesting-{tag}-fifth-run'
+              <<: *xtesting-jobs
+            - name: 'xtesting-opnfv-xtesting-{tag}-sixth-run'
               <<: *xtesting-jobs
 
 - trigger:
@@ -352,13 +369,14 @@
       - xtesting-patchset-created:
           branch: '{branch}'
     parameters:
-      - xtesting-slave
+      - xtesting-slave:
+          slave: '{slave}'
     properties:
       - build-blocker:
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-[a-z]+-(daily|check|gate)$'
+            - '^xtesting-{tag}-(daily|check|gate)$'
     builders:
       - multijob:
           name: remove former images
@@ -376,7 +394,7 @@
             - name: 'xtesting-_-alpine-3.9-pull'
               <<: *xtesting-jobs
       - multijob:
-          name: opnfv/functest-xtesting
+          name: opnfv/xtesting
           projects:
             - name: 'xtesting-opnfv-xtesting-{tag}-gate'
               <<: *xtesting-jobs
@@ -392,6 +410,8 @@
             - name: 'xtesting-opnfv-xtesting-{tag}-fourth-run'
               <<: *xtesting-jobs
             - name: 'xtesting-opnfv-xtesting-{tag}-fifth-run'
+              <<: *xtesting-jobs
+            - name: 'xtesting-opnfv-xtesting-{tag}-sixth-run'
               <<: *xtesting-jobs
 
 - project:
