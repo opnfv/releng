@@ -100,7 +100,7 @@
             image={repo}:{port}/{container}:{tag}
           fi
           if [ "{tag}" = "latest" ]; then
-            py=3.6
+            py=3.7
           else
             py=2.7
           fi
@@ -496,21 +496,21 @@
           ref: $branch
 
 - project:
-    name: 'functest-_-alpine-3.9-rmi'
+    name: 'functest-_-alpine-3.10-rmi'
     repo: _
     port:
     container: alpine
-    tag: 3.9
+    tag: 3.10
     slave: master
     jobs:
       - 'functest-{repo}-{container}-{tag}-rmi'
 
 - project:
-    name: 'functest-_-alpine-3.9-pull'
+    name: 'functest-_-alpine-3.10-pull'
     repo: _
     port:
     container: alpine
-    tag: 3.9
+    tag: 3.10
     slave: master
     jobs:
       - 'functest-{repo}-{container}-{tag}-pull'
@@ -618,12 +618,12 @@
       - multijob:
           name: remove dependencies
           projects:
-            - name: 'functest-_-alpine-3.9-rmi'
+            - name: 'functest-_-alpine-3.10-rmi'
               <<: *functest-jobs
       - multijob:
           name: pull dependencies
           projects:
-            - name: 'functest-_-alpine-3.9-pull'
+            - name: 'functest-_-alpine-3.10-pull'
               <<: *functest-jobs
       - multijob:
           name: build opnfv/functest-core
@@ -798,12 +798,12 @@
       - multijob:
           name: remove dependencies
           projects:
-            - name: 'functest-_-alpine-3.9-rmi'
+            - name: 'functest-_-alpine-3.10-rmi'
               <<: *functest-jobs
       - multijob:
           name: pull dependencies
           projects:
-            - name: 'functest-_-alpine-3.9-pull'
+            - name: 'functest-_-alpine-3.10-pull'
               <<: *functest-jobs
       - multijob:
           name: build opnfv/functest-core
