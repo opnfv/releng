@@ -13,6 +13,7 @@ set -o pipefail
 source /etc/os-release || source /usr/lib/os-release
 case ${ID,,} in
     ubuntu|debian)
+    sudo apt-get install mercurial
     sudo add-apt-repository -y ppa:longsleep/golang-backports
     sudo apt-get update
     sudo apt-get install -y build-essential golang-go
