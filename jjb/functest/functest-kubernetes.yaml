@@ -218,8 +218,8 @@
     <<: *functest-kubernetes-params
     container: 'functest-kubernetes-smoke'
     test:
-      - k8s_conformance
       - xrally_kubernetes
+      - k8s_conformance
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
     exclude:
@@ -321,21 +321,21 @@
           ref: $branch
 
 - project:
-    name: 'functest-kubernetes-_-golang-alpine3.9-rmi'
+    name: 'functest-kubernetes-_-golang-alpine3.10-rmi'
     repo: _
     port:
     container: golang
-    tag: alpine3.9
+    tag: 'alpine3.10'
     slave: master
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
 
 - project:
-    name: 'functest-kubernetes-_-golang-alpine3.9-pull'
+    name: 'functest-kubernetes-_-golang-alpine3.10-pull'
     repo: _
     port:
     container: golang
-    tag: alpine3.9
+    tag: 'alpine3.10'
     slave: master
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
@@ -407,12 +407,12 @@
       - multijob:
           name: remove dependencies
           projects:
-            - name: 'functest-kubernetes-_-golang-alpine3.9-rmi'
+            - name: 'functest-kubernetes-_-golang-alpine3.10-rmi'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: pull dependencies
           projects:
-            - name: 'functest-kubernetes-_-golang-alpine3.9-pull'
+            - name: 'functest-kubernetes-_-golang-alpine3.10-pull'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: build opnfv/functest-kubernetes-core
@@ -503,12 +503,12 @@
       - multijob:
           name: remove dependencies
           projects:
-            - name: 'functest-kubernetes-_-golang-alpine3.9-rmi'
+            - name: 'functest-kubernetes-_-golang-alpine3.10-rmi'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: pull dependencies
           projects:
-            - name: 'functest-kubernetes-_-golang-alpine3.9-pull'
+            - name: 'functest-kubernetes-_-golang-alpine3.10-pull'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: build opnfv/functest-kubernetes-core
