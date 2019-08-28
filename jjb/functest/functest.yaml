@@ -279,17 +279,22 @@
       - networking-bgpvpn
       - networking-sfc
       - barbican
+      - octavia
     exclude:
       - tag: latest
         test: refstack_defcore
       - tag: iruya
         test: refstack_defcore
+      - tag: iruya
+        test: octavia
       - tag: hunter
         test: refstack_compute
       - tag: hunter
         test: refstack_object
       - tag: hunter
         test: refstack_platform
+      - tag: hunter
+        test: octavia
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -427,6 +432,8 @@
             - name: 'functest-opnfv-functest-smoke-{tag}-networking-sfc-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-barbican-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-octavia-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{tag}
@@ -704,6 +711,8 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-barbican-run'
               <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-octavia-run'
+              <<: *functest-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{tag}
           projects:
@@ -883,6 +892,8 @@
             - name: 'functest-opnfv-functest-smoke-{tag}-networking-sfc-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-barbican-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-octavia-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{tag}
