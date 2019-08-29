@@ -110,6 +110,9 @@
             -e EXTERNAL_NETWORK=public \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
+            -v /home/opnfv/functest/tempest_blacklist.yaml:/usr/lib/python$py/\
+          site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/\
+          blacklist.yaml \
             -v /home/opnfv/functest/blacklist.yaml:/usr/lib/python$py/\
           site-packages/functest/opnfv_tests/openstack/rally/blacklist.yaml \
             $image run_tests -t {test}
@@ -274,6 +277,7 @@
       - refstack_platform
       - tempest_full
       - tempest_scenario
+      - tempest_slow
       - patrole
       - neutron_trunk
       - networking-bgpvpn
@@ -286,6 +290,8 @@
       - tag: iruya
         test: refstack_defcore
       - tag: iruya
+        test: tempest_slow
+      - tag: iruya
         test: octavia
       - tag: hunter
         test: refstack_compute
@@ -293,6 +299,8 @@
         test: refstack_object
       - tag: hunter
         test: refstack_platform
+      - tag: hunter
+        test: tempest_slow
       - tag: hunter
         test: octavia
     jobs:
@@ -422,6 +430,8 @@
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_full-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_scenario-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_slow-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-patrole-run'
               <<: *functest-jobs
@@ -701,6 +711,8 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_scenario-run'
               <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_slow-run'
+              <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-patrole-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-neutron_trunk-run'
@@ -882,6 +894,8 @@
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_full-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_scenario-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_slow-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-patrole-run'
               <<: *functest-jobs
