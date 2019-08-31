@@ -53,11 +53,12 @@ function override_scenario() {
     if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment|force-verify ]]; then
         [[ "$GERRIT_TOPIC" =~ force-verify ]] && echo "Forcing CI verification using default scenario and installer!"
         [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]] && echo "Skipping verification!"
-        echo "INSTALLER_TYPE=osa" > $WORK_DIRECTORY/scenario.properties
+        echo "INSTALLER_TYPE=osa" >> $WORK_DIRECTORY/scenario.properties
         echo "DEPLOY_SCENARIO=os-nosdn-nofeature" >> $WORK_DIRECTORY/scenario.properties
         echo "XCI_SHA=$XCI_SHA" >> $WORK_DIRECTORY/scenario.properties
         echo "SCENARIO_SHA=$SCENARIO_SHA" >> $WORK_DIRECTORY/scenario.properties
         echo "PROJECT_NAME=$GERRIT_PROJECT" >> $WORK_DIRECTORY/scenario.properties
+        log_scenario_properties
         exit 0
     fi
 
@@ -70,11 +71,12 @@ function override_scenario() {
             echo "Installer type or deploy scenario is not specified. Falling back to programmatically determining them."
         else
             echo "Recording the installer '$INSTALLER_TYPE' and scenario '$DEPLOY_SCENARIO' for downstream jobs"
-            echo "INSTALLER_TYPE=$INSTALLER_TYPE" > $WORK_DIRECTORY/scenario.properties
+            echo "INSTALLER_TYPE=$INSTALLER_TYPE" >> $WORK_DIRECTORY/scenario.properties
             echo "DEPLOY_SCENARIO=$DEPLOY_SCENARIO" >> $WORK_DIRECTORY/scenario.properties
             echo "XCI_SHA=$XCI_SHA" >> $WORK_DIRECTORY/scenario.properties
             echo "SCENARIO_SHA=$SCENARIO_SHA" >> $WORK_DIRECTORY/scenario.properties
             echo "PROJECT_NAME=$GERRIT_PROJECT" >> $WORK_DIRECTORY/scenario.properties
+            log_scenario_properties
             exit 0
         fi
     else
@@ -177,19 +179,23 @@ function override_xci_flavor() {
             XCI_FLAVOR='mini'
             echo "XCI flavor is not specified. The default is specified instead (i.e. mini). Falling back to programmatically determining them."
             echo "XCI_FLAVOR=mini" >> $WORK_DIRECTORY/scenario.properties
-            exit 0
         else
             echo "Recording the XCI flavor '$XCI_FLAVOR' for downstream jobs"
             echo "XCI_FLAVOR=$XCI_FLAVOR" >> $WORK_DIRECTORY/scenario.properties
-            exit 0
         fi
     else
         XCI_FLAVOR='mini'
         echo "XCI flavor is not specified. The default is specified instead (i.e. mini). Falling back to programmatically determining them."
         echo "XCI_FLAVOR=mini" >> $WORK_DIRECTORY/scenario.properties
-        exit 0
     fi
 
+}
+
+function log_scenario_properties() {
+    echo "Processing $GERRIT_PROJECT patchset $GERRIT_REFSPEC"
+    echo "-------------------------------------------------------------------------"
+    cat $WORK_DIRECTORY/scenario.properties
+    echo "-------------------------------------------------------------------------"
 }
 
 echo "Determining the impacted scenario"
@@ -208,8 +214,8 @@ if [[ $GERRIT_PROJECT == "releng-xci" ]]; then
     determine_default_scenario
 else
     determine_scenario
-    override_xci_flavor
 fi
+override_xci_flavor
 override_scenario
 
 # ensure single scenario is impacted
