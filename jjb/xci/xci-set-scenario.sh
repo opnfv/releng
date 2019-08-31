@@ -29,6 +29,9 @@ set -x
 #   deploy-scenario:<scenario-name>
 #   installer-type:<installer-type>
 # Examples:
+#   deploy-scenario:os-nosdn-nofeature
+#   installer-type:osh
+#
 #   deploy-scenario:os-odl-nofeature
 #   installer-type:osa
 #
@@ -53,7 +56,7 @@ function override_scenario() {
     if [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment|force-verify ]]; then
         [[ "$GERRIT_TOPIC" =~ force-verify ]] && echo "Forcing CI verification using default scenario and installer!"
         [[ "$GERRIT_TOPIC" =~ skip-verify|skip-deployment ]] && echo "Skipping verification!"
-        echo "INSTALLER_TYPE=osa" >> $WORK_DIRECTORY/scenario.properties
+        echo "INSTALLER_TYPE=osh" >> $WORK_DIRECTORY/scenario.properties
         echo "DEPLOY_SCENARIO=os-nosdn-nofeature" >> $WORK_DIRECTORY/scenario.properties
         echo "XCI_SHA=$XCI_SHA" >> $WORK_DIRECTORY/scenario.properties
         echo "SCENARIO_SHA=$SCENARIO_SHA" >> $WORK_DIRECTORY/scenario.properties
@@ -229,7 +232,7 @@ fi
 # set the installer
 case ${DEPLOY_SCENARIO[0]} in
     os-*)
-        INSTALLER_TYPE=osa
+        INSTALLER_TYPE=osh
         ;;
     k8-*)
         INSTALLER_TYPE=kubespray
