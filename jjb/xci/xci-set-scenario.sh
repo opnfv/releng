@@ -177,17 +177,14 @@ function override_xci_flavor() {
             XCI_FLAVOR='mini'
             echo "XCI flavor is not specified. The default is specified instead (i.e. mini). Falling back to programmatically determining them."
             echo "XCI_FLAVOR=mini" >> $WORK_DIRECTORY/scenario.properties
-            exit 0
         else
             echo "Recording the XCI flavor '$XCI_FLAVOR' for downstream jobs"
             echo "XCI_FLAVOR=$XCI_FLAVOR" >> $WORK_DIRECTORY/scenario.properties
-            exit 0
         fi
     else
         XCI_FLAVOR='mini'
         echo "XCI flavor is not specified. The default is specified instead (i.e. mini). Falling back to programmatically determining them."
         echo "XCI_FLAVOR=mini" >> $WORK_DIRECTORY/scenario.properties
-        exit 0
     fi
 
 }
@@ -208,8 +205,8 @@ if [[ $GERRIT_PROJECT == "releng-xci" ]]; then
     determine_default_scenario
 else
     determine_scenario
-    override_xci_flavor
 fi
+override_xci_flavor
 override_scenario
 
 # ensure single scenario is impacted
