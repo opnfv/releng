@@ -184,13 +184,6 @@
     jobs:
       - 'functest-{repo}-{container}-{tag}-pull'
 
-- project:
-    name: 'functest-opnfv-functest-features-pull'
-    <<: *functest-params
-    container: 'functest-features'
-    jobs:
-      - 'functest-{repo}-{container}-{tag}-pull'
-
 - job-template:
     name: 'functest-{repo}-{container}-{tag}-rmi'
     parameters:
@@ -225,13 +218,6 @@
     name: 'functest-opnfv-functest-vnf-rmi'
     <<: *functest-params
     container: 'functest-vnf'
-    jobs:
-      - 'functest-{repo}-{container}-{tag}-rmi'
-
-- project:
-    name: 'functest-opnfv-functest-features-rmi'
-    <<: *functest-params
-    container: 'functest-features'
     jobs:
       - 'functest-{repo}-{container}-{tag}-rmi'
 
@@ -329,19 +315,6 @@
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
-- project:
-    name: 'functest-opnfv-functest-features'
-    <<: *functest-params
-    container: 'functest-features'
-    test:
-      - doctor-notification
-      - functest-odl-sfc
-      - barometercollectd
-      - vgpu
-      - stor4nfv_os
-    jobs:
-      - 'functest-{repo}-{container}-{tag}-{test}-run'
-
 - job-template:
     name: 'functest-{tag}-daily'
     project-type: multijob
@@ -368,8 +341,6 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-rmi'
               <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-rmi'
-              <<: *functest-jobs
       - multijob:
           name: pull containers
           projects:
@@ -380,8 +351,6 @@
             - name: 'functest-opnfv-functest-benchmarking-{tag}-pull'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-pull'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-pull'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-healthcheck:{tag}
@@ -467,19 +436,6 @@
             - name: 'functest-opnfv-functest-vnf-{tag}-vyos_vrouter-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-juju_epc-run'
-              <<: *functest-jobs
-      - multijob:
-          name: opnfv/functest-features:{tag}
-          projects:
-            - name: 'functest-opnfv-functest-features-{tag}-doctor-notification-run'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-functest-odl-sfc-run'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-barometercollectd-run'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-vgpu-run'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-stor4nfv_os-run'
               <<: *functest-jobs
 
 - job-template:
@@ -592,16 +548,6 @@
       - 'functest-{repo}-{container}-{tag}-gate'
       - 'functest-{repo}-{container}-{tag}-check'
 
-- project:
-    name: functest-opnfv-functest-features-{tag}-build
-    <<: *functest-params
-    container: functest-features
-    ref_arg: BRANCH
-    path: docker/features
-    jobs:
-      - 'functest-{repo}-{container}-{tag}-gate'
-      - 'functest-{repo}-{container}-{tag}-check'
-
 - job-template:
     name: 'functest-{tag}-check'
     project-type: multijob
@@ -627,8 +573,6 @@
             - name: 'functest-opnfv-functest-benchmarking-{tag}-rmi'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-rmi'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-rmi'
               <<: *functest-jobs
       - multijob:
           name: remove dependencies
@@ -660,8 +604,6 @@
             - name: 'functest-opnfv-functest-benchmarking-{tag}-check'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-check'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-check'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-healthcheck:{tag}
@@ -747,19 +689,6 @@
             - name: 'functest-opnfv-functest-vnf-{tag}-vyos_vrouter-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-juju_epc-run'
-              <<: *functest-jobs
-      - multijob:
-          name: opnfv/functest-features:{tag}
-          projects:
-            - name: 'functest-opnfv-functest-features-{tag}-doctor-notification-run'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-functest-odl-sfc-run'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-barometercollectd-run'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-vgpu-run'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-stor4nfv_os-run'
               <<: *functest-jobs
 
 - trigger:
@@ -812,8 +741,6 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-rmi'
               <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-rmi'
-              <<: *functest-jobs
       - multijob:
           name: remove dependencies
           projects:
@@ -844,8 +771,6 @@
             - name: 'functest-opnfv-functest-benchmarking-{tag}-gate'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-gate'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-gate'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-healthcheck:{tag}
@@ -931,19 +856,6 @@
             - name: 'functest-opnfv-functest-vnf-{tag}-vyos_vrouter-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-juju_epc-run'
-              <<: *functest-jobs
-      - multijob:
-          name: opnfv/functest-features:{tag}
-          projects:
-            - name: 'functest-opnfv-functest-features-{tag}-doctor-notification-run'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-functest-odl-sfc-run'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-barometercollectd-run'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-vgpu-run'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-features-{tag}-stor4nfv_os-run'
               <<: *functest-jobs
 
 - project:

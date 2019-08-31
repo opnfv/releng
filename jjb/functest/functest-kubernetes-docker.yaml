@@ -29,7 +29,6 @@
     image:
       - 'core'
       - 'healthcheck'
-      - 'features'
       - 'smoke'
 
     # settings for jobs run in multijob phases
@@ -125,10 +124,6 @@
           condition: SUCCESSFUL
           execution-type: PARALLEL
           projects:
-            - name: 'functest-kubernetes-features-docker-build-amd64-{stream}'
-              <<: *build-job-settings
-            - name: 'functest-kubernetes-features-docker-build-arm64-{stream}'
-              <<: *build-job-settings
             - name: 'functest-kubernetes-smoke-docker-build-amd64-{stream}'
               <<: *build-job-settings
             - name: 'functest-kubernetes-smoke-docker-build-arm64-{stream}'
@@ -138,8 +133,6 @@
           condition: SUCCESSFUL
           execution-type: PARALLEL
           projects:
-            - name: 'functest-kubernetes-features-docker-manifest-{stream}'
-              <<: *manifest-job-settings
             - name: 'functest-kubernetes-smoke-docker-manifest-{stream}'
               <<: *manifest-job-settings
 

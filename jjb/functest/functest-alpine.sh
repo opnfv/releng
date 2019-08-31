@@ -46,8 +46,6 @@ run_test() {
             FUNCTEST_IMAGE=${REPO}/functest-benchmarking:${DOCKER_TAG} ;;
         cloudify|cloudify_ims|heat_ims|vyos_vrouter|juju_epc)
             FUNCTEST_IMAGE=${REPO}/functest-vnf:${DOCKER_TAG} ;;
-        doctor-notification|bgpvpn|functest-odl-sfc|barometercollectd|fds|vgpu|stor4nfv_os)
-            FUNCTEST_IMAGE=${REPO}/functest-features:${DOCKER_TAG} ;;
         *)
             echo "Unkown test case $test_name"
             exit 1
@@ -296,9 +294,9 @@ else
     tests=()
     skip_tests=0
     if [ "${HOST_ARCH}" != "aarch64" ]; then
-        tiers=(healthcheck smoke benchmarking features vnf)
+        tiers=(healthcheck smoke benchmarking vnf)
     else
-        tiers=(healthcheck smoke benchmarking features)
+        tiers=(healthcheck smoke benchmarking)
     fi
     run_tiers ${tiers}
     if [ ${skip_tests} -eq 0 ]; then

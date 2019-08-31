@@ -30,7 +30,6 @@
       - 'core'
       - 'tempest'
       - 'healthcheck'
-      - 'features'
       - 'smoke'
       - 'benchmarking'
       - 'vnf'
@@ -136,10 +135,6 @@
               <<: *build-job-settings
             - name: 'functest-healthcheck-docker-build-arm64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-features-docker-build-amd64-{stream}'
-              <<: *build-job-settings
-            - name: 'functest-features-docker-build-arm64-{stream}'
-              <<: *build-job-settings
             - name: 'functest-smoke-docker-build-amd64-{stream}'
               <<: *build-job-settings
             - name: 'functest-smoke-docker-build-arm64-{stream}'
@@ -158,8 +153,6 @@
           execution-type: PARALLEL
           projects:
             - name: 'functest-healthcheck-docker-manifest-{stream}'
-              <<: *manifest-job-settings
-            - name: 'functest-features-docker-manifest-{stream}'
               <<: *manifest-job-settings
             - name: 'functest-smoke-docker-manifest-{stream}'
               <<: *manifest-job-settings

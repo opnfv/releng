@@ -30,8 +30,7 @@ echo 0 > ${ret_val_file}
 
 FUNCTEST_IMAGES="\
 opnfv/functest-kubernetes-healthcheck:${DOCKER_TAG} \
-opnfv/functest-kubernetes-smoke:${DOCKER_TAG} \
-opnfv/functest-kubernetes-features:${DOCKER_TAG}"
+opnfv/functest-kubernetes-smoke:${DOCKER_TAG}"
 cmd_opt="run_tests -r -t all"
 
 for image in ${FUNCTEST_IMAGES}; do

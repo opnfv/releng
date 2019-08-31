@@ -158,13 +158,6 @@
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
 
-- project:
-    name: 'functest-kubernetes-opnfv-functest-kubernetes-features-pull'
-    <<: *functest-kubernetes-params
-    container: 'functest-kubernetes-features'
-    jobs:
-      - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
-
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
     parameters:
@@ -185,13 +178,6 @@
     name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-rmi'
     <<: *functest-kubernetes-params
     container: 'functest-kubernetes-smoke'
-    jobs:
-      - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
-
-- project:
-    name: 'functest-kubernetes-opnfv-functest-kubernetes-features-rmi'
-    <<: *functest-kubernetes-params
-    container: 'functest-kubernetes-features'
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
 
@@ -228,16 +214,6 @@
       - tag: hunter
         test: xrally_kubernetes
 
-- project:
-    name: 'functest-kubernetes-opnfv-functest-kubernetes-features'
-    <<: *functest-kubernetes-params
-    container: 'functest-kubernetes-features'
-    test:
-      - stor4nfv_k8s
-      - clover_k8s
-    jobs:
-      - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
-
 - job-template:
     name: 'functest-kubernetes-{tag}-daily'
     project-type: multijob
@@ -260,16 +236,12 @@
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-rmi'
               <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-features-{tag}-rmi'
-              <<: *functest-kubernetes-jobs
       - multijob:
           name: pull containers
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-pull'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-pull'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-features-{tag}-pull'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-healthcheck:{tag}
@@ -283,13 +255,6 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
-              <<: *functest-kubernetes-jobs
-      - multijob:
-          name: opnfv/functest-kubernetes-features:{tag}
-          projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-features-{tag}-stor4nfv_k8s-run'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-features-{tag}-clover_k8s-run'
               <<: *functest-kubernetes-jobs
 
 - job-template:
@@ -370,16 +335,6 @@
       - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
       - 'functest-kubernetes-{repo}-{container}-{tag}-check'
 
-- project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-features-{tag}-build
-    <<: *functest-kubernetes-params
-    container: functest-kubernetes-features
-    ref_arg:
-    path: docker/features
-    jobs:
-      - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
-      - 'functest-kubernetes-{repo}-{container}-{tag}-check'
-
 - job-template:
     name: 'functest-kubernetes-{tag}-check'
     project-type: multijob
@@ -401,8 +356,6 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-rmi'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-rmi'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-features-{tag}-rmi'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: remove dependencies
@@ -429,8 +382,6 @@
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-check'
               <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-features-{tag}-check'
-              <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-healthcheck:{tag}
           projects:
@@ -443,13 +394,6 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
-              <<: *functest-kubernetes-jobs
-      - multijob:
-          name: opnfv/functest-kubernetes-features:{tag}
-          projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-features-{tag}-stor4nfv_k8s-run'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-features-{tag}-clover_k8s-run'
               <<: *functest-kubernetes-jobs
 
 - trigger:
@@ -498,8 +442,6 @@
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-rmi'
               <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-features-{tag}-rmi'
-              <<: *functest-kubernetes-jobs
       - multijob:
           name: remove dependencies
           projects:
@@ -525,8 +467,6 @@
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-gate'
               <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-features-{tag}-gate'
-              <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-healthcheck:{tag}
           projects:
@@ -539,13 +479,6 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
-              <<: *functest-kubernetes-jobs
-      - multijob:
-          name: opnfv/functest-kubernetes-features:{tag}
-          projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-features-{tag}-stor4nfv_k8s-run'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-features-{tag}-clover_k8s-run'
               <<: *functest-kubernetes-jobs
 
 - project:
