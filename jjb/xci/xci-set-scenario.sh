@@ -243,7 +243,7 @@ esac
 # save the installer and scenario names into java properties file
 # so they can be injected to downstream jobs via envInject
 echo "Recording the installer '$INSTALLER_TYPE' and scenario '${DEPLOY_SCENARIO[0]}' and SHAs for downstream jobs"
-echo "INSTALLER_TYPE=$INSTALLER_TYPE" > $WORK_DIRECTORY/scenario.properties
+echo "INSTALLER_TYPE=$INSTALLER_TYPE" >> $WORK_DIRECTORY/scenario.properties
 echo "DEPLOY_SCENARIO=$DEPLOY_SCENARIO" >> $WORK_DIRECTORY/scenario.properties
 echo "XCI_SHA=$XCI_SHA" >> $WORK_DIRECTORY/scenario.properties
 echo "SCENARIO_SHA=$SCENARIO_SHA" >> $WORK_DIRECTORY/scenario.properties
