@@ -259,7 +259,7 @@ fi
 
 # skip the deployment if the scenario is not supported on this distro
 OPNFV_SCENARIO_REQUIREMENTS=$WORKSPACE/xci/opnfv-scenario-requirements.yml
-if ! sed -n "/^- scenario: ${DEPLOY_SCENARIO[0]}$/,/^$/p" $OPNFV_SCENARIO_REQUIREMENTS | grep -q $DISTRO; then
+if ! sed -n "/${DEPLOY_SCENARIO[0]}$/,/^$/p" $OPNFV_SCENARIO_REQUIREMENTS | grep -q $DISTRO; then
     echo "# SKIPPED: Scenario ${DEPLOY_SCENARIO[0]} is NOT supported on $DISTRO"
     exit 0
 fi

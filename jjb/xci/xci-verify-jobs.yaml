@@ -171,7 +171,7 @@
       - inject:
           properties-file: "/tmp/$GERRIT_CHANGE_NUMBER/$DISTRO/scenario.properties"
       - description-setter:
-          description: "Scenario: $DEPLOY_SCENARIO | Node: $NODE_NAME"
+          description: "$INSTALLER_TYPE | $DEPLOY_SCENARIO | $NODE_NAME"
       - multijob:
           name: deploy
           condition: SUCCESSFUL
@@ -293,7 +293,7 @@
 
     builders:
       - description-setter:
-          description: "Scenario: $DEPLOY_SCENARIO | Node: $NODE_NAME"
+          description: "$INSTALLER_TYPE | $DEPLOY_SCENARIO | $NODE_NAME"
       - 'xci-verify-{phase}-macro'
 
 # -------------------------------
