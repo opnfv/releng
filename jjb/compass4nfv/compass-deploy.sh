@@ -56,11 +56,7 @@ if [[ "$NODE_NAME" =~ "-virtual" ]]; then
         export VIRT_NUMBER=2
     fi
 else
-    if [[ "$NODE_NAME" =~ "intel-pod17" ]]; then
-        export INSTALL_NIC=eno2
-    else
-        export INSTALL_NIC=eth1
-    fi
+    export INSTALL_NIC=eth1
     export NETWORK_CONF=$CONFDIR/hardware_environment/$NODE_NAME/${NETWORK_CONF_FILE}
     export DHA_CONF=$CONFDIR/hardware_environment/$NODE_NAME/${DEPLOY_SCENARIO}.yml
 fi
