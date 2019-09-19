@@ -97,15 +97,15 @@
      - PDF
      - IDF
    * - `intel-pod17 <https://build.opnfv.org/ci/computer/intel-pod17>`_
-     - Compass4NFV
+     - Airship
      -
      - PDF
      - IDF
    * - `intel-pod18 <https://build.opnfv.org/ci/computer/intel-pod18>`_
-     - JOID
-     - Ubuntu 16.04
-     - `PDF <https://git.opnfv.org/pharos/plain/labs/intel/pod18.yaml>`__
-     - `IDF <https://git.opnfv.org/pharos/plain/labs/intel/idf-pod18.yaml>`__
+     - Airship
+     -
+     - PDF
+     - IDF
    * - `lf-pod1 <https://build.opnfv.org/ci/computer/lf-pod1>`_
      - Apex
      - CentOS 7
