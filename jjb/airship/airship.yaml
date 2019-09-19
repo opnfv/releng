@@ -98,6 +98,12 @@
           fi
           docker rmi $image || true
 
+- builder:
+    name: airship-deploy
+    builders:
+      - shell: |
+          set +x
+          tools/deploy deploy_site
 
 - job-template:
     name: 'airship-{repo}-{container}-{tag}-pull'
