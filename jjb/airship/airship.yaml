@@ -66,6 +66,8 @@
             image={repo}:{port}/{container}:{tag}
           fi
           docker run --rm \
+            -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e NODE_NAME=airship \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEBUG=True \
             -e EXTERNAL_NETWORK=public \
@@ -73,7 +75,7 @@
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
             -v /home/opnfv/functest/tempest_conf.yaml:/usr/lib/python2.7/\
           site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/tempest_conf.yaml \
-            $image run_tests -t {test}
+            $image run_tests -t {test} -r
           res=$?
           gsutil -m cp -r $WORKSPACE/ \
             gs://artifacts.opnfv.org/airship/$JOB_NAME-$BUILD_ID > /dev/null 2>&1
