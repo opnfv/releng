@@ -98,6 +98,31 @@
           fi
           docker rmi $image || true
 
+- builder:
+    name: airship-deploy
+    builders:
+      - shell: |
+          set +x
+          tools/deploy deploy_site
+
+- job-template:
+    name: 'airship-deploy-{tag}-daily'
+    scm:
+      - git-scm-gerrit
+
+    wrappers:
+      - timeout:
+          timeout: 240
+          fail: true
+
+    parameters:
+      - string:
+          name: DEPLOY_ACTION
+          default: '{deploy_site}'
+          description: "Shipyard action to deploy site."
+
+    builders:
+      - 'airship-deploy'
 
 - job-template:
     name: 'airship-{repo}-{container}-{tag}-pull'
@@ -408,6 +433,7 @@
     <<: *airship-params
     jobs:
       - 'airship-{tag}-daily'
+      - 'airship-deploy-{tag}-daily'
 
 - view:
     name: airship
