@@ -19,13 +19,6 @@
           name: slave
           default: '{slave}'
 
-- parameter:
-    name: airship-branch
-    parameters:
-      - string:
-          name: branch
-          default: '{branch}'
-
 - airship-containers: &airship-containers
     name: 'airship-containers'
     repo: '{repo}'
@@ -99,6 +92,50 @@
           fi
           docker rmi $image || true
 
+- builder:
+    name: airship-deploy
+    builders:
+      - shell: |
+          set +x
+          tools/deploy deploy_site
+
+- scm:
+    name: airship-scm
+    scm:
+      - git:
+          url: https://gerrit.opnfv.org/gerrit/airship
+          refspec: '+refs/changes/*:refs/changes/*'
+          branches:
+            - '{ref}'
+
+- parameter:
+    name: airship-branch
+    parameters:
+      - string:
+          name: branch
+          default: '{branch}'
+
+- job-template:
+    name: 'airship-deploy-{tag}'
+    parameters:
+      - airship-slave:
+          slave: '{slave}'
+      - airship-branch:
+          branch: '{branch}'
+    scm:
+      - airship-scm:
+          ref: $branch
+    builders:
+      - airship-deploy
+
+- project:
+    name: 'airship-deploy'
+    tag:
+      - latest:
+          branch: master
+          slave: intel-pod17
+    jobs:
+      - 'airship-deploy-{tag}'
 
 - job-template:
     name: 'airship-{repo}-{container}-{tag}-pull'
@@ -281,6 +318,8 @@
     parameters:
       - airship-slave:
           slave: '{slave}'
+      - airship-branch:
+          branch: 'master'
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -288,6 +327,11 @@
           blocking-jobs:
             - '^airship-{tag}-(daily|check|gate)$'
     builders:
+      - multijob:
+          name: deploy
+          projects:
+            - name: 'airship-deploy-latest'
+              <<: *airship-jobs
       - multijob:
           name: remove former images
           projects:
