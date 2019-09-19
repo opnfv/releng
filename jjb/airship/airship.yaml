@@ -56,8 +56,7 @@
     name: airship-run-containers
     builders:
       - shell: |
-          set +e
-          set -x
+          set +ex
           [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -66,7 +65,6 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          echo $WORKSPACE
           docker run --rm \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e NODE_NAME=intel-pod17 \
@@ -81,7 +79,7 @@
             $image run_tests -t {test} -r
           res=$?
           gsutil -m cp -r $WORKSPACE/ \
-            gs://artifacts.opnfv.org/airship/$JOB_NAME-$BUILD_ID
+            gs://artifacts.opnfv.org/airship/$JOB_NAME-$BUILD_ID > /dev/null 2>&1
           find $WORKSPACE -type f \
             -printf \
             "http://artifacts.opnfv.org/airship/$JOB_NAME-$BUILD_ID/%P\n"
