@@ -1,0 +1,420 @@
+---
+- airship-jobs: &airship-jobs
+    name: 'airship-jobs'
+    current-parameters: true
+
+- airship-params: &airship-params
+    name: 'airship-params'
+    repo: 'opnfv'
+    port:
+    tag:
+      - hunter:
+          branch: stable/hunter
+          slave: intel-pod17
+
+- parameter:
+    name: airship-slave
+    parameters:
+      - label:
+          name: slave
+          default: '{slave}'
+
+- parameter:
+    name: airship-branch
+    parameters:
+      - string:
+          name: branch
+          default: '{branch}'
+
+- airship-containers: &airship-containers
+    name: 'airship-containers'
+    repo: '{repo}'
+    port: '{port}'
+    container: '{container}'
+    tag: '{tag}'
+
+- airship-run-containers: &airship-run-containers
+    name: 'airship-run-containers'
+    <<: *airship-containers
+    test: '{test}'
+
+- builder:
+    name: airship-pull-containers
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          docker pull $image
+
+- builder:
+    name: airship-run-containers
+    builders:
+      - shell: |
+          set +ex
+          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          docker run --rm \
+            -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -e DEBUG=True \
+            -e EXTERNAL_NETWORK=public \
+            -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
+            -v /home/opnfv/functest/images:/home/opnfv/functest/images \
+            -v /home/opnfv/functest/tempest_conf.yaml:/usr/lib/python2.7/\
+          site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/tempest_conf.yaml \
+            $image run_tests -t {test}
+          res=$?
+          gsutil -m cp -r $WORKSPACE/ \
+            gs://artifacts.opnfv.org/airship/$JOB_NAME-$BUILD_ID > /dev/null 2>&1
+          find $WORKSPACE -type f \
+            -printf \
+            "http://artifacts.opnfv.org/airship/$JOB_NAME-$BUILD_ID/%P\n"
+          exit $res
+
+- builder:
+    name: airship-remove-images
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          docker rmi $image || true
+
+
+- job-template:
+    name: 'airship-{repo}-{container}-{tag}-pull'
+    parameters:
+      - airship-slave:
+          slave: '{slave}'
+    builders:
+      - airship-pull-containers:
+          <<: *airship-containers
+
+- project:
+    name: 'airship-opnfv-functest-healthcheck-pull'
+    <<: *airship-params
+    container: 'functest-healthcheck'
+    jobs:
+      - 'airship-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'airship-opnfv-functest-smoke-pull'
+    <<: *airship-params
+    container: 'functest-smoke'
+    jobs:
+      - 'airship-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'airship-opnfv-functest-benchmarking-pull'
+    <<: *airship-params
+    container: 'functest-benchmarking'
+    jobs:
+      - 'airship-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'airship-opnfv-functest-vnf-pull'
+    <<: *airship-params
+    container: 'functest-vnf'
+    jobs:
+      - 'airship-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'airship-opnfv-functest-features-pull'
+    <<: *airship-params
+    container: 'functest-features'
+    jobs:
+      - 'airship-{repo}-{container}-{tag}-pull'
+
+- job-template:
+    name: 'airship-{repo}-{container}-{tag}-rmi'
+    parameters:
+      - airship-slave:
+          slave: '{slave}'
+    builders:
+      - airship-remove-images:
+          <<: *airship-containers
+
+- project:
+    name: 'airship-opnfv-functest-healthcheck-rmi'
+    <<: *airship-params
+    container: 'functest-healthcheck'
+    jobs:
+      - 'airship-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'airship-opnfv-functest-smoke-rmi'
+    <<: *airship-params
+    container: 'functest-smoke'
+    jobs:
+      - 'airship-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'airship-opnfv-functest-benchmarking-rmi'
+    <<: *airship-params
+    container: 'functest-benchmarking'
+    jobs:
+      - 'airship-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'airship-opnfv-functest-vnf-rmi'
+    <<: *airship-params
+    container: 'functest-vnf'
+    jobs:
+      - 'airship-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'airship-opnfv-functest-features-rmi'
+    <<: *airship-params
+    container: 'functest-features'
+    jobs:
+      - 'airship-{repo}-{container}-{tag}-rmi'
+
+- job-template:
+    name: 'airship-{repo}-{container}-{tag}-{test}-run'
+    parameters:
+      - airship-slave:
+          slave: '{slave}'
+    builders:
+      - airship-run-containers:
+          <<: *airship-run-containers
+
+- project:
+    name: 'airship-opnfv-functest-healthcheck'
+    <<: *airship-params
+    container: 'functest-healthcheck'
+    test:
+      - connection_check
+      - tenantnetwork1
+      - tenantnetwork2
+      - vmready1
+      - vmready2
+      - singlevm1
+      - singlevm2
+      - vping_ssh
+      - vping_userdata
+      - cinder_test
+      - odl
+      - tempest_smoke
+    jobs:
+      - 'airship-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'airship-opnfv-functest-smoke'
+    <<: *airship-params
+    container: 'functest-smoke'
+    test:
+      - neutron-tempest-plugin-api
+      - rally_sanity
+      - refstack_defcore
+      - tempest_full
+      - tempest_scenario
+      - patrole
+      - neutron_trunk
+      - networking-bgpvpn
+      - networking-sfc
+      - barbican
+    jobs:
+      - 'airship-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'airship-opnfv-functest-benchmarking'
+    <<: *airship-params
+    container: 'functest-benchmarking'
+    test:
+      - rally_full
+      - rally_jobs
+      - vmtp
+      - shaker
+    jobs:
+      - 'airship-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'airship-opnfv-functest-vnf'
+    <<: *airship-params
+    container: 'functest-vnf'
+    test:
+      - cloudify
+      - cloudify_ims
+      - heat_ims
+      - vyos_vrouter
+      - juju_epc
+    jobs:
+      - 'airship-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'airship-opnfv-functest-features'
+    <<: *airship-params
+    container: 'functest-features'
+    test:
+      - doctor-notification
+      - functest-odl-sfc
+      - barometercollectd
+      - vgpu
+      - stor4nfv_os
+    jobs:
+      - 'airship-{repo}-{container}-{tag}-{test}-run'
+
+- job-template:
+    name: 'airship-{tag}-daily'
+    project-type: multijob
+    triggers:
+      - timed: '@daily'
+    parameters:
+      - airship-slave:
+          slave: '{slave}'
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^airship-{tag}-(daily|check|gate)$'
+    builders:
+      - multijob:
+          name: remove former images
+          projects:
+            - name: 'airship-opnfv-functest-healthcheck-{tag}-rmi'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-rmi'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-benchmarking-{tag}-rmi'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-vnf-{tag}-rmi'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-features-{tag}-rmi'
+              <<: *airship-jobs
+      - multijob:
+          name: pull containers
+          projects:
+            - name: 'airship-opnfv-functest-healthcheck-{tag}-pull'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-pull'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-benchmarking-{tag}-pull'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-vnf-{tag}-pull'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-features-{tag}-pull'
+              <<: *airship-jobs
+      - multijob:
+          name: opnfv/functest-healthcheck:{tag}
+          projects:
+            - name: 'airship-opnfv-functest-healthcheck-{tag}-connection_check-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-healthcheck-{tag}-tenantnetwork1-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-healthcheck-{tag}-tenantnetwork2-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-healthcheck-{tag}-vmready1-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-healthcheck-{tag}-vmready2-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-healthcheck-{tag}-singlevm1-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-healthcheck-{tag}-singlevm2-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-healthcheck-{tag}-vping_ssh-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-healthcheck-{tag}-vping_userdata-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-healthcheck-{tag}-cinder_test-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-healthcheck-{tag}-odl-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-healthcheck-{tag}-tempest_smoke-run'
+              <<: *airship-jobs
+      - multijob:
+          name: opnfv/functest-smoke:{tag}
+          projects:
+            - name: 'airship-opnfv-functest-smoke-{tag}-neutron-tempest-plugin-api-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-rally_sanity-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-refstack_defcore-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-tempest_full-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-tempest_scenario-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-patrole-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-neutron_trunk-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-networking-bgpvpn-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-networking-sfc-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-barbican-run'
+              <<: *airship-jobs
+      - multijob:
+          name: opnfv/functest-benchmarking:{tag}
+          projects:
+            - name: 'airship-opnfv-functest-benchmarking-{tag}-rally_full-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-benchmarking-{tag}-rally_jobs-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-benchmarking-{tag}-vmtp-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-benchmarking-{tag}-shaker-run'
+              <<: *airship-jobs
+      - multijob:
+          name: opnfv/functest-vnf:{tag}
+          execution-type: SEQUENTIALLY
+          projects:
+            - name: 'airship-opnfv-functest-vnf-{tag}-cloudify-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-vnf-{tag}-cloudify_ims-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-vnf-{tag}-heat_ims-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-vnf-{tag}-vyos_vrouter-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-vnf-{tag}-juju_epc-run'
+              <<: *airship-jobs
+      - multijob:
+          name: opnfv/functest-features:{tag}
+          projects:
+            - name: 'airship-opnfv-functest-features-{tag}-doctor-notification-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-features-{tag}-functest-odl-sfc-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-features-{tag}-barometercollectd-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-features-{tag}-vgpu-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-features-{tag}-stor4nfv_os-run'
+              <<: *airship-jobs
+
+
+- project:
+    name: 'airship'
+    <<: *airship-params
+    jobs:
+      - 'airship-{tag}-daily'
+
+- view:
+    name: airship
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^airship-[a-z]+-(daily|check|gate)$
