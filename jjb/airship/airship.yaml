@@ -43,14 +43,14 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          docker pull $image
+          sudo docker pull $image
 
 - builder:
     name: airship-run-containers
     builders:
       - shell: |
           set +ex
-          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
+          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -58,7 +58,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          docker run --rm \
+          sudo docker run --rm \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e NODE_NAME=intel-pod17 \
             -e INSTALLER_TYPE=airship \
@@ -90,7 +90,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          docker rmi $image || true
+          sudo docker rmi $image || true
 
 - builder:
     name: airship-deploy
