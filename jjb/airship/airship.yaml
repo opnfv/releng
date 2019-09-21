@@ -8,9 +8,10 @@
     repo: 'opnfv'
     port:
     tag:
-      - hunter:
-          branch: stable/hunter
+      - latest:
+          branch: master
           slave: intel-pod17
+          functest_tag: hunter
 
 - parameter:
     name: airship-slave
@@ -24,7 +25,7 @@
     repo: '{repo}'
     port: '{port}'
     container: '{container}'
-    tag: '{tag}'
+    functest_tag: '{functest_tag}'
 
 - airship-run-containers: &airship-run-containers
     name: 'airship-run-containers'
@@ -37,11 +38,11 @@
       - shell: |
           set +x
           if [ "{repo}" = "_" ]; then
-            image={container}:{tag}
+            image={container}:{functest_tag}
           elif [ "{port}" = "None" ]; then
-            image={repo}/{container}:{tag}
+            image={repo}/{container}:{functest_tag}
           else
-            image={repo}:{port}/{container}:{tag}
+            image={repo}:{port}/{container}:{functest_tag}
           fi
           sudo docker pull $image
 
@@ -52,11 +53,11 @@
           set +ex
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
-            image={container}:{tag}
+            image={container}:{functest_tag}
           elif [ "{port}" = "None" ]; then
-            image={repo}/{container}:{tag}
+            image={repo}/{container}:{functest_tag}
           else
-            image={repo}:{port}/{container}:{tag}
+            image={repo}:{port}/{container}:{functest_tag}
           fi
           sudo docker run --rm \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
@@ -84,11 +85,11 @@
       - shell: |
           set +x
           if [ "{repo}" = "_" ]; then
-            image={container}:{tag}
+            image={container}:{functest_tag}
           elif [ "{port}" = "None" ]; then
-            image={repo}/{container}:{tag}
+            image={repo}/{container}:{functest_tag}
           else
-            image={repo}:{port}/{container}:{tag}
+            image={repo}:{port}/{container}:{functest_tag}
           fi
           sudo docker rmi $image || true
 
@@ -130,10 +131,7 @@
 
 - project:
     name: 'airship-deploy'
-    tag:
-      - latest:
-          branch: master
-          slave: intel-pod17
+    <<: *airship-params
     jobs:
       - 'airship-deploy-{tag}'
 
@@ -359,7 +357,7 @@
             - name: 'airship-opnfv-functest-features-{tag}-pull'
               <<: *airship-jobs
       - multijob:
-          name: opnfv/functest-healthcheck:{tag}
+          name: opnfv/functest-healthcheck:{functest_tag}
           condition: ALWAYS
           projects:
             - name: 'airship-opnfv-functest-healthcheck-{tag}-connection_check-run'
@@ -387,7 +385,7 @@
             - name: 'airship-opnfv-functest-healthcheck-{tag}-tempest_smoke-run'
               <<: *airship-jobs
       - multijob:
-          name: opnfv/functest-smoke:{tag}
+          name: opnfv/functest-smoke:{functest_tag}
           condition: ALWAYS
           projects:
             - name: 'airship-opnfv-functest-smoke-{tag}-neutron-tempest-plugin-api-run'
@@ -411,7 +409,7 @@
             - name: 'airship-opnfv-functest-smoke-{tag}-barbican-run'
               <<: *airship-jobs
       - multijob:
-          name: opnfv/functest-benchmarking:{tag}
+          name: opnfv/functest-benchmarking:{functest_tag}
           condition: ALWAYS
           projects:
             - name: 'airship-opnfv-functest-benchmarking-{tag}-rally_full-run'
@@ -423,7 +421,7 @@
             - name: 'airship-opnfv-functest-benchmarking-{tag}-shaker-run'
               <<: *airship-jobs
       - multijob:
-          name: opnfv/functest-vnf:{tag}
+          name: opnfv/functest-vnf:{functest_tag}
           condition: ALWAYS
           execution-type: SEQUENTIALLY
           projects:
@@ -438,7 +436,7 @@
             - name: 'airship-opnfv-functest-vnf-{tag}-juju_epc-run'
               <<: *airship-jobs
       - multijob:
-          name: opnfv/functest-features:{tag}
+          name: opnfv/functest-features:{functest_tag}
           condition: ALWAYS
           projects:
             - name: 'airship-opnfv-functest-features-{tag}-doctor-notification-run'
@@ -451,7 +449,6 @@
               <<: *airship-jobs
             - name: 'airship-opnfv-functest-features-{tag}-stor4nfv_os-run'
               <<: *airship-jobs
-
 
 - project:
     name: 'airship'
