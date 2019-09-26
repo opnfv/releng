@@ -227,12 +227,14 @@
           - ./doctor-env-presetup.sh
           - ../../utils/fetch_os_creds.sh
       - shell: |
+          #!/bin/bash
+
           # prepare the env for test
-          source $HOME/opnfv-openrc.sh
+          . $HOME/opnfv-openrc.sh
           if [ -f $HOME/os_cacert ]; then
               export OS_CACERT=$HOME/os_cacert
           fi
-          source $HOME/opnfv-installer.sh
+          . $HOME/opnfv-installer.sh
 
           # run tox to trigger the test
           # As Jenkins user, it has no permission to send ICMP package
