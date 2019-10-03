@@ -30,13 +30,6 @@ if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
         # If dev lab, credentials may not be the default ones, just provide a path to put them into docker
         # replace the default one by the customized one provided by jenkins config
     fi
-elif [[ ${INSTALLER_TYPE} == 'compass' ]]; then
-    if [[ "${DEPLOY_SCENARIO:0:2}" == "k8" ]];then
-        rc_file_vol="-v ${HOME}/admin.conf:/etc/yardstick/admin.conf"
-    else
-        cacert_file_vol="-v ${HOME}/os_cacert:/etc/yardstick/os_cacert"
-        echo "export OS_CACERT=/etc/yardstick/os_cacert" >> ${HOME}/opnfv-openrc.sh
-    fi
 elif [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
     if [[ "${DEPLOY_SCENARIO:0:2}" == 'k8' ]]; then
         rc_file_vol="-v ${HOME}/admin.conf:/etc/yardstick/admin.conf"

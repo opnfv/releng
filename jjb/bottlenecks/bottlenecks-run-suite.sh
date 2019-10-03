@@ -48,24 +48,8 @@ if [[ $SUITE_NAME == *posca* ]]; then
     POSCA_SCRIPT=/home/opnfv/bottlenecks/testsuites/posca
     sudo rm -f ${OPENRC}
 
-    # Preparing OpenStack RC and Cacert files
-    echo "BOTTLENECKS INFO: fetching os credentials from $INSTALLER_TYPE"
-    if [[ $INSTALLER_TYPE == 'compass' ]]; then
-        ${RELENG_REPO}/utils/fetch_os_creds.sh -d ${OPENRC} -i ${INSTALLER_TYPE} -a ${INSTALLER_IP} -o ${OS_CACERT} >${redirect}
-        if [[ -f ${OS_CACERT} ]]; then
-            echo "BOTTLENECKS INFO: successfully fetching os_cacert for openstack: ${OS_CACERT}"
-        else
-            echo "BOTTLENECKS ERROR: couldn't find os_cacert file: ${OS_CACERT}, please check if the it's been properly provided."
-            exit 1
-        fi
-    fi
-
     if [[ -f ${OPENRC} ]]; then
         echo "BOTTLENECKS INFO: openstack credentials path is ${OPENRC}"
-        if [[ $INSTALLER_TYPE == 'compass' ]]; then
-            echo "BOTTLENECKS INFO: writing ${OS_CACERT} to ${OPENRC}"
-            echo "export OS_CACERT=${OS_CACERT}" >> ${OPENRC}
-        fi
         cat ${OPENRC}
     else
         echo "BOTTLENECKS ERROR: couldn't find openstack rc file: ${OPENRC}, please check if the it's been properly provided."
@@ -95,27 +79,12 @@ if [[ $SUITE_NAME == *posca* ]]; then
     sudo -H pip install -e ./ >/dev/null
     sudo -H pip install netaddr
 
-    if [[ ${INSTALLER_TYPE} == compass ]]; then
-        options="-u root -p root"
-    elif [[ ${INSTALLER_TYPE} == fuel ]]; then
+    if [[ ${INSTALLER_TYPE} == fuel ]]; then
         options="-u root -p r00tme"
     elif [[ ${INSTALLER_TYPE} == apex ]]; then
         options="-u stack -k /root/.ssh/id_rsa"
     else
         echo "Don't support to generate pod.yaml on ${INSTALLER_TYPE} currently."
-    fi
-
-    if [[ ${INSTALLER_TYPE} != compass ]]; then
-        cmd="sudo python ${RELENG_REPO}/utils/create_pod_file.py -t ${INSTALLER_TYPE} \
-         -i ${INSTALLER_IP} ${options} -f ${BOTTLENECKS_CONFIG}/pod.yaml \
-         -s ${BOTTLENECKS_CONFIG}/id_rsa"
-        echo ${cmd}
-        ${cmd}
-    else
-        cmd="sudo cp ${YARDSTICK_REPO}/etc/yardstick/nodes/compass_sclab_virtual/pod.yaml \
-        ${BOTTLENECKS_CONFIG}"
-        echo ${cmd}
-        ${cmd}
     fi
 
     deactivate

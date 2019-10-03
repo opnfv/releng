@@ -113,27 +113,6 @@
           installer: joid
           auto-trigger-name: 'daily-trigger-disabled'
           <<: *hunter
-      # compass CI PODs
-      - baremetal:
-          slave-label: compass-baremetal
-          installer: compass
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *master
-      - virtual:
-          slave-label: compass-virtual
-          installer: compass
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *master
-      - baremetal:
-          slave-label: compass-baremetal
-          installer: compass
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *hunter
-      - virtual:
-          slave-label: compass-virtual
-          installer: compass
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *hunter
       # daisy CI PODs
       - baremetal:
           slave-label: daisy-baremetal
@@ -201,21 +180,6 @@
       - orange-pod2:
           slave-label: '{pod}'
           installer: joid
-          auto-trigger-name: 'daily-trigger-disabled'
-          <<: *master
-      - huawei-pod3:
-          slave-label: '{pod}'
-          installer: compass
-          auto-trigger-name: 'yardstick-daily-huawei-pod3-trigger'
-          <<: *master
-      - huawei-pod4:
-          slave-label: '{pod}'
-          installer: compass
-          auto-trigger-name: 'yardstick-daily-huawei-pod4-trigger'
-          <<: *master
-      - baremetal-centos:
-          slave-label: 'intel-pod8'
-          installer: compass
           auto-trigger-name: 'daily-trigger-disabled'
           <<: *master
       - flex-pod1:
@@ -427,14 +391,6 @@
           description: 'Arguments to use in order to choose the backend DB'
 
 - parameter:
-    name: 'yardstick-params-compass-baremetal'
-    parameters:
-      - string:
-          name: YARDSTICK_DB_BACKEND
-          default: '-i 104.197.68.199:8086'
-          description: 'Arguments to use in order to choose the backend DB'
-
-- parameter:
     name: 'yardstick-params-daisy-baremetal'
     parameters:
       - string:
@@ -508,14 +464,6 @@
 
 - parameter:
     name: 'yardstick-params-virtual'
-    parameters:
-      - string:
-          name: YARDSTICK_DB_BACKEND
-          default: '-i 104.197.68.199:8086'
-          description: 'Arguments to use in order to choose the backend DB'
-
-- parameter:
-    name: 'yardstick-params-compass-virtual'
     parameters:
       - string:
           name: YARDSTICK_DB_BACKEND

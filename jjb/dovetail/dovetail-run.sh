@@ -79,10 +79,6 @@ get_apex_cred_file() {
     get_cred_file_with_scripts
 }
 
-get_compass_cred_file() {
-    get_cred_file_with_scripts
-}
-
 get_fuel_cred_file() {
     get_cred_file_with_scripts
 }
@@ -101,9 +97,7 @@ change_cred_file_cacert_path() {
     exists=`check_file_exists ${CACERT}`
     if [[ $exists == 0 ]]; then
         echo "INFO: set ${INSTALLER_TYPE} openstack cacert file to be ${CACERT}"
-        if [[ ${INSTALLER_TYPE} == "compass" ]]; then
-            echo "export OS_CACERT=${CACERT}" >> ${OPENRC}
-        elif [[ ${INSTALLER_TYPE} == "fuel" ]]; then
+        if [[ ${INSTALLER_TYPE} == "fuel" ]]; then
             sed -i "s#/etc/ssl/certs/mcp_os_cacert#${CACERT}#g" ${OPENRC}
         fi
     else
@@ -127,8 +121,6 @@ change_cred_file_ext_net() {
 get_cred_file() {
     if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
         get_apex_cred_file
-    elif [[ ${INSTALLER_TYPE} == 'compass' ]]; then
-        get_compass_cred_file
     elif [[ ${INSTALLER_TYPE} == 'fuel' ]]; then
         get_fuel_cred_file
     elif [[ ${INSTALLER_TYPE} == 'joid' ]]; then
@@ -150,30 +142,6 @@ get_cred_file() {
         sudo ls -al ${DOVETAIL_CONFIG}
         exit 1
     fi
-}
-
-get_compass_pod_file() {
-    compass_repo=${WORKSPACE}/compass4nfv/
-    echo "INFO: clone compass repo..."
-    git clone https://github.com/opnfv/compass4nfv.git ${compass_repo} >/dev/null
-    scenario_file=${compass_repo}/deploy/conf/hardware_environment/$NODE_NAME/os-nosdn-nofeature-ha.yml
-    ipmiIp=$(cat ${scenario_file} | shyaml get-value hosts.0.ipmiIp)
-    ipmiPass=$(cat ${scenario_file} | shyaml get-value hosts.0.ipmiPass)
-    ipmiUser=root
-    jumpserver_ip=$(ifconfig | grep -A 5 docker0 | grep "inet addr" | cut -d ':' -f 2 | cut -d ' ' -f 1)
-
-    cat << EOF >${POD}
-nodes:
-- {ip: ${jumpserver_ip}, name: node0, password: root, role: Jumpserver, user: root}
-- {ip: 10.1.0.50, name: node1, password: root, role: controller, user: root,
-   ipmi_ip: ${ipmiIp}, ipmi_user: ${ipmiUser}, ipmi_password: ${ipmiPass}}
-- {ip: 10.1.0.51, name: node2, password: root, role: controller, user: root}
-- {ip: 10.1.0.52, name: node3, password: root, role: controller, user: root}
-- {ip: 10.1.0.53, name: node4, password: root, role: compute, user: root}
-- {ip: 10.1.0.54, name: node5, password: root, role: compute, user: root}
-
-EOF
-
 }
 
 get_fuel_baremetal_pod_file() {
@@ -226,9 +194,7 @@ get_pod_file_with_scripts() {
     sudo pip install -e ./ >/dev/null
     sudo pip install netaddr
 
-    if [[ ${INSTALLER_TYPE} == compass ]]; then
-        options="-u root -p root"
-    elif [[ ${INSTALLER_TYPE} == fuel ]]; then
+    if [[ ${INSTALLER_TYPE} == fuel ]]; then
         options="-u ubuntu -k /root/.ssh/id_rsa"
     elif [[ ${INSTALLER_TYPE} == apex ]]; then
         options="-u stack -k /root/.ssh/id_rsa"
@@ -268,13 +234,6 @@ process_info:
 EOF
 }
 
-change_compass_pod_file_process_info() {
-    cat << EOF >> ${POD}
-process_info:
-- {testcase_name: yardstick.ha.rabbitmq, attack_process: rabbitmq}
-EOF
-}
-
 change_pod_file_process_info() {
     sudo chmod 666 ${POD}
     echo "INFO: adapt process info for $INSTALLER_TYPE ..."
@@ -282,8 +241,6 @@ change_pod_file_process_info() {
         change_apex_pod_file_process_info
     elif [ "$INSTALLER_TYPE" == "fuel" ]; then
         change_fuel_pod_file_process_info
-    elif [ "$INSTALLER_TYPE" == "compass" ]; then
-        change_compass_pod_file_process_info
     fi
 }
 
@@ -292,9 +249,7 @@ get_pod_file() {
     sudo pip install shyaml
     sudo yum install -y rubygems || sudo apt-get install -y ruby
     sudo gem install hiera-eyaml
-    if [[ ${INSTALLER_TYPE} == 'compass' ]]; then
-        get_compass_pod_file
-    elif [[ ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_TYPE} == 'baremetal' ]]; then
+    if [[ ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_TYPE} == 'baremetal' ]]; then
         get_fuel_baremetal_pod_file
     fi
 
@@ -430,7 +385,7 @@ fi
 
 # Modify tempest_conf.yaml file
 tempest_conf_file=${DOVETAIL_CONFIG}/tempest_conf.yaml
-if [[ ${INSTALLER_TYPE} == 'compass' || ${INSTALLER_TYPE} == 'apex' ]]; then
+if [[ ${INSTALLER_TYPE} == 'apex' ]]; then
     volume_device='vdb'
 else
     volume_device='vdc'
