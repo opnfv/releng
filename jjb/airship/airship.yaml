@@ -527,6 +527,23 @@
           projects:
             - name: 'airship-opnfv-functest-benchmarking-{tag}-vmtp-run'
               <<: *airship-jobs
+            - name: 'airship-opnfv-functest-benchmarking-{tag}-shaker-run'
+              <<: *airship-jobs
+      - multijob:
+          name: opnfv/functest-vnf:{functest_tag}
+          condition: ALWAYS
+          execution-type: SEQUENTIALLY
+          projects:
+            - name: 'airship-opnfv-functest-vnf-{tag}-cloudify-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-vnf-{tag}-cloudify_ims-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-vnf-{tag}-heat_ims-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-vnf-{tag}-vyos_vrouter-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-vnf-{tag}-juju_epc-run'
+              <<: *airship-jobs
 
 - project:
     name: 'airship'
