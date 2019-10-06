@@ -74,9 +74,6 @@ rc_file=${HOME}/opnfv-openrc.sh
 
 if [[ ${INSTALLER_TYPE} == 'joid' ]]; then
     rc_file=$LAB_CONFIG/admin-openrc
-elif [[ ${INSTALLER_TYPE} == 'compass' ]]; then
-    cacert_file_vol="-v ${HOME}/os_cacert:${FUNCTEST_DIR}/conf/os_cacert"
-    echo "export OS_CACERT=${FUNCTEST_DIR}/conf/os_cacert" >> ${HOME}/opnfv-openrc.sh
 elif [[ ${INSTALLER_TYPE} == 'fuel' ]] && [[ "${DEPLOY_SCENARIO}" =~ -ha$ ]]; then
     cacert_file_vol="-v ${HOME}/os_cacert:/etc/ssl/certs/mcp_os_cacert"
 fi
@@ -120,20 +117,6 @@ if [[ ${INSTALLER_TYPE} == 'fuel' && ${DEPLOY_SCENARIO} == 'os-nosdn-nofeature-n
     envs="${envs} -e LIBVIRT_USER=ubuntu -e LIBVIRT_KEY_PATH=${FUNCTEST_DIR}/conf/libvirt_key"
 fi
 
-if [[ ${INSTALLER_TYPE} == 'compass' && ${DEPLOY_SCENARIO} =~ 'sfc' ]]; then
-    ssh_key="/tmp/id_rsa"
-    user_config="/tmp/openstack_user_config.yml"
-    docker cp compass-tasks:/root/.ssh/id_rsa $ssh_key
-    docker cp compass-tasks:/etc/openstack_deploy/openstack_user_config.yml $user_config
-    sshkey_vol="-v ${ssh_key}:/root/.ssh/id_rsa"
-    userconfig_vol="-v ${user_config}:${user_config}"
-    envs="${envs} -e EXTERNAL_NETWORK=${EXTERNAL_NETWORK}"
-fi
-
-if [[ ${INSTALLER_TYPE} == 'compass' ]] || [[ ${DEPLOY_SCENARIO} == *"odl"* ]]; then
-      envs="${envs} -e SDN_CONTROLLER_RESTCONFPORT=8080"
-fi
-
 if [[ ${DEPLOY_SCENARIO} == *"ovs"* ]] || [[ ${DEPLOY_SCENARIO} == *"fdio"* ]]; then
     if [[ -n ${IMAGE_PROPERTIES} ]]; then
         IMAGE_PROPERTIES="${IMAGE_PROPERTIES},hw_mem_page_size:large"
@@ -164,26 +147,6 @@ image-feature-enabled:
     api_v1: false
 object-storage:
     operator_role: SwiftOperator
-volume:
-    storage_protocol: ceph
-volume-feature-enabled:
-    backup: false
-EOF
-    ;;
-compass)
-    cat << EOF > "${tempest_conf_yaml}"
----
-compute-feature-enabled:
-    shelve: false
-    vnc_console: false
-    block_migration_for_live_migration: false
-    spice_console: true
-identity-feature-enabled:
-    api_v2: false
-    api_v2_admin: false
-image-feature-enabled:
-    api_v2: true
-    api_v1: false
 volume:
     storage_protocol: ceph
 volume-feature-enabled:
