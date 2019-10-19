@@ -1,167 +1,80 @@
 ---
-###################################################
-# All the jobs except verify have been removed!
-# They will only be enabled on request by projects!
-###################################################
-- project:
-    name: functest-kubernetes-project-jobs
+- functest-kubernetes-project-params: &functest-kubernetes-project-params
+    name: 'functest-kubernetes-project-params'
+    tag:
+      - latest:
+          branch: master
+          slave: lf-virtual1
+      - jerma:
+          branch: stable/jerma
+          slave: lf-virtual1
+      - iruya:
+          branch: stable/iruya
+          slave: lf-virtual1
+      - hunter:
+          branch: stable/hunter
+          slave: lf-virtual1
 
-    project: 'functest-kubernetes'
-
-    jobs:
-      - 'functest-kubernetes-verify-{stream}'
-      - 'functest-kubernetes-verify-{phase}-{stream}'
-
-    stream:
-      - master:
-          branch: '{stream}'
-          gs-pathname: ''
-          disabled: false
-      - jerma: &jerma
-          branch: '{stream}'
-          gs-pathname: ''
-          disabled: false
-      - iruya: &iruya
-          branch: 'stable/{stream}'
-          gs-pathname: '/{stream}'
-          disabled: false
-      - hunter: &hunter
-          branch: 'stable/{stream}'
-          gs-pathname: '/{stream}'
-          disabled: false
-
-    phase:
-      - 'unit-tests-and-docs':
-          slave-label: 'lf-virtual1'
-
-- job-template:
-    name: 'functest-kubernetes-verify-{stream}'
-
-    disabled: '{obj:disabled}'
-
-    project-type: 'multijob'
-
-    parameters:
-      - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - 'opnfv-build-ubuntu-defaults'
-
-    scm:
-      - git-scm-gerrit
-
-    triggers:
-      - 'functest-kubernetes-verify-triggers-macro':
-          project: '{project}'
-          branch: '{branch}'
-
+- builder:
+    name: functest-kubernetes-run-tox
     builders:
-      - shell: |
-          #!/bin/bash
-          # we do nothing here as the main stuff will be done
-          # in phase jobs
-          echo "Triggering phase jobs!"
-      - multijob:
-          name: 'functest-kubernetes-build-and-unittest'
-          execution-type: PARALLEL
-          projects:
-            - name: 'functest-kubernetes-verify-unit-tests-and-docs-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              git-revision: true
-              node-parameters: false
-              kill-phase-on: FAILURE
-              abort-all-job: false
+      - shell: tox
 
-- job-template:
-    name: 'functest-kubernetes-verify-{phase}-{stream}'
-
-    disabled: '{obj:disabled}'
-
-    wrappers:
-      - ssh-agent-wrapper
-      - build-timeout:
-          timeout: 30
-
-    parameters:
-      - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - '{slave-label}-defaults'
-
-    scm:
-      - git-scm-gerrit
-
-    builders:
-      - 'functest-kubernetes-verify-{phase}-builders-macro'
-
-    publishers:
-      - 'functest-kubernetes-verify-{phase}-publishers-macro'
-
-################################
-# job triggers
-################################
 - trigger:
-    name: 'functest-kubernetes-verify-triggers-macro'
+    name: functest-kubernetes-project-patchset-created
     triggers:
       - gerrit:
           server-name: 'gerrit.opnfv.org'
           trigger-on:
-            - patchset-created-event:
-                exclude-drafts: 'false'
-                exclude-trivial-rebase: 'false'
-                exclude-no-code-change: 'false'
-            - draft-published-event
+            - patchset-created-event
             - comment-added-contains-event:
                 comment-contains-value: 'recheck'
             - comment-added-contains-event:
                 comment-contains-value: 'reverify'
           projects:
             - project-compare-type: 'ANT'
-              project-pattern: '{project}'
+              project-pattern: 'functest-kubernetes'
               branches:
                 - branch-compare-type: 'ANT'
                   branch-pattern: '**/{branch}'
-              disable-strict-forbidden-file-verification: 'true'
-              forbidden-file-paths:
-                - compare-type: ANT
-                  pattern: 'docs/**|.gitignore'
+          skip-vote:
+            successful: false
+            failed: false
+            unstable: false
+            notbuilt: false
 
-################################
-# job builders
-################################
+- parameter:
+    name: functest-kubernetes-project-slave
+    parameters:
+      - label:
+          name: slave
+          default: '{slave}'
 
-- builder:
-    name: 'functest-kubernetes-verify-unit-tests-and-docs-builders-macro'
+- scm:
+    name: functest-kubernetes-project-scm
+    scm:
+      - git:
+          url: https://gerrit.opnfv.org/gerrit/functest-kubernetes
+          refspec: '+refs/changes/*:refs/changes/*'
+          branches:
+            - '{ref}'
+
+- job-template:
+    name: 'functest-kubernetes-run-tox-{tag}'
+    triggers:
+      - functest-kubernetes-project-patchset-created:
+          branch: '{branch}'
+    scm:
+      - functest-kubernetes-project-scm:
+          ref: $GERRIT_REFSPEC
+    parameters:
+      - functest-kubernetes-project-slave:
+          slave: '{slave}'
     builders:
-      - shell: |
-          cd $WORKSPACE && tox
+      - functest-kubernetes-run-tox
 
-################################
-# job publishers
-################################
-- publisher:
-    name: 'functest-kubernetes-verify-unit-tests-and-docs-publishers-macro'
-    publishers:
-      - junit:
-          results: nosetests.xml
-      - cobertura:
-          report-file: "coverage.xml"
-          only-stable: "true"
-          health-auto-update: "true"
-          stability-auto-update: "true"
-          zoom-coverage-chart: "true"
-          targets:
-            - files:
-                healthy: 10
-                unhealthy: 20
-                failing: 30
-            - method:
-                healthy: 50
-                unhealthy: 40
-                failing: 30
-      - email-jenkins-admins-on-failure
+- project:
+    name: 'functest-kubernetes-run-tox'
+    <<: *functest-kubernetes-project-params
+    jobs:
+      - 'functest-kubernetes-run-tox-{tag}'
