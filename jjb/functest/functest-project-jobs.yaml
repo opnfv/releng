@@ -1,167 +1,68 @@
 ---
-###################################################
-# All the jobs except verify have been removed!
-# They will only be enabled on request by projects!
-###################################################
-- project:
-    name: functest-project-jobs
-
-    project: 'functest'
-
-    jobs:
-      - 'functest-verify-{stream}'
-      - 'functest-verify-{phase}-{stream}'
-
-    stream:
-      - master:
-          branch: '{stream}'
-          gs-pathname: ''
-          disabled: false
+- functest-project-params: &functest-project-params
+    name: 'functest-project-params'
+    tag:
+      - latest:
+          branch: master
+          slave: lf-virtual9
       - jerma:
-          branch: 'stable/{stream}'
-          gs-pathname: ''
-          disabled: false
+          branch: stable/jerma
+          slave: lf-virtual4
       - iruya:
-          branch: 'stable/{stream}'
-          gs-pathname: ''
-          disabled: false
+          branch: stable/iruya
+          slave: lf-virtual4
       - hunter:
-          branch: 'stable/{stream}'
-          gs-pathname: ''
-          disabled: false
+          branch: stable/hunter
+          slave: lf-virtual6
 
-    phase:
-      - 'unit-tests-and-docs':
-          slave-label: 'lf-virtual1'
-
-- job-template:
-    name: 'functest-verify-{stream}'
-
-    disabled: '{obj:disabled}'
-
-    project-type: 'multijob'
-
-    parameters:
-      - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - 'opnfv-build-ubuntu-defaults'
-
-    scm:
-      - git-scm-gerrit
-
-    triggers:
-      - 'functest-verify-triggers-macro':
-          project: '{project}'
-          branch: '{branch}'
-
+- builder:
+    name: functest-run-tox
     builders:
-      - shell: |
-          #!/bin/bash
-          # we do nothing here as the main stuff will be done
-          # in phase jobs
-          echo "Triggering phase jobs!"
-      - multijob:
-          name: 'functest-build-and-unittest'
-          execution-type: PARALLEL
-          projects:
-            - name: 'functest-verify-unit-tests-and-docs-{stream}'
-              current-parameters: false
-              predefined-parameters: |
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              git-revision: true
-              node-parameters: false
-              kill-phase-on: FAILURE
-              abort-all-job: false
+      - shell: tox
 
-- job-template:
-    name: 'functest-verify-{phase}-{stream}'
-
-    disabled: '{obj:disabled}'
-
-    wrappers:
-      - ssh-agent-wrapper
-      - build-timeout:
-          timeout: 60
-
-    parameters:
-      - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - '{slave-label}-defaults'
-
-    scm:
-      - git-scm-gerrit
-
-    builders:
-      - 'functest-verify-{phase}-builders-macro'
-
-    publishers:
-      - 'functest-verify-{phase}-publishers-macro'
-
-################################
-# job triggers
-################################
 - trigger:
-    name: 'functest-verify-triggers-macro'
+    name: functest-project-patchset-created
     triggers:
       - gerrit:
           server-name: 'gerrit.opnfv.org'
           trigger-on:
-            - patchset-created-event:
-                exclude-drafts: 'false'
-                exclude-trivial-rebase: 'false'
-                exclude-no-code-change: 'false'
-            - draft-published-event
+            - patchset-created-event
             - comment-added-contains-event:
                 comment-contains-value: 'recheck'
             - comment-added-contains-event:
                 comment-contains-value: 'reverify'
           projects:
             - project-compare-type: 'ANT'
-              project-pattern: '{project}'
+              project-pattern: 'functest'
               branches:
                 - branch-compare-type: 'ANT'
                   branch-pattern: '**/{branch}'
-              disable-strict-forbidden-file-verification: 'true'
-              forbidden-file-paths:
-                - compare-type: ANT
-                  pattern: 'docs/**|.gitignore'
+          skip-vote:
+            successful: false
+            failed: false
+            unstable: false
+            notbuilt: false
 
-################################
-# job builders
-################################
+- parameter:
+    name: functest-project-slave
+    parameters:
+      - label:
+          name: slave
+          default: '{slave}'
 
-- builder:
-    name: 'functest-verify-unit-tests-and-docs-builders-macro'
+- job-template:
+    name: 'functest-run-tox-{tag}'
+    triggers:
+      - functest-project-patchset-created:
+          branch: '{branch}'
+    parameters:
+      - functest-project-slave:
+          slave: '{slave}'
     builders:
-      - shell: |
-          cd $WORKSPACE && tox
+      - functest-run-tox
 
-################################
-# job publishers
-################################
-- publisher:
-    name: 'functest-verify-unit-tests-and-docs-publishers-macro'
-    publishers:
-      - junit:
-          results: nosetests.xml
-      - cobertura:
-          report-file: "coverage.xml"
-          only-stable: "true"
-          health-auto-update: "true"
-          stability-auto-update: "true"
-          zoom-coverage-chart: "true"
-          targets:
-            - files:
-                healthy: 10
-                unhealthy: 20
-                failing: 30
-            - method:
-                healthy: 50
-                unhealthy: 40
-                failing: 30
-      - email-jenkins-admins-on-failure
+- project:
+    name: 'functest-run-tox'
+    <<: *functest-project-params
+    jobs:
+      - 'functest-run-tox-{tag}'
