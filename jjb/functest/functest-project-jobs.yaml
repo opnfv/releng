@@ -50,11 +50,23 @@
           name: slave
           default: '{slave}'
 
+- scm:
+    name: functest-project-scm
+    scm:
+      - git:
+          url: https://gerrit.opnfv.org/gerrit/functest
+          refspec: '+refs/changes/*:refs/changes/*'
+          branches:
+            - '{ref}'
+
 - job-template:
     name: 'functest-run-tox-{tag}'
     triggers:
       - functest-project-patchset-created:
           branch: '{branch}'
+    scm:
+      - functest-project-scm:
+          ref: $GERRIT_REFSPEC
     parameters:
       - functest-project-slave:
           slave: '{slave}'
