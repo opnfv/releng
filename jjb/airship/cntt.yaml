@@ -1,0 +1,565 @@
+---
+- cntt-jobs: &cntt-jobs
+    name: 'cntt-jobs'
+    current-parameters: true
+
+- cntt-params: &cntt-params
+    name: 'cntt-params'
+    repo: 'opnfv'
+    port:
+    tag:
+      - latest:
+          branch: master
+          slave: intel-pod10
+          functest_tag: hunter
+
+- parameter:
+    name: cntt-slave
+    parameters:
+      - label:
+          name: slave
+          default: '{slave}'
+
+- cntt-containers: &cntt-containers
+    name: 'cntt-containers'
+    repo: '{repo}'
+    port: '{port}'
+    container: '{container}'
+    functest_tag: '{functest_tag}'
+
+- cntt-run-containers: &cntt-run-containers
+    name: 'cntt-run-containers'
+    <<: *cntt-containers
+    test: '{test}'
+
+- builder:
+    name: cntt-pull-containers
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{functest_tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{functest_tag}
+          else
+            image={repo}:{port}/{container}:{functest_tag}
+          fi
+          sudo docker pull $image
+
+- builder:
+    name: cntt-run-containers
+    builders:
+      - shell: |
+          set +ex
+          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
+          if [ "{repo}" = "_" ]; then
+            image={container}:{functest_tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{functest_tag}
+          else
+            image={repo}:{port}/{container}:{functest_tag}
+          fi
+          sudo docker run --rm \
+            -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e NODE_NAME=intel-pod10 \
+            -e INSTALLER_TYPE=cntt \
+            -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -e DEBUG=True \
+            -e EXTERNAL_NETWORK=public \
+            -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
+            -v /home/opnfv/functest/images:/home/opnfv/functest/images \
+            -v /home/opnfv/functest/tempest_conf.yaml:/usr/lib/python2.7/\
+          site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/tempest_conf.yaml \
+            $image run_tests -t {test} -r
+          res=$?
+          gsutil -m cp -r $WORKSPACE/ \
+            gs://artifacts.opnfv.org/cntt/$JOB_NAME-$BUILD_ID > /dev/null 2>&1
+          find $WORKSPACE -type f \
+            -printf \
+            "http://artifacts.opnfv.org/cntt/$JOB_NAME-$BUILD_ID/%P\n"
+          exit $res
+
+- builder:
+    name: cntt-remove-images
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{functest_tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{functest_tag}
+          else
+            image={repo}:{port}/{container}:{functest_tag}
+          fi
+          sudo docker rmi $image || true
+
+- builder:
+    name: cntt-deploy
+    builders:
+      - shell: |
+          set +x
+          export TERM_OPTS=" "
+          sudo -H -E -u ubuntu bash -c 'tools/deploy.sh deploy_site'
+
+- scm:
+    name: cntt-scm
+    scm:
+      - git:
+          url: https://gerrit.opnfv.org/gerrit/airship
+          refspec: '+refs/changes/*:refs/changes/*'
+          branches:
+            - '{ref}'
+
+- parameter:
+    name: cntt-branch
+    parameters:
+      - string:
+          name: branch
+          default: '{branch}'
+
+- job-template:
+    name: 'cntt-deploy-daily-{tag}'
+    parameters:
+      - cntt-slave:
+          slave: '{slave}'
+      - cntt-branch:
+          branch: '{branch}'
+    scm:
+      - cntt-scm:
+          ref: $branch
+    builders:
+      - cntt-deploy
+
+- job-template:
+    name: 'cntt-deploy-gate-{tag}'
+    parameters:
+      - cntt-slave:
+          slave: '{slave}'
+    scm:
+      - cntt-scm:
+          ref: $GERRIT_REFSPEC
+    builders:
+      - cntt-deploy
+
+- project:
+    name: 'cntt-deploy'
+    <<: *cntt-params
+    jobs:
+      - 'cntt-deploy-daily-{tag}'
+      - 'cntt-deploy-gate-{tag}'
+
+- job-template:
+    name: 'cntt-{repo}-{container}-{tag}-pull'
+    parameters:
+      - cntt-slave:
+          slave: '{slave}'
+    builders:
+      - cntt-pull-containers:
+          <<: *cntt-containers
+
+- project:
+    name: 'cntt-opnfv-functest-healthcheck-pull'
+    <<: *cntt-params
+    container: 'functest-healthcheck'
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'cntt-opnfv-functest-smoke-pull'
+    <<: *cntt-params
+    container: 'functest-smoke'
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'cntt-opnfv-functest-benchmarking-pull'
+    <<: *cntt-params
+    container: 'functest-benchmarking'
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'cntt-opnfv-functest-vnf-pull'
+    <<: *cntt-params
+    container: 'functest-vnf'
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-pull'
+
+- job-template:
+    name: 'cntt-{repo}-{container}-{tag}-rmi'
+    parameters:
+      - cntt-slave:
+          slave: '{slave}'
+    builders:
+      - cntt-remove-images:
+          <<: *cntt-containers
+
+- project:
+    name: 'cntt-opnfv-functest-healthcheck-rmi'
+    <<: *cntt-params
+    container: 'functest-healthcheck'
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'cntt-opnfv-functest-smoke-rmi'
+    <<: *cntt-params
+    container: 'functest-smoke'
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'cntt-opnfv-functest-benchmarking-rmi'
+    <<: *cntt-params
+    container: 'functest-benchmarking'
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'cntt-opnfv-functest-vnf-rmi'
+    <<: *cntt-params
+    container: 'functest-vnf'
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-rmi'
+
+- job-template:
+    name: 'cntt-{repo}-{container}-{tag}-{test}-run'
+    parameters:
+      - cntt-slave:
+          slave: '{slave}'
+    builders:
+      - cntt-run-containers:
+          <<: *cntt-run-containers
+
+- project:
+    name: 'cntt-opnfv-functest-healthcheck'
+    <<: *cntt-params
+    container: 'functest-healthcheck'
+    test:
+      - connection_check
+      - tenantnetwork1
+      - tenantnetwork2
+      - vmready1
+      - vmready2
+      - singlevm1
+      - singlevm2
+      - vping_ssh
+      - vping_userdata
+      - cinder_test
+      - odl
+      - tempest_smoke
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'cntt-opnfv-functest-smoke'
+    <<: *cntt-params
+    container: 'functest-smoke'
+    test:
+      - neutron-tempest-plugin-api
+      - rally_sanity
+      - refstack_defcore
+      - tempest_full
+      - tempest_scenario
+      - patrole
+      - neutron_trunk
+      - networking-bgpvpn
+      - networking-sfc
+      - barbican
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'cntt-opnfv-functest-benchmarking'
+    <<: *cntt-params
+    container: 'functest-benchmarking'
+    test:
+      - rally_full
+      - rally_jobs
+      - vmtp
+      - shaker
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'cntt-opnfv-functest-vnf'
+    <<: *cntt-params
+    container: 'functest-vnf'
+    test:
+      - cloudify
+      - cloudify_ims
+      - heat_ims
+      - vyos_vrouter
+      - juju_epc
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-{test}-run'
+
+- job-template:
+    name: 'cntt-{tag}-daily'
+    project-type: multijob
+    triggers:
+      - timed: '@daily'
+    parameters:
+      - cntt-slave:
+          slave: '{slave}'
+      - cntt-branch:
+          branch: 'master'
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^cntt-{tag}-(daily|gate)$'
+    builders:
+      - multijob:
+          name: deploy
+          projects:
+            - name: 'cntt-deploy-daily-latest'
+              <<: *cntt-jobs
+      - multijob:
+          name: remove former images
+          projects:
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-rmi'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-rmi'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-benchmarking-{tag}-rmi'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-vnf-{tag}-rmi'
+              <<: *cntt-jobs
+      - multijob:
+          name: pull containers
+          projects:
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-pull'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-pull'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-benchmarking-{tag}-pull'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-vnf-{tag}-pull'
+              <<: *cntt-jobs
+      - multijob:
+          name: opnfv/functest-healthcheck:{functest_tag}
+          condition: ALWAYS
+          projects:
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-connection_check-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-tenantnetwork1-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-tenantnetwork2-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-vmready1-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-vmready2-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-singlevm1-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-singlevm2-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-vping_ssh-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-vping_userdata-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-cinder_test-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-odl-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-tempest_smoke-run'
+              <<: *cntt-jobs
+      - multijob:
+          name: opnfv/functest-smoke:{functest_tag}
+          condition: ALWAYS
+          projects:
+            - name: 'cntt-opnfv-functest-smoke-{tag}-neutron-tempest-plugin-api-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-rally_sanity-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-refstack_defcore-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_full-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_scenario-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-patrole-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-neutron_trunk-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-networking-bgpvpn-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-networking-sfc-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-barbican-run'
+              <<: *cntt-jobs
+      - multijob:
+          name: opnfv/functest-benchmarking:{functest_tag}
+          condition: ALWAYS
+          projects:
+            - name: 'cntt-opnfv-functest-benchmarking-{tag}-rally_full-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-benchmarking-{tag}-rally_jobs-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-benchmarking-{tag}-vmtp-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-benchmarking-{tag}-shaker-run'
+              <<: *cntt-jobs
+      - multijob:
+          name: opnfv/functest-vnf:{functest_tag}
+          condition: ALWAYS
+          execution-type: SEQUENTIALLY
+          projects:
+            - name: 'cntt-opnfv-functest-vnf-{tag}-cloudify-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-vnf-{tag}-cloudify_ims-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-vnf-{tag}-heat_ims-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-vnf-{tag}-vyos_vrouter-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-vnf-{tag}-juju_epc-run'
+              <<: *cntt-jobs
+
+- trigger:
+    name: cntt-patchset-created
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'airship'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+          skip-vote:
+            successful: false
+            failed: false
+            unstable: false
+            notbuilt: false
+
+- job-template:
+    name: 'cntt-{tag}-gate'
+    project-type: multijob
+    triggers:
+      - cntt-patchset-created:
+          branch: '{branch}'
+    parameters:
+      - cntt-slave:
+          slave: '{slave}'
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^cntt-{tag}-(daily|gate)$'
+    builders:
+      - multijob:
+          name: deploy
+          projects:
+            - name: 'cntt-deploy-gate-latest'
+              <<: *cntt-jobs
+      - multijob:
+          name: remove former images
+          projects:
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-rmi'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-rmi'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-benchmarking-{tag}-rmi'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-vnf-{tag}-rmi'
+              <<: *cntt-jobs
+      - multijob:
+          name: pull containers
+          projects:
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-pull'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-pull'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-benchmarking-{tag}-pull'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-vnf-{tag}-pull'
+              <<: *cntt-jobs
+      - multijob:
+          name: opnfv/functest-healthcheck:{functest_tag}
+          projects:
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-connection_check-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-tenantnetwork1-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-tenantnetwork2-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-vmready1-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-vmready2-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-singlevm1-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-singlevm2-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-vping_ssh-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-vping_userdata-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-cinder_test-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-odl-run'
+              <<: *cntt-jobs
+      - multijob:
+          name: opnfv/functest-smoke:{functest_tag}
+          projects:
+            - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_scenario-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-neutron_trunk-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-networking-bgpvpn-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-networking-sfc-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-barbican-run'
+              <<: *cntt-jobs
+      - multijob:
+          name: opnfv/functest-benchmarking:{functest_tag}
+          projects:
+            - name: 'cntt-opnfv-functest-benchmarking-{tag}-vmtp-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-benchmarking-{tag}-shaker-run'
+              <<: *cntt-jobs
+      - multijob:
+          name: opnfv/functest-vnf:{functest_tag}
+          condition: ALWAYS
+          execution-type: SEQUENTIALLY
+          projects:
+            - name: 'cntt-opnfv-functest-vnf-{tag}-cloudify-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-vnf-{tag}-cloudify_ims-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-vnf-{tag}-heat_ims-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-vnf-{tag}-vyos_vrouter-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-vnf-{tag}-juju_epc-run'
+              <<: *cntt-jobs
+
+- project:
+    name: 'cntt'
+    <<: *cntt-params
+    jobs:
+      - 'cntt-{tag}-daily'
+      - 'cntt-{tag}-gate'
+
+- view:
+    name: cntt
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^cntt-[a-z]+-(daily|check|gate)$
