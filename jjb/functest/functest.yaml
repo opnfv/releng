@@ -11,15 +11,19 @@
       - latest:
           branch: master
           slave: lf-virtual9
+          dashboard_url: http://172.30.13.94
       - jerma:
           branch: stable/jerma
           slave: lf-virtual4
+          dashboard_url: http://172.30.13.89
       - iruya:
           branch: stable/iruya
           slave: lf-virtual4
+          dashboard_url: http://172.30.13.89
       - hunter:
           branch: stable/hunter
           slave: lf-virtual6
+          dashboard_url: http://172.30.13.91
 
 - parameter:
     name: functest-slave
@@ -115,6 +119,7 @@
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEBUG=True \
             -e EXTERNAL_NETWORK=public \
+            -e DASHBOARD_URL={dashboard_url} \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
             -v /home/opnfv/functest/tempest_blacklist.yaml:/usr/lib/python$py/\
@@ -254,6 +259,14 @@
       - cinder_test
       - odl
       - tempest_smoke
+      - tempest_horizon
+    exclude:
+      - tag: jerma
+        test: tempest_horizon
+      - tag: iruya
+        test: tempest_horizon
+      - tag: hunter
+        test: tempest_horizon
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -263,6 +276,8 @@
     container: 'functest-smoke'
     test:
       - neutron-tempest-plugin-api
+      - tempest_keystone
+      - tempest_cinder
       - rally_sanity
       - refstack_defcore
       - refstack_compute
@@ -282,10 +297,18 @@
         test: refstack_defcore
       - tag: jerma
         test: refstack_defcore
+      - tag: jerma
+        test: tempest_keystone
+      - tag: jerma
+        test: tempest_cinder
       - tag: iruya
         test: refstack_defcore
       - tag: iruya
         test: octavia
+      - tag: iruya
+        test: tempest_keystone
+      - tag: iruya
+        test: tempest_cinder
       - tag: hunter
         test: refstack_compute
       - tag: hunter
@@ -296,6 +319,10 @@
         test: tempest_slow
       - tag: hunter
         test: octavia
+      - tag: hunter
+        test: tempest_keystone
+      - tag: hunter
+        test: tempest_cinder
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -388,10 +415,16 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-healthcheck-{tag}-tempest_smoke-run'
               <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-tempest_horizon-run'
+              <<: *functest-jobs
       - multijob:
           name: opnfv/functest-smoke:{tag}
           projects:
             - name: 'functest-opnfv-functest-smoke-{tag}-neutron-tempest-plugin-api-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-tempest_keystone-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-tempest_cinder-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-jobs
@@ -642,10 +675,16 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-healthcheck-{tag}-tempest_smoke-run'
               <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-tempest_horizon-run'
+              <<: *functest-jobs
       - multijob:
           name: opnfv/functest-smoke:{tag}
           projects:
             - name: 'functest-opnfv-functest-smoke-{tag}-neutron-tempest-plugin-api-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-tempest_keystone-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-tempest_cinder-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-jobs
@@ -809,10 +848,16 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-healthcheck-{tag}-tempest_smoke-run'
               <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-tempest_horizon-run'
+              <<: *functest-jobs
       - multijob:
           name: opnfv/functest-smoke:{tag}
           projects:
             - name: 'functest-opnfv-functest-smoke-{tag}-neutron-tempest-plugin-api-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-tempest_keystone-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-healthcheck-{tag}-tempest_cinder-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-jobs
