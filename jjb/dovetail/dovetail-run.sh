@@ -133,8 +133,8 @@ get_cred_file() {
         cat $OPENRC
         echo "INFO: change cacert file path in credentials file"
         change_cred_file_cacert_path
-        echo "INFO: set external network in credentials file"
-        change_cred_file_ext_net
+        #echo "INFO: set external network in credentials file"
+        #change_cred_file_ext_net
         echo "INFO: final openstack credentials file is:"
         cat $OPENRC
     else
@@ -396,6 +396,7 @@ cat << EOF >$tempest_conf_file
 compute:
     min_compute_nodes: 2
     volume_device_name: ${volume_device}
+    max_microversion: 2.65
 
 EOF
 
