@@ -7,13 +7,22 @@
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
-cp $HOME/config.env $WORKSPACE/dashboard
-cd $WORKSPACE/dashboard
 
-docker-compose pull
-docker-compose up -d
+BACKUP_DIR=$HOME/backups
+DATE=$(date +%Y%m%d)
+TAR_FILE=laas-dashboard-db-$DATE.tar.tz
 
-# Copy JIRA keys into web container
-WEB_CONTAINER="$(docker ps --filter 'name=dg01' -q)"
-docker cp $HOME/rsa.pub $WEB_CONTAINER:/pharos_dashboard/account/
-docker cp $HOME/rsa.pem $WEB_CONTAINER:/pharos_dashboard/account/
+mkdir -p $BACKUP_DIR
+echo "-- $DATE --"
+echo "--> Backing up Lab as a Service Dashboard"
+
+docker run --rm \
+  -v laas-data:/laas-data:ro \
+  -v $BACKUP_DIR:/backup \
+  alpine \
+  tar -czf /backup/$TAR_FILE -C /laas-data ./
+
+/usr/local/bin/gsutil cp $BACKUP_DIR/$TAR_FILE \
+  gs://opnfv-backups/laas-dashboard/ && rm $BACKUP_DIR/$TAR_FILE
+
+echo "--> LAAS dashboard backup complete"

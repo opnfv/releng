@@ -15,7 +15,7 @@
       stream: hunter
       branch: 'stable/{stream}'
       disabled: false
-    pharos-tools-receivers: &pharos_tools_receivers
+    laas-receivers: &laas_receivers
       receivers: >
           pberberian@iol.unh.edu
           sbergeron@iol.unh.edu
@@ -200,18 +200,18 @@
           project: 'nfvbench'
           <<: *master
           <<: *other-receivers
-      - 'pharos-tools-laas-dashboard':
-          project: 'pharos-tools'
+      - 'laas-dashboard':
+          project: 'laas'
           dockerdir: 'dashboard'
           dockerfile: 'web/Dockerfile'
           <<: *master
-          <<: *pharos_tools_receivers
-      - 'pharos-tools-laas-celery':
-          project: 'pharos-tools'
+          <<: *laas_receivers
+      - 'laas-celery':
+          project: 'laas'
           dockerdir: 'dashboard'
           dockerfile: 'worker/Dockerfile'
           <<: *master
-          <<: *pharos_tools_receivers
+          <<: *laas_receivers
       - 'qtip':
           project: 'qtip'
           dockerdir: '.'
