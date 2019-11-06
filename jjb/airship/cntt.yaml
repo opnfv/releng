@@ -50,7 +50,8 @@
     name: cntt-run-containers
     builders:
       - shell: |
-          set +ex
+          set +e
+          set -x
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
             image={container}:{functest_tag}
@@ -73,7 +74,7 @@
           site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/tempest_conf.yaml \
             $image run_tests -t {test} -r
           res=$?
-          gsutil -m cp -r $WORKSPACE/ \
+          gsutil -DD -m cp -r $WORKSPACE/ \
             gs://artifacts.opnfv.org/cntt/$JOB_NAME-$BUILD_ID > /dev/null 2>&1
           find $WORKSPACE -type f \
             -printf \
