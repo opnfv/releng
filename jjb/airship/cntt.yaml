@@ -120,6 +120,7 @@
 
 - job-template:
     name: 'cntt-deploy-daily-{tag}'
+    disabled: true
     parameters:
       - cntt-slave:
           slave: '{slave}'
@@ -133,6 +134,7 @@
 
 - job-template:
     name: 'cntt-deploy-gate-{tag}'
+    disabled: true
     parameters:
       - cntt-slave:
           slave: '{slave}'
@@ -298,7 +300,6 @@
 - job-template:
     name: 'cntt-{tag}-daily'
     project-type: multijob
-    disabled: true
     triggers:
       - timed: '@daily'
     parameters:
@@ -446,7 +447,6 @@
 - job-template:
     name: 'cntt-{tag}-gate'
     project-type: multijob
-    disabled: true
     triggers:
       - cntt-patchset-created:
           branch: '{branch}'
