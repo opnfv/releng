@@ -17,8 +17,6 @@
           disabled: false
 
     installer:
-      - 'apex':
-          scenario: 'os-nosdn-nofeature-noha'
       - 'fuel':
           scenario: 'os-nosdn-nofeature-noha'
 
@@ -29,10 +27,6 @@
     inspector:
       - 'sample'
       - 'congress'
-
-    exclude:
-      - installer: 'apex'
-        arch: 'aarch64'
 
     jobs:
       - 'doctor-verify-{stream}'
@@ -64,18 +58,9 @@
           # in phase jobs
           echo "Triggering phase jobs!"
       - multijob:
-          name: 'doctor-verify-sample'
+          name: 'doctor-verify-fault_management'
           execution-type: PARALLEL
           projects:
-            - name: 'doctor-verify-all-apex-sample-x86_64-{stream}'
-              predefined-parameters: |
-                PROJECT=$PROJECT
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              kill-phase-on: FAILURE
-              git-revision: true
             - name: 'doctor-verify-fault_management-fuel-sample-x86_64-{stream}'
               predefined-parameters: |
                 PROJECT=$PROJECT
@@ -86,23 +71,10 @@
               kill-phase-on: FAILURE
               git-revision: true
       - multijob:
-          name: 'doctor-verify-fenix'
+          name: 'doctor-verify-maintenance'
           execution-type: PARALLEL
           projects:
-            - name: 'doctor-verify-maintenance-apex-sample-x86_64-{stream}'
-              predefined-parameters: |
-                PROJECT=$PROJECT
-                GERRIT_BRANCH=$GERRIT_BRANCH
-                GERRIT_REFSPEC=$GERRIT_REFSPEC
-                GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
-                GERRIT_CHANGE_COMMIT_MESSAGE=$GERRIT_CHANGE_COMMIT_MESSAGE
-              kill-phase-on: FAILURE
-              git-revision: true
-      - multijob:
-          name: 'doctor-verify-congress'
-          execution-type: PARALLEL
-          projects:
-            - name: 'doctor-verify-fault_management-apex-congress-x86_64-{stream}'
+            - name: doctor-verify-maintenance-fuel-sample-x86_64-{stream}'
               predefined-parameters: |
                 PROJECT=$PROJECT
                 GERRIT_BRANCH=$GERRIT_BRANCH
@@ -115,7 +87,7 @@
 - job-template:
     name: 'doctor-verify-fault_management-{installer}-{inspector}-{arch}-{stream}'
     disabled: '{obj:disabled}'
-    node: 'doctor-{installer}-{arch}'
+    node: 'zte-virtual4'
     wrappers:
       - ssh-agent-wrapper
       - build-timeout:
@@ -141,7 +113,7 @@
 - job-template:
     name: 'doctor-verify-maintenance-{installer}-{inspector}-{arch}-{stream}'
     disabled: '{obj:disabled}'
-    node: 'doctor-{installer}-{arch}'
+    node: 'nokia-pod1'
     wrappers:
       - ssh-agent-wrapper
       - build-timeout:
