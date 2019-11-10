@@ -43,12 +43,6 @@
         image: 'tempest'
       - stream: 'jerma'
         image: 'tempest'
-      - stream: 'jerma'
-        image: 'smoke-cntt'
-      - stream: 'iruya'
-        image: 'smoke-cntt'
-      - stream: 'hunter'
-        image: 'smoke-cntt'
 
     # settings for jobs run in multijob phases
     build-job-settings: &build-job-settings
@@ -159,10 +153,6 @@
               <<: *build-job-settings
             - name: 'functest-vnf-docker-build-arm64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-smoke-cntt-docker-build-amd64-{stream}'
-              <<: *build-job-settings
-            - name: 'functest-smoke-cntt-docker-build-arm64-{stream}'
-              <<: *build-job-settings
       - multijob:
           name: 'publish all manifests'
           condition: SUCCESSFUL
@@ -176,6 +166,20 @@
               <<: *manifest-job-settings
             - name: 'functest-vnf-docker-manifest-{stream}'
               <<: *manifest-job-settings
+      - multijob:
+          name: 'build all functest cntt images'
+          condition: SUCCESSFUL
+          execution-type: PARALLEL
+          projects:
+            - name: 'functest-smoke-cntt-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-smoke-cntt-docker-build-arm64-{stream}'
+              <<: *build-job-settings
+      - multijob:
+          name: 'publish all cntt manifests'
+          condition: SUCCESSFUL
+          execution-type: PARALLEL
+          projects:
             - name: 'functest-smoke-cntt-docker-manifest-{stream}'
               <<: *manifest-job-settings
 
