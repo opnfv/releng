@@ -93,7 +93,7 @@
     name: xtesting-run-containers
     builders:
       - shell: |
-          set +ex
+          set +x
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -103,16 +103,13 @@
             image={repo}:{port}/{container}:{tag}
           fi
           sudo docker run --rm \
+            -e S3_ENDPOINT_URL=https://storage.googleapis.com \
+            -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting/$JOB_NAME-$BUILD_ID \
+            -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting/$JOB_NAME-$BUILD_ID \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -v /home/opnfv/xtesting/.boto:/root/boto \
             -e DEBUG=true \
-            $image run_tests -t {test}
-          res=$?
-          gsutil -m cp -r $WORKSPACE/ \
-            gs://artifacts.opnfv.org/xtesting/$JOB_NAME-$BUILD_ID > /dev/null 2>&1
-          find $WORKSPACE -type f \
-            -printf \
-            "http://artifacts.opnfv.org/xtesting/$JOB_NAME-$BUILD_ID/%P\n"
-          exit $res
+            $image run_tests -t {test} -p
 
 - builder:
     name: xtesting-remove-images
