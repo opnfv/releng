@@ -98,7 +98,7 @@
     name: functest-run-containers
     builders:
       - shell: |
-          set +ex
+          set +x
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -121,21 +121,18 @@
             -e DEBUG=True \
             -e EXTERNAL_NETWORK=public \
             -e DASHBOARD_URL={dashboard_url} \
+            -e S3_ENDPOINT_URL=https://storage.googleapis.com \
+            -e S3_DST_URL=s3://artifacts.opnfv.org/functest/$JOB_NAME-$BUILD_ID \
+            -e HTTP_DST_URL=http://artifacts.opnfv.org/functest/$JOB_NAME-$BUILD_ID \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
             -v /home/opnfv/functest/tempest_blacklist.yaml:/usr/lib/python$py/\
+            -v /home/opnfv/functest/.boto:/root/.boto \
           site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/\
           blacklist.yaml \
             -v /home/opnfv/functest/blacklist.yaml:/usr/lib/python$py/\
           site-packages/functest/opnfv_tests/openstack/rally/blacklist.yaml \
-            $image run_tests -t {test}
-          res=$?
-          gsutil -m cp -r $WORKSPACE/ \
-            gs://artifacts.opnfv.org/functest/$JOB_NAME-$BUILD_ID > /dev/null 2>&1
-          find $WORKSPACE -type f \
-            -printf \
-            "http://artifacts.opnfv.org/functest/$JOB_NAME-$BUILD_ID/%P\n"
-          exit $res
+            $image run_tests -t {test} -p
 
 - builder:
     name: functest-remove-images
