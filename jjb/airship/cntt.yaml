@@ -61,7 +61,7 @@
           fi
           sudo docker run --rm \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
-            -e NODE_NAME=intel-pod10 \
+            -e NODE_NAME=$slave \
             -e INSTALLER_TYPE=cntt \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEBUG=True \
@@ -100,7 +100,7 @@
       - shell: |
           set +x
           export TERM_OPTS=" "
-          sudo -H -E -u ubuntu bash -c 'tools/deploy.sh deploy_site'
+          sudo -H -E -u ubuntu bash -c 'tools/deploy.sh $slave deploy_site'
 
 - scm:
     name: cntt-scm
