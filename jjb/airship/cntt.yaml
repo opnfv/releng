@@ -50,7 +50,7 @@
     name: cntt-run-containers
     builders:
       - shell: |
-          set +ex
+          set +x
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
             image={container}:{functest_tag}
@@ -60,10 +60,15 @@
             image={repo}:{port}/{container}:{functest_tag}
           fi
           sudo docker run --rm \
+            -e S3_ENDPOINT_URL=https://storage.googleapis.com \
+            -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting/$JOB_NAME-$BUILD_ID \
+            -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting/$JOB_NAME-$BUILD_ID \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e NODE_NAME=$slave \
             -e INSTALLER_TYPE=cntt \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -v /home/opnfv/functest/.boto:/root/.boto \
             -e DEBUG=True \
             -e EXTERNAL_NETWORK=public \
             -e DEPLOY_SCENARIO=os-nosdn-nofeature-ha \
@@ -71,14 +76,7 @@
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
             -v /home/opnfv/functest/tempest_conf.yaml:/usr/lib/python2.7/\
           site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/tempest_conf.yaml \
-            $image run_tests -t {test} -r
-          res=$?
-          gsutil -m cp -r $WORKSPACE/ \
-            gs://artifacts.opnfv.org/cntt/$JOB_NAME-$BUILD_ID > /dev/null 2>&1
-          find $WORKSPACE -type f \
-            -printf \
-            "http://artifacts.opnfv.org/cntt/$JOB_NAME-$BUILD_ID/%P\n"
-          exit $res
+            $image run_tests -t {test} -r -p
 
 - builder:
     name: cntt-remove-images
