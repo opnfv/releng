@@ -20,6 +20,20 @@
           name: slave
           default: '{slave}'
 
+- parameter:
+    name: cntt-DEBUG
+    parameters:
+      - string:
+          name: DEBUG
+          default: 'true'
+
+- parameter:
+    name: cntt-EXTERNAL_NETWORK
+    parameters:
+      - string:
+          name: EXTERNAL_NETWORK
+          default: public
+
 - cntt-containers: &cntt-containers
     name: 'cntt-containers'
     repo: '{repo}'
@@ -69,8 +83,8 @@
             -e INSTALLER_TYPE=cntt \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -v /home/opnfv/functest/.boto:/root/.boto \
-            -e DEBUG=True \
-            -e EXTERNAL_NETWORK=public \
+            -e DEBUG=$DEBUG \
+            -e EXTERNAL_NETWORK=$EXTERNAL_NETWORK \
             -e DEPLOY_SCENARIO=os-nosdn-nofeature-ha \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
@@ -172,6 +186,13 @@
       - 'cntt-{repo}-{container}-{tag}-pull'
 
 - project:
+    name: 'cntt-opnfv-functest-smoke-cntt-pull'
+    <<: *cntt-params
+    container: 'functest-smoke-cntt'
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-pull'
+
+- project:
     name: 'cntt-opnfv-functest-benchmarking-pull'
     <<: *cntt-params
     container: 'functest-benchmarking'
@@ -209,6 +230,13 @@
       - 'cntt-{repo}-{container}-{tag}-rmi'
 
 - project:
+    name: 'cntt-opnfv-functest-smoke-cntt-rmi'
+    <<: *cntt-params
+    container: 'functest-smoke-cntt'
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-rmi'
+
+- project:
     name: 'cntt-opnfv-functest-benchmarking-rmi'
     <<: *cntt-params
     container: 'functest-benchmarking'
@@ -227,6 +255,10 @@
     parameters:
       - cntt-slave:
           slave: '{slave}'
+      - cntt-DEBUG:
+          DEBUG: 'true'
+      - cntt-EXTERNAL_NETWORK:
+          EXTERNAL_NETWORK: public
     builders:
       - cntt-run-containers:
           <<: *cntt-run-containers
@@ -270,6 +302,19 @@
       - 'cntt-{repo}-{container}-{tag}-{test}-run'
 
 - project:
+    name: 'cntt-opnfv-functest-smoke-cntt'
+    <<: *cntt-params
+    container: 'functest-smoke-cntt'
+    test:
+      - neutron-tempest-plugin-api
+      - tempest_cinder
+      - tempest_keystone
+      - rally_sanity
+      - tempest_full
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-{test}-run'
+
+- project:
     name: 'cntt-opnfv-functest-benchmarking'
     <<: *cntt-params
     container: 'functest-benchmarking'
@@ -304,6 +349,10 @@
           slave: '{slave}'
       - cntt-branch:
           branch: 'master'
+      - cntt-DEBUG:
+          DEBUG: 'true'
+      - cntt-EXTERNAL_NETWORK:
+          EXTERNAL_NETWORK: public
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -323,6 +372,8 @@
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-rmi'
               <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-rmi'
+              <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-benchmarking-{tag}-rmi'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-vnf-{tag}-rmi'
@@ -333,6 +384,8 @@
             - name: 'cntt-opnfv-functest-healthcheck-{tag}-pull'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-pull'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-pull'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-benchmarking-{tag}-pull'
               <<: *cntt-jobs
@@ -389,6 +442,19 @@
             - name: 'cntt-opnfv-functest-smoke-{tag}-networking-sfc-run'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-barbican-run'
+              <<: *cntt-jobs
+      - multijob:
+          name: opnfv/functest-smoke-cntt:{tag}
+          projects:
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-neutron-tempest-plugin-api-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-tempest_cinder-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-tempest_keystone-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-rally_sanity-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-tempest_full-run'
               <<: *cntt-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{functest_tag}
@@ -451,6 +517,10 @@
     parameters:
       - cntt-slave:
           slave: '{slave}'
+      - cntt-DEBUG:
+          DEBUG: 'true'
+      - cntt-EXTERNAL_NETWORK:
+          EXTERNAL_NETWORK: public
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -470,6 +540,8 @@
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-rmi'
               <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-rmi'
+              <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-benchmarking-{tag}-rmi'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-vnf-{tag}-rmi'
@@ -480,6 +552,8 @@
             - name: 'cntt-opnfv-functest-healthcheck-{tag}-pull'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-pull'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-pull'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-benchmarking-{tag}-pull'
               <<: *cntt-jobs
@@ -522,6 +596,19 @@
             - name: 'cntt-opnfv-functest-smoke-{tag}-networking-sfc-run'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-barbican-run'
+              <<: *cntt-jobs
+      - multijob:
+          name: opnfv/functest-smoke-cntt:{tag}
+          projects:
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-neutron-tempest-plugin-api-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-tempest_cinder-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-tempest_keystone-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-rally_sanity-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-tempest_full-run'
               <<: *cntt-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{functest_tag}

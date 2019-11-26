@@ -20,6 +20,20 @@
           name: slave
           default: '{slave}'
 
+- parameter:
+    name: airship-DEBUG
+    parameters:
+      - string:
+          name: DEBUG
+          default: 'true'
+
+- parameter:
+    name: airship-EXTERNAL_NETWORK
+    parameters:
+      - string:
+          name: EXTERNAL_NETWORK
+          default: public
+
 - airship-containers: &airship-containers
     name: 'airship-containers'
     repo: '{repo}'
@@ -69,8 +83,8 @@
             -e INSTALLER_TYPE=airship \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -v /home/opnfv/functest/.boto:/root/.boto \
-            -e DEBUG=True \
-            -e EXTERNAL_NETWORK=public \
+            -e DEBUG=$DEBUG \
+            -e EXTERNAL_NETWORK=$EXTERNAL_NETWORK \
             -e DEPLOY_SCENARIO=os-nosdn-nofeature-ha \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
@@ -226,6 +240,10 @@
     parameters:
       - airship-slave:
           slave: '{slave}'
+      - airship-DEBUG:
+          DEBUG: 'true'
+      - airship-EXTERNAL_NETWORK:
+          EXTERNAL_NETWORK: public
     builders:
       - airship-run-containers:
           <<: *airship-run-containers
@@ -303,6 +321,10 @@
           slave: '{slave}'
       - airship-branch:
           branch: 'master'
+      - airship-DEBUG:
+          DEBUG: 'true'
+      - airship-EXTERNAL_NETWORK:
+          EXTERNAL_NETWORK: public
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -449,6 +471,10 @@
     parameters:
       - airship-slave:
           slave: '{slave}'
+      - airship-DEBUG:
+          DEBUG: 'true'
+      - airship-EXTERNAL_NETWORK:
+          EXTERNAL_NETWORK: public
     properties:
       - build-blocker:
           use-build-blocker: true
