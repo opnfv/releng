@@ -349,6 +349,7 @@
       - tempest_cinder
       - tempest_keystone
       - rally_sanity
+      - tempest_full
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -498,6 +499,8 @@
             - name: 'functest-opnfv-functest-smoke-cntt-{tag}-tempest_keystone-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-cntt-{tag}-rally_sanity-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-cntt-{tag}-tempest_full-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{tag}
@@ -791,6 +794,8 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-cntt-{tag}-rally_sanity-run'
               <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-cntt-{tag}-tempest_full-run'
+              <<: *functest-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{tag}
           projects:
@@ -985,6 +990,8 @@
             - name: 'functest-opnfv-functest-smoke-cntt-{tag}-tempest_keystone-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-cntt-{tag}-rally_sanity-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-cntt-{tag}-tempest_full-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{tag}
