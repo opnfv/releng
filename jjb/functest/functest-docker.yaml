@@ -37,6 +37,7 @@
       - 'benchmarking'
       - 'vnf'
       - 'smoke-cntt'
+      - 'benchmarking-cntt'
 
     exclude:
       - stream: 'master'
@@ -175,12 +176,18 @@
               <<: *build-job-settings
             - name: 'functest-smoke-cntt-docker-build-arm64-{stream}'
               <<: *build-job-settings
+            - name: 'functest-benchmarking-cntt-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-benchmarking-cntt-docker-build-arm64-{stream}'
+              <<: *build-job-settings
       - multijob:
           name: 'publish all cntt manifests'
           condition: SUCCESSFUL
           execution-type: PARALLEL
           projects:
             - name: 'functest-smoke-cntt-docker-manifest-{stream}'
+              <<: *manifest-job-settings
+            - name: 'functest-benchmarking-cntt-docker-manifest-{stream}'
               <<: *manifest-job-settings
 
     publishers:
