@@ -311,6 +311,8 @@
       - tempest_keystone
       - rally_sanity
       - tempest_full
+      - tempest_scenario
+      - tempest_slow
     jobs:
       - 'cntt-{repo}-{container}-{tag}-{test}-run'
 
@@ -455,6 +457,10 @@
             - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-rally_sanity-run'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-tempest_full-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-tempest_scenario-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-tempest_slow-run'
               <<: *cntt-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{functest_tag}
@@ -609,6 +615,10 @@
             - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-rally_sanity-run'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-tempest_full-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-tempest_scenario-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-tempest_slow-run'
               <<: *cntt-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{functest_tag}
