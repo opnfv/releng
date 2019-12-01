@@ -21,6 +21,12 @@
           default: '{slave}'
 
 - parameter:
+    name: cntt-build_tag
+    parameters:
+      - random-string:
+          name: build_tag
+
+- parameter:
     name: cntt-DEBUG
     parameters:
       - string:
@@ -81,6 +87,7 @@
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e NODE_NAME=$slave \
             -e INSTALLER_TYPE=cntt \
+            -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -v /home/opnfv/functest/.boto:/root/.boto \
             -e DEBUG=$DEBUG \
@@ -254,6 +261,8 @@
     parameters:
       - cntt-slave:
           slave: '{slave}'
+      - cntt-build_tag:
+          build_tag: ''
       - cntt-DEBUG:
           DEBUG: 'true'
       - cntt-EXTERNAL_NETWORK:
@@ -348,6 +357,8 @@
     parameters:
       - cntt-slave:
           slave: '{slave}'
+      - cntt-build_tag:
+          build_tag: ''
       - cntt-branch:
           branch: 'master'
       - cntt-DEBUG:
@@ -523,6 +534,8 @@
     parameters:
       - cntt-slave:
           slave: '{slave}'
+      - cntt-build_tag:
+          build_tag: ''
       - cntt-DEBUG:
           DEBUG: 'true'
       - cntt-EXTERNAL_NETWORK:

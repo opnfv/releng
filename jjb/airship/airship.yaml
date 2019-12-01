@@ -21,6 +21,12 @@
           default: '{slave}'
 
 - parameter:
+    name: airship-build_tag
+    parameters:
+      - random-string:
+          name: build_tag
+
+- parameter:
     name: airship-DEBUG
     parameters:
       - string:
@@ -81,6 +87,7 @@
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e NODE_NAME=$slave \
             -e INSTALLER_TYPE=airship \
+            -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -v /home/opnfv/functest/.boto:/root/.boto \
             -e DEBUG=$DEBUG \
@@ -240,6 +247,8 @@
     parameters:
       - airship-slave:
           slave: '{slave}'
+      - airship-build_tag:
+          build_tag: ''
       - airship-DEBUG:
           DEBUG: 'true'
       - airship-EXTERNAL_NETWORK:
@@ -319,6 +328,8 @@
     parameters:
       - airship-slave:
           slave: '{slave}'
+      - airship-build_tag:
+          build_tag: ''
       - airship-branch:
           branch: 'master'
       - airship-DEBUG:
@@ -471,6 +482,8 @@
     parameters:
       - airship-slave:
           slave: '{slave}'
+      - airship-build_tag:
+          build_tag: ''
       - airship-DEBUG:
           DEBUG: 'true'
       - airship-EXTERNAL_NETWORK:
