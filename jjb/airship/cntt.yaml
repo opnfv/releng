@@ -297,10 +297,13 @@
     container: 'functest-smoke'
     test:
       - neutron-tempest-plugin-api
+      - tempest_cinder
+      - tempest_keystone
       - rally_sanity
       - refstack_defcore
       - tempest_full
       - tempest_scenario
+      - tempest_slow
       - patrole
       - neutron_trunk
       - networking-bgpvpn
@@ -437,6 +440,10 @@
           projects:
             - name: 'cntt-opnfv-functest-smoke-{tag}-neutron-tempest-plugin-api-run'
               <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_cinder-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_keystone-run'
+              <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-refstack_defcore-run'
@@ -444,6 +451,8 @@
             - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_full-run'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_scenario-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_slow-run'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-patrole-run'
               <<: *cntt-jobs
