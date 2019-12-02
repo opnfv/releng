@@ -67,9 +67,7 @@
           fail: true
 
     builders:
-      - yardstick-unit-tests-python-27
       - yardstick-unit-tests-python-3
-      - yardstick-functional-tests-python-27
       - yardstick-functional-tests-python-3
       - yardstick-coverage-tests
       - yardstick-pep8-tests
@@ -114,9 +112,7 @@
           fail: true
 
     builders:
-      - yardstick-unit-tests-python-27
       - yardstick-unit-tests-python-3
-      - yardstick-functional-tests-python-27
       - yardstick-functional-tests-python-3
       - yardstick-coverage-tests
       - yardstick-pep8-tests
@@ -124,22 +120,6 @@
 ################################
 # job builders
 ################################
-
-- builder:
-    name: yardstick-unit-tests-python-27
-    builders:
-      - shell: |
-          #!/bin/bash
-          set -o errexit
-          set -o pipefail
-
-          sudo apt-get -y autoremove
-          sudo apt-get install -y build-essential python-dev python3-dev
-          sudo apt-get -y clean && sudo apt-get -y autoremove
-
-          echo "Running unit tests in Python 2.7 ..."
-          cd $WORKSPACE
-          tox -epy27
 
 - builder:
     name: yardstick-unit-tests-python-3
@@ -156,30 +136,6 @@
           echo "Running unit tests in Python 3 ..."
           cd $WORKSPACE
           tox -epy3
-
-- builder:
-    name: yardstick-functional-tests-python-27
-    builders:
-      - shell: |
-          #!/bin/bash
-          set -o errexit
-          set -o pipefail
-
-          sudo apt-get -y autoremove
-          sudo apt-get install -y build-essential python-dev python3-dev rabbitmq-server
-          sudo apt-get -y clean && sudo apt-get -y autoremove
-
-          echo "Configure RabbitMQ service"
-          sudo service rabbitmq-server restart
-          sudo rabbitmqctl start_app
-          if [ -z "$(sudo rabbitmqctl list_users | grep yardstick)" ]; then
-            sudo rabbitmqctl add_user yardstick yardstick
-            sudo rabbitmqctl set_permissions yardstick ".*" ".*" ".*"
-          fi
-
-          echo "Running functional tests in Python 2.7 ..."
-          cd $WORKSPACE
-          tox -efunctional
 
 - builder:
     name: yardstick-functional-tests-python-3
