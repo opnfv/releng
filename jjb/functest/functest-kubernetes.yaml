@@ -29,6 +29,12 @@
           default: '{slave}'
 
 - parameter:
+    name: functest-kubernetes-build_tag
+    parameters:
+      - random-string:
+          name: build_tag
+
+- parameter:
     name: functest-kubernetes-branch
     parameters:
       - string:
@@ -104,8 +110,9 @@
           fi
           docker run --rm \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
-            -e S3_DST_URL=s3://artifacts.opnfv.org/functest-kubernetes/$JOB_NAME-$BUILD_ID \
-            -e HTTP_DST_URL=http://artifacts.opnfv.org/functest-kubernetes/$JOB_NAME-$BUILD_ID \
+            -e S3_DST_URL=s3://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -e HTTP_DST_URL=http://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEPLOY_SCENARIO=k8-nosdn-nofeature-noha \
             -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
@@ -186,6 +193,8 @@
     parameters:
       - functest-kubernetes-slave:
           slave: '{slave}'
+      - functest-kubernetes-build_tag:
+          build_tag: ''
     builders:
       - functest-kubernetes-run-containers:
           <<: *functest-kubernetes-run-containers
@@ -222,6 +231,8 @@
     parameters:
       - functest-kubernetes-slave:
           slave: '{slave}'
+      - functest-kubernetes-build_tag:
+          build_tag: ''
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -341,6 +352,8 @@
     parameters:
       - functest-kubernetes-slave:
           slave: '{slave}'
+      - functest-kubernetes-build_tag:
+          build_tag: ''
       - functest-kubernetes-branch:
           branch: '{branch}'
     properties:
@@ -428,6 +441,8 @@
     parameters:
       - functest-kubernetes-slave:
           slave: '{slave}'
+      - functest-kubernetes-build_tag:
+          build_tag: ''
     properties:
       - build-blocker:
           use-build-blocker: true

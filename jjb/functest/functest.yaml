@@ -33,6 +33,12 @@
           default: '{slave}'
 
 - parameter:
+    name: functest-build_tag
+    parameters:
+      - random-string:
+          name: build_tag
+
+- parameter:
     name: functest-branch
     parameters:
       - string:
@@ -132,8 +138,9 @@
           fi
           sudo docker run --rm \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
-            -e S3_DST_URL=s3://artifacts.opnfv.org/functest/$JOB_NAME-$BUILD_ID \
-            -e HTTP_DST_URL=http://artifacts.opnfv.org/functest/$JOB_NAME-$BUILD_ID \
+            -e S3_DST_URL=s3://artifacts.opnfv.org/functest/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -e HTTP_DST_URL=http://artifacts.opnfv.org/functest/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEBUG=$DEBUG \
             -e EXTERNAL_NETWORK=$EXTERNAL_NETWORK \
@@ -264,6 +271,8 @@
     parameters:
       - functest-slave:
           slave: '{slave}'
+      - functest-build_tag:
+          build_tag: ''
       - functest-DEBUG:
           DEBUG: 'true'
       - functest-EXTERNAL_NETWORK:
@@ -386,6 +395,8 @@
     parameters:
       - functest-slave:
           slave: '{slave}'
+      - functest-build_tag:
+          build_tag: ''
       - functest-DEBUG:
           DEBUG: 'true'
       - functest-EXTERNAL_NETWORK:
@@ -659,6 +670,8 @@
     parameters:
       - functest-slave:
           slave: '{slave}'
+      - functest-build_tag:
+          build_tag: ''
       - functest-branch:
           branch: '{branch}'
       - functest-DEBUG:
@@ -862,6 +875,8 @@
     parameters:
       - functest-slave:
           slave: '{slave}'
+      - functest-build_tag:
+          build_tag: ''
       - functest-DEBUG:
           DEBUG: 'true'
       - functest-EXTERNAL_NETWORK:

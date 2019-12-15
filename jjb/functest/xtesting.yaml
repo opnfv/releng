@@ -29,6 +29,12 @@
           default: '{slave}'
 
 - parameter:
+    name: xtesting-build_tag
+    parameters:
+      - random-string:
+          name: build_tag
+
+- parameter:
     name: xtesting-branch
     parameters:
       - string:
@@ -104,8 +110,9 @@
           fi
           sudo docker run --rm \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
-            -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting/$JOB_NAME-$BUILD_ID \
-            -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting/$JOB_NAME-$BUILD_ID \
+            -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -v /home/opnfv/xtesting/.boto:/root/.boto \
             -e DEBUG=true \
@@ -171,6 +178,8 @@
     parameters:
       - xtesting-slave:
           slave: '{slave}'
+      - xtesting-build_tag:
+          build_tag: ''
     builders:
       - xtesting-run-containers:
           <<: *xtesting-run-containers
@@ -202,6 +211,8 @@
     parameters:
       - xtesting-slave:
           slave: '{slave}'
+      - xtesting-build_tag:
+          build_tag: ''
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -299,6 +310,8 @@
     parameters:
       - xtesting-slave:
           slave: '{slave}'
+      - xtesting-build_tag:
+          build_tag: ''
       - xtesting-branch:
           branch: '{branch}'
     properties:
@@ -376,6 +389,8 @@
     parameters:
       - xtesting-slave:
           slave: '{slave}'
+      - xtesting-build_tag:
+          build_tag: ''
     properties:
       - build-blocker:
           use-build-blocker: true
