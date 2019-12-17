@@ -38,12 +38,19 @@
       - 'vnf'
       - 'smoke-cntt'
       - 'benchmarking-cntt'
+      - 'features'
 
     exclude:
       - stream: 'master'
         image: 'tempest'
       - stream: 'jerma'
         image: 'tempest'
+      - stream: 'master'
+        image: 'features'
+      - stream: 'jerma'
+        image: 'features'
+      - stream: 'iruya'
+        image: 'features'
 
     # settings for jobs run in multijob phases
     build-job-settings: &build-job-settings
@@ -154,6 +161,10 @@
               <<: *build-job-settings
             - name: 'functest-vnf-docker-build-arm64-{stream}'
               <<: *build-job-settings
+            - name: 'functest-features-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-features-docker-build-arm64-{stream}'
+              <<: *build-job-settings
       - multijob:
           name: 'publish all manifests'
           condition: SUCCESSFUL
@@ -166,6 +177,8 @@
             - name: 'functest-benchmarking-docker-manifest-{stream}'
               <<: *manifest-job-settings
             - name: 'functest-vnf-docker-manifest-{stream}'
+              <<: *manifest-job-settings
+            - name: 'functest-features-docker-manifest-{stream}'
               <<: *manifest-job-settings
       - multijob:
           name: 'build all functest cntt images'
