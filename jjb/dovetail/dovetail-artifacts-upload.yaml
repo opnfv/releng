@@ -16,6 +16,10 @@
           gs-pathname: ''
           disabled: false
 
+      - hunter: &hunter
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
     image:
       - 'dovetail'
       - 'functest'
@@ -94,8 +98,7 @@
 - builder:
     name: dovetail-builder-artifacts-upload
     builders:
-      - shell:
-          !include-raw: ./dovetail-artifacts-upload.sh
+      - shell: !include-raw: ./dovetail-artifacts-upload.sh
 
 - builder:
     name: dovetail-upload-artifacts-cache-cleanup
@@ -111,5 +114,4 @@
 - builder:
     name: dovetail-images-cleanup
     builders:
-      - shell:
-          !include-raw: ./dovetail-cleanup.sh
+      - shell: !include-raw: ./dovetail-cleanup.sh
