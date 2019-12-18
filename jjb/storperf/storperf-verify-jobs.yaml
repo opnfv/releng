@@ -4,23 +4,27 @@
 
     project: 'storperf'
 
-    # -------------------------------
-    # branches
-    # -------------------------------
+  # -------------------------------
+  # branches
+  # -------------------------------
     stream:
       - master:
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
           docker-tag: 'latest'
-      - hunter: &hunter
+      - iruya: &iruya
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
+      - hunter:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           disabled: false
           docker-tag: 'stable'
-    # -------------------------------
-    # patch verification phases
-    # -------------------------------
+  # -------------------------------
+  # patch verification phases
+  # -------------------------------
     phase:
       - 'unit-test':
           slave-label: 'opnfv-build-ubuntu'
@@ -28,9 +32,9 @@
           slave-label: 'opnfv-build-ubuntu'
       - 'build-aarch64':
           slave-label: 'opnfv-build-ubuntu-arm'
-    # -------------------------------
-    # jobs
-    # -------------------------------
+  # -------------------------------
+  # jobs
+  # -------------------------------
     jobs:
       - 'storperf-verify-{stream}'
       - 'storperf-verify-{phase}-{stream}'
