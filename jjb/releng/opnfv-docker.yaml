@@ -15,13 +15,17 @@
       stream: hunter
       branch: 'stable/{stream}'
       disabled: false
+    iruya: &iruya
+      stream: iruya
+      branch: 'stable/{stream}'
+      disabled: false
     laas-receivers: &laas_receivers
       receivers: >
           pberberian@iol.unh.edu
           sbergeron@iol.unh.edu
     storperf-receivers: &storperf-receivers
       receivers: >
-          mark.beierl@emc.com
+          mbeierl@vmware.com
     yardstick-receivers: &yardstick-receivers
       receivers: >
           rexlee8776@gmail.com
@@ -326,40 +330,43 @@
           project: 'bottlenecks'
           <<: *hunter
           <<: *other-receivers
+      - 'yardstick':
+          project: 'yardstick'
+          <<: *hunter
+          <<: *yardstick-receivers
+
+      # projects with jobs for iruya
       - 'storperf-master':
           project: 'storperf'
           dockerdir: 'docker/storperf-master'
           arch_tag: 'x86_64'
-          <<: *hunter
+          <<: *iruya
           <<: *storperf-receivers
       - 'storperf-graphite':
           project: 'storperf'
           dockerdir: 'docker/storperf-graphite'
           arch_tag: 'x86_64'
-          <<: *hunter
+          <<: *iruya
           <<: *storperf-receivers
       - 'storperf-httpfrontend':
           project: 'storperf'
           dockerdir: 'docker/storperf-httpfrontend'
           arch_tag: 'x86_64'
-          <<: *hunter
+          <<: *iruya
           <<: *storperf-receivers
       - 'storperf-reporting':
           project: 'storperf'
           dockerdir: 'docker/storperf-reporting'
           arch_tag: 'x86_64'
-          <<: *hunter
+          <<: *iruya
           <<: *storperf-receivers
       - 'storperf-swaggerui':
           project: 'storperf'
           dockerdir: 'docker/storperf-swaggerui'
           arch_tag: 'x86_64'
-          <<: *hunter
+          <<: *iruya
           <<: *storperf-receivers
-      - 'yardstick':
-          project: 'yardstick'
-          <<: *hunter
-          <<: *yardstick-receivers
+
     # yamllint enable rule:key-duplicates
     jobs:
       - "{dockerrepo}-docker-build-push-{stream}"

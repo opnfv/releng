@@ -15,15 +15,11 @@
       stream: euphrates
       branch: 'stable/{stream}'
       disabled: false
-    fraser: &fraser
-      stream: fraser
-      branch: 'stable/{stream}'
-      disabled: false
-    gambia: &gambia
-      stream: gambia
-      branch: 'stable/{stream}'
-      disabled: false
     hunter: &hunter
+      stream: hunter
+      branch: 'stable/{stream}'
+      disabled: false
+    iruya: &iruya
       stream: hunter
       branch: 'stable/{stream}'
       disabled: false
@@ -35,7 +31,7 @@
       receivers: >
           cristina.pauna@enea.com
           alexandru.avadanii@enea.com
-          mark.beierl@emc.com
+          mbeierl@vmware.com
     yardstick-arm-receivers: &yardstick-arm-receivers
       receivers: >
           cristina.pauna@enea.com
@@ -96,50 +92,55 @@
           project: 'yardstick'
           <<: *master
           <<: *yardstick-arm-receivers
+
       # projects with jobs for stable/euphrates
       - 'dovetail':
           project: 'dovetail'
           <<: *euphrates
           <<: *dovetail-arm-receivers
+
+      # projects with jobs for stable/hunter
+      - 'yardstick':
+          project: 'yardstick'
+          <<: *hunter
+          <<: *yardstick-arm-receivers
+
+      # projects with jobs for stable/iruya
       - 'storperf-master':
           project: 'storperf'
           dockerdir: 'docker/storperf-master'
           docker_repo_name: 'opnfv/storperf-master'
           arch_tag: 'aarch64'
-          <<: *hunter
+          <<: *iruya
           <<: *storperf-arm-receivers
       - 'storperf-graphite':
           project: 'storperf'
           dockerdir: 'docker/storperf-graphite'
           docker_repo_name: 'opnfv/storperf-graphite'
           arch_tag: 'aarch64'
-          <<: *hunter
+          <<: *iruya
           <<: *storperf-arm-receivers
       - 'storperf-httpfrontend':
           project: 'storperf'
           dockerdir: 'docker/storperf-httpfrontend'
           docker_repo_name: 'opnfv/storperf-httpfrontend'
           arch_tag: 'aarch64'
-          <<: *hunter
+          <<: *iruya
           <<: *storperf-arm-receivers
       - 'storperf-reporting':
           project: 'storperf'
           dockerdir: 'docker/storperf-reporting'
           docker_repo_name: 'opnfv/storperf-reporting'
           arch_tag: 'aarch64'
-          <<: *hunter
+          <<: *iruya
           <<: *storperf-arm-receivers
       - 'storperf-swaggerui':
           project: 'storperf'
           dockerdir: 'docker/storperf-swaggerui'
           docker_repo_name: 'opnfv/storperf-swaggerui'
           arch_tag: 'aarch64'
-          <<: *hunter
+          <<: *iruya
           <<: *storperf-arm-receivers
-      - 'yardstick':
-          project: 'yardstick'
-          <<: *hunter
-          <<: *yardstick-arm-receivers
 
     # yamllint enable rule:key-duplicates
     jobs:
