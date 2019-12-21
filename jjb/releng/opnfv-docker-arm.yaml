@@ -20,7 +20,7 @@
       branch: 'stable/{stream}'
       disabled: false
     iruya: &iruya
-      stream: hunter
+      stream: iruya
       branch: 'stable/{stream}'
       disabled: false
     dovetail-arm-receivers: &dovetail-arm-receivers
@@ -88,6 +88,13 @@
           arch_tag: 'aarch64'
           <<: *master
           <<: *storperf-arm-receivers
+      - 'storperf-workloadagent':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-workloadagent'
+          docker_repo_name: 'opnfv/storperf-workloadagent'
+          arch_tag: 'aarch64'
+          <<: *master
+          <<: *storperf-arm-receivers
       - 'yardstick':
           project: 'yardstick'
           <<: *master
@@ -138,6 +145,13 @@
           project: 'storperf'
           dockerdir: 'docker/storperf-swaggerui'
           docker_repo_name: 'opnfv/storperf-swaggerui'
+          arch_tag: 'aarch64'
+          <<: *iruya
+          <<: *storperf-arm-receivers
+      - 'storperf-workloadagent':
+          project: 'storperf'
+          dockerdir: 'docker/storperf-workloadagent'
+          docker_repo_name: 'opnfv/storperf-workloadagent'
           arch_tag: 'aarch64'
           <<: *iruya
           <<: *storperf-arm-receivers
