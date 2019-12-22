@@ -140,6 +140,8 @@
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e NODE_NAME=$slave \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEBUG=$DEBUG \
@@ -151,7 +153,7 @@
           site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/\
           blacklist.yaml \
             -v /home/opnfv/functest/.boto:/root/.boto \
-            $image run_tests -t {test} -p
+            $image run_tests -t {test} -r -p
 
 - builder:
     name: functest-remove-images
@@ -385,6 +387,45 @@
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
+- builder:
+    name: functest-zip
+    builders:
+      - shell: |
+          set +x
+          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          sudo docker run --rm \
+            -e S3_ENDPOINT_URL=https://storage.googleapis.com \
+            -e S3_DST_URL=s3://artifacts.opnfv.org/functest \
+            -e HTTP_DST_URL=http://artifacts.opnfv.org/functest \
+            -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e BUILD_TAG=$BUILD_TAG \
+            -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -v /home/opnfv/functest/.boto:/root/.boto \
+            $image zip_campaign
+
+- job-template:
+    name: 'functest-{tag}-zip'
+    parameters:
+      - functest-build_tag:
+          build_tag: ''
+    builders:
+      - functest-zip:
+          <<: *functest-containers
+
+- project:
+    name: 'functest-{tag}-zip'
+    <<: *functest-params
+    container: 'healthcheck'
+    jobs:
+      - 'functest-{tag}-zip'
+
 - job-template:
     name: 'functest-{tag}-daily'
     project-type: multijob
@@ -539,6 +580,11 @@
             - name: 'functest-opnfv-functest-vnf-{tag}-vyos_vrouter-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-juju_epc-run'
+              <<: *functest-jobs
+      - multijob:
+          name: dump all campaign data
+          projects:
+            - name: 'functest-{tag}-zip'
               <<: *functest-jobs
 
 - job-template:
