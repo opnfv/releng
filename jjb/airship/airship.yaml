@@ -325,6 +325,45 @@
     jobs:
       - 'airship-{repo}-{container}-{tag}-{test}-run'
 
+- builder:
+    name: airship-zip
+    builders:
+      - shell: |
+          set +x
+          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          docker run --rm \
+            -e S3_ENDPOINT_URL=https://storage.googleapis.com \
+            -e S3_DST_URL=s3://artifacts.opnfv.org/airship \
+            -e HTTP_DST_URL=http://artifacts.opnfv.org/airship/ \
+            -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e BUILD_TAG=$BUILD_TAG \
+            -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            $image zip_campaign
+
+- job-template:
+    name: 'airship-{tag}-zip'
+    parameters:
+      - airship-build_tag:
+          build_tag: ''
+    builders:
+      - airship-zip:
+          <<: *airship-containers
+
+- project:
+    name: 'airship-{tag}-zip'
+    <<: *airship-params
+    container: 'functest-healthcheck'
+    jobs:
+      - 'airship-{tag}-zip'
+
 - job-template:
     name: 'airship-{tag}-daily'
     project-type: multijob
@@ -459,6 +498,11 @@
             - name: 'airship-opnfv-functest-vnf-{tag}-vyos_vrouter-run'
               <<: *airship-jobs
             - name: 'airship-opnfv-functest-vnf-{tag}-juju_epc-run'
+              <<: *airship-jobs
+      - multijob:
+          name: dump all campaign data
+          projects:
+            - name: 'airship-{tag}-zip'
               <<: *airship-jobs
 
 - trigger:
