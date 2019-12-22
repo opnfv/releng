@@ -112,12 +112,14 @@
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e NODE_NAME=$slave \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEPLOY_SCENARIO=k8-nosdn-nofeature-noha \
             -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
             -v /home/opnfv/functest-kubernetes/.boto:/root/.boto \
-            $image run_tests -t {test} -p
+            $image run_tests -t {test} -r -p
 
 - builder:
     name: functest-kubernetes-remove-images
@@ -223,6 +225,45 @@
       - tag: hunter
         test: xrally_kubernetes
 
+- builder:
+    name: functest-kubernetes-zip
+    builders:
+      - shell: |
+          set +x
+          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          sudo docker run --rm \
+            -e S3_ENDPOINT_URL=https://storage.googleapis.com \
+            -e S3_DST_URL=s3://artifacts.opnfv.org/functest-kubernetes \
+            -e HTTP_DST_URL=http://artifacts.opnfv.org/functest-kubernetes \
+            -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e BUILD_TAG=$BUILD_TAG \
+            -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -v /home/opnfv/functest-kubernetes/.boto:/root/.boto \
+            $image zip_campaign
+
+- job-template:
+    name: 'functest-kubernetes-{tag}-zip'
+    parameters:
+      - functest-kubernetes-build_tag:
+          build_tag: ''
+    builders:
+      - functest-kubernetes-zip:
+          <<: *functest-kubernetes-containers
+
+- project:
+    name: 'functest-kubernetes-{tag}-zip'
+    <<: *functest-kubernetes-params
+    container: 'kubernetes-healthcheck'
+    jobs:
+      - 'functest-kubernetes-{tag}-zip'
+
 - job-template:
     name: 'functest-kubernetes-{tag}-daily'
     project-type: multijob
@@ -266,6 +307,11 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: dump all campaign data
+          projects:
+            - name: 'functest-kubernetes-{tag}-zip'
               <<: *functest-kubernetes-jobs
 
 - job-template:
