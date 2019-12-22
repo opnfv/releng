@@ -112,11 +112,13 @@
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e NODE_NAME=$slave \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -v /home/opnfv/xtesting/.boto:/root/.boto \
             -e DEBUG=true \
-            $image run_tests -t {test} -p
+            $image run_tests -t {test} -r -p
 
 - builder:
     name: xtesting-remove-images
@@ -203,6 +205,45 @@
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-{test}-run'
 
+ builder:
+    name: xtesting-zip
+    builders:
+      - shell: |
+          set +x
+          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          docker run --rm \
+            -e S3_ENDPOINT_URL=https://storage.googleapis.com \
+            -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting \
+            -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting \
+            -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e BUILD_TAG=$BUILD_TAG \
+            -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -v /home/opnfv/xtesting/.boto:/root/.boto \
+            $image zip_campaign
+
+- job-template:
+    name: 'xtesting-{tag}-zip'
+    parameters:
+      - xtesting-build_tag:
+          build_tag: ''
+    builders:
+      - xtesting-zip:
+          <<: *xtesting-containers
+
+- project:
+    name: 'xtesting-{tag}-zip'
+    <<: *xtesting-params
+    container: 'xtesting'
+    jobs:
+      - 'xtesting-{tag}-zip'
+
 - job-template:
     name: 'xtesting-{tag}-daily'
     project-type: multijob
@@ -244,6 +285,11 @@
             - name: 'xtesting-opnfv-xtesting-{tag}-fifth-run'
               <<: *xtesting-jobs
             - name: 'xtesting-opnfv-xtesting-{tag}-sixth-run'
+              <<: *xtesting-jobs
+      - multijob:
+          name: dump all campaign data
+          projects:
+            - name: 'xtesting-{tag}-zip'
               <<: *xtesting-jobs
 
 - job-template:
