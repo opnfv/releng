@@ -357,7 +357,7 @@
     builders:
       - shell: |
           set +x
-          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
+          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
             image={container}:{functest_tag}
           elif [ "{port}" = "None" ]; then
@@ -373,6 +373,7 @@
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -v /home/opnfv/functest/.boto:/root/.boto \
             $image zip_campaign
 
 - job-template:
