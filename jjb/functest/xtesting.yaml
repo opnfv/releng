@@ -60,12 +60,6 @@
     <<: *xtesting-containers
     test: '{test}'
 
-- xtesting-build-containers: &xtesting-build-containers
-    name: 'xtesting-build-containers'
-    <<: *xtesting-containers
-    ref_arg: '{ref_arg}'
-    path: '{path}'
-
 - builder:
     name: xtesting-pull-containers
     builders:
@@ -79,28 +73,6 @@
             image={repo}:{port}/{container}:{tag}
           fi
           sudo docker pull $image
-
-- builder:
-    name: xtesting-build-containers
-    builders:
-      - shell: |
-          set +x
-          if [ "{repo}" = "_" ]; then
-            image={container}:{tag}
-          elif [ "{port}" = "None" ]; then
-            image={repo}/{container}:{tag}
-          else
-            image={repo}:{port}/{container}:{tag}
-          fi
-          if [ "{ref_arg}" = "None" ]; then
-            build_arg=""
-          else
-            build_arg="--build-arg {ref_arg}={ref}"
-          fi
-          cd {path}
-          sudo docker build $build_arg \
-            --pull=false --no-cache --force-rm=true \
-            -t $image .
 
 - builder:
     name: xtesting-run-containers
@@ -141,6 +113,34 @@
             image={repo}:{port}/{container}:{tag}
           fi
           sudo docker rmi $image || true
+
+- xtesting-build-containers: &xtesting-build-containers
+    name: 'xtesting-build-containers'
+    <<: *xtesting-containers
+    ref_arg: '{ref_arg}'
+    path: '{path}'
+
+- builder:
+    name: xtesting-build-containers
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          if [ "{ref_arg}" = "None" ]; then
+            build_arg=""
+          else
+            build_arg="--build-arg {ref_arg}={ref}"
+          fi
+          cd {path}
+          sudo docker build $build_arg \
+            --pull=false --no-cache --force-rm=true \
+            -t $image .
 
 - scm:
     name: xtesting-scm
