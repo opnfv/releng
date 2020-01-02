@@ -41,6 +41,13 @@
           name: branch
           default: '{branch}'
 
+- parameter:
+    name: xtesting-DEBUG
+    parameters:
+      - string:
+          name: DEBUG
+          default: true
+
 - xtesting-containers: &xtesting-containers
     name: 'xtesting-containers'
     repo: '{repo}'
@@ -49,7 +56,7 @@
     tag: '{tag}'
 
 - xtesting-run-containers: &xtesting-run-containers
-    name: 'xtesting-build-containers'
+    name: 'xtesting-run-containers'
     <<: *xtesting-containers
     test: '{test}'
 
@@ -113,12 +120,13 @@
             -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e NODE_NAME=$slave \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -e DEBUG=$DEBUG \
             -v /home/opnfv/xtesting/.boto:/root/.boto \
-            -e DEBUG=true \
-            $image run_tests -t {test} -r -p
+            $image run_tests -t {test} -p -r
 
 - builder:
     name: xtesting-remove-images
@@ -182,6 +190,8 @@
           slave: '{slave}'
       - xtesting-build_tag:
           build_tag: ''
+      - xtesting-DEBUG:
+          DEBUG: true
     builders:
       - xtesting-run-containers:
           <<: *xtesting-run-containers
@@ -205,12 +215,13 @@
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-{test}-run'
 
+
 - builder:
     name: xtesting-zip
     builders:
       - shell: |
           set +x
-          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
+          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -223,16 +234,22 @@
             -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -e DEBUG=$DEBUG \
             -v /home/opnfv/xtesting/.boto:/root/.boto \
             $image zip_campaign
 
 - job-template:
     name: 'xtesting-{tag}-zip'
     parameters:
+      - xtesting-slave:
+          slave: '{slave}'
       - xtesting-build_tag:
           build_tag: ''
+      - xtesting-DEBUG:
+          DEBUG: true
     builders:
       - xtesting-zip:
           <<: *xtesting-containers
@@ -254,6 +271,8 @@
           slave: '{slave}'
       - xtesting-build_tag:
           build_tag: ''
+      - xtesting-DEBUG:
+          DEBUG: true
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -360,6 +379,8 @@
           build_tag: ''
       - xtesting-branch:
           branch: '{branch}'
+      - xtesting-DEBUG:
+          DEBUG: true
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -437,6 +458,8 @@
           slave: '{slave}'
       - xtesting-build_tag:
           build_tag: ''
+      - xtesting-DEBUG:
+          DEBUG: true
     properties:
       - build-blocker:
           use-build-blocker: true
