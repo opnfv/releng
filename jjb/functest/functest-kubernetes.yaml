@@ -41,6 +41,19 @@
           name: branch
           default: '{branch}'
 
+- parameter:
+    name: functest-kubernetes-DEBUG
+    parameters:
+      - string:
+          name: DEBUG
+          default: 'true'
+- parameter:
+    name: functest-kubernetes-DEPLOY_SCENARIO
+    parameters:
+      - string:
+          name: DEPLOY_SCENARIO
+          default: k8-nosdn-nofeature-noha
+
 - functest-kubernetes-containers: &functest-kubernetes-containers
     name: 'functest-kubernetes-containers'
     repo: '{repo}'
@@ -49,15 +62,9 @@
     tag: '{tag}'
 
 - functest-kubernetes-run-containers: &functest-kubernetes-run-containers
-    name: 'functest-kubernetes-build-containers'
+    name: 'functest-kubernetes-run-containers'
     <<: *functest-kubernetes-containers
     test: '{test}'
-
-- functest-kubernetes-build-containers: &functest-kubernetes-build-containers
-    name: 'functest-kubernetes-build-containers'
-    <<: *functest-kubernetes-containers
-    ref_arg: '{ref_arg}'
-    path: '{path}'
 
 - builder:
     name: functest-kubernetes-pull-containers
@@ -72,6 +79,54 @@
             image={repo}:{port}/{container}:{tag}
           fi
           docker pull $image
+
+- builder:
+    name: functest-kubernetes-run-containers
+    builders:
+      - shell: |
+          set +x
+          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          docker run --rm \
+            -e S3_ENDPOINT_URL=https://storage.googleapis.com \
+            -e S3_DST_URL=s3://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -e HTTP_DST_URL=http://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e NODE_NAME=$slave \
+            -e BUILD_TAG=$BUILD_TAG \
+            -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -e DEBUG=$DEBUG \
+            -e DEPLOY_SCENARIO=$DEPLOY_SCENARIO \
+            -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
+            -v /home/opnfv/functest-kubernetes/.boto:/root/.boto \
+            $image run_tests -t {test} -p -r
+
+- builder:
+    name: functest-kubernetes-remove-images
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          docker rmi $image || true
+
+- functest-kubernetes-build-containers: &functest-kubernetes-build-containers
+    name: 'functest-kubernetes-build-containers'
+    <<: *functest-kubernetes-containers
+    ref_arg: '{ref_arg}'
+    path: '{path}'
 
 - builder:
     name: functest-kubernetes-build-containers
@@ -94,46 +149,6 @@
           docker build $build_arg \
             --pull=false --no-cache --force-rm=true \
             -t $image .
-
-- builder:
-    name: functest-kubernetes-run-containers
-    builders:
-      - shell: |
-          set +ex
-          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
-          if [ "{repo}" = "_" ]; then
-            image={container}:{tag}
-          elif [ "{port}" = "None" ]; then
-            image={repo}/{container}:{tag}
-          else
-            image={repo}:{port}/{container}:{tag}
-          fi
-          docker run --rm \
-            -e S3_ENDPOINT_URL=https://storage.googleapis.com \
-            -e S3_DST_URL=s3://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
-            -e HTTP_DST_URL=http://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
-            -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
-            -e NODE_NAME=$slave \
-            -e BUILD_TAG=$BUILD_TAG \
-            -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
-            -e DEPLOY_SCENARIO=k8-nosdn-nofeature-noha \
-            -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
-            -v /home/opnfv/functest-kubernetes/.boto:/root/.boto \
-            $image run_tests -t {test} -r -p
-
-- builder:
-    name: functest-kubernetes-remove-images
-    builders:
-      - shell: |
-          set +x
-          if [ "{repo}" = "_" ]; then
-            image={container}:{tag}
-          elif [ "{port}" = "None" ]; then
-            image={repo}/{container}:{tag}
-          else
-            image={repo}:{port}/{container}:{tag}
-          fi
-          docker rmi $image || true
 
 - scm:
     name: functest-kubernetes-scm
@@ -197,6 +212,10 @@
           slave: '{slave}'
       - functest-kubernetes-build_tag:
           build_tag: ''
+      - functest-kubernetes-DEBUG:
+          DEBUG: 'true'
+      - functest-kubernetes-DEPLOY_SCENARIO:
+          DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
     builders:
       - functest-kubernetes-run-containers:
           <<: *functest-kubernetes-run-containers
@@ -217,13 +236,14 @@
     test:
       - xrally_kubernetes
       - k8s_conformance
-    jobs:
-      - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
     exclude:
       - tag: iruya
         test: xrally_kubernetes
       - tag: hunter
         test: xrally_kubernetes
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
+
 
 - builder:
     name: functest-kubernetes-zip
@@ -243,16 +263,26 @@
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest-kubernetes \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest-kubernetes \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -e DEBUG=$DEBUG \
+            -e DEPLOY_SCENARIO=$DEPLOY_SCENARIO \
+            -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
             -v /home/opnfv/functest-kubernetes/.boto:/root/.boto \
             $image zip_campaign
 
 - job-template:
     name: 'functest-kubernetes-{tag}-zip'
     parameters:
+      - functest-kubernetes-slave:
+          slave: '{slave}'
       - functest-kubernetes-build_tag:
           build_tag: ''
+      - functest-kubernetes-DEBUG:
+          DEBUG: 'true'
+      - functest-kubernetes-DEPLOY_SCENARIO:
+          DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
     builders:
       - functest-kubernetes-zip:
           <<: *functest-kubernetes-containers
@@ -274,6 +304,10 @@
           slave: '{slave}'
       - functest-kubernetes-build_tag:
           build_tag: ''
+      - functest-kubernetes-DEBUG:
+          DEBUG: 'true'
+      - functest-kubernetes-DEPLOY_SCENARIO:
+          DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -343,21 +377,21 @@
           ref: $branch
 
 - project:
-    name: 'functest-kubernetes-_-golang-1.12-alpine3.10-rmi'
+    name: 'functest-kubernetes-_-golang-1.13-alpine3.10-rmi'
     repo: _
     port:
     container: golang
-    tag: '1.12-alpine3.10'
+    tag: '1.13-alpine3.10'
     slave: master
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
 
 - project:
-    name: 'functest-kubernetes-_-golang-1.12-alpine3.10-pull'
+    name: 'functest-kubernetes-_-golang-1.13-alpine3.10-pull'
     repo: _
     port:
     container: golang
-    tag: '1.12-alpine3.10'
+    tag: '1.13-alpine3.10'
     slave: master
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
@@ -402,6 +436,10 @@
           build_tag: ''
       - functest-kubernetes-branch:
           branch: '{branch}'
+      - functest-kubernetes-DEBUG:
+          DEBUG: 'true'
+      - functest-kubernetes-DEPLOY_SCENARIO:
+          DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -419,12 +457,12 @@
       - multijob:
           name: remove dependencies
           projects:
-            - name: 'functest-kubernetes-_-golang-1.12-alpine3.10-rmi'
+            - name: 'functest-kubernetes-_-golang-1.13-alpine3.10-rmi'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: pull dependencies
           projects:
-            - name: 'functest-kubernetes-_-golang-1.12-alpine3.10-pull'
+            - name: 'functest-kubernetes-_-golang-1.13-alpine3.10-pull'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: build opnfv/functest-kubernetes-core
@@ -489,6 +527,10 @@
           slave: '{slave}'
       - functest-kubernetes-build_tag:
           build_tag: ''
+      - functest-kubernetes-DEBUG:
+          DEBUG: 'true'
+      - functest-kubernetes-DEPLOY_SCENARIO:
+          DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -506,12 +548,12 @@
       - multijob:
           name: remove dependencies
           projects:
-            - name: 'functest-kubernetes-_-golang-1.12-alpine3.10-rmi'
+            - name: 'functest-kubernetes-_-golang-1.13-alpine3.10-rmi'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: pull dependencies
           projects:
-            - name: 'functest-kubernetes-_-golang-1.12-alpine3.10-pull'
+            - name: 'functest-kubernetes-_-golang-1.13-alpine3.10-pull'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: build opnfv/functest-kubernetes-core
