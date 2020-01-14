@@ -16,12 +16,16 @@
     stream:
       - master:
           branch: '{stream}'
-          # This is used for common project file storage
+        # This is used for common project file storage
           gs-pathname: ''
-          # This is used for different test suite dependent packages storage
+        # This is used for different test suite dependent packages storage
           gs-packagepath: '/{suite}'
           disabled: false
-      - hunter: &hunter
+      - iruya: &iruya
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
+      - hunter:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           gs-packagepath: '/{stream}/{suite}'
