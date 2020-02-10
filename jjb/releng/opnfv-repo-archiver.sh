@@ -14,7 +14,7 @@ export PATH=$PATH:/usr/local/bin/
 DATE="$(date +%Y%m%d)"
 
 declare -a PROJECT_LIST
-EXCLUDE_PROJECTS="All-Projects|All-Users|securedlab"
+EXCLUDE_PROJECTS="All-Projects|All-Users|securedlab|^test"
 CLONE_PATH="$WORKSPACE/opnfv-repos"
 
 # Generate project list from gerrit
