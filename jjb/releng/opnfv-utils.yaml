@@ -5,7 +5,6 @@
 
     jobs:
       - 'prune-docker-images'
-      - 'archive-repositories'
       - 'check-status-of-slaves'
       - 'ansible-build-server'
       - 'generate-artifacts-index-pages'
@@ -48,43 +47,6 @@
     # yamllint enable rule:line-length
     triggers:
       - timed: '@midnight'
-
-- job-template:
-    name: 'archive-repositories'
-
-    disabled: false
-
-    concurrent: true
-
-    parameters:
-      - node:
-          name: SLAVE_NAME
-          description: Where to create the archive
-          default-slaves:
-            - lf-build2
-          allowed-multiselect: false
-          ignore-offline-nodes: true
-
-    triggers:
-      - timed: '@monthly'
-
-    builders:
-      - shell:
-          !include-raw-escape: opnfv-repo-archiver.sh
-
-    publishers:
-      - email-ext:
-          content-type: 'text'
-          failure: false
-          always: true
-          body:
-            ${{FILE,path="archive-link.txt"}}
-          reply-to: >
-            helpdesk@opnfv.org
-          recipients: >
-            tbramwell@linuxfoundation.org
-            swinslow@linuxfoundation.org
-
 
 - job-template:
     name: 'check-status-of-slaves'
