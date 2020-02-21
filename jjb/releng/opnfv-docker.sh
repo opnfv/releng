@@ -105,7 +105,13 @@ fi
 
 if [[ "$BRANCH" == "master" ]]; then
     DOCKER_TAG="latest"
-elif [[ -n "${RELEASE_VERSION-}" ]]; then
+fi
+
+if [[ "$BRANCH" =~ "stable" ]]; then
+    DOCKER_TAG="stable"
+fi
+
+if [[ -n "${RELEASE_VERSION-}" ]]; then
     DOCKER_TAG=${RELEASE_VERSION}
     if git checkout ${RELEASE_VERSION}; then
         echo "Successfully checked out the git tag ${RELEASE_VERSION}"
@@ -114,8 +120,6 @@ elif [[ -n "${RELEASE_VERSION-}" ]]; then
         git tag
         exit 1
     fi
-else
-    DOCKER_TAG="stable"
 fi
 
 if [[ -n "${COMMIT_ID-}" && -n "${RELEASE_VERSION-}" ]]; then
