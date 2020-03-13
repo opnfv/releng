@@ -42,17 +42,17 @@
           default: '{branch}'
 
 - parameter:
-    name: functest-kubernetes-DEBUG
-    parameters:
-      - string:
-          name: DEBUG
-          default: 'true'
-- parameter:
     name: functest-kubernetes-DEPLOY_SCENARIO
     parameters:
       - string:
           name: DEPLOY_SCENARIO
           default: k8-nosdn-nofeature-noha
+- parameter:
+    name: functest-kubernetes-DEBUG
+    parameters:
+      - string:
+          name: DEBUG
+          default: 'true'
 
 - functest-kubernetes-containers: &functest-kubernetes-containers
     name: 'functest-kubernetes-containers'
@@ -102,8 +102,8 @@
             -e NODE_NAME=$slave \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
-            -e DEBUG=$DEBUG \
             -e DEPLOY_SCENARIO=$DEPLOY_SCENARIO \
+            -e DEBUG=$DEBUG \
             -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
             -v /home/opnfv/functest-kubernetes/.boto:/root/.boto \
             $image run_tests -t {test} -p -r
@@ -182,6 +182,20 @@
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
 
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-pull'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-cnf'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-security-pull'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-security'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
+
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
     parameters:
@@ -205,6 +219,20 @@
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
 
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-rmi'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-cnf'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-security-rmi'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-security'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
+
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
     parameters:
@@ -212,10 +240,10 @@
           slave: '{slave}'
       - functest-kubernetes-build_tag:
           build_tag: ''
-      - functest-kubernetes-DEBUG:
-          DEBUG: 'true'
       - functest-kubernetes-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-DEBUG:
+          DEBUG: 'true'
     builders:
       - functest-kubernetes-run-containers:
           <<: *functest-kubernetes-run-containers
@@ -244,6 +272,45 @@
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
 
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-cnf'
+    test:
+      - k8s_vims
+    exclude:
+      - tag: jerma
+        test: k8s_vims
+      - tag: iruya
+        test: k8s_vims
+      - tag: hunter
+        test: k8s_vims
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-security'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-security'
+    test:
+      - kube_hunter
+      - kube_bench
+    exclude:
+      - tag: jerma
+        test: kube_hunter
+      - tag: jerma
+        test: kube_bench
+      - tag: iruya
+        test: kube_hunter
+      - tag: iruya
+        test: kube_bench
+      - tag: hunter
+        test: kube_hunter
+      - tag: hunter
+        test: kube_bench
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
+
 
 - builder:
     name: functest-kubernetes-zip
@@ -266,8 +333,8 @@
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
-            -e DEBUG=$DEBUG \
             -e DEPLOY_SCENARIO=$DEPLOY_SCENARIO \
+            -e DEBUG=$DEBUG \
             -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
             -v /home/opnfv/functest-kubernetes/.boto:/root/.boto \
             $image zip_campaign
@@ -279,10 +346,10 @@
           slave: '{slave}'
       - functest-kubernetes-build_tag:
           build_tag: ''
-      - functest-kubernetes-DEBUG:
-          DEBUG: 'true'
       - functest-kubernetes-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-DEBUG:
+          DEBUG: 'true'
     builders:
       - functest-kubernetes-zip:
           <<: *functest-kubernetes-containers
@@ -304,10 +371,10 @@
           slave: '{slave}'
       - functest-kubernetes-build_tag:
           build_tag: ''
-      - functest-kubernetes-DEBUG:
-          DEBUG: 'true'
       - functest-kubernetes-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-DEBUG:
+          DEBUG: 'true'
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -322,12 +389,20 @@
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-rmi'
               <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-rmi'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-rmi'
+              <<: *functest-kubernetes-jobs
       - multijob:
           name: pull containers
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-pull'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-pull'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-pull'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-pull'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-healthcheck:{tag}
@@ -341,6 +416,18 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: opnfv/functest-kubernetes-cnf:{tag}
+          projects:
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-k8s_vims-run'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: opnfv/functest-kubernetes-security:{tag}
+          projects:
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_hunter-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_bench-run'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: dump all campaign data
@@ -417,6 +504,26 @@
       - 'functest-kubernetes-{repo}-{container}-{tag}-check'
 
 - project:
+    name: functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-build
+    <<: *functest-kubernetes-params
+    container: functest-kubernetes-cnf
+    ref_arg: BRANCH
+    path: docker/cnf
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
+      - 'functest-kubernetes-{repo}-{container}-{tag}-check'
+
+- project:
+    name: functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-build
+    <<: *functest-kubernetes-params
+    container: functest-kubernetes-security
+    ref_arg: BRANCH
+    path: docker/security
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
+      - 'functest-kubernetes-{repo}-{container}-{tag}-check'
+
+- project:
     name: functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-build
     <<: *functest-kubernetes-params
     container: functest-kubernetes-smoke
@@ -436,10 +543,10 @@
           build_tag: ''
       - functest-kubernetes-branch:
           branch: '{branch}'
-      - functest-kubernetes-DEBUG:
-          DEBUG: 'true'
       - functest-kubernetes-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-DEBUG:
+          DEBUG: 'true'
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -453,6 +560,10 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-rmi'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-rmi'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-rmi'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-rmi'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: remove dependencies
@@ -474,6 +585,10 @@
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-check'
               <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-check'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-check'
+              <<: *functest-kubernetes-jobs
       - multijob:
           name: build containers
           projects:
@@ -491,6 +606,18 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: opnfv/functest-kubernetes-cnf:{tag}
+          projects:
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-k8s_vims-run'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: opnfv/functest-kubernetes-security:{tag}
+          projects:
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_hunter-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_bench-run'
               <<: *functest-kubernetes-jobs
 
 - trigger:
@@ -527,10 +654,10 @@
           slave: '{slave}'
       - functest-kubernetes-build_tag:
           build_tag: ''
-      - functest-kubernetes-DEBUG:
-          DEBUG: 'true'
       - functest-kubernetes-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-DEBUG:
+          DEBUG: 'true'
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -544,6 +671,10 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-rmi'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-rmi'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-rmi'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-rmi'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: remove dependencies
@@ -565,6 +696,10 @@
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-gate'
               <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-gate'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-gate'
+              <<: *functest-kubernetes-jobs
       - multijob:
           name: build containers
           projects:
@@ -582,6 +717,18 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: opnfv/functest-kubernetes-cnf:{tag}
+          projects:
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-k8s_vims-run'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: opnfv/functest-kubernetes-security:{tag}
+          projects:
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_hunter-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_bench-run'
               <<: *functest-kubernetes-jobs
 
 - project:
