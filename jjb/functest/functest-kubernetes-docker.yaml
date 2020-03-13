@@ -33,6 +33,22 @@
       - 'core'
       - 'healthcheck'
       - 'smoke'
+      - 'cnf'
+      - 'security'
+
+    exclude:
+      - stream: 'jerma'
+        image: 'cnf'
+      - stream: 'jerma'
+        image: 'security'
+      - stream: 'iruya'
+        image: 'cnf'
+      - stream: 'iruya'
+        image: 'security'
+      - stream: 'hunter'
+        image: 'cnf'
+      - stream: 'hunter'
+        image: 'security'
 
     # settings for jobs run in multijob phases
     build-job-settings: &build-job-settings
@@ -109,21 +125,33 @@
             - name: 'functest-kubernetes-core-docker-manifest-{stream}'
               <<: *manifest-job-settings
       - multijob:
-          name: 'build functest-kubernetes-healthcheck images'
+          name: 'build functest-kubernetes-[healthcheck,cnf,security] images'
           execution-type: PARALLEL
           projects:
             - name: 'functest-kubernetes-healthcheck-docker-build-amd64-{stream}'
               <<: *build-job-settings
             - name: 'functest-kubernetes-healthcheck-docker-build-arm64-{stream}'
               <<: *build-job-settings
+            - name: 'functest-kubernetes-cnf-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-kubernetes-cnf-docker-build-arm64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-kubernetes-security-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-kubernetes-security-docker-build-arm64-{stream}'
+              <<: *build-job-settings
       - multijob:
-          name: 'publish functest-kubernetes-healthcheck manifests'
+          name: 'publish functest-kubernetes-[healthcheck,cnf,security] manifests'
           execution-type: PARALLEL
           projects:
             - name: 'functest-kubernetes-healthcheck-docker-manifest-{stream}'
               <<: *manifest-job-settings
+            - name: 'functest-kubernetes-cnf-docker-manifest-{stream}'
+              <<: *manifest-job-settings
+            - name: 'functest-kubernetes-security-docker-manifest-{stream}'
+              <<: *manifest-job-settings
       - multijob:
-          name: 'build all functest-kubernetes images'
+          name: 'build functest-kubernetes-smoke image'
           condition: SUCCESSFUL
           execution-type: PARALLEL
           projects:
@@ -132,7 +160,7 @@
             - name: 'functest-kubernetes-smoke-docker-build-arm64-{stream}'
               <<: *build-job-settings
       - multijob:
-          name: 'publish all manifests'
+          name: 'publish functest-kubernetes-smoke manifests'
           condition: SUCCESSFUL
           execution-type: PARALLEL
           projects:
