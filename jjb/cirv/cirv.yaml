@@ -1,0 +1,71 @@
+---
+- cirv-project-params: &cirv-project-params
+    name: 'cirv-project-params'
+    tag:
+      - latest:
+          branch: master
+          slave: intel-pod15
+
+- builder:
+    name: cirv-run-tox
+    builders:
+      - shell: tox
+
+- trigger:
+    name: cirv-project-patchset-created
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'cirv'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+          skip-vote:
+            successful: false
+            failed: false
+            unstable: false
+            notbuilt: false
+
+- parameter:
+    name: cirv-project-slave
+    parameters:
+      - label:
+          name: slave
+          default: '{slave}'
+
+- scm:
+    name: cirv-project-scm
+    scm:
+      - git:
+          url: https://gerrit.opnfv.org/gerrit/cirv
+          refspec: '+refs/changes/*:refs/changes/*'
+          branches:
+            - '{ref}'
+
+- job-template:
+    name: 'cirv-run-tox-{tag}'
+    triggers:
+      - cirv-project-patchset-created:
+          branch: '{branch}'
+    scm:
+      - cirv-project-scm:
+          ref: $GERRIT_REFSPEC
+    parameters:
+      - cirv-project-slave:
+          slave: '{slave}'
+    builders:
+      - cirv-run-tox
+
+- project:
+    name: 'cirv-run-tox'
+    <<: *cirv-project-params
+    jobs:
+      - 'cirv-run-tox-{tag}'
