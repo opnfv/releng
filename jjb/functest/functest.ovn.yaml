@@ -207,6 +207,13 @@
       - 'functest-ovn-{repo}-{container}-{tag}-pull'
 
 - project:
+    name: 'functest-ovn-opnfv-functest-benchmarking-cntt-pull'
+    <<: *functest-ovn-params
+    container: 'functest-benchmarking-cntt'
+    jobs:
+      - 'functest-ovn-{repo}-{container}-{tag}-pull'
+
+- project:
     name: 'functest-ovn-opnfv-functest-vnf-pull'
     <<: *functest-ovn-params
     container: 'functest-vnf'
@@ -247,6 +254,13 @@
     name: 'functest-ovn-opnfv-functest-benchmarking-rmi'
     <<: *functest-ovn-params
     container: 'functest-benchmarking'
+    jobs:
+      - 'functest-ovn-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-ovn-opnfv-functest-benchmarking-cntt-rmi'
+    <<: *functest-ovn-params
+    container: 'functest-benchmarking-cntt'
     jobs:
       - 'functest-ovn-{repo}-{container}-{tag}-rmi'
 
@@ -343,13 +357,13 @@
     <<: *functest-ovn-params
     container: 'functest-smoke-cntt'
     test:
-      - neutron-tempest-plugin-api
-      - tempest_cinder
-      - tempest_keystone
-      - rally_sanity
-      - tempest_full
-      - tempest_scenario
-      - tempest_slow
+      - neutron-tempest-plugin-api-cntt
+      - tempest_cinder_cntt
+      - tempest_keystone_cntt
+      - rally_sanity_cntt
+      - tempest_full_cntt
+      - tempest_scenario_cntt
+      - tempest_slow_cntt
     jobs:
       - 'functest-ovn-{repo}-{container}-{tag}-{test}-run'
 
@@ -362,6 +376,16 @@
       - rally_jobs
       - vmtp
       - shaker
+    jobs:
+      - 'functest-ovn-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-ovn-opnfv-functest-benchmarking-cntt'
+    <<: *functest-ovn-params
+    container: 'functest-benchmarking-cntt'
+    test:
+      - rally_full_cntt
+      - rally_jobs_cntt
     jobs:
       - 'functest-ovn-{repo}-{container}-{tag}-{test}-run'
 
@@ -449,6 +473,8 @@
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-benchmarking-{tag}-rmi'
               <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-benchmarking-cntt-{tag}-rmi'
+              <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-vnf-{tag}-rmi'
               <<: *functest-ovn-jobs
       - multijob:
@@ -461,6 +487,8 @@
             - name: 'functest-ovn-opnfv-functest-smoke-cntt-{tag}-pull'
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-benchmarking-{tag}-pull'
+              <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-benchmarking-cntt-{tag}-pull'
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-vnf-{tag}-pull'
               <<: *functest-ovn-jobs
@@ -561,6 +589,14 @@
             - name: 'functest-ovn-opnfv-functest-benchmarking-{tag}-vmtp-run'
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-benchmarking-{tag}-shaker-run'
+              <<: *functest-ovn-jobs
+      - multijob:
+          name: opnfv/functest-benchmarking-cntt:{tag}
+          condition: ALWAYS
+          projects:
+            - name: 'functest-ovn-opnfv-functest-benchmarking-cntt-{tag}-rally_full_cntt-run'
+              <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-benchmarking-cntt-{tag}-rally_jobs_cntt-run'
               <<: *functest-ovn-jobs
       - multijob:
           name: opnfv/functest-vnf:{tag}
@@ -676,6 +712,16 @@
       - 'functest-ovn-{repo}-{container}-{tag}-check'
 
 - project:
+    name: functest-ovn-opnfv-functest-smoke-cntt-{tag}-build
+    <<: *functest-ovn-params
+    container: functest-smoke-cntt
+    ref_arg: BRANCH
+    path: docker/smoke
+    jobs:
+      - 'functest-ovn-{repo}-{container}-{tag}-gate'
+      - 'functest-ovn-{repo}-{container}-{tag}-check'
+
+- project:
     name: functest-ovn-opnfv-functest-benchmarking-{tag}-build
     <<: *functest-ovn-params
     container: functest-benchmarking
@@ -686,21 +732,21 @@
       - 'functest-ovn-{repo}-{container}-{tag}-check'
 
 - project:
-    name: functest-ovn-opnfv-functest-vnf-{tag}-build
+    name: functest-ovn-opnfv-functest-benchmarking-cntt-{tag}-build
     <<: *functest-ovn-params
-    container: functest-vnf
-    ref_arg:
-    path: docker/vnf
+    container: functest-benchmarking-cntt
+    ref_arg: BRANCH
+    path: docker/benchmarking-cntt
     jobs:
       - 'functest-ovn-{repo}-{container}-{tag}-gate'
       - 'functest-ovn-{repo}-{container}-{tag}-check'
 
 - project:
-    name: functest-ovn-opnfv-functest-smoke-cntt-{tag}-build
+    name: functest-ovn-opnfv-functest-vnf-{tag}-build
     <<: *functest-ovn-params
-    container: functest-smoke-cntt
-    ref_arg: BRANCH
-    path: docker/smoke-cntt
+    container: functest-vnf
+    ref_arg:
+    path: docker/vnf
     jobs:
       - 'functest-ovn-{repo}-{container}-{tag}-gate'
       - 'functest-ovn-{repo}-{container}-{tag}-check'
@@ -737,6 +783,8 @@
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-benchmarking-{tag}-rmi'
               <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-benchmarking-cntt-{tag}-rmi'
+              <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-vnf-{tag}-rmi'
               <<: *functest-ovn-jobs
       - multijob:
@@ -771,9 +819,11 @@
             - name: 'functest-ovn-opnfv-functest-vnf-{tag}-check'
               <<: *functest-ovn-jobs
       - multijob:
-          name: build opnfv/functest-smoke-cntt
+          name: build cntt containers
           projects:
             - name: 'functest-ovn-opnfv-functest-smoke-cntt-{tag}-check'
+              <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-benchmarking-cntt-{tag}-check'
               <<: *functest-ovn-jobs
       - multijob:
           name: opnfv/functest-healthcheck:{tag}
@@ -868,6 +918,13 @@
             - name: 'functest-ovn-opnfv-functest-benchmarking-{tag}-vmtp-run'
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-benchmarking-{tag}-shaker-run'
+              <<: *functest-ovn-jobs
+      - multijob:
+          name: opnfv/functest-benchmarking-cntt:{tag}
+          projects:
+            - name: 'functest-ovn-opnfv-functest-benchmarking-cntt-{tag}-rally_full_cntt-run'
+              <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-benchmarking-cntt-{tag}-rally_jobs_cntt-run'
               <<: *functest-ovn-jobs
       - multijob:
           name: opnfv/functest-vnf:{tag}
@@ -940,6 +997,8 @@
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-benchmarking-{tag}-rmi'
               <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-benchmarking-cntt-{tag}-rmi'
+              <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-vnf-{tag}-rmi'
               <<: *functest-ovn-jobs
       - multijob:
@@ -974,9 +1033,11 @@
             - name: 'functest-ovn-opnfv-functest-vnf-{tag}-gate'
               <<: *functest-ovn-jobs
       - multijob:
-          name: build opnfv/functest-smoke-cntt
+          name: build cntt containers
           projects:
             - name: 'functest-ovn-opnfv-functest-smoke-cntt-{tag}-gate'
+              <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-benchmarking-cntt-{tag}-gate'
               <<: *functest-ovn-jobs
       - multijob:
           name: opnfv/functest-healthcheck:{tag}
@@ -1071,6 +1132,13 @@
             - name: 'functest-ovn-opnfv-functest-benchmarking-{tag}-vmtp-run'
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-benchmarking-{tag}-shaker-run'
+              <<: *functest-ovn-jobs
+      - multijob:
+          name: opnfv/functest-benchmarking-cntt:{tag}
+          projects:
+            - name: 'functest-ovn-opnfv-functest-benchmarking-cntt-{tag}-rally_full_cntt-run'
+              <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-benchmarking-cntt-{tag}-rally_jobs_cntt-run'
               <<: *functest-ovn-jobs
       - multijob:
           name: opnfv/functest-vnf:{tag}
