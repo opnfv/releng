@@ -206,6 +206,13 @@
       - 'cntt-{repo}-{container}-{tag}-pull'
 
 - project:
+    name: 'cntt-opnfv-functest-benchmarking-cntt-pull'
+    <<: *cntt-params
+    container: 'functest-benchmarking-cntt'
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-pull'
+
+- project:
     name: 'cntt-opnfv-functest-vnf-pull'
     <<: *cntt-params
     container: 'functest-vnf'
@@ -246,6 +253,13 @@
     name: 'cntt-opnfv-functest-benchmarking-rmi'
     <<: *cntt-params
     container: 'functest-benchmarking'
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'cntt-opnfv-functest-benchmarking-cntt-rmi'
+    <<: *cntt-params
+    container: 'functest-benchmarking-cntt'
     jobs:
       - 'cntt-{repo}-{container}-{tag}-rmi'
 
@@ -336,6 +350,16 @@
       - rally_jobs
       - vmtp
       - shaker
+    jobs:
+      - 'cntt-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'cntt-opnfv-functest-benchmarking-cntt'
+    <<: *cntt-params
+    container: 'functest-benchmarking-cntt'
+    test:
+      - rally_full
+      - rally_jobs
     jobs:
       - 'cntt-{repo}-{container}-{tag}-{test}-run'
 
@@ -431,6 +455,8 @@
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-benchmarking-{tag}-rmi'
               <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-benchmarking-cntt-{tag}-rmi'
+              <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-vnf-{tag}-rmi'
               <<: *cntt-jobs
       - multijob:
@@ -443,6 +469,8 @@
             - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-pull'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-benchmarking-{tag}-pull'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-benchmarking-cntt-{tag}-pull'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-vnf-{tag}-pull'
               <<: *cntt-jobs
@@ -535,6 +563,14 @@
             - name: 'cntt-opnfv-functest-benchmarking-{tag}-shaker-run'
               <<: *cntt-jobs
       - multijob:
+          name: opnfv/functest-benchmarking-cntt:{functest_tag}
+          condition: ALWAYS
+          projects:
+            - name: 'cntt-opnfv-functest-benchmarking-cntt-{tag}-rally_full_cntt-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-benchmarking-cntt-{tag}-rally_jobs_cntt-run'
+              <<: *cntt-jobs
+      - multijob:
           name: opnfv/functest-vnf:{functest_tag}
           condition: ALWAYS
           execution-type: SEQUENTIALLY
@@ -616,6 +652,8 @@
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-benchmarking-{tag}-rmi'
               <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-benchmarking-cntt-{tag}-rmi'
+              <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-vnf-{tag}-rmi'
               <<: *cntt-jobs
       - multijob:
@@ -628,6 +666,8 @@
             - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-pull'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-benchmarking-{tag}-pull'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-benchmarking-cntt-{tag}-pull'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-vnf-{tag}-pull'
               <<: *cntt-jobs
