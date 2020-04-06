@@ -329,6 +329,7 @@
       - neutron-tempest-plugin-api
       - tempest_cinder
       - tempest_keystone
+      - tempest_heat
       - rally_sanity
       - refstack_defcore
       - refstack_compute
@@ -344,6 +345,12 @@
       - barbican
       - octavia
     exclude:
+      - tag: jerma
+        test: tempest_heat
+      - tag: iruya
+        test: tempest_heat
+      - tag: hunter
+        test: tempest_heat
       - tag: latest
         test: refstack_defcore
       - tag: jerma
@@ -541,6 +548,8 @@
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_cinder-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_keystone-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_heat-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-jobs
@@ -870,6 +879,8 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_keystone-run'
               <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_heat-run'
+              <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-refstack_defcore-run'
@@ -1085,6 +1096,8 @@
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_cinder-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_keystone-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_heat-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-jobs
