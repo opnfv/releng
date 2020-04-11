@@ -302,6 +302,7 @@
       - cinder_test
       - odl
       - tempest_smoke
+      - tempest_horizon
     jobs:
       - 'cntt-{repo}-{container}-{tag}-{test}-run'
 
@@ -502,6 +503,8 @@
             - name: 'cntt-opnfv-functest-healthcheck-{tag}-odl-run'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-healthcheck-{tag}-tempest_smoke-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-healthcheck-{tag}-tempest_horizon-run'
               <<: *cntt-jobs
       - multijob:
           name: opnfv/functest-smoke:{functest_tag}

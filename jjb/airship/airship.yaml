@@ -276,6 +276,7 @@
       - cinder_test
       - odl
       - tempest_smoke
+      - tempest_horizon
     jobs:
       - 'airship-{repo}-{container}-{tag}-{test}-run'
 
@@ -443,6 +444,8 @@
             - name: 'airship-opnfv-functest-healthcheck-{tag}-odl-run'
               <<: *airship-jobs
             - name: 'airship-opnfv-functest-healthcheck-{tag}-tempest_smoke-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-healthcheck-{tag}-tempest_horizon-run'
               <<: *airship-jobs
       - multijob:
           name: opnfv/functest-smoke:{functest_tag}
