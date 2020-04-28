@@ -311,7 +311,7 @@
     <<: *cntt-params
     container: 'functest-smoke'
     test:
-      - neutron-tempest-plugin-api
+      - tempest_neutron
       - tempest_cinder
       - tempest_keystone
       - tempest_heat
@@ -333,7 +333,7 @@
     <<: *cntt-params
     container: 'functest-smoke-cntt'
     test:
-      - neutron-tempest-plugin-api-cntt
+      - tempest_neutron_cntt
       - tempest_cinder_cntt
       - tempest_keystone_cntt
       - tempest_heat_cntt
@@ -511,7 +511,7 @@
           name: opnfv/functest-smoke:{functest_tag}
           condition: ALWAYS
           projects:
-            - name: 'cntt-opnfv-functest-smoke-{tag}-neutron-tempest-plugin-api-run'
+            - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_neutron-run'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_cinder-run'
               <<: *cntt-jobs
@@ -543,7 +543,7 @@
           name: opnfv/functest-smoke-cntt:{tag}
           condition: ALWAYS
           projects:
-            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-neutron-tempest-plugin-api-cntt-run'
+            - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-tempest_neutron_cntt-run'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-cntt-{tag}-tempest_cinder_cntt-run'
               <<: *cntt-jobs
