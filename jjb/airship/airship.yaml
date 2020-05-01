@@ -295,10 +295,9 @@
       - tempest_scenario
       - tempest_slow
       - patrole
-      - neutron_trunk
       - networking-bgpvpn
       - networking-sfc
-      - barbican
+      - tempest_barbican
     jobs:
       - 'airship-{repo}-{container}-{tag}-{test}-run'
 
@@ -471,13 +470,11 @@
               <<: *airship-jobs
             - name: 'airship-opnfv-functest-smoke-{tag}-patrole-run'
               <<: *airship-jobs
-            - name: 'airship-opnfv-functest-smoke-{tag}-neutron_trunk-run'
-              <<: *airship-jobs
             - name: 'airship-opnfv-functest-smoke-{tag}-networking-bgpvpn-run'
               <<: *airship-jobs
             - name: 'airship-opnfv-functest-smoke-{tag}-networking-sfc-run'
               <<: *airship-jobs
-            - name: 'airship-opnfv-functest-smoke-{tag}-barbican-run'
+            - name: 'airship-opnfv-functest-smoke-{tag}-tempest_barbican-run'
               <<: *airship-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{functest_tag}
@@ -618,7 +615,7 @@
               <<: *airship-jobs
             - name: 'airship-opnfv-functest-smoke-{tag}-networking-sfc-run'
               <<: *airship-jobs
-            - name: 'airship-opnfv-functest-smoke-{tag}-barbican-run'
+            - name: 'airship-opnfv-functest-smoke-{tag}-tempest_barbican-run'
               <<: *airship-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{functest_tag}

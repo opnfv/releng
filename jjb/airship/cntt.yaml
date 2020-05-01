@@ -321,10 +321,9 @@
       - tempest_scenario
       - tempest_slow
       - patrole
-      - neutron_trunk
       - networking-bgpvpn
       - networking-sfc
-      - barbican
+      - tempest_barbican
     jobs:
       - 'cntt-{repo}-{container}-{tag}-{test}-run'
 
@@ -531,13 +530,11 @@
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-patrole-run'
               <<: *cntt-jobs
-            - name: 'cntt-opnfv-functest-smoke-{tag}-neutron_trunk-run'
-              <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-networking-bgpvpn-run'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-networking-sfc-run'
               <<: *cntt-jobs
-            - name: 'cntt-opnfv-functest-smoke-{tag}-barbican-run'
+            - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_barbican-run'
               <<: *cntt-jobs
       - multijob:
           name: opnfv/functest-smoke-cntt:{tag}
@@ -714,7 +711,7 @@
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-networking-sfc-run'
               <<: *cntt-jobs
-            - name: 'cntt-opnfv-functest-smoke-{tag}-barbican-run'
+            - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_barbican-run'
               <<: *cntt-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{functest_tag}

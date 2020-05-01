@@ -343,19 +343,39 @@
       - neutron_trunk
       - networking-bgpvpn
       - networking-sfc
-      - barbican
-      - octavia
+      - tempest_barbican
+      - tempest_octavia
     exclude:
       - tag: latest
         test: refstack_defcore
+      - tag: latest
+        test: neutron_trunk
+      - tag: latest
+        test: networking-bgpvpn
+      - tag: latest
+        test: networking-sfc
       - tag: kali
         test: refstack_defcore
+      - tag: kali
+        test: neutron_trunk
+      - tag: kali
+        test: networking-bgpvpn
+      - tag: kali
+        test: networking-sfc
       - tag: jerma
         test: refstack_defcore
+      - tag: jerma
+        test: neutron_trunk
+      - tag: jerma
+        test: networking-bgpvpn
+      - tag: jerma
+        test: networking-sfc
       - tag: iruya
         test: refstack_defcore
       - tag: iruya
-        test: octavia
+        test: neutron_trunk
+      - tag: iruya
+        test: tempest_octavia
       - tag: hunter
         test: refstack_compute
       - tag: hunter
@@ -363,7 +383,9 @@
       - tag: hunter
         test: refstack_platform
       - tag: hunter
-        test: octavia
+        test: tempest_octavia
+      - tag: hunter
+        test: neutron_trunk
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -572,9 +594,9 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-networking-sfc-run'
               <<: *functest-jobs
-            - name: 'functest-opnfv-functest-smoke-{tag}-barbican-run'
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_barbican-run'
               <<: *functest-jobs
-            - name: 'functest-opnfv-functest-smoke-{tag}-octavia-run'
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_octavia-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-smoke-cntt:{tag}
@@ -903,9 +925,9 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-networking-sfc-run'
               <<: *functest-jobs
-            - name: 'functest-opnfv-functest-smoke-{tag}-barbican-run'
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_barbican-run'
               <<: *functest-jobs
-            - name: 'functest-opnfv-functest-smoke-{tag}-octavia-run'
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_octavia-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-smoke-cntt:{tag}
@@ -1121,9 +1143,9 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-networking-sfc-run'
               <<: *functest-jobs
-            - name: 'functest-opnfv-functest-smoke-{tag}-barbican-run'
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_barbican-run'
               <<: *functest-jobs
-            - name: 'functest-opnfv-functest-smoke-{tag}-octavia-run'
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_octavia-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-smoke-cntt:{tag}
