@@ -331,6 +331,7 @@
       - tempest_cinder
       - tempest_keystone
       - tempest_heat
+      - tempest_telemetry
       - rally_sanity
       - refstack_defcore
       - refstack_compute
@@ -370,12 +371,16 @@
         test: networking-bgpvpn
       - tag: jerma
         test: networking-sfc
+      - tag: jerma
+        test: tempest_telemetry
       - tag: iruya
         test: refstack_defcore
       - tag: iruya
         test: neutron_trunk
       - tag: iruya
         test: tempest_octavia
+      - tag: iruya
+        test: tempest_telemetry
       - tag: hunter
         test: refstack_compute
       - tag: hunter
@@ -386,6 +391,8 @@
         test: tempest_octavia
       - tag: hunter
         test: neutron_trunk
+      - tag: hunter
+        test: tempest_telemetry
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -569,6 +576,8 @@
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_keystone-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_heat-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_telemetry-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-jobs
@@ -901,6 +910,8 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_heat-run'
               <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_telemetry-run'
+              <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-refstack_defcore-run'
@@ -1118,6 +1129,8 @@
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_keystone-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_heat-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_telemetry-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-jobs
