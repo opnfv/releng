@@ -131,15 +131,6 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          if [ "{tag}" = "latest" ]; then
-            py=3.7
-          elif [ "{tag}" = "jerma" ]; then
-            py=3.7
-          elif [ "{tag}" = "iruya" ]; then
-            py=3.6
-          else
-            py=2.7
-          fi
           sudo docker run --rm \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
@@ -155,9 +146,6 @@
             -e IMAGE_PROPERTIES=hw_scsi_model:virtio-scsi,hw_disk_bus:scsi \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
-            -v /home/opnfv/functest/tempest_blacklist.yaml:/usr/lib/python$py/\
-          site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/\
-          blacklist.yaml \
             -v /home/opnfv/functest/.boto:/root/.boto \
             $image run_tests -t {test} -r -p
 

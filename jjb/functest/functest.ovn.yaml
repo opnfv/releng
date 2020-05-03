@@ -117,6 +117,8 @@
           fi
           if [ "{tag}" = "latest" ]; then
             py=3.8
+          elif [ "{tag}" = "kali" ]; then
+            py=3.8
           elif [ "{tag}" = "jerma" ]; then
             py=3.7
           elif [ "{tag}" = "iruya" ]; then
@@ -143,9 +145,6 @@
             -v /home/opnfv/functest/tempest_conf.yaml:/usr/lib/python$py/\
           site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/\
           tempest_conf.yaml \
-            -v /home/opnfv/functest/tempest_blacklist.yaml:/usr/lib/python$py/\
-          site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/\
-          blacklist.yaml \
             -v /home/opnfv/functest/.boto:/root/.boto \
             $image run_tests -t {test} -r -p
 
