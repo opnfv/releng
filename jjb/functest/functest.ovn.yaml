@@ -558,7 +558,7 @@
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-smoke-{tag}-tempest_heat-run'
               <<: *functest-ovn-jobs
-            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_telemetry-run'
+            - name: 'functest-ovn-opnfv-functest-smoke-{tag}-tempest_telemetry-run'
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-ovn-jobs
@@ -694,9 +694,9 @@
       - 'functest-ovn-{repo}-{container}-{tag}-pull'
 
 - project:
-    name: functest-ovn-opnfv-functest-ovn-core-{tag}-build
+    name: functest-ovn-opnfv-functest-core-{tag}-build
     <<: *functest-ovn-params
-    container: functest-ovn-core
+    container: functest-core
     ref_arg: BRANCH
     path: docker/core
     jobs:
@@ -704,9 +704,9 @@
       - 'functest-ovn-{repo}-{container}-{tag}-check'
 
 - project:
-    name: functest-ovn-opnfv-functest-ovn-tempest-{tag}-build
+    name: functest-ovn-opnfv-functest-tempest-{tag}-build
     <<: *functest-ovn-params
-    container: functest-ovn-tempest
+    container: functest-tempest
     ref_arg: BRANCH
     path: docker/tempest
     jobs:
@@ -824,14 +824,14 @@
             - name: 'functest-ovn-_-alpine-3.11-pull'
               <<: *functest-ovn-jobs
       - multijob:
-          name: build opnfv/functest-ovn-core
+          name: build opnfv/functest-core
           projects:
-            - name: 'functest-ovn-opnfv-functest-ovn-core-{tag}-check'
+            - name: 'functest-ovn-opnfv-functest-core-{tag}-check'
               <<: *functest-ovn-jobs
       - multijob:
-          name: build opnfv/functest-ovn-tempest
+          name: build opnfv/functest-tempest
           projects:
-            - name: 'functest-ovn-opnfv-functest-ovn-tempest-{tag}-check'
+            - name: 'functest-ovn-opnfv-functest-tempest-{tag}-check'
               <<: *functest-ovn-jobs
       - multijob:
           name: build containers
@@ -891,7 +891,7 @@
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-smoke-{tag}-tempest_heat-run'
               <<: *functest-ovn-jobs
-            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_telemetry-run'
+            - name: 'functest-ovn-opnfv-functest-smoke-{tag}-tempest_telemetry-run'
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-ovn-jobs
@@ -1044,14 +1044,14 @@
             - name: 'functest-ovn-_-alpine-3.11-pull'
               <<: *functest-ovn-jobs
       - multijob:
-          name: build opnfv/functest-ovn-core
+          name: build opnfv/functest-core
           projects:
-            - name: 'functest-ovn-opnfv-functest-ovn-core-{tag}-gate'
+            - name: 'functest-ovn-opnfv-functest-core-{tag}-gate'
               <<: *functest-ovn-jobs
       - multijob:
-          name: build opnfv/functest-ovn-tempest
+          name: build opnfv/functest-tempest
           projects:
-            - name: 'functest-ovn-opnfv-functest-ovn-tempest-{tag}-gate'
+            - name: 'functest-ovn-opnfv-functest-tempest-{tag}-gate'
               <<: *functest-ovn-jobs
       - multijob:
           name: build containers
@@ -1111,7 +1111,7 @@
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-smoke-{tag}-tempest_heat-run'
               <<: *functest-ovn-jobs
-            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_telemetry-run'
+            - name: 'functest-ovn-opnfv-functest-smoke-{tag}-tempest_telemetry-run'
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *functest-ovn-jobs
