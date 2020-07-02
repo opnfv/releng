@@ -200,8 +200,6 @@
     name: 'functest-kubernetes-opnfv-functest-kubernetes-security-pull'
     <<: *functest-kubernetes-params
     container: 'functest-kubernetes-security'
-    exclude:
-      - tag: hunter
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
 
@@ -243,8 +241,6 @@
     name: 'functest-kubernetes-opnfv-functest-kubernetes-security-rmi'
     <<: *functest-kubernetes-params
     container: 'functest-kubernetes-security'
-    exclude:
-      - tag: hunter
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
 
@@ -310,11 +306,6 @@
     test:
       - kube_hunter
       - kube_bench
-    exclude:
-      - tag: hunter
-        test: kube_hunter
-      - tag: hunter
-        test: kube_bench
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
 
@@ -530,8 +521,6 @@
     container: functest-kubernetes-security
     ref_arg: BRANCH
     path: docker/security
-    exclude:
-      - tag: hunter
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
       - 'functest-kubernetes-{repo}-{container}-{tag}-check'
