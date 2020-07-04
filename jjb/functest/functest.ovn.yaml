@@ -328,6 +328,9 @@
       - tempest_scenario
       - tempest_slow
       - patrole
+      - patrole_admin
+      - patrole_member
+      - patrole_reader
       - neutron_trunk
       - networking-bgpvpn
       - networking-sfc
@@ -342,6 +345,8 @@
         test: networking-bgpvpn
       - tag: latest
         test: networking-sfc
+      - tag: latest
+        test: patrole
       - tag: kali
         test: refstack_defcore
       - tag: kali
@@ -350,6 +355,12 @@
         test: networking-bgpvpn
       - tag: kali
         test: networking-sfc
+      - tag: kali
+        test: patrole_admin
+      - tag: kali
+        test: patrole_member
+      - tag: kali
+        test: patrole_reader
       - tag: jerma
         test: refstack_defcore
       - tag: jerma
@@ -358,10 +369,22 @@
         test: networking-bgpvpn
       - tag: jerma
         test: networking-sfc
+      - tag: jerma
+        test: patrole_admin
+      - tag: jerma
+        test: patrole_member
+      - tag: jerma
+        test: patrole_reader
       - tag: iruya
         test: refstack_defcore
       - tag: iruya
         test: neutron_trunk
+      - tag: iruya
+        test: patrole_admin
+      - tag: iruya
+        test: patrole_member
+      - tag: iruya
+        test: patrole_reader
       - tag: hunter
         test: refstack_compute
       - tag: hunter
@@ -374,6 +397,12 @@
         test: neutron_trunk
       - tag: hunter
         test: tempest_telemetry
+      - tag: hunter
+        test: patrole_admin
+      - tag: hunter
+        test: patrole_member
+      - tag: hunter
+        test: patrole_reader
     jobs:
       - 'functest-ovn-{repo}-{container}-{tag}-{test}-run'
 
@@ -577,6 +606,12 @@
             - name: 'functest-ovn-opnfv-functest-smoke-{tag}-tempest_slow-run'
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-smoke-{tag}-patrole-run'
+              <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-smoke-{tag}-patrole_admin-run'
+              <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-smoke-{tag}-patrole_member-run'
+              <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-smoke-{tag}-patrole_reader-run'
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-smoke-{tag}-neutron_trunk-run'
               <<: *functest-ovn-jobs
@@ -910,6 +945,12 @@
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-smoke-{tag}-patrole-run'
               <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-smoke-{tag}-patrole_admin-run'
+              <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-smoke-{tag}-patrole_member-run'
+              <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-smoke-{tag}-patrole_reader-run'
+              <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-smoke-{tag}-neutron_trunk-run'
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-smoke-{tag}-networking-bgpvpn-run'
@@ -1128,6 +1169,12 @@
             - name: 'functest-ovn-opnfv-functest-smoke-{tag}-tempest_slow-run'
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-smoke-{tag}-patrole-run'
+              <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-smoke-{tag}-patrole_admin-run'
+              <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-smoke-{tag}-patrole_member-run'
+              <<: *functest-ovn-jobs
+            - name: 'functest-ovn-opnfv-functest-smoke-{tag}-patrole_reader-run'
               <<: *functest-ovn-jobs
             - name: 'functest-ovn-opnfv-functest-smoke-{tag}-neutron_trunk-run'
               <<: *functest-ovn-jobs
