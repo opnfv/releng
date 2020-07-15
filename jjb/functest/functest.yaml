@@ -337,6 +337,7 @@
       - networking-sfc
       - tempest_barbican
       - tempest_octavia
+      - tempest_cyborg
     exclude:
       - tag: latest
         test: refstack_defcore
@@ -362,6 +363,8 @@
         test: patrole_member
       - tag: kali
         test: patrole_reader
+      - tag: kali
+        test: tempest_cyborg
       - tag: jerma
         test: refstack_defcore
       - tag: jerma
@@ -376,6 +379,8 @@
         test: patrole_member
       - tag: jerma
         test: patrole_reader
+      - tag: jerma
+        test: tempest_cyborg
       - tag: iruya
         test: refstack_defcore
       - tag: iruya
@@ -386,6 +391,8 @@
         test: patrole_member
       - tag: iruya
         test: patrole_reader
+      - tag: iruya
+        test: tempest_cyborg
       - tag: hunter
         test: refstack_compute
       - tag: hunter
@@ -404,6 +411,8 @@
         test: patrole_member
       - tag: hunter
         test: patrole_reader
+      - tag: hunter
+        test: tempest_cyborg
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -623,6 +632,8 @@
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_barbican-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_octavia-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_cyborg-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-smoke-cntt:{tag}
@@ -962,6 +973,8 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_octavia-run'
               <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_cyborg-run'
+              <<: *functest-jobs
       - multijob:
           name: opnfv/functest-smoke-cntt:{tag}
           projects:
@@ -1186,6 +1199,8 @@
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_barbican-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-smoke-{tag}-tempest_octavia-run'
+              <<: *functest-jobs
+            - name: 'functest-opnfv-functest-smoke-{tag}-tempest_cyborg-run'
               <<: *functest-jobs
       - multijob:
           name: opnfv/functest-smoke-cntt:{tag}
