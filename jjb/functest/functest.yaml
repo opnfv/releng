@@ -276,6 +276,13 @@
 
 - job-template:
     name: 'functest-{repo}-{container}-{tag}-{test}-run'
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^functest-{repo}-{container}-{tag}-tempest_full-run$'
+            - '^functest-{repo}-{container}-{tag}-tempest_full_cntt-run$'
     parameters:
       - functest-slave:
           slave: '{slave}'
