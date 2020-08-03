@@ -32,11 +32,6 @@
           cristina.pauna@enea.com
           alexandru.avadanii@enea.com
           mbeierl@vmware.com
-    yardstick-arm-receivers: &yardstick-arm-receivers
-      receivers: >
-          cristina.pauna@enea.com
-          alexandru.avadanii@enea.com
-          delia.popescu@enea.com
     other-receivers: &other-receivers
       receivers: ''
 
@@ -95,10 +90,6 @@
           arch_tag: 'aarch64'
           <<: *master
           <<: *storperf-arm-receivers
-      - 'yardstick':
-          project: 'yardstick'
-          <<: *master
-          <<: *yardstick-arm-receivers
 
       # projects with jobs for stable/euphrates
       - 'dovetail':
@@ -106,17 +97,7 @@
           <<: *euphrates
           <<: *dovetail-arm-receivers
 
-      # projects with jobs for stable/hunter
-      - 'yardstick':
-          project: 'yardstick'
-          <<: *hunter
-          <<: *yardstick-arm-receivers
-
       # projects with jobs for stable/iruya
-      - 'yardstick':
-          project: 'yardstick'
-          <<: *iruya
-          <<: *yardstick-arm-receivers
       - 'storperf-master':
           project: 'storperf'
           dockerdir: 'docker/storperf-master'
