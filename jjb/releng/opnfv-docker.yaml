@@ -94,10 +94,6 @@
           dockerdir: 'docker/barometer-snmp'
           <<: *master
           <<: *other-receivers
-      - 'bottlenecks':
-          project: 'bottlenecks'
-          <<: *master
-          <<: *other-receivers
       - 'clover':
           project: 'clover'
           dockerdir: '.'
@@ -269,40 +265,14 @@
           arch_tag: 'x86_64'
           <<: *master
           <<: *storperf-receivers
-      - 'yardstick':
-          project: 'yardstick'
-          <<: *master
-          <<: *yardstick-receivers
-      - 'yardstick-ubuntu-18.04':
-          project: 'yardstick'
-          dockerfile: 'Dockerfile_ubuntu18'
-          <<: *master
-          <<: *yardstick-receivers
-      - 'yardstick-image-k8s':
-          project: 'yardstick'
-          dockerdir: 'docker/k8s'
-          <<: *master
-          <<: *yardstick-receivers
 
       # projects with jobs for hunter
-      - 'bottlenecks':
-          project: 'bottlenecks'
-          <<: *hunter
-          <<: *other-receivers
       - 'dovetail':
           project: 'dovetail'
           <<: *hunter
           <<: *other-receivers
-      - 'yardstick':
-          project: 'yardstick'
-          <<: *hunter
-          <<: *yardstick-receivers
 
       # projects with jobs for iruya
-      - 'yardstick':
-          project: 'yardstick'
-          <<: *iruya
-          <<: *yardstick-receivers
       - 'barometer-dma':
           project: 'barometer'
           dockerdir: 'docker/barometer-dma'
@@ -391,24 +361,6 @@
     jobs:
       - "{dockerrepo}-docker-build-push-{stream}"
 
-- project:
-
-    name: opnfv-monitor-docker        # projects which only monitor dedicated file or path
-
-    dockerfile: "Dockerfile"
-    dockerdir: "docker"
-    arch_tag: ""
-    extra_build_args: ""
-
-    project:
-      # projects with jobs for master
-      - 'daisy':
-          dockerrepo: 'daisy'
-          <<: *master
-
-    jobs:
-      - '{project}-docker-build-push-monitor-{stream}'
-
 ########################
 # job templates
 ########################
@@ -477,30 +429,3 @@
       - email:
           recipients: '{receivers}'
       - email-jenkins-admins-on-failure
-
-- job-template:
-    name: '{project}-docker-build-push-monitor-{stream}'
-    disabled: '{obj:disabled}'
-    parameters: *parameters
-
-    scm:
-      - git-scm
-
-    builders: *builders
-
-    # trigger only matching the file name
-    triggers:
-      - gerrit:
-          trigger-on:
-            - change-merged-event
-            - comment-added-contains-event:
-                comment-contains-value: 'remerge'
-          projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{project}'
-              branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
-              file-paths:
-                - compare-type: ANT
-                  pattern: 'docker/**'
