@@ -31,6 +31,20 @@
       - 'arm64':
           slave_label: 'opnfv-build-ubuntu-arm'
 
+    image:
+      - 'core'
+      - 'mts'
+
+    exclude:
+      - stream: 'kali'
+        image: 'mts'
+      - stream: 'jerma'
+        image: 'mts'
+      - stream: 'iruya'
+        image: 'mts'
+      - stream: 'hunter'
+        image: 'mts'
+
     # settings for jobs run in multijob phases
     build-job-settings: &build-job-settings
       current-parameters: false
@@ -56,8 +70,8 @@
     # yamllint enable rule:key-duplicates
     jobs:
       - "xtesting-docker-{stream}"
-      - "xtesting-docker-build-{arch_tag}-{stream}"
-      - "xtesting-docker-manifest-{stream}"
+      - "xtesting-{image}-docker-build-{arch_tag}-{stream}"
+      - "xtesting-{image}-docker-manifest-{stream}"
 
 ########################
 # job templates
@@ -95,16 +109,31 @@
           name: 'build xtesting images'
           execution-type: PARALLEL
           projects:
-            - name: 'xtesting-docker-build-amd64-{stream}'
+            - name: 'xtesting-core-docker-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'xtesting-docker-build-arm64-{stream}'
+            - name: 'xtesting-core-docker-build-arm64-{stream}'
               <<: *build-job-settings
       - multijob:
           name: 'publish xtesting manifests'
           execution-type: PARALLEL
           projects:
-            - name: 'xtesting-docker-manifest-{stream}'
+            - name: 'xtesting-core-docker-manifest-{stream}'
               <<: *manifest-job-settings
+      - multijob:
+          name: 'build xtesting-mts images'
+          execution-type: PARALLEL
+          projects:
+            - name: 'xtesting-mts-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'xtesting-mts-docker-build-arm64-{stream}'
+              <<: *build-job-settings
+      - multijob:
+          name: 'publish xtesting-mts manifests'
+          execution-type: PARALLEL
+          projects:
+            - name: 'xtesting-mts-docker-manifest-{stream}'
+              <<: *manifest-job-settings
+
 
     publishers:
       - 'xtesting-amd64-recipients'
@@ -124,7 +153,12 @@
     builders:
       - shell: |
           #!/bin/bash -ex
-          sudo arch={arch_tag} bash ./build.sh
+          case "{arch_tag}" in
+          "arm64")
+              sudo amd64_dirs= arm64_dirs=docker/{image} arm_dirs= bash ./build.sh ;;
+          *)
+              sudo amd64_dirs=docker/{image} arm64_dirs= arm_dirs= bash ./build.sh ;;
+          esac
           exit $?
 
 - job-template:
@@ -151,7 +185,7 @@
       - string:
           name: REPO
           default: "opnfv"
-          description: "Repository name for functest images"
+          description: "Repository name for xtesting images"
 
 
     disabled: '{obj:disabled}'
@@ -165,10 +199,16 @@
           *)
               tag="{stream}" ;;
           esac
+          case "{image}" in
+          "core")
+              img="" ;;
+          *)
+              img="-{image}" ;;
+          esac
           sudo manifest-tool push from-args \
               --platforms linux/amd64,linux/arm64 \
-              --template $REPO/xtesting:ARCH-$tag \
-              --target $REPO/xtesting:$tag
+              --template $REPO/xtesting$img:ARCH-$tag \
+              --target $REPO/xtesting$img:$tag
           exit $?
 
 - parameter:
@@ -214,7 +254,7 @@
       - string:
           name: REPO
           default: "opnfv"
-          description: "Repository name for functest images"
+          description: "Repository name for xtesting images"
 
 # publisher macros
 - publisher:
