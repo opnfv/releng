@@ -153,9 +153,10 @@
           fi
           volumes=""
           case "{tag}" in
-            arm*-hunter)
-              volumes=-v /usr/bin/qemu-arm-static:/usr/bin/qemu-arm-static \
-                -v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static;;
+            arm-hunter)
+              volumes="-v /usr/bin/qemu-arm-static:/usr/bin/qemu-arm-static" ;;
+            arm64-hunter)
+              volumes="-v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static" ;;
           esac
           sudo docker run --rm \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
