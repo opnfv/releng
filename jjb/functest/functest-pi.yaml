@@ -1,0 +1,923 @@
+---
+- functest-pi-jobs: &functest-pi-jobs
+    name: 'functest-pi-jobs'
+    current-parameters: true
+
+- functest-pi-params: &functest-pi-params
+    name: 'functest-pi-params'
+    repo: 'ollivier'
+    port:
+    tag:
+      - latest:
+          branch: master
+          slave: lf-virtual9
+          dashboard_url: http://172.30.13.94
+      - kali:
+          branch: stable/kali
+          slave: lf-pod4-3
+          dashboard_url: http://172.30.12.88
+      - jerma:
+          branch: stable/jerma
+          slave: lf-pod4
+          dashboard_url: http://172.30.12.83
+      - iruya:
+          branch: stable/iruya
+          slave: lf-virtual4
+          dashboard_url: http://172.30.13.89
+      - hunter:
+          branch: stable/hunter
+          slave: lf-virtual6
+          dashboard_url: http://172.30.13.91
+      - arm-latest:
+          branch: master
+          slave: lf-virtual9
+          dashboard_url: http://172.30.13.94
+      - arm-kali:
+          branch: stable/kali
+          slave: lf-pod4-3
+          dashboard_url: http://172.30.12.88
+      - arm-jerma:
+          branch: stable/jerma
+          slave: lf-pod4
+          dashboard_url: http://172.30.12.83
+      - arm-iruya:
+          branch: stable/iruya
+          slave: lf-virtual4
+          dashboard_url: http://172.30.13.89
+      - arm-hunter:
+          branch: stable/hunter
+          slave: lf-virtual6
+          dashboard_url: http://172.30.13.91
+      - arm64-latest:
+          branch: master
+          slave: lf-virtual9
+          dashboard_url: http://172.30.13.94
+      - arm64-kali:
+          branch: stable/kali
+          slave: lf-pod4-3
+          dashboard_url: http://172.30.12.88
+      - arm64-jerma:
+          branch: stable/jerma
+          slave: lf-pod4
+          dashboard_url: http://172.30.12.83
+      - arm64-iruya:
+          branch: stable/iruya
+          slave: lf-virtual4
+          dashboard_url: http://172.30.13.89
+      - arm64-hunter:
+          branch: stable/hunter
+          slave: lf-virtual6
+          dashboard_url: http://172.30.13.91
+
+- parameter:
+    name: functest-pi-slave
+    parameters:
+      - label:
+          name: slave
+          default: '{slave}'
+
+- parameter:
+    name: functest-pi-build_tag
+    parameters:
+      - random-string:
+          name: build_tag
+
+- parameter:
+    name: functest-pi-branch
+    parameters:
+      - string:
+          name: branch
+          default: '{branch}'
+
+- parameter:
+    name: functest-pi-DEBUG
+    parameters:
+      - string:
+          name: DEBUG
+          default: 'true'
+- parameter:
+    name: functest-pi-EXTERNAL_NETWORK
+    parameters:
+      - string:
+          name: EXTERNAL_NETWORK
+          default: public
+- parameter:
+    name: functest-pi-VOLUME_DEVICE_NAME
+    parameters:
+      - string:
+          name: VOLUME_DEVICE_NAME
+          default: sdb
+- parameter:
+    name: functest-pi-IMAGE_PROPERTIES
+    parameters:
+      - string:
+          name: IMAGE_PROPERTIES
+          default: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+
+- functest-pi-containers: &functest-pi-containers
+    name: 'functest-pi-containers'
+    repo: '{repo}'
+    port: '{port}'
+    container: '{container}'
+    tag: '{tag}'
+
+- functest-pi-run-containers: &functest-pi-run-containers
+    name: 'functest-pi-run-containers'
+    <<: *functest-pi-containers
+    test: '{test}'
+    dashboard_url: '{dashboard_url}'
+    privileged: '{privileged}'
+    network: '{network}'
+
+- builder:
+    name: functest-pi-pull-containers
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          sudo docker pull $image
+
+- builder:
+    name: functest-pi-run-containers
+    builders:
+      - shell: |
+          set +x
+          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          volumes=""
+          case "{tag}" in
+            arm-hunter)
+              volumes="-v /usr/bin/qemu-arm-static:/usr/bin/qemu-arm-static" ;;
+            arm64-hunter)
+              volumes="-v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static" ;;
+          esac
+          sudo docker run --rm \
+            --privileged={privileged} \
+            --network={network} \
+            -e S3_ENDPOINT_URL=https://storage.googleapis.com \
+            -e S3_DST_URL=s3://artifacts.opnfv.org/functest/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -e HTTP_DST_URL=http://artifacts.opnfv.org/functest/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e NODE_NAME=$slave \
+            -e BUILD_TAG=$BUILD_TAG \
+            -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -e DEBUG=$DEBUG \
+            -e EXTERNAL_NETWORK=$EXTERNAL_NETWORK \
+            -e DASHBOARD_URL={dashboard_url} \
+            -e VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME \
+            -e IMAGE_PROPERTIES=$IMAGE_PROPERTIES \
+            -v /home/opnfv/functest/.boto:/root/.boto \
+            -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
+            -v /home/opnfv/functest/images:/home/opnfv/functest/images \
+            $volumes $image run_tests -t {test} -r -p
+
+- builder:
+    name: functest-pi-remove-images
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          sudo docker rmi $image || true
+
+- job-template:
+    name: 'functest-pi-{repo}-{container}-{tag}-pull'
+    parameters:
+      - functest-pi-slave:
+          slave: '{slave}'
+    builders:
+      - functest-pi-pull-containers:
+          <<: *functest-pi-containers
+
+- project:
+    name: 'functest-pi-ollivier-functest-healthcheck-pull'
+    <<: *functest-pi-params
+    container: 'functest-healthcheck'
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'functest-pi-ollivier-functest-smoke-pull'
+    <<: *functest-pi-params
+    container: 'functest-smoke'
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'functest-pi-ollivier-functest-smoke-cntt-pull'
+    <<: *functest-pi-params
+    container: 'functest-smoke-cntt'
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'functest-pi-ollivier-functest-benchmarking-pull'
+    <<: *functest-pi-params
+    container: 'functest-benchmarking'
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'functest-pi-ollivier-functest-benchmarking-cntt-pull'
+    <<: *functest-pi-params
+    container: 'functest-benchmarking-cntt'
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'functest-pi-ollivier-functest-vnf-pull'
+    <<: *functest-pi-params
+    container: 'functest-vnf'
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-pull'
+
+- job-template:
+    name: 'functest-pi-{repo}-{container}-{tag}-rmi'
+    parameters:
+      - functest-pi-slave:
+          slave: '{slave}'
+    builders:
+      - functest-pi-remove-images:
+          <<: *functest-pi-containers
+
+- project:
+    name: 'functest-pi-ollivier-functest-healthcheck-rmi'
+    <<: *functest-pi-params
+    container: 'functest-healthcheck'
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-pi-ollivier-functest-smoke-rmi'
+    <<: *functest-pi-params
+    container: 'functest-smoke'
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-pi-ollivier-functest-smoke-cntt-rmi'
+    <<: *functest-pi-params
+    container: 'functest-smoke-cntt'
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-pi-ollivier-functest-benchmarking-rmi'
+    <<: *functest-pi-params
+    container: 'functest-benchmarking'
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-pi-ollivier-functest-benchmarking-cntt-rmi'
+    <<: *functest-pi-params
+    container: 'functest-benchmarking-cntt'
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-pi-ollivier-functest-vnf-rmi'
+    <<: *functest-pi-params
+    container: 'functest-vnf'
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-rmi'
+
+- job-template:
+    name: 'functest-pi-{repo}-{container}-{tag}-{test}-run'
+    parameters:
+      - functest-pi-slave:
+          slave: '{slave}'
+      - functest-pi-build_tag:
+          build_tag: ''
+      - functest-pi-DEBUG:
+          DEBUG: 'true'
+      - functest-pi-EXTERNAL_NETWORK:
+          EXTERNAL_NETWORK: public
+      - functest-pi-VOLUME_DEVICE_NAME:
+          VOLUME_DEVICE_NAME: sdb
+      - functest-pi-IMAGE_PROPERTIES:
+          IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+    builders:
+      - functest-pi-run-containers:
+          <<: *functest-pi-run-containers
+
+- project:
+    name: 'functest-pi-ollivier-functest-healthcheck'
+    <<: *functest-pi-params
+    container: 'functest-healthcheck'
+    test:
+      - connection_check
+      - tenantnetwork1
+      - tenantnetwork2
+      - vmready1
+      - vmready2
+      - singlevm1
+      - singlevm2
+      - vping_ssh
+      - vping_userdata
+      - cinder_test
+      - odl
+      - tempest_smoke
+      - tempest_horizon
+    privileged: 'false'
+    network: bridge
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-pi-ollivier-functest-smoke'
+    <<: *functest-pi-params
+    container: 'functest-smoke'
+    test:
+      - tempest_neutron
+      - tempest_cinder
+      - tempest_keystone
+      - tempest_heat
+      - tempest_telemetry
+      - rally_sanity
+      - refstack_defcore
+      - refstack_compute
+      - refstack_object
+      - refstack_platform
+      - tempest_full
+      - tempest_scenario
+      - tempest_slow
+      - patrole
+      - patrole_admin
+      - patrole_member
+      - patrole_reader
+      - neutron_trunk
+      - networking-bgpvpn
+      - networking-sfc
+      - tempest_barbican
+      - tempest_octavia
+      - tempest_cyborg
+    exclude:
+      - tag: latest
+        test: refstack_defcore
+      - tag: latest
+        test: neutron_trunk
+      - tag: latest
+        test: networking-bgpvpn
+      - tag: latest
+        test: networking-sfc
+      - tag: latest
+        test: patrole
+      - tag: kali
+        test: refstack_defcore
+      - tag: kali
+        test: neutron_trunk
+      - tag: kali
+        test: networking-bgpvpn
+      - tag: kali
+        test: networking-sfc
+      - tag: kali
+        test: patrole_admin
+      - tag: kali
+        test: patrole_member
+      - tag: kali
+        test: patrole_reader
+      - tag: jerma
+        test: refstack_defcore
+      - tag: jerma
+        test: neutron_trunk
+      - tag: jerma
+        test: networking-bgpvpn
+      - tag: jerma
+        test: networking-sfc
+      - tag: jerma
+        test: patrole_admin
+      - tag: jerma
+        test: patrole_member
+      - tag: jerma
+        test: patrole_reader
+      - tag: jerma
+        test: tempest_cyborg
+      - tag: iruya
+        test: refstack_defcore
+      - tag: iruya
+        test: neutron_trunk
+      - tag: iruya
+        test: patrole_admin
+      - tag: iruya
+        test: patrole_member
+      - tag: iruya
+        test: patrole_reader
+      - tag: iruya
+        test: tempest_cyborg
+      - tag: hunter
+        test: refstack_compute
+      - tag: hunter
+        test: refstack_object
+      - tag: hunter
+        test: refstack_platform
+      - tag: hunter
+        test: tempest_octavia
+      - tag: hunter
+        test: neutron_trunk
+      - tag: hunter
+        test: tempest_telemetry
+      - tag: hunter
+        test: patrole_admin
+      - tag: hunter
+        test: patrole_member
+      - tag: hunter
+        test: patrole_reader
+      - tag: hunter
+        test: tempest_cyborg
+      - tag: arm-latest
+        test: refstack_defcore
+      - tag: arm-latest
+        test: neutron_trunk
+      - tag: arm-latest
+        test: networking-bgpvpn
+      - tag: arm-latest
+        test: networking-sfc
+      - tag: arm-latest
+        test: patrole
+      - tag: arm-kali
+        test: refstack_defcore
+      - tag: arm-kali
+        test: neutron_trunk
+      - tag: arm-kali
+        test: networking-bgpvpn
+      - tag: arm-kali
+        test: networking-sfc
+      - tag: arm-kali
+        test: patrole_admin
+      - tag: arm-kali
+        test: patrole_member
+      - tag: arm-kali
+        test: patrole_reader
+      - tag: arm-jerma
+        test: refstack_defcore
+      - tag: arm-jerma
+        test: neutron_trunk
+      - tag: arm-jerma
+        test: networking-bgpvpn
+      - tag: arm-jerma
+        test: networking-sfc
+      - tag: arm-jerma
+        test: patrole_admin
+      - tag: arm-jerma
+        test: patrole_member
+      - tag: arm-jerma
+        test: patrole_reader
+      - tag: arm-jerma
+        test: tempest_cyborg
+      - tag: arm-iruya
+        test: refstack_defcore
+      - tag: arm-iruya
+        test: neutron_trunk
+      - tag: arm-iruya
+        test: patrole_admin
+      - tag: arm-iruya
+        test: patrole_member
+      - tag: arm-iruya
+        test: patrole_reader
+      - tag: arm-iruya
+        test: tempest_cyborg
+      - tag: arm-hunter
+        test: refstack_compute
+      - tag: arm-hunter
+        test: refstack_object
+      - tag: arm-hunter
+        test: refstack_platform
+      - tag: arm-hunter
+        test: tempest_octavia
+      - tag: arm-hunter
+        test: neutron_trunk
+      - tag: arm-hunter
+        test: tempest_telemetry
+      - tag: arm-hunter
+        test: patrole_admin
+      - tag: arm-hunter
+        test: patrole_member
+      - tag: arm-hunter
+        test: patrole_reader
+      - tag: arm-hunter
+        test: tempest_cyborg
+      - tag: arm64-latest
+        test: refstack_defcore
+      - tag: arm64-latest
+        test: neutron_trunk
+      - tag: arm64-latest
+        test: networking-bgpvpn
+      - tag: arm64-latest
+        test: networking-sfc
+      - tag: arm64-latest
+        test: patrole
+      - tag: arm64-kali
+        test: refstack_defcore
+      - tag: arm64-kali
+        test: neutron_trunk
+      - tag: arm64-kali
+        test: networking-bgpvpn
+      - tag: arm64-kali
+        test: networking-sfc
+      - tag: arm64-kali
+        test: patrole_admin
+      - tag: arm64-kali
+        test: patrole_member
+      - tag: arm64-kali
+        test: patrole_reader
+      - tag: arm64-jerma
+        test: refstack_defcore
+      - tag: arm64-jerma
+        test: neutron_trunk
+      - tag: arm64-jerma
+        test: networking-bgpvpn
+      - tag: arm64-jerma
+        test: networking-sfc
+      - tag: arm64-jerma
+        test: patrole_admin
+      - tag: arm64-jerma
+        test: patrole_member
+      - tag: arm64-jerma
+        test: patrole_reader
+      - tag: arm64-jerma
+        test: tempest_cyborg
+      - tag: arm64-iruya
+        test: refstack_defcore
+      - tag: arm64-iruya
+        test: neutron_trunk
+      - tag: arm64-iruya
+        test: patrole_admin
+      - tag: arm64-iruya
+        test: patrole_member
+      - tag: arm64-iruya
+        test: patrole_reader
+      - tag: arm64-iruya
+        test: tempest_cyborg
+      - tag: arm64-hunter
+        test: refstack_compute
+      - tag: arm64-hunter
+        test: refstack_object
+      - tag: arm64-hunter
+        test: refstack_platform
+      - tag: arm64-hunter
+        test: tempest_octavia
+      - tag: arm64-hunter
+        test: neutron_trunk
+      - tag: arm64-hunter
+        test: tempest_telemetry
+      - tag: arm64-hunter
+        test: patrole_admin
+      - tag: arm64-hunter
+        test: patrole_member
+      - tag: arm64-hunter
+        test: patrole_reader
+      - tag: arm64-hunter
+        test: tempest_cyborg
+    privileged: 'false'
+    network: bridge
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-pi-ollivier-functest-smoke-cntt'
+    <<: *functest-pi-params
+    container: 'functest-smoke-cntt'
+    test:
+      - tempest_neutron_cntt
+      - tempest_cinder_cntt
+      - tempest_keystone_cntt
+      - tempest_heat_cntt
+      - rally_sanity_cntt
+      - tempest_full_cntt
+      - tempest_scenario_cntt
+      - tempest_slow_cntt
+    privileged: 'false'
+    network: bridge
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-pi-ollivier-functest-benchmarking'
+    <<: *functest-pi-params
+    container: 'functest-benchmarking'
+    test:
+      - rally_full
+      - rally_jobs
+      - vmtp
+      - shaker
+    privileged: 'false'
+    network: bridge
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-pi-ollivier-functest-benchmarking-cntt'
+    <<: *functest-pi-params
+    container: 'functest-benchmarking-cntt'
+    test:
+      - rally_full_cntt
+      - rally_jobs_cntt
+    privileged: 'false'
+    network: bridge
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-pi-ollivier-functest-vnf'
+    <<: *functest-pi-params
+    container: 'functest-vnf'
+    test:
+      - cloudify
+      - cloudify_ims
+      - heat_ims
+      - vyos_vrouter
+      - juju_epc
+    privileged: 'false'
+    network: bridge
+    jobs:
+      - 'functest-pi-{repo}-{container}-{tag}-{test}-run'
+
+
+- builder:
+    name: functest-pi-zip
+    builders:
+      - shell: |
+          set +x
+          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          volumes=""
+          case "{tag}" in
+            arm-hunter)
+              volumes="-v /usr/bin/qemu-arm-static:/usr/bin/qemu-arm-static" ;;
+            arm64-hunter)
+              volumes="-v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static" ;;
+          esac
+          sudo docker run --rm \
+            -e S3_ENDPOINT_URL=https://storage.googleapis.com \
+            -e S3_DST_URL=s3://artifacts.opnfv.org/functest \
+            -e HTTP_DST_URL=http://artifacts.opnfv.org/functest \
+            -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e BUILD_TAG=$BUILD_TAG \
+            -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -e DEBUG=$DEBUG \
+            -e EXTERNAL_NETWORK=$EXTERNAL_NETWORK \
+            -e VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME \
+            -e IMAGE_PROPERTIES=$IMAGE_PROPERTIES \
+            -v /home/opnfv/functest/.boto:/root/.boto \
+            -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
+            -v /home/opnfv/functest/images:/home/opnfv/functest/images \
+            $volumes $image zip_campaign
+
+- job-template:
+    name: 'functest-pi-{tag}-zip'
+    parameters:
+      - functest-pi-slave:
+          slave: '{slave}'
+      - functest-pi-build_tag:
+          build_tag: ''
+      - functest-pi-DEBUG:
+          DEBUG: 'true'
+      - functest-pi-EXTERNAL_NETWORK:
+          EXTERNAL_NETWORK: public
+      - functest-pi-VOLUME_DEVICE_NAME:
+          VOLUME_DEVICE_NAME: sdb
+      - functest-pi-IMAGE_PROPERTIES:
+          IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+    builders:
+      - functest-pi-zip:
+          <<: *functest-pi-containers
+
+- project:
+    name: 'functest-pi-{tag}-zip'
+    <<: *functest-pi-params
+    container: 'functest-healthcheck'
+    jobs:
+      - 'functest-pi-{tag}-zip'
+
+- job-template:
+    name: 'functest-pi-{tag}-daily'
+    project-type: multijob
+    triggers:
+      - timed: '@weekly'
+    parameters:
+      - functest-pi-slave:
+          slave: '{slave}'
+      - functest-pi-build_tag:
+          build_tag: ''
+      - functest-pi-DEBUG:
+          DEBUG: 'true'
+      - functest-pi-EXTERNAL_NETWORK:
+          EXTERNAL_NETWORK: public
+      - functest-pi-VOLUME_DEVICE_NAME:
+          VOLUME_DEVICE_NAME: sdb
+      - functest-pi-IMAGE_PROPERTIES:
+          IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^functest(-pi)?(-ovn)?-(arm.*-|amd64-)*[a-z]+-(daily|gate|check)$'
+    builders:
+      - multijob:
+          name: remove former images
+          projects:
+            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-rmi'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-rmi'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-rmi'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-benchmarking-{tag}-rmi'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-benchmarking-cntt-{tag}-rmi'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-vnf-{tag}-rmi'
+              <<: *functest-pi-jobs
+      - multijob:
+          name: pull containers
+          projects:
+            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-pull'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-pull'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-pull'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-benchmarking-{tag}-pull'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-benchmarking-cntt-{tag}-pull'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-vnf-{tag}-pull'
+              <<: *functest-pi-jobs
+      - multijob:
+          name: ollivier/functest-healthcheck:{tag}
+          projects:
+            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-connection_check-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-tenantnetwork1-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-tenantnetwork2-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-vmready1-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-vmready2-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-singlevm1-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-singlevm2-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-vping_ssh-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-vping_userdata-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-cinder_test-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-odl-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-tempest_smoke-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-tempest_horizon-run'
+              <<: *functest-pi-jobs
+      - multijob:
+          name: ollivier/functest-smoke:{tag}
+          projects:
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_neutron-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_cinder-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_keystone-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_heat-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_telemetry-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-rally_sanity-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-refstack_defcore-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-refstack_compute-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-refstack_object-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-refstack_platform-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_full-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_scenario-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_slow-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-patrole-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-patrole_admin-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-patrole_member-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-patrole_reader-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-neutron_trunk-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-networking-bgpvpn-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-networking-sfc-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_barbican-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_octavia-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_cyborg-run'
+              <<: *functest-pi-jobs
+      - multijob:
+          name: ollivier/functest-smoke-cntt:{tag}
+          projects:
+            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_neutron_cntt-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_cinder_cntt-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_keystone_cntt-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_heat_cntt-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-rally_sanity_cntt-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_full_cntt-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_scenario_cntt-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_slow_cntt-run'
+              <<: *functest-pi-jobs
+      - multijob:
+          name: ollivier/functest-benchmarking:{tag}
+          projects:
+            - name: 'functest-pi-ollivier-functest-benchmarking-{tag}-rally_full-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-benchmarking-{tag}-rally_jobs-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-benchmarking-{tag}-vmtp-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-benchmarking-{tag}-shaker-run'
+              <<: *functest-pi-jobs
+      - multijob:
+          name: ollivier/functest-benchmarking-cntt:{tag}
+          projects:
+            - name: 'functest-pi-ollivier-functest-benchmarking-cntt-{tag}-rally_full_cntt-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-benchmarking-cntt-{tag}-rally_jobs_cntt-run'
+              <<: *functest-pi-jobs
+      - multijob:
+          name: ollivier/functest-vnf:{tag}
+          projects:
+            - name: 'functest-pi-ollivier-functest-vnf-{tag}-cloudify-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-vnf-{tag}-cloudify_ims-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-vnf-{tag}-heat_ims-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-vnf-{tag}-vyos_vrouter-run'
+              <<: *functest-pi-jobs
+            - name: 'functest-pi-ollivier-functest-vnf-{tag}-juju_epc-run'
+              <<: *functest-pi-jobs
+      - multijob:
+          name: dump all campaign data
+          projects:
+            - name: 'functest-pi-{tag}-zip'
+              <<: *functest-pi-jobs
+
+- project:
+    name: 'functest-pi'
+    <<: *functest-pi-params
+    jobs:
+      - 'functest-pi-{tag}-daily'
+
+- view:
+    name: functest-pi
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^functest-pi(-ovn)?-(arm.*-|amd64-)*[a-z]+-daily$
