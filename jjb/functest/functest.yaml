@@ -83,6 +83,20 @@
           name: EXTERNAL_NETWORK
           default: public
 
+- parameter:
+    name: functest-VOLUME_DEVICE_NAME
+    parameters:
+      - string:
+          name: VOLUME_DEVICE_NAME
+          default: sdb
+
+- parameter:
+    name: functest-IMAGE_PROPERTIES
+    parameters:
+      - string:
+          name: IMAGE_PROPERTIES
+          default: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+
 - functest-containers: &functest-containers
     name: 'functest-containers'
     repo: '{repo}'
@@ -95,12 +109,8 @@
     <<: *functest-containers
     test: '{test}'
     dashboard_url: '{dashboard_url}'
-
-- functest-build-containers: &functest-build-containers
-    name: 'functest-build-containers'
-    <<: *functest-containers
-    ref_arg: '{ref_arg}'
-    path: '{path}'
+    privileged: '{privileged}'
+    network: '{network}'
 
 - builder:
     name: functest-pull-containers
@@ -115,28 +125,6 @@
             image={repo}:{port}/{container}:{tag}
           fi
           sudo docker pull $image
-
-- builder:
-    name: functest-build-containers
-    builders:
-      - shell: |
-          set +x
-          if [ "{repo}" = "_" ]; then
-            image={container}:{tag}
-          elif [ "{port}" = "None" ]; then
-            image={repo}/{container}:{tag}
-          else
-            image={repo}:{port}/{container}:{tag}
-          fi
-          if [ "{ref_arg}" = "None" ]; then
-            build_arg=""
-          else
-            build_arg="--build-arg {ref_arg}={ref}"
-          fi
-          cd {path}
-          sudo docker build $build_arg \
-            --pull=false --no-cache --force-rm=true \
-            -t $image .
 
 - builder:
     name: functest-run-containers
@@ -159,21 +147,24 @@
               volumes="-v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static" ;;
           esac
           sudo docker run --rm \
+            --privileged={privileged} \
+            --network={network} \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e NODE_NAME=$slave \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEBUG=$DEBUG \
             -e EXTERNAL_NETWORK=$EXTERNAL_NETWORK \
             -e DASHBOARD_URL={dashboard_url} \
-            -e VOLUME_DEVICE_NAME=sdb \
-            -e IMAGE_PROPERTIES=hw_scsi_model:virtio-scsi,hw_disk_bus:scsi \
+            -e VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME \
+            -e IMAGE_PROPERTIES=$IMAGE_PROPERTIES \
+            -v /home/opnfv/functest/.boto:/root/.boto \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
-            -v /home/opnfv/functest/.boto:/root/.boto \
             $volumes $image run_tests -t {test} -r -p
 
 - builder:
@@ -189,6 +180,34 @@
             image={repo}:{port}/{container}:{tag}
           fi
           sudo docker rmi $image || true
+
+- functest-build-containers: &functest-build-containers
+    name: 'functest-build-containers'
+    <<: *functest-containers
+    ref_arg: '{ref_arg}'
+    path: '{path}'
+
+- builder:
+    name: functest-build-containers
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          if [ "{ref_arg}" = "None" ]; then
+            build_arg=""
+          else
+            build_arg="--build-arg {ref_arg}={ref}"
+          fi
+          cd {path}
+          sudo docker build $build_arg \
+            --pull=false --no-cache --force-rm=true \
+            -t $image .
 
 - scm:
     name: functest-scm
@@ -312,6 +331,10 @@
           DEBUG: 'true'
       - functest-EXTERNAL_NETWORK:
           EXTERNAL_NETWORK: public
+      - functest-VOLUME_DEVICE_NAME:
+          VOLUME_DEVICE_NAME: sdb
+      - functest-IMAGE_PROPERTIES:
+          IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
     builders:
       - functest-run-containers:
           <<: *functest-run-containers
@@ -334,6 +357,8 @@
       - odl
       - tempest_smoke
       - tempest_horizon
+    privileged: 'false'
+    network: bridge
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -510,6 +535,8 @@
         test: patrole_reader
       - tag: arm64-hunter
         test: tempest_cyborg
+    privileged: 'false'
+    network: bridge
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -526,6 +553,8 @@
       - tempest_full_cntt
       - tempest_scenario_cntt
       - tempest_slow_cntt
+    privileged: 'false'
+    network: bridge
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -538,6 +567,8 @@
       - rally_jobs
       - vmtp
       - shaker
+    privileged: 'false'
+    network: bridge
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -548,6 +579,8 @@
     test:
       - rally_full_cntt
       - rally_jobs_cntt
+    privileged: 'false'
+    network: bridge
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -561,8 +594,11 @@
       - heat_ims
       - vyos_vrouter
       - juju_epc
+    privileged: 'false'
+    network: bridge
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
+
 
 - builder:
     name: functest-zip
@@ -577,21 +613,45 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
+          volumes=""
+          case "{tag}" in
+            arm-hunter)
+              volumes="-v /usr/bin/qemu-arm-static:/usr/bin/qemu-arm-static" ;;
+            arm64-hunter)
+              volumes="-v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static" ;;
+          esac
           sudo docker run --rm \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -e DEBUG=$DEBUG \
+            -e EXTERNAL_NETWORK=$EXTERNAL_NETWORK \
+            -e VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME \
+            -e IMAGE_PROPERTIES=$IMAGE_PROPERTIES \
             -v /home/opnfv/functest/.boto:/root/.boto \
-            $image zip_campaign
+            -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
+            -v /home/opnfv/functest/images:/home/opnfv/functest/images \
+            $volumes $image zip_campaign
 
 - job-template:
     name: 'functest-{tag}-zip'
     parameters:
+      - functest-slave:
+          slave: '{slave}'
       - functest-build_tag:
           build_tag: ''
+      - functest-DEBUG:
+          DEBUG: 'true'
+      - functest-EXTERNAL_NETWORK:
+          EXTERNAL_NETWORK: public
+      - functest-VOLUME_DEVICE_NAME:
+          VOLUME_DEVICE_NAME: sdb
+      - functest-IMAGE_PROPERTIES:
+          IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
     builders:
       - functest-zip:
           <<: *functest-containers
@@ -617,6 +677,10 @@
           DEBUG: 'true'
       - functest-EXTERNAL_NETWORK:
           EXTERNAL_NETWORK: public
+      - functest-VOLUME_DEVICE_NAME:
+          VOLUME_DEVICE_NAME: sdb
+      - functest-IMAGE_PROPERTIES:
+          IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -981,6 +1045,10 @@
           DEBUG: 'true'
       - functest-EXTERNAL_NETWORK:
           EXTERNAL_NETWORK: public
+      - functest-VOLUME_DEVICE_NAME:
+          VOLUME_DEVICE_NAME: sdb
+      - functest-IMAGE_PROPERTIES:
+          IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -1208,6 +1276,10 @@
           DEBUG: 'true'
       - functest-EXTERNAL_NETWORK:
           EXTERNAL_NETWORK: public
+      - functest-VOLUME_DEVICE_NAME:
+          VOLUME_DEVICE_NAME: sdb
+      - functest-IMAGE_PROPERTIES:
+          IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
     properties:
       - build-blocker:
           use-build-blocker: true
