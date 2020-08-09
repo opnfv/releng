@@ -153,6 +153,11 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
+          volumes=""
+          if [ "{tag}" = "hunter" ]; then
+            volumes=-v /usr/bin/qemu-arm-static:/usr/bin/qemu-arm-static \
+              -v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static
+          fi
           sudo docker run --rm \
             --privileged={privileged} \
             --network={network} \
@@ -172,7 +177,7 @@
             -v /home/opnfv/functest/.boto:/root/.boto \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
-            $image run_tests -t {test} -p -r
+            $volumes $image run_tests -t {test} -p -r
 
 - builder:
     name: functest-remove-images
