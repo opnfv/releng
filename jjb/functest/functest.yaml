@@ -151,6 +151,11 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
+          volumes=""
+          if [ "{tag}" = "hunter" ]; then
+            volumes=-v /usr/bin/qemu-arm-static:/usr/bin/qemu-arm-static \
+              -v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static
+          fi
           sudo docker run --rm \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
@@ -167,7 +172,7 @@
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
             -v /home/opnfv/functest/.boto:/root/.boto \
-            $image run_tests -t {test} -r -p
+            $volumes $image run_tests -t {test} -r -p
 
 - builder:
     name: functest-remove-images
