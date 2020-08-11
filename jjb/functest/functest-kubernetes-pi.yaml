@@ -1,0 +1,504 @@
+---
+- functest-kubernetes-pi-jobs: &functest-kubernetes-pi-jobs
+    name: 'functest-kubernetes-pi-jobs'
+    current-parameters: true
+
+- functest-kubernetes-pi-params: &functest-kubernetes-pi-params
+    name: 'functest-kubernetes-pi-params'
+    repo: 'ollivier'
+    port:
+    tag:
+      - latest:
+          branch: master
+          slave: lf-virtual1-5
+      - kali:
+          branch: stable/kali
+          slave: lf-virtual1-4
+      - jerma:
+          branch: stable/jerma
+          slave: lf-virtual1-3
+      - iruya:
+          branch: stable/iruya
+          slave: lf-virtual1-2
+      - hunter:
+          branch: stable/hunter
+          slave: lf-virtual1-1
+      - arm-latest:
+          branch: master
+          slave: lf-virtual1-5
+      - arm-kali:
+          branch: stable/kali
+          slave: lf-virtual1-4
+      - arm-jerma:
+          branch: stable/jerma
+          slave: lf-virtual1-3
+      - arm-iruya:
+          branch: stable/iruya
+          slave: lf-virtual1-2
+      - arm-hunter:
+          branch: stable/hunter
+          slave: lf-virtual1-1
+      - arm64-latest:
+          branch: master
+          slave: lf-virtual1-5
+      - arm64-kali:
+          branch: stable/kali
+          slave: lf-virtual1-4
+      - arm64-jerma:
+          branch: stable/jerma
+          slave: lf-virtual1-3
+      - arm64-iruya:
+          branch: stable/iruya
+          slave: lf-virtual1-2
+      - arm64-hunter:
+          branch: stable/hunter
+          slave: lf-virtual1-1
+
+- parameter:
+    name: functest-kubernetes-pi-slave
+    parameters:
+      - label:
+          name: slave
+          default: '{slave}'
+
+- parameter:
+    name: functest-kubernetes-pi-build_tag
+    parameters:
+      - random-string:
+          name: build_tag
+
+- parameter:
+    name: functest-kubernetes-pi-branch
+    parameters:
+      - string:
+          name: branch
+          default: '{branch}'
+
+- parameter:
+    name: functest-kubernetes-pi-DEPLOY_SCENARIO
+    parameters:
+      - string:
+          name: DEPLOY_SCENARIO
+          default: k8-nosdn-nofeature-noha
+- parameter:
+    name: functest-kubernetes-pi-DEBUG
+    parameters:
+      - string:
+          name: DEBUG
+          default: 'true'
+
+- functest-kubernetes-pi-containers: &functest-kubernetes-pi-containers
+    name: 'functest-kubernetes-pi-containers'
+    repo: '{repo}'
+    port: '{port}'
+    container: '{container}'
+    tag: '{tag}'
+
+- functest-kubernetes-pi-run-containers: &functest-kubernetes-pi-run-containers
+    name: 'functest-kubernetes-pi-run-containers'
+    <<: *functest-kubernetes-pi-containers
+    test: '{test}'
+    privileged: '{privileged}'
+    network: '{network}'
+
+- builder:
+    name: functest-kubernetes-pi-pull-containers
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          docker pull $image
+
+- builder:
+    name: functest-kubernetes-pi-run-containers
+    builders:
+      - shell: |
+          set +x
+          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          docker run --rm \
+            --privileged={privileged} \
+            --network={network} \
+            -e S3_ENDPOINT_URL=https://storage.googleapis.com \
+            -e S3_DST_URL=s3://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -e HTTP_DST_URL=http://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e NODE_NAME=$slave \
+            -e BUILD_TAG=$BUILD_TAG \
+            -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -e DEPLOY_SCENARIO=$DEPLOY_SCENARIO \
+            -e DEBUG=$DEBUG \
+            -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
+            -v /home/opnfv/functest-kubernetes/.boto:/root/.boto \
+            $image run_tests -t {test} -p -r
+
+- builder:
+    name: functest-kubernetes-pi-remove-images
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          docker rmi $image || true
+
+
+- job-template:
+    name: 'functest-kubernetes-pi-{repo}-{container}-{tag}-pull'
+    parameters:
+      - functest-kubernetes-pi-slave:
+          slave: '{slave}'
+    builders:
+      - functest-kubernetes-pi-pull-containers:
+          <<: *functest-kubernetes-pi-containers
+
+- project:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck-pull'
+    <<: *functest-kubernetes-pi-params
+    container: 'functest-kubernetes-healthcheck'
+    exclude:
+      - tag: arm-latest
+      - tag: arm-kali
+      - tag: arm-jerma
+      - tag: arm-iruya
+      - tag: arm-hunter
+      - tag: arm64-latest
+      - tag: arm64-kali
+      - tag: arm64-jerma
+      - tag: arm64-iruya
+      - tag: arm64-hunter
+    jobs:
+      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-pull'
+    <<: *functest-kubernetes-pi-params
+    container: 'functest-kubernetes-smoke'
+    exclude:
+      - tag: arm-latest
+      - tag: arm-kali
+      - tag: arm-jerma
+      - tag: arm-iruya
+      - tag: arm-hunter
+      - tag: arm64-latest
+      - tag: arm64-kali
+      - tag: arm64-jerma
+      - tag: arm64-iruya
+      - tag: arm64-hunter
+    jobs:
+      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-security-pull'
+    <<: *functest-kubernetes-pi-params
+    container: 'functest-kubernetes-security'
+    jobs:
+      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-pull'
+
+- project:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-pull'
+    <<: *functest-kubernetes-pi-params
+    container: 'functest-kubernetes-cnf'
+    jobs:
+      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-pull'
+
+- job-template:
+    name: 'functest-kubernetes-pi-{repo}-{container}-{tag}-rmi'
+    parameters:
+      - functest-kubernetes-pi-slave:
+          slave: '{slave}'
+    builders:
+      - functest-kubernetes-pi-remove-images:
+          <<: *functest-kubernetes-pi-containers
+
+- project:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck-rmi'
+    <<: *functest-kubernetes-pi-params
+    container: 'functest-kubernetes-healthcheck'
+    exclude:
+      - tag: arm-latest
+      - tag: arm-kali
+      - tag: arm-jerma
+      - tag: arm-iruya
+      - tag: arm-hunter
+      - tag: arm64-latest
+      - tag: arm64-kali
+      - tag: arm64-jerma
+      - tag: arm64-iruya
+      - tag: arm64-hunter
+    jobs:
+      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-rmi'
+    <<: *functest-kubernetes-pi-params
+    container: 'functest-kubernetes-smoke'
+    exclude:
+      - tag: arm-latest
+      - tag: arm-kali
+      - tag: arm-jerma
+      - tag: arm-iruya
+      - tag: arm-hunter
+      - tag: arm64-latest
+      - tag: arm64-kali
+      - tag: arm64-jerma
+      - tag: arm64-iruya
+      - tag: arm64-hunter
+    jobs:
+      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-security-rmi'
+    <<: *functest-kubernetes-pi-params
+    container: 'functest-kubernetes-security'
+    jobs:
+      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-rmi'
+    <<: *functest-kubernetes-pi-params
+    container: 'functest-kubernetes-cnf'
+    jobs:
+      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-rmi'
+
+- job-template:
+    name: 'functest-kubernetes-pi-{repo}-{container}-{tag}-{test}-run'
+    parameters:
+      - functest-kubernetes-pi-slave:
+          slave: '{slave}'
+      - functest-kubernetes-pi-build_tag:
+          build_tag: ''
+      - functest-kubernetes-pi-DEPLOY_SCENARIO:
+          DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-pi-DEBUG:
+          DEBUG: 'true'
+    builders:
+      - functest-kubernetes-pi-run-containers:
+          <<: *functest-kubernetes-pi-run-containers
+
+- project:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck'
+    <<: *functest-kubernetes-pi-params
+    container: 'functest-kubernetes-healthcheck'
+    test:
+      - k8s_smoke
+    exclude:
+      - tag: arm-latest
+      - tag: arm-kali
+      - tag: arm-jerma
+      - tag: arm-iruya
+      - tag: arm-hunter
+      - tag: arm64-latest
+      - tag: arm64-kali
+      - tag: arm64-jerma
+      - tag: arm64-iruya
+      - tag: arm64-hunter
+    privileged: 'false'
+    network: bridge
+    jobs:
+      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke'
+    <<: *functest-kubernetes-pi-params
+    container: 'functest-kubernetes-smoke'
+    test:
+      - xrally_kubernetes
+      - k8s_conformance
+    exclude:
+      - tag: arm-latest
+      - tag: arm-kali
+      - tag: arm-jerma
+      - tag: arm-iruya
+      - tag: arm-hunter
+      - tag: arm64-latest
+      - tag: arm64-kali
+      - tag: arm64-jerma
+      - tag: arm64-iruya
+      - tag: arm64-hunter
+    privileged: 'false'
+    network: bridge
+    jobs:
+      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-security'
+    <<: *functest-kubernetes-pi-params
+    container: 'functest-kubernetes-security'
+    test:
+      - kube_hunter
+      - kube_bench
+    privileged: 'false'
+    network: bridge
+    jobs:
+      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf'
+    <<: *functest-kubernetes-pi-params
+    container: 'functest-kubernetes-cnf'
+    test:
+      - k8s_vims
+    privileged: 'false'
+    network: bridge
+    jobs:
+      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-{test}-run'
+
+
+- builder:
+    name: functest-kubernetes-pi-zip
+    builders:
+      - shell: |
+          set +x
+          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          docker run --rm \
+            -e S3_ENDPOINT_URL=https://storage.googleapis.com \
+            -e S3_DST_URL=s3://artifacts.opnfv.org/functest-kubernetes \
+            -e HTTP_DST_URL=http://artifacts.opnfv.org/functest-kubernetes \
+            -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e BUILD_TAG=$BUILD_TAG \
+            -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
+            -e DEPLOY_SCENARIO=$DEPLOY_SCENARIO \
+            -e DEBUG=$DEBUG \
+            -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
+            -v /home/opnfv/functest-kubernetes/.boto:/root/.boto \
+            $image zip_campaign
+
+- job-template:
+    name: 'functest-kubernetes-pi-{tag}-zip'
+    parameters:
+      - functest-kubernetes-pi-slave:
+          slave: '{slave}'
+      - functest-kubernetes-pi-build_tag:
+          build_tag: ''
+      - functest-kubernetes-pi-DEPLOY_SCENARIO:
+          DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-pi-DEBUG:
+          DEBUG: 'true'
+    builders:
+      - functest-kubernetes-pi-zip:
+          <<: *functest-kubernetes-pi-containers
+
+- project:
+    name: 'functest-kubernetes-pi-{tag}-zip'
+    <<: *functest-kubernetes-pi-params
+    container: 'functest-kubernetes-healthcheck'
+    jobs:
+      - 'functest-kubernetes-pi-{tag}-zip'
+
+- job-template:
+    name: 'functest-kubernetes-pi-{tag}-daily'
+    project-type: multijob
+    triggers:
+      - timed: '@daily'
+    parameters:
+      - functest-kubernetes-pi-slave:
+          slave: '{slave}'
+      - functest-kubernetes-pi-build_tag:
+          build_tag: ''
+      - functest-kubernetes-pi-DEPLOY_SCENARIO:
+          DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-pi-DEBUG:
+          DEBUG: 'true'
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^functest-kubernetes(-pi)?-(arm.*-|amd64-)*[a-z]+-(daily|gate|check)$'
+    builders:
+      - multijob:
+          name: remove former images
+          projects:
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck-{tag}-rmi'
+              <<: *functest-kubernetes-pi-jobs
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-{tag}-rmi'
+              <<: *functest-kubernetes-pi-jobs
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-security-{tag}-rmi'
+              <<: *functest-kubernetes-pi-jobs
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-{tag}-rmi'
+              <<: *functest-kubernetes-pi-jobs
+      - multijob:
+          name: pull containers
+          projects:
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck-{tag}-pull'
+              <<: *functest-kubernetes-pi-jobs
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-{tag}-pull'
+              <<: *functest-kubernetes-pi-jobs
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-security-{tag}-pull'
+              <<: *functest-kubernetes-pi-jobs
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-{tag}-pull'
+              <<: *functest-kubernetes-pi-jobs
+      - multijob:
+          name: ollivier/functest-kubernetes-healthcheck:{tag}
+          projects:
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck-{tag}-k8s_smoke-run'
+              <<: *functest-kubernetes-pi-jobs
+      - multijob:
+          name: ollivier/functest-kubernetes-smoke:{tag}
+          projects:
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
+              <<: *functest-kubernetes-pi-jobs
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
+              <<: *functest-kubernetes-pi-jobs
+      - multijob:
+          name: ollivier/functest-kubernetes-security:{tag}
+          projects:
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-security-{tag}-kube_hunter-run'
+              <<: *functest-kubernetes-pi-jobs
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-security-{tag}-kube_bench-run'
+              <<: *functest-kubernetes-pi-jobs
+      - multijob:
+          name: ollivier/functest-kubernetes-cnf:{tag}
+          projects:
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-{tag}-k8s_vims-run'
+              <<: *functest-kubernetes-pi-jobs
+      - multijob:
+          name: dump all campaign data
+          projects:
+            - name: 'functest-kubernetes-pi-{tag}-zip'
+              <<: *functest-kubernetes-pi-jobs
+
+
+- project:
+    name: 'functest-kubernetes-pi'
+    <<: *functest-kubernetes-pi-params
+    jobs:
+      - 'functest-kubernetes-pi-{tag}-daily'
+
+- view:
+    name: functest-kubernetes-pi
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^functest-kubernetes-pi-(arm.*-|amd64-)*[a-z]+-daily$
