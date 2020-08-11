@@ -23,6 +23,21 @@
       - hunter:
           branch: stable/hunter
           slave: lf-virtual1-1
+      - arm64-latest:
+          branch: master
+          slave: lf-virtual1-5
+      - arm64-kali:
+          branch: stable/kali
+          slave: lf-virtual1-4
+      - arm64-jerma:
+          branch: stable/jerma
+          slave: lf-virtual1-3
+      - arm64-iruya:
+          branch: stable/iruya
+          slave: lf-virtual1-2
+      - arm64-hunter:
+          branch: stable/hunter
+          slave: lf-virtual1-1
 
 - parameter:
     name: functest-kubernetes-slave
@@ -68,6 +83,8 @@
     name: 'functest-kubernetes-run-containers'
     <<: *functest-kubernetes-containers
     test: '{test}'
+    privileged: '{privileged}'
+    network: '{network}'
 
 - builder:
     name: functest-kubernetes-pull-containers
@@ -97,6 +114,8 @@
             image={repo}:{port}/{container}:{tag}
           fi
           docker run --rm \
+            --privileged={privileged} \
+            --network={network} \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
@@ -186,16 +205,16 @@
       - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
 
 - project:
-    name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-pull'
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-security-pull'
     <<: *functest-kubernetes-params
-    container: 'functest-kubernetes-cnf'
+    container: 'functest-kubernetes-security'
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
 
 - project:
-    name: 'functest-kubernetes-opnfv-functest-kubernetes-security-pull'
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-pull'
     <<: *functest-kubernetes-params
-    container: 'functest-kubernetes-security'
+    container: 'functest-kubernetes-cnf'
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
 
@@ -223,16 +242,16 @@
       - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
 
 - project:
-    name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-rmi'
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-security-rmi'
     <<: *functest-kubernetes-params
-    container: 'functest-kubernetes-cnf'
+    container: 'functest-kubernetes-security'
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
 
 - project:
-    name: 'functest-kubernetes-opnfv-functest-kubernetes-security-rmi'
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-rmi'
     <<: *functest-kubernetes-params
-    container: 'functest-kubernetes-security'
+    container: 'functest-kubernetes-cnf'
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
 
@@ -257,6 +276,8 @@
     container: 'functest-kubernetes-healthcheck'
     test:
       - k8s_smoke
+    privileged: 'false'
+    network: bridge
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
 
@@ -267,15 +288,8 @@
     test:
       - xrally_kubernetes
       - k8s_conformance
-    jobs:
-      - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
-
-- project:
-    name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf'
-    <<: *functest-kubernetes-params
-    container: 'functest-kubernetes-cnf'
-    test:
-      - k8s_vims
+    privileged: 'false'
+    network: bridge
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
 
@@ -286,6 +300,19 @@
     test:
       - kube_hunter
       - kube_bench
+    privileged: 'false'
+    network: bridge
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-cnf'
+    test:
+      - k8s_vims
+    privileged: 'false'
+    network: bridge
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
 
@@ -295,7 +322,7 @@
     builders:
       - shell: |
           set +x
-          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
+          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -358,7 +385,7 @@
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-{tag}-(daily|check|gate)$'
+            - '^functest-kubernetes(-pi)?-(arm.*-|amd64-)*[a-z]+-(daily|gate|check)$'
     builders:
       - multijob:
           name: remove former images
@@ -367,9 +394,9 @@
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-rmi'
               <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-rmi'
-              <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-rmi'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-rmi'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: pull containers
@@ -378,9 +405,9 @@
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-pull'
               <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-pull'
-              <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-pull'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-pull'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-healthcheck:{tag}
@@ -529,7 +556,7 @@
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-{tag}-(daily|check|gate)$'
+            - '^functest-kubernetes(-pi)?-(arm.*-|amd64-)*[a-z]+-(daily|gate|check)$'
     builders:
       - multijob:
           name: remove former images
@@ -538,9 +565,9 @@
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-rmi'
               <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-rmi'
-              <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-rmi'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-rmi'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: remove dependencies
@@ -578,7 +605,6 @@
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-smoke:{tag}
-          execution-type: SEQUENTIALLY
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
               <<: *functest-kubernetes-jobs
@@ -640,7 +666,7 @@
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-{tag}-(daily|check|gate)$'
+            - '^functest-kubernetes(-pi)?-(arm.*-|amd64-)*[a-z]+-(daily|gate|check)$'
     builders:
       - multijob:
           name: remove former images
@@ -649,9 +675,9 @@
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-rmi'
               <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-rmi'
-              <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-rmi'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-rmi'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: remove dependencies
@@ -689,7 +715,6 @@
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-smoke:{tag}
-          execution-type: SEQUENTIALLY
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
               <<: *functest-kubernetes-jobs
@@ -726,8 +751,8 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^functest-kubernetes-[a-z]+-daily$
-
+    regex: ^functest-kubernetes-(arm.*-|amd64-)*[a-z]+-daily$
+-
 - view:
     name: functest-kubernetes-gate
     view-type: list
@@ -738,4 +763,4 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^functest-kubernetes-[a-z]+-gate$
+    regex: ^functest-kubernetes-(arm.*-|amd64-)*[a-z]+-gate$
