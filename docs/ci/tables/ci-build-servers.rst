@@ -18,10 +18,6 @@
      - aarch64
      - Ubuntu 16.04
      - `Armband ENEA Team`_
-   * - `ericsson-build3 <https://build.opnfv.org/ci/computer/ericsson-build3>`_
-     - x86_64
-     - Ubuntu 16.04
-     - `Dianfeng Du`_
    * - `ericsson-build4 <https://build.opnfv.org/ci/computer/ericsson-build4>`_
      - x86_64
      - Ubuntu 16.04
