@@ -1,0 +1,51 @@
+---
+- project:
+    name: kuberef-verify
+    project: kuberef
+    stream:
+      - master:
+          branch: '{stream}'
+    jobs:
+      - '{project}-verify-lint-{stream}'
+
+- job-template:
+    name: '{project}-verify-lint-{stream}'
+    scm:
+      - kuberef-project-scm
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'kuberef'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+          skip-vote:
+            successful: false
+            failed: false
+            unstable: false
+            notbuilt: false
+    builders:
+      - kubref-run-linting
+
+- scm:
+    name: kuberef-project-scm
+    scm:
+      - git:
+          url: https://gerrit.opnfv.org/gerrit/kuberef
+          refspec: '+refs/changes/*:refs/changes/*'
+          branches:
+            - '{ref}'
+
+- builder:
+    name: kubref-run-linting
+    builders:
+      - shell:
+          !include-raw: ./kuberef-run-linting.sh
