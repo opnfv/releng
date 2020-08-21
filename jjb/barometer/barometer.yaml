@@ -12,6 +12,7 @@
       - 'barometer-verify-{stream}'
       - 'barometer-merge-{stream}'
       - 'barometer-daily-{stream}'
+      - 'barometer-plugins-tests'
 
     stream:
       - master:
@@ -148,6 +149,37 @@
     builders:
       - shell: !include-raw-escape: ./barometer-build.sh
       - shell: !include-raw-escape: ./barometer-upload-artifact.sh
+
+- job-template:
+    name: 'barometer-plugins-tests'
+
+    branch: master
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - string:
+          name: BRANCH
+          default: '{branch}'
+
+    triggers:
+      - timed: '@midnight'
+
+    builders:
+      - shell: |
+         rm -rf barometer
+         git clone "https://gerrit.opnfv.org/gerrit/barometer"
+         cd barometer
+         sudo docker build -t opnfv/barometer-collectd-tests-base --network=host \
+            -f docker/barometer-collectd-plugin-tests/Dockerfile.base .
+         docker build -t opnfv/barometer-collectd-tests --network=host \
+            -f docker/barometer-collectd-plugin-tests/Dockerfile .
+         docker run -t --net=host -v `pwd`/src/collectd/collectd_sample_configs-master:/opt/collectd/etc/collectd.conf.d \
+            -v /var/run:/var/run -v /tmp:/tmp -v  `pwd`/plugin_test:/tests \
+            --privileged opnfv/barometer-collectd-tests:latest
+         docker container rm $(sudo docker container ls -aq)
+         docker rmi opnfv/barometer-collectd-tests:latest
+         docker rmi opnfv/barometer-collectd-tests-base:latest
 
 ########################
 # parameter macros
