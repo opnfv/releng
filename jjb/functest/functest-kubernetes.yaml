@@ -284,27 +284,6 @@
       - functest-kubernetes-run-containers:
           <<: *functest-kubernetes-run-containers
 
-- job-template:
-    name: 'functest-kubernetes-{repo}-functest-kubernetes-cnf-{tag}-k8s_vims-run'
-    properties:
-      - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'GLOBAL'
-          blocking-jobs:
-            - '^functest-kubernetes(-pi)?-*-k8s_vims-run$'
-    parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
-      - functest-kubernetes-build_tag:
-          build_tag: ''
-      - functest-kubernetes-DEPLOY_SCENARIO:
-          DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
-      - functest-kubernetes-DEBUG:
-          DEBUG: 'true'
-    builders:
-      - functest-kubernetes-run-containers:
-          <<: *functest-kubernetes-run-containers
-
 - project:
     name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck'
     <<: *functest-kubernetes-params
@@ -360,7 +339,7 @@
     privileged: 'false'
     network: bridge
     jobs:
-      - 'functest-kubernetes-{repo}-functest-kubernetes-cnf-{tag}-k8s_vims-run'
+      - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
 
 
 - builder:
