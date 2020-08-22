@@ -197,6 +197,13 @@
       - 'functest-kubernetes-pi-{repo}-{container}-{tag}-pull'
 
 - project:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking-pull'
+    <<: *functest-kubernetes-pi-params
+    container: 'functest-kubernetes-benchmarking'
+    jobs:
+      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-pull'
+
+- project:
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-pull'
     <<: *functest-kubernetes-pi-params
     container: 'functest-kubernetes-cnf'
@@ -236,6 +243,13 @@
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-security-rmi'
     <<: *functest-kubernetes-pi-params
     container: 'functest-kubernetes-security'
+    jobs:
+      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking-rmi'
+    <<: *functest-kubernetes-pi-params
+    container: 'functest-kubernetes-benchmarking'
     jobs:
       - 'functest-kubernetes-pi-{repo}-{container}-{tag}-rmi'
 
@@ -318,6 +332,17 @@
     test:
       - kube_hunter
       - kube_bench
+    privileged: 'false'
+    network: bridge
+    jobs:
+      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking'
+    <<: *functest-kubernetes-pi-params
+    container: 'functest-kubernetes-benchmarking'
+    test:
+      - xrally_kubernetes_full
     privileged: 'false'
     network: bridge
     jobs:
@@ -414,6 +439,8 @@
               <<: *functest-kubernetes-pi-jobs
             - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-security-{tag}-rmi'
               <<: *functest-kubernetes-pi-jobs
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking-{tag}-rmi'
+              <<: *functest-kubernetes-pi-jobs
             - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-{tag}-rmi'
               <<: *functest-kubernetes-pi-jobs
       - multijob:
@@ -424,6 +451,8 @@
             - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-{tag}-pull'
               <<: *functest-kubernetes-pi-jobs
             - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-security-{tag}-pull'
+              <<: *functest-kubernetes-pi-jobs
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking-{tag}-pull'
               <<: *functest-kubernetes-pi-jobs
             - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-{tag}-pull'
               <<: *functest-kubernetes-pi-jobs
@@ -445,6 +474,11 @@
             - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-security-{tag}-kube_hunter-run'
               <<: *functest-kubernetes-pi-jobs
             - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-security-{tag}-kube_bench-run'
+              <<: *functest-kubernetes-pi-jobs
+      - multijob:
+          name: ollivier/functest-kubernetes-benchmarking:{tag}
+          projects:
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking-{tag}-xrally_kubernetes_full-run'
               <<: *functest-kubernetes-pi-jobs
       - multijob:
           name: ollivier/functest-kubernetes-cnf:{tag}
