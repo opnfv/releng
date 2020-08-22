@@ -38,6 +38,7 @@
       - 'smoke'
       - 'cnf'
       - 'security'
+      - 'benchmarking'
 
     # settings for jobs run in multijob phases
     build-job-settings: &build-job-settings
@@ -154,6 +155,22 @@
           execution-type: PARALLEL
           projects:
             - name: 'functest-kubernetes-smoke-docker-manifest-{stream}'
+              <<: *manifest-job-settings
+      - multijob:
+          name: 'build functest-kubernetes-benchmarking image'
+          condition: SUCCESSFUL
+          execution-type: PARALLEL
+          projects:
+            - name: 'functest-kubernetes-benchmarking-docker-build-amd64-{stream}'
+              <<: *build-job-settings
+            - name: 'functest-kubernetes-benchmarking-docker-build-arm64-{stream}'
+              <<: *build-job-settings
+      - multijob:
+          name: 'publish functest-kubernetes-benchmarking manifests'
+          condition: SUCCESSFUL
+          execution-type: PARALLEL
+          projects:
+            - name: 'functest-kubernetes-benchmarking-docker-manifest-{stream}'
               <<: *manifest-job-settings
 
     publishers:
