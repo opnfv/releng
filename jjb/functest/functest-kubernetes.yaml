@@ -212,6 +212,13 @@
       - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
 
 - project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-pull'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-benchmarking'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
+
+- project:
     name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-pull'
     <<: *functest-kubernetes-params
     container: 'functest-kubernetes-cnf'
@@ -245,6 +252,13 @@
     name: 'functest-kubernetes-opnfv-functest-kubernetes-security-rmi'
     <<: *functest-kubernetes-params
     container: 'functest-kubernetes-security'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
+
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-rmi'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-benchmarking'
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
 
@@ -321,6 +335,17 @@
     test:
       - kube_hunter
       - kube_bench
+    privileged: 'false'
+    network: bridge
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
+
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-benchmarking'
+    test:
+      - xrally_kubernetes_full
     privileged: 'false'
     network: bridge
     jobs:
@@ -417,6 +442,8 @@
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-rmi'
               <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-pull'
+              <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-rmi'
               <<: *functest-kubernetes-jobs
       - multijob:
@@ -427,6 +454,8 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-pull'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-pull'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-pull'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-pull'
               <<: *functest-kubernetes-jobs
@@ -448,6 +477,11 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_hunter-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_bench-run'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: opnfv/functest-kubernetes-benchmarking:{tag}
+          projects:
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-xrally_kubernetes_full-run'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-cnf:{tag}
@@ -600,6 +634,22 @@
       - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
       - 'functest-kubernetes-{repo}-{container}-{tag}-check'
 
+- project:
+    name: functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-build
+    <<: *functest-kubernetes-params
+    container: functest-kubernetes-benchmarking
+    ref_arg:
+    path: docker/benchmarking
+    exclude:
+      - tag: arm64-latest
+      - tag: arm64-kali
+      - tag: arm64-jerma
+      - tag: arm64-iruya
+      - tag: arm64-hunter
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
+      - 'functest-kubernetes-{repo}-{container}-{tag}-check'
+
 - job-template:
     name: 'functest-kubernetes-{tag}-check'
     project-type: multijob
@@ -629,6 +679,8 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-rmi'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-rmi'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-rmi'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-rmi'
               <<: *functest-kubernetes-jobs
@@ -662,6 +714,11 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-check'
               <<: *functest-kubernetes-jobs
       - multijob:
+          name: build opnfv/functest-kubernetes-benchmarking
+          projects:
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-check'
+              <<: *functest-kubernetes-jobs
+      - multijob:
           name: opnfv/functest-kubernetes-healthcheck:{tag}
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-k8s_smoke-run'
@@ -672,6 +729,11 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: opnfv/functest-kubernetes-benchmarking:{tag}
+          projects:
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-xrally_kubernetes_full-run'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-security:{tag}
@@ -740,6 +802,8 @@
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-rmi'
               <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-rmi'
+              <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-rmi'
               <<: *functest-kubernetes-jobs
       - multijob:
@@ -772,6 +836,11 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-gate'
               <<: *functest-kubernetes-jobs
       - multijob:
+          name: build opnfv/functest-kubernetes-benchmarking
+          projects:
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-gate'
+              <<: *functest-kubernetes-jobs
+      - multijob:
           name: opnfv/functest-kubernetes-healthcheck:{tag}
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-k8s_smoke-run'
@@ -789,6 +858,11 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_hunter-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_bench-run'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: opnfv/functest-kubernetes-benchmarking:{tag}
+          projects:
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-xrally_kubernetes_full-run'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-cnf:{tag}
