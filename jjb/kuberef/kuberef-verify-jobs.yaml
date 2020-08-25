@@ -12,6 +12,19 @@
     name: '{project}-verify-lint-{stream}'
     scm:
       - kuberef-project-scm
+    parameters:
+      - label:
+          name: SLAVE_LABEL
+          default: 'opnfv-build'
+          all-nodes: false
+          node-eligibility: 'ignore-offline'
+      - project-parameter:
+          project: $GERRIT_PROJECT
+          branch: '{branch}'
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: 'Git URL to use on this Jenkins Slave'
     triggers:
       - gerrit:
           server-name: 'gerrit.opnfv.org'
