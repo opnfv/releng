@@ -11,7 +11,7 @@
 - job-template:
     name: '{project}-verify-lint-{stream}'
     scm:
-      - kuberef-project-scm
+      - git-scm-gerrit
     parameters:
       - label:
           name: SLAVE_LABEL
@@ -47,15 +47,6 @@
             notbuilt: false
     builders:
       - kubref-run-linting
-
-- scm:
-    name: kuberef-project-scm
-    scm:
-      - git:
-          url: https://gerrit.opnfv.org/gerrit/kuberef
-          refspec: '+refs/changes/*:refs/changes/*'
-          branches:
-            - '{ref}'
 
 - builder:
     name: kubref-run-linting
