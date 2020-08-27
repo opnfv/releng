@@ -12,6 +12,7 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
+echo "Requirements validation"
 # shellcheck disable=SC1091
 source /etc/os-release || source /usr/lib/os-release
 
@@ -32,6 +33,7 @@ if ! command -v pip; then
 fi
 
 if [ -n "$pkgs" ]; then
+    echo "Requirements installation"
     case ${ID,,} in
         *suse*)
             sudo zypper install --gpg-auto-import-keys refresh
@@ -52,5 +54,11 @@ if [ -n "$pkgs" ]; then
     esac
 fi
 
+echo "Server tools information:"
+python -V
+tox --version
+shellcheck -V
+
+echo "Linting process execution"
 tox -e lint
-bash -c 'shopt -s globstar; shellcheck  **/*.sh'
+bash -c 'shopt -s globstar; shellcheck -x **/*.sh'
