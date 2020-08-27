@@ -52,5 +52,11 @@ if [ -n "$pkgs" ]; then
     esac
 fi
 
+echo "Server tools information:"
+python -V
+tox --version
+shellcheck -V
+
+echo "Server tools information:"
 tox -e lint
-bash -c 'shopt -s globstar; shellcheck  **/*.sh'
+bash -c 'shopt -s globstar; shellcheck -x **/*.sh'
