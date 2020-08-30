@@ -401,7 +401,7 @@
     name: 'functest-kubernetes-pi-{tag}-daily'
     project-type: multijob
     triggers:
-      - timed: '@daily'
+      - timed: '@weekly'
     parameters:
       - functest-kubernetes-pi-slave:
           slave: '{slave}'
@@ -414,7 +414,7 @@
     properties:
       - build-blocker:
           use-build-blocker: true
-          blocking-level: 'NODE'
+          blocking-level: 'GLOBAL'
           blocking-jobs:
             - '^functest-kubernetes(-pi)?-(arm.*-|amd64-)*[a-z]+-(daily|gate|check)$'
     builders:
