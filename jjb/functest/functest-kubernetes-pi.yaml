@@ -342,6 +342,37 @@
     container: 'functest-kubernetes-cnf'
     test:
       - k8s_vims
+    exclude:
+      - tag: kali
+        test: cnf_conformance
+      - tag: jerma
+        test: cnf_conformance
+      - tag: iruya
+        test: cnf_conformance
+      - tag: hunter
+        test: cnf_conformance
+      - tag: arm-latest
+        test: cnf_conformance
+      - tag: arm-kali
+        test: cnf_conformance
+      - tag: arm-jerma
+        test: cnf_conformance
+      - tag: arm-iruya
+        test: cnf_conformance
+      - tag: arm-hunter
+        test: cnf_conformance
+      - tag: arm64-latest
+        test: cnf_conformance
+      - tag: arm64-kali
+        test: cnf_conformance
+      - tag: arm64-kali
+        test: cnf_conformance
+      - tag: arm64-jerma
+        test: cnf_conformance
+      - tag: arm64-iruya
+        test: cnf_conformance
+      - tag: arm64-hunter
+        test: cnf_conformance
     privileged: 'false'
     network: bridge
     jobs:
@@ -471,6 +502,8 @@
       - multijob:
           name: ollivier/functest-kubernetes-cnf:{tag}
           projects:
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-{tag}-cnf_conformance-run'
+              <<: *functest-kubernetes-pi-jobs
             - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-{tag}-k8s_vims-run'
               <<: *functest-kubernetes-pi-jobs
       - multijob:
