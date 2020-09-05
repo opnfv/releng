@@ -159,7 +159,12 @@
           else
             build_arg="--build-arg {ref_arg}={ref}"
           fi
-          cd {path}
+          case {tag} in
+          *latest)
+            cd {path};;
+          *)
+            cd docker;;
+          esac
           sudo docker build $build_arg \
             --pull=false --no-cache --force-rm=true \
             -t $image .
