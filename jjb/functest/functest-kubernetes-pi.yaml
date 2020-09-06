@@ -286,6 +286,7 @@
     <<: *functest-kubernetes-pi-params
     container: 'functest-kubernetes-healthcheck'
     test:
+      - k8s_quick
       - k8s_smoke
     exclude:
       - tag: arm-hunter
@@ -448,6 +449,8 @@
       - multijob:
           name: ollivier/functest-kubernetes-healthcheck:{tag}
           projects:
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck-{tag}-k8s_quick-run'
+              <<: *functest-kubernetes-pi-jobs
             - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck-{tag}-k8s_smoke-run'
               <<: *functest-kubernetes-pi-jobs
       - multijob:
