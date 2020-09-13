@@ -314,46 +314,8 @@
     container: 'functest-kubernetes-security'
     test:
       - kube_hunter
-      - kube_bench
       - kube_bench_master
       - kube_bench_node
-    exclude:
-      - tag: latest
-        test: kube_bench
-      - tag: kali
-        test: kube_bench_master
-      - tag: kali
-        test: kube_bench_node
-      - tag: jerma
-        test: kube_bench_master
-      - tag: jerma
-        test: kube_bench_node
-      - tag: iruya
-        test: kube_bench_master
-      - tag: iruya
-        test: kube_bench_node
-      - tag: hunter
-        test: kube_bench_master
-      - tag: hunter
-        test: kube_bench_node
-      - tag: arm64-latest
-        test: kube_bench
-      - tag: arm64-kali
-        test: kube_bench_master
-      - tag: arm64-kali
-        test: kube_bench_node
-      - tag: arm64-jerma
-        test: kube_bench_master
-      - tag: arm64-jerma
-        test: kube_bench_node
-      - tag: arm64-iruya
-        test: kube_bench_master
-      - tag: arm64-iruya
-        test: kube_bench_node
-      - tag: arm64-hunter
-        test: kube_bench_master
-      - tag: arm64-hunter
-        test: kube_bench_node
     privileged: 'false'
     network: bridge
     jobs:
@@ -502,8 +464,6 @@
           name: opnfv/functest-kubernetes-security:{tag}
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_hunter-run'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_bench-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_bench_master-run'
               <<: *functest-kubernetes-jobs
@@ -775,8 +735,6 @@
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_hunter-run'
               <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_bench-run'
-              <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_bench_master-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_bench_node-run'
@@ -899,8 +857,6 @@
           name: opnfv/functest-kubernetes-security:{tag}
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_hunter-run'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_bench-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_bench_master-run'
               <<: *functest-kubernetes-jobs
