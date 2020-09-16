@@ -337,13 +337,18 @@
     <<: *functest-kubernetes-params
     container: 'functest-kubernetes-cnf'
     test:
-      - cnf_conformance
       - k8s_vims
+      - helm_vims
+      - cnf_conformance
     exclude:
       - tag: iruya
         test: k8s_vims
+      - tag: iruya
+        test: helm_vims
       - tag: arm64-iruya
         test: k8s_vims
+      - tag: arm64-iruya
+        test: helm_vims
     privileged: 'false'
     network: bridge
     jobs:
@@ -477,9 +482,11 @@
       - multijob:
           name: opnfv/functest-kubernetes-cnf:{tag}
           projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-cnf_conformance-run'
-              <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-k8s_vims-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-helm_vims-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-cnf_conformance-run'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: dump all campaign data
@@ -742,9 +749,11 @@
       - multijob:
           name: opnfv/functest-kubernetes-cnf:{tag}
           projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-cnf_conformance-run'
-              <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-k8s_vims-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-helm_vims-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-cnf_conformance-run'
               <<: *functest-kubernetes-jobs
 
 - trigger:
@@ -870,9 +879,11 @@
       - multijob:
           name: opnfv/functest-kubernetes-cnf:{tag}
           projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-cnf_conformance-run'
-              <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-k8s_vims-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-helm_vims-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-cnf_conformance-run'
               <<: *functest-kubernetes-jobs
 
 - project:
