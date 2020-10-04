@@ -26,24 +26,6 @@
       - hunter:
           branch: stable/hunter
           slave: lf-virtual1-1
-      - arm64-latest:
-          branch: master
-          slave: lf-virtual1-6
-      - arm64-leguer:
-          branch: stable/leguer
-          slave: lf-virtual1-5
-      - arm64-kali:
-          branch: stable/kali
-          slave: lf-virtual1-4
-      - arm64-jerma:
-          branch: stable/jerma
-          slave: lf-virtual1-3
-      - arm64-iruya:
-          branch: stable/iruya
-          slave: lf-virtual1-2
-      - arm64-hunter:
-          branch: stable/hunter
-          slave: lf-virtual1-1
 
 - parameter:
     name: functest-kubernetes-slave
@@ -351,10 +333,6 @@
         test: k8s_vims
       - tag: iruya
         test: helm_vims
-      - tag: arm64-iruya
-        test: k8s_vims
-      - tag: arm64-iruya
-        test: helm_vims
     privileged: 'false'
     network: bridge
     jobs:
@@ -535,13 +513,6 @@
     container: golang
     tag: '1.15-alpine3.12'
     slave: master
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
 
@@ -552,13 +523,6 @@
     container: golang
     tag: '1.15-alpine3.12'
     slave: master
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
 
@@ -568,13 +532,6 @@
     container: functest-kubernetes-core
     ref_arg: BRANCH
     path: docker/core
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
       - 'functest-kubernetes-{repo}-{container}-{tag}-check'
@@ -585,13 +542,6 @@
     container: functest-kubernetes-healthcheck
     ref_arg:
     path: docker/healthcheck
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
       - 'functest-kubernetes-{repo}-{container}-{tag}-check'
@@ -602,13 +552,6 @@
     container: functest-kubernetes-cnf
     ref_arg: BRANCH
     path: docker/cnf
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
       - 'functest-kubernetes-{repo}-{container}-{tag}-check'
@@ -619,13 +562,6 @@
     container: functest-kubernetes-security
     ref_arg: BRANCH
     path: docker/security
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
       - 'functest-kubernetes-{repo}-{container}-{tag}-check'
@@ -636,13 +572,6 @@
     container: functest-kubernetes-smoke
     ref_arg:
     path: docker/smoke
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
       - 'functest-kubernetes-{repo}-{container}-{tag}-check'
@@ -653,13 +582,6 @@
     container: functest-kubernetes-benchmarking
     ref_arg:
     path: docker/benchmarking
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
       - 'functest-kubernetes-{repo}-{container}-{tag}-check'
@@ -909,13 +831,6 @@
 - project:
     name: 'functest-kubernetes-gate'
     <<: *functest-kubernetes-params
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-kubernetes-{tag}-check'
       - 'functest-kubernetes-{tag}-gate'

@@ -31,8 +31,6 @@
     arch_tag:
       - 'amd64':
           slave_label: 'lf-build2'
-      - 'arm64':
-          slave_label: 'opnfv-build-ubuntu-arm'
 
     # yamllint disable rule:key-duplicates
     image:
@@ -128,8 +126,6 @@
           projects:
             - name: 'functest-core-docker-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-core-docker-build-arm64-{stream}'
-              <<: *build-job-settings
       - multijob:
           name: 'publish functest-core manifests'
           execution-type: PARALLEL
@@ -141,8 +137,6 @@
           execution-type: PARALLEL
           projects:
             - name: 'functest-tempest-docker-build-amd64-{stream}'
-              <<: *build-job-settings
-            - name: 'functest-tempest-docker-build-arm64-{stream}'
               <<: *build-job-settings
       - multijob:
           name: 'publish functest-tempest manifests'
@@ -157,23 +151,13 @@
           projects:
             - name: 'functest-healthcheck-docker-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-healthcheck-docker-build-arm64-{stream}'
-              <<: *build-job-settings
             - name: 'functest-smoke-docker-build-amd64-{stream}'
-              <<: *build-job-settings
-            - name: 'functest-smoke-docker-build-arm64-{stream}'
               <<: *build-job-settings
             - name: 'functest-benchmarking-docker-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-benchmarking-docker-build-arm64-{stream}'
-              <<: *build-job-settings
             - name: 'functest-vnf-docker-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-vnf-docker-build-arm64-{stream}'
-              <<: *build-job-settings
             - name: 'functest-features-docker-build-amd64-{stream}'
-              <<: *build-job-settings
-            - name: 'functest-features-docker-build-arm64-{stream}'
               <<: *build-job-settings
       - multijob:
           name: 'publish all manifests'
@@ -197,11 +181,7 @@
           projects:
             - name: 'functest-smoke-cntt-docker-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'functest-smoke-cntt-docker-build-arm64-{stream}'
-              <<: *build-job-settings
             - name: 'functest-benchmarking-cntt-docker-build-amd64-{stream}'
-              <<: *build-job-settings
-            - name: 'functest-benchmarking-cntt-docker-build-arm64-{stream}'
               <<: *build-job-settings
       - multijob:
           name: 'publish all cntt manifests'
@@ -215,7 +195,6 @@
 
     publishers:
       - 'functest-amd64-recipients'
-      - 'functest-arm64-recipients'
 
 - job-template:
     name: 'functest-{image}-docker-build-{arch_tag}-{stream}'
@@ -231,12 +210,7 @@
     builders:
       - shell: |
           #!/bin/bash -ex
-          case "{arch_tag}" in
-          "arm64")
-              sudo amd64_dirs= arm64_dirs=docker/{image} arm_dirs= bash ./build.sh ;;
-          *)
-              sudo amd64_dirs=docker/{image} arm64_dirs= arm_dirs= bash ./build.sh ;;
-          esac
+          sudo amd64_dirs=docker/{image} arm64_dirs= arm_dirs= bash ./build.sh ;;
           exit $?
 
 - job-template:
@@ -278,7 +252,7 @@
               tag="{stream}" ;;
           esac
           sudo manifest-tool push from-args \
-              --platforms linux/amd64,linux/arm64 \
+              --platforms linux/amd64 \
               --template $REPO/functest-{image}:ARCH-$tag \
               --target $REPO/functest-{image}:$tag
           exit $?
@@ -330,15 +304,6 @@
           description: "Repository name for functest images"
 
 # publisher macros
-- publisher:
-    name: 'functest-arm64-recipients'
-    publishers:
-      - email:
-          recipients: >
-            cristina.pauna@enea.com
-            alexandru.avadanii@enea.com
-            delia.popescu@enea.com
-
 - publisher:
     name: 'functest-amd64-recipients'
     publishers:

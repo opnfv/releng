@@ -26,24 +26,6 @@
       - hunter:
           branch: stable/hunter
           slave: lf-virtual1
-      - arm64-latest:
-          branch: master
-          slave: lf-virtual1
-      - arm64-leguer:
-          branch: stable/leguer
-          slave: lf-virtual1
-      - arm64-kali:
-          branch: stable/kali
-          slave: lf-virtual1
-      - arm64-jerma:
-          branch: stable/jerma
-          slave: lf-virtual1
-      - arm64-iruya:
-          branch: stable/iruya
-          slave: lf-virtual1
-      - arm64-hunter:
-          branch: stable/hunter
-          slave: lf-virtual1
 
 - parameter:
     name: xtesting-slave
@@ -209,10 +191,6 @@
       - tag: iruya
       - tag: jerma
       - tag: kali
-      - tag: arm64-hunter
-      - tag: arm64-iruya
-      - tag: arm64-jerma
-      - tag: arm64-kali
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-pull'
 
@@ -241,10 +219,6 @@
       - tag: iruya
       - tag: jerma
       - tag: kali
-      - tag: arm64-hunter
-      - tag: arm64-iruya
-      - tag: arm64-jerma
-      - tag: arm64-kali
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-rmi'
 
@@ -277,10 +251,6 @@
         test: sixth
       - tag: iruya
         test: sixth
-      - tag: arm64-hunter
-        test: sixth
-      - tag: arm64-iruya
-        test: sixth
     privileged: 'false'
     network: bridge
     jobs:
@@ -300,14 +270,6 @@
       - tag: jerma
         test: seventh
       - tag: kali
-        test: seventh
-      - tag: arm64-hunter
-        test: seventh
-      - tag: arm64-iruya
-        test: seventh
-      - tag: arm64-jerma
-        test: seventh
-      - tag: arm64-kali
         test: seventh
     privileged: 'false'
     network: bridge
@@ -463,13 +425,6 @@
     container: alpine
     tag: '3.12'
     slave: master
-    exclude:
-      - tag: arm64-hunter
-      - tag: arm64-iruya
-      - tag: arm64-jerma
-      - tag: arm64-kali
-      - tag: arm64-leguer
-      - tag: arm64-latest
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-pull'
 
@@ -479,13 +434,6 @@
     container: xtesting
     ref_arg: BRANCH
     path: docker/core
-    exclude:
-      - tag: arm64-hunter
-      - tag: arm64-iruya
-      - tag: arm64-jerma
-      - tag: arm64-kali
-      - tag: arm64-leguer
-      - tag: arm64-latest
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-gate'
       - 'xtesting-{repo}-{container}-{tag}-check'
@@ -501,12 +449,6 @@
       - tag: iruya
       - tag: jerma
       - tag: kali
-      - tag: arm64-hunter
-      - tag: arm64-iruya
-      - tag: arm64-jerma
-      - tag: arm64-kali
-      - tag: arm64-leguer
-      - tag: arm64-latest
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-gate'
       - 'xtesting-{repo}-{container}-{tag}-check'
@@ -678,13 +620,6 @@
 - project:
     name: 'xtesting-gate'
     <<: *xtesting-params
-    exclude:
-      - tag: arm64-hunter
-      - tag: arm64-iruya
-      - tag: arm64-jerma
-      - tag: arm64-kali
-      - tag: arm64-leguer
-      - tag: arm64-latest
     jobs:
       - 'xtesting-{tag}-check'
       - 'xtesting-{tag}-gate'

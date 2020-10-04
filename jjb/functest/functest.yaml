@@ -32,30 +32,6 @@
           branch: stable/hunter
           slave: lf-virtual6
           dashboard_url: http://172.30.13.91
-      - arm64-latest:
-          branch: master
-          slave: lf-virtual9
-          dashboard_url: http://172.30.13.94
-      - arm64-leguer:
-          branch: stable/leguer
-          slave: lf-virtual9
-          dashboard_url: http://172.30.13.94
-      - arm64-kali:
-          branch: stable/kali
-          slave: lf-pod4-3
-          dashboard_url: http://172.30.12.88
-      - arm64-jerma:
-          branch: stable/jerma
-          slave: lf-pod4
-          dashboard_url: http://172.30.12.83
-      - arm64-iruya:
-          branch: stable/iruya
-          slave: lf-virtual4
-          dashboard_url: http://172.30.13.89
-      - arm64-hunter:
-          branch: stable/hunter
-          slave: lf-virtual6
-          dashboard_url: http://172.30.13.91
 
 - parameter:
     name: functest-slave
@@ -147,13 +123,6 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          volumes=""
-          case "{tag}" in
-            arm-hunter)
-              volumes="-v /usr/bin/qemu-arm-static:/usr/bin/qemu-arm-static" ;;
-            arm64-hunter)
-              volumes="-v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static" ;;
-          esac
           sudo docker run --rm \
             --privileged={privileged} \
             --network={network} \
@@ -173,7 +142,7 @@
             -v /home/opnfv/functest/.boto:/root/.boto \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
-            $volumes $image run_tests -t {test} -r -p
+            $image run_tests -t {test} -r -p
 
 - builder:
     name: functest-remove-images
@@ -468,76 +437,6 @@
         test: patrole_reader
       - tag: hunter
         test: tempest_cyborg
-      - tag: arm64-latest
-        test: refstack_defcore
-      - tag: arm64-latest
-        test: networking-bgpvpn
-      - tag: arm64-latest
-        test: networking-sfc
-      - tag: arm64-latest
-        test: patrole
-      - tag: arm64-leguer
-        test: refstack_defcore
-      - tag: arm64-leguer
-        test: networking-bgpvpn
-      - tag: arm64-leguer
-        test: networking-sfc
-      - tag: arm64-leguer
-        test: patrole
-      - tag: arm64-kali
-        test: refstack_defcore
-      - tag: arm64-kali
-        test: networking-bgpvpn
-      - tag: arm64-kali
-        test: networking-sfc
-      - tag: arm64-kali
-        test: patrole_admin
-      - tag: arm64-kali
-        test: patrole_member
-      - tag: arm64-kali
-        test: patrole_reader
-      - tag: arm64-jerma
-        test: refstack_defcore
-      - tag: arm64-jerma
-        test: networking-bgpvpn
-      - tag: arm64-jerma
-        test: networking-sfc
-      - tag: arm64-jerma
-        test: patrole_admin
-      - tag: arm64-jerma
-        test: patrole_member
-      - tag: arm64-jerma
-        test: patrole_reader
-      - tag: arm64-jerma
-        test: tempest_cyborg
-      - tag: arm64-iruya
-        test: refstack_defcore
-      - tag: arm64-iruya
-        test: patrole_admin
-      - tag: arm64-iruya
-        test: patrole_member
-      - tag: arm64-iruya
-        test: patrole_reader
-      - tag: arm64-iruya
-        test: tempest_cyborg
-      - tag: arm64-hunter
-        test: refstack_compute
-      - tag: arm64-hunter
-        test: refstack_object
-      - tag: arm64-hunter
-        test: refstack_platform
-      - tag: arm64-hunter
-        test: tempest_octavia
-      - tag: arm64-hunter
-        test: tempest_telemetry
-      - tag: arm64-hunter
-        test: patrole_admin
-      - tag: arm64-hunter
-        test: patrole_member
-      - tag: arm64-hunter
-        test: patrole_reader
-      - tag: arm64-hunter
-        test: tempest_cyborg
     privileged: 'false'
     network: bridge
     jobs:
@@ -616,13 +515,6 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          volumes=""
-          case "{tag}" in
-            arm-hunter)
-              volumes="-v /usr/bin/qemu-arm-static:/usr/bin/qemu-arm-static" ;;
-            arm64-hunter)
-              volumes="-v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static" ;;
-          esac
           sudo docker run --rm \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest \
@@ -638,7 +530,7 @@
             -v /home/opnfv/functest/.boto:/root/.boto \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
-            $volumes $image zip_campaign
+            $image zip_campaign
 
 - job-template:
     name: 'functest-{tag}-zip'
@@ -888,13 +780,6 @@
     container: alpine
     tag: '3.12'
     slave: master
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-{repo}-{container}-{tag}-rmi'
 
@@ -905,13 +790,6 @@
     container: alpine
     tag: '3.12'
     slave: master
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-{repo}-{container}-{tag}-pull'
 
@@ -921,13 +799,6 @@
     container: functest-core
     ref_arg: BRANCH
     path: docker/core
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-{repo}-{container}-{tag}-gate'
       - 'functest-{repo}-{container}-{tag}-check'
@@ -946,12 +817,6 @@
       - tag: leguer
       - tag: kali
       - tag: jerma
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
 
 - project:
     name: functest-opnfv-functest-healthcheck-{tag}-build
@@ -959,13 +824,6 @@
     container: functest-healthcheck
     ref_arg: BRANCH
     path: docker/healthcheck
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-{repo}-{container}-{tag}-gate'
       - 'functest-{repo}-{container}-{tag}-check'
@@ -976,13 +834,6 @@
     container: functest-smoke
     ref_arg: BRANCH
     path: docker/smoke
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-{repo}-{container}-{tag}-gate'
       - 'functest-{repo}-{container}-{tag}-check'
@@ -993,13 +844,6 @@
     container: functest-benchmarking
     ref_arg: BRANCH
     path: docker/benchmarking
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-{repo}-{container}-{tag}-gate'
       - 'functest-{repo}-{container}-{tag}-check'
@@ -1010,13 +854,6 @@
     container: functest-benchmarking-cntt
     ref_arg: BRANCH
     path: docker/benchmarking-cntt
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-{repo}-{container}-{tag}-gate'
       - 'functest-{repo}-{container}-{tag}-check'
@@ -1027,13 +864,6 @@
     container: functest-vnf
     ref_arg:
     path: docker/vnf
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-{repo}-{container}-{tag}-gate'
       - 'functest-{repo}-{container}-{tag}-check'
@@ -1044,13 +874,6 @@
     container: functest-smoke-cntt
     ref_arg: BRANCH
     path: docker/smoke-cntt
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-{repo}-{container}-{tag}-gate'
       - 'functest-{repo}-{container}-{tag}-check'
@@ -1498,13 +1321,6 @@
 - project:
     name: 'functest-gate'
     <<: *functest-params
-    exclude:
-      - tag: arm64-latest
-      - tag: arm64-leguer
-      - tag: arm64-kali
-      - tag: arm64-jerma
-      - tag: arm64-iruya
-      - tag: arm64-hunter
     jobs:
       - 'functest-{tag}-check'
       - 'functest-{tag}-gate'

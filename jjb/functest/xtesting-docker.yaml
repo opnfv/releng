@@ -31,8 +31,6 @@
     arch_tag:
       - 'amd64':
           slave_label: 'lf-build2'
-      - 'arm64':
-          slave_label: 'opnfv-build-ubuntu-arm'
 
     image:
       - 'core'
@@ -114,8 +112,6 @@
           projects:
             - name: 'xtesting-core-docker-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'xtesting-core-docker-build-arm64-{stream}'
-              <<: *build-job-settings
       - multijob:
           name: 'publish xtesting manifests'
           execution-type: PARALLEL
@@ -128,8 +124,6 @@
           projects:
             - name: 'xtesting-mts-docker-build-amd64-{stream}'
               <<: *build-job-settings
-            - name: 'xtesting-mts-docker-build-arm64-{stream}'
-              <<: *build-job-settings
       - multijob:
           name: 'publish xtesting-mts manifests'
           execution-type: PARALLEL
@@ -140,7 +134,6 @@
 
     publishers:
       - 'xtesting-amd64-recipients'
-      - 'xtesting-arm64-recipients'
 
 - job-template:
     name: 'xtesting-{image}-docker-build-{arch_tag}-{stream}'
@@ -156,12 +149,7 @@
     builders:
       - shell: |
           #!/bin/bash -ex
-          case "{arch_tag}" in
-          "arm64")
-              sudo arch=arm64 amd64_dirs= arm64_dirs=docker/{image} arm_dirs= bash ./build.sh ;;
-          *)
-              sudo arch=amd64 amd64_dirs=docker/{image} arm64_dirs= arm_dirs= bash ./build.sh ;;
-          esac
+          sudo arch=amd64 amd64_dirs=docker/{image} arm64_dirs= arm_dirs= bash ./build.sh ;;
           exit $?
 
 - job-template:
@@ -209,7 +197,7 @@
               img="-{image}" ;;
           esac
           sudo manifest-tool push from-args \
-              --platforms linux/amd64,linux/arm64 \
+              --platforms linux/amd64 \
               --template $REPO/xtesting$img:ARCH-$tag \
               --target $REPO/xtesting$img:$tag
           exit $?
@@ -260,15 +248,6 @@
           description: "Repository name for xtesting images"
 
 # publisher macros
-- publisher:
-    name: 'xtesting-arm64-recipients'
-    publishers:
-      - email:
-          recipients: >
-            cristina.pauna@enea.com
-            alexandru.avadanii@enea.com
-            delia.popescu@enea.com
-
 - publisher:
     name: 'xtesting-amd64-recipients'
     publishers:
