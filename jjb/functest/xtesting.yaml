@@ -11,6 +11,9 @@
       - latest:
           branch: master
           slave: lf-virtual1
+      - leguer:
+          branch: stable/leguer
+          slave: lf-virtual1
       - kali:
           branch: stable/kali
           slave: lf-virtual1
@@ -25,6 +28,9 @@
           slave: lf-virtual1
       - arm64-latest:
           branch: master
+          slave: lf-virtual1
+      - arm64-leguer:
+          branch: stable/leguer
           slave: lf-virtual1
       - arm64-kali:
           branch: stable/kali
@@ -160,7 +166,7 @@
             build_arg="--build-arg {ref_arg}={ref}"
           fi
           case {tag} in
-          *latest)
+          *latest|*leguer)
             cd {path};;
           *)
             cd docker;;
@@ -462,6 +468,7 @@
       - tag: arm64-iruya
       - tag: arm64-jerma
       - tag: arm64-kali
+      - tag: arm64-leguer
       - tag: arm64-latest
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-pull'
@@ -477,6 +484,7 @@
       - tag: arm64-iruya
       - tag: arm64-jerma
       - tag: arm64-kali
+      - tag: arm64-leguer
       - tag: arm64-latest
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-gate'
@@ -497,6 +505,7 @@
       - tag: arm64-iruya
       - tag: arm64-jerma
       - tag: arm64-kali
+      - tag: arm64-leguer
       - tag: arm64-latest
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-gate'
@@ -674,6 +683,7 @@
       - tag: arm64-iruya
       - tag: arm64-jerma
       - tag: arm64-kali
+      - tag: arm64-leguer
       - tag: arm64-latest
     jobs:
       - 'xtesting-{tag}-check'

@@ -12,6 +12,10 @@
           branch: master
           slave: lf-virtual9
           dashboard_url: http://172.30.13.94
+      - leguer:
+          branch: stable/leguer
+          slave: lf-virtual9
+          dashboard_url: http://172.30.13.94
       - kali:
           branch: stable/kali
           slave: lf-pod4-3
@@ -30,6 +34,10 @@
           dashboard_url: http://172.30.13.91
       - arm64-latest:
           branch: master
+          slave: lf-virtual9
+          dashboard_url: http://172.30.13.94
+      - arm64-leguer:
+          branch: stable/leguer
           slave: lf-virtual9
           dashboard_url: http://172.30.13.94
       - arm64-kali:
@@ -398,6 +406,14 @@
         test: networking-sfc
       - tag: latest
         test: patrole
+      - tag: leguer
+        test: refstack_defcore
+      - tag: leguer
+        test: networking-bgpvpn
+      - tag: leguer
+        test: networking-sfc
+      - tag: leguer
+        test: patrole
       - tag: kali
         test: refstack_defcore
       - tag: kali
@@ -459,6 +475,14 @@
       - tag: arm64-latest
         test: networking-sfc
       - tag: arm64-latest
+        test: patrole
+      - tag: arm64-leguer
+        test: refstack_defcore
+      - tag: arm64-leguer
+        test: networking-bgpvpn
+      - tag: arm64-leguer
+        test: networking-sfc
+      - tag: arm64-leguer
         test: patrole
       - tag: arm64-kali
         test: refstack_defcore
@@ -866,6 +890,7 @@
     slave: master
     exclude:
       - tag: arm64-latest
+      - tag: arm64-leguer
       - tag: arm64-kali
       - tag: arm64-jerma
       - tag: arm64-iruya
@@ -882,6 +907,7 @@
     slave: master
     exclude:
       - tag: arm64-latest
+      - tag: arm64-leguer
       - tag: arm64-kali
       - tag: arm64-jerma
       - tag: arm64-iruya
@@ -897,6 +923,7 @@
     path: docker/core
     exclude:
       - tag: arm64-latest
+      - tag: arm64-leguer
       - tag: arm64-kali
       - tag: arm64-jerma
       - tag: arm64-iruya
@@ -916,9 +943,11 @@
       - 'functest-{repo}-{container}-{tag}-check'
     exclude:
       - tag: latest
+      - tag: leguer
       - tag: kali
       - tag: jerma
       - tag: arm64-latest
+      - tag: arm64-leguer
       - tag: arm64-kali
       - tag: arm64-jerma
       - tag: arm64-iruya
@@ -932,6 +961,7 @@
     path: docker/healthcheck
     exclude:
       - tag: arm64-latest
+      - tag: arm64-leguer
       - tag: arm64-kali
       - tag: arm64-jerma
       - tag: arm64-iruya
@@ -948,6 +978,7 @@
     path: docker/smoke
     exclude:
       - tag: arm64-latest
+      - tag: arm64-leguer
       - tag: arm64-kali
       - tag: arm64-jerma
       - tag: arm64-iruya
@@ -964,6 +995,7 @@
     path: docker/benchmarking
     exclude:
       - tag: arm64-latest
+      - tag: arm64-leguer
       - tag: arm64-kali
       - tag: arm64-jerma
       - tag: arm64-iruya
@@ -980,6 +1012,7 @@
     path: docker/benchmarking-cntt
     exclude:
       - tag: arm64-latest
+      - tag: arm64-leguer
       - tag: arm64-kali
       - tag: arm64-jerma
       - tag: arm64-iruya
@@ -996,6 +1029,7 @@
     path: docker/vnf
     exclude:
       - tag: arm64-latest
+      - tag: arm64-leguer
       - tag: arm64-kali
       - tag: arm64-jerma
       - tag: arm64-iruya
@@ -1012,6 +1046,7 @@
     path: docker/smoke-cntt
     exclude:
       - tag: arm64-latest
+      - tag: arm64-leguer
       - tag: arm64-kali
       - tag: arm64-jerma
       - tag: arm64-iruya
@@ -1465,6 +1500,7 @@
     <<: *functest-params
     exclude:
       - tag: arm64-latest
+      - tag: arm64-leguer
       - tag: arm64-kali
       - tag: arm64-jerma
       - tag: arm64-iruya
