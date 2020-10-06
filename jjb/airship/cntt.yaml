@@ -315,8 +315,11 @@
       - tempest_cinder
       - tempest_keystone
       - tempest_heat
+      - tempest_telemetry
       - rally_sanity
-      - refstack_defcore
+      - refstack_compute
+      - refstack_object
+      - refstack_platform
       - tempest_full
       - tempest_scenario
       - tempest_slow
@@ -324,6 +327,7 @@
       - networking-bgpvpn
       - networking-sfc
       - tempest_barbican
+      - tempest_octavia
     jobs:
       - 'cntt-{repo}-{container}-{tag}-{test}-run'
 
@@ -518,9 +522,15 @@
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_heat-run'
               <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_telemetry-run'
+              <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *cntt-jobs
-            - name: 'cntt-opnfv-functest-smoke-{tag}-refstack_defcore-run'
+            - name: 'cntt-opnfv-functest-smoke-{tag}-refstack_compute-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-refstack_object-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-refstack_platform-run'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_full-run'
               <<: *cntt-jobs
@@ -535,6 +545,8 @@
             - name: 'cntt-opnfv-functest-smoke-{tag}-networking-sfc-run'
               <<: *cntt-jobs
             - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_barbican-run'
+              <<: *cntt-jobs
+            - name: 'cntt-opnfv-functest-smoke-{tag}-tempest_octavia-run'
               <<: *cntt-jobs
       - multijob:
           name: opnfv/functest-smoke-cntt:{tag}
