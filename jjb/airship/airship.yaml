@@ -11,7 +11,7 @@
       - latest:
           branch: master
           slave: intel-pod17
-          functest_tag: hunter
+          functest_tag: iruya
 
 - parameter:
     name: airship-slave
@@ -289,8 +289,11 @@
       - tempest_cinder
       - tempest_keystone
       - tempest_heat
+      - tempest_telemetry
       - rally_sanity
-      - refstack_defcore
+      - refstack_compute
+      - refstack_object
+      - refstack_platform
       - tempest_full
       - tempest_scenario
       - tempest_slow
@@ -298,6 +301,7 @@
       - networking-bgpvpn
       - networking-sfc
       - tempest_barbican
+      - tempest_octavia
     jobs:
       - 'airship-{repo}-{container}-{tag}-{test}-run'
 
@@ -339,13 +343,17 @@
           else
             image={repo}:{port}/{container}:{functest_tag}
           fi
-          sudo docker run --rm \
+          sudo docker run --rm --dns 172.17.0.2 \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/airship \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/airship/ \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e BUILD_TAG=$BUILD_TAG \
+            -e DEPLOY_SCENARIO=ovs \
+            -e FLAVOR_EXTRA_SPECS=hw:mem_page_size:large \
+            -e NEW_USER_ROLE=_member_ \
+            -e NO_TENANT_NETWORK=true \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -v /home/opnfv/functest/.boto:/root/.boto \
             $image zip_campaign
@@ -459,9 +467,15 @@
               <<: *airship-jobs
             - name: 'airship-opnfv-functest-smoke-{tag}-tempest_heat-run'
               <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-tempest_telemetry-run'
+              <<: *airship-jobs
             - name: 'airship-opnfv-functest-smoke-{tag}-rally_sanity-run'
               <<: *airship-jobs
-            - name: 'airship-opnfv-functest-smoke-{tag}-refstack_defcore-run'
+            - name: 'airship-opnfv-functest-smoke-{tag}-refstack_compute-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-refstack_object-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-refstack_plateform-run'
               <<: *airship-jobs
             - name: 'airship-opnfv-functest-smoke-{tag}-tempest_full-run'
               <<: *airship-jobs
@@ -476,6 +490,8 @@
             - name: 'airship-opnfv-functest-smoke-{tag}-networking-sfc-run'
               <<: *airship-jobs
             - name: 'airship-opnfv-functest-smoke-{tag}-tempest_barbican-run'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-tempest_octavia-run'
               <<: *airship-jobs
       - multijob:
           name: opnfv/functest-benchmarking:{functest_tag}
@@ -566,31 +582,15 @@
           projects:
             - name: 'airship-opnfv-functest-healthcheck-{tag}-rmi'
               <<: *airship-jobs
-            - name: 'airship-opnfv-functest-smoke-{tag}-rmi'
-              <<: *airship-jobs
-            - name: 'airship-opnfv-functest-benchmarking-{tag}-rmi'
-              <<: *airship-jobs
-            - name: 'airship-opnfv-functest-vnf-{tag}-rmi'
-              <<: *airship-jobs
       - multijob:
           name: pull containers
           projects:
             - name: 'airship-opnfv-functest-healthcheck-{tag}-pull'
               <<: *airship-jobs
-            - name: 'airship-opnfv-functest-smoke-{tag}-pull'
-              <<: *airship-jobs
-            - name: 'airship-opnfv-functest-benchmarking-{tag}-pull'
-              <<: *airship-jobs
-            - name: 'airship-opnfv-functest-vnf-{tag}-pull'
-              <<: *airship-jobs
       - multijob:
           name: opnfv/functest-healthcheck:{functest_tag}
           projects:
             - name: 'airship-opnfv-functest-healthcheck-{tag}-connection_check-run'
-              <<: *airship-jobs
-            - name: 'airship-opnfv-functest-healthcheck-{tag}-tenantnetwork1-run'
-              <<: *airship-jobs
-            - name: 'airship-opnfv-functest-healthcheck-{tag}-tenantnetwork2-run'
               <<: *airship-jobs
             - name: 'airship-opnfv-functest-healthcheck-{tag}-vmready1-run'
               <<: *airship-jobs
@@ -602,40 +602,7 @@
               <<: *airship-jobs
             - name: 'airship-opnfv-functest-healthcheck-{tag}-vping_ssh-run'
               <<: *airship-jobs
-            - name: 'airship-opnfv-functest-healthcheck-{tag}-vping_userdata-run'
-              <<: *airship-jobs
             - name: 'airship-opnfv-functest-healthcheck-{tag}-cinder_test-run'
-              <<: *airship-jobs
-            - name: 'airship-opnfv-functest-healthcheck-{tag}-odl-run'
-              <<: *airship-jobs
-      - multijob:
-          name: opnfv/functest-smoke:{functest_tag}
-          projects:
-            - name: 'airship-opnfv-functest-smoke-{tag}-tempest_scenario-run'
-              <<: *airship-jobs
-            - name: 'airship-opnfv-functest-smoke-{tag}-networking-bgpvpn-run'
-              <<: *airship-jobs
-            - name: 'airship-opnfv-functest-smoke-{tag}-networking-sfc-run'
-              <<: *airship-jobs
-            - name: 'airship-opnfv-functest-smoke-{tag}-tempest_barbican-run'
-              <<: *airship-jobs
-      - multijob:
-          name: opnfv/functest-benchmarking:{functest_tag}
-          projects:
-            - name: 'airship-opnfv-functest-benchmarking-{tag}-vmtp-run'
-              <<: *airship-jobs
-            - name: 'airship-opnfv-functest-benchmarking-{tag}-shaker-run'
-              <<: *airship-jobs
-      - multijob:
-          name: opnfv/functest-vnf:{functest_tag}
-          condition: ALWAYS
-          execution-type: SEQUENTIALLY
-          projects:
-            - name: 'airship-opnfv-functest-vnf-{tag}-cloudify-run'
-              <<: *airship-jobs
-            - name: 'airship-opnfv-functest-vnf-{tag}-vyos_vrouter-run'
-              <<: *airship-jobs
-            - name: 'airship-opnfv-functest-vnf-{tag}-juju_epc-run'
               <<: *airship-jobs
 
 - project:
