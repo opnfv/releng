@@ -79,7 +79,7 @@
           else
             image={repo}:{port}/{container}:{functest_tag}
           fi
-          sudo docker run --rm \
+          sudo docker run --rm --dns 172.17.0.2 \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/airship/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/airship/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
@@ -92,13 +92,14 @@
             -v /home/opnfv/functest/.boto:/root/.boto \
             -e DEBUG=$DEBUG \
             -e EXTERNAL_NETWORK=$EXTERNAL_NETWORK \
-            -e DEPLOY_SCENARIO=os-nosdn-nofeature-ha \
+            -e DEPLOY_SCENARIO=ovs \
+            -e FLAVOR_EXTRA_SPECS=hw:mem_page_size:large \
+            -e NEW_USER_ROLE=_member_ \
+            -e NO_TENANT_NETWORK=true \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
-            -v /home/opnfv/functest/tempest_conf.yaml:/usr/lib/python2.7/\
+            -v /home/opnfv/functest/tempest_conf.yaml:/usr/lib/python3.6/\
           site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/tempest_conf.yaml \
-            -v /home/opnfv/functest/blacklist.yaml:/usr/lib/python2.7/\
-          site-packages/functest/opnfv_tests/openstack/rally/blacklist.yaml \
             $image run_tests -t {test} -r -p
 
 - builder:
