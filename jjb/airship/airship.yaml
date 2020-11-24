@@ -100,6 +100,7 @@
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
             -v /home/opnfv/functest/tempest_conf.yaml:/usr/lib/python3.6/\
           site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/tempest_conf.yaml \
+            -v /home/opnfv/functest/functest/core/singlevm.py:/usr/lib/python3.6/site-packages/functest/core/singlevm.py \
             $image run_tests -t {test} -r -p
 
 - builder:
@@ -351,10 +352,16 @@
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e BUILD_TAG=$BUILD_TAG \
+            -e EXTERNAL_NETWORK=$EXTERNAL_NETWORK \
             -e DEPLOY_SCENARIO=ovs \
             -e FLAVOR_EXTRA_SPECS=hw:mem_page_size:large \
             -e NEW_USER_ROLE=_member_ \
             -e NO_TENANT_NETWORK=true \
+            -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
+            -v /home/opnfv/functest/images:/home/opnfv/functest/images \
+            -v /home/opnfv/functest/tempest_conf.yaml:/usr/lib/python3.6/\
+          site-packages/functest/opnfv_tests/openstack/tempest/custom_tests/tempest_conf.yaml \
+            -v /home/opnfv/functest/functest/core/singlevm.py:/usr/lib/python3.6/site-packages/functest/core/singlevm.py \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -v /home/opnfv/functest/.boto:/root/.boto \
             $image zip_campaign
