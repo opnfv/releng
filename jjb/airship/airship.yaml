@@ -583,10 +583,14 @@
           projects:
             - name: 'airship-opnfv-functest-healthcheck-{tag}-rmi'
               <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-rmi'
+              <<: *airship-jobs
       - multijob:
           name: pull containers
           projects:
             - name: 'airship-opnfv-functest-healthcheck-{tag}-pull'
+              <<: *airship-jobs
+            - name: 'airship-opnfv-functest-smoke-{tag}-pull'
               <<: *airship-jobs
       - multijob:
           name: opnfv/functest-healthcheck:{functest_tag}
