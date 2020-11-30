@@ -5,6 +5,10 @@
     stream:
       - master:
           branch: '{stream}'
+      - jerma: &jerma
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
     jobs:
       - '{project}-verify-lint-{stream}'
 
@@ -51,5 +55,4 @@
 - builder:
     name: kubref-run-linting
     builders:
-      - shell:
-          !include-raw: ./kuberef-run-linting.sh
+      - shell: !include-raw: ./kuberef-run-linting.sh
