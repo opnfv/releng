@@ -19,7 +19,11 @@
           branch: '{stream}'
           gs-pathname: ''
           disabled: false
-      - iruya: &iruya
+      - jerma: &jerma
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
+      - iruya:
           branch: 'stable/{stream}'
           gs-pathname: '/{stream}'
           disabled: false
@@ -167,20 +171,20 @@
 
     builders:
       - shell: |
-         rm -rf barometer
-         git clone "https://gerrit.opnfv.org/gerrit/barometer"
-         cd barometer
-         sudo docker build -t opnfv/barometer-collectd-tests-base --network=host \
-            -f docker/barometer-collectd-plugin-tests/Dockerfile.base .
-         docker build -t opnfv/barometer-collectd-tests --network=host \
-            -f docker/barometer-collectd-plugin-tests/Dockerfile .
-         docker run -t --net=host
-            -v `pwd`/src/collectd/collectd_sample_configs-master:/opt/collectd/etc/collectd.conf.d \
-            -v /var/run:/var/run -v /tmp:/tmp -v  `pwd`/plugin_test:/tests \
-            --privileged opnfv/barometer-collectd-tests:latest
-         docker container rm $(sudo docker container ls -aq)
-         docker rmi opnfv/barometer-collectd-tests:latest
-         docker rmi opnfv/barometer-collectd-tests-base:latest
+          rm -rf barometer
+          git clone "https://gerrit.opnfv.org/gerrit/barometer"
+          cd barometer
+          sudo docker build -t opnfv/barometer-collectd-tests-base --network=host \
+             -f docker/barometer-collectd-plugin-tests/Dockerfile.base .
+          docker build -t opnfv/barometer-collectd-tests --network=host \
+             -f docker/barometer-collectd-plugin-tests/Dockerfile .
+          docker run -t --net=host
+             -v `pwd`/src/collectd/collectd_sample_configs-master:/opt/collectd/etc/collectd.conf.d \
+             -v /var/run:/var/run -v /tmp:/tmp -v  `pwd`/plugin_test:/tests \
+             --privileged opnfv/barometer-collectd-tests:latest
+          docker container rm $(sudo docker container ls -aq)
+          docker rmi opnfv/barometer-collectd-tests:latest
+          docker rmi opnfv/barometer-collectd-tests-base:latest
 
 ########################
 # parameter macros
