@@ -291,8 +291,42 @@
     test:
       - xrally_kubernetes
       - k8s_conformance
+      - sig_network
+      - sig_network_feature
+      - sig_storage
     privileged: 'false'
     network: bridge
+    exclude:
+      - tag: leguer
+        test: sig_network
+      - tag: leguer
+        test: sig_network_feature
+      - tag: leguer
+        test: sig_storage
+      - tag: kali
+        test: sig_network
+      - tag: kali
+        test: sig_network_feature
+      - tag: kali
+        test: sig_storage
+      - tag: jerma
+        test: sig_network
+      - tag: jerma
+        test: sig_network_feature
+      - tag: jerma
+        test: sig_storage
+      - tag: iruya
+        test: sig_network
+      - tag: iruya
+        test: sig_network_feature
+      - tag: iruya
+        test: sig_storage
+      - tag: hunter
+        test: sig_network
+      - tag: hunter
+        test: sig_network_feature
+      - tag: hunter
+        test: sig_storage
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
 
@@ -448,6 +482,12 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_network-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_network_feature-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_storage-run'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-security:{tag}
@@ -668,6 +708,12 @@
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
               <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_network-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_network_feature-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_storage-run'
+              <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-benchmarking:{tag}
           projects:
@@ -797,6 +843,12 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_network-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_network_feature-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_storage-run'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-security:{tag}
