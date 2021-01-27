@@ -30,6 +30,10 @@
     storperf-receivers: &storperf-receivers
       receivers: >
           mbeierl@vmware.com
+    samplevnf-receivers: &samplevnf-receivers
+      receivers: >
+          luc.provoost@intel.com
+          yury.kylulin@intel.com
     other-receivers: &other-receivers
       receivers: ''
 
@@ -251,11 +255,11 @@
           arch_tag: 'x86_64'
           <<: *master
           <<: *storperf-receivers
-      - 'samplevnf':
+      - 'rapid':
           project: 'samplevnf'
           dockerdir: 'VNFs/DPPD-PROX/helper-scripts/rapid'
           <<: *master
-          <<: *other-receivers
+          <<: *samplevnf-receivers
 
       # projects with jobs for hunter
       - 'dovetail':
