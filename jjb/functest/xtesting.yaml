@@ -41,18 +41,11 @@
           name: build_tag
 
 - parameter:
-    name: xtesting-branch
-    parameters:
-      - string:
-          name: branch
-          default: '{branch}'
-
-- parameter:
     name: xtesting-DEBUG
     parameters:
       - string:
           name: DEBUG
-          default: 'true'
+          default: true
 
 - xtesting-containers: &xtesting-containers
     name: 'xtesting-containers'
@@ -87,7 +80,7 @@
     builders:
       - shell: |
           set +x
-          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
+          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -101,13 +94,13 @@
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -v /home/opnfv/xtesting/.boto:/root/.boto \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e NODE_NAME=$slave \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEBUG=$DEBUG \
-            -v /home/opnfv/xtesting/.boto:/root/.boto \
             $image run_tests -t {test} -p -r
 
 - builder:
@@ -123,6 +116,13 @@
             image={repo}:{port}/{container}:{tag}
           fi
           sudo docker rmi $image || true
+
+- parameter:
+    name: xtesting-branch
+    parameters:
+      - string:
+          name: branch
+          default: '{branch}'
 
 - xtesting-build-containers: &xtesting-build-containers
     name: 'xtesting-build-containers'
@@ -230,7 +230,7 @@
       - xtesting-build_tag:
           build_tag: ''
       - xtesting-DEBUG:
-          DEBUG: 'true'
+          DEBUG: true
     builders:
       - xtesting-run-containers:
           <<: *xtesting-run-containers
@@ -246,13 +246,13 @@
       - fourth
       - fifth
       - sixth
+    privileged: 'false'
+    network: bridge
     exclude:
       - tag: hunter
         test: sixth
       - tag: iruya
         test: sixth
-    privileged: 'false'
-    network: bridge
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-{test}-run'
 
@@ -262,6 +262,8 @@
     container: 'xtesting-mts'
     test:
       - seventh
+    privileged: 'false'
+    network: bridge
     exclude:
       - tag: hunter
         test: seventh
@@ -271,17 +273,15 @@
         test: seventh
       - tag: kali
         test: seventh
-    privileged: 'false'
-    network: bridge
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-{test}-run'
+
 
 - builder:
     name: xtesting-zip
     builders:
       - shell: |
           set +x
-          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -293,12 +293,12 @@
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting \
+            -v /home/opnfv/xtesting/.boto:/root/.boto \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEBUG=$DEBUG \
-            -v /home/opnfv/xtesting/.boto:/root/.boto \
             $image zip_campaign
 
 - job-template:
@@ -309,7 +309,7 @@
       - xtesting-build_tag:
           build_tag: ''
       - xtesting-DEBUG:
-          DEBUG: 'true'
+          DEBUG: true
     builders:
       - xtesting-zip:
           <<: *xtesting-containers
@@ -332,13 +332,13 @@
       - xtesting-build_tag:
           build_tag: ''
       - xtesting-DEBUG:
-          DEBUG: 'true'
+          DEBUG: true
     properties:
       - build-blocker:
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-{tag}-(daily|check|gate)$'
+            - '^xtesting-{tag}-(daily|gate)$'
     builders:
       - multijob:
           name: remove former images
@@ -393,21 +393,6 @@
           <<: *xtesting-build-containers
           ref: $GERRIT_REFSPEC
 
-- job-template:
-    name: 'xtesting-{repo}-{container}-{tag}-check'
-    parameters:
-      - xtesting-slave:
-          slave: '{slave}'
-      - xtesting-branch:
-          branch: '{branch}'
-    scm:
-      - xtesting-scm:
-          ref: $branch
-    builders:
-      - xtesting-build-containers:
-          <<: *xtesting-build-containers
-          ref: $branch
-
 - project:
     name: 'xtesting-_-alpine-3.13-rmi'
     repo: _
@@ -429,17 +414,16 @@
       - 'xtesting-{repo}-{container}-{tag}-pull'
 
 - project:
-    name: xtesting-opnfv-xtesting-{tag}-build
+    name: xtesting-opnfv-xtesting-{tag}-gate
     <<: *xtesting-params
     container: xtesting
     ref_arg: BRANCH
     path: docker/core
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-gate'
-      - 'xtesting-{repo}-{container}-{tag}-check'
 
 - project:
-    name: xtesting-opnfv-xtesting-mts-{tag}-build
+    name: xtesting-opnfv-xtesting-mts-{tag}-gate
     <<: *xtesting-params
     container: xtesting-mts
     ref_arg: BRANCH
@@ -451,74 +435,7 @@
       - tag: kali
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-gate'
-      - 'xtesting-{repo}-{container}-{tag}-check'
 
-- job-template:
-    name: 'xtesting-{tag}-check'
-    project-type: multijob
-    parameters:
-      - xtesting-slave:
-          slave: '{slave}'
-      - xtesting-build_tag:
-          build_tag: ''
-      - xtesting-branch:
-          branch: '{branch}'
-      - xtesting-DEBUG:
-          DEBUG: 'true'
-    properties:
-      - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
-          blocking-jobs:
-            - '^xtesting-{tag}-(daily|check|gate)$'
-    builders:
-      - multijob:
-          name: remove former images
-          projects:
-            - name: 'xtesting-opnfv-xtesting-{tag}-rmi'
-              <<: *xtesting-jobs
-            - name: 'xtesting-opnfv-xtesting-mts-{tag}-rmi'
-              <<: *xtesting-jobs
-      - multijob:
-          name: remove dependencies
-          projects:
-            - name: 'xtesting-_-alpine-3.13-rmi'
-              <<: *xtesting-jobs
-      - multijob:
-          name: pull dependencies
-          projects:
-            - name: 'xtesting-_-alpine-3.13-pull'
-              <<: *xtesting-jobs
-      - multijob:
-          name: opnfv/xtesting
-          projects:
-            - name: 'xtesting-opnfv-xtesting-{tag}-check'
-              <<: *xtesting-jobs
-      - multijob:
-          name: opnfv/xtesting-mts
-          projects:
-            - name: 'xtesting-opnfv-xtesting-mts-{tag}-check'
-              <<: *xtesting-jobs
-      - multijob:
-          name: opnfv/xtesting:{tag}
-          projects:
-            - name: 'xtesting-opnfv-xtesting-{tag}-first-run'
-              <<: *xtesting-jobs
-            - name: 'xtesting-opnfv-xtesting-{tag}-second-run'
-              <<: *xtesting-jobs
-            - name: 'xtesting-opnfv-xtesting-{tag}-third-run'
-              <<: *xtesting-jobs
-            - name: 'xtesting-opnfv-xtesting-{tag}-fourth-run'
-              <<: *xtesting-jobs
-            - name: 'xtesting-opnfv-xtesting-{tag}-fifth-run'
-              <<: *xtesting-jobs
-            - name: 'xtesting-opnfv-xtesting-{tag}-sixth-run'
-              <<: *xtesting-jobs
-      - multijob:
-          name: opnfv/xtesting-mts:{tag}
-          projects:
-            - name: 'xtesting-opnfv-xtesting-mts-{tag}-seventh-run'
-              <<: *xtesting-jobs
 
 - trigger:
     name: xtesting-patchset-created
@@ -544,7 +461,7 @@
             notbuilt: false
 
 - job-template:
-    name: 'xtesting-{tag}-gate'
+    name: 'xtesting-{tag}-review'
     project-type: multijob
     triggers:
       - xtesting-patchset-created:
@@ -555,13 +472,13 @@
       - xtesting-build_tag:
           build_tag: ''
       - xtesting-DEBUG:
-          DEBUG: 'true'
+          DEBUG: true
     properties:
       - build-blocker:
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-{tag}-(daily|check|gate)$'
+            - '^xtesting-{tag}-(daily|gate)$'
     builders:
       - multijob:
           name: remove former images
@@ -611,21 +528,87 @@
             - name: 'xtesting-opnfv-xtesting-mts-{tag}-seventh-run'
               <<: *xtesting-jobs
 
+- job-template:
+    name: 'xtesting-{repo}-{container}-{tag}-build'
+    parameters:
+      - xtesting-slave:
+          slave: '{slave}'
+      - xtesting-branch:
+          branch: '{branch}'
+    scm:
+      - xtesting-scm:
+          ref: $branch
+    builders:
+      - xtesting-build-containers:
+          <<: *xtesting-build-containers
+          ref: $branch
+
+- project:
+    name: xtesting-opnfv-xtesting-{tag}-build
+    <<: *xtesting-params
+    container: xtesting
+    ref_arg: BRANCH
+    path: docker/core
+    jobs:
+      - 'xtesting-{repo}-{container}-{tag}-build'
+
+- project:
+    name: xtesting-opnfv-xtesting-mts-{tag}-build
+    <<: *xtesting-params
+    container: xtesting-mts
+    ref_arg: BRANCH
+    path: docker/mts
+    exclude:
+      - tag: hunter
+      - tag: iruya
+      - tag: jerma
+      - tag: kali
+    jobs:
+      - 'xtesting-{repo}-{container}-{tag}-build'
+
+
+- job-template:
+    name: 'xtesting-{tag}-docker'
+    project-type: multijob
+    parameters:
+      - xtesting-slave:
+          slave: '{slave}'
+      - xtesting-branch:
+          branch: '{branch}'
+      - xtesting-DEBUG:
+          DEBUG: true
+    builders:
+      - multijob:
+          name: remove dependencies
+          projects:
+            - name: 'xtesting-_-alpine-3.13-rmi'
+              <<: *xtesting-jobs
+      - multijob:
+          name: pull dependencies
+          projects:
+            - name: 'xtesting-_-alpine-3.13-pull'
+              <<: *xtesting-jobs
+      - multijob:
+          name: opnfv/xtesting
+          projects:
+            - name: 'xtesting-opnfv-xtesting-{tag}-build'
+              <<: *xtesting-jobs
+      - multijob:
+          name: opnfv/xtesting-mts
+          projects:
+            - name: 'xtesting-opnfv-xtesting-mts-{tag}-build'
+              <<: *xtesting-jobs
+
 - project:
     name: 'xtesting'
     <<: *xtesting-params
     jobs:
       - 'xtesting-{tag}-daily'
-
-- project:
-    name: 'xtesting-gate'
-    <<: *xtesting-params
-    jobs:
-      - 'xtesting-{tag}-check'
-      - 'xtesting-{tag}-gate'
+      - 'xtesting-{tag}-review'
+      - 'xtesting-{tag}-docker'
 
 - view:
-    name: xtesting
+    name: xtesting-daily
     view-type: list
     columns:
       - status
@@ -634,10 +617,10 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^xtesting-(amd64-)*[a-z]+-daily$
+    regex: ^xtesting-[a-z-]+-daily$
 
 - view:
-    name: xtesting-gate
+    name: xtesting-review
     view-type: list
     columns:
       - status
@@ -646,4 +629,16 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^xtesting-(amd64-)*[a-z]+-gate$
+    regex: ^xtesting-[a-z-]+-review$
+
+- view:
+    name: xtesting-docker
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^xtesting-[a-z-]+-docker$
