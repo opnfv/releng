@@ -117,13 +117,6 @@
           fi
           sudo docker rmi $image || true
 
-- parameter:
-    name: xtesting-branch
-    parameters:
-      - string:
-          name: branch
-          default: '{branch}'
-
 - xtesting-build-containers: &xtesting-build-containers
     name: 'xtesting-build-containers'
     <<: *xtesting-containers
@@ -161,8 +154,8 @@
     name: xtesting-scm
     scm:
       - git:
-          url: https://gerrit.opnfv.org/gerrit/functest-xtesting
-          refspec: '+refs/changes/*:refs/changes/*'
+          url: 'gerrit.opnfv.org'
+          refspec: '+refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*'
           branches:
             - '{ref}'
 
@@ -338,7 +331,7 @@
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-{tag}-(daily|gate)$'
+            - '^xtesting-{tag}-(daily|review)$'
     builders:
       - multijob:
           name: remove former images
@@ -380,19 +373,6 @@
             - name: 'xtesting-{tag}-zip'
               <<: *xtesting-jobs
 
-- job-template:
-    name: 'xtesting-{repo}-{container}-{tag}-gate'
-    parameters:
-      - xtesting-slave:
-          slave: '{slave}'
-    scm:
-      - xtesting-scm:
-          ref: $GERRIT_REFSPEC
-    builders:
-      - xtesting-build-containers:
-          <<: *xtesting-build-containers
-          ref: $GERRIT_REFSPEC
-
 - project:
     name: 'xtesting-_-alpine-3.13-rmi'
     repo: _
@@ -412,6 +392,32 @@
     slave: master
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-pull'
+
+
+- builder:
+    name: xtesting-tox
+    builders:
+      - shell: tox
+
+- job-template:
+    name: 'xtesting-{tag}-tox'
+    scm:
+      - xtesting-scm:
+          ref: $GERRIT_REFSPEC
+    triggers:
+      - xtesting-patchset-created:
+          branch: '{branch}'
+    parameters:
+      - xtesting-slave:
+          slave: '{slave}'
+    builders:
+      - xtesting-tox:
+
+- project:
+    name: xtesting-tox
+    <<: *xtesting-params
+    jobs:
+      - 'xtesting-{tag}-tox'
 
 - project:
     name: xtesting-opnfv-xtesting-{tag}-gate
@@ -436,6 +442,19 @@
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-gate'
 
+
+- job-template:
+    name: 'xtesting-{repo}-{container}-{tag}-gate'
+    parameters:
+      - xtesting-slave:
+          slave: '{slave}'
+    scm:
+      - xtesting-scm:
+          ref: $GERRIT_REFSPEC
+    builders:
+      - xtesting-build-containers:
+          <<: *xtesting-build-containers
+          ref: $GERRIT_REFSPEC
 
 - trigger:
     name: xtesting-patchset-created
@@ -478,7 +497,7 @@
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-{tag}-(daily|gate)$'
+            - '^xtesting-{tag}-(daily|review)$'
     builders:
       - multijob:
           name: remove former images
@@ -528,20 +547,24 @@
             - name: 'xtesting-opnfv-xtesting-mts-{tag}-seventh-run'
               <<: *xtesting-jobs
 
+- trigger:
+    name: xtesting-commit
+    triggers:
+      - pollscm:
+          cron: "*/30 * * * *"
+          ignore-post-commit-hooks: True
 - job-template:
     name: 'xtesting-{repo}-{container}-{tag}-build'
     parameters:
       - xtesting-slave:
           slave: '{slave}'
-      - xtesting-branch:
-          branch: '{branch}'
     scm:
       - xtesting-scm:
-          ref: $branch
+          ref: '{branch}'
     builders:
       - xtesting-build-containers:
           <<: *xtesting-build-containers
-          ref: $branch
+          ref: '{branch}'
 
 - project:
     name: xtesting-opnfv-xtesting-{tag}-build
@@ -570,11 +593,14 @@
 - job-template:
     name: 'xtesting-{tag}-docker'
     project-type: multijob
+    triggers:
+      - xtesting-commit
+    scm:
+      - xtesting-scm:
+          ref: '{branch}'
     parameters:
       - xtesting-slave:
           slave: '{slave}'
-      - xtesting-branch:
-          branch: '{branch}'
       - xtesting-DEBUG:
           DEBUG: 'true'
     builders:
@@ -630,6 +656,18 @@
       - last-failure
       - last-duration
     regex: ^xtesting-[a-z-]+-review$
+
+- view:
+    name: xtesting-tox
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^xtesting-[a-z-]+-tox$
 
 - view:
     name: xtesting-docker
