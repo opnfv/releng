@@ -379,7 +379,7 @@
     port:
     container: alpine
     tag: '3.13'
-    slave: master
+    slave: '{slave}'
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-rmi'
 
@@ -389,7 +389,7 @@
     port:
     container: alpine
     tag: '3.13'
-    slave: master
+    slave: '{slave}'
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-pull'
 
@@ -640,6 +640,9 @@
 
 - job-template:
     name: 'xtesting-{repo}-{container}-{tag}-trivy'
+    parameters:
+      - xtesting-slave:
+          slave: '{slave}'
     builders:
       - xtesting-trivy:
           <<: *xtesting-containers
