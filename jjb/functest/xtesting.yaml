@@ -628,6 +628,7 @@
     name: xtesting-trivy
     builders:
       - shell: |
+          set +x
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b .
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -658,6 +659,11 @@
     name: 'xtesting-opnfv-xtesting-mts-trivy'
     <<: *xtesting-params
     container: 'xtesting-mts'
+    exclude:
+      - tag: hunter
+      - tag: iruya
+      - tag: jerma
+      - tag: kali
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-trivy'
 
