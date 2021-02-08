@@ -624,6 +624,40 @@
             - name: 'xtesting-opnfv-xtesting-mts-{tag}-build'
               <<: *xtesting-jobs
 
+- builder:
+    name: xtesting-trivy
+    builders:
+      - shell: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b .
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          ./trivy $image
+
+- job-template:
+    name: 'xtesting-{repo}-{container}-{tag}-trivy'
+    builders:
+      - xtesting-trivy:
+          <<: *xtesting-containers
+
+- project:
+    name: 'xtesting-opnfv-xtesting-trivy'
+    <<: *xtesting-params
+    container: 'xtesting'
+    jobs:
+      - 'xtesting-{repo}-{container}-{tag}-trivy'
+
+- project:
+    name: 'xtesting-opnfv-xtesting-mts-trivy'
+    <<: *xtesting-params
+    container: 'xtesting-mts'
+    jobs:
+      - 'xtesting-{repo}-{container}-{tag}-trivy'
+
 - project:
     name: 'xtesting'
     <<: *xtesting-params
@@ -679,3 +713,15 @@
       - last-failure
       - last-duration
     regex: ^xtesting-[a-z-]+-docker$
+
+- view:
+    name: xtesting-trivy
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^xtesting-[a-z-]+-trivy$
