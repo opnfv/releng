@@ -146,12 +146,7 @@
           else
             build_arg="--build-arg {ref_arg}={ref}"
           fi
-          case {tag} in
-          *latest|*leguer|*kali|*jerma)
-            cd {path};;
-          *)
-            cd docker;;
-          esac
+          cd {path};;
           sudo docker build $build_arg \
             --pull=false --no-cache --force-rm=true \
             -t $image .
@@ -185,9 +180,6 @@
     name: 'xtesting-opnfv-xtesting-mts-pull'
     <<: *xtesting-params
     container: 'xtesting-mts'
-    exclude:
-      - tag: hunter
-      - tag: iruya
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-pull'
 
@@ -211,9 +203,6 @@
     name: 'xtesting-opnfv-xtesting-mts-rmi'
     <<: *xtesting-params
     container: 'xtesting-mts'
-    exclude:
-      - tag: hunter
-      - tag: iruya
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-rmi'
 
@@ -243,9 +232,6 @@
       - sixth
     privileged: 'false'
     network: bridge
-    exclude:
-      - {'tag': 'hunter', 'test': 'sixth'}
-      - {'tag': 'iruya', 'test': 'sixth'}
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-{test}-run'
 
@@ -257,9 +243,6 @@
       - seventh
     privileged: 'false'
     network: bridge
-    exclude:
-      - {'tag': 'hunter', 'test': 'seventh'}
-      - {'tag': 'iruya', 'test': 'seventh'}
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-{test}-run'
 
@@ -472,9 +455,6 @@
     container: xtesting-mts
     ref_arg: BRANCH
     path: docker/mts
-    exclude:
-      - tag: hunter
-      - tag: iruya
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-gate'
 
@@ -610,9 +590,6 @@
     container: xtesting-mts
     ref_arg: BRANCH
     path: docker/mts
-    exclude:
-      - tag: hunter
-      - tag: iruya
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-build'
 
@@ -686,9 +663,6 @@
     name: 'xtesting-opnfv-xtesting-mts-trivy'
     <<: *xtesting-params
     container: 'xtesting-mts'
-    exclude:
-      - tag: hunter
-      - tag: iruya
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-trivy'
 
