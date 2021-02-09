@@ -147,7 +147,7 @@
             build_arg="--build-arg {ref_arg}={ref}"
           fi
           case {tag} in
-          *latest|*leguer)
+          *latest|*leguer|*kali|*jerma)
             cd {path};;
           *)
             cd docker;;
@@ -188,8 +188,6 @@
     exclude:
       - tag: hunter
       - tag: iruya
-      - tag: jerma
-      - tag: kali
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-pull'
 
@@ -216,8 +214,6 @@
     exclude:
       - tag: hunter
       - tag: iruya
-      - tag: jerma
-      - tag: kali
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-rmi'
 
@@ -262,10 +258,8 @@
     privileged: 'false'
     network: bridge
     exclude:
-      - {'tag': 'hunter'}
-      - {'tag': 'iruya'}
-      - {'tag': 'jerma'}
-      - {'tag': 'kali'}
+      - {'tag': 'hunter', 'test': 'seventh'}
+      - {'tag': 'iruya', 'test': 'seventh'}
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-{test}-run'
 
@@ -481,8 +475,6 @@
     exclude:
       - tag: hunter
       - tag: iruya
-      - tag: jerma
-      - tag: kali
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-gate'
 
@@ -621,8 +613,6 @@
     exclude:
       - tag: hunter
       - tag: iruya
-      - tag: jerma
-      - tag: kali
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-build'
 
@@ -691,6 +681,7 @@
     container: 'xtesting'
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-trivy'
+
 - project:
     name: 'xtesting-opnfv-xtesting-mts-trivy'
     <<: *xtesting-params
@@ -698,8 +689,6 @@
     exclude:
       - tag: hunter
       - tag: iruya
-      - tag: jerma
-      - tag: kali
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-trivy'
 
