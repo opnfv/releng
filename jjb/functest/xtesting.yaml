@@ -11,21 +11,27 @@
       - latest:
           branch: master
           slave: lf-virtual1
+          dependency: 3.13
       - leguer:
           branch: stable/leguer
           slave: lf-virtual1
+          dependency: 3.12
       - kali:
           branch: stable/kali
           slave: lf-virtual1
+          dependency: 3.11
       - jerma:
           branch: stable/jerma
           slave: lf-virtual1
+          dependency: 3.10
       - iruya:
           branch: stable/iruya
           slave: lf-virtual1
+          dependency: 3.9
       - hunter:
           branch: stable/hunter
           slave: lf-virtual1
+          dependency: 3.9
 
 - parameter:
     name: xtesting-slave
@@ -373,26 +379,70 @@
             - name: 'xtesting-{tag}-zip'
               <<: *xtesting-jobs
 
-- project:
-    name: 'xtesting-_-alpine-3.13-rmi'
-    repo: _
-    port:
-    container: alpine
-    tag: '3.13'
-    slave: '{slave}'
-    jobs:
-      - 'xtesting-{repo}-{container}-{tag}-rmi'
+- xtesting-dep: &xtesting-dep
+    name: 'xtesting-containers'
+    repo: '{repo}'
+    port: '{port}'
+    tag: '{tag}'
+    dependency: '{dependency}'
+
+- builder:
+    name: xtesting-pull-dep-images
+    builders:
+      - shell: |
+          set +x
+          if [ "_" = "_" ]; then
+            image=alpine:{dependency}
+          elif [ "_" = "None" ]; then
+            image=_/alpine:{dependency}
+          else
+            image=_:/alpine{dependency}
+          fi
+          sudo docker pull $image || true
+
+- builder:
+    name: xtesting-remove-dep-images
+    builders:
+      - shell: |
+          set +x
+          if [ "_" = "_" ]; then
+            image=alpine:{dependency}
+          elif [ "_" = "None" ]; then
+            image=_/alpine:{dependency}
+          else
+            image=_:/alpine{dependency}
+          fi
+          sudo docker rmi $image || true
+
+- job-template:
+    name: 'xtesting-{repo}-{tag}-dep-pull'
+    parameters:
+      - xtesting-slave:
+          slave: '{slave}'
+    builders:
+      - xtesting-pull-dep-images:
+          <<: *xtesting-dep
 
 - project:
-    name: 'xtesting-_-alpine-3.13-pull'
-    repo: _
-    port:
-    container: alpine
-    tag: '3.13'
-    slave: '{slave}'
+    name: 'xtesting-{repo}-{tag}-dep-pull'
+    <<: *xtesting-params
     jobs:
-      - 'xtesting-{repo}-{container}-{tag}-pull'
+      - 'xtesting-{repo}-{tag}-dep-pull'
 
+- job-template:
+    name: 'xtesting-{repo}-{tag}-dep-rmi'
+    parameters:
+      - xtesting-slave:
+          slave: '{slave}'
+    builders:
+      - xtesting-remove-dep-images:
+          <<: *xtesting-dep
+
+- project:
+    name: 'xtesting-{repo}-{tag}-dep-rmi'
+    <<: *xtesting-params
+    jobs:
+      - 'xtesting-{repo}-{tag}-dep-rmi'
 
 - builder:
     name: xtesting-tox
@@ -460,7 +510,6 @@
     name: xtesting-patchset-created
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
           trigger-on:
             - patchset-created-event
             - comment-added-contains-event:
@@ -473,11 +522,6 @@
               branches:
                 - branch-compare-type: 'ANT'
                   branch-pattern: '**/{branch}'
-          skip-vote:
-            successful: false
-            failed: false
-            unstable: false
-            notbuilt: false
 
 - job-template:
     name: 'xtesting-{tag}-review'
@@ -507,14 +551,14 @@
             - name: 'xtesting-opnfv-xtesting-mts-{tag}-rmi'
               <<: *xtesting-jobs
       - multijob:
-          name: remove dependencies
+          name: remove dependency
           projects:
-            - name: 'xtesting-_-alpine-3.13-rmi'
+            - name: 'xtesting-{repo}-{tag}-dep-rmi'
               <<: *xtesting-jobs
       - multijob:
-          name: pull dependencies
+          name: pull dependency
           projects:
-            - name: 'xtesting-_-alpine-3.13-pull'
+            - name: 'xtesting-{repo}-{tag}-dep-pull'
               <<: *xtesting-jobs
       - multijob:
           name: opnfv/xtesting
@@ -604,14 +648,14 @@
           DEBUG: 'true'
     builders:
       - multijob:
-          name: remove dependencies
+          name: remove dependency
           projects:
-            - name: 'xtesting-_-alpine-3.13-rmi'
+            - name: 'xtesting-{repo}-{tag}-dep-rmi'
               <<: *xtesting-jobs
       - multijob:
-          name: pull dependencies
+          name: pull dependency
           projects:
-            - name: 'xtesting-_-alpine-3.13-pull'
+            - name: 'xtesting-{repo}-{tag}-dep-pull'
               <<: *xtesting-jobs
       - multijob:
           name: opnfv/xtesting
@@ -628,8 +672,7 @@
     name: xtesting-trivy
     builders:
       - shell: |
-          set +x
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b .
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b .
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -654,7 +697,6 @@
     container: 'xtesting'
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-trivy'
-
 - project:
     name: 'xtesting-opnfv-xtesting-mts-trivy'
     <<: *xtesting-params
@@ -674,6 +716,7 @@
       - 'xtesting-{tag}-daily'
       - 'xtesting-{tag}-review'
       - 'xtesting-{tag}-docker'
+
 
 - view:
     name: xtesting-daily
