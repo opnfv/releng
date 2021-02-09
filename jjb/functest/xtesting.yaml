@@ -557,11 +557,26 @@
             - name: 'xtesting-opnfv-xtesting-mts-{tag}-seventh-run'
               <<: *xtesting-jobs
 
+- builder:
+    name: xtesting-push-containers
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          sudo docker push $image .
+
 - trigger:
     name: xtesting-commit
     triggers:
       - pollscm:
           cron: "*/30 * * * *"
+
 - job-template:
     name: 'xtesting-{repo}-{container}-{tag}-build'
     parameters:
@@ -572,6 +587,9 @@
           ref: '{branch}'
     builders:
       - xtesting-build-containers:
+          <<: *xtesting-build-containers
+          ref: '{branch}'
+      - xtesting-push-containers:
           <<: *xtesting-build-containers
           ref: '{branch}'
 
@@ -658,7 +676,6 @@
     container: 'xtesting'
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-trivy'
-
 - project:
     name: 'xtesting-opnfv-xtesting-mts-trivy'
     <<: *xtesting-params
