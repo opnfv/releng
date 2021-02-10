@@ -11,21 +11,27 @@
       - latest:
           branch: master
           slave: lf-virtual1-6
+          dependency: 3.13
       - leguer:
           branch: stable/leguer
           slave: lf-virtual1-5
+          dependency: 3.12
       - kali:
           branch: stable/kali
           slave: lf-virtual1-4
+          dependency: 3.11
       - jerma:
           branch: stable/jerma
           slave: lf-virtual1-3
+          dependency: 3.10
       - iruya:
           branch: stable/iruya
           slave: lf-virtual1-2
+          dependency: 3.9
       - hunter:
           branch: stable/hunter
           slave: lf-virtual1-1
+          dependency: 3.9
 
 - parameter:
     name: functest-kubernetes-slave
@@ -39,13 +45,6 @@
     parameters:
       - random-string:
           name: build_tag
-
-- parameter:
-    name: functest-kubernetes-branch
-    parameters:
-      - string:
-          name: branch
-          default: '{branch}'
 
 - parameter:
     name: functest-kubernetes-DEPLOY_SCENARIO
@@ -93,7 +92,7 @@
     builders:
       - shell: |
           set +x
-          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
+          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -107,6 +106,7 @@
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -v /home/opnfv/functest-kubernetes/.boto:/root/.boto \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e NODE_NAME=$slave \
@@ -114,8 +114,7 @@
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEPLOY_SCENARIO=$DEPLOY_SCENARIO \
             -e DEBUG=$DEBUG \
-            -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
-            -v /home/opnfv/functest-kubernetes/.boto:/root/.boto \
+            -v /home/opnfv/functest-kubernetes/config:/root/.kube/config \
             $image run_tests -t {test} -p -r
 
 - builder:
@@ -164,8 +163,8 @@
     name: functest-kubernetes-scm
     scm:
       - git:
-          url: https://gerrit.opnfv.org/gerrit/functest-kubernetes
-          refspec: '+refs/changes/*:refs/changes/*'
+          url: 'https://gerrit.opnfv.org/gerrit/functest-kubernetes'
+          refspec: '+refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*'
           branches:
             - '{ref}'
 
@@ -296,37 +295,6 @@
       - sig_storage
     privileged: 'false'
     network: bridge
-    exclude:
-      - tag: leguer
-        test: sig_network
-      - tag: leguer
-        test: sig_network_features
-      - tag: leguer
-        test: sig_storage
-      - tag: kali
-        test: sig_network
-      - tag: kali
-        test: sig_network_features
-      - tag: kali
-        test: sig_storage
-      - tag: jerma
-        test: sig_network
-      - tag: jerma
-        test: sig_network_features
-      - tag: jerma
-        test: sig_storage
-      - tag: iruya
-        test: sig_network
-      - tag: iruya
-        test: sig_network_features
-      - tag: iruya
-        test: sig_storage
-      - tag: hunter
-        test: sig_network
-      - tag: hunter
-        test: sig_network_features
-      - tag: hunter
-        test: sig_storage
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
 
@@ -362,11 +330,6 @@
       - k8s_vims
       - helm_vims
       - cnf_conformance
-    exclude:
-      - tag: iruya
-        test: k8s_vims
-      - tag: iruya
-        test: helm_vims
     privileged: 'false'
     network: bridge
     jobs:
@@ -378,7 +341,6 @@
     builders:
       - shell: |
           set +x
-          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -390,14 +352,14 @@
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest-kubernetes \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest-kubernetes \
+            -v /home/opnfv/functest-kubernetes/.boto:/root/.boto \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEPLOY_SCENARIO=$DEPLOY_SCENARIO \
             -e DEBUG=$DEBUG \
-            -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
-            -v /home/opnfv/functest-kubernetes/.boto:/root/.boto \
+            -v /home/opnfv/functest-kubernetes/config:/root/.kube/config \
             $image zip_campaign
 
 - job-template:
@@ -426,7 +388,7 @@
     name: 'functest-kubernetes-{tag}-daily'
     project-type: multijob
     triggers:
-      - timed: '@weekly'
+      - timed: '@daily'
     parameters:
       - functest-kubernetes-slave:
           slave: '{slave}'
@@ -439,9 +401,9 @@
     properties:
       - build-blocker:
           use-build-blocker: true
-          blocking-level: 'GLOBAL'
+          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes(-pi)?-(arm.*-|amd64-)*[a-z]+-(daily|gate|check)$'
+            - '^functest-kubernetes-{tag}-(daily|review)$'
     builders:
       - multijob:
           name: remove former images
@@ -452,7 +414,7 @@
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-rmi'
               <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-pull'
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-rmi'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-rmi'
               <<: *functest-kubernetes-jobs
@@ -518,6 +480,115 @@
             - name: 'functest-kubernetes-{tag}-zip'
               <<: *functest-kubernetes-jobs
 
+- functest-kubernetes-dep: &functest-kubernetes-dep
+    name: 'functest-kubernetes-containers'
+    repo: '{repo}'
+    port: '{port}'
+    tag: '{tag}'
+    dependency: '{dependency}'
+
+- builder:
+    name: functest-kubernetes-pull-dep-images
+    builders:
+      - shell: |
+          set +x
+          if [ "_" = "_" ]; then
+            image=alpine:{dependency}
+          elif [ "_" = "None" ]; then
+            image=_/alpine:{dependency}
+          else
+            image=_:/alpine{dependency}
+          fi
+          docker pull $image || true
+
+- builder:
+    name: functest-kubernetes-remove-dep-images
+    builders:
+      - shell: |
+          set +x
+          if [ "_" = "_" ]; then
+            image=alpine:{dependency}
+          elif [ "_" = "None" ]; then
+            image=_/alpine:{dependency}
+          else
+            image=_:/alpine{dependency}
+          fi
+          docker rmi $image || true
+
+- job-template:
+    name: 'functest-kubernetes-{repo}-{tag}-dep-pull'
+    parameters:
+      - functest-kubernetes-slave:
+          slave: '{slave}'
+    builders:
+      - functest-kubernetes-pull-dep-images:
+          <<: *functest-kubernetes-dep
+
+- project:
+    name: 'functest-kubernetes-{repo}-{tag}-dep-pull'
+    <<: *functest-kubernetes-params
+    jobs:
+      - 'functest-kubernetes-{repo}-{tag}-dep-pull'
+
+- job-template:
+    name: 'functest-kubernetes-{repo}-{tag}-dep-rmi'
+    parameters:
+      - functest-kubernetes-slave:
+          slave: '{slave}'
+    builders:
+      - functest-kubernetes-remove-dep-images:
+          <<: *functest-kubernetes-dep
+
+- project:
+    name: 'functest-kubernetes-{repo}-{tag}-dep-rmi'
+    <<: *functest-kubernetes-params
+    jobs:
+      - 'functest-kubernetes-{repo}-{tag}-dep-rmi'
+
+- builder:
+    name: functest-kubernetes-tox
+    builders:
+      - shell: tox
+
+- job-template:
+    name: 'functest-kubernetes-{tag}-tox'
+    scm:
+      - functest-kubernetes-scm:
+          ref: $GERRIT_REFSPEC
+    triggers:
+      - functest-kubernetes-patchset-created:
+          branch: '{branch}'
+    parameters:
+      - functest-kubernetes-slave:
+          slave: '{slave}'
+    builders:
+      - functest-kubernetes-tox:
+
+- project:
+    name: functest-kubernetes-tox
+    <<: *functest-kubernetes-params
+    jobs:
+      - 'functest-kubernetes-{tag}-tox'
+
+- project:
+    name: functest-kubernetes-opnfv-xtesting-{tag}-gate
+    <<: *functest-kubernetes-params
+    container: xtesting
+    ref_arg: BRANCH
+    path: docker/core
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
+
+- project:
+    name: functest-kubernetes-opnfv-xtesting-mts-{tag}-gate
+    <<: *functest-kubernetes-params
+    container: xtesting-mts
+    ref_arg: BRANCH
+    path: docker/mts
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
+
+
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-gate'
     parameters:
@@ -531,218 +602,10 @@
           <<: *functest-kubernetes-build-containers
           ref: $GERRIT_REFSPEC
 
-- job-template:
-    name: 'functest-kubernetes-{repo}-{container}-{tag}-check'
-    parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
-      - functest-kubernetes-branch:
-          branch: '{branch}'
-    scm:
-      - functest-kubernetes-scm:
-          ref: $branch
-    builders:
-      - functest-kubernetes-build-containers:
-          <<: *functest-kubernetes-build-containers
-          ref: $branch
-
-- project:
-    name: 'functest-kubernetes-_-golang-1.15-alpine3.13-rmi'
-    repo: _
-    port:
-    container: golang
-    tag: '1.15-alpine3.13'
-    slave: master
-    jobs:
-      - 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
-
-- project:
-    name: 'functest-kubernetes-_-golang-1.15-alpine3.13-pull'
-    repo: _
-    port:
-    container: golang
-    tag: '1.15-alpine3.13'
-    slave: master
-    jobs:
-      - 'functest-kubernetes-{repo}-{container}-{tag}-pull'
-
-- project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-core-{tag}-build
-    <<: *functest-kubernetes-params
-    container: functest-kubernetes-core
-    ref_arg: BRANCH
-    path: docker/core
-    jobs:
-      - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
-      - 'functest-kubernetes-{repo}-{container}-{tag}-check'
-
-- project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-build
-    <<: *functest-kubernetes-params
-    container: functest-kubernetes-healthcheck
-    ref_arg:
-    path: docker/healthcheck
-    jobs:
-      - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
-      - 'functest-kubernetes-{repo}-{container}-{tag}-check'
-
-- project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-build
-    <<: *functest-kubernetes-params
-    container: functest-kubernetes-cnf
-    ref_arg: BRANCH
-    path: docker/cnf
-    jobs:
-      - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
-      - 'functest-kubernetes-{repo}-{container}-{tag}-check'
-
-- project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-build
-    <<: *functest-kubernetes-params
-    container: functest-kubernetes-security
-    ref_arg: BRANCH
-    path: docker/security
-    jobs:
-      - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
-      - 'functest-kubernetes-{repo}-{container}-{tag}-check'
-
-- project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-build
-    <<: *functest-kubernetes-params
-    container: functest-kubernetes-smoke
-    ref_arg:
-    path: docker/smoke
-    jobs:
-      - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
-      - 'functest-kubernetes-{repo}-{container}-{tag}-check'
-
-- project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-build
-    <<: *functest-kubernetes-params
-    container: functest-kubernetes-benchmarking
-    ref_arg:
-    path: docker/benchmarking
-    jobs:
-      - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
-      - 'functest-kubernetes-{repo}-{container}-{tag}-check'
-
-- job-template:
-    name: 'functest-kubernetes-{tag}-check'
-    project-type: multijob
-    parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
-      - functest-kubernetes-build_tag:
-          build_tag: ''
-      - functest-kubernetes-branch:
-          branch: '{branch}'
-      - functest-kubernetes-DEPLOY_SCENARIO:
-          DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
-      - functest-kubernetes-DEBUG:
-          DEBUG: 'true'
-    properties:
-      - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'GLOBAL'
-          blocking-jobs:
-            - '^functest-kubernetes(-pi)?-(arm.*-|amd64-)*[a-z]+-(daily|gate|check)$'
-    builders:
-      - multijob:
-          name: remove former images
-          projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-rmi'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-rmi'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-rmi'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-rmi'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-rmi'
-              <<: *functest-kubernetes-jobs
-      - multijob:
-          name: remove dependencies
-          projects:
-            - name: 'functest-kubernetes-_-golang-1.15-alpine3.13-rmi'
-              <<: *functest-kubernetes-jobs
-      - multijob:
-          name: pull dependencies
-          projects:
-            - name: 'functest-kubernetes-_-golang-1.15-alpine3.13-pull'
-              <<: *functest-kubernetes-jobs
-      - multijob:
-          name: build opnfv/functest-kubernetes-core
-          projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-core-{tag}-check'
-              <<: *functest-kubernetes-jobs
-      - multijob:
-          name: build opnfv/functest-kubernetes-healthcheck
-          projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-check'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-check'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-check'
-              <<: *functest-kubernetes-jobs
-      - multijob:
-          name: build containers
-          projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-check'
-              <<: *functest-kubernetes-jobs
-      - multijob:
-          name: build opnfv/functest-kubernetes-benchmarking
-          projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-check'
-              <<: *functest-kubernetes-jobs
-      - multijob:
-          name: opnfv/functest-kubernetes-healthcheck:{tag}
-          projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-k8s_quick-run'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-k8s_smoke-run'
-              <<: *functest-kubernetes-jobs
-      - multijob:
-          name: opnfv/functest-kubernetes-smoke:{tag}
-          projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_network-run'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_network_features-run'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_storage-run'
-              <<: *functest-kubernetes-jobs
-      - multijob:
-          name: opnfv/functest-kubernetes-benchmarking:{tag}
-          projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-xrally_kubernetes_full-run'
-              <<: *functest-kubernetes-jobs
-      - multijob:
-          name: opnfv/functest-kubernetes-security:{tag}
-          projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_hunter-run'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_bench_master-run'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-kube_bench_node-run'
-              <<: *functest-kubernetes-jobs
-      - multijob:
-          name: opnfv/functest-kubernetes-cnf:{tag}
-          projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-k8s_vims-run'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-helm_vims-run'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-cnf_conformance-run'
-              <<: *functest-kubernetes-jobs
-
 - trigger:
     name: functest-kubernetes-patchset-created
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
           trigger-on:
             - patchset-created-event
             - comment-added-contains-event:
@@ -755,14 +618,9 @@
               branches:
                 - branch-compare-type: 'ANT'
                   branch-pattern: '**/{branch}'
-          skip-vote:
-            successful: false
-            failed: false
-            unstable: false
-            notbuilt: false
 
 - job-template:
-    name: 'functest-kubernetes-{tag}-gate'
+    name: 'functest-kubernetes-{tag}-review'
     project-type: multijob
     triggers:
       - functest-kubernetes-patchset-created:
@@ -779,9 +637,9 @@
     properties:
       - build-blocker:
           use-build-blocker: true
-          blocking-level: 'GLOBAL'
+          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes(-pi)?-(arm.*-|amd64-)*[a-z]+-(daily|gate|check)$'
+            - '^functest-kubernetes-{tag}-(daily|review)$'
     builders:
       - multijob:
           name: remove former images
@@ -797,38 +655,24 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-rmi'
               <<: *functest-kubernetes-jobs
       - multijob:
-          name: remove dependencies
+          name: remove dependency
           projects:
-            - name: 'functest-kubernetes-_-golang-1.15-alpine3.13-rmi'
+            - name: 'functest-kubernetes-{repo}-{tag}-dep-rmi'
               <<: *functest-kubernetes-jobs
       - multijob:
-          name: pull dependencies
+          name: pull dependency
           projects:
-            - name: 'functest-kubernetes-_-golang-1.15-alpine3.13-pull'
+            - name: 'functest-kubernetes-{repo}-{tag}-dep-pull'
               <<: *functest-kubernetes-jobs
       - multijob:
-          name: build opnfv/functest-kubernetes-core
+          name: opnfv/xtesting
           projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-core-{tag}-gate'
+            - name: 'functest-kubernetes-opnfv-xtesting-{tag}-gate'
               <<: *functest-kubernetes-jobs
       - multijob:
-          name: build opnfv/functest-kubernetes-healthcheck
+          name: opnfv/xtesting-mts
           projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-gate'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-gate'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-gate'
-              <<: *functest-kubernetes-jobs
-      - multijob:
-          name: build containers
-          projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-gate'
-              <<: *functest-kubernetes-jobs
-      - multijob:
-          name: build opnfv/functest-kubernetes-benchmarking
-          projects:
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-gate'
+            - name: 'functest-kubernetes-opnfv-xtesting-mts-{tag}-gate'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-healthcheck:{tag}
@@ -874,21 +718,163 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-cnf_conformance-run'
               <<: *functest-kubernetes-jobs
 
+- builder:
+    name: functest-kubernetes-push-containers
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          docker push $image
+
+- trigger:
+    name: functest-kubernetes-commit
+    triggers:
+      - pollscm:
+          cron: "*/30 * * * *"
+
+- job-template:
+    name: 'functest-kubernetes-{repo}-{container}-{tag}-build'
+    parameters:
+      - functest-kubernetes-slave:
+          slave: '{slave}'
+    scm:
+      - functest-kubernetes-scm:
+          ref: '{branch}'
+    builders:
+      - functest-kubernetes-build-containers:
+          <<: *functest-kubernetes-build-containers
+          ref: '{branch}'
+      - functest-kubernetes-push-containers:
+          <<: *functest-kubernetes-build-containers
+          ref: '{branch}'
+
+- project:
+    name: functest-kubernetes-opnfv-xtesting-{tag}-build
+    <<: *functest-kubernetes-params
+    container: xtesting
+    ref_arg: BRANCH
+    path: docker/core
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-build'
+
+- project:
+    name: functest-kubernetes-opnfv-xtesting-mts-{tag}-build
+    <<: *functest-kubernetes-params
+    container: xtesting-mts
+    ref_arg: BRANCH
+    path: docker/mts
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-build'
+
+
+- job-template:
+    name: 'functest-kubernetes-{tag}-docker'
+    project-type: multijob
+    triggers:
+      - functest-kubernetes-commit
+    scm:
+      - functest-kubernetes-scm:
+          ref: '{branch}'
+    parameters:
+      - functest-kubernetes-slave:
+          slave: '{slave}'
+      - functest-kubernetes-DEPLOY_SCENARIO:
+          DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-DEBUG:
+          DEBUG: 'true'
+    builders:
+      - multijob:
+          name: remove dependency
+          projects:
+            - name: 'functest-kubernetes-{repo}-{tag}-dep-rmi'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: pull dependency
+          projects:
+            - name: 'functest-kubernetes-{repo}-{tag}-dep-pull'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: opnfv/xtesting
+          projects:
+            - name: 'functest-kubernetes-opnfv-xtesting-{tag}-build'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: opnfv/xtesting-mts
+          projects:
+            - name: 'functest-kubernetes-opnfv-xtesting-mts-{tag}-build'
+              <<: *functest-kubernetes-jobs
+
+- builder:
+    name: functest-kubernetes-trivy
+    builders:
+      - shell: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b .
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          ./trivy --exit-code 1 $image
+
+- job-template:
+    name: 'functest-kubernetes-{repo}-{container}-{tag}-trivy'
+    parameters:
+      - functest-kubernetes-slave:
+          slave: '{slave}'
+    builders:
+      - functest-kubernetes-trivy:
+          <<: *functest-kubernetes-containers
+
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-trivy'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-healthcheck'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-trivy'
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-trivy'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-smoke'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-trivy'
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-security-trivy'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-security'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-trivy'
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-trivy'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-benchmarking'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-trivy'
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-trivy'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-cnf'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-trivy'
+
 - project:
     name: 'functest-kubernetes'
     <<: *functest-kubernetes-params
     jobs:
       - 'functest-kubernetes-{tag}-daily'
+      - 'functest-kubernetes-{tag}-review'
+      - 'functest-kubernetes-{tag}-docker'
 
-- project:
-    name: 'functest-kubernetes-gate'
-    <<: *functest-kubernetes-params
-    jobs:
-      - 'functest-kubernetes-{tag}-check'
-      - 'functest-kubernetes-{tag}-gate'
 
 - view:
-    name: functest-kubernetes
+    name: functest-kubernetes-daily
     view-type: list
     columns:
       - status
@@ -897,10 +883,10 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^functest-kubernetes-(amd64-)*[a-z]+-daily$
+    regex: ^functest-kubernetes-[a-z-]+-daily$
 
 - view:
-    name: functest-kubernetes-gate
+    name: functest-kubernetes-review
     view-type: list
     columns:
       - status
@@ -909,4 +895,40 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^functest-kubernetes-(amd64-)*[a-z]+-gate$
+    regex: ^functest-kubernetes-[a-z-]+-review$
+
+- view:
+    name: functest-kubernetes-tox
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^functest-kubernetes-[a-z-]+-tox$
+
+- view:
+    name: functest-kubernetes-docker
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^functest-kubernetes-[a-z-]+-docker$
+
+- view:
+    name: functest-kubernetes-trivy
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^functest-kubernetes-[a-z-]+-trivy$
