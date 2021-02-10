@@ -295,6 +295,22 @@
       - sig_storage
     privileged: 'false'
     network: bridge
+    exclude:
+      - {'tag': 'leguer', 'test': 'sig_network'}
+      - {'tag': 'leguer', 'test': 'sig_network_features'}
+      - {'tag': 'leguer', 'test': 'sig_storage'}
+      - {'tag': 'kali', 'test': 'sig_network'}
+      - {'tag': 'kali', 'test': 'sig_network_features'}
+      - {'tag': 'kali', 'test': 'sig_storage'}
+      - {'tag': 'jerma', 'test': 'sig_network'}
+      - {'tag': 'jerma', 'test': 'sig_network_features'}
+      - {'tag': 'jerma', 'test': 'sig_storage'}
+      - {'tag': 'iruya', 'test': 'sig_network'}
+      - {'tag': 'iruya', 'test': 'sig_network_features'}
+      - {'tag': 'iruya', 'test': 'sig_storage'}
+      - {'tag': 'hunter', 'test': 'sig_network'}
+      - {'tag': 'hunter', 'test': 'sig_network_features'}
+      - {'tag': 'hunter', 'test': 'sig_storage'}
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
 
@@ -571,20 +587,56 @@
       - 'functest-kubernetes-{tag}-tox'
 
 - project:
-    name: functest-kubernetes-opnfv-xtesting-{tag}-gate
+    name: functest-kubernetes-opnfv-functest-kubernetes-core-{tag}-gate
     <<: *functest-kubernetes-params
-    container: xtesting
+    container: functest-kubernetes-core
     ref_arg: BRANCH
     path: docker/core
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
 
 - project:
-    name: functest-kubernetes-opnfv-xtesting-mts-{tag}-gate
+    name: functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-gate
     <<: *functest-kubernetes-params
-    container: xtesting-mts
+    container: functest-kubernetes-healthcheck
+    ref_arg:
+    path: docker/healthcheck
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
+
+- project:
+    name: functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-gate
+    <<: *functest-kubernetes-params
+    container: functest-kubernetes-cnf
     ref_arg: BRANCH
-    path: docker/mts
+    path: docker/cnf
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
+
+- project:
+    name: functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-gate
+    <<: *functest-kubernetes-params
+    container: functest-kubernetes-security
+    ref_arg: BRANCH
+    path: docker/security
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
+
+- project:
+    name: functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-gate
+    <<: *functest-kubernetes-params
+    container: functest-kubernetes-smoke
+    ref_arg:
+    path: docker/smoke
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
+
+- project:
+    name: functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-gate
+    <<: *functest-kubernetes-params
+    container: functest-kubernetes-benchmarking
+    ref_arg:
+    path: docker/benchmarking
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
 
@@ -665,14 +717,28 @@
             - name: 'functest-kubernetes-{repo}-{tag}-dep-pull'
               <<: *functest-kubernetes-jobs
       - multijob:
-          name: opnfv/xtesting
+          name: build opnfv/functest-kubernetes-core
           projects:
-            - name: 'functest-kubernetes-opnfv-xtesting-{tag}-gate'
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-core-{tag}-gate'
               <<: *functest-kubernetes-jobs
       - multijob:
-          name: opnfv/xtesting-mts
+          name: build containers
           projects:
-            - name: 'functest-kubernetes-opnfv-xtesting-mts-{tag}-gate'
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-gate'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-gate'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-gate'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: build opnfv/functest-kubernetes-smoke
+          projects:
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-gate'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: build opnfv/functest-kubernetes-benchmarking
+          projects:
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-gate'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-healthcheck:{tag}
@@ -755,20 +821,56 @@
           ref: '{branch}'
 
 - project:
-    name: functest-kubernetes-opnfv-xtesting-{tag}-build
+    name: functest-kubernetes-opnfv-functest-kubernetes-core-{tag}-build
     <<: *functest-kubernetes-params
-    container: xtesting
+    container: functest-kubernetes-core
     ref_arg: BRANCH
     path: docker/core
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-build'
 
 - project:
-    name: functest-kubernetes-opnfv-xtesting-mts-{tag}-build
+    name: functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-build
     <<: *functest-kubernetes-params
-    container: xtesting-mts
+    container: functest-kubernetes-healthcheck
+    ref_arg:
+    path: docker/healthcheck
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-build'
+
+- project:
+    name: functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-build
+    <<: *functest-kubernetes-params
+    container: functest-kubernetes-cnf
     ref_arg: BRANCH
-    path: docker/mts
+    path: docker/cnf
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-build'
+
+- project:
+    name: functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-build
+    <<: *functest-kubernetes-params
+    container: functest-kubernetes-security
+    ref_arg: BRANCH
+    path: docker/security
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-build'
+
+- project:
+    name: functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-build
+    <<: *functest-kubernetes-params
+    container: functest-kubernetes-smoke
+    ref_arg:
+    path: docker/smoke
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-build'
+
+- project:
+    name: functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-build
+    <<: *functest-kubernetes-params
+    container: functest-kubernetes-benchmarking
+    ref_arg:
+    path: docker/benchmarking
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-build'
 
@@ -800,14 +902,28 @@
             - name: 'functest-kubernetes-{repo}-{tag}-dep-pull'
               <<: *functest-kubernetes-jobs
       - multijob:
-          name: opnfv/xtesting
+          name: build opnfv/functest-kubernetes-core
           projects:
-            - name: 'functest-kubernetes-opnfv-xtesting-{tag}-build'
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-core-{tag}-build'
               <<: *functest-kubernetes-jobs
       - multijob:
-          name: opnfv/xtesting-mts
+          name: build containers
           projects:
-            - name: 'functest-kubernetes-opnfv-xtesting-mts-{tag}-build'
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-build'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-build'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-build'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: build opnfv/functest-kubernetes-smoke
+          projects:
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-build'
+              <<: *functest-kubernetes-jobs
+      - multijob:
+          name: build opnfv/functest-kubernetes-benchmarking
+          projects:
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-build'
               <<: *functest-kubernetes-jobs
 
 - builder:
