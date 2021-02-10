@@ -14,7 +14,7 @@
           dependency: 3.13
       - leguer:
           branch: stable/leguer
-          slave: lf-
+          slave: lf-build2
           dependency: 3.12
       - kali:
           branch: stable/kali
@@ -562,6 +562,7 @@
     builders:
       - shell: |
           set +x
+          sudo cat ~/.docker/config.json
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
