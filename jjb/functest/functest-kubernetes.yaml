@@ -114,7 +114,7 @@
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEPLOY_SCENARIO=$DEPLOY_SCENARIO \
             -e DEBUG=$DEBUG \
-            -v /home/opnfv/functest-kubernetes/config:/root/.kube/config \
+            -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
             $image run_tests -t {test} -p -r
 
 - builder:
@@ -375,7 +375,7 @@
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEPLOY_SCENARIO=$DEPLOY_SCENARIO \
             -e DEBUG=$DEBUG \
-            -v /home/opnfv/functest-kubernetes/config:/root/.kube/config \
+            -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
             $image zip_campaign
 
 - job-template:
