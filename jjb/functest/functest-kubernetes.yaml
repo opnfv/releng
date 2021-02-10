@@ -564,7 +564,14 @@
 - builder:
     name: functest-kubernetes-tox
     builders:
-      - shell: tox
+      - shell: |
+          set +x
+          add-apt-repository -y ppa:deadsnakes/ppa
+          apt-get update
+          apt-get install python3.8 python3.8-dev python3.8-distutils enchant \
+            python3.7 python3.7-dev python3.6 python3.6-dev \
+            python2 tox
+          tox
 
 - job-template:
     name: 'functest-kubernetes-{tag}-tox'
