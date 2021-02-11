@@ -294,7 +294,7 @@
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-{tag}-(daily|review)$'
+            - '^xtesting-{tag}-(daily|docker|review)$'
     builders:
       - multijob:
           name: remove former images
@@ -500,7 +500,7 @@
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-{tag}-(daily|review)$'
+            - '^xtesting-{tag}-(daily|docker|review)$'
     builders:
       - multijob:
           name: remove former images
@@ -616,6 +616,11 @@
     parameters:
       - xtesting-slave:
           slave: '{slave}'
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^xtesting-{tag}-(daily|docker|review)$'
     builders:
       - multijob:
           name: remove dependency

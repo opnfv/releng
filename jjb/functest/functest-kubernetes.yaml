@@ -405,7 +405,7 @@
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-{tag}-(daily|review)$'
+            - '^functest-kubernetes-{tag}-(daily|docker|review)$'
     builders:
       - multijob:
           name: remove former images
@@ -684,7 +684,7 @@
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-{tag}-(daily|review)$'
+            - '^functest-kubernetes-{tag}-(daily|docker|review)$'
     builders:
       - multijob:
           name: remove former images
@@ -879,8 +879,11 @@
     parameters:
       - functest-kubernetes-slave:
           slave: '{slave}'
-      - functest-kubernetes-DEPLOY_SCENARIO:
-          DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^functest-kubernetes-{tag}-(daily|docker|review)$'
     builders:
       - multijob:
           name: remove dependency
