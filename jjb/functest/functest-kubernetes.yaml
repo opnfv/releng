@@ -52,12 +52,6 @@
       - string:
           name: DEPLOY_SCENARIO
           default: k8-nosdn-nofeature-noha
-- parameter:
-    name: functest-kubernetes-DEBUG
-    parameters:
-      - string:
-          name: DEBUG
-          default: 'true'
 
 - functest-kubernetes-containers: &functest-kubernetes-containers
     name: 'functest-kubernetes-containers'
@@ -113,7 +107,6 @@
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEPLOY_SCENARIO=$DEPLOY_SCENARIO \
-            -e DEBUG=$DEBUG \
             -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
             $image run_tests -t {test} -p -r
 
@@ -265,8 +258,6 @@
           build_tag: ''
       - functest-kubernetes-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
-      - functest-kubernetes-DEBUG:
-          DEBUG: 'true'
     builders:
       - functest-kubernetes-run-containers:
           <<: *functest-kubernetes-run-containers
@@ -374,7 +365,6 @@
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEPLOY_SCENARIO=$DEPLOY_SCENARIO \
-            -e DEBUG=$DEBUG \
             -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
             $image zip_campaign
 
@@ -387,8 +377,6 @@
           build_tag: ''
       - functest-kubernetes-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
-      - functest-kubernetes-DEBUG:
-          DEBUG: 'true'
     builders:
       - functest-kubernetes-zip:
           <<: *functest-kubernetes-containers
@@ -404,7 +392,7 @@
     name: 'functest-kubernetes-{tag}-daily'
     project-type: multijob
     triggers:
-      - timed: '@daily'
+      - timed: '@weekly'
     parameters:
       - functest-kubernetes-slave:
           slave: '{slave}'
@@ -412,8 +400,6 @@
           build_tag: ''
       - functest-kubernetes-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
-      - functest-kubernetes-DEBUG:
-          DEBUG: 'true'
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -693,8 +679,6 @@
           build_tag: ''
       - functest-kubernetes-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
-      - functest-kubernetes-DEBUG:
-          DEBUG: 'true'
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -897,8 +881,6 @@
           slave: '{slave}'
       - functest-kubernetes-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
-      - functest-kubernetes-DEBUG:
-          DEBUG: 'true'
     builders:
       - multijob:
           name: remove dependency
