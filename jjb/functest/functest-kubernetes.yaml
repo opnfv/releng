@@ -921,6 +921,7 @@
     name: functest-kubernetes-trivy
     builders:
       - shell: |
+          apt-get update && apt-get install curl
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b .
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -933,6 +934,8 @@
 
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-trivy'
+    triggers:
+      - timed: '@weekly'
     parameters:
       - functest-kubernetes-slave:
           slave: '{slave}'
@@ -981,7 +984,7 @@
 
 
 - view:
-    name: functest-kubernetes-daily
+    name: functest-kubernetes
     view-type: list
     columns:
       - status

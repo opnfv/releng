@@ -642,6 +642,7 @@
     name: xtesting-trivy
     builders:
       - shell: |
+          apt-get update && apt-get install curl
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b .
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -654,6 +655,8 @@
 
 - job-template:
     name: 'xtesting-{repo}-{container}-{tag}-trivy'
+    triggers:
+      - timed: '@daily'
     parameters:
       - xtesting-slave:
           slave: '{slave}'
@@ -684,7 +687,7 @@
 
 
 - view:
-    name: xtesting-daily
+    name: xtesting
     view-type: list
     columns:
       - status
