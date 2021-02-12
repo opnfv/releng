@@ -95,19 +95,6 @@
           name: build_tag
 
 - parameter:
-    name: functest-pi-branch
-    parameters:
-      - string:
-          name: branch
-          default: '{branch}'
-
-- parameter:
-    name: functest-pi-DEBUG
-    parameters:
-      - string:
-          name: DEBUG
-          default: 'true'
-- parameter:
     name: functest-pi-EXTERNAL_NETWORK
     parameters:
       - string:
@@ -137,7 +124,6 @@
     name: 'functest-pi-run-containers'
     <<: *functest-pi-containers
     test: '{test}'
-    dashboard_url: '{dashboard_url}'
     privileged: '{privileged}'
     network: '{network}'
 
@@ -160,7 +146,7 @@
     builders:
       - shell: |
           set +x
-          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
+          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -168,33 +154,24 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          volumes=""
-          case "{tag}" in
-            arm-hunter)
-              volumes="-v /usr/bin/qemu-arm-static:/usr/bin/qemu-arm-static" ;;
-            arm64-hunter)
-              volumes="-v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static" ;;
-          esac
           sudo docker run --rm \
             --privileged={privileged} \
             --network={network} \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -v /home/opnfv/functest/.boto:/root/.boto \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e NODE_NAME=$slave \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
-            -e DEBUG=$DEBUG \
             -e EXTERNAL_NETWORK=$EXTERNAL_NETWORK \
-            -e DASHBOARD_URL={dashboard_url} \
             -e VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME \
             -e IMAGE_PROPERTIES=$IMAGE_PROPERTIES \
-            -v /home/opnfv/functest/.boto:/root/.boto \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
-            $volumes $image run_tests -t {test} -r -p
+            $image run_tests -t {test} -p -r
 
 - builder:
     name: functest-pi-remove-images
@@ -209,6 +186,7 @@
             image={repo}:{port}/{container}:{tag}
           fi
           sudo docker rmi $image || true
+
 
 - job-template:
     name: 'functest-pi-{repo}-{container}-{tag}-pull'
@@ -319,8 +297,6 @@
           slave: '{slave}'
       - functest-pi-build_tag:
           build_tag: ''
-      - functest-pi-DEBUG:
-          DEBUG: 'true'
       - functest-pi-EXTERNAL_NETWORK:
           EXTERNAL_NETWORK: public
       - functest-pi-VOLUME_DEVICE_NAME:
@@ -381,219 +357,114 @@
       - tempest_barbican
       - tempest_octavia
       - tempest_cyborg
-    exclude:
-      - tag: latest
-        test: refstack_defcore
-      - tag: latest
-        test: networking-bgpvpn
-      - tag: latest
-        test: networking-sfc
-      - tag: latest
-        test: patrole
-      - tag: leguer
-        test: refstack_defcore
-      - tag: leguer
-        test: networking-bgpvpn
-      - tag: leguer
-        test: networking-sfc
-      - tag: leguer
-        test: patrole
-      - tag: kali
-        test: refstack_defcore
-      - tag: kali
-        test: networking-bgpvpn
-      - tag: kali
-        test: networking-sfc
-      - tag: kali
-        test: patrole_admin
-      - tag: kali
-        test: patrole_member
-      - tag: kali
-        test: patrole_reader
-      - tag: jerma
-        test: refstack_defcore
-      - tag: jerma
-        test: networking-bgpvpn
-      - tag: jerma
-        test: networking-sfc
-      - tag: jerma
-        test: patrole_admin
-      - tag: jerma
-        test: patrole_member
-      - tag: jerma
-        test: patrole_reader
-      - tag: jerma
-        test: tempest_cyborg
-      - tag: iruya
-        test: refstack_defcore
-      - tag: iruya
-        test: patrole_admin
-      - tag: iruya
-        test: patrole_member
-      - tag: iruya
-        test: patrole_reader
-      - tag: iruya
-        test: tempest_cyborg
-      - tag: hunter
-        test: refstack_compute
-      - tag: hunter
-        test: refstack_object
-      - tag: hunter
-        test: refstack_platform
-      - tag: hunter
-        test: tempest_octavia
-      - tag: hunter
-        test: tempest_telemetry
-      - tag: hunter
-        test: patrole_admin
-      - tag: hunter
-        test: patrole_member
-      - tag: hunter
-        test: patrole_reader
-      - tag: hunter
-        test: tempest_cyborg
-      - tag: arm-latest
-        test: refstack_defcore
-      - tag: arm-latest
-        test: networking-bgpvpn
-      - tag: arm-latest
-        test: networking-sfc
-      - tag: arm-latest
-        test: patrole
-      - tag: arm-leguer
-        test: refstack_defcore
-      - tag: arm-leguer
-        test: networking-bgpvpn
-      - tag: arm-leguer
-        test: networking-sfc
-      - tag: arm-leguer
-        test: patrole
-      - tag: arm-kali
-        test: refstack_defcore
-      - tag: arm-kali
-        test: networking-bgpvpn
-      - tag: arm-kali
-        test: networking-sfc
-      - tag: arm-kali
-        test: patrole_admin
-      - tag: arm-kali
-        test: patrole_member
-      - tag: arm-kali
-        test: patrole_reader
-      - tag: arm-jerma
-        test: refstack_defcore
-      - tag: arm-jerma
-        test: networking-bgpvpn
-      - tag: arm-jerma
-        test: networking-sfc
-      - tag: arm-jerma
-        test: patrole_admin
-      - tag: arm-jerma
-        test: patrole_member
-      - tag: arm-jerma
-        test: patrole_reader
-      - tag: arm-jerma
-        test: tempest_cyborg
-      - tag: arm-iruya
-        test: refstack_defcore
-      - tag: arm-iruya
-        test: patrole_admin
-      - tag: arm-iruya
-        test: patrole_member
-      - tag: arm-iruya
-        test: patrole_reader
-      - tag: arm-iruya
-        test: tempest_cyborg
-      - tag: arm-hunter
-        test: refstack_compute
-      - tag: arm-hunter
-        test: refstack_object
-      - tag: arm-hunter
-        test: refstack_platform
-      - tag: arm-hunter
-        test: tempest_octavia
-      - tag: arm-hunter
-        test: tempest_telemetry
-      - tag: arm-hunter
-        test: patrole_admin
-      - tag: arm-hunter
-        test: patrole_member
-      - tag: arm-hunter
-        test: patrole_reader
-      - tag: arm-hunter
-        test: tempest_cyborg
-      - tag: arm64-latest
-        test: refstack_defcore
-      - tag: arm64-latest
-        test: networking-bgpvpn
-      - tag: arm64-latest
-        test: networking-sfc
-      - tag: arm64-latest
-        test: patrole
-      - tag: arm64-leguer
-        test: refstack_defcore
-      - tag: arm64-leguer
-        test: networking-bgpvpn
-      - tag: arm64-leguer
-        test: networking-sfc
-      - tag: arm64-leguer
-        test: patrole
-      - tag: arm64-kali
-        test: refstack_defcore
-      - tag: arm64-kali
-        test: networking-bgpvpn
-      - tag: arm64-kali
-        test: networking-sfc
-      - tag: arm64-kali
-        test: patrole_admin
-      - tag: arm64-kali
-        test: patrole_member
-      - tag: arm64-kali
-        test: patrole_reader
-      - tag: arm64-jerma
-        test: refstack_defcore
-      - tag: arm64-jerma
-        test: networking-bgpvpn
-      - tag: arm64-jerma
-        test: networking-sfc
-      - tag: arm64-jerma
-        test: patrole_admin
-      - tag: arm64-jerma
-        test: patrole_member
-      - tag: arm64-jerma
-        test: patrole_reader
-      - tag: arm64-jerma
-        test: tempest_cyborg
-      - tag: arm64-iruya
-        test: refstack_defcore
-      - tag: arm64-iruya
-        test: patrole_admin
-      - tag: arm64-iruya
-        test: patrole_member
-      - tag: arm64-iruya
-        test: patrole_reader
-      - tag: arm64-iruya
-        test: tempest_cyborg
-      - tag: arm64-hunter
-        test: refstack_compute
-      - tag: arm64-hunter
-        test: refstack_object
-      - tag: arm64-hunter
-        test: refstack_platform
-      - tag: arm64-hunter
-        test: tempest_octavia
-      - tag: arm64-hunter
-        test: tempest_telemetry
-      - tag: arm64-hunter
-        test: patrole_admin
-      - tag: arm64-hunter
-        test: patrole_member
-      - tag: arm64-hunter
-        test: patrole_reader
-      - tag: arm64-hunter
-        test: tempest_cyborg
     privileged: 'false'
     network: bridge
+    exclude:
+      - {'tag': 'latest', 'test': 'refstack_defcore'}
+      - {'tag': 'latest', 'test': 'networking-bgpvpn'}
+      - {'tag': 'latest', 'test': 'networking-sfc'}
+      - {'tag': 'latest', 'test': 'patrole'}
+      - {'tag': 'leguer', 'test': 'refstack_defcore'}
+      - {'tag': 'leguer', 'test': 'networking-bgpvpn'}
+      - {'tag': 'leguer', 'test': 'networking-sfc'}
+      - {'tag': 'leguer', 'test': 'patrole'}
+      - {'tag': 'kali', 'test': 'refstack_defcore'}
+      - {'tag': 'kali', 'test': 'networking-bgpvpn'}
+      - {'tag': 'kali', 'test': 'networking-sfc'}
+      - {'tag': 'kali', 'test': 'patrole_admin'}
+      - {'tag': 'kali', 'test': 'patrole_member'}
+      - {'tag': 'kali', 'test': 'patrole_reader'}
+      - {'tag': 'jerma', 'test': 'refstack_defcore'}
+      - {'tag': 'jerma', 'test': 'networking-bgpvpn'}
+      - {'tag': 'jerma', 'test': 'networking-sfc'}
+      - {'tag': 'jerma', 'test': 'patrole_admin'}
+      - {'tag': 'jerma', 'test': 'patrole_member'}
+      - {'tag': 'jerma', 'test': 'patrole_reader'}
+      - {'tag': 'jerma', 'test': 'tempest_cyborg'}
+      - {'tag': 'iruya', 'test': 'refstack_defcore'}
+      - {'tag': 'iruya', 'test': 'patrole_admin'}
+      - {'tag': 'iruya', 'test': 'patrole_member'}
+      - {'tag': 'iruya', 'test': 'patrole_reader'}
+      - {'tag': 'iruya', 'test': 'tempest_cyborg'}
+      - {'tag': 'hunter', 'test': 'refstack_compute'}
+      - {'tag': 'hunter', 'test': 'refstack_object'}
+      - {'tag': 'hunter', 'test': 'refstack_platform'}
+      - {'tag': 'hunter', 'test': 'tempest_octavia'}
+      - {'tag': 'hunter', 'test': 'tempest_telemetry'}
+      - {'tag': 'hunter', 'test': 'patrole_admin'}
+      - {'tag': 'hunter', 'test': 'patrole_member'}
+      - {'tag': 'hunter', 'test': 'patrole_reader'}
+      - {'tag': 'hunter', 'test': 'tempest_cyborg'}
+      - {'tag': 'arm-latest', 'test': 'refstack_defcore'}
+      - {'tag': 'arm-latest', 'test': 'networking-bgpvpn'}
+      - {'tag': 'arm-latest', 'test': 'networking-sfc'}
+      - {'tag': 'arm-latest', 'test': 'patrole'}
+      - {'tag': 'arm-leguer', 'test': 'refstack_defcore'}
+      - {'tag': 'arm-leguer', 'test': 'networking-bgpvpn'}
+      - {'tag': 'arm-leguer', 'test': 'networking-sfc'}
+      - {'tag': 'arm-leguer', 'test': 'patrole'}
+      - {'tag': 'arm-kali', 'test': 'refstack_defcore'}
+      - {'tag': 'arm-kali', 'test': 'networking-bgpvpn'}
+      - {'tag': 'arm-kali', 'test': 'networking-sfc'}
+      - {'tag': 'arm-kali', 'test': 'patrole_admin'}
+      - {'tag': 'arm-kali', 'test': 'patrole_member'}
+      - {'tag': 'arm-kali', 'test': 'patrole_reader'}
+      - {'tag': 'arm-jerma', 'test': 'refstack_defcore'}
+      - {'tag': 'arm-jerma', 'test': 'networking-bgpvpn'}
+      - {'tag': 'arm-jerma', 'test': 'networking-sfc'}
+      - {'tag': 'arm-jerma', 'test': 'patrole_admin'}
+      - {'tag': 'arm-jerma', 'test': 'patrole_member'}
+      - {'tag': 'arm-jerma', 'test': 'patrole_reader'}
+      - {'tag': 'arm-jerma', 'test': 'tempest_cyborg'}
+      - {'tag': 'arm-iruya', 'test': 'refstack_defcore'}
+      - {'tag': 'arm-iruya', 'test': 'patrole_admin'}
+      - {'tag': 'arm-iruya', 'test': 'patrole_member'}
+      - {'tag': 'arm-iruya', 'test': 'patrole_reader'}
+      - {'tag': 'arm-iruya', 'test': 'tempest_cyborg'}
+      - {'tag': 'arm-hunter', 'test': 'refstack_compute'}
+      - {'tag': 'arm-hunter', 'test': 'refstack_object'}
+      - {'tag': 'arm-hunter', 'test': 'refstack_platform'}
+      - {'tag': 'arm-hunter', 'test': 'tempest_octavia'}
+      - {'tag': 'arm-hunter', 'test': 'tempest_telemetry'}
+      - {'tag': 'arm-hunter', 'test': 'patrole_admin'}
+      - {'tag': 'arm-hunter', 'test': 'patrole_member'}
+      - {'tag': 'arm-hunter', 'test': 'patrole_reader'}
+      - {'tag': 'arm-hunter', 'test': 'tempest_cyborg'}
+      - {'tag': 'arm64-latest', 'test': 'refstack_defcore'}
+      - {'tag': 'arm64-latest', 'test': 'networking-bgpvpn'}
+      - {'tag': 'arm64-latest', 'test': 'networking-sfc'}
+      - {'tag': 'arm64-latest', 'test': 'patrole'}
+      - {'tag': 'arm64-leguer', 'test': 'refstack_defcore'}
+      - {'tag': 'arm64-leguer', 'test': 'networking-bgpvpn'}
+      - {'tag': 'arm64-leguer', 'test': 'networking-sfc'}
+      - {'tag': 'arm64-leguer', 'test': 'patrole'}
+      - {'tag': 'arm64-kali', 'test': 'refstack_defcore'}
+      - {'tag': 'arm64-kali', 'test': 'networking-bgpvpn'}
+      - {'tag': 'arm64-kali', 'test': 'networking-sfc'}
+      - {'tag': 'arm64-kali', 'test': 'patrole_admin'}
+      - {'tag': 'arm64-kali', 'test': 'patrole_member'}
+      - {'tag': 'arm64-kali', 'test': 'patrole_reader'}
+      - {'tag': 'arm64-jerma', 'test': 'refstack_defcore'}
+      - {'tag': 'arm64-jerma', 'test': 'networking-bgpvpn'}
+      - {'tag': 'arm64-jerma', 'test': 'networking-sfc'}
+      - {'tag': 'arm64-jerma', 'test': 'patrole_admin'}
+      - {'tag': 'arm64-jerma', 'test': 'patrole_member'}
+      - {'tag': 'arm64-jerma', 'test': 'patrole_reader'}
+      - {'tag': 'arm64-jerma', 'test': 'tempest_cyborg'}
+      - {'tag': 'arm64-iruya', 'test': 'refstack_defcore'}
+      - {'tag': 'arm64-iruya', 'test': 'patrole_admin'}
+      - {'tag': 'arm64-iruya', 'test': 'patrole_member'}
+      - {'tag': 'arm64-iruya', 'test': 'patrole_reader'}
+      - {'tag': 'arm64-iruya', 'test': 'tempest_cyborg'}
+      - {'tag': 'arm64-hunter', 'test': 'refstack_compute'}
+      - {'tag': 'arm64-hunter', 'test': 'refstack_object'}
+      - {'tag': 'arm64-hunter', 'test': 'refstack_platform'}
+      - {'tag': 'arm64-hunter', 'test': 'tempest_octavia'}
+      - {'tag': 'arm64-hunter', 'test': 'tempest_telemetry'}
+      - {'tag': 'arm64-hunter', 'test': 'patrole_admin'}
+      - {'tag': 'arm64-hunter', 'test': 'patrole_member'}
+      - {'tag': 'arm64-hunter', 'test': 'patrole_reader'}
+      - {'tag': 'arm64-hunter', 'test': 'tempest_cyborg'}
     jobs:
       - 'functest-pi-{repo}-{container}-{tag}-{test}-run'
 
@@ -662,7 +533,6 @@
     builders:
       - shell: |
           set +x
-          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -670,29 +540,21 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          volumes=""
-          case "{tag}" in
-            arm-hunter)
-              volumes="-v /usr/bin/qemu-arm-static:/usr/bin/qemu-arm-static" ;;
-            arm64-hunter)
-              volumes="-v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static" ;;
-          esac
           sudo docker run --rm \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest \
+            -v /home/opnfv/functest/.boto:/root/.boto \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
-            -e DEBUG=$DEBUG \
             -e EXTERNAL_NETWORK=$EXTERNAL_NETWORK \
             -e VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME \
             -e IMAGE_PROPERTIES=$IMAGE_PROPERTIES \
-            -v /home/opnfv/functest/.boto:/root/.boto \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
-            $volumes $image zip_campaign
+            $image zip_campaign
 
 - job-template:
     name: 'functest-pi-{tag}-zip'
@@ -701,8 +563,6 @@
           slave: '{slave}'
       - functest-pi-build_tag:
           build_tag: ''
-      - functest-pi-DEBUG:
-          DEBUG: 'true'
       - functest-pi-EXTERNAL_NETWORK:
           EXTERNAL_NETWORK: public
       - functest-pi-VOLUME_DEVICE_NAME:
@@ -730,8 +590,6 @@
           slave: '{slave}'
       - functest-pi-build_tag:
           build_tag: ''
-      - functest-pi-DEBUG:
-          DEBUG: 'true'
       - functest-pi-EXTERNAL_NETWORK:
           EXTERNAL_NETWORK: public
       - functest-pi-VOLUME_DEVICE_NAME:
@@ -743,7 +601,7 @@
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest(-pi)?(-ovn)?-(arm.*-|amd64-)*[a-z]+-(daily|gate|check)$'
+            - '^functest-pi-{tag}-(daily|docker|review)$'
     builders:
       - multijob:
           name: remove former images
@@ -923,4 +781,4 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^functest-pi(-ovn)?-(arm.*-|amd64-)*[a-z]+-daily$
+    regex: (?!functest-kubernetes)^functest-pi-[a-z-0-9]+-daily$
