@@ -9,58 +9,58 @@
     port:
     tag:
       - latest:
-          branch: master
+          branch: 'master'
           slave: lf-virtual1
       - leguer:
-          branch: stable/leguer
+          branch: 'master'
           slave: lf-virtual1
       - kali:
-          branch: stable/kali
+          branch: 'master'
           slave: lf-virtual1
       - jerma:
-          branch: stable/jerma
+          branch: 'master'
           slave: lf-virtual1
       - iruya:
-          branch: stable/iruya
+          branch: 'master'
           slave: lf-virtual1
       - hunter:
-          branch: stable/hunter
+          branch: 'master'
           slave: lf-virtual1
       - arm-latest:
-          branch: master
+          branch: 'master'
           slave: lf-virtual1
       - arm-leguer:
-          branch: stable/leguer
+          branch: 'master'
           slave: lf-virtual1
       - arm-kali:
-          branch: stable/kali
+          branch: 'master'
           slave: lf-virtual1
       - arm-jerma:
-          branch: stable/jerma
+          branch: 'master'
           slave: lf-virtual1
       - arm-iruya:
-          branch: stable/iruya
+          branch: 'master'
           slave: lf-virtual1
       - arm-hunter:
-          branch: stable/hunter
+          branch: 'master'
           slave: lf-virtual1
       - arm64-latest:
-          branch: master
+          branch: 'master'
           slave: lf-virtual1
       - arm64-leguer:
-          branch: stable/leguer
+          branch: 'master'
           slave: lf-virtual1
       - arm64-kali:
-          branch: stable/kali
+          branch: 'master'
           slave: lf-virtual1
       - arm64-jerma:
-          branch: stable/jerma
+          branch: 'master'
           slave: lf-virtual1
       - arm64-iruya:
-          branch: stable/iruya
+          branch: 'master'
           slave: lf-virtual1
       - arm64-hunter:
-          branch: stable/hunter
+          branch: 'master'
           slave: lf-virtual1
 
 - parameter:
@@ -76,19 +76,6 @@
       - random-string:
           name: build_tag
 
-- parameter:
-    name: xtesting-pi-branch
-    parameters:
-      - string:
-          name: branch
-          default: '{branch}'
-
-- parameter:
-    name: xtesting-pi-DEBUG
-    parameters:
-      - string:
-          name: DEBUG
-          default: 'true'
 
 - xtesting-pi-containers: &xtesting-pi-containers
     name: 'xtesting-pi-containers'
@@ -123,7 +110,7 @@
     builders:
       - shell: |
           set +x
-          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
+          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -137,13 +124,12 @@
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
+            -v /home/opnfv/xtesting/.boto:/root/.boto \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e NODE_NAME=$slave \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
-            -e DEBUG=$DEBUG \
-            -v /home/opnfv/xtesting/.boto:/root/.boto \
             $image run_tests -t {test} -p -r
 
 - builder:
@@ -181,21 +167,6 @@
     name: 'xtesting-pi-ollivier-xtesting-mts-pull'
     <<: *xtesting-pi-params
     container: 'xtesting-mts'
-    exclude:
-      - tag: hunter
-      - tag: iruya
-      - tag: jerma
-      - tag: kali
-      - tag: arm-hunter
-      - tag: arm-iruya
-      - tag: arm-jerma
-      - tag: arm-kali
-      - tag: arm-leguer
-      - tag: arm-latest
-      - tag: arm64-hunter
-      - tag: arm64-iruya
-      - tag: arm64-jerma
-      - tag: arm64-kali
     jobs:
       - 'xtesting-pi-{repo}-{container}-{tag}-pull'
 
@@ -219,21 +190,6 @@
     name: 'xtesting-pi-ollivier-xtesting-mts-rmi'
     <<: *xtesting-pi-params
     container: 'xtesting-mts'
-    exclude:
-      - tag: hunter
-      - tag: iruya
-      - tag: jerma
-      - tag: kali
-      - tag: arm-hunter
-      - tag: arm-iruya
-      - tag: arm-jerma
-      - tag: arm-kali
-      - tag: arm-leguer
-      - tag: arm-latest
-      - tag: arm64-hunter
-      - tag: arm64-iruya
-      - tag: arm64-jerma
-      - tag: arm64-kali
     jobs:
       - 'xtesting-pi-{repo}-{container}-{tag}-rmi'
 
@@ -244,8 +200,6 @@
           slave: '{slave}'
       - xtesting-pi-build_tag:
           build_tag: ''
-      - xtesting-pi-DEBUG:
-          DEBUG: 'true'
     builders:
       - xtesting-pi-run-containers:
           <<: *xtesting-pi-run-containers
@@ -261,19 +215,6 @@
       - fourth
       - fifth
       - sixth
-    exclude:
-      - tag: hunter
-        test: sixth
-      - tag: iruya
-        test: sixth
-      - tag: arm-hunter
-        test: sixth
-      - tag: arm-iruya
-        test: sixth
-      - tag: arm64-hunter
-        test: sixth
-      - tag: arm64-iruya
-        test: sixth
     privileged: 'false'
     network: bridge
     jobs:
@@ -285,35 +226,6 @@
     container: 'xtesting-mts'
     test:
       - seventh
-    exclude:
-      - tag: hunter
-        test: seventh
-      - tag: iruya
-        test: seventh
-      - tag: jerma
-        test: seventh
-      - tag: kali
-        test: seventh
-      - tag: arm-hunter
-        test: seventh
-      - tag: arm-iruya
-        test: seventh
-      - tag: arm-jerma
-        test: seventh
-      - tag: arm-kali
-        test: seventh
-      - tag: arm-leguer
-        test: seventh
-      - tag: arm-latest
-        test: seventh
-      - tag: arm64-hunter
-        test: seventh
-      - tag: arm64-iruya
-        test: seventh
-      - tag: arm64-jerma
-        test: seventh
-      - tag: arm64-kali
-        test: seventh
     privileged: 'false'
     network: bridge
     jobs:
@@ -325,7 +237,6 @@
     builders:
       - shell: |
           set +x
-          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/* || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -337,12 +248,11 @@
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting \
+            -v /home/opnfv/xtesting/.boto:/root/.boto \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
-            -e DEBUG=$DEBUG \
-            -v /home/opnfv/xtesting/.boto:/root/.boto \
             $image zip_campaign
 
 - job-template:
@@ -352,8 +262,6 @@
           slave: '{slave}'
       - xtesting-pi-build_tag:
           build_tag: ''
-      - xtesting-pi-DEBUG:
-          DEBUG: 'true'
     builders:
       - xtesting-pi-zip:
           <<: *xtesting-pi-containers
@@ -375,14 +283,12 @@
           slave: '{slave}'
       - xtesting-pi-build_tag:
           build_tag: ''
-      - xtesting-pi-DEBUG:
-          DEBUG: 'true'
     properties:
       - build-blocker:
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-pi-{tag}-(daily|check|gate)$'
+            - '^xtesting-pi-{tag}-(daily|docker|review)$'
     builders:
       - multijob:
           name: remove former images
@@ -425,11 +331,14 @@
               <<: *xtesting-pi-jobs
 
 
+
+
 - project:
     name: 'xtesting-pi'
     <<: *xtesting-pi-params
     jobs:
       - 'xtesting-pi-{tag}-daily'
+
 
 - view:
     name: xtesting-pi
@@ -441,4 +350,6 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^xtesting-pi-(arm.*-|amd64-)*[a-z]+-daily$
+    regex: ^xtesting-pi-[a-z]+-daily$
+
+
