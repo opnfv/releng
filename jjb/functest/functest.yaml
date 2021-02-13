@@ -689,6 +689,24 @@
             - name: 'functest-{tag}-zip'
               <<: *functest-jobs
 
+- project:
+    name: 'functest-daily'
+    <<: *functest-params
+    jobs:
+      - 'functest-{tag}-daily'
+
+- view:
+    name: functest
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^functest-[a-z0-9]+-daily$
+
 - functest-dep: &functest-dep
     name: 'functest-containers'
     repo: '{repo}'
@@ -1081,6 +1099,36 @@
             - name: 'functest-opnfv-functest-vnf-{tag}-juju_epc-run'
               <<: *functest-jobs
 
+- project:
+    name: 'functest-review'
+    <<: *functest-params
+    jobs:
+      - 'functest-{tag}-review'
+
+- view:
+    name: functest-review
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^functest-[a-z0-9]+-review$
+
+- view:
+    name: functest-tox
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^functest-[a-z0-9]+-tox$
+
 - builder:
     name: functest-push-containers
     builders:
@@ -1300,45 +1348,7 @@
     name: 'functest'
     <<: *functest-params
     jobs:
-      - 'functest-{tag}-daily'
-      - 'functest-{tag}-review'
       - 'functest-{tag}-docker'
-
-- view:
-    name: functest
-    view-type: list
-    columns:
-      - status
-      - weather
-      - job
-      - last-success
-      - last-failure
-      - last-duration
-    regex: ^functest-[a-z0-9]+-daily$
-
-- view:
-    name: functest-review
-    view-type: list
-    columns:
-      - status
-      - weather
-      - job
-      - last-success
-      - last-failure
-      - last-duration
-    regex: ^functest-[a-z0-9]+-review$
-
-- view:
-    name: functest-tox
-    view-type: list
-    columns:
-      - status
-      - weather
-      - job
-      - last-success
-      - last-failure
-      - last-duration
-    regex: ^functest-[a-z0-9]+-tox$
 
 - view:
     name: functest-docker
@@ -1362,4 +1372,4 @@
       - last-success
       - last-failure
       - last-duration
-    regex: (?!functest-kubernetes)^functest-[a-z-0-9]+-trivy$
+    regex: (?!functest-kubernetes)(?!functest-pi)^functest-[a-z-0-9]+-trivy$

@@ -336,6 +336,24 @@
             - name: 'xtesting-{tag}-zip'
               <<: *xtesting-jobs
 
+- project:
+    name: 'xtesting-daily'
+    <<: *xtesting-params
+    jobs:
+      - 'xtesting-{tag}-daily'
+
+- view:
+    name: xtesting
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^xtesting-[a-z0-9]+-daily$
+
 - xtesting-dep: &xtesting-dep
     name: 'xtesting-containers'
     repo: '{repo}'
@@ -550,6 +568,36 @@
             - name: 'xtesting-opnfv-xtesting-mts-{tag}-seventh-run'
               <<: *xtesting-jobs
 
+- project:
+    name: 'xtesting-review'
+    <<: *xtesting-params
+    jobs:
+      - 'xtesting-{tag}-review'
+
+- view:
+    name: xtesting-review
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^xtesting-[a-z0-9]+-review$
+
+- view:
+    name: xtesting-tox
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^xtesting-[a-z0-9]+-tox$
+
 - builder:
     name: xtesting-push-containers
     builders:
@@ -687,45 +735,7 @@
     name: 'xtesting'
     <<: *xtesting-params
     jobs:
-      - 'xtesting-{tag}-daily'
-      - 'xtesting-{tag}-review'
       - 'xtesting-{tag}-docker'
-
-- view:
-    name: xtesting
-    view-type: list
-    columns:
-      - status
-      - weather
-      - job
-      - last-success
-      - last-failure
-      - last-duration
-    regex: ^xtesting-[a-z0-9]+-daily$
-
-- view:
-    name: xtesting-review
-    view-type: list
-    columns:
-      - status
-      - weather
-      - job
-      - last-success
-      - last-failure
-      - last-duration
-    regex: ^xtesting-[a-z0-9]+-review$
-
-- view:
-    name: xtesting-tox
-    view-type: list
-    columns:
-      - status
-      - weather
-      - job
-      - last-success
-      - last-failure
-      - last-duration
-    regex: ^xtesting-[a-z0-9]+-tox$
 
 - view:
     name: xtesting-docker
@@ -749,4 +759,4 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^xtesting-[a-z-0-9]+-trivy$
+    regex: (?!xtesting-pi)^xtesting-[a-z-0-9]+-trivy$

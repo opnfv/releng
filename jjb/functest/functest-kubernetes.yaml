@@ -482,6 +482,24 @@
             - name: 'functest-kubernetes-{tag}-zip'
               <<: *functest-kubernetes-jobs
 
+- project:
+    name: 'functest-kubernetes-daily'
+    <<: *functest-kubernetes-params
+    jobs:
+      - 'functest-kubernetes-{tag}-daily'
+
+- view:
+    name: functest-kubernetes
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^functest-kubernetes-[a-z0-9]+-daily$
+
 - functest-kubernetes-dep: &functest-kubernetes-dep
     name: 'functest-kubernetes-containers'
     repo: '{repo}'
@@ -777,6 +795,36 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-cnf_conformance-run'
               <<: *functest-kubernetes-jobs
 
+- project:
+    name: 'functest-kubernetes-review'
+    <<: *functest-kubernetes-params
+    jobs:
+      - 'functest-kubernetes-{tag}-review'
+
+- view:
+    name: functest-kubernetes-review
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^functest-kubernetes-[a-z0-9]+-review$
+
+- view:
+    name: functest-kubernetes-tox
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^functest-kubernetes-[a-z0-9]+-tox$
+
 - builder:
     name: functest-kubernetes-push-containers
     builders:
@@ -982,45 +1030,7 @@
     name: 'functest-kubernetes'
     <<: *functest-kubernetes-params
     jobs:
-      - 'functest-kubernetes-{tag}-daily'
-      - 'functest-kubernetes-{tag}-review'
       - 'functest-kubernetes-{tag}-docker'
-
-- view:
-    name: functest-kubernetes
-    view-type: list
-    columns:
-      - status
-      - weather
-      - job
-      - last-success
-      - last-failure
-      - last-duration
-    regex: ^functest-kubernetes-[a-z0-9]+-daily$
-
-- view:
-    name: functest-kubernetes-review
-    view-type: list
-    columns:
-      - status
-      - weather
-      - job
-      - last-success
-      - last-failure
-      - last-duration
-    regex: ^functest-kubernetes-[a-z0-9]+-review$
-
-- view:
-    name: functest-kubernetes-tox
-    view-type: list
-    columns:
-      - status
-      - weather
-      - job
-      - last-success
-      - last-failure
-      - last-duration
-    regex: ^functest-kubernetes-[a-z0-9]+-tox$
 
 - view:
     name: functest-kubernetes-docker
@@ -1044,4 +1054,4 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^functest-kubernetes-[a-z-0-9]+-trivy$
+    regex: (?!functest-kubernetes-pi)^functest-kubernetes-[a-z-0-9]+-trivy$
