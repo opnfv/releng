@@ -10,58 +10,58 @@
     tag:
       - latest:
           slave: lf-virtual9
-          dashboard_url: http://172.30.13.94
+          DASHBOARD_URL: http://172.30.13.94
       - leguer:
           slave: lf-virtual9
-          dashboard_url: http://172.30.13.94
+          DASHBOARD_URL: http://172.30.13.94
       - kali:
           slave: lf-pod4-3
-          dashboard_url: http://172.30.12.88
+          DASHBOARD_URL: http://172.30.12.88
       - jerma:
           slave: lf-pod4
-          dashboard_url: http://172.30.12.83
+          DASHBOARD_URL: http://172.30.12.83
       - iruya:
           slave: lf-virtual4
-          dashboard_url: http://172.30.13.89
+          DASHBOARD_URL: http://172.30.13.89
       - hunter:
           slave: lf-virtual6
-          dashboard_url: http://172.30.13.91
+          DASHBOARD_URL: http://172.30.13.91
       - arm-latest:
           slave: lf-virtual9
-          dashboard_url: http://172.30.13.94
+          DASHBOARD_URL: http://172.30.13.94
       - arm-leguer:
           slave: lf-virtual9
-          dashboard_url: http://172.30.13.94
+          DASHBOARD_URL: http://172.30.13.94
       - arm-kali:
           slave: lf-pod4-3
-          dashboard_url: http://172.30.12.88
+          DASHBOARD_URL: http://172.30.12.88
       - arm-jerma:
           slave: lf-pod4
-          dashboard_url: http://172.30.12.83
+          DASHBOARD_URL: http://172.30.12.83
       - arm-iruya:
           slave: lf-virtual4
-          dashboard_url: http://172.30.13.89
+          DASHBOARD_URL: http://172.30.13.89
       - arm-hunter:
           slave: lf-virtual6
-          dashboard_url: http://172.30.13.91
+          DASHBOARD_URL: http://172.30.13.91
       - arm64-latest:
           slave: lf-virtual9
-          dashboard_url: http://172.30.13.94
+          DASHBOARD_URL: http://172.30.13.94
       - arm64-leguer:
           slave: lf-virtual9
-          dashboard_url: http://172.30.13.94
+          DASHBOARD_URL: http://172.30.13.94
       - arm64-kali:
           slave: lf-pod4-3
-          dashboard_url: http://172.30.12.88
+          DASHBOARD_URL: http://172.30.12.88
       - arm64-jerma:
           slave: lf-pod4
-          dashboard_url: http://172.30.12.83
+          DASHBOARD_URL: http://172.30.12.83
       - arm64-iruya:
           slave: lf-virtual4
-          dashboard_url: http://172.30.13.89
+          DASHBOARD_URL: http://172.30.13.89
       - arm64-hunter:
           slave: lf-virtual6
-          dashboard_url: http://172.30.13.91
+          DASHBOARD_URL: http://172.30.13.91
 
 - parameter:
     name: functest-pi-slave
@@ -108,6 +108,7 @@
     test: '{test}'
     privileged: '{privileged}'
     network: '{network}'
+    DASHBOARD_URL: '{DASHBOARD_URL}'
 
 - builder:
     name: functest-pi-pull-containers
@@ -151,6 +152,7 @@
             -e EXTERNAL_NETWORK=$EXTERNAL_NETWORK \
             -e VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME \
             -e IMAGE_PROPERTIES=$IMAGE_PROPERTIES \
+            -e DASHBOARD_URL={DASHBOARD_URL} \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
             $image run_tests -t {test} -p -r

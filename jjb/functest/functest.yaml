@@ -11,32 +11,32 @@
       - latest:
           branch: master
           slave: lf-virtual9
-          dashboard_url: http://172.30.13.94
+          DASHBOARD_URL: http://172.30.13.94
           dependency: 3.13
       - leguer:
           branch: stable/leguer
           slave: lf-virtual9
-          dashboard_url: http://172.30.13.94
+          DASHBOARD_URL: http://172.30.13.94
           dependency: 3.12
       - kali:
           branch: stable/kali
           slave: lf-pod4-3
-          dashboard_url: http://172.30.12.88
+          DASHBOARD_URL: http://172.30.12.88
           dependency: 3.11
       - jerma:
           branch: stable/jerma
           slave: lf-pod4
-          dashboard_url: http://172.30.12.83
+          DASHBOARD_URL: http://172.30.12.83
           dependency: 3.10
       - iruya:
           branch: stable/iruya
           slave: lf-virtual4
-          dashboard_url: http://172.30.13.89
+          DASHBOARD_URL: http://172.30.13.89
           dependency: 3.9
       - hunter:
           branch: stable/hunter
           slave: lf-virtual6
-          dashboard_url: http://172.30.13.91
+          DASHBOARD_URL: http://172.30.13.91
           dependency: 3.9
 
 - parameter:
@@ -84,6 +84,7 @@
     test: '{test}'
     privileged: '{privileged}'
     network: '{network}'
+    DASHBOARD_URL: '{DASHBOARD_URL}'
 
 - builder:
     name: functest-pull-containers
@@ -127,6 +128,7 @@
             -e EXTERNAL_NETWORK=$EXTERNAL_NETWORK \
             -e VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME \
             -e IMAGE_PROPERTIES=$IMAGE_PROPERTIES \
+            -e DASHBOARD_URL={DASHBOARD_URL} \
             -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
             -v /home/opnfv/functest/images:/home/opnfv/functest/images \
             $image run_tests -t {test} -p -r
