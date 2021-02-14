@@ -1,7 +1,10 @@
 ---
-- functest-pi-jobs: &functest-pi-jobs
-    name: 'functest-pi-jobs'
-    current-parameters: true
+- functest-pi-containers: &functest-pi-containers
+    name: 'functest-pi-containers'
+    repo: '{repo}'
+    port: '{port}'
+    container: '{container}'
+    tag: '{tag}'
 
 - functest-pi-params: &functest-pi-params
     name: 'functest-pi-params'
@@ -63,6 +66,10 @@
           slave: lf-virtual6
           DASHBOARD_URL: http://172.30.13.91
 
+- functest-pi-jobs: &functest-pi-jobs
+    name: 'functest-pi-jobs'
+    current-parameters: true
+
 - parameter:
     name: functest-pi-slave
     parameters:
@@ -94,13 +101,6 @@
       - string:
           name: IMAGE_PROPERTIES
           default: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
-
-- functest-pi-containers: &functest-pi-containers
-    name: 'functest-pi-containers'
-    repo: '{repo}'
-    port: '{port}'
-    container: '{container}'
-    tag: '{tag}'
 
 - functest-pi-run-containers: &functest-pi-run-containers
     name: 'functest-pi-run-containers'
@@ -170,7 +170,6 @@
             image={repo}:{port}/{container}:{tag}
           fi
           sudo docker rmi $image || true
-
 
 - job-template:
     name: 'functest-pi-{repo}-{container}-{tag}-pull'
@@ -517,6 +516,7 @@
     builders:
       - shell: |
           set +x
+          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then

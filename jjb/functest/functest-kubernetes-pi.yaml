@@ -1,7 +1,10 @@
 ---
-- functest-kubernetes-pi-jobs: &functest-kubernetes-pi-jobs
-    name: 'functest-kubernetes-pi-jobs'
-    current-parameters: true
+- functest-kubernetes-pi-containers: &functest-kubernetes-pi-containers
+    name: 'functest-kubernetes-pi-containers'
+    repo: '{repo}'
+    port: '{port}'
+    container: '{container}'
+    tag: '{tag}'
 
 - functest-kubernetes-pi-params: &functest-kubernetes-pi-params
     name: 'functest-kubernetes-pi-params'
@@ -45,6 +48,10 @@
       - arm64-hunter:
           slave: lf-virtual1-1
 
+- functest-kubernetes-pi-jobs: &functest-kubernetes-pi-jobs
+    name: 'functest-kubernetes-pi-jobs'
+    current-parameters: true
+
 - parameter:
     name: functest-kubernetes-pi-slave
     parameters:
@@ -64,13 +71,6 @@
       - string:
           name: DEPLOY_SCENARIO
           default: k8-nosdn-nofeature-noha
-
-- functest-kubernetes-pi-containers: &functest-kubernetes-pi-containers
-    name: 'functest-kubernetes-pi-containers'
-    repo: '{repo}'
-    port: '{port}'
-    container: '{container}'
-    tag: '{tag}'
 
 - functest-kubernetes-pi-run-containers: &functest-kubernetes-pi-run-containers
     name: 'functest-kubernetes-pi-run-containers'
@@ -135,7 +135,6 @@
             image={repo}:{port}/{container}:{tag}
           fi
           docker rmi $image || true
-
 
 - job-template:
     name: 'functest-kubernetes-pi-{repo}-{container}-{tag}-pull'
@@ -354,6 +353,7 @@
     builders:
       - shell: |
           set +x
+          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then

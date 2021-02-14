@@ -1,7 +1,10 @@
 ---
-- xtesting-pi-jobs: &xtesting-pi-jobs
-    name: 'xtesting-pi-jobs'
-    current-parameters: true
+- xtesting-pi-containers: &xtesting-pi-containers
+    name: 'xtesting-pi-containers'
+    repo: '{repo}'
+    port: '{port}'
+    container: '{container}'
+    tag: '{tag}'
 
 - xtesting-pi-params: &xtesting-pi-params
     name: 'xtesting-pi-params'
@@ -45,6 +48,10 @@
       - arm64-hunter:
           slave: lf-virtual1
 
+- xtesting-pi-jobs: &xtesting-pi-jobs
+    name: 'xtesting-pi-jobs'
+    current-parameters: true
+
 - parameter:
     name: xtesting-pi-slave
     parameters:
@@ -58,13 +65,6 @@
       - random-string:
           name: build_tag
 
-
-- xtesting-pi-containers: &xtesting-pi-containers
-    name: 'xtesting-pi-containers'
-    repo: '{repo}'
-    port: '{port}'
-    container: '{container}'
-    tag: '{tag}'
 
 - xtesting-pi-run-containers: &xtesting-pi-run-containers
     name: 'xtesting-pi-run-containers'
@@ -127,7 +127,6 @@
             image={repo}:{port}/{container}:{tag}
           fi
           sudo docker rmi $image || true
-
 
 - job-template:
     name: 'xtesting-pi-{repo}-{container}-{tag}-pull'
@@ -219,6 +218,7 @@
     builders:
       - shell: |
           set +x
+          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then

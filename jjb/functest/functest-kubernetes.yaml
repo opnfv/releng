@@ -1,7 +1,10 @@
 ---
-- functest-kubernetes-jobs: &functest-kubernetes-jobs
-    name: 'functest-kubernetes-jobs'
-    current-parameters: true
+- functest-kubernetes-containers: &functest-kubernetes-containers
+    name: 'functest-kubernetes-containers'
+    repo: '{repo}'
+    port: '{port}'
+    container: '{container}'
+    tag: '{tag}'
 
 - functest-kubernetes-params: &functest-kubernetes-params
     name: 'functest-kubernetes-params'
@@ -33,6 +36,10 @@
           slave: lf-virtual1-1
           dependency: 3.9
 
+- functest-kubernetes-jobs: &functest-kubernetes-jobs
+    name: 'functest-kubernetes-jobs'
+    current-parameters: true
+
 - parameter:
     name: functest-kubernetes-slave
     parameters:
@@ -52,13 +59,6 @@
       - string:
           name: DEPLOY_SCENARIO
           default: k8-nosdn-nofeature-noha
-
-- functest-kubernetes-containers: &functest-kubernetes-containers
-    name: 'functest-kubernetes-containers'
-    repo: '{repo}'
-    port: '{port}'
-    container: '{container}'
-    tag: '{tag}'
 
 - functest-kubernetes-run-containers: &functest-kubernetes-run-containers
     name: 'functest-kubernetes-run-containers'
@@ -123,43 +123,6 @@
             image={repo}:{port}/{container}:{tag}
           fi
           docker rmi $image || true
-
-- functest-kubernetes-build-containers: &functest-kubernetes-build-containers
-    name: 'functest-kubernetes-build-containers'
-    <<: *functest-kubernetes-containers
-    ref_arg: '{ref_arg}'
-    path: '{path}'
-
-- builder:
-    name: functest-kubernetes-build-containers
-    builders:
-      - shell: |
-          set +x
-          if [ "{repo}" = "_" ]; then
-            image={container}:{tag}
-          elif [ "{port}" = "None" ]; then
-            image={repo}/{container}:{tag}
-          else
-            image={repo}:{port}/{container}:{tag}
-          fi
-          if [ "{ref_arg}" = "None" ]; then
-            build_arg=""
-          else
-            build_arg="--build-arg {ref_arg}={ref}"
-          fi
-          cd {path}
-          docker build $build_arg \
-            --pull=false --no-cache --force-rm=true \
-            -t $image .
-
-- scm:
-    name: functest-kubernetes-scm
-    scm:
-      - git:
-          url: 'https://gerrit.opnfv.org/gerrit/functest-kubernetes'
-          refspec: '+refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*'
-          branches:
-            - '{ref}'
 
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-pull'
@@ -348,6 +311,7 @@
     builders:
       - shell: |
           set +x
+          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -499,6 +463,43 @@
       - last-failure
       - last-duration
     regex: ^functest-kubernetes-[a-z0-9]+-daily$
+
+- functest-kubernetes-build-containers: &functest-kubernetes-build-containers
+    name: 'functest-kubernetes-build-containers'
+    <<: *functest-kubernetes-containers
+    ref_arg: '{ref_arg}'
+    path: '{path}'
+
+- builder:
+    name: functest-kubernetes-build-containers
+    builders:
+      - shell: |
+          set +x
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          if [ "{ref_arg}" = "None" ]; then
+            build_arg=""
+          else
+            build_arg="--build-arg {ref_arg}={ref}"
+          fi
+          cd {path}
+          docker build $build_arg \
+            --pull=false --no-cache --force-rm=true \
+            -t $image .
+
+- scm:
+    name: functest-kubernetes-scm
+    scm:
+      - git:
+          url: 'https://gerrit.opnfv.org/gerrit/functest-kubernetes'
+          refspec: '+refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*'
+          branches:
+            - '{ref}'
 
 - functest-kubernetes-dep: &functest-kubernetes-dep
     name: 'functest-kubernetes-containers'
