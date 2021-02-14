@@ -816,6 +816,21 @@
       - 'functest-{repo}-{container}-{tag}-gate'
 
 - project:
+    name: functest-opnfv-functest-tempest-{tag}-gate
+    <<: *functest-params
+    container: functest-tempest
+    ref_arg: BRANCH
+    path: docker/tempest
+    exclude:
+      - {'tag': 'latest'}
+      - {'tag': 'leguer'}
+      - {'tag': 'kali'}
+      - {'tag': 'jerma'}
+      - {'tag': 'iruya'}
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-gate'
+
+- project:
     name: functest-opnfv-functest-healthcheck-{tag}-gate
     <<: *functest-params
     container: functest-healthcheck
@@ -953,6 +968,11 @@
           name: build opnfv/functest-core
           projects:
             - name: 'functest-opnfv-functest-core-{tag}-gate'
+              <<: *functest-jobs
+      - multijob:
+          name: build opnfv/functest-tempest
+          projects:
+            - name: 'functest-opnfv-functest-tempest-{tag}-gate'
               <<: *functest-jobs
       - multijob:
           name: build containers
@@ -1175,6 +1195,21 @@
       - 'functest-{repo}-{container}-{tag}-build'
 
 - project:
+    name: functest-opnfv-functest-tempest-{tag}-build
+    <<: *functest-params
+    container: functest-tempest
+    ref_arg: BRANCH
+    path: docker/tempest
+    exclude:
+      - {'tag': 'latest'}
+      - {'tag': 'leguer'}
+      - {'tag': 'kali'}
+      - {'tag': 'jerma'}
+      - {'tag': 'iruya'}
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-build'
+
+- project:
     name: functest-opnfv-functest-healthcheck-{tag}-build
     <<: *functest-params
     container: functest-healthcheck
@@ -1261,6 +1296,11 @@
           name: build opnfv/functest-core
           projects:
             - name: 'functest-opnfv-functest-core-{tag}-build'
+              <<: *functest-jobs
+      - multijob:
+          name: build opnfv/functest-tempest
+          projects:
+            - name: 'functest-opnfv-functest-tempest-{tag}-build'
               <<: *functest-jobs
       - multijob:
           name: build containers
