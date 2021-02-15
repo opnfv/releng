@@ -342,15 +342,44 @@
           <<: *functest-kubernetes-ng-containers
 
 - project:
-    name: 'functest-kubernetes-ng-opnfv-xtesting-trivy'
+    name: 'functest-kubernetes-ng-opnfv-functest-kubernetes-core-trivy'
     <<: *functest-kubernetes-ng-params
-    container: 'xtesting'
+    container: 'functest-kubernetes-core'
     jobs:
       - 'functest-kubernetes-ng-{repo}-{container}-{tag}-trivy'
+
 - project:
-    name: 'functest-kubernetes-ng-opnfv-xtesting-mts-trivy'
+    name: 'functest-kubernetes-ng-opnfv-functest-kubernetes-healthcheck-trivy'
     <<: *functest-kubernetes-ng-params
-    container: 'xtesting-mts'
+    container: 'functest-kubernetes-healthcheck'
+    jobs:
+      - 'functest-kubernetes-ng-{repo}-{container}-{tag}-trivy'
+
+- project:
+    name: 'functest-kubernetes-ng-opnfv-functest-kubernetes-cnf-trivy'
+    <<: *functest-kubernetes-ng-params
+    container: 'functest-kubernetes-cnf'
+    jobs:
+      - 'functest-kubernetes-ng-{repo}-{container}-{tag}-trivy'
+
+- project:
+    name: 'functest-kubernetes-ng-opnfv-functest-kubernetes-security-trivy'
+    <<: *functest-kubernetes-ng-params
+    container: 'functest-kubernetes-security'
+    jobs:
+      - 'functest-kubernetes-ng-{repo}-{container}-{tag}-trivy'
+
+- project:
+    name: 'functest-kubernetes-ng-opnfv-functest-kubernetes-smoke-trivy'
+    <<: *functest-kubernetes-ng-params
+    container: 'functest-kubernetes-smoke'
+    jobs:
+      - 'functest-kubernetes-ng-{repo}-{container}-{tag}-trivy'
+
+- project:
+    name: 'functest-kubernetes-ng-opnfv-functest-kubernetes-benchmarking-trivy'
+    <<: *functest-kubernetes-ng-params
+    container: 'functest-kubernetes-benchmarking'
     jobs:
       - 'functest-kubernetes-ng-{repo}-{container}-{tag}-trivy'
 
