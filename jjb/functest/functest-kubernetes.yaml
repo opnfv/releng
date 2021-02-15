@@ -1008,15 +1008,21 @@
           <<: *functest-kubernetes-containers
 
 - project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-core-trivy'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-core'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-trivy'
+- project:
     name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-trivy'
     <<: *functest-kubernetes-params
     container: 'functest-kubernetes-healthcheck'
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-trivy'
 - project:
-    name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-trivy'
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-trivy'
     <<: *functest-kubernetes-params
-    container: 'functest-kubernetes-smoke'
+    container: 'functest-kubernetes-cnf'
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-trivy'
 - project:
@@ -1026,15 +1032,15 @@
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-trivy'
 - project:
-    name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-trivy'
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-trivy'
     <<: *functest-kubernetes-params
-    container: 'functest-kubernetes-benchmarking'
+    container: 'functest-kubernetes-smoke'
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-trivy'
 - project:
-    name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-trivy'
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-trivy'
     <<: *functest-kubernetes-params
-    container: 'functest-kubernetes-cnf'
+    container: 'functest-kubernetes-benchmarking'
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-trivy'
 

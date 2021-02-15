@@ -1360,6 +1360,18 @@
           <<: *functest-containers
 
 - project:
+    name: 'functest-opnfv-functest-core-trivy'
+    <<: *functest-params
+    container: 'functest-core'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-trivy'
+- project:
+    name: 'functest-opnfv-functest-tempest-trivy'
+    <<: *functest-params
+    container: 'functest-tempest'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-trivy'
+- project:
     name: 'functest-opnfv-functest-healthcheck-trivy'
     <<: *functest-params
     container: 'functest-healthcheck'
@@ -1372,27 +1384,27 @@
     jobs:
       - 'functest-{repo}-{container}-{tag}-trivy'
 - project:
-    name: 'functest-opnfv-functest-smoke-cntt-trivy'
-    <<: *functest-params
-    container: 'functest-smoke-cntt'
-    jobs:
-      - 'functest-{repo}-{container}-{tag}-trivy'
-- project:
     name: 'functest-opnfv-functest-benchmarking-trivy'
     <<: *functest-params
     container: 'functest-benchmarking'
     jobs:
       - 'functest-{repo}-{container}-{tag}-trivy'
 - project:
-    name: 'functest-opnfv-functest-benchmarking-cntt-trivy'
-    <<: *functest-params
-    container: 'functest-benchmarking-cntt'
-    jobs:
-      - 'functest-{repo}-{container}-{tag}-trivy'
-- project:
     name: 'functest-opnfv-functest-vnf-trivy'
     <<: *functest-params
     container: 'functest-vnf'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-trivy'
+- project:
+    name: 'functest-opnfv-functest-smoke-cntt-trivy'
+    <<: *functest-params
+    container: 'functest-smoke-cntt'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-trivy'
+- project:
+    name: 'functest-opnfv-functest-benchmarking-cntt-trivy'
+    <<: *functest-params
+    container: 'functest-benchmarking-cntt'
     jobs:
       - 'functest-{repo}-{container}-{tag}-trivy'
 
