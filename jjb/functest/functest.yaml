@@ -707,15 +707,14 @@
           fi
           build_args=""
           if [ "{buildargs}" != "None" ]; then
-            build_args="{buildargs} "
+            build_args="{buildargs}"
           fi
           if [ "{ref_arg}" != "None" ]; then
-            build_args="--build-arg {ref_arg}={ref}"
+            build_args="$build_args --build-arg {ref_arg}={ref}"
           fi
           cd {path}
           if [ "{from}" != "None" ]; then
               sed -i {from} Dockerfile
-              git diff
           fi
           sudo docker build $build_args \
             --pull=false --no-cache --force-rm=true \
