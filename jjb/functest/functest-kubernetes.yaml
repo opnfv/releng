@@ -12,31 +12,37 @@
     port:
     tag:
       - latest:
+          from:
           buildargs:
           branch: master
           slave: lf-virtual1-6
           dependency: 3.13
       - leguer:
+          from:
           buildargs:
           branch: stable/leguer
           slave: lf-virtual1-5
           dependency: 3.12
       - kali:
+          from:
           buildargs:
           branch: stable/kali
           slave: lf-virtual1-4
           dependency: 3.11
       - jerma:
+          from:
           buildargs:
           branch: stable/jerma
           slave: lf-virtual1-3
           dependency: 3.10
       - iruya:
+          from:
           buildargs:
           branch: stable/iruya
           slave: lf-virtual1-2
           dependency: 3.9
       - hunter:
+          from:
           buildargs:
           branch: stable/hunter
           slave: lf-virtual1-1
@@ -476,6 +482,7 @@
     ref_arg: '{ref_arg}'
     path: '{path}'
     buildargs: '{buildargs}'
+    from: '{from}'
 
 - builder:
     name: functest-kubernetes-build-containers
@@ -497,6 +504,10 @@
             build_args="--build-arg {ref_arg}={ref}"
           fi
           cd {path}
+          if [ "{from}" != "None" ]; then
+              sed -i {from} Dockerfile
+              git diff
+          fi
           docker build $build_args \
             --pull=false --no-cache --force-rm=true \
             -t $image .

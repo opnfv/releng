@@ -16,41 +16,49 @@
           branch: stable/leguer
           slave: lf-virtual1
           dependency: 3.12
+          from: s/:leguer$/:v1.20/g
       - v1.19:
           buildargs:
           branch: stable/kali
           slave: lf-virtual1
           dependency: 3.11
+          from: s/:kali$/:v1.19/g
       - v1.18:
           branch: stable/kali
           slave: lf-virtual1
           dependency: 3.11
           buildargs: --build-arg K8S_TAG=1.18
+          from: s/:kali$/:v1.18/g
       - v1.17:
           buildargs:
           branch: stable/jerma
           slave: lf-virtual1
           dependency: 3.10
+          from: s/:jerma$/:v1.17/g
       - v1.16:
           branch: stable/jerma
           slave: lf-virtual1
           dependency: 3.10
           buildargs: --build-arg K8S_TAG=1.16
+          from: s/:jerma$/:v1.16/g
       - v1.15:
           buildargs:
           branch: stable/iruya
           slave: lf-virtual1
           dependency: 3.9
+          from: s/:iruya$/:v1.15/g
       - v1.14:
           branch: stable/iruya
           slave: lf-virtual1
           dependency: 3.9
           buildargs: --build-arg K8S_TAG=1.14
+          from: s/:iruya$/:v1.14/g
       - v1.13:
           buildargs:
           branch: stable/hunter
           slave: lf-virtual1
           dependency: 3.9
+          from: s/:hunter$/:v1.13/g
 
 - functest-kubernetes-ng-jobs: &functest-kubernetes-ng-jobs
     name: 'functest-kubernetes-ng-jobs'
@@ -70,6 +78,7 @@
     ref_arg: '{ref_arg}'
     path: '{path}'
     buildargs: '{buildargs}'
+    from: '{from}'
 
 - builder:
     name: functest-kubernetes-ng-build-containers
@@ -91,6 +100,10 @@
             build_args="--build-arg {ref_arg}={ref}"
           fi
           cd {path}
+          if [ "{from}" != "None" ]; then
+              sed -i {from} Dockerfile
+              git diff
+          fi
           sudo docker build $build_args \
             --pull=false --no-cache --force-rm=true \
             -t $image .
