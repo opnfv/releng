@@ -12,45 +12,45 @@
     port:
     tag:
       - v1.20:
+          buildargs:
           branch: stable/leguer
           slave: lf-virtual1
           dependency: 3.12
-          docker_args: [{'K8S_TAG': '1.20'}]
       - v1.19:
+          buildargs:
           branch: stable/kali
           slave: lf-virtual1
           dependency: 3.11
-          docker_args: []
       - v1.18:
           branch: stable/kali
           slave: lf-virtual1
           dependency: 3.11
-          docker_args: [{'K8S_TAG': '1.18'}]
+          buildargs: --build-arg K8S_TAG=1.18
       - v1.17:
+          buildargs:
           branch: stable/jerma
           slave: lf-virtual1
           dependency: 3.10
-          docker_args: []
       - v1.16:
           branch: stable/jerma
           slave: lf-virtual1
           dependency: 3.10
-          docker_args: [{'K8S_TAG': '1.16'}]
+          buildargs: --build-arg K8S_TAG=1.16
       - v1.15:
+          buildargs:
           branch: stable/iruya
           slave: lf-virtual1
           dependency: 3.9
-          docker_args: []
       - v1.14:
           branch: stable/iruya
           slave: lf-virtual1
           dependency: 3.9
-          docker_args: [{'K8S_TAG': '1.14'}]
+          buildargs: --build-arg K8S_TAG=1.14
       - v1.13:
+          buildargs:
           branch: stable/hunter
           slave: lf-virtual1
           dependency: 3.9
-          docker_args: []
 
 - functest-kubernetes-ng-jobs: &functest-kubernetes-ng-jobs
     name: 'functest-kubernetes-ng-jobs'
@@ -69,6 +69,7 @@
     <<: *functest-kubernetes-ng-containers
     ref_arg: '{ref_arg}'
     path: '{path}'
+    buildargs: '{buildargs}'
 
 - builder:
     name: functest-kubernetes-ng-build-containers
@@ -82,13 +83,15 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          if [ "{ref_arg}" = "None" ]; then
-            build_arg=""
-          else
-            build_arg="--build-arg {ref_arg}={ref}"
+          build_args=""
+          if [ "{buildargs}" != "None" ]; then
+            build_args="{buildargs} "
+          fi
+          if [ "{ref_arg}" != "None" ]; then
+            build_args="--build-arg {ref_arg}={ref}"
           fi
           cd {path}
-          sudo docker build $build_arg \
+          sudo docker build $build_args \
             --pull=false --no-cache --force-rm=true \
             -t $image .
 
@@ -199,6 +202,7 @@
       - functest-kubernetes-ng-build-containers:
           <<: *functest-kubernetes-ng-build-containers
           ref: '{branch}'
+          buildargs: '{buildargs}'
       - functest-kubernetes-ng-push-containers:
           <<: *functest-kubernetes-ng-build-containers
           ref: '{branch}'

@@ -12,31 +12,37 @@
     port:
     tag:
       - latest:
+          buildargs:
           branch: master
           slave: lf-virtual9
           DASHBOARD_URL: http://172.30.13.94
           dependency: 3.13
       - leguer:
+          buildargs:
           branch: stable/leguer
           slave: lf-virtual9
           DASHBOARD_URL: http://172.30.13.94
           dependency: 3.12
       - kali:
+          buildargs:
           branch: stable/kali
           slave: lf-pod4-3
           DASHBOARD_URL: http://172.30.12.88
           dependency: 3.11
       - jerma:
+          buildargs:
           branch: stable/jerma
           slave: lf-pod4
           DASHBOARD_URL: http://172.30.12.83
           dependency: 3.10
       - iruya:
+          buildargs:
           branch: stable/iruya
           slave: lf-virtual4
           DASHBOARD_URL: http://172.30.13.89
           dependency: 3.9
       - hunter:
+          buildargs:
           branch: stable/hunter
           slave: lf-virtual6
           DASHBOARD_URL: http://172.30.13.91
@@ -678,6 +684,7 @@
     <<: *functest-containers
     ref_arg: '{ref_arg}'
     path: '{path}'
+    buildargs: '{buildargs}'
 
 - builder:
     name: functest-build-containers
@@ -691,13 +698,15 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          if [ "{ref_arg}" = "None" ]; then
-            build_arg=""
-          else
-            build_arg="--build-arg {ref_arg}={ref}"
+          build_args=""
+          if [ "{buildargs}" != "None" ]; then
+            build_args="{buildargs} "
+          fi
+          if [ "{ref_arg}" != "None" ]; then
+            build_args="--build-arg {ref_arg}={ref}"
           fi
           cd {path}
-          sudo docker build $build_arg \
+          sudo docker build $build_args \
             --pull=false --no-cache --force-rm=true \
             -t $image .
 
@@ -809,6 +818,20 @@
     jobs:
       - 'functest-{tag}-tox'
 
+- job-template:
+    name: 'functest-{repo}-{container}-{tag}-gate'
+    parameters:
+      - functest-slave:
+          slave: '{slave}'
+    scm:
+      - functest-scm:
+          ref: $GERRIT_REFSPEC
+    builders:
+      - functest-build-containers:
+          <<: *functest-build-containers
+          ref: $GERRIT_REFSPEC
+          buildargs: '{buildargs}'
+
 - project:
     name: functest-opnfv-functest-core-{tag}-gate
     <<: *functest-params
@@ -886,19 +909,6 @@
     jobs:
       - 'functest-{repo}-{container}-{tag}-gate'
 
-
-- job-template:
-    name: 'functest-{repo}-{container}-{tag}-gate'
-    parameters:
-      - functest-slave:
-          slave: '{slave}'
-    scm:
-      - functest-scm:
-          ref: $GERRIT_REFSPEC
-    builders:
-      - functest-build-containers:
-          <<: *functest-build-containers
-          ref: $GERRIT_REFSPEC
 
 - trigger:
     name: functest-patchset-created
@@ -1183,6 +1193,7 @@
       - functest-build-containers:
           <<: *functest-build-containers
           ref: '{branch}'
+          buildargs: '{buildargs}'
       - functest-push-containers:
           <<: *functest-build-containers
           ref: '{branch}'

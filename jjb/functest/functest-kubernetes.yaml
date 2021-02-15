@@ -12,26 +12,32 @@
     port:
     tag:
       - latest:
+          buildargs:
           branch: master
           slave: lf-virtual1-6
           dependency: 3.13
       - leguer:
+          buildargs:
           branch: stable/leguer
           slave: lf-virtual1-5
           dependency: 3.12
       - kali:
+          buildargs:
           branch: stable/kali
           slave: lf-virtual1-4
           dependency: 3.11
       - jerma:
+          buildargs:
           branch: stable/jerma
           slave: lf-virtual1-3
           dependency: 3.10
       - iruya:
+          buildargs:
           branch: stable/iruya
           slave: lf-virtual1-2
           dependency: 3.9
       - hunter:
+          buildargs:
           branch: stable/hunter
           slave: lf-virtual1-1
           dependency: 3.9
@@ -469,6 +475,7 @@
     <<: *functest-kubernetes-containers
     ref_arg: '{ref_arg}'
     path: '{path}'
+    buildargs: '{buildargs}'
 
 - builder:
     name: functest-kubernetes-build-containers
@@ -482,13 +489,15 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          if [ "{ref_arg}" = "None" ]; then
-            build_arg=""
-          else
-            build_arg="--build-arg {ref_arg}={ref}"
+          build_args=""
+          if [ "{buildargs}" != "None" ]; then
+            build_args="{buildargs} "
+          fi
+          if [ "{ref_arg}" != "None" ]; then
+            build_args="--build-arg {ref_arg}={ref}"
           fi
           cd {path}
-          docker build $build_arg \
+          docker build $build_args \
             --pull=false --no-cache --force-rm=true \
             -t $image .
 
@@ -600,6 +609,20 @@
     jobs:
       - 'functest-kubernetes-{tag}-tox'
 
+- job-template:
+    name: 'functest-kubernetes-{repo}-{container}-{tag}-gate'
+    parameters:
+      - functest-kubernetes-slave:
+          slave: '{slave}'
+    scm:
+      - functest-kubernetes-scm:
+          ref: $GERRIT_REFSPEC
+    builders:
+      - functest-kubernetes-build-containers:
+          <<: *functest-kubernetes-build-containers
+          ref: $GERRIT_REFSPEC
+          buildargs: '{buildargs}'
+
 - project:
     name: functest-kubernetes-opnfv-functest-kubernetes-core-{tag}-gate
     <<: *functest-kubernetes-params
@@ -654,19 +677,6 @@
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
 
-
-- job-template:
-    name: 'functest-kubernetes-{repo}-{container}-{tag}-gate'
-    parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
-    scm:
-      - functest-kubernetes-scm:
-          ref: $GERRIT_REFSPEC
-    builders:
-      - functest-kubernetes-build-containers:
-          <<: *functest-kubernetes-build-containers
-          ref: $GERRIT_REFSPEC
 
 - trigger:
     name: functest-kubernetes-patchset-created
@@ -858,6 +868,7 @@
       - functest-kubernetes-build-containers:
           <<: *functest-kubernetes-build-containers
           ref: '{branch}'
+          buildargs: '{buildargs}'
       - functest-kubernetes-push-containers:
           <<: *functest-kubernetes-build-containers
           ref: '{branch}'

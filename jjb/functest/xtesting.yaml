@@ -12,26 +12,32 @@
     port:
     tag:
       - latest:
+          buildargs:
           branch: master
           slave: lf-virtual1
           dependency: 3.13
       - leguer:
+          buildargs:
           branch: stable/leguer
           slave: lf-virtual1
           dependency: 3.12
       - kali:
+          buildargs:
           branch: stable/kali
           slave: lf-virtual1
           dependency: 3.11
       - jerma:
+          buildargs:
           branch: stable/jerma
           slave: lf-virtual1
           dependency: 3.10
       - iruya:
+          buildargs:
           branch: stable/iruya
           slave: lf-virtual1
           dependency: 3.9
       - hunter:
+          buildargs:
           branch: stable/hunter
           slave: lf-virtual1
           dependency: 3.9
@@ -323,6 +329,7 @@
     <<: *xtesting-containers
     ref_arg: '{ref_arg}'
     path: '{path}'
+    buildargs: '{buildargs}'
 
 - builder:
     name: xtesting-build-containers
@@ -336,13 +343,15 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          if [ "{ref_arg}" = "None" ]; then
-            build_arg=""
-          else
-            build_arg="--build-arg {ref_arg}={ref}"
+          build_args=""
+          if [ "{buildargs}" != "None" ]; then
+            build_args="{buildargs} "
+          fi
+          if [ "{ref_arg}" != "None" ]; then
+            build_args="--build-arg {ref_arg}={ref}"
           fi
           cd {path}
-          sudo docker build $build_arg \
+          sudo docker build $build_args \
             --pull=false --no-cache --force-rm=true \
             -t $image .
 
@@ -454,6 +463,20 @@
     jobs:
       - 'xtesting-{tag}-tox'
 
+- job-template:
+    name: 'xtesting-{repo}-{container}-{tag}-gate'
+    parameters:
+      - xtesting-slave:
+          slave: '{slave}'
+    scm:
+      - xtesting-scm:
+          ref: $GERRIT_REFSPEC
+    builders:
+      - xtesting-build-containers:
+          <<: *xtesting-build-containers
+          ref: $GERRIT_REFSPEC
+          buildargs: '{buildargs}'
+
 - project:
     name: xtesting-opnfv-xtesting-{tag}-gate
     <<: *xtesting-params
@@ -472,19 +495,6 @@
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-gate'
 
-
-- job-template:
-    name: 'xtesting-{repo}-{container}-{tag}-gate'
-    parameters:
-      - xtesting-slave:
-          slave: '{slave}'
-    scm:
-      - xtesting-scm:
-          ref: $GERRIT_REFSPEC
-    builders:
-      - xtesting-build-containers:
-          <<: *xtesting-build-containers
-          ref: $GERRIT_REFSPEC
 
 - trigger:
     name: xtesting-patchset-created
@@ -631,6 +641,7 @@
       - xtesting-build-containers:
           <<: *xtesting-build-containers
           ref: '{branch}'
+          buildargs: '{buildargs}'
       - xtesting-push-containers:
           <<: *xtesting-build-containers
           ref: '{branch}'
