@@ -444,13 +444,15 @@
     builders:
       - shell: |
           set +x
-          sudo apt-get update && sudo apt-get install software-properties-common gpg -y
+          sudo apt-get update && sudo apt-get install \
+            software-properties-common gpg -y
           sudo add-apt-repository -y ppa:deadsnakes/ppa
           sudo apt-get update && sudo apt-get install python3.8 python3.8-dev \
             python3.8-distutils \
             python3.7 python3.7-dev python3.6 python3.6-dev \
             python python-dev python3-pip enchant -y
           sudo pip3 install tox tox-pip-version
+
           tox
 
 - job-template:
@@ -719,6 +721,7 @@
     builders:
       - shell: |
           sudo apt-get update && sudo apt-get install curl -y
+
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b .
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
