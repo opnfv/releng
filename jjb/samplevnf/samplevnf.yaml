@@ -1,0 +1,100 @@
+---
+- project:
+    name: samplevnf
+
+    project: '{name}'
+
+    jobs:
+      - 'rapid-prox-build-{stream}'
+      - 'rapid-prox-verify-{stream}'
+
+    stream:
+      - master:
+          branch: '{stream}'
+          gs-pathname: ''
+          docker-tag: 'latest'
+          disabled: false
+      - jerma:
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          docker-tag: 'stable'
+          disabled: false
+
+- job-template:
+    name: 'rapid-prox-build-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      # yamllint disable rule:line-length
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+      # yamllint enable rule:line-length
+      - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+      - git-scm-gerrit
+
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - change-merged-event
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+
+    builders:
+      - shell: |
+          cd $WORKSPACE/rapidvm/dib
+          bash build-image.sh
+
+- job-template:
+    name: 'rapid-prox-verify-{stream}'
+
+    disabled: '{obj:disabled}'
+
+    parameters:
+      - project-parameter:
+          project: '{project}'
+          branch: '{branch}'
+      # yamllint disable rule:line-length
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
+      # yamllint enable rule:line-length
+      - 'opnfv-build-ubuntu-defaults'
+
+    scm:
+      - git-scm-gerrit
+
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: '{project}'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/{branch}'
+
+    builders:
+      - shell: |
+          sudo pip install tox-pip-version
+          cd $WORKSPACE && tox
+          cd $WORKSPACE/rapidvm/dib
+          bash verify-image.sh -v
