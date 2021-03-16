@@ -11,13 +11,13 @@
     stream:
       - master:
           branch: '{stream}'
-          gs-pathname: ''
-          docker-tag: 'latest'
+          gs-pathname: 'artifacts.opnfv.org/samplevnf/images'
+          tag: 'latest'
           disabled: false
       - jerma:
           branch: 'stable/{stream}'
-          gs-pathname: '/{stream}'
-          docker-tag: 'stable'
+          gs-pathname: 'artifacts.opnfv.org/samplevnf/images'
+          tag: '{stream}'
           disabled: false
 
 - job-template:
@@ -55,7 +55,7 @@
     builders:
       - shell: |
           cd $WORKSPACE/rapidvm/dib
-          bash build-image.sh
+          bash build-image.sh -g {gs-pathname} -i {tag}
 
 - job-template:
     name: 'rapid-prox-verify-{stream}'
@@ -101,4 +101,4 @@
           sudo pip install tox-pip-version
           cd $WORKSPACE && tox -e docs
           cd $WORKSPACE/rapidvm/dib
-          bash verify-image.sh -v
+          bash build-image.sh -g {gs-pathname} -i {tag} -v
