@@ -256,20 +256,52 @@
     test:
       - xrally_kubernetes
       - k8s_conformance
+      - sig_api_machinery
+      - sig_apps
+      - sig_auth
+      - sig_cli
+      - sig_cluster_lifecycle
+      - sig_instrumentation
       - sig_network
       - sig_network_features
+      - sig_node
+      - sig_scheduling
       - sig_storage
     privileged: 'false'
     network: bridge
     exclude:
+      - {'tag': 'jerma', 'test': 'sig_api_machinery'}
+      - {'tag': 'jerma', 'test': 'sig_apps'}
+      - {'tag': 'jerma', 'test': 'sig_auth'}
+      - {'tag': 'jerma', 'test': 'sig_cli'}
+      - {'tag': 'jerma', 'test': 'sig_cluster_lifecycle'}
+      - {'tag': 'jerma', 'test': 'sig_instrumentation'}
       - {'tag': 'jerma', 'test': 'sig_network'}
       - {'tag': 'jerma', 'test': 'sig_network_features'}
+      - {'tag': 'jerma', 'test': 'sig_node'}
+      - {'tag': 'jerma', 'test': 'sig_scheduling'}
       - {'tag': 'jerma', 'test': 'sig_storage'}
+      - {'tag': 'iruya', 'test': 'sig_api_machinery'}
+      - {'tag': 'iruya', 'test': 'sig_apps'}
+      - {'tag': 'iruya', 'test': 'sig_auth'}
+      - {'tag': 'iruya', 'test': 'sig_cli'}
+      - {'tag': 'iruya', 'test': 'sig_cluster_lifecycle'}
+      - {'tag': 'iruya', 'test': 'sig_instrumentation'}
       - {'tag': 'iruya', 'test': 'sig_network'}
       - {'tag': 'iruya', 'test': 'sig_network_features'}
+      - {'tag': 'iruya', 'test': 'sig_node'}
+      - {'tag': 'iruya', 'test': 'sig_scheduling'}
       - {'tag': 'iruya', 'test': 'sig_storage'}
+      - {'tag': 'hunter', 'test': 'sig_api_machinery'}
+      - {'tag': 'hunter', 'test': 'sig_apps'}
+      - {'tag': 'hunter', 'test': 'sig_auth'}
+      - {'tag': 'hunter', 'test': 'sig_cli'}
+      - {'tag': 'hunter', 'test': 'sig_cluster_lifecycle'}
+      - {'tag': 'hunter', 'test': 'sig_instrumentation'}
       - {'tag': 'hunter', 'test': 'sig_network'}
       - {'tag': 'hunter', 'test': 'sig_network_features'}
+      - {'tag': 'hunter', 'test': 'sig_node'}
+      - {'tag': 'hunter', 'test': 'sig_scheduling'}
       - {'tag': 'hunter', 'test': 'sig_storage'}
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
@@ -417,9 +449,25 @@
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
               <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_api_machinery-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_apps-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_auth-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_cli-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_cluster_lifecycle-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_instrumentation-run'
+              <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_network-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_network_features-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_node-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_scheduling-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_storage-run'
               <<: *functest-kubernetes-jobs
@@ -782,9 +830,25 @@
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
               <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_api_machinery-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_apps-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_auth-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_cli-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_cluster_lifecycle-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_instrumentation-run'
+              <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_network-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_network_features-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_node-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_scheduling-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_storage-run'
               <<: *functest-kubernetes-jobs
