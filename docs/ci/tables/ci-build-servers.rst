@@ -18,10 +18,6 @@
      - aarch64
      - Ubuntu 16.04
      - `Armband ENEA Team`_
-   * - `ericsson-build4 <https://build.opnfv.org/ci/computer/ericsson-build4>`_
-     - x86_64
-     - Ubuntu 16.04
-     - `Dianfeng Du`_
    * - `lf-build1 <https://build.opnfv.org/ci/computer/lf-build1>`_
      - x86_64
      - CentOS 7.4
@@ -32,5 +28,4 @@
      - `Linux Foundation`_
 
 .. _Linux Foundation: helpdesk@opnfv.org
-.. _Dianfeng Du: dianfeng.du@ericsson.com
 .. _Armband ENEA Team: armband@enea.com
