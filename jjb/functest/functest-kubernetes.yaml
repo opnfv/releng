@@ -256,6 +256,7 @@
     test:
       - xrally_kubernetes
       - k8s_conformance
+      - k8s_conformance_serial
       - sig_api_machinery
       - sig_apps
       - sig_auth
@@ -269,6 +270,7 @@
     privileged: 'false'
     network: bridge
     exclude:
+      - {'tag': 'jerma', 'test': 'k8s_conformance_serial'}
       - {'tag': 'jerma', 'test': 'sig_api_machinery'}
       - {'tag': 'jerma', 'test': 'sig_apps'}
       - {'tag': 'jerma', 'test': 'sig_auth'}
@@ -279,6 +281,7 @@
       - {'tag': 'jerma', 'test': 'sig_network_features'}
       - {'tag': 'jerma', 'test': 'sig_node'}
       - {'tag': 'jerma', 'test': 'sig_storage'}
+      - {'tag': 'iruya', 'test': 'k8s_conformance_serial'}
       - {'tag': 'iruya', 'test': 'sig_api_machinery'}
       - {'tag': 'iruya', 'test': 'sig_apps'}
       - {'tag': 'iruya', 'test': 'sig_auth'}
@@ -289,6 +292,7 @@
       - {'tag': 'iruya', 'test': 'sig_network_features'}
       - {'tag': 'iruya', 'test': 'sig_node'}
       - {'tag': 'iruya', 'test': 'sig_storage'}
+      - {'tag': 'hunter', 'test': 'k8s_conformance_serial'}
       - {'tag': 'hunter', 'test': 'sig_api_machinery'}
       - {'tag': 'hunter', 'test': 'sig_apps'}
       - {'tag': 'hunter', 'test': 'sig_auth'}
@@ -445,6 +449,8 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance_serial-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_api_machinery-run'
               <<: *functest-kubernetes-jobs
@@ -825,6 +831,8 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance_serial-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-sig_api_machinery-run'
               <<: *functest-kubernetes-jobs
