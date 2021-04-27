@@ -196,8 +196,15 @@
       - fourth
       - fifth
       - sixth
+      - eighth
     privileged: 'false'
     network: bridge
+    exclude:
+      - {'tag': 'leguer', 'test': 'eighth'}
+      - {'tag': 'kali', 'test': 'eighth'}
+      - {'tag': 'jerma', 'test': 'eighth'}
+      - {'tag': 'iruya', 'test': 'eighth'}
+      - {'tag': 'hunter', 'test': 'eighth'}
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-{test}-run'
 
@@ -300,6 +307,8 @@
             - name: 'xtesting-opnfv-xtesting-{tag}-fifth-run'
               <<: *xtesting-jobs
             - name: 'xtesting-opnfv-xtesting-{tag}-sixth-run'
+              <<: *xtesting-jobs
+            - name: 'xtesting-opnfv-xtesting-{tag}-eighth-run'
               <<: *xtesting-jobs
       - multijob:
           name: opnfv/xtesting-mts:{tag}
@@ -584,6 +593,8 @@
             - name: 'xtesting-opnfv-xtesting-{tag}-fifth-run'
               <<: *xtesting-jobs
             - name: 'xtesting-opnfv-xtesting-{tag}-sixth-run'
+              <<: *xtesting-jobs
+            - name: 'xtesting-opnfv-xtesting-{tag}-eighth-run'
               <<: *xtesting-jobs
       - multijob:
           name: opnfv/xtesting-mts:{tag}

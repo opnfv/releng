@@ -196,8 +196,25 @@
       - fourth
       - fifth
       - sixth
+      - eighth
     privileged: 'false'
     network: bridge
+    exclude:
+      - {'tag': 'leguer', 'test': 'eighth'}
+      - {'tag': 'kali', 'test': 'eighth'}
+      - {'tag': 'jerma', 'test': 'eighth'}
+      - {'tag': 'iruya', 'test': 'eighth'}
+      - {'tag': 'hunter', 'test': 'eighth'}
+      - {'tag': 'arm-leguer', 'test': 'eighth'}
+      - {'tag': 'arm-kali', 'test': 'eighth'}
+      - {'tag': 'arm-jerma', 'test': 'eighth'}
+      - {'tag': 'arm-iruya', 'test': 'eighth'}
+      - {'tag': 'arm-hunter', 'test': 'eighth'}
+      - {'tag': 'arm64-leguer', 'test': 'eighth'}
+      - {'tag': 'arm64-kali', 'test': 'eighth'}
+      - {'tag': 'arm64-jerma', 'test': 'eighth'}
+      - {'tag': 'arm64-iruya', 'test': 'eighth'}
+      - {'tag': 'arm64-hunter', 'test': 'eighth'}
     jobs:
       - 'xtesting-pi-{repo}-{container}-{tag}-{test}-run'
 
@@ -300,6 +317,8 @@
             - name: 'xtesting-pi-ollivier-xtesting-{tag}-fifth-run'
               <<: *xtesting-pi-jobs
             - name: 'xtesting-pi-ollivier-xtesting-{tag}-sixth-run'
+              <<: *xtesting-pi-jobs
+            - name: 'xtesting-pi-ollivier-xtesting-{tag}-eighth-run'
               <<: *xtesting-pi-jobs
       - multijob:
           name: ollivier/xtesting-mts:{tag}
