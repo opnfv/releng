@@ -17,6 +17,12 @@
           branch: master
           slave: lf-virtual1-6
           dependency: 3.13
+      - v1.21:
+          from:
+          buildargs:
+          branch: stable/v1.21
+          slave: lf-virtual1-6
+          dependency: 3.13
       - leguer:
           from:
           buildargs:
@@ -277,6 +283,7 @@
     network: bridge
     exclude:
       - {'tag': 'latest', 'test': 'k8s_io'}
+      - {'tag': 'v1.21', 'test': 'k8s_io'}
       - {'tag': 'jerma', 'test': 'k8s_io'}
       - {'tag': 'jerma', 'test': 'k8s_conformance_serial'}
       - {'tag': 'jerma', 'test': 'sig_api_machinery'}
@@ -430,9 +437,9 @@
     properties:
       - build-blocker:
           use-build-blocker: true
-          blocking-level: 'GLOBAL'
+          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-*-(daily|docker|review)$'
+            - '^functest-kubernetes-{tag}-(daily|docker|review)$'
     builders:
       - multijob:
           name: remove former images
@@ -803,9 +810,9 @@
     properties:
       - build-blocker:
           use-build-blocker: true
-          blocking-level: 'GLOBAL'
+          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-*-(daily|docker|review)$'
+            - '^functest-kubernetes-{tag}-(daily|docker|review)$'
     builders:
       - multijob:
           name: remove former images
@@ -1063,9 +1070,9 @@
     properties:
       - build-blocker:
           use-build-blocker: true
-          blocking-level: 'GLOBAL'
+          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-*-(daily|docker|review)$'
+            - '^functest-kubernetes-{tag}-(daily|docker|review)$'
     builders:
       - multijob:
           name: remove dependency
