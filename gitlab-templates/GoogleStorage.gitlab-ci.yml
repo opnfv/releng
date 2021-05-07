@@ -1,0 +1,30 @@
+# Template for uploading artifacts to Google Storage
+#
+# To upload artifacts to Google Storage, include this file in your
+# .gitlab-ci.yml file with the following stanza:
+#
+#   include:
+#     - project: anuket/releng
+#       file: '/gitlab-templates/GoogleStorage.gitlab-ci.yml'
+#
+# And append the following "- !reference.." line to the script portion
+# of a job where artifacts should be uploaded:
+#
+#   script:
+#      ...
+#      - !reference [.gsutil-install, script]
+#      ...
+#
+# After the script has been included `gsutil` will have access to the
+# necessary Google Storage bucket.
+---
+variables:
+  GS_URL: "artifacts.opnfv.org/$CI_PROJECT_NAME"
+  WORKSPACE: $CI_PROJECT_DIR
+
+.gsutil-install: &gsutil-install
+  script:
+    - dnf -y install python3-pip
+    - python3 -m pip install -U pip
+    - python3 -m pip install gsutil
+    - echo "$GSUTIL_CONFIG" > ~/.boto

@@ -1,0 +1,95 @@
+# ReadTheDocs Workflow
+#
+# This workflow adds these builds to projects:
+#
+#   docs-build:
+#       Generate a html sphinx-build from the $DOCS_DIRECTORY
+#
+#   docs-link-check:
+#       Run a non-blocking sphinx-build linkcheck against
+#       the $DOCS_DIRECTORY
+#
+#   pages:
+#       Serve the built documentation as the Gitlab Pages site for
+#       the project
+#
+# Both docs-build and docs-link-check run on merge requests and merges
+# to the default branch that modify files under the $DOCS_DIRECTORY,
+# while pages only run on merges.
+#
+# Scheduled builds can be enabled when creating a schedule job and
+# specifying DOCS_SCHEDULE = "true" in build variables
+---
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  DOCS_DIRECTORY: "docs"
+
+.docs-cache: &docs-cache
+  paths:
+    - .cache/pip
+    - venv/
+
+.docs-before-script: &docs-before-script
+  - python -V
+  - pip install virtualenv
+  - virtualenv venv
+  - source venv/bin/activate
+  - pip install Sphinx
+  - |
+    if [ -f "$DOCS_DIRECTORY/requirements.txt" ]; then
+      pip install -r "$DOCS_DIRECTORY/requirements.txt"
+    fi
+
+docs-build:
+  stage: build
+  image: python:3
+  before_script:
+    - *docs-before-script
+  script: |
+     sphinx-build -T -b html -D language=en $DOCS_DIRECTORY _build/html
+  cache: *docs-cache
+  artifacts:
+    paths:
+      - _build/html
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $DOCS_SCHEDULE != "true"
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - $DOCS_DIRECTORY/*
+
+docs-link-check:
+  stage: test
+  allow_failure: true
+  needs: []
+  image: python:3
+  before_script:
+    - *docs-before-script
+  script: |
+      sphinx-build -T -b linkcheck $DOCS_DIRECTORY _build/linkcheck
+  cache: *docs-cache
+  artifacts:
+    paths:
+      - _build/linkcheck
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $DOCS_SCHEDULE != "true"
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - $DOCS_DIRECTORY/*
+
+pages:
+  stage: deploy
+  image: python:3
+  script: |
+      mkdir public
+      mv _build/html/* public/
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - $DOCS_DIRECTORY/*
