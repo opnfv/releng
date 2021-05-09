@@ -293,8 +293,19 @@
     container: 'functest-kubernetes-benchmarking'
     test:
       - xrally_kubernetes_full
+      - netperf
     privileged: 'false'
     network: bridge
+    exclude:
+      - {'tag': 'v1.21', 'test': 'netperf'}
+      - {'tag': 'leguer', 'test': 'netperf'}
+      - {'tag': 'kali', 'test': 'netperf'}
+      - {'tag': 'arm-v1.21', 'test': 'netperf'}
+      - {'tag': 'arm-leguer', 'test': 'netperf'}
+      - {'tag': 'arm-kali', 'test': 'netperf'}
+      - {'tag': 'arm64-v1.21', 'test': 'netperf'}
+      - {'tag': 'arm64-leguer', 'test': 'netperf'}
+      - {'tag': 'arm64-kali', 'test': 'netperf'}
     jobs:
       - 'functest-kubernetes-pi-{repo}-{container}-{tag}-{test}-run'
 
@@ -465,6 +476,8 @@
           name: ollivier/functest-kubernetes-benchmarking:{tag}
           projects:
             - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking-{tag}-xrally_kubernetes_full-run'
+              <<: *functest-kubernetes-pi-jobs
+            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking-{tag}-netperf-run'
               <<: *functest-kubernetes-pi-jobs
       - multijob:
           name: ollivier/functest-kubernetes-cnf:{tag}

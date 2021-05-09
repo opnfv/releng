@@ -288,8 +288,13 @@
     container: 'functest-kubernetes-benchmarking'
     test:
       - xrally_kubernetes_full
+      - netperf
     privileged: 'false'
     network: bridge
+    exclude:
+      - {'tag': 'v1.21', 'test': 'netperf'}
+      - {'tag': 'leguer', 'test': 'netperf'}
+      - {'tag': 'kali', 'test': 'netperf'}
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
 
@@ -460,6 +465,8 @@
           name: opnfv/functest-kubernetes-benchmarking:{tag}
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-xrally_kubernetes_full-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-netperf-run'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-cnf:{tag}
@@ -854,6 +861,8 @@
           name: opnfv/functest-kubernetes-benchmarking:{tag}
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-xrally_kubernetes_full-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-netperf-run'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: opnfv/functest-kubernetes-cnf:{tag}
