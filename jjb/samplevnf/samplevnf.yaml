@@ -55,7 +55,7 @@
     builders:
       - shell: |
           cd $WORKSPACE/rapidvm/dib
-          bash build-image.sh -g {gs-pathname} -i {tag}
+          bash build-image.sh -g {gs-pathname} -i {tag} -w $WORKSPACE
 
 - job-template:
     name: 'rapid-prox-verify-{stream}'
@@ -101,4 +101,4 @@
           sudo pip install tox-pip-version
           cd $WORKSPACE && tox -e docs
           cd $WORKSPACE/rapidvm/dib
-          bash build-image.sh -g {gs-pathname} -i {tag} -v
+          bash build-image.sh -g {gs-pathname} -i {tag} -v -w $WORKSPACE
