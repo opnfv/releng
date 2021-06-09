@@ -1,0 +1,52 @@
+- builder:
+    name: xtestingci-tests
+    builders:
+      - shell: |
+          set +x
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
+          chmod +x ./kind
+          mv ./kind /usr/local/bin/kind
+          kind delete clusters xtesting
+          sudo docker ps -aq |xargs docker stop
+          sudo docker ps -aq |xargs docker rm
+          sudo rm -rf /data/*
+          sudo pip3 install ansible
+          ansible-galaxy install -f collivier.xtesting
+          ansible-galaxy collection install -f -r ~/.ansible/roles/collivier.xtesting/requirements.yml
+          ansible-playbook -vv ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml
+
+- parameter:
+    name: xtestingci-slave
+    parameters:
+      - label:
+          name: slave
+          default: '{slave}'
+
+- job-template:
+    name: 'xtestingci-tests-{playbook}'
+    parameters:
+      - xtestingci-slave:
+          slave: '{slave}'
+    builders:
+      - xtestingci-tests:
+          playbook: '{playbook}'
+
+- project:
+    name: xtestingci-tests
+    slave: master
+    playbook:
+      - all
+    jobs:
+      - 'xtestingci-tests-{playbook}'
+
+- view:
+    name: xtestingci
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^xtestingci-tests-.*$
