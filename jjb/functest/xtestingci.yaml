@@ -28,6 +28,12 @@
     parameters:
       - xtestingci-slave:
           slave: '{slave}'
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^xtestingci-tests-.*$'
     builders:
       - xtestingci-tests:
           playbook: '{playbook}'
@@ -37,6 +43,7 @@
     slave: lf-virtual1
     playbook:
       - all
+      - kubernetes0
     jobs:
       - 'xtestingci-tests-{playbook}'
 
