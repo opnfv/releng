@@ -1,6 +1,6 @@
 ---
 - builder:
-    name: xtestingci-tests
+    name: xtesting-ci-tests
     builders:
       - shell: |
           set +x
@@ -17,29 +17,29 @@
           ansible-playbook -vv ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml
 
 - parameter:
-    name: xtestingci-slave
+    name: xtesting-ci-slave
     parameters:
       - label:
           name: slave
           default: '{slave}'
 
 - job-template:
-    name: 'xtestingci-tests-{playbook}'
+    name: 'xtesting-ci-tests-{playbook}'
     parameters:
-      - xtestingci-slave:
+      - xtesting-ci-slave:
           slave: '{slave}'
     properties:
       - build-blocker:
           use-build-blocker: true
           blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtestingci-tests-.*$'
+            - '^xtesting-ci-tests-.*$'
     builders:
-      - xtestingci-tests:
+      - xtesting-ci-tests:
           playbook: '{playbook}'
 
 - project:
-    name: xtestingci-tests
+    name: xtesting-ci-tests
     slave: lf-virtual1
     playbook:
       - all
@@ -60,10 +60,10 @@
       - k8s_gitlab_kind3
 
     jobs:
-      - 'xtestingci-tests-{playbook}'
+      - 'xtesting-ci-tests-{playbook}'
 
 - view:
-    name: xtestingci
+    name: xtesting-ci
     view-type: list
     columns:
       - status
@@ -72,4 +72,4 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^xtestingci-tests-.*$
+    regex: ^xtesting-ci-tests-.*$
