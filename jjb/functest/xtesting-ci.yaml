@@ -7,6 +7,9 @@
           curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
           chmod +x ./kind
           sudo mv ./kind /usr/local/bin/kind
+          rm -f /etc/systemd/system/docker.service.d/http-proxy.conf
+          sudo systemctl daemon-reload
+          sudo systemctl restart docker
           kind delete clusters xtesting jenkins gitlab | true
           sudo docker ps -aq |xargs sudo docker stop | true
           sudo docker ps -aq |xargs sudo docker rm | true
@@ -25,6 +28,8 @@
 
 - job-template:
     name: 'xtesting-ci-tests-{playbook}'
+    triggers:
+      - timed: '@daily'
     parameters:
       - xtesting-ci-slave:
           slave: '{slave}'
