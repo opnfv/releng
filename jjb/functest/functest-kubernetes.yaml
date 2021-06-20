@@ -60,6 +60,13 @@
           name: DEPLOY_SCENARIO
           default: k8-nosdn-nofeature-noha
 
+- parameter:
+    name: functest-kubernetes-E2E_TEST_OPTS
+    parameters:
+      - string:
+          name: E2E_TEST_OPTS
+          default: container-runtime:containerd
+
 - functest-kubernetes-run-containers: &functest-kubernetes-run-containers
     name: 'functest-kubernetes-run-containers'
     <<: *functest-kubernetes-containers
@@ -107,6 +114,7 @@
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEPLOY_SCENARIO=$DEPLOY_SCENARIO \
+            -e E2E_TEST_OPTS=$E2E_TEST_OPTS \
             -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
             $image run_tests -t {test} -p -r
 
@@ -221,6 +229,8 @@
           build_tag: ''
       - functest-kubernetes-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-E2E_TEST_OPTS:
+          E2E_TEST_OPTS: container-runtime:containerd
     builders:
       - functest-kubernetes-run-containers:
           <<: *functest-kubernetes-run-containers
@@ -331,6 +341,7 @@
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DEPLOY_SCENARIO=$DEPLOY_SCENARIO \
+            -e E2E_TEST_OPTS=$E2E_TEST_OPTS \
             -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
             $image zip_campaign
 
@@ -343,6 +354,8 @@
           build_tag: ''
       - functest-kubernetes-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-E2E_TEST_OPTS:
+          E2E_TEST_OPTS: container-runtime:containerd
     builders:
       - functest-kubernetes-zip:
           <<: *functest-kubernetes-containers
@@ -366,6 +379,8 @@
           build_tag: ''
       - functest-kubernetes-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-E2E_TEST_OPTS:
+          E2E_TEST_OPTS: container-runtime:containerd
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -741,6 +756,8 @@
           build_tag: ''
       - functest-kubernetes-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-E2E_TEST_OPTS:
+          E2E_TEST_OPTS: container-runtime:containerd
     properties:
       - build-blocker:
           use-build-blocker: true
