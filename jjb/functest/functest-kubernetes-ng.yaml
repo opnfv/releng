@@ -30,6 +30,7 @@
           buildargs: --build-arg K8S_TAG=1.18
           from: s/:kali$/:v1.18/g
 
+
 - functest-kubernetes-ng-jobs: &functest-kubernetes-ng-jobs
     name: 'functest-kubernetes-ng-jobs'
     current-parameters: true
@@ -257,10 +258,9 @@
           slave: '{slave}'
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-ng-{tag}-(daily|docker|review)$'
+          - ^functest-kubernetes-ng-{tag}-(daily|docker|review)$
+
     builders:
       - multijob:
           name: remove dependency

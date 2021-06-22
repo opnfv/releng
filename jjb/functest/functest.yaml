@@ -47,6 +47,7 @@
           DASHBOARD_URL: http://172.30.12.83
           dependency: 3.10
 
+
 - functest-jobs: &functest-jobs
     name: 'functest-jobs'
     current-parameters: true
@@ -324,31 +325,57 @@
     privileged: 'false'
     network: bridge
     exclude:
-      - {'tag': 'latest', 'test': 'refstack_defcore'}
-      - {'tag': 'latest', 'test': 'networking-bgpvpn'}
-      - {'tag': 'latest', 'test': 'networking-sfc'}
-      - {'tag': 'latest', 'test': 'patrole'}
-      - {'tag': 'wallaby', 'test': 'refstack_defcore'}
-      - {'tag': 'wallaby', 'test': 'networking-bgpvpn'}
-      - {'tag': 'wallaby', 'test': 'networking-sfc'}
-      - {'tag': 'wallaby', 'test': 'patrole'}
-      - {'tag': 'leguer', 'test': 'refstack_defcore'}
-      - {'tag': 'leguer', 'test': 'networking-bgpvpn'}
-      - {'tag': 'leguer', 'test': 'networking-sfc'}
-      - {'tag': 'leguer', 'test': 'patrole'}
-      - {'tag': 'kali', 'test': 'refstack_defcore'}
-      - {'tag': 'kali', 'test': 'networking-bgpvpn'}
-      - {'tag': 'kali', 'test': 'networking-sfc'}
-      - {'tag': 'kali', 'test': 'patrole_admin'}
-      - {'tag': 'kali', 'test': 'patrole_member'}
-      - {'tag': 'kali', 'test': 'patrole_reader'}
-      - {'tag': 'jerma', 'test': 'refstack_defcore'}
-      - {'tag': 'jerma', 'test': 'networking-bgpvpn'}
-      - {'tag': 'jerma', 'test': 'networking-sfc'}
-      - {'tag': 'jerma', 'test': 'patrole_admin'}
-      - {'tag': 'jerma', 'test': 'patrole_member'}
-      - {'tag': 'jerma', 'test': 'patrole_reader'}
-      - {'tag': 'jerma', 'test': 'tempest_cyborg'}
+      - tag: latest
+        test: refstack_defcore
+      - tag: latest
+        test: networking-bgpvpn
+      - tag: latest
+        test: networking-sfc
+      - tag: latest
+        test: patrole
+      - tag: wallaby
+        test: refstack_defcore
+      - tag: wallaby
+        test: networking-bgpvpn
+      - tag: wallaby
+        test: networking-sfc
+      - tag: wallaby
+        test: patrole
+      - tag: leguer
+        test: refstack_defcore
+      - tag: leguer
+        test: networking-bgpvpn
+      - tag: leguer
+        test: networking-sfc
+      - tag: leguer
+        test: patrole
+      - tag: kali
+        test: refstack_defcore
+      - tag: kali
+        test: networking-bgpvpn
+      - tag: kali
+        test: networking-sfc
+      - tag: kali
+        test: patrole_admin
+      - tag: kali
+        test: patrole_member
+      - tag: kali
+        test: patrole_reader
+      - tag: jerma
+        test: refstack_defcore
+      - tag: jerma
+        test: networking-bgpvpn
+      - tag: jerma
+        test: networking-sfc
+      - tag: jerma
+        test: patrole_admin
+      - tag: jerma
+        test: patrole_member
+      - tag: jerma
+        test: patrole_reader
+      - tag: jerma
+        test: tempest_cyborg
+
     jobs:
       - 'functest-{repo}-{container}-{tag}-{test}-run'
 
@@ -483,10 +510,9 @@
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-{tag}-(daily|docker|review)$'
+          - ^functest-(pi-)*{tag}-(daily|docker|review)$
+
     builders:
       - multijob:
           name: remove former images
@@ -942,10 +968,9 @@
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-{tag}-(daily|docker|review)$'
+          - ^functest-(pi-)*{tag}-(daily|docker|review)$
+
     builders:
       - multijob:
           name: remove former images
@@ -1286,10 +1311,9 @@
           slave: '{slave}'
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-{tag}-(daily|docker|review)$'
+          - ^functest-(pi-)*{tag}-(daily|docker|review)$
+
     builders:
       - multijob:
           name: remove dependency

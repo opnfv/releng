@@ -36,6 +36,7 @@
           slave: lf-virtual1-4
           dependency: 3.11
 
+
 - functest-kubernetes-jobs: &functest-kubernetes-jobs
     name: 'functest-kubernetes-jobs'
     current-parameters: true
@@ -59,7 +60,6 @@
       - string:
           name: DEPLOY_SCENARIO
           default: k8-nosdn-nofeature-noha
-
 - parameter:
     name: functest-kubernetes-E2E_TEST_OPTS
     parameters:
@@ -274,8 +274,11 @@
     privileged: 'false'
     network: bridge
     exclude:
-      - {'tag': 'latest', 'test': 'k8s_io'}
-      - {'tag': 'v1.21', 'test': 'k8s_io'}
+      - tag: latest
+        test: k8s_io
+      - tag: v1.21
+        test: k8s_io
+
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
 
@@ -383,10 +386,9 @@
           E2E_TEST_OPTS: container-runtime:containerd
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-{tag}-(daily|docker|review)$'
+          - ^functest-kubernetes-(pi-)*{tag}-(daily|docker|review)$
+
     builders:
       - multijob:
           name: remove former images
@@ -760,10 +762,9 @@
           E2E_TEST_OPTS: container-runtime:containerd
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-{tag}-(daily|docker|review)$'
+          - ^functest-kubernetes-(pi-)*{tag}-(daily|docker|review)$
+
     builders:
       - multijob:
           name: remove former images
@@ -1022,10 +1023,9 @@
           slave: '{slave}'
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-{tag}-(daily|docker|review)$'
+          - ^functest-kubernetes-(pi-)*{tag}-(daily|docker|review)$
+
     builders:
       - multijob:
           name: remove dependency

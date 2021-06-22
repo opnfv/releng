@@ -42,6 +42,7 @@
           slave: lf-virtual1
           dependency: 3.10
 
+
 - xtesting-jobs: &xtesting-jobs
     name: 'xtesting-jobs'
     current-parameters: true
@@ -194,9 +195,13 @@
     privileged: 'false'
     network: bridge
     exclude:
-      - {'tag': 'leguer', 'test': 'eighth'}
-      - {'tag': 'kali', 'test': 'eighth'}
-      - {'tag': 'jerma', 'test': 'eighth'}
+      - tag: leguer
+        test: eighth
+      - tag: kali
+        test: eighth
+      - tag: jerma
+        test: eighth
+
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-{test}-run'
 
@@ -266,10 +271,9 @@
           build_tag: ''
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-{tag}-(daily|docker|review)$'
+          - ^xtesting-(pi-)*{tag}-(daily|docker|review)$
+
     builders:
       - multijob:
           name: remove former images
@@ -539,10 +543,9 @@
           build_tag: ''
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-{tag}-(daily|docker|review)$'
+          - ^xtesting-(pi-)*{tag}-(daily|docker|review)$
+
     builders:
       - multijob:
           name: remove former images
@@ -693,10 +696,9 @@
           slave: '{slave}'
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-{tag}-(daily|docker|review)$'
+          - ^xtesting-(pi-)*{tag}-(daily|docker|review)$
+
     builders:
       - multijob:
           name: remove dependency

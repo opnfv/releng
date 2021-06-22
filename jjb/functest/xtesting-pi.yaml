@@ -42,6 +42,7 @@
       - arm64-jerma:
           slave: lf-virtual1
 
+
 - xtesting-pi-jobs: &xtesting-pi-jobs
     name: 'xtesting-pi-jobs'
     current-parameters: true
@@ -194,15 +195,25 @@
     privileged: 'false'
     network: bridge
     exclude:
-      - {'tag': 'leguer', 'test': 'eighth'}
-      - {'tag': 'kali', 'test': 'eighth'}
-      - {'tag': 'jerma', 'test': 'eighth'}
-      - {'tag': 'arm-leguer', 'test': 'eighth'}
-      - {'tag': 'arm-kali', 'test': 'eighth'}
-      - {'tag': 'arm-jerma', 'test': 'eighth'}
-      - {'tag': 'arm64-leguer', 'test': 'eighth'}
-      - {'tag': 'arm64-kali', 'test': 'eighth'}
-      - {'tag': 'arm64-jerma', 'test': 'eighth'}
+      - tag: leguer
+        test: eighth
+      - tag: kali
+        test: eighth
+      - tag: jerma
+        test: eighth
+      - tag: arm-leguer
+        test: eighth
+      - tag: arm-kali
+        test: eighth
+      - tag: arm-jerma
+        test: eighth
+      - tag: arm64-leguer
+        test: eighth
+      - tag: arm64-kali
+        test: eighth
+      - tag: arm64-jerma
+        test: eighth
+
     jobs:
       - 'xtesting-pi-{repo}-{container}-{tag}-{test}-run'
 
@@ -272,10 +283,9 @@
           build_tag: ''
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-pi-{tag}-(daily|docker|review)$'
+          - ^xtesting-(pi-)*{tag}-(daily|docker|review)$
+
     builders:
       - multijob:
           name: remove former images
