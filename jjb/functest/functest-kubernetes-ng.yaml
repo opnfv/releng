@@ -41,7 +41,6 @@
           name: slave
           default: '{slave}'
 
-
 - functest-kubernetes-ng-build-containers: &functest-kubernetes-ng-build-containers
     name: 'functest-kubernetes-ng-build-containers'
     <<: *functest-kubernetes-ng-containers
@@ -151,7 +150,6 @@
     jobs:
       - 'functest-kubernetes-ng-{repo}-{tag}-dep-rmi'
 
-
 - builder:
     name: functest-kubernetes-ng-push-containers
     builders:
@@ -243,7 +241,6 @@
     jobs:
       - 'functest-kubernetes-ng-{repo}-{container}-{tag}-build'
 
-
 - job-template:
     name: 'functest-kubernetes-ng-{tag}-docker'
     project-type: multijob
@@ -257,10 +254,8 @@
           slave: '{slave}'
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-ng-{tag}-(daily|docker|review)$'
+          - ^functest-kubernetes-ng-{tag}-(daily|docker|review)$
     builders:
       - multijob:
           name: remove dependency

@@ -59,7 +59,6 @@
       - random-string:
           name: build_tag
 
-
 - xtesting-run-containers: &xtesting-run-containers
     name: 'xtesting-run-containers'
     <<: *xtesting-containers
@@ -194,9 +193,12 @@
     privileged: 'false'
     network: bridge
     exclude:
-      - {'tag': 'leguer', 'test': 'eighth'}
-      - {'tag': 'kali', 'test': 'eighth'}
-      - {'tag': 'jerma', 'test': 'eighth'}
+      - tag: leguer
+        test: eighth
+      - tag: kali
+        test: eighth
+      - tag: jerma
+        test: eighth
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-{test}-run'
 
@@ -266,10 +268,8 @@
           build_tag: ''
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-{tag}-(daily|docker|review)$'
+          - ^xtesting-(pi-)*{tag}-(daily|docker|review)$
     builders:
       - multijob:
           name: remove former images
@@ -508,7 +508,6 @@
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-gate'
 
-
 - trigger:
     name: xtesting-patchset-created
     triggers:
@@ -539,10 +538,8 @@
           build_tag: ''
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-{tag}-(daily|docker|review)$'
+          - ^xtesting-(pi-)*{tag}-(daily|docker|review)$
     builders:
       - multijob:
           name: remove former images
@@ -679,7 +676,6 @@
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-build'
 
-
 - job-template:
     name: 'xtesting-{tag}-docker'
     project-type: multijob
@@ -693,10 +689,8 @@
           slave: '{slave}'
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-{tag}-(daily|docker|review)$'
+          - ^xtesting-(pi-)*{tag}-(daily|docker|review)$
     builders:
       - multijob:
           name: remove dependency
