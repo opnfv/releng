@@ -274,8 +274,10 @@
     privileged: 'false'
     network: bridge
     exclude:
-      - {'tag': 'latest', 'test': 'k8s_io'}
-      - {'tag': 'v1.21', 'test': 'k8s_io'}
+      - tag: latest
+        test: k8s_io
+      - tag: v1.21
+        test: k8s_io
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-{test}-run'
 
@@ -381,12 +383,14 @@
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
       - functest-kubernetes-E2E_TEST_OPTS:
           E2E_TEST_OPTS: container-runtime:containerd
+    # PyYAML and yamllint differ here
+    # see https://github.com/yaml/pyyaml/issues/234
+    # yamllint disable rule:indentation
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-{tag}-(daily|docker|review)$'
+          - ^functest-kubernetes-(pi-)*{tag}-(daily|docker|review)$
+    # yamllint enable rule:indentation
     builders:
       - multijob:
           name: remove former images
@@ -725,7 +729,6 @@
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-gate'
 
-
 - trigger:
     name: functest-kubernetes-patchset-created
     triggers:
@@ -758,12 +761,14 @@
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
       - functest-kubernetes-E2E_TEST_OPTS:
           E2E_TEST_OPTS: container-runtime:containerd
+    # PyYAML and yamllint differ here
+    # see https://github.com/yaml/pyyaml/issues/234
+    # yamllint disable rule:indentation
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-{tag}-(daily|docker|review)$'
+          - ^functest-kubernetes-(pi-)*{tag}-(daily|docker|review)$
+    # yamllint enable rule:indentation
     builders:
       - multijob:
           name: remove former images
@@ -1008,7 +1013,6 @@
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-build'
 
-
 - job-template:
     name: 'functest-kubernetes-{tag}-docker'
     project-type: multijob
@@ -1020,12 +1024,14 @@
     parameters:
       - functest-kubernetes-slave:
           slave: '{slave}'
+    # PyYAML and yamllint differ here
+    # see https://github.com/yaml/pyyaml/issues/234
+    # yamllint disable rule:indentation
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-{tag}-(daily|docker|review)$'
+          - ^functest-kubernetes-(pi-)*{tag}-(daily|docker|review)$
+    # yamllint enable rule:indentation
     builders:
       - multijob:
           name: remove dependency

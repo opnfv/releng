@@ -41,7 +41,6 @@
           name: slave
           default: '{slave}'
 
-
 - functest-kubernetes-ng-build-containers: &functest-kubernetes-ng-build-containers
     name: 'functest-kubernetes-ng-build-containers'
     <<: *functest-kubernetes-ng-containers
@@ -151,7 +150,6 @@
     jobs:
       - 'functest-kubernetes-ng-{repo}-{tag}-dep-rmi'
 
-
 - builder:
     name: functest-kubernetes-ng-push-containers
     builders:
@@ -243,7 +241,6 @@
     jobs:
       - 'functest-kubernetes-ng-{repo}-{container}-{tag}-build'
 
-
 - job-template:
     name: 'functest-kubernetes-ng-{tag}-docker'
     project-type: multijob
@@ -255,12 +252,14 @@
     parameters:
       - functest-kubernetes-ng-slave:
           slave: '{slave}'
+    # PyYAML and yamllint differ here
+    # see https://github.com/yaml/pyyaml/issues/234
+    # yamllint disable rule:indentation
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-ng-{tag}-(daily|docker|review)$'
+          - ^functest-kubernetes-ng-{tag}-(daily|docker|review)$
+    # yamllint enable rule:indentation
     builders:
       - multijob:
           name: remove dependency

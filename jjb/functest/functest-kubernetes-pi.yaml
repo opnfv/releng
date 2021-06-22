@@ -274,13 +274,20 @@
     privileged: 'false'
     network: bridge
     exclude:
-      - {'tag': 'latest', 'test': 'k8s_io'}
-      - {'tag': 'v1.21', 'test': 'k8s_io'}
-      - {'tag': 'jerma', 'test': 'k8s_io'}
-      - {'tag': 'arm-latest', 'test': 'k8s_io'}
-      - {'tag': 'arm-v1.21', 'test': 'k8s_io'}
-      - {'tag': 'arm64-latest', 'test': 'k8s_io'}
-      - {'tag': 'arm64-v1.21', 'test': 'k8s_io'}
+      - tag: latest
+        test: k8s_io
+      - tag: v1.21
+        test: k8s_io
+      - tag: jerma
+        test: k8s_io
+      - tag: arm-latest
+        test: k8s_io
+      - tag: arm-v1.21
+        test: k8s_io
+      - tag: arm64-latest
+        test: k8s_io
+      - tag: arm64-v1.21
+        test: k8s_io
     jobs:
       - 'functest-kubernetes-pi-{repo}-{container}-{tag}-{test}-run'
 
@@ -386,12 +393,14 @@
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
       - functest-kubernetes-pi-E2E_TEST_OPTS:
           E2E_TEST_OPTS: container-runtime:containerd
+    # PyYAML and yamllint differ here
+    # see https://github.com/yaml/pyyaml/issues/234
+    # yamllint disable rule:indentation
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^functest-kubernetes-pi-{tag}-(daily|docker|review)$'
+          - ^functest-kubernetes-(pi-)*{tag}-(daily|docker|review)$
+    # yamllint enable rule:indentation
     builders:
       - multijob:
           name: remove former images

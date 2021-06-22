@@ -59,7 +59,6 @@
       - random-string:
           name: build_tag
 
-
 - xtesting-run-containers: &xtesting-run-containers
     name: 'xtesting-run-containers'
     <<: *xtesting-containers
@@ -194,9 +193,12 @@
     privileged: 'false'
     network: bridge
     exclude:
-      - {'tag': 'leguer', 'test': 'eighth'}
-      - {'tag': 'kali', 'test': 'eighth'}
-      - {'tag': 'jerma', 'test': 'eighth'}
+      - tag: leguer
+        test: eighth
+      - tag: kali
+        test: eighth
+      - tag: jerma
+        test: eighth
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-{test}-run'
 
@@ -264,12 +266,14 @@
           slave: '{slave}'
       - xtesting-build_tag:
           build_tag: ''
+    # PyYAML and yamllint differ here
+    # see https://github.com/yaml/pyyaml/issues/234
+    # yamllint disable rule:indentation
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-{tag}-(daily|docker|review)$'
+          - ^xtesting-(pi-)*{tag}-(daily|docker|review)$
+    # yamllint enable rule:indentation
     builders:
       - multijob:
           name: remove former images
@@ -508,7 +512,6 @@
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-gate'
 
-
 - trigger:
     name: xtesting-patchset-created
     triggers:
@@ -537,12 +540,14 @@
           slave: '{slave}'
       - xtesting-build_tag:
           build_tag: ''
+    # PyYAML and yamllint differ here
+    # see https://github.com/yaml/pyyaml/issues/234
+    # yamllint disable rule:indentation
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-{tag}-(daily|docker|review)$'
+          - ^xtesting-(pi-)*{tag}-(daily|docker|review)$
+    # yamllint enable rule:indentation
     builders:
       - multijob:
           name: remove former images
@@ -679,7 +684,6 @@
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-build'
 
-
 - job-template:
     name: 'xtesting-{tag}-docker'
     project-type: multijob
@@ -691,12 +695,14 @@
     parameters:
       - xtesting-slave:
           slave: '{slave}'
+    # PyYAML and yamllint differ here
+    # see https://github.com/yaml/pyyaml/issues/234
+    # yamllint disable rule:indentation
     properties:
       - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
           blocking-jobs:
-            - '^xtesting-{tag}-(daily|docker|review)$'
+          - ^xtesting-(pi-)*{tag}-(daily|docker|review)$
+    # yamllint enable rule:indentation
     builders:
       - multijob:
           name: remove dependency
