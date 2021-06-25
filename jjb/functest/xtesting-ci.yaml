@@ -25,6 +25,7 @@
             ansible-galaxy install -f git+https://github.com/collivier/ansible-role-xtesting.git,{release}
             mv ~/.ansible/roles/ansible-role-xtesting ~/.ansible/roles/collivier.xtesting ;;
           esac
+          (cd ~/.ansible/roles/collivier.xtesting; patch -p1 < tests/docker_config_json.patch)
           ansible-galaxy collection install -f -r ~/.ansible/roles/collivier.xtesting/requirements.yml
           ansible-playbook -vvvv ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml
 
