@@ -19,10 +19,14 @@
 #
 # Scheduled builds can be enabled when creating a schedule job and
 # specifying DOCS_SCHEDULE = "true" in build variables
+#
+# If extra dependencies are needed for builds they will be installed
+# from the $DOCS_REQUIREMENTS location.
 ---
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   DOCS_DIRECTORY: "docs"
+  DOCS_REQUIREMENTS: "$DOCS_DIRECTORY/requirements.txt"
 
 .docs-cache: &docs-cache
   paths:
@@ -36,8 +40,8 @@ variables:
   - source venv/bin/activate
   - pip install Sphinx
   - |
-    if [ -f "$DOCS_DIRECTORY/requirements.txt" ]; then
-      pip install -r "$DOCS_DIRECTORY/requirements.txt"
+    if [ -f "$DOCS_REQUIREMENTS" ]; then
+      pip install -r "$DOCS_REQUIREMENTS"
     fi
 
 docs-build:
