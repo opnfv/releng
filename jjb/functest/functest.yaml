@@ -90,6 +90,8 @@
     <<: *functest-containers
     test: '{test}'
     privileged: '{privileged}'
+    volumes: '{volumes}'
+    env: '{env}'
     network: '{network}'
     DASHBOARD_URL: '{DASHBOARD_URL}'
 
@@ -112,6 +114,8 @@
     builders:
       - shell: |
           set +x
+          volumes=; for i in $(echo {volumes} | tr -d '[] ' |sed "s/,/ /g" ); do volumes="-v $i $volumes"; done
+          env=; for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -123,6 +127,8 @@
           sudo docker run --rm \
             --privileged={privileged} \
             --network={network} \
+            $volumes \
+            $env \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
@@ -132,12 +138,7 @@
             -e NODE_NAME=$slave \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
-            -e EXTERNAL_NETWORK=$EXTERNAL_NETWORK \
-            -e VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME \
-            -e IMAGE_PROPERTIES=$IMAGE_PROPERTIES \
             -e DASHBOARD_URL={DASHBOARD_URL} \
-            -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
-            -v /home/opnfv/functest/images:/home/opnfv/functest/images \
             $image run_tests -t {test} -p -r
 
 - builder:
@@ -257,7 +258,7 @@
       - 'functest-{repo}-{container}-{tag}-rmi'
 
 - job-template:
-    name: 'functest-{repo}-{container}-{tag}-{test}-run'
+    name: 'functest-opnfv-functest-healthcheck-{tag}-{test}-run'
     parameters:
       - functest-slave:
           slave: '{slave}'
@@ -276,6 +277,13 @@
 - project:
     name: 'functest-opnfv-functest-healthcheck'
     <<: *functest-params
+    volumes:
+      - /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file
+      - /home/opnfv/functest/images:/home/opnfv/functest/images
+    env:
+      - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
+      - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
+      - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
     container: 'functest-healthcheck'
     test:
       - connection_check
@@ -294,11 +302,35 @@
     privileged: 'false'
     network: bridge
     jobs:
-      - 'functest-{repo}-{container}-{tag}-{test}-run'
+      - 'functest-opnfv-functest-healthcheck-{tag}-{test}-run'
+
+- job-template:
+    name: 'functest-opnfv-functest-smoke-{tag}-{test}-run'
+    parameters:
+      - functest-slave:
+          slave: '{slave}'
+      - functest-build_tag:
+          build_tag: ''
+      - functest-EXTERNAL_NETWORK:
+          EXTERNAL_NETWORK: public
+      - functest-VOLUME_DEVICE_NAME:
+          VOLUME_DEVICE_NAME: sdb
+      - functest-IMAGE_PROPERTIES:
+          IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+    builders:
+      - functest-run-containers:
+          <<: *functest-run-containers
 
 - project:
     name: 'functest-opnfv-functest-smoke'
     <<: *functest-params
+    volumes:
+      - /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file
+      - /home/opnfv/functest/images:/home/opnfv/functest/images
+    env:
+      - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
+      - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
+      - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
     container: 'functest-smoke'
     test:
       - tempest_neutron
@@ -377,11 +409,35 @@
       - tag: jerma
         test: tempest_cyborg
     jobs:
-      - 'functest-{repo}-{container}-{tag}-{test}-run'
+      - 'functest-opnfv-functest-smoke-{tag}-{test}-run'
+
+- job-template:
+    name: 'functest-opnfv-functest-smoke-cntt-{tag}-{test}-run'
+    parameters:
+      - functest-slave:
+          slave: '{slave}'
+      - functest-build_tag:
+          build_tag: ''
+      - functest-EXTERNAL_NETWORK:
+          EXTERNAL_NETWORK: public
+      - functest-VOLUME_DEVICE_NAME:
+          VOLUME_DEVICE_NAME: sdb
+      - functest-IMAGE_PROPERTIES:
+          IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+    builders:
+      - functest-run-containers:
+          <<: *functest-run-containers
 
 - project:
     name: 'functest-opnfv-functest-smoke-cntt'
     <<: *functest-params
+    volumes:
+      - /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file
+      - /home/opnfv/functest/images:/home/opnfv/functest/images
+    env:
+      - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
+      - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
+      - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
     container: 'functest-smoke-cntt'
     test:
       - tempest_neutron_cntt
@@ -395,11 +451,35 @@
     privileged: 'false'
     network: bridge
     jobs:
-      - 'functest-{repo}-{container}-{tag}-{test}-run'
+      - 'functest-opnfv-functest-smoke-cntt-{tag}-{test}-run'
+
+- job-template:
+    name: 'functest-opnfv-functest-benchmarking-{tag}-{test}-run'
+    parameters:
+      - functest-slave:
+          slave: '{slave}'
+      - functest-build_tag:
+          build_tag: ''
+      - functest-EXTERNAL_NETWORK:
+          EXTERNAL_NETWORK: public
+      - functest-VOLUME_DEVICE_NAME:
+          VOLUME_DEVICE_NAME: sdb
+      - functest-IMAGE_PROPERTIES:
+          IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+    builders:
+      - functest-run-containers:
+          <<: *functest-run-containers
 
 - project:
     name: 'functest-opnfv-functest-benchmarking'
     <<: *functest-params
+    volumes:
+      - /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file
+      - /home/opnfv/functest/images:/home/opnfv/functest/images
+    env:
+      - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
+      - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
+      - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
     container: 'functest-benchmarking'
     test:
       - rally_full
@@ -409,11 +489,35 @@
     privileged: 'false'
     network: bridge
     jobs:
-      - 'functest-{repo}-{container}-{tag}-{test}-run'
+      - 'functest-opnfv-functest-benchmarking-{tag}-{test}-run'
+
+- job-template:
+    name: 'functest-opnfv-functest-benchmarking-cntt-{tag}-{test}-run'
+    parameters:
+      - functest-slave:
+          slave: '{slave}'
+      - functest-build_tag:
+          build_tag: ''
+      - functest-EXTERNAL_NETWORK:
+          EXTERNAL_NETWORK: public
+      - functest-VOLUME_DEVICE_NAME:
+          VOLUME_DEVICE_NAME: sdb
+      - functest-IMAGE_PROPERTIES:
+          IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+    builders:
+      - functest-run-containers:
+          <<: *functest-run-containers
 
 - project:
     name: 'functest-opnfv-functest-benchmarking-cntt'
     <<: *functest-params
+    volumes:
+      - /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file
+      - /home/opnfv/functest/images:/home/opnfv/functest/images
+    env:
+      - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
+      - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
+      - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
     container: 'functest-benchmarking-cntt'
     test:
       - rally_full_cntt
@@ -421,11 +525,35 @@
     privileged: 'false'
     network: bridge
     jobs:
-      - 'functest-{repo}-{container}-{tag}-{test}-run'
+      - 'functest-opnfv-functest-benchmarking-cntt-{tag}-{test}-run'
+
+- job-template:
+    name: 'functest-opnfv-functest-vnf-{tag}-{test}-run'
+    parameters:
+      - functest-slave:
+          slave: '{slave}'
+      - functest-build_tag:
+          build_tag: ''
+      - functest-EXTERNAL_NETWORK:
+          EXTERNAL_NETWORK: public
+      - functest-VOLUME_DEVICE_NAME:
+          VOLUME_DEVICE_NAME: sdb
+      - functest-IMAGE_PROPERTIES:
+          IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+    builders:
+      - functest-run-containers:
+          <<: *functest-run-containers
 
 - project:
     name: 'functest-opnfv-functest-vnf'
     <<: *functest-params
+    volumes:
+      - /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file
+      - /home/opnfv/functest/images:/home/opnfv/functest/images
+    env:
+      - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
+      - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
+      - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
     container: 'functest-vnf'
     test:
       - cloudify
@@ -436,13 +564,15 @@
     privileged: 'false'
     network: bridge
     jobs:
-      - 'functest-{repo}-{container}-{tag}-{test}-run'
+      - 'functest-opnfv-functest-vnf-{tag}-{test}-run'
 
 - builder:
     name: functest-zip
     builders:
       - shell: |
           set +x
+          volumes=; for i in $(echo {volumes} | tr -d '[] ' |sed "s/,/ /g" ); do volumes="-v $i $volumes"; done
+          env=; for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -452,6 +582,8 @@
             image={repo}:{port}/{container}:{tag}
           fi
           sudo docker run --rm \
+            $volumes \
+            $env \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest \
@@ -460,11 +592,6 @@
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
-            -e EXTERNAL_NETWORK=$EXTERNAL_NETWORK \
-            -e VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME \
-            -e IMAGE_PROPERTIES=$IMAGE_PROPERTIES \
-            -v /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file \
-            -v /home/opnfv/functest/images:/home/opnfv/functest/images \
             $image zip_campaign
 
 - job-template:
@@ -483,10 +610,19 @@
     builders:
       - functest-zip:
           <<: *functest-containers
+          volumes: '{volumes}'
+          env: '{env}'
 
 - project:
     name: 'functest-{tag}-zip'
     <<: *functest-params
+    volumes:
+      - /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file
+      - /home/opnfv/functest/images:/home/opnfv/functest/images
+    env:
+      - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
+      - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
+      - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
     container: 'functest-healthcheck'
     jobs:
       - 'functest-{tag}-zip'

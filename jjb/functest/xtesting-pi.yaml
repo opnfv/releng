@@ -64,6 +64,8 @@
     <<: *xtesting-pi-containers
     test: '{test}'
     privileged: '{privileged}'
+    volumes: '{volumes}'
+    env: '{env}'
     network: '{network}'
 
 - builder:
@@ -85,6 +87,8 @@
     builders:
       - shell: |
           set +x
+          volumes=; for i in $(echo {volumes} | tr -d '[] ' |sed "s/,/ /g" ); do volumes="-v $i $volumes"; done
+          env=; for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -96,6 +100,8 @@
           sudo docker run --rm \
             --privileged={privileged} \
             --network={network} \
+            $volumes \
+            $env \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
@@ -168,7 +174,7 @@
       - 'xtesting-pi-{repo}-{container}-{tag}-rmi'
 
 - job-template:
-    name: 'xtesting-pi-{repo}-{container}-{tag}-{test}-run'
+    name: 'xtesting-pi-ollivier-xtesting-{tag}-{test}-run'
     parameters:
       - xtesting-pi-slave:
           slave: '{slave}'
@@ -181,6 +187,8 @@
 - project:
     name: 'xtesting-pi-ollivier-xtesting'
     <<: *xtesting-pi-params
+    volumes:
+    env:
     container: 'xtesting'
     test:
       - first
@@ -212,24 +220,39 @@
       - tag: arm64-jerma
         test: eighth
     jobs:
-      - 'xtesting-pi-{repo}-{container}-{tag}-{test}-run'
+      - 'xtesting-pi-ollivier-xtesting-{tag}-{test}-run'
+
+- job-template:
+    name: 'xtesting-pi-ollivier-xtesting-mts-{tag}-{test}-run'
+    parameters:
+      - xtesting-pi-slave:
+          slave: '{slave}'
+      - xtesting-pi-build_tag:
+          build_tag: ''
+    builders:
+      - xtesting-pi-run-containers:
+          <<: *xtesting-pi-run-containers
 
 - project:
     name: 'xtesting-pi-ollivier-xtesting-mts'
     <<: *xtesting-pi-params
+    volumes:
+    env:
     container: 'xtesting-mts'
     test:
       - seventh
     privileged: 'false'
     network: bridge
     jobs:
-      - 'xtesting-pi-{repo}-{container}-{tag}-{test}-run'
+      - 'xtesting-pi-ollivier-xtesting-mts-{tag}-{test}-run'
 
 - builder:
     name: xtesting-pi-zip
     builders:
       - shell: |
           set +x
+          volumes=; for i in $(echo {volumes} | tr -d '[] ' |sed "s/,/ /g" ); do volumes="-v $i $volumes"; done
+          env=; for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -239,6 +262,8 @@
             image={repo}:{port}/{container}:{tag}
           fi
           sudo docker run --rm \
+            $volumes \
+            $env \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting \
@@ -259,10 +284,14 @@
     builders:
       - xtesting-pi-zip:
           <<: *xtesting-pi-containers
+          volumes: '{volumes}'
+          env: '{env}'
 
 - project:
     name: 'xtesting-pi-{tag}-zip'
     <<: *xtesting-pi-params
+    volumes:
+    env:
     container: 'xtesting'
     jobs:
       - 'xtesting-pi-{tag}-zip'

@@ -72,6 +72,8 @@
     <<: *functest-kubernetes-pi-containers
     test: '{test}'
     privileged: '{privileged}'
+    volumes: '{volumes}'
+    env: '{env}'
     network: '{network}'
 
 - builder:
@@ -93,6 +95,8 @@
     builders:
       - shell: |
           set +x
+          volumes=; for i in $(echo {volumes} | tr -d '[] ' |sed "s/,/ /g" ); do volumes="-v $i $volumes"; done
+          env=; for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
           [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -104,6 +108,8 @@
           docker run --rm \
             --privileged={privileged} \
             --network={network} \
+            $volumes \
+            $env \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
@@ -113,9 +119,6 @@
             -e NODE_NAME=$slave \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
-            -e DEPLOY_SCENARIO=$DEPLOY_SCENARIO \
-            -e E2E_TEST_OPTS=$E2E_TEST_OPTS \
-            -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
             $image run_tests -t {test} -p -r
 
 - builder:
@@ -221,7 +224,7 @@
       - 'functest-kubernetes-pi-{repo}-{container}-{tag}-rmi'
 
 - job-template:
-    name: 'functest-kubernetes-pi-{repo}-{container}-{tag}-{test}-run'
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck-{tag}-{test}-run'
     parameters:
       - functest-kubernetes-pi-slave:
           slave: '{slave}'
@@ -238,6 +241,11 @@
 - project:
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck'
     <<: *functest-kubernetes-pi-params
+    volumes:
+      - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
+    env:
+      - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+      - E2E_TEST_OPTS=$E2E_TEST_OPTS
     container: 'functest-kubernetes-healthcheck'
     test:
       - k8s_quick
@@ -245,11 +253,31 @@
     privileged: 'false'
     network: bridge
     jobs:
-      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-{test}-run'
+      - 'functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck-{tag}-{test}-run'
+
+- job-template:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-{tag}-{test}-run'
+    parameters:
+      - functest-kubernetes-pi-slave:
+          slave: '{slave}'
+      - functest-kubernetes-pi-build_tag:
+          build_tag: ''
+      - functest-kubernetes-pi-DEPLOY_SCENARIO:
+          DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-pi-E2E_TEST_OPTS:
+          E2E_TEST_OPTS: container-runtime:containerd
+    builders:
+      - functest-kubernetes-pi-run-containers:
+          <<: *functest-kubernetes-pi-run-containers
 
 - project:
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke'
     <<: *functest-kubernetes-pi-params
+    volumes:
+      - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
+    env:
+      - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+      - E2E_TEST_OPTS=$E2E_TEST_OPTS
     container: 'functest-kubernetes-smoke'
     test:
       - xrally_kubernetes
@@ -289,11 +317,31 @@
       - tag: arm64-v1.21
         test: k8s_io
     jobs:
-      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-{test}-run'
+      - 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-{tag}-{test}-run'
+
+- job-template:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-security-{tag}-{test}-run'
+    parameters:
+      - functest-kubernetes-pi-slave:
+          slave: '{slave}'
+      - functest-kubernetes-pi-build_tag:
+          build_tag: ''
+      - functest-kubernetes-pi-DEPLOY_SCENARIO:
+          DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-pi-E2E_TEST_OPTS:
+          E2E_TEST_OPTS: container-runtime:containerd
+    builders:
+      - functest-kubernetes-pi-run-containers:
+          <<: *functest-kubernetes-pi-run-containers
 
 - project:
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-security'
     <<: *functest-kubernetes-pi-params
+    volumes:
+      - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
+    env:
+      - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+      - E2E_TEST_OPTS=$E2E_TEST_OPTS
     container: 'functest-kubernetes-security'
     test:
       - kube_hunter
@@ -302,11 +350,31 @@
     privileged: 'false'
     network: bridge
     jobs:
-      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-{test}-run'
+      - 'functest-kubernetes-pi-ollivier-functest-kubernetes-security-{tag}-{test}-run'
+
+- job-template:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking-{tag}-{test}-run'
+    parameters:
+      - functest-kubernetes-pi-slave:
+          slave: '{slave}'
+      - functest-kubernetes-pi-build_tag:
+          build_tag: ''
+      - functest-kubernetes-pi-DEPLOY_SCENARIO:
+          DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-pi-E2E_TEST_OPTS:
+          E2E_TEST_OPTS: container-runtime:containerd
+    builders:
+      - functest-kubernetes-pi-run-containers:
+          <<: *functest-kubernetes-pi-run-containers
 
 - project:
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking'
     <<: *functest-kubernetes-pi-params
+    volumes:
+      - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
+    env:
+      - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+      - E2E_TEST_OPTS=$E2E_TEST_OPTS
     container: 'functest-kubernetes-benchmarking'
     test:
       - xrally_kubernetes_full
@@ -314,11 +382,31 @@
     privileged: 'false'
     network: bridge
     jobs:
-      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-{test}-run'
+      - 'functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking-{tag}-{test}-run'
+
+- job-template:
+    name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-{tag}-{test}-run'
+    parameters:
+      - functest-kubernetes-pi-slave:
+          slave: '{slave}'
+      - functest-kubernetes-pi-build_tag:
+          build_tag: ''
+      - functest-kubernetes-pi-DEPLOY_SCENARIO:
+          DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
+      - functest-kubernetes-pi-E2E_TEST_OPTS:
+          E2E_TEST_OPTS: container-runtime:containerd
+    builders:
+      - functest-kubernetes-pi-run-containers:
+          <<: *functest-kubernetes-pi-run-containers
 
 - project:
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf'
     <<: *functest-kubernetes-pi-params
+    volumes:
+      - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
+    env:
+      - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+      - E2E_TEST_OPTS=$E2E_TEST_OPTS
     container: 'functest-kubernetes-cnf'
     test:
       - k8s_vims
@@ -327,13 +415,15 @@
     privileged: 'false'
     network: bridge
     jobs:
-      - 'functest-kubernetes-pi-{repo}-{container}-{tag}-{test}-run'
+      - 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-{tag}-{test}-run'
 
 - builder:
     name: functest-kubernetes-pi-zip
     builders:
       - shell: |
           set +x
+          volumes=; for i in $(echo {volumes} | tr -d '[] ' |sed "s/,/ /g" ); do volumes="-v $i $volumes"; done
+          env=; for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
           [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -343,6 +433,8 @@
             image={repo}:{port}/{container}:{tag}
           fi
           docker run --rm \
+            $volumes \
+            $env \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest-kubernetes \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest-kubernetes \
@@ -351,9 +443,6 @@
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
-            -e DEPLOY_SCENARIO=$DEPLOY_SCENARIO \
-            -e E2E_TEST_OPTS=$E2E_TEST_OPTS \
-            -v /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config \
             $image zip_campaign
 
 - job-template:
@@ -370,10 +459,17 @@
     builders:
       - functest-kubernetes-pi-zip:
           <<: *functest-kubernetes-pi-containers
+          volumes: '{volumes}'
+          env: '{env}'
 
 - project:
     name: 'functest-kubernetes-pi-{tag}-zip'
     <<: *functest-kubernetes-pi-params
+    volumes:
+      - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
+    env:
+      - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
+      - E2E_TEST_OPTS=$E2E_TEST_OPTS
     container: 'functest-kubernetes-healthcheck'
     jobs:
       - 'functest-kubernetes-pi-{tag}-zip'
