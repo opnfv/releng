@@ -80,7 +80,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          sudo docker pull $image
+          docker pull $image
 
 - builder:
     name: xtesting-run-containers
@@ -89,7 +89,7 @@
           set +x
           volumes=; for i in $(echo {volumes} | tr -d '[] ' |sed "s/,/ /g" ); do volumes="-v $i $volumes"; done
           env=; for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
-          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
+          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -97,7 +97,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          sudo docker run --rm \
+          docker run --rm \
             --privileged={privileged} \
             --network={network} \
             $volumes \
@@ -125,7 +125,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          sudo docker rmi $image || true
+          docker rmi $image || true
 
 - job-template:
     name: 'xtesting-{repo}-{container}-{tag}-pull'
@@ -241,7 +241,7 @@
           set +x
           volumes=; for i in $(echo {volumes} | tr -d '[] ' |sed "s/,/ /g" ); do volumes="-v $i $volumes"; done
           env=; for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
-          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
+          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -249,7 +249,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          sudo docker run --rm \
+          docker run --rm \
             $volumes \
             $env \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
@@ -394,7 +394,7 @@
           if [ "{from}" != "None" ]; then
               sed -i {from} Dockerfile
           fi
-          sudo docker build $build_args \
+          docker build $build_args \
             --pull=false --no-cache --force-rm=true \
             -t $image .
 
@@ -426,7 +426,7 @@
           else
             image=_:/alpine:{dependency}
           fi
-          sudo docker pull $image || true
+          docker pull $image || true
 
 - builder:
     name: xtesting-remove-dep-images
@@ -440,7 +440,7 @@
           else
             image=_:/alpine:{dependency}
           fi
-          sudo docker rmi $image || true
+          docker rmi $image || true
 
 - job-template:
     name: 'xtesting-{repo}-{tag}-dep-pull'
@@ -477,14 +477,14 @@
     builders:
       - shell: |
           set +x
-          sudo apt-get update && sudo apt-get install \
+          apt-get update && apt-get install \
             software-properties-common gpg -y
-          sudo add-apt-repository -y ppa:deadsnakes/ppa
-          sudo apt-get update && sudo apt-get install python3.8 \
+          add-apt-repository -y ppa:deadsnakes/ppa
+          apt-get update && apt-get install python3.8 \
             python3.8-dev python3.8-distutils \
             python3.7 python3.7-dev python3.6 python3.6-dev \
             python python-dev python3-pip enchant -y
-          sudo pip3 install tox tox-pip-version
+          pip3 install tox tox-pip-version
 
           tox
 
@@ -669,7 +669,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          sudo docker push $image
+          docker push $image
 
 - trigger:
     name: xtesting-commit
@@ -757,9 +757,9 @@
     name: xtesting-trivy
     builders:
       - shell: |
-          sudo apt-get update && sudo apt-get install curl -y
+          apt-get update && apt-get install curl -y
 
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b .
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b .
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
