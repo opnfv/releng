@@ -1,0 +1,25 @@
+---
+- project:
+    name: kuberef-rtd
+    project: kuberef
+    project-name: kuberef
+
+    project-pattern: 'kuberef'
+    rtd-build-url: 'https://readthedocs.org/api/v2/webhook/opnfv-kuberef/47353/'
+    rtd-token: 'aef70b8a0148b295e25dd92474110bcd622bacb0'
+
+    stream:
+      - master:
+          branch: '{stream}'
+          disabled: false
+      - kali: &kali
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
+      - jerma: &jerma
+          branch: 'stable/{stream}'
+          gs-pathname: '/{stream}'
+          disabled: false
+
+    jobs:
+      - '{project-name}-rtd-jobs'
