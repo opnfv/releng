@@ -86,7 +86,7 @@
     name: xtesting-run-containers
     builders:
       - shell: |
-          set +x
+          set -ex
           volumes=; for i in $(echo {volumes} | tr -d '[] ' |sed "s/,/ /g" ); do volumes="-v $i $volumes"; done
           env=; for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
           [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/results || true
