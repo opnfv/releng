@@ -577,8 +577,14 @@
     builders:
       - shell: |
           set +x
-          volumes=; for i in $(echo {volumes} | tr -d '[] ' |sed "s/,/ /g" ); do volumes="-v $i $volumes"; done
-          env=; for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
+          volumes=;
+          if [ "{volumes}" != "None" ]; then
+            for i in $(echo {volumes} | tr -d '[] ' |sed "s/,/ /g" ); do volumes="-v $i $volumes"; done
+          fi
+          env=;
+          if [ "{env}" != "None" ]; then
+            for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
+          fi
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
