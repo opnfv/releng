@@ -27,6 +27,7 @@ variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   DOCS_DIRECTORY: "docs"
   DOCS_REQUIREMENTS: "$DOCS_DIRECTORY/requirements.txt"
+  STABLE_BRANCH: "stable/*"
 
 .docs-cache: &docs-cache
   paths:
@@ -58,9 +59,11 @@ docs-build:
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule" && $DOCS_SCHEDULE != "true"
       when: never
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
         - $DOCS_DIRECTORY/**/*
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == $STABLE_BRANCH
 
 docs-link-check:
   stage: test
@@ -78,9 +81,11 @@ docs-link-check:
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule" && $DOCS_SCHEDULE != "true"
       when: never
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
         - $DOCS_DIRECTORY/**/*
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == $STABLE_BRANCH
 
 pages:
   stage: deploy
