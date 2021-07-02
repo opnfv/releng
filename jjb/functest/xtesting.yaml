@@ -80,7 +80,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          docker pull $image
+          sudo docker pull $image
 
 - builder:
     name: xtesting-run-containers
@@ -95,7 +95,7 @@
           if [ "{env}" != "None" ]; then
             for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
           fi
-          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/results || true
+          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -103,7 +103,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          docker run --rm \
+          sudo docker run --rm \
             --privileged={privileged} \
             --network={network} \
             $volumes \
@@ -131,7 +131,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          docker rmi $image || true
+          sudo docker rmi $image || true
 
 - job-template:
     name: 'xtesting-{repo}-{container}-{tag}-pull'
@@ -253,7 +253,7 @@
           if [ "{env}" != "None" ]; then
             for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
           fi
-          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/results || true
+          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -261,7 +261,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          docker run --rm \
+          sudo docker run --rm \
             $volumes \
             $env \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
@@ -406,7 +406,7 @@
           if [ "{from}" != "None" ]; then
               sed -i {from} Dockerfile
           fi
-          docker build $build_args \
+          sudo docker build $build_args \
             --pull=false --no-cache --force-rm=true \
             -t $image .
 
@@ -438,7 +438,7 @@
           else
             image=_:/alpine:{dependency}
           fi
-          docker pull $image || true
+          sudo docker pull $image || true
 
 - builder:
     name: xtesting-remove-dep-images
@@ -452,7 +452,7 @@
           else
             image=_:/alpine:{dependency}
           fi
-          docker rmi $image || true
+          sudo docker rmi $image || true
 
 - job-template:
     name: 'xtesting-{repo}-{tag}-dep-pull'
@@ -489,14 +489,14 @@
     builders:
       - shell: |
           set +x
-          apt-get update && apt-get install \
+          sudo apt-get update && sudo apt-get install \
             software-properties-common gpg -y
-          add-apt-repository -y ppa:deadsnakes/ppa
-          apt-get update && apt-get install python3.8 \
+          sudo add-apt-repository -y ppa:deadsnakes/ppa
+          sudo apt-get update && sudo apt-get install python3.8 \
             python3.8-dev python3.8-distutils \
             python3.7 python3.7-dev python3.6 python3.6-dev \
             python python-dev python3-pip enchant -y
-          pip3 install tox tox-pip-version
+          sudo pip3 install tox tox-pip-version
 
           tox
 
@@ -681,7 +681,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          docker push $image
+          sudo docker push $image
 
 - trigger:
     name: xtesting-commit
@@ -769,9 +769,9 @@
     name: xtesting-trivy
     builders:
       - shell: |
-          apt-get update && apt-get install curl -y
+          sudo apt-get update && sudo apt-get install curl -y
 
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b .
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b .
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then

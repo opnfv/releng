@@ -80,7 +80,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          docker pull $image
+          sudo docker pull $image
 
 - builder:
     name: xtesting-pi-run-containers
@@ -95,7 +95,7 @@
           if [ "{env}" != "None" ]; then
             for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
           fi
-          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/results || true
+          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -103,7 +103,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          docker run --rm \
+          sudo docker run --rm \
             --privileged={privileged} \
             --network={network} \
             $volumes \
@@ -131,7 +131,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          docker rmi $image || true
+          sudo docker rmi $image || true
 
 - job-template:
     name: 'xtesting-pi-{repo}-{container}-{tag}-pull'
@@ -265,7 +265,7 @@
           if [ "{env}" != "None" ]; then
             for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
           fi
-          [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/results || true
+          [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -273,7 +273,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          docker run --rm \
+          sudo docker run --rm \
             $volumes \
             $env \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
