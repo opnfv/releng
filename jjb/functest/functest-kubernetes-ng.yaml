@@ -300,7 +300,8 @@
     name: functest-kubernetes-ng-trivy
     builders:
       - shell: |
-          sudo apt-get update && sudo apt-get install curl -y
+          sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive \
+          apt-get install curl -y
 
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b .
           if [ "{repo}" = "_" ]; then
