@@ -95,6 +95,13 @@
           name: IMAGE_PROPERTIES
           default: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
 
+- parameter:
+    name: functest-pi-DEBUG
+    parameters:
+      - string:
+          name: DEBUG
+          default: true
+
 - functest-pi-run-containers: &functest-pi-run-containers
     name: 'functest-pi-run-containers'
     <<: *functest-pi-containers
@@ -286,6 +293,8 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-pi-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+      - functest-pi-DEBUG:
+          DEBUG: true
     builders:
       - functest-pi-run-containers:
           <<: *functest-pi-run-containers
@@ -300,6 +309,7 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
+      - DEBUG=$DEBUG
     container: 'functest-healthcheck'
     test:
       - connection_check
@@ -333,6 +343,8 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-pi-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+      - functest-pi-DEBUG:
+          DEBUG: true
     builders:
       - functest-pi-run-containers:
           <<: *functest-pi-run-containers
@@ -347,6 +359,7 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
+      - DEBUG=$DEBUG
     container: 'functest-smoke'
     test:
       - tempest_neutron
@@ -540,6 +553,8 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-pi-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+      - functest-pi-DEBUG:
+          DEBUG: true
     builders:
       - functest-pi-run-containers:
           <<: *functest-pi-run-containers
@@ -554,6 +569,7 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
+      - DEBUG=$DEBUG
     container: 'functest-smoke-cntt'
     test:
       - tempest_neutron_cntt
@@ -582,6 +598,8 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-pi-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+      - functest-pi-DEBUG:
+          DEBUG: true
     builders:
       - functest-pi-run-containers:
           <<: *functest-pi-run-containers
@@ -596,6 +614,7 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
+      - DEBUG=$DEBUG
     container: 'functest-benchmarking'
     test:
       - rally_full
@@ -620,6 +639,8 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-pi-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+      - functest-pi-DEBUG:
+          DEBUG: true
     builders:
       - functest-pi-run-containers:
           <<: *functest-pi-run-containers
@@ -634,6 +655,7 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
+      - DEBUG=$DEBUG
     container: 'functest-benchmarking-cntt'
     test:
       - rally_full_cntt
@@ -656,6 +678,8 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-pi-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+      - functest-pi-DEBUG:
+          DEBUG: true
     builders:
       - functest-pi-run-containers:
           <<: *functest-pi-run-containers
@@ -670,6 +694,7 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
+      - DEBUG=$DEBUG
     container: 'functest-vnf'
     test:
       - cloudify
@@ -729,6 +754,8 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-pi-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+      - functest-pi-DEBUG:
+          DEBUG: true
     builders:
       - functest-pi-zip:
           <<: *functest-pi-containers
@@ -745,6 +772,7 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
+      - DEBUG=$DEBUG
     container: 'functest-healthcheck'
     jobs:
       - 'functest-pi-{tag}-zip'
@@ -765,6 +793,8 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-pi-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
+      - functest-pi-DEBUG:
+          DEBUG: true
     # PyYAML and yamllint differ here
     # see https://github.com/yaml/pyyaml/issues/234
     # yamllint disable rule:indentation
