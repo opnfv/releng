@@ -122,13 +122,14 @@
       - shell: |
           set +x
           volumes=;
+          echo "{volumes}"
           if [ "{volumes}" != "None" ]; then
-            for i in $(echo {volumes} | tr -d '[] ' |sed "s/,/ /g" ); do volumes="-v $i $volumes"; done
+            for i in $(echo {volumes} | tr -d '[]' |sed "s/, / /g" ); do volumes="-v $i $volumes"; done
           fi
           env=;
           echo "{env}"
           if [ "{env}" != "None" ]; then
-            for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
+            for i in $(eval echo {env} | tr -d '[]' |sed "s/, / /g" ); do env="-e $i $env"; done
           fi
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
