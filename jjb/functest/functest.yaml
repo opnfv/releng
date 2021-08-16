@@ -85,13 +85,6 @@
           name: IMAGE_PROPERTIES
           default: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
 
-- parameter:
-    name: functest-DEBUG
-    parameters:
-      - string:
-          name: DEBUG
-          default: 'true'
-
 - functest-run-containers: &functest-run-containers
     name: 'functest-run-containers'
     <<: *functest-containers
@@ -122,12 +115,10 @@
       - shell: |
           set +x
           volumes=;
-          echo "{volumes}"
           if [ "{volumes}" != "None" ]; then
             for i in $(echo {volumes} | tr -d '[]' |sed "s/, / /g" ); do volumes="-v $i $volumes"; done
           fi
           env=;
-          echo "{env}"
           if [ "{env}" != "None" ]; then
             for i in $(eval echo {env} | tr -d '[]' |sed "s/, / /g" ); do env="-e $i $env"; done
           fi
@@ -139,7 +130,6 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          echo $env
           sudo docker run --rm \
             --privileged={privileged} \
             --network={network} \
@@ -286,8 +276,6 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
-      - functest-DEBUG:
-          DEBUG: 'true'
     builders:
       - functest-run-containers:
           <<: *functest-run-containers
@@ -302,7 +290,6 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
-      - DEBUG=$DEBUG
     container: 'functest-healthcheck'
     test:
       - connection_check
@@ -336,8 +323,6 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
-      - functest-DEBUG:
-          DEBUG: 'true'
     builders:
       - functest-run-containers:
           <<: *functest-run-containers
@@ -352,7 +337,6 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
-      - DEBUG=$DEBUG
     container: 'functest-smoke'
     test:
       - tempest_neutron
@@ -446,8 +430,6 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
-      - functest-DEBUG:
-          DEBUG: 'true'
     builders:
       - functest-run-containers:
           <<: *functest-run-containers
@@ -462,7 +444,6 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
-      - DEBUG=$DEBUG
     container: 'functest-smoke-cntt'
     test:
       - tempest_neutron_cntt
@@ -491,8 +472,6 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
-      - functest-DEBUG:
-          DEBUG: 'true'
     builders:
       - functest-run-containers:
           <<: *functest-run-containers
@@ -507,7 +486,6 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
-      - DEBUG=$DEBUG
     container: 'functest-benchmarking'
     test:
       - rally_full
@@ -532,8 +510,6 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
-      - functest-DEBUG:
-          DEBUG: 'true'
     builders:
       - functest-run-containers:
           <<: *functest-run-containers
@@ -548,7 +524,6 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
-      - DEBUG=$DEBUG
     container: 'functest-benchmarking-cntt'
     test:
       - rally_full_cntt
@@ -571,8 +546,6 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
-      - functest-DEBUG:
-          DEBUG: 'true'
     builders:
       - functest-run-containers:
           <<: *functest-run-containers
@@ -587,7 +560,6 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
-      - DEBUG=$DEBUG
     container: 'functest-vnf'
     test:
       - cloudify
@@ -607,11 +579,11 @@
           set +x
           volumes=;
           if [ "{volumes}" != "None" ]; then
-            for i in $(echo {volumes} | tr -d '[] ' |sed "s/,/ /g" ); do volumes="-v $i $volumes"; done
+            for i in $(echo {volumes} | tr -d '[]' |sed "s/, / /g" ); do volumes="-v $i $volumes"; done
           fi
           env=;
           if [ "{env}" != "None" ]; then
-            for i in $(eval echo {env} | tr -d '[] ' |sed "s/,/ /g" ); do env="-e $i $env"; done
+            for i in $(eval echo {env} | tr -d '[]' |sed "s/, / /g" ); do env="-e $i $env"; done
           fi
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
@@ -647,8 +619,6 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
-      - functest-DEBUG:
-          DEBUG: 'true'
     builders:
       - functest-zip:
           <<: *functest-containers
@@ -665,7 +635,6 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
-      - DEBUG=$DEBUG
     container: 'functest-healthcheck'
     jobs:
       - 'functest-{tag}-zip'
@@ -686,8 +655,6 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
-      - functest-DEBUG:
-          DEBUG: 'true'
     # PyYAML and yamllint differ here
     # see https://github.com/yaml/pyyaml/issues/234
     # yamllint disable rule:indentation
@@ -1150,8 +1117,6 @@
           VOLUME_DEVICE_NAME: sdb
       - functest-IMAGE_PROPERTIES:
           IMAGE_PROPERTIES: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
-      - functest-DEBUG:
-          DEBUG: 'true'
     # PyYAML and yamllint differ here
     # see https://github.com/yaml/pyyaml/issues/234
     # yamllint disable rule:indentation
