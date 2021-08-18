@@ -18,13 +18,13 @@
      - aarch64
      - Ubuntu 16.04
      - `Armband ENEA Team`_
-   * - `lf-build1 <https://build.opnfv.org/ci/computer/lf-build1>`_
+   * - `lf-build5 <https://build.opnfv.org/ci/computer/lf-build5>`_
      - x86_64
-     - CentOS 7.4
+     - Ubuntu 18.04
      - `Linux Foundation`_
-   * - `lf-build2 <https://build.opnfv.org/ci/computer/lf-build2>`_
+   * - `lf-build6 <https://build.opnfv.org/ci/computer/lf-build6>`_
      - x86_64
-     - Ubuntu 16.10
+     - CentOS 8
      - `Linux Foundation`_
 
 .. _Linux Foundation: helpdesk@opnfv.org
