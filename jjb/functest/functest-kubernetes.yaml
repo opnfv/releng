@@ -15,6 +15,12 @@
           from:
           buildargs:
           branch: master
+          slave: lf-virtual1-8
+          dependency: 3.14
+      - v1.22:
+          from:
+          buildargs:
+          branch: stable/v1.22
           slave: lf-virtual1-7
           dependency: 3.14
       - v1.21:
@@ -309,6 +315,8 @@
     network: bridge
     exclude:
       - tag: latest
+        test: k8s_io
+      - tag: v1.22
         test: k8s_io
       - tag: v1.21
         test: k8s_io
