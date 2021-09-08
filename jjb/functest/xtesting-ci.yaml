@@ -17,11 +17,13 @@
           sudo systemctl restart docker
           sudo rm -rfv /data
           sudo pip3 install ansible
+          rm -rf ~/.ansible/roles/collivier.xtesting
           case {release} in
           stable)
             ansible-galaxy install -f collivier.xtesting ;;
           *)
             ansible-galaxy install -f git+https://github.com/collivier/ansible-role-xtesting.git,{release} ;;
+            mv ~/.ansible/roles/ansible-role-xtesting ~/.ansible/roles/collivier.xtesting
           esac
           ansible-galaxy collection install -f -r ~/.ansible/roles/collivier.xtesting/requirements.yml
           ansible-playbook -vvvv ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml
