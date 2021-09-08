@@ -17,7 +17,12 @@
           sudo systemctl restart docker
           sudo rm -rfv /data
           sudo pip3 install ansible
-          ansible-galaxy install -f collivier.xtesting
+          case {release} in
+          stable)
+            ansible-galaxy install -f collivier.xtesting ;;
+          *)
+            ansible-galaxy install -f git+https://github.com/collivier/ansible-role-xtesting.git,{release} ;;
+          esac
           ansible-galaxy collection install -f -r ~/.ansible/roles/collivier.xtesting/requirements.yml
           ansible-playbook -vvvv ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml
 
@@ -29,7 +34,7 @@
           default: '{slave}'
 
 - job-template:
-    name: 'xtesting-ci-tests-{playbook}'
+    name: 'xtesting-ci-tests-{release}-{playbook}'
     triggers:
       - timed: '@daily'
     parameters:
@@ -44,6 +49,7 @@
     builders:
       - xtesting-ci-tests:
           playbook: '{playbook}'
+          release: '{release}'
 
 - project:
     name: xtesting-ci-tests
@@ -79,8 +85,11 @@
       - k8s_gitlab_kind1
       - k8s_gitlab_kind2
       - k8s_gitlab_kind3
+    release:
+      - stable
+      - master
     jobs:
-      - 'xtesting-ci-tests-{playbook}'
+      - 'xtesting-ci-tests-{release}-{playbook}'
 
 - view:
     name: xtesting-ci
