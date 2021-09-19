@@ -27,7 +27,7 @@
           branch: stable/kali
           slave: lf-virtual1
           dependency: 3.11
-          buildargs: --build-arg K8S_TAG=1.18
+          buildargs: {'K8S_TAG': 1.18}
           from: s/:kali$/:v1.18/g
 
 - functest-kubernetes-ng-jobs: &functest-kubernetes-ng-jobs
@@ -63,7 +63,7 @@
           fi
           build_args=""
           if [ "{buildargs}" != "None" ]; then
-            build_args="{buildargs}"
+            for i in $(eval echo {buildargs} | tr -d '[]' |sed "s/, / /g" ); do build_args="--build-arg $i $build_args"; done
           fi
           if [ "{ref_arg}" != "None" ]; then
             build_args="$build_args --build-arg {ref_arg}={ref}"

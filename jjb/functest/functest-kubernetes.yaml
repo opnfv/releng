@@ -644,7 +644,7 @@
           fi
           build_args=""
           if [ "{buildargs}" != "None" ]; then
-            build_args="{buildargs}"
+            for i in $(eval echo {buildargs} | tr -d '[]' |sed "s/, / /g" ); do build_args="--build-arg $i $build_args"; done
           fi
           if [ "{ref_arg}" != "None" ]; then
             build_args="$build_args --build-arg {ref_arg}={ref}"
