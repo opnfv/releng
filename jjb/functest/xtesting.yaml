@@ -89,11 +89,13 @@
           set +x
           volumes=;
           if [ "{volumes}" != "None" ]; then
-            for i in $(echo {volumes} | tr -d '[]' |sed "s/, / /g" ); do volumes="-v $i $volumes"; done
+            for i in $(echo {volumes} | tr -d '[]' |sed "s/, / /g" ); \
+              do volumes="-v $i $volumes"; done
           fi
           env=;
           if [ "{env}" != "None" ]; then
-            for i in $(eval echo {env} | tr -d '[]' |sed "s/, / /g" ); do env="-e $i $env"; done
+            for i in $(eval echo {env} | tr -d '[]' |sed "s/, / /g" ); \
+              do env="-e $i $env"; done
           fi
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
@@ -247,11 +249,13 @@
           set +x
           volumes=;
           if [ "{volumes}" != "None" ]; then
-            for i in $(echo {volumes} | tr -d '[]' |sed "s/, / /g" ); do volumes="-v $i $volumes"; done
+            for i in $(echo {volumes} | tr -d '[]' |sed "s/, / /g" ); \
+              do volumes="-v $i $volumes"; done
           fi
           env=;
           if [ "{env}" != "None" ]; then
-            for i in $(eval echo {env} | tr -d '[]' |sed "s/, / /g" ); do env="-e $i $env"; done
+            for i in $(eval echo {env} | tr -d '[]' |sed "s/, / /g" ); \
+              do env="-e $i $env"; done
           fi
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
@@ -397,7 +401,8 @@
           fi
           build_args=""
           if [ "{buildargs}" != "None" ]; then
-            build_args="{buildargs}"
+            for i in $(eval echo {buildargs} | tr -d '[]' |sed "s/, / /g" ); \
+              do build_args="--build-arg $i $build_args"; done
           fi
           if [ "{ref_arg}" != "None" ]; then
             build_args="$build_args --build-arg {ref_arg}={ref}"
