@@ -12,13 +12,13 @@
     port:
     tag:
       - v1.20:
-          buildargs:
+          build_args:
           branch: stable/leguer
           slave: lf-virtual1
           dependency: 3.12
           from: s/:leguer$/:v1.20/g
       - v1.19:
-          buildargs:
+          build_args:
           branch: stable/kali
           slave: lf-virtual1
           dependency: 3.11
@@ -27,7 +27,8 @@
           branch: stable/kali
           slave: lf-virtual1
           dependency: 3.11
-          buildargs: {'K8S_TAG': 1.18}
+          build_args:
+            - K8S_TAG=1.18
           from: s/:kali$/:v1.18/g
 
 - functest-kubernetes-ng-jobs: &functest-kubernetes-ng-jobs
@@ -46,7 +47,7 @@
     <<: *functest-kubernetes-ng-containers
     ref_arg: '{ref_arg}'
     path: '{path}'
-    buildargs: '{buildargs}'
+    build_args: '{build_args}'
     from: '{from}'
 
 - builder:
@@ -62,8 +63,8 @@
             image={repo}:{port}/{container}:{tag}
           fi
           build_args=""
-          if [ "{buildargs}" != "None" ]; then
-            for i in $(eval echo {buildargs} | tr -d '[]' |sed "s/, / /g" ); \
+          if [ "{build_args}" != "None" ]; then
+            for i in $(eval echo {build_args} | tr -d '[]' |sed "s/, / /g" ); \
               do build_args="--build-arg $i $build_args"; done
           fi
           if [ "{ref_arg}" != "None" ]; then
@@ -183,7 +184,7 @@
       - functest-kubernetes-ng-build-containers:
           <<: *functest-kubernetes-ng-build-containers
           ref: '{branch}'
-          buildargs: '{buildargs}'
+          build_args: '{build_args}'
       - functest-kubernetes-ng-push-containers:
           <<: *functest-kubernetes-ng-build-containers
           ref: '{branch}'
