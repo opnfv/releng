@@ -13,35 +13,35 @@
     tag:
       - latest:
           from:
-          buildargs:
+          build_args:
           branch: master
           slave: lf-pod4-2
           DASHBOARD_URL: http://172.30.12.85
           dependency: 3.14
       - wallaby:
           from:
-          buildargs:
+          build_args:
           branch: stable/wallaby
           slave: lf-virtual6
           DASHBOARD_URL: http://172.30.13.91
           dependency: 3.13
       - leguer:
           from:
-          buildargs:
+          build_args:
           branch: stable/leguer
           slave: lf-virtual9
           DASHBOARD_URL: http://172.30.13.94
           dependency: 3.12
       - kali:
           from:
-          buildargs:
+          build_args:
           branch: stable/kali
           slave: lf-pod4-3
           DASHBOARD_URL: http://172.30.12.88
           dependency: 3.11
       - jerma:
           from:
-          buildargs:
+          build_args:
           branch: stable/jerma
           slave: lf-pod4
           DASHBOARD_URL: http://172.30.12.83
@@ -853,7 +853,7 @@
     <<: *functest-containers
     ref_arg: '{ref_arg}'
     path: '{path}'
-    buildargs: '{buildargs}'
+    build_args: '{build_args}'
     from: '{from}'
 
 - builder:
@@ -869,8 +869,8 @@
             image={repo}:{port}/{container}:{tag}
           fi
           build_args=""
-          if [ "{buildargs}" != "None" ]; then
-            for i in $(eval echo {buildargs} | tr -d '[]' |sed "s/, / /g" ); \
+          if [ "{build_args}" != "None" ]; then
+            for i in $(echo {build_args} | tr -d '[]' |sed "s/, / /g" ); \
               do build_args="--build-arg $i $build_args"; done
           fi
           if [ "{ref_arg}" != "None" ]; then
@@ -1008,7 +1008,7 @@
       - functest-build-containers:
           <<: *functest-build-containers
           ref: $GERRIT_REFSPEC
-          buildargs: '{buildargs}'
+          build_args: '{build_args}'
 
 - project:
     name: functest-opnfv-functest-core-{tag}-gate
@@ -1373,7 +1373,7 @@
       - functest-build-containers:
           <<: *functest-build-containers
           ref: '{branch}'
-          buildargs: '{buildargs}'
+          build_args: '{build_args}'
       - functest-push-containers:
           <<: *functest-build-containers
           ref: '{branch}'

@@ -13,31 +13,31 @@
     tag:
       - latest:
           from:
-          buildargs:
+          build_args:
           branch: master
           slave: lf-virtual1
           dependency: 3.14
       - wallaby:
           from:
-          buildargs:
+          build_args:
           branch: stable/wallaby
           slave: lf-virtual1
           dependency: 3.13
       - leguer:
           from:
-          buildargs:
+          build_args:
           branch: stable/leguer
           slave: lf-virtual1
           dependency: 3.12
       - kali:
           from:
-          buildargs:
+          build_args:
           branch: stable/kali
           slave: lf-virtual1
           dependency: 3.11
       - jerma:
           from:
-          buildargs:
+          build_args:
           branch: stable/jerma
           slave: lf-virtual1
           dependency: 3.10
@@ -384,7 +384,7 @@
     <<: *xtesting-containers
     ref_arg: '{ref_arg}'
     path: '{path}'
-    buildargs: '{buildargs}'
+    build_args: '{build_args}'
     from: '{from}'
 
 - builder:
@@ -400,8 +400,8 @@
             image={repo}:{port}/{container}:{tag}
           fi
           build_args=""
-          if [ "{buildargs}" != "None" ]; then
-            for i in $(eval echo {buildargs} | tr -d '[]' |sed "s/, / /g" ); \
+          if [ "{build_args}" != "None" ]; then
+            for i in $(echo {build_args} | tr -d '[]' |sed "s/, / /g" ); \
               do build_args="--build-arg $i $build_args"; done
           fi
           if [ "{ref_arg}" != "None" ]; then
@@ -539,7 +539,7 @@
       - xtesting-build-containers:
           <<: *xtesting-build-containers
           ref: $GERRIT_REFSPEC
-          buildargs: '{buildargs}'
+          build_args: '{build_args}'
 
 - project:
     name: xtesting-opnfv-xtesting-{tag}-gate
@@ -708,7 +708,7 @@
       - xtesting-build-containers:
           <<: *xtesting-build-containers
           ref: '{branch}'
-          buildargs: '{buildargs}'
+          build_args: '{build_args}'
       - xtesting-push-containers:
           <<: *xtesting-build-containers
           ref: '{branch}'

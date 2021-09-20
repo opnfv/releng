@@ -13,31 +13,31 @@
     tag:
       - latest:
           from:
-          buildargs:
+          build_args:
           branch: master
           slave: lf-virtual1-8
           dependency: 3.14
       - v1.22:
           from:
-          buildargs:
+          build_args:
           branch: stable/v1.22
           slave: lf-virtual1-7
           dependency: 3.14
       - v1.21:
           from:
-          buildargs:
+          build_args:
           branch: stable/v1.21
           slave: lf-virtual1-6
           dependency: 3.13
       - leguer:
           from:
-          buildargs:
+          build_args:
           branch: stable/leguer
           slave: lf-virtual1-5
           dependency: 3.12
       - kali:
           from:
-          buildargs:
+          build_args:
           branch: stable/kali
           slave: lf-virtual1-4
           dependency: 3.11
@@ -631,7 +631,7 @@
     <<: *functest-kubernetes-containers
     ref_arg: '{ref_arg}'
     path: '{path}'
-    buildargs: '{buildargs}'
+    build_args: '{build_args}'
     from: '{from}'
 
 - builder:
@@ -647,8 +647,8 @@
             image={repo}:{port}/{container}:{tag}
           fi
           build_args=""
-          if [ "{buildargs}" != "None" ]; then
-            for i in $(eval echo {buildargs} | tr -d '[]' |sed "s/, / /g" ); \
+          if [ "{build_args}" != "None" ]; then
+            for i in $(echo {build_args} | tr -d '[]' |sed "s/, / /g" ); \
               do build_args="--build-arg $i $build_args"; done
           fi
           if [ "{ref_arg}" != "None" ]; then
@@ -786,7 +786,7 @@
       - functest-kubernetes-build-containers:
           <<: *functest-kubernetes-build-containers
           ref: $GERRIT_REFSPEC
-          buildargs: '{buildargs}'
+          build_args: '{build_args}'
 
 - project:
     name: functest-kubernetes-opnfv-functest-kubernetes-core-{tag}-gate
@@ -1061,7 +1061,7 @@
       - functest-kubernetes-build-containers:
           <<: *functest-kubernetes-build-containers
           ref: '{branch}'
-          buildargs: '{buildargs}'
+          build_args: '{build_args}'
       - functest-kubernetes-push-containers:
           <<: *functest-kubernetes-build-containers
           ref: '{branch}'
