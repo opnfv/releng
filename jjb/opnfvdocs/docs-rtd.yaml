@@ -77,12 +77,12 @@
 
     builders:
       - shell: |
-          sudo -H pip install virtualenv
-          virtualenv $WORKSPACE/venv
+          sudo -H apt install python3-venv
+          python3 -m venv $WORKSPACE/venv
           . $WORKSPACE/venv/bin/activate
-          pip install --upgrade pip
-          pip freeze
-          pip install tox
+          pip3 install --upgrade pip
+          pip3 freeze
+          pip3 install tox
           sed -i s,\-b\ html,\-b\ singlehtml,g tox.ini
           tox -edocs
       - 'upload-review-docs'
