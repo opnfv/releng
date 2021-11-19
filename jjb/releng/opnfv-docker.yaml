@@ -38,6 +38,9 @@
       receivers: >
           luc.provoost@intel.com
           yury.kylulin@intel.com
+    vineperf-receivers: &vineperf-receivers
+      receivers: >
+          sridhar.rao@spirent.com
     other-receivers: &other-receivers
       receivers: ''
 
@@ -180,6 +183,36 @@
           dockerdir: 'VNFs/DPPD-PROX/helper-scripts/rapid'
           <<: *master
           <<: *samplevnf-receivers
+      - 'vineperf':
+          project: 'vineperf'
+          dockerdir: 'tools/docker/vineperf'
+          <<: *master
+          <<: *vineperf-receivers
+      - 'vineperf-prox':
+          project: 'vineperf'
+          dockerdir: 'tools/docker/test-containers/trafficgen-pods/prox'
+          <<: *master
+          <<: *vineperf-receivers
+      - 'vineperf-trex':
+          project: 'vineperf'
+          dockerdir: 'tools/docker/test-containers/trafficgen-pods/trex'
+          <<: *master
+          <<: *vineperf-receivers
+      - 'vineperf-pktgen':
+          project: 'vineperf'
+          dockerdir: 'tools/docker/test-containers/trafficgen-pods/pktgen'
+          <<: *master
+          <<: *vineperf-receivers
+      - 'vineperf-l2l3fwd':
+          project: 'vineperf'
+          dockerdir: 'tools/docker/test-containers/dpdk-forwarding-pods/l2l3fwd'
+          <<: *master
+          <<: *vineperf-receivers
+      - 'vineperf-vpp':
+          project: 'vineperf'
+          dockerdir: 'tools/docker/test-containers/dpdk-forwarding-pods/vpp'
+          <<: *master
+          <<: *vineperf-receivers
 
       # projects with jobs for hunter
       - 'dovetail':
