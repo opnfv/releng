@@ -297,6 +297,9 @@
           projects:
             - name: 'functest-kubernetes-ng-opnfv-functest-kubernetes-benchmarking-{tag}-build'
               <<: *functest-kubernetes-ng-jobs
+    publishers:
+      - email:
+          recipients: cedric.ollivier@orange.com
 
 - builder:
     name: functest-kubernetes-ng-trivy
@@ -325,6 +328,9 @@
     builders:
       - functest-kubernetes-ng-trivy:
           <<: *functest-kubernetes-ng-containers
+    publishers:
+      - email:
+          recipients: cedric.ollivier@orange.com
 
 - project:
     name: 'functest-kubernetes-ng-opnfv-functest-kubernetes-core-trivy'

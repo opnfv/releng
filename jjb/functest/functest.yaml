@@ -844,6 +844,9 @@
           projects:
             - name: 'functest-{tag}-zip'
               <<: *functest-jobs
+    publishers:
+      - email:
+          recipients: cedric.ollivier@orange.com
 
 - project:
     name: 'functest-daily'
@@ -1328,6 +1331,9 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-juju_epc-run'
               <<: *functest-jobs
+    publishers:
+      - email:
+          recipients: cedric.ollivier@orange.com
 
 - project:
     name: 'functest-review'
@@ -1533,6 +1539,9 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-benchmarking-cntt-{tag}-build'
               <<: *functest-jobs
+    publishers:
+      - email:
+          recipients: cedric.ollivier@orange.com
 
 - builder:
     name: functest-trivy
@@ -1561,6 +1570,9 @@
     builders:
       - functest-trivy:
           <<: *functest-containers
+    publishers:
+      - email:
+          recipients: cedric.ollivier@orange.com
 
 - project:
     name: 'functest-opnfv-functest-core-trivy'
