@@ -8,8 +8,11 @@
     project-pattern: 'opnfvdocs'
     jobs:
       - '{project-name}-rtd-jobs'
+      - 'gerrit-tox-verify':
+          python-version: python3
+          tox-envs: "docs"
+          build-days-to-keep: 7
       - 'docs-merge-rtd-{stream}'
-      - 'docs-verify-rtd-{stream}'
 
     stream:
       - master:
@@ -43,46 +46,3 @@
 
     builders:
       - 'remove-old-docs-from-opnfv-artifacts'
-
-- job-template:
-    name: 'docs-verify-rtd-{stream}'
-
-    project-type: freestyle
-
-    parameters:
-      - label:
-          name: SLAVE_LABEL
-          default: 'lf-build5'
-          description: 'Slave label on Jenkins'
-          all-nodes: false
-          node-eligibility: 'ignore-offline'
-      - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - string:
-          name: GIT_BASE
-          default: https://gerrit.opnfv.org/gerrit/opnfvdocs
-          description: 'Git URL to use on this Jenkins Slave'
-
-    scm:
-      - git-scm-with-submodules:
-          branch: '{branch}'
-
-    triggers:
-      - gerrit-trigger-patchset-created:
-          server: 'gerrit.opnfv.org'
-          project: 'opnfvdocs'
-          branch: '{branch}'
-          files: 'docs/**'
-
-    builders:
-      - shell: |
-          sudo -H pip install virtualenv
-          virtualenv $WORKSPACE/venv
-          . $WORKSPACE/venv/bin/activate
-          pip install --upgrade pip
-          pip freeze
-          pip install tox
-          sed -i s,\-b\ html,\-b\ singlehtml,g tox.ini
-          tox -edocs
-      - 'upload-review-docs'
