@@ -607,6 +607,9 @@
           projects:
             - name: 'functest-kubernetes-{tag}-zip'
               <<: *functest-kubernetes-jobs
+    publishers:
+      - email:
+          recipients: cedric.ollivier@orange.com
 
 - project:
     name: 'functest-kubernetes-daily'
@@ -1000,6 +1003,9 @@
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-cnf_testsuite-run'
               <<: *functest-kubernetes-jobs
+    publishers:
+      - email:
+          recipients: cedric.ollivier@orange.com
 
 - project:
     name: 'functest-kubernetes-review'
@@ -1176,6 +1182,9 @@
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-build'
               <<: *functest-kubernetes-jobs
+    publishers:
+      - email:
+          recipients: cedric.ollivier@orange.com
 
 - builder:
     name: functest-kubernetes-trivy
@@ -1204,6 +1213,9 @@
     builders:
       - functest-kubernetes-trivy:
           <<: *functest-kubernetes-containers
+    publishers:
+      - email:
+          recipients: cedric.ollivier@orange.com
 
 - project:
     name: 'functest-kubernetes-opnfv-functest-kubernetes-core-trivy'
