@@ -41,6 +41,10 @@
     vineperf-receivers: &vineperf-receivers
       receivers: >
           sridhar.rao@spirent.com
+    cirv-receivers: &cirv-receivers
+      receivers: >
+          sridhar.rao@spirent.com
+          parthyadav3105@gmail.com
     other-receivers: &other-receivers
       receivers: ''
 
@@ -213,6 +217,31 @@
           dockerdir: 'tools/docker/test-containers/dpdk-forwarding-pods/vpp'
           <<: *master
           <<: *vineperf-receivers
+      - 'sdvconfig':
+          project: 'cirv-sdv'
+          dockerdir: 'sdv/docker/sdvconfig'
+          <<: *master
+          <<: *cirv-receivers
+      - 'sdvmodel':
+          project: 'cirv-sdv'
+          dockerdir: 'sdv/docker/sdvmodel'
+          <<: *master
+          <<: *cirv-receivers
+      - 'sdvsecurity':
+          project: 'cirv-sdv'
+          dockerdir: 'sdv/docker/sdvsecurity'
+          <<: *master
+          <<: *cirv-receivers
+      - 'sdvstate':
+          project: 'cirv-sdv'
+          dockerdir: 'sdv/docker/sdvstate'
+          <<: *master
+          <<: *cirv-receivers
+      - 'sdvurls':
+          project: 'cirv-sdv'
+          dockerdir: 'sdv/docker/sdvurls'
+          <<: *master
+          <<: *cirv-receivers
 
       # projects with jobs for hunter
       - 'dovetail':
