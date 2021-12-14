@@ -11,9 +11,9 @@ set -e -o pipefail
 echo "---> Create virtualenv"
 
 sudo -H pip3 install virtualenv
-virtualenv -p python3 $WORKSPACE/venv
+python3 -m venv -p python3 $WORKSPACE/venv
 
 # shellcheck source=$WORKSPACE/venv/bin/activate disable=SC1091
 source $WORKSPACE/venv/bin/activate
-pip install --upgrade pip
-pip install -r releases/scripts/requirements.txt
+python3 -m pip install --upgrade pip
+python3 -m pip install -r releases/scripts/requirements.txt
