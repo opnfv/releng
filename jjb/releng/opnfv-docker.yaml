@@ -27,6 +27,10 @@
       stream: kali
       branch: 'stable/{stream}'
       disabled: false
+    lakelse: &lakelse
+      stream: lakelse
+      branch: 'stable/{stream}'
+      disabled: false
     laas-receivers: &laas_receivers
       receivers: >
           pberberian@iol.unh.edu
@@ -383,6 +387,55 @@
           project: 'barometer'
           dockerdir: 'docker/barometer-snmp'
           <<: *kali
+          <<: *other-receivers
+
+      # projects with jobs for lakelse
+      - 'barometer-collectd':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-collectd'
+          <<: *lakelse
+          <<: *other-receivers
+      - 'barometer-collectd-experimental':
+          project: 'barometer'
+          dockerdir: '.'
+          dockerfile: 'docker/barometer-collectd-experimental/Dockerfile'
+          <<: *lakelse
+          <<: *other-receivers
+      - 'barometer-collectd-latest':
+          project: 'barometer'
+          dockerdir: '.'
+          dockerfile: 'docker/barometer-collectd-latest/Dockerfile'
+          <<: *lakelse
+          <<: *other-receivers
+      - 'barometer-dma':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-dma'
+          <<: *lakelse
+          <<: *other-receivers
+      - 'barometer-grafana':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-grafana'
+          <<: *lakelse
+          <<: *other-receivers
+      - 'barometer-influxdb':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-influxdb'
+          <<: *lakelse
+          <<: *other-receivers
+      - 'barometer-kafka':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-kafka'
+          <<: *lakelse
+          <<: *other-receivers
+      - 'barometer-ves':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-ves'
+          <<: *lakelse
+          <<: *other-receivers
+      - 'barometer-snmp':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-snmp'
+          <<: *lakelse
           <<: *other-receivers
 
     # yamllint enable rule:key-duplicates
