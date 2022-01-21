@@ -981,13 +981,15 @@
     builders:
       - shell: |
           set +x
-          sudo apt-get update && \
-          sudo DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 dist-upgrade -y
           sudo DEBIAN_FRONTEND=noninteractive \
-          apt-get install software-properties-common gpg -y
+          apt-get -o DPkg::Lock::Timeout=300 install software-properties-common gpg -y
           sudo add-apt-repository -y ppa:deadsnakes/ppa
-          sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive \
-          apt-get install \
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 install \
             python3.9 python3.9-dev python3.9-distutils \
             python3.8 python3.8-dev python3.8-distutils \
             python3.7 python3.7-dev python3.6 python3.6-dev \
@@ -1547,8 +1549,9 @@
     name: functest-trivy
     builders:
       - shell: |
-          sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive \
-          apt-get install curl -y
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 install curl -y
 
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b .
           if [ "{repo}" = "_" ]; then
