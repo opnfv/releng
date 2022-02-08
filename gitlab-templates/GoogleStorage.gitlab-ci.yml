@@ -24,7 +24,12 @@ variables:
 
 .gsutil-install: &gsutil-install
   script:
-    - dnf -y install python3-pip
+    - |
+        if command -v dnf &> /dev/null; then
+          dnf -y install python3-pip
+        else
+          yum -y install python3-pip
+        fi
     - python3 -m pip install -U pip
     - python3 -m pip install gsutil
     - echo "$GSUTIL_CONFIG" > ~/.boto
