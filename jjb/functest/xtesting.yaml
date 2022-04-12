@@ -849,6 +849,57 @@
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-trivy'
 
+- builder:
+    name: xtesting-docker-scan
+    builders:
+      - shell: |
+          apt-get -o DPkg::Lock::Timeout=300 update && \
+          DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout=300 install \
+            curl docker.io -y
+
+          mkdir -p ~/.docker/cli-plugins && \
+          curl https://github.com/docker/scan-cli-plugin/releases/latest/download/docker-scan_linux_amd64 -L -s -S -o ~/.docker/cli-plugins/docker-scan &&\
+          chmod +x ~/.docker/cli-plugins/docker-scan
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          docker-scan $image
+
+- job-template:
+    name: 'xtesting-{repo}-{container}-{tag}-docker-scan'
+    triggers:
+      - timed: '@daily'
+    parameters:
+      - xtesting-slave:
+          slave: '{slave}'
+    builders:
+      - xtesting-docker-scan:
+          <<: *xtesting-containers
+    publishers:
+      - email-ext:
+          failure: false
+          first-failure: true
+          fixed: true
+          recipients: cedric.ollivier@orange.com
+
+- project:
+    name: 'xtesting-opnfv-xtesting-docker-scan'
+    <<: *xtesting-params
+    container: 'xtesting'
+    jobs:
+      - 'xtesting-{repo}-{container}-{tag}-docker-scan'
+
+- project:
+    name: 'xtesting-opnfv-xtesting-mts-docker-scan'
+    <<: *xtesting-params
+    container: 'xtesting-mts'
+    jobs:
+      - 'xtesting-{repo}-{container}-{tag}-docker-scan'
+
 - project:
     name: 'xtesting'
     <<: *xtesting-params
@@ -878,3 +929,15 @@
       - last-failure
       - last-duration
     regex: (?!xtesting-pi)^xtesting-[a-z-0-9.]+-trivy$
+
+- view:
+    name: xtesting-docker-scan
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^xtesting-[a-z0-9.]+-docker-scan$

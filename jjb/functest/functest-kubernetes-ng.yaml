@@ -381,6 +381,85 @@
     jobs:
       - 'functest-kubernetes-ng-{repo}-{container}-{tag}-trivy'
 
+- builder:
+    name: functest-kubernetes-ng-docker-scan
+    builders:
+      - shell: |
+          apt-get -o DPkg::Lock::Timeout=300 update && \
+          DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout=300 install \
+            curl docker.io -y
+
+          mkdir -p ~/.docker/cli-plugins && \
+          curl https://github.com/docker/scan-cli-plugin/releases/latest/download/docker-scan_linux_amd64 -L -s -S -o ~/.docker/cli-plugins/docker-scan &&\
+          chmod +x ~/.docker/cli-plugins/docker-scan
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          docker-scan $image
+
+- job-template:
+    name: 'functest-kubernetes-ng-{repo}-{container}-{tag}-docker-scan'
+    triggers:
+      - timed: '@daily'
+    parameters:
+      - functest-kubernetes-ng-slave:
+          slave: '{slave}'
+    builders:
+      - functest-kubernetes-ng-docker-scan:
+          <<: *functest-kubernetes-ng-containers
+    publishers:
+      - email-ext:
+          failure: false
+          first-failure: true
+          fixed: true
+          recipients: cedric.ollivier@orange.com
+
+- project:
+    name: 'functest-kubernetes-ng-opnfv-functest-kubernetes-core-docker-scan'
+    <<: *functest-kubernetes-ng-params
+    container: 'functest-kubernetes-core'
+    jobs:
+      - 'functest-kubernetes-ng-{repo}-{container}-{tag}-docker-scan'
+
+- project:
+    name: 'functest-kubernetes-ng-opnfv-functest-kubernetes-healthcheck-docker-scan'
+    <<: *functest-kubernetes-ng-params
+    container: 'functest-kubernetes-healthcheck'
+    jobs:
+      - 'functest-kubernetes-ng-{repo}-{container}-{tag}-docker-scan'
+
+- project:
+    name: 'functest-kubernetes-ng-opnfv-functest-kubernetes-cnf-docker-scan'
+    <<: *functest-kubernetes-ng-params
+    container: 'functest-kubernetes-cnf'
+    jobs:
+      - 'functest-kubernetes-ng-{repo}-{container}-{tag}-docker-scan'
+
+- project:
+    name: 'functest-kubernetes-ng-opnfv-functest-kubernetes-security-docker-scan'
+    <<: *functest-kubernetes-ng-params
+    container: 'functest-kubernetes-security'
+    jobs:
+      - 'functest-kubernetes-ng-{repo}-{container}-{tag}-docker-scan'
+
+- project:
+    name: 'functest-kubernetes-ng-opnfv-functest-kubernetes-smoke-docker-scan'
+    <<: *functest-kubernetes-ng-params
+    container: 'functest-kubernetes-smoke'
+    jobs:
+      - 'functest-kubernetes-ng-{repo}-{container}-{tag}-docker-scan'
+
+- project:
+    name: 'functest-kubernetes-ng-opnfv-functest-kubernetes-benchmarking-docker-scan'
+    <<: *functest-kubernetes-ng-params
+    container: 'functest-kubernetes-benchmarking'
+    jobs:
+      - 'functest-kubernetes-ng-{repo}-{container}-{tag}-docker-scan'
+
 - project:
     name: 'functest-kubernetes-ng'
     <<: *functest-kubernetes-ng-params
@@ -410,3 +489,15 @@
       - last-failure
       - last-duration
     regex: ^functest-kubernetes-ng-[a-z0-9-.]+-trivy$
+
+- view:
+    name: functest-kubernetes-ng-docker-scan
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^functest-kubernetes-ng-[a-z0-9.]+-docker-scan$
