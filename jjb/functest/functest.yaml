@@ -1649,9 +1649,9 @@
     name: functest-docker-scan
     builders:
       - shell: |
-          apt-get -o DPkg::Lock::Timeout=300 update && \
-          DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout=300 install \
-            curl docker.io -y
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 install curl docker.io -y
 
           mkdir -p ~/.docker/cli-plugins && \
           curl https://github.com/docker/scan-cli-plugin/releases/latest/download/docker-scan_linux_amd64 \
@@ -1664,7 +1664,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          docker-scan $image
+          sudo docker scan $image
 
 - job-template:
     name: 'functest-{repo}-{container}-{tag}-docker-scan'
@@ -1779,4 +1779,4 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^functest-[a-z0-9.]+-docker-scan$
+    regex: (?!functest-kubernetes)(?!functest-pi)^functest-[a-z-0-9.]+-docker-scan$

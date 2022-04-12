@@ -1287,8 +1287,8 @@
     builders:
       - shell: |
           apt-get -o DPkg::Lock::Timeout=300 update && \
-          DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout=300 install \
-            curl docker.io -y
+          DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 install curl docker.io -y
 
           mkdir -p ~/.docker/cli-plugins && \
           curl https://github.com/docker/scan-cli-plugin/releases/latest/download/docker-scan_linux_amd64 \
@@ -1301,7 +1301,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          docker-scan $image
+          docker scan $image
 
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-docker-scan'
@@ -1402,4 +1402,4 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^functest-kubernetes-[a-z0-9.]+-docker-scan$
+    regex: (?!functest-kubernetes-pi)(?!functest-kubernetes-ng)^functest-kubernetes-[a-z-0-9.]+-docker-scan$
