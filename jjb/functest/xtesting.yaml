@@ -850,17 +850,14 @@
       - 'xtesting-{repo}-{container}-{tag}-trivy'
 
 - builder:
-    name: xtesting-docker-scan
+    name: xtesting-grype
     builders:
       - shell: |
           sudo apt-get -o DPkg::Lock::Timeout=300 update && \
           sudo DEBIAN_FRONTEND=noninteractive apt-get \
-            -o DPkg::Lock::Timeout=300 install curl docker.io -y
+            -o DPkg::Lock::Timeout=300 install curl -y
 
-          mkdir -p ~/.docker/cli-plugins && \
-          curl https://github.com/docker/scan-cli-plugin/releases/latest/download/docker-scan_linux_amd64 \
-            -L -s -S -o ~/.docker/cli-plugins/docker-scan &&\
-          chmod +x ~/.docker/cli-plugins/docker-scan
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sudo sh -s -- -b .
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -868,17 +865,17 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          sudo docker scan --accept-license $image
+          sudo grype -q $image
 
 - job-template:
-    name: 'xtesting-{repo}-{container}-{tag}-docker-scan'
+    name: 'xtesting-{repo}-{container}-{tag}-grype'
     triggers:
       - timed: '@daily'
     parameters:
       - xtesting-slave:
           slave: '{slave}'
     builders:
-      - xtesting-docker-scan:
+      - xtesting-grype:
           <<: *xtesting-containers
     publishers:
       - email-ext:
@@ -888,18 +885,18 @@
           recipients: cedric.ollivier@orange.com
 
 - project:
-    name: 'xtesting-opnfv-xtesting-docker-scan'
+    name: 'xtesting-opnfv-xtesting-grype'
     <<: *xtesting-params
     container: 'xtesting'
     jobs:
-      - 'xtesting-{repo}-{container}-{tag}-docker-scan'
+      - 'xtesting-{repo}-{container}-{tag}-grype'
 
 - project:
-    name: 'xtesting-opnfv-xtesting-mts-docker-scan'
+    name: 'xtesting-opnfv-xtesting-mts-grype'
     <<: *xtesting-params
     container: 'xtesting-mts'
     jobs:
-      - 'xtesting-{repo}-{container}-{tag}-docker-scan'
+      - 'xtesting-{repo}-{container}-{tag}-grype'
 
 - project:
     name: 'xtesting'
@@ -932,7 +929,7 @@
     regex: (?!xtesting-pi)^xtesting-[a-z-0-9.]+-trivy$
 
 - view:
-    name: xtesting-docker-scan
+    name: xtesting-grype
     view-type: list
     columns:
       - status
@@ -941,4 +938,4 @@
       - last-success
       - last-failure
       - last-duration
-    regex: (?!xtesting-pi)^xtesting-[a-z-0-9.]+-docker-scan$
+    regex: (?!xtesting-pi)^xtesting-[a-z-0-9.]+-grype$

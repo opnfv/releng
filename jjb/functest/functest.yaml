@@ -1646,17 +1646,14 @@
       - 'functest-{repo}-{container}-{tag}-trivy'
 
 - builder:
-    name: functest-docker-scan
+    name: functest-grype
     builders:
       - shell: |
           sudo apt-get -o DPkg::Lock::Timeout=300 update && \
           sudo DEBIAN_FRONTEND=noninteractive apt-get \
-            -o DPkg::Lock::Timeout=300 install curl docker.io -y
+            -o DPkg::Lock::Timeout=300 install curl -y
 
-          mkdir -p ~/.docker/cli-plugins && \
-          curl https://github.com/docker/scan-cli-plugin/releases/latest/download/docker-scan_linux_amd64 \
-            -L -s -S -o ~/.docker/cli-plugins/docker-scan &&\
-          chmod +x ~/.docker/cli-plugins/docker-scan
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sudo sh -s -- -b .
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
           elif [ "{port}" = "None" ]; then
@@ -1664,17 +1661,17 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          sudo docker scan --accept-license $image
+          sudo grype -q $image
 
 - job-template:
-    name: 'functest-{repo}-{container}-{tag}-docker-scan'
+    name: 'functest-{repo}-{container}-{tag}-grype'
     triggers:
       - timed: '@weekly'
     parameters:
       - functest-slave:
           slave: '{slave}'
     builders:
-      - functest-docker-scan:
+      - functest-grype:
           <<: *functest-containers
     publishers:
       - email-ext:
@@ -1684,60 +1681,60 @@
           recipients: cedric.ollivier@orange.com
 
 - project:
-    name: 'functest-opnfv-functest-core-docker-scan'
+    name: 'functest-opnfv-functest-core-grype'
     <<: *functest-params
     container: 'functest-core'
     jobs:
-      - 'functest-{repo}-{container}-{tag}-docker-scan'
+      - 'functest-{repo}-{container}-{tag}-grype'
 
 - project:
-    name: 'functest-opnfv-functest-tempest-docker-scan'
+    name: 'functest-opnfv-functest-tempest-grype'
     <<: *functest-params
     container: 'functest-tempest'
     jobs:
-      - 'functest-{repo}-{container}-{tag}-docker-scan'
+      - 'functest-{repo}-{container}-{tag}-grype'
 
 - project:
-    name: 'functest-opnfv-functest-healthcheck-docker-scan'
+    name: 'functest-opnfv-functest-healthcheck-grype'
     <<: *functest-params
     container: 'functest-healthcheck'
     jobs:
-      - 'functest-{repo}-{container}-{tag}-docker-scan'
+      - 'functest-{repo}-{container}-{tag}-grype'
 
 - project:
-    name: 'functest-opnfv-functest-smoke-docker-scan'
+    name: 'functest-opnfv-functest-smoke-grype'
     <<: *functest-params
     container: 'functest-smoke'
     jobs:
-      - 'functest-{repo}-{container}-{tag}-docker-scan'
+      - 'functest-{repo}-{container}-{tag}-grype'
 
 - project:
-    name: 'functest-opnfv-functest-benchmarking-docker-scan'
+    name: 'functest-opnfv-functest-benchmarking-grype'
     <<: *functest-params
     container: 'functest-benchmarking'
     jobs:
-      - 'functest-{repo}-{container}-{tag}-docker-scan'
+      - 'functest-{repo}-{container}-{tag}-grype'
 
 - project:
-    name: 'functest-opnfv-functest-vnf-docker-scan'
+    name: 'functest-opnfv-functest-vnf-grype'
     <<: *functest-params
     container: 'functest-vnf'
     jobs:
-      - 'functest-{repo}-{container}-{tag}-docker-scan'
+      - 'functest-{repo}-{container}-{tag}-grype'
 
 - project:
-    name: 'functest-opnfv-functest-smoke-cntt-docker-scan'
+    name: 'functest-opnfv-functest-smoke-cntt-grype'
     <<: *functest-params
     container: 'functest-smoke-cntt'
     jobs:
-      - 'functest-{repo}-{container}-{tag}-docker-scan'
+      - 'functest-{repo}-{container}-{tag}-grype'
 
 - project:
-    name: 'functest-opnfv-functest-benchmarking-cntt-docker-scan'
+    name: 'functest-opnfv-functest-benchmarking-cntt-grype'
     <<: *functest-params
     container: 'functest-benchmarking-cntt'
     jobs:
-      - 'functest-{repo}-{container}-{tag}-docker-scan'
+      - 'functest-{repo}-{container}-{tag}-grype'
 
 - project:
     name: 'functest'
@@ -1770,7 +1767,7 @@
     regex: (?!functest-kubernetes)(?!functest-pi)^functest-[a-z-0-9.]+-trivy$
 
 - view:
-    name: functest-docker-scan
+    name: functest-grype
     view-type: list
     columns:
       - status
@@ -1779,4 +1776,4 @@
       - last-success
       - last-failure
       - last-duration
-    regex: (?!functest-kubernetes)(?!functest-pi)^functest-[a-z-0-9.]+-docker-scan$
+    regex: (?!functest-kubernetes)(?!functest-pi)^functest-[a-z-0-9.]+-grype$
