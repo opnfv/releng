@@ -291,6 +291,8 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
+          sudo mkdir -p $WORKSPACE/results
+          sudo chown {uid}:{gid} $WORKSPACE/results
           sudo docker run --rm \
             $volumes \
             $env \
@@ -316,6 +318,8 @@
           <<: *xtesting-pi-containers
           volumes: '{volumes}'
           env: '{env}'
+          uid: '{uid}'
+          gid: '{gid}'
 
 - project:
     name: 'xtesting-pi-{tag}-zip'
@@ -323,6 +327,8 @@
     volumes:
     env:
     container: 'xtesting'
+    uid: 1000
+    gid: 1000
     jobs:
       - 'xtesting-pi-{tag}-zip'
 

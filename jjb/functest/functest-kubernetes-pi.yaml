@@ -483,6 +483,8 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
+          mkdir -p $WORKSPACE/results
+          chown {uid}:{gid} $WORKSPACE/results
           docker run --rm \
             $volumes \
             $env \
@@ -512,6 +514,8 @@
           <<: *functest-kubernetes-pi-containers
           volumes: '{volumes}'
           env: '{env}'
+          uid: '{uid}'
+          gid: '{gid}'
 
 - project:
     name: 'functest-kubernetes-pi-{tag}-zip'
@@ -522,6 +526,8 @@
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
       - E2E_TEST_OPTS=$E2E_TEST_OPTS
     container: 'functest-kubernetes-healthcheck'
+    uid: 1000
+    gid: 1000
     jobs:
       - 'functest-kubernetes-pi-{tag}-zip'
 
