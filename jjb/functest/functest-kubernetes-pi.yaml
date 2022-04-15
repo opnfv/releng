@@ -87,6 +87,8 @@
     volumes: '{volumes}'
     env: '{env}'
     network: '{network}'
+    uid: '{uid}'
+    gid: '{gid}'
 
 - builder:
     name: functest-kubernetes-pi-pull-containers
@@ -126,7 +128,7 @@
             image={repo}:{port}/{container}:{tag}
           fi
           mkdir -p $WORKSPACE/results
-          chown 1000:1000 $WORKSPACE/results
+          chown {uid}:{gid} $WORKSPACE/results
           docker run --rm \
             --privileged={privileged} \
             --network={network} \
@@ -274,6 +276,8 @@
       - k8s_smoke
     privileged: 'false'
     network: bridge
+    uid: 1000
+    gid: 1000
     jobs:
       - 'functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck-{tag}-{test}-run'
 
@@ -320,6 +324,8 @@
       - sig_storage_serial
     privileged: 'false'
     network: bridge
+    uid: 1000
+    gid: 1000
     exclude:
       - tag: latest
         test: k8s_io
@@ -380,6 +386,8 @@
       - kube_bench_node
     privileged: 'false'
     network: bridge
+    uid: 1000
+    gid: 1000
     jobs:
       - 'functest-kubernetes-pi-ollivier-functest-kubernetes-security-{tag}-{test}-run'
 
@@ -412,6 +420,8 @@
       - netperf
     privileged: 'false'
     network: bridge
+    uid: 1000
+    gid: 1000
     jobs:
       - 'functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking-{tag}-{test}-run'
 
@@ -445,6 +455,8 @@
       - cnf_testsuite
     privileged: 'false'
     network: bridge
+    uid: 1000
+    gid: 1000
     jobs:
       - 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-{tag}-{test}-run'
 

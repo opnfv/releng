@@ -73,6 +73,8 @@
     volumes: '{volumes}'
     env: '{env}'
     network: '{network}'
+    uid: '{uid}'
+    gid: '{gid}'
 
 - builder:
     name: xtesting-pi-pull-containers
@@ -111,8 +113,8 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          mkdir -p $WORKSPACE/results
-          chown 1000:1000 $WORKSPACE/results
+          sudo mkdir -p $WORKSPACE/results
+          sudo chown {uid}:{gid} $WORKSPACE/results
           sudo docker run --rm \
             --privileged={privileged} \
             --network={network} \
@@ -216,6 +218,8 @@
       - eighth
     privileged: 'false'
     network: bridge
+    uid: 1000
+    gid: 1000
     exclude:
       - tag: leguer
         test: eighth
@@ -259,6 +263,8 @@
       - seventh
     privileged: 'false'
     network: bridge
+    uid: 1000
+    gid: 1000
     jobs:
       - 'xtesting-pi-ollivier-xtesting-mts-{tag}-{test}-run'
 

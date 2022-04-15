@@ -100,6 +100,8 @@
     volumes: '{volumes}'
     env: '{env}'
     network: '{network}'
+    uid: '{uid}'
+    gid: '{gid}'
     DASHBOARD_URL: '{DASHBOARD_URL}'
 
 - builder:
@@ -139,8 +141,8 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          mkdir -p $WORKSPACE/results
-          chown 1000:1000 $WORKSPACE/results
+          sudo mkdir -p $WORKSPACE/results
+          sudo chown {uid}:{gid} $WORKSPACE/results
           sudo docker run --rm \
             --privileged={privileged} \
             --network={network} \
@@ -318,6 +320,8 @@
       - tempest_horizon
     privileged: 'false'
     network: bridge
+    uid: 1000
+    gid: 1000
     jobs:
       - 'functest-opnfv-functest-healthcheck-{tag}-{test}-run'
 
@@ -374,6 +378,8 @@
       - tempest_cyborg
     privileged: 'false'
     network: bridge
+    uid: 1000
+    gid: 1000
     exclude:
       - tag: latest
         test: refstack_defcore
@@ -475,6 +481,8 @@
       - tempest_slow_cntt
     privileged: 'false'
     network: bridge
+    uid: 1000
+    gid: 1000
     jobs:
       - 'functest-opnfv-functest-smoke-cntt-{tag}-{test}-run'
 
@@ -513,6 +521,8 @@
       - shaker
     privileged: 'false'
     network: bridge
+    uid: 1000
+    gid: 1000
     jobs:
       - 'functest-opnfv-functest-benchmarking-{tag}-{test}-run'
 
@@ -549,6 +559,8 @@
       - rally_jobs_cntt
     privileged: 'false'
     network: bridge
+    uid: 1000
+    gid: 1000
     jobs:
       - 'functest-opnfv-functest-benchmarking-cntt-{tag}-{test}-run'
 
@@ -588,6 +600,8 @@
       - juju_epc
     privileged: 'false'
     network: bridge
+    uid: 1000
+    gid: 1000
     jobs:
       - 'functest-opnfv-functest-vnf-{tag}-{test}-run'
 
