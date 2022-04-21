@@ -89,6 +89,7 @@
     network: '{network}'
     uid: '{uid}'
     gid: '{gid}'
+    published_ports: '{published_ports}'
 
 - builder:
     name: functest-kubernetes-pull-containers
@@ -119,6 +120,11 @@
             for i in $(eval echo {env} | tr -d '[]' |sed "s/, / /g" ); \
               do env="-e $i $env"; done
           fi
+          published_ports=;
+          if [ "{published_ports}" != "None" ]; then
+            for i in $(echo {published_ports} | tr -d '[]' |sed "s/, / /g" ); \
+              do published_ports="-p $i $published_ports"; done
+          fi
           [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -134,6 +140,7 @@
             --network={network} \
             $volumes \
             $env \
+            $published_ports \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest-kubernetes/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
@@ -270,6 +277,7 @@
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
       - E2E_TEST_OPTS=$E2E_TEST_OPTS
+    published_ports:
     container: 'functest-kubernetes-healthcheck'
     test:
       - k8s_quick
@@ -304,6 +312,7 @@
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
       - E2E_TEST_OPTS=$E2E_TEST_OPTS
+    published_ports:
     container: 'functest-kubernetes-smoke'
     test:
       - xrally_kubernetes
@@ -361,6 +370,7 @@
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
       - E2E_TEST_OPTS=$E2E_TEST_OPTS
+    published_ports:
     container: 'functest-kubernetes-security'
     test:
       - kube_hunter
@@ -396,6 +406,7 @@
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
       - E2E_TEST_OPTS=$E2E_TEST_OPTS
+    published_ports:
     container: 'functest-kubernetes-benchmarking'
     test:
       - xrally_kubernetes_full
@@ -430,6 +441,7 @@
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
       - E2E_TEST_OPTS=$E2E_TEST_OPTS
+    published_ports:
     container: 'functest-kubernetes-cnf'
     test:
       - k8s_vims
@@ -457,6 +469,11 @@
             for i in $(eval echo {env} | tr -d '[]' |sed "s/, / /g" ); \
               do env="-e $i $env"; done
           fi
+          published_ports=;
+          if [ "{published_ports}" != "None" ]; then
+            for i in $(echo {published_ports} | tr -d '[]' |sed "s/, / /g" ); \
+              do published_ports="-p $i $published_ports"; done
+          fi
           [ ! -z "$WORKSPACE" ] && rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -470,6 +487,7 @@
           docker run --rm \
             $volumes \
             $env \
+            $published_ports \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest-kubernetes \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest-kubernetes \
@@ -498,6 +516,7 @@
           env: '{env}'
           uid: '{uid}'
           gid: '{gid}'
+          published_ports: '{published_ports}'
 
 - project:
     name: 'functest-kubernetes-{tag}-zip'
@@ -507,6 +526,7 @@
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
       - E2E_TEST_OPTS=$E2E_TEST_OPTS
+    published_ports:
     container: 'functest-kubernetes-healthcheck'
     uid: 1000
     gid: 1000
@@ -1241,7 +1261,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          ./trivy --exit-code 1 $image
+          ./trivy $image
 
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-trivy'

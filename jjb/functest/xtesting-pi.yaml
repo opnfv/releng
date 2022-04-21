@@ -75,6 +75,7 @@
     network: '{network}'
     uid: '{uid}'
     gid: '{gid}'
+    published_ports: '{published_ports}'
 
 - builder:
     name: xtesting-pi-pull-containers
@@ -105,6 +106,11 @@
             for i in $(eval echo {env} | tr -d '[]' |sed "s/, / /g" ); \
               do env="-e $i $env"; done
           fi
+          published_ports=;
+          if [ "{published_ports}" != "None" ]; then
+            for i in $(echo {published_ports} | tr -d '[]' |sed "s/, / /g" ); \
+              do published_ports="-p $i $published_ports"; done
+          fi
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -120,6 +126,7 @@
             --network={network} \
             $volumes \
             $env \
+            $published_ports \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
@@ -207,6 +214,7 @@
     <<: *xtesting-pi-params
     volumes:
     env:
+    published_ports:
     container: 'xtesting'
     test:
       - first
@@ -258,6 +266,7 @@
     <<: *xtesting-pi-params
     volumes:
     env:
+    published_ports:
     container: 'xtesting-mts'
     test:
       - seventh
@@ -283,6 +292,11 @@
             for i in $(eval echo {env} | tr -d '[]' |sed "s/, / /g" ); \
               do env="-e $i $env"; done
           fi
+          published_ports=;
+          if [ "{published_ports}" != "None" ]; then
+            for i in $(echo {published_ports} | tr -d '[]' |sed "s/, / /g" ); \
+              do published_ports="-p $i $published_ports"; done
+          fi
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -296,6 +310,7 @@
           sudo docker run --rm \
             $volumes \
             $env \
+            $published_ports \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting \
@@ -320,12 +335,14 @@
           env: '{env}'
           uid: '{uid}'
           gid: '{gid}'
+          published_ports: '{published_ports}'
 
 - project:
     name: 'xtesting-pi-{tag}-zip'
     <<: *xtesting-pi-params
     volumes:
     env:
+    published_ports:
     container: 'xtesting'
     uid: 1000
     gid: 1000

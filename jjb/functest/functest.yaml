@@ -102,6 +102,7 @@
     network: '{network}'
     uid: '{uid}'
     gid: '{gid}'
+    published_ports: '{published_ports}'
     DASHBOARD_URL: '{DASHBOARD_URL}'
 
 - builder:
@@ -133,6 +134,11 @@
             for i in $(eval echo {env} | tr -d '[]' |sed "s/, / /g" ); \
               do env="-e $i $env"; done
           fi
+          published_ports=;
+          if [ "{published_ports}" != "None" ]; then
+            for i in $(echo {published_ports} | tr -d '[]' |sed "s/, / /g" ); \
+              do published_ports="-p $i $published_ports"; done
+          fi
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -148,6 +154,7 @@
             --network={network} \
             $volumes \
             $env \
+            $published_ports \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
@@ -303,6 +310,7 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
+    published_ports:
     container: 'functest-healthcheck'
     test:
       - connection_check
@@ -352,6 +360,7 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
+    published_ports:
     container: 'functest-smoke'
     test:
       - tempest_neutron
@@ -469,6 +478,7 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
+    published_ports:
     container: 'functest-smoke-cntt'
     test:
       - tempest_neutron_cntt
@@ -513,6 +523,7 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
+    published_ports:
     container: 'functest-benchmarking'
     test:
       - rally_full
@@ -553,6 +564,7 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
+    published_ports:
     container: 'functest-benchmarking-cntt'
     test:
       - rally_full_cntt
@@ -591,6 +603,7 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
+    published_ports:
     container: 'functest-vnf'
     test:
       - cloudify
@@ -620,6 +633,11 @@
             for i in $(eval echo {env} | tr -d '[]' |sed "s/, / /g" ); \
               do env="-e $i $env"; done
           fi
+          published_ports=;
+          if [ "{published_ports}" != "None" ]; then
+            for i in $(echo {published_ports} | tr -d '[]' |sed "s/, / /g" ); \
+              do published_ports="-p $i $published_ports"; done
+          fi
           [ ! -z "$WORKSPACE" ] && sudo rm -rf $WORKSPACE/results || true
           if [ "{repo}" = "_" ]; then
             image={container}:{tag}
@@ -633,6 +651,7 @@
           sudo docker run --rm \
             $volumes \
             $env \
+            $published_ports \
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/functest \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/functest \
@@ -663,6 +682,7 @@
           env: '{env}'
           uid: '{uid}'
           gid: '{gid}'
+          published_ports: '{published_ports}'
 
 - project:
     name: 'functest-{tag}-zip'
@@ -674,6 +694,7 @@
       - EXTERNAL_NETWORK=$EXTERNAL_NETWORK
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
+    published_ports:
     container: 'functest-healthcheck'
     uid: 1000
     gid: 1000
@@ -1592,7 +1613,7 @@
           else
             image={repo}:{port}/{container}:{tag}
           fi
-          ./trivy --exit-code 1 $image
+          ./trivy $image
 
 - job-template:
     name: 'functest-{repo}-{container}-{tag}-trivy'
