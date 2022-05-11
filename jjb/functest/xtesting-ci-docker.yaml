@@ -4,8 +4,9 @@
     builders:
       - shell: |
           cd {dir}
-          sudo docker build --pull true -t {image} .
+          sudo docker build --pull -t {image} .
           sudo docker system prune --all -f
+          sudo docker push {image}
 
 - scm:
     name: xtesting-ci-docker-scm
