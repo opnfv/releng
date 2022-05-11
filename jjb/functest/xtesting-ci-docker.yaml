@@ -46,10 +46,10 @@
 - project:
     name: xtesting-ci-docker
     stream:
-      - jenkins-debian-lts-slim:
+      - jenkins-lts-slim:
           dir: jenkins.debian
           image: opnfv/xtesting-jenkins:lts-slim
-      - jenkins-debian-lts-alpine:
+      - jenkins-lts-alpine:
           dir: jenkins
           image: opnfv/xtesting-jenkins:lts-alpine
       - s3www-v0.5.3:
@@ -59,7 +59,7 @@
       - xtesting-ci-docker-{stream}
 
 - builder:
-    name: xtesting-ci-docker-trivy
+    name: xtesting-ci-docker-trivy-builder
     builders:
       - shell: |
           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b .
@@ -84,15 +84,15 @@
     parameters:
       - xtesting-ci-docker-trivy-parameter
     builders:
-      - xtesting-ci-docker-trivy:
+      - xtesting-ci-docker-trivy-builder:
           image: '{image}'
 
 - project:
     name: 'xtesting-ci-docker-trivy'
     stream:
-      - jenkins-debian-lts-slim:
+      - jenkins-lts-slim:
           image: opnfv/xtesting-jenkins:lts-slim
-      - jenkins-debian-lts-alpine:
+      - jenkins-lts-alpine:
           image: opnfv/xtesting-jenkins:lts-alpine
       - s3www-v0.5.3:
           image: opnfv/xtesting-s3www:v0.5.3
