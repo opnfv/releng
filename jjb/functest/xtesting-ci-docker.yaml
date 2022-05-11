@@ -5,8 +5,8 @@
       - shell: |
           cd {dir}
           sudo docker build --pull -t {image} .
-          sudo docker system prune --all -f
           sudo docker push {image}
+          sudo docker system prune --all -f
 
 - scm:
     name: xtesting-ci-docker-scm
@@ -65,4 +65,4 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^xtesting-ci-docker*$
+    regex: ^xtesting-ci-docker.*$
