@@ -58,6 +58,47 @@
     jobs:
       - xtesting-ci-docker-{stream}
 
+- builder:
+    name: xtesting-ci-docker-trivy
+    builders:
+      - shell: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b .
+          ./trivy image --exit-code 1 {image}
+
+- trigger:
+    name: xtesting-ci-docker-trivy-trigger
+    triggers:
+      - timed: '@daily'
+
+- parameter:
+    name: xtesting-ci-docker-trivy-parameter
+    parameters:
+      - label:
+          name: node
+          default: 'lf-virtual1'
+
+- job-template:
+    name: 'xtesting-ci-docker-trivy-{stream}'
+    triggers:
+      - xtesting-ci-docker-trivy-trigger
+    parameters:
+      - xtesting-ci-docker-trivy-parameter
+    builders:
+      - xtesting-ci-docker-trivy:
+          image: '{image}'
+
+- project:
+    name: 'xtesting-ci-docker-trivy'
+    stream:
+      - jenkins-debian-lts-slim:
+          image: opnfv/xtesting-jenkins:lts-slim
+      - jenkins-debian-lts-alpine:
+          image: opnfv/xtesting-jenkins:lts-alpine
+      - s3www-v0.5.3:
+          image: opnfv/xtesting-s3www:v0.5.3
+    jobs:
+      - 'xtesting-ci-docker-trivy-{stream}'
+
 - view:
     name: xtesting-ci-docker
     view-type: list
