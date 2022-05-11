@@ -1,0 +1,68 @@
+---
+- builder:
+    name: xtesting-ci-docker-builder
+    builders:
+      - shell:
+          cd {dir}
+          sudo docker build --pull true -t {image} .
+          sudo docker system prune --all -f
+
+- scm:
+    name: xtesting-ci-docker-scm
+    scm:
+      - git:
+          # must be changed once Anuket CI tool and repos are clear
+          url: https://github.com/collivier/xtesting-ci-docker
+
+- trigger:
+    name: xtesting-ci-docker-trigger
+    triggers:
+      - pollscm:
+          cron: "H/30 * * * *"
+      - timed: '@daily'
+
+- parameter:
+    name: xtesting-ci-docker-parameter
+    parameters:
+      - label:
+          name: node
+          default: 'lf-virtual1'
+
+- job-template:
+    name: xtesting-ci-docker-{stream}
+    scm:
+      - xtesting-ci-docker-scm
+    parameters:
+      - xtesting-ci-docker-parameter
+    triggers:
+      - xtesting-ci-docker-trigger
+    builders:
+      - xtesting-ci-docker-builder:
+          image: '{image}'
+          dir: '{dir}'
+
+- project:
+    name: xtesting-ci-docker
+    stream:
+      - jenkins-debian-lts-slim:
+          dir: jenkins.debian
+          # must be changed once Anuket docker repo is clear
+          image: ollivier/xtesting-jenkins:lts-slim
+      - jenkins-debian-lts-alpine:
+          dir: jenkins
+          # must be changed once Anuket docker repo is clear
+          image: ollivier/xtesting-jenkins:lts-alpine
+    jobs:
+      - xtesting-ci-docker-{stream}
+
+- view:
+    name: xtesting-ci-docker
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^xtesting-ci-docker*$
