@@ -18,17 +18,17 @@
             sudo -E make && sudo -E make install)
           (cd {dir} && \
             sudo docker build --pull -t {image}:amd64-{tag} . && \
-            sudo docker push {image}:{tag})
+            sudo docker push {image}:amd64-{tag})
           (cd {dir} && \
             git checkout Dockerfile
             sed -i -e "s|{from_amd64}|{to_arm64}|g" Dockerfile
             sudo docker build --pull -t {image}:arm64-{tag} . && \
-            sudo docker push {image}:{tag})
+            sudo docker push {image}:arm64-{tag})
           (cd {dir} && \
             git checkout Dockerfile
             sed -i -e "s|{from_amd64}|{to_arm}|g" Dockerfile
             sudo docker build --pull -t {image}:arm-{tag} . && \
-            sudo docker push {image}:{tag})
+            sudo docker push {image}:arm-{tag})
           sudo manifest-tool push from-args \
             --platforms linux/amd64,linux/arm,linux/arm64 \
             --template {image}:ARCH-{tag} \
