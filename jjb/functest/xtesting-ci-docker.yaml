@@ -8,6 +8,33 @@
           sudo docker push {image}
           sudo docker system prune --all -f
 
+- builder:
+    name: xtesting-ci-docker-multiarch-builder
+    builders:
+      - shell: |
+          sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          git clone https://github.com/estesp/manifest-tool
+          (cd manifest-tool && git checkout v0.9.0 && \
+            sudo -E make && sudo -E make install)
+          (cd {dir} && \
+            sudo docker build --pull -t {image}:amd64-{tag} . && \
+            sudo docker push {image})
+          (cd {dir} && \
+            git checkout Dockerfile
+            sed -i -e "s|{from_amd64}|{to_arm64}|g" Dockerfile
+            sudo docker build --pull -t {image}:arm64-{tag} . && \
+            sudo docker push {image})
+          (cd {dir} && \
+            git checkout Dockerfile
+            sed -i -e "s|{from_amd64}|{to_arm}|g" Dockerfile
+            sudo docker build --pull -t {image}:arm-{tag} . && \
+            sudo docker push {image})
+          sudo manifest-tool push from-args \
+            --platforms linux/amd64,linux/arm,linux/arm64 \
+            --template {image}:ARCH-{tag} \
+            --target {image}:{tag}
+          sudo docker system prune --all -f
+
 - scm:
     name: xtesting-ci-docker-scm
     scm:
@@ -43,6 +70,23 @@
           image: '{image}'
           dir: '{dir}'
 
+- job-template:
+    name: xtesting-ci-docker-multitarch-{stream}
+    scm:
+      - xtesting-ci-docker-scm
+    parameters:
+      - xtesting-ci-docker-parameter
+    triggers:
+      - xtesting-ci-docker-trigger
+    builders:
+      - xtesting-ci-docker-multiarch-builder:
+          image: '{image}'
+          dir: '{dir}'
+          tag: '{tag}'
+          from_amd64: '{from_amd64}'
+          to_arm64: '{to_arm64}'
+          to_arm: '{to_arm}'
+
 - project:
     name: xtesting-ci-docker
     stream:
@@ -57,6 +101,19 @@
           image: opnfv/xtesting-s3www:v0.5.3
     jobs:
       - xtesting-ci-docker-{stream}
+
+- project:
+    name: xtesting-ci-docker-multiarch
+    stream:
+      - jenkins-agent-buster:
+          dir: jenkins-agent
+          image: opnfv/xtesting-jenkins-agent
+          tag: buster
+          from_amd64: debian:buster
+          to_arm64: arm64v8/debian:buster
+          to_arm: arm32v7/debian:buster
+    jobs:
+      - xtesting-ci-docker-multitarch-{stream}
 
 - builder:
     name: xtesting-ci-docker-trivy-builder
