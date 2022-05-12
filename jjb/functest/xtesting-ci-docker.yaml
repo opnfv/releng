@@ -28,7 +28,7 @@
             git checkout Dockerfile
             sed -i -e "s|{from_amd64}|{to_arm}|g" Dockerfile
             sudo docker build --pull -t {image}:arm-{tag} . && \
-            sudo docker push {image})
+            sudo docker push {image}-{tag})
           sudo manifest-tool push from-args \
             --platforms linux/amd64,linux/arm,linux/arm64 \
             --template {image}:ARCH-{tag} \
@@ -108,10 +108,24 @@
       - jenkins-agent-buster:
           dir: jenkins-agent
           image: opnfv/xtesting-jenkins-agent
-          tag: 3.36
+          tag: 3.36-buster
           from_amd64: debian:buster
           to_arm64: arm64v8/debian:buster
           to_arm: arm32v7/debian:buster
+      - jenkins-agent-ubuntu:
+          dir: jenkins-agent-ubuntu
+          image: opnfv/xtesting-jenkins-agent
+          tag: 3.36-bionic
+          from_amd64: ubuntu:bionic
+          to_arm64: arm64v8/ubuntu:bionic
+          to_arm: arm32v7/ubuntu:bionic
+      - jenkins-agent-auto:
+          dir: jenkins-agent-auto
+          image: opnfv/xtesting-jenkins-agent-auto
+          tag: 3.36-buster
+          from_amd64: opnfv/xtesting-jenkins-agent
+          to_arm64: opnfv/xtesting-jenkins-agent-auto:arm64-latest
+          to_arm: opnfv/xtesting-jenkins-agent-auto:arm-latest
     jobs:
       - xtesting-ci-docker-multitarch-{stream}
 
