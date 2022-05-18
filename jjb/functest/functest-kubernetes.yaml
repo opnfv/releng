@@ -17,6 +17,12 @@
           branch: master
           slave: lf-virtual1-8
           dependency: 3.14
+      - v1.24:
+          dependency: latest
+          from:
+          build_args:
+          branch: stable/v1.24
+          slave: lf-virtual1-9
       - v1.23:
           from:
           build_args:
@@ -337,6 +343,8 @@
     gid: 1000
     exclude:
       - tag: latest
+        test: k8s_io
+      - tag: v1.24
         test: k8s_io
       - tag: v1.23
         test: k8s_io
