@@ -8,13 +8,14 @@
             (cd {dir} && tox
             wget -q -N https://dl.min.io/client/mc/release/linux-amd64/mc && chmod a+x mc
             ./mc cp -r -q build/ opnfv/artifacts.opnfv.org/$BUILD_TAG/{stream}
-            echo "\nhttps://artifacts.opnfv.org/$BUILD_TAG/{stream}/index.html\n")
+            echo -e "\nhttps://artifacts.opnfv.org/{stream}/$BUILD_TAG/index.html\n")
           fi
           if [ -d {dir}/build ] && [ -f {dir}/build/Makefile ]; then
             (cd {dir}/build && make
-            for i in {dir}/build/*.pdf; do
+            wget -q -N https://dl.min.io/client/mc/release/linux-amd64/mc && chmod a+x mc
+            for i in *.pdf; do
               ./mc cp -r -q $i opnfv/artifacts.opnfv.org/$BUILD_TAG/{stream}
-              echo "\nhttps://artifacts.opnfv.org/$BUILD_TAG/{stream}/$i\n"
+              echo -e "\nhttps://artifacts.opnfv.org/{stream}/$BUILD_TAG/$i\n"
             done)
           fi
 
