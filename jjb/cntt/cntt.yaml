@@ -1,0 +1,82 @@
+---
+- builder:
+    name: cntt-tox
+    builders:
+      - shell: |
+          set +x
+          if [ -d {dir} ] && [ -f {dir}/tox.ini ]; then
+            (cd {dir} && tox
+            wget -q -N https://dl.min.io/client/mc/release/linux-amd64/mc && chmod a+x mc
+            ./mc cp -r -q build/ opnfv/artifacts.opnfv.org/$BUILD_TAG/{stream}
+            echo "\nhttps://artifacts.opnfv.org/$BUILD_TAG/{stream}/index.html\n")
+          fi
+          if [ -d {dir}/build ] && [ -f {dir}/build/Makefile ]; then
+            (cd {dir}/build && make
+            for i in {dir}/build/*.pdf; do
+              ./mc cp -r -q $i opnfv/artifacts.opnfv.org/$BUILD_TAG/{stream}
+              echo "\nhttps://artifacts.opnfv.org/$BUILD_TAG/{stream}/$i\n"
+            done)
+          fi
+
+- scm:
+    name: cntt-scm
+    scm:
+      - git:
+          url: https://github.com/cntt-n/CNTT
+          refspec: '+refs/heads/*:refs/remotes/origin/* +refs/pull/*/head:refs/remotes/origin/pr/*'
+
+- parameter:
+    name: cntt-parameter
+    parameters:
+      - label:
+          name: node
+          default: 'lf-virtual1'
+
+- job-template:
+    name: cntt-tox-{stream}
+    scm:
+      - cntt-scm
+    triggers:
+      - github
+    parameters:
+      - cntt-parameter
+    builders:
+      - cntt-tox:
+          stream: '{stream}'
+          dir: '{dir}'
+    publishers:
+      - github-notifier
+
+- project:
+    name: cntt
+    stream:
+      - rm:
+          dir: doc/ref_model
+      - ra1:
+          dir: doc/ref_arch/openstack
+      - ra2:
+          dir: doc/ref_arch/kubernetes
+      - rc:
+          dir: doc/ref_cert
+      - rc1:
+          dir: doc/ref_cert/RC1
+      - rc2:
+          dir: doc/ref_cert/RC2
+      - ri1:
+          dir: doc/ref_impl/cntt-ri
+      - ri2:
+          dir: doc/ref_impl/cntt-ri2
+    jobs:
+      - cntt-tox-{stream}
+
+- view:
+    name: cntt
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^cntt.*$
