@@ -31,6 +31,10 @@
       stream: lakelse
       branch: 'stable/{stream}'
       disabled: false
+    moselle: &moselle
+      stream: moselle
+      branch: 'stable/{stream}'
+      disabled: false
     laas-receivers: &laas_receivers
       receivers: >
           pberberian@iol.unh.edu
@@ -436,6 +440,55 @@
           project: 'barometer'
           dockerdir: 'docker/barometer-snmp'
           <<: *lakelse
+          <<: *other-receivers
+
+      # projects with jobs for moselle
+      - 'barometer-collectd':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-collectd'
+          <<: *moselle
+          <<: *other-receivers
+      - 'barometer-collectd-experimental':
+          project: 'barometer'
+          dockerdir: '.'
+          dockerfile: 'docker/barometer-collectd-experimental/Dockerfile'
+          <<: *moselle
+          <<: *other-receivers
+      - 'barometer-collectd-latest':
+          project: 'barometer'
+          dockerdir: '.'
+          dockerfile: 'docker/barometer-collectd-latest/Dockerfile'
+          <<: *moselle
+          <<: *other-receivers
+      - 'barometer-dma':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-dma'
+          <<: *moselle
+          <<: *other-receivers
+      - 'barometer-grafana':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-grafana'
+          <<: *moselle
+          <<: *other-receivers
+      - 'barometer-influxdb':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-influxdb'
+          <<: *moselle
+          <<: *other-receivers
+      - 'barometer-kafka':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-kafka'
+          <<: *moselle
+          <<: *other-receivers
+      - 'barometer-ves':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-ves'
+          <<: *moselle
+          <<: *other-receivers
+      - 'barometer-snmp':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-snmp'
+          <<: *moselle
           <<: *other-receivers
 
     # yamllint enable rule:key-duplicates
