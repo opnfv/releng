@@ -10,7 +10,7 @@
 set -e -o pipefail
 echo "---> Create virtualenv"
 
-sudo -H pip3 install "virtualenv<=20.15.1"
+sudo -H python3 -m pip install "virtualenv<=20.15.1"
 python3 -m venv $WORKSPACE/venv
 
 # shellcheck source=$WORKSPACE/venv/bin/activate disable=SC1091
