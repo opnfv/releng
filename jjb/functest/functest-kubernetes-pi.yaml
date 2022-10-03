@@ -21,12 +21,6 @@
           slave: lf-virtual1-9
       - v1.22:
           slave: lf-virtual1-7
-      - v1.21:
-          slave: lf-virtual1-6
-      - leguer:
-          slave: lf-virtual1-5
-      - kali:
-          slave: lf-virtual1-4
       - arm-latest:
           slave: lf-virtual1-8
       - arm-v1.25:
@@ -37,12 +31,6 @@
           slave: lf-virtual1-9
       - arm-v1.22:
           slave: lf-virtual1-7
-      - arm-v1.21:
-          slave: lf-virtual1-6
-      - arm-leguer:
-          slave: lf-virtual1-5
-      - arm-kali:
-          slave: lf-virtual1-4
       - arm64-latest:
           slave: lf-virtual1-8
       - arm64-v1.25:
@@ -53,12 +41,6 @@
           slave: lf-virtual1-9
       - arm64-v1.22:
           slave: lf-virtual1-7
-      - arm64-v1.21:
-          slave: lf-virtual1-6
-      - arm64-leguer:
-          slave: lf-virtual1-5
-      - arm64-kali:
-          slave: lf-virtual1-4
 
 - functest-kubernetes-pi-jobs: &functest-kubernetes-pi-jobs
     name: 'functest-kubernetes-pi-jobs'
@@ -328,7 +310,6 @@
     container: 'functest-kubernetes-smoke'
     test:
       - xrally_kubernetes
-      - k8s_io
       - k8s_conformance
       - k8s_conformance_serial
       - sig_api_machinery
@@ -347,45 +328,6 @@
     network: bridge
     uid: 1000
     gid: 1000
-    exclude:
-      - tag: latest
-        test: k8s_io
-      - tag: v1.25
-        test: k8s_io
-      - tag: v1.24
-        test: k8s_io
-      - tag: v1.23
-        test: k8s_io
-      - tag: v1.22
-        test: k8s_io
-      - tag: v1.21
-        test: k8s_io
-      - tag: jerma
-        test: k8s_io
-      - tag: arm-latest
-        test: k8s_io
-      - tag: arm-v1.25
-        test: k8s_io
-      - tag: arm-v1.24
-        test: k8s_io
-      - tag: arm-v1.23
-        test: k8s_io
-      - tag: arm-v1.22
-        test: k8s_io
-      - tag: arm-v1.21
-        test: k8s_io
-      - tag: arm64-latest
-        test: k8s_io
-      - tag: arm64-v1.25
-        test: k8s_io
-      - tag: arm64-v1.24
-        test: k8s_io
-      - tag: arm64-v1.23
-        test: k8s_io
-      - tag: arm64-v1.22
-        test: k8s_io
-      - tag: arm64-v1.21
-        test: k8s_io
     jobs:
       - 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-{tag}-{test}-run'
 
@@ -636,8 +578,6 @@
           execution-type: SEQUENTIALLY
           projects:
             - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
-              <<: *functest-kubernetes-pi-jobs
-            - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-{tag}-k8s_io-run'
               <<: *functest-kubernetes-pi-jobs
             - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
               <<: *functest-kubernetes-pi-jobs

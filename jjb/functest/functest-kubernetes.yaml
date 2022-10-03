@@ -41,24 +41,6 @@
           branch: stable/v1.22
           slave: lf-virtual1-7
           dependency: 3.14
-      - v1.21:
-          from:
-          build_args:
-          branch: stable/v1.21
-          slave: lf-virtual1-6
-          dependency: 3.13
-      - leguer:
-          from:
-          build_args:
-          branch: stable/leguer
-          slave: lf-virtual1-5
-          dependency: 3.12
-      - kali:
-          from:
-          build_args:
-          branch: stable/kali
-          slave: lf-virtual1-4
-          dependency: 3.11
 
 - functest-kubernetes-jobs: &functest-kubernetes-jobs
     name: 'functest-kubernetes-jobs'
@@ -328,7 +310,6 @@
     container: 'functest-kubernetes-smoke'
     test:
       - xrally_kubernetes
-      - k8s_io
       - k8s_conformance
       - k8s_conformance_serial
       - sig_api_machinery
@@ -347,19 +328,6 @@
     network: bridge
     uid: 1000
     gid: 1000
-    exclude:
-      - tag: latest
-        test: k8s_io
-      - tag: v1.25
-        test: k8s_io
-      - tag: v1.24
-        test: k8s_io
-      - tag: v1.23
-        test: k8s_io
-      - tag: v1.22
-        test: k8s_io
-      - tag: v1.21
-        test: k8s_io
     jobs:
       - 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-{test}-run'
 
@@ -610,8 +578,6 @@
           execution-type: SEQUENTIALLY
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_io-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
               <<: *functest-kubernetes-jobs
@@ -1018,8 +984,6 @@
           execution-type: SEQUENTIALLY
           projects:
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-xrally_kubernetes-run'
-              <<: *functest-kubernetes-jobs
-            - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_io-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-k8s_conformance-run'
               <<: *functest-kubernetes-jobs
