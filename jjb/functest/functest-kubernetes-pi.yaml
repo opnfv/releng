@@ -66,13 +66,6 @@
           name: DEPLOY_SCENARIO
           default: k8-nosdn-nofeature-noha
 
-- parameter:
-    name: functest-kubernetes-pi-E2E_TEST_OPTS
-    parameters:
-      - string:
-          name: E2E_TEST_OPTS
-          default: container-runtime:containerd
-
 - functest-kubernetes-pi-run-containers: &functest-kubernetes-pi-run-containers
     name: 'functest-kubernetes-pi-run-containers'
     <<: *functest-kubernetes-pi-containers
@@ -257,8 +250,6 @@
           build_tag: ''
       - functest-kubernetes-pi-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
-      - functest-kubernetes-pi-E2E_TEST_OPTS:
-          E2E_TEST_OPTS: container-runtime:containerd
     builders:
       - functest-kubernetes-pi-run-containers:
           <<: *functest-kubernetes-pi-run-containers
@@ -270,7 +261,6 @@
       - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-      - E2E_TEST_OPTS=$E2E_TEST_OPTS
     published_ports:
     container: 'functest-kubernetes-healthcheck'
     test:
@@ -292,8 +282,6 @@
           build_tag: ''
       - functest-kubernetes-pi-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
-      - functest-kubernetes-pi-E2E_TEST_OPTS:
-          E2E_TEST_OPTS: container-runtime:containerd
     builders:
       - functest-kubernetes-pi-run-containers:
           <<: *functest-kubernetes-pi-run-containers
@@ -305,7 +293,6 @@
       - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-      - E2E_TEST_OPTS=$E2E_TEST_OPTS
     published_ports:
     container: 'functest-kubernetes-smoke'
     test:
@@ -340,8 +327,6 @@
           build_tag: ''
       - functest-kubernetes-pi-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
-      - functest-kubernetes-pi-E2E_TEST_OPTS:
-          E2E_TEST_OPTS: container-runtime:containerd
     builders:
       - functest-kubernetes-pi-run-containers:
           <<: *functest-kubernetes-pi-run-containers
@@ -353,7 +338,6 @@
       - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-      - E2E_TEST_OPTS=$E2E_TEST_OPTS
     published_ports:
     container: 'functest-kubernetes-security'
     test:
@@ -376,8 +360,6 @@
           build_tag: ''
       - functest-kubernetes-pi-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
-      - functest-kubernetes-pi-E2E_TEST_OPTS:
-          E2E_TEST_OPTS: container-runtime:containerd
     builders:
       - functest-kubernetes-pi-run-containers:
           <<: *functest-kubernetes-pi-run-containers
@@ -389,7 +371,6 @@
       - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-      - E2E_TEST_OPTS=$E2E_TEST_OPTS
     published_ports:
     container: 'functest-kubernetes-benchmarking'
     test:
@@ -411,8 +392,6 @@
           build_tag: ''
       - functest-kubernetes-pi-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
-      - functest-kubernetes-pi-E2E_TEST_OPTS:
-          E2E_TEST_OPTS: container-runtime:containerd
     builders:
       - functest-kubernetes-pi-run-containers:
           <<: *functest-kubernetes-pi-run-containers
@@ -424,7 +403,6 @@
       - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-      - E2E_TEST_OPTS=$E2E_TEST_OPTS
     published_ports:
     container: 'functest-kubernetes-cnf'
     test:
@@ -491,8 +469,6 @@
           build_tag: ''
       - functest-kubernetes-pi-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
-      - functest-kubernetes-pi-E2E_TEST_OPTS:
-          E2E_TEST_OPTS: container-runtime:containerd
     builders:
       - functest-kubernetes-pi-zip:
           <<: *functest-kubernetes-pi-containers
@@ -509,7 +485,6 @@
       - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
-      - E2E_TEST_OPTS=$E2E_TEST_OPTS
     published_ports:
     container: 'functest-kubernetes-healthcheck'
     uid: 1000
@@ -529,8 +504,6 @@
           build_tag: ''
       - functest-kubernetes-pi-DEPLOY_SCENARIO:
           DEPLOY_SCENARIO: k8-nosdn-nofeature-noha
-      - functest-kubernetes-pi-E2E_TEST_OPTS:
-          E2E_TEST_OPTS: container-runtime:containerd
     # PyYAML and yamllint differ here
     # see https://github.com/yaml/pyyaml/issues/234
     # yamllint disable rule:indentation
