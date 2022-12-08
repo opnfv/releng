@@ -1,4 +1,55 @@
 ---
+- trigger:
+    name: releng-patchset-created
+    triggers:
+      - gerrit:
+          trigger-on:
+            - patchset-created-event
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'releng'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: 'master'
+
+- builder:
+    name: releng-jjb-verify
+    builders:
+      - shell: |
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 dist-upgrade -y
+          sudo DEBIAN_FRONTEND=noninteractive \
+          apt-get -o DPkg::Lock::Timeout=300 install jenkins-job-builder -y
+          jenkins-jobs test --recursive -o /dev/null jjb/
+
+- parameter:
+    name: releng-jjb-slave
+    parameters:
+      - label:
+          name: slave
+          default: '{slave}'
+
+- job-template:
+    name: releng-jjb-verify
+    triggers:
+      - releng-patchset-created
+    parameters:
+      - releng-jjb:
+          slave: lf-build6
+    builders:
+      - releng-jjb-verify
+
+- project:
+    name: 'releng-jjb-verify'
+    jobs:
+      - 'releng-jjb-verify'
+
+
 - project:
     name: releng-builder-jobs
     project: 'releng'
