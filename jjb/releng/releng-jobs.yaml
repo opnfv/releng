@@ -27,6 +27,21 @@
                 - branch-compare-type: 'ANT'
                   branch-pattern: 'master'
 
+- trigger:
+    name: releng-patchset-merged
+    triggers:
+      - gerrit:
+          trigger-on:
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'remerge'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'releng'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: 'master'
+
 - builder:
     name: jjb-verify
     builders:
@@ -38,6 +53,17 @@
           apt-get -o DPkg::Lock::Timeout=300 install jenkins-job-builder -y
           jenkins-jobs test --recursive -o tmp jjb/
           rm -rf tmp
+
+- builder:
+    name: jjb-merge
+    builders:
+      - shell: |
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 dist-upgrade -y
+          sudo DEBIAN_FRONTEND=noninteractive \
+          apt-get -o DPkg::Lock::Timeout=300 install jenkins-job-builder -y
+          jenkins-jobs update --recursive --delete-old jjb/
 
 - parameter:
     name: jjb-slave
@@ -64,6 +90,23 @@
     jobs:
       - 'jjb-verify'
 
+- job-template:
+    name: jjb-merge
+    triggers:
+      - releng-patchset-merged
+    scm:
+      - releng-scm:
+          ref: master
+    parameters:
+      - jjb-slave:
+          slave: lf-virtual1
+    builders:
+      - jjb-merge
+
+- project:
+    name: jjb-merge
+    jobs:
+      - jjb-merge
 
 - project:
     name: releng-builder-jobs
