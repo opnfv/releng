@@ -43,7 +43,7 @@
                   branch-pattern: 'master'
 
 - builder:
-    name: jjb-verify
+    name: releng-jjb-verify
     builders:
       - shell: |
           sudo apt-get -o DPkg::Lock::Timeout=300 update && \
@@ -55,7 +55,7 @@
           rm -rf tmp
 
 - builder:
-    name: jjb-merge
+    name: releng-jjb-merge
     builders:
       - shell: |
           sudo apt-get -o DPkg::Lock::Timeout=300 update && \
@@ -66,61 +66,56 @@
           jenkins-jobs update --recursive --delete-old jjb/
 
 - parameter:
-    name: jjb-slave
+    name: releng-jjb-slave
     parameters:
       - label:
           name: slave
           default: '{slave}'
 
 - job-template:
-    name: jjb-verify
+    name: releng-jjb-verify
     triggers:
       - releng-patchset-created
     scm:
       - releng-scm:
           ref: $GERRIT_REFSPEC
     parameters:
-      - jjb-slave:
-          slave: lf-virtual1
+      - releng-jjb-slave:
+          slave: opnfv-build
     builders:
       - jjb-verify
 
 - project:
-    name: 'jjb-verify'
+    name: releng-jjb-verify
     jobs:
-      - 'jjb-verify'
+      - releng-jjb-verify
 
 - job-template:
-    name: jjb-merge
+    name: releng-jjb-merge
     triggers:
       - releng-patchset-merged
     scm:
       - releng-scm:
           ref: master
     parameters:
-      - jjb-slave:
-          slave: lf-virtual1
+      - releng-jjb-slave:
+          slave: opnfv-build
     builders:
-      - jjb-merge
+      - releng-jjb-merge
 
 - project:
-    name: jjb-merge
+    name: releng-jjb-merge
     jobs:
-      - jjb-merge
+      - releng-jjb-merge
 
-- project:
-    name: releng-builder-jobs
-    project: 'releng'
-    project-name: 'releng'
-    jjb-version: '2.5.0'
-    jjb-cache: "$WORKSPACE/.cache/jenkins_jobs"
-
-    build-timeout: 60
-
-    rtd-build-url: 'https://readthedocs.org/api/v2/webhook/opnfv-releng/38594/'
-    rtd-token: '291c6a0109493b4457e566d06141212452c65784'
-    project-pattern: 'releng'
-
-    jobs:
-      - '{project-name}-ci-jobs'
-      - '{project-name}-rtd-jobs'
+- view:
+    name: releng
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^releng.*
