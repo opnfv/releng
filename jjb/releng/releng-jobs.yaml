@@ -1,4 +1,13 @@
 ---
+- scm:
+    name: releng-scm
+    scm:
+      - git:
+          url: 'https://gerrit.opnfv.org/gerrit/releng'
+          refspec: '+refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*'
+          branches:
+            - '{ref}'
+
 - trigger:
     name: releng-patchset-created
     triggers:
@@ -38,6 +47,9 @@
     name: jjb-verify
     triggers:
       - releng-patchset-created
+    scm:
+      - releng-scm:
+          ref: $GERRIT_REFSPEC
     parameters:
       - jjb-slave:
           slave: lf-virtual1
