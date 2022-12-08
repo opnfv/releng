@@ -36,7 +36,8 @@
             -o DPkg::Lock::Timeout=300 dist-upgrade -y
           sudo DEBIAN_FRONTEND=noninteractive \
           apt-get -o DPkg::Lock::Timeout=300 install jenkins-job-builder -y
-          jenkins-jobs test --recursive -o /dev/null jjb/
+          jenkins-jobs test --recursive -o tmp jjb/
+          rm -rf tmp
 
 - parameter:
     name: jjb-slave
