@@ -101,39 +101,6 @@ on merges and tags to your project repository::
           project: 'myproject'
           <<: *master
 
-
-Documentation Builds
-~~~~~~~~~~~~~~~~~~~~
-
-Documentation is build using they Python Sphinx project. You can read
-more about how these build work and how your documentation should be
-setup in the `opnfvdocs`_ project.
-
-Create a file at **jjb/myproject/myproject-rtd-builds.yaml** with the
-following content::
-
-  ---
-  - project:
-      name: myproject-rtd
-      project: myproject
-      project-name: myproject
-
-      project-pattern: 'myproject'
-      rtd-build-url: <request from LFN IT>
-      rtd-token: <request from LFN IT>
-
-      jobs:
-        - '{project-name}-rtd-jobs'
-
-.. note::
-   Open a ticket with a link to the change adding your documentation
-   at `support.linuxfoundation.org`_ and the LFN IT team will
-   provide you the *rtd-build-url* and *rtd-token*.
-
-This will create jobs to build your project documentation (under *docs/*
-in your project repository) on proposed changes, and trigger a rebuild
-on the RTD site when code is merged in your project.
-
 .. _Jenkins Job Builder: https://docs.openstack.org/infra/jenkins-job-builder/
 .. _Releng: https://gerrit.opnfv.org/gerrit/admin/repos/releng
 .. _Global-JJB: https://docs.releng.linuxfoundation.org/projects/global-jjb/en/latest/index.html
