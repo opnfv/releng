@@ -984,3 +984,24 @@
       - last-failure
       - last-duration
     regex: (?!xtesting-pi)^xtesting-[a-z-0-9.]+-grype$
+
+- builder:
+    name: xtesting-debug
+    builders:
+      - shell: |
+          ip addr
+          ls /home
+          cat /etc/jenkins_jobs/jenkins_jobs.ini
+
+- job-template:
+    name: xtesting-debug
+    parameters:
+      - xtesting-debug-slave:
+          slave: lf-build6
+    builders:
+      - xtesting-debug
+
+- project:
+    name: 'xtesting-debug'
+    jobs:
+      - 'xtesting-debug'
