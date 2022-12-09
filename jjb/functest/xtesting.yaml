@@ -41,24 +41,6 @@
           branch: stable/wallaby
           slave: lf-virtual1
           dependency: 3.13
-      - leguer:
-          from:
-          build_args:
-          branch: stable/leguer
-          slave: lf-virtual1
-          dependency: 3.12
-      - kali:
-          from:
-          build_args:
-          branch: stable/kali
-          slave: lf-virtual1
-          dependency: 3.11
-      - jerma:
-          from:
-          build_args:
-          branch: stable/jerma
-          slave: lf-virtual1
-          dependency: 3.10
 
 - xtesting-jobs: &xtesting-jobs
     name: 'xtesting-jobs'
@@ -240,13 +222,6 @@
     network: bridge
     uid: 1000
     gid: 1000
-    exclude:
-      - tag: leguer
-        test: eighth
-      - tag: kali
-        test: eighth
-      - tag: jerma
-        test: eighth
     jobs:
       - 'xtesting-opnfv-xtesting-{tag}-{test}-run'
 
@@ -562,7 +537,6 @@
             python3.10 python3.10-dev python3.10-distutils \
             python3.9 python3.9-dev python3.9-distutils \
             python3.8 python3.8-dev python3.8-distutils \
-            python3.7 python3.7-dev python3.6 python3.6-dev \
             python python-dev python3-pip enchant -y
           sudo pip3 install tox tox-pip-version
 
