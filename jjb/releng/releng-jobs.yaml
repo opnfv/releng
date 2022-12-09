@@ -107,3 +107,72 @@
     name: releng-jjb-merge
     jobs:
       - releng-jjb-merge
+
+- scm:
+    name: opnfv-scm
+    scm:
+      - git:
+          url: 'https://gerrit.opnfv.org/gerrit/{project}'
+          refspec: '+refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*'
+          submodule:
+            recursive: true
+          branches:
+            - '{ref}'
+
+- trigger:
+    name: tox-patchset-created
+    triggers:
+      - gerrit:
+          trigger-on:
+            - patchset-created-event
+            - comment-added-contains-event:
+                comment-contains-value: recheck
+            - comment-added-contains-event:
+                comment-contains-value: reverify
+          projects:
+            - project-compare-type: 'REG_EXP'
+              project-pattern: '^(?!functest).*'
+              branches:
+                  branch-compare-type: 'ANT'
+                  branch-pattern:
+                    - master
+                    - stable/nile
+                    - stable/moselle
+
+- builder:
+    name: tox
+    builders:
+      - shell: |
+          [ -f tox.ini ] || true
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 dist-upgrade -y
+          sudo DEBIAN_FRONTEND=noninteractive \
+          apt-get -o DPkg::Lock::Timeout=300 install tox -y
+          tox
+
+- parameter:
+    name: tox-slave
+    parameters:
+      - label:
+          name: slave
+          default: '{slave}'
+
+- job-template:
+    name: releng-tox
+    triggers:
+      - tox-patchset-created
+    scm:
+      - opnfv-scm:
+          ref: $GERRIT_REFSPEC
+          project: $GERRIT_PROJECT
+    parameters:
+      - tox-slave:
+          slave: opnfv-build
+    builders:
+      - releng-tox
+
+- project:
+    name: releng-tox
+    jobs:
+      - releng-tox
