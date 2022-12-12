@@ -445,8 +445,12 @@
     builders:
       - shell: |
           #!/bin/bash
-          # Install python package
-          sudo -H pip install "flake8==2.6.2"
+
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 dist-upgrade -y
+          sudo DEBIAN_FRONTEND=noninteractive \
+          apt-get -o DPkg::Lock::Timeout=300 install flake8 -y
 
           echo "Checking python code..."
           for f in $(egrep '\.py$' modified_files)
@@ -463,8 +467,12 @@
     builders:
       - shell: |
           #!/bin/bash
-          # sudo Install python packages
-          sudo -H pip install "yamllint==1.8.2"
+
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 dist-upgrade -y
+          sudo DEBIAN_FRONTEND=noninteractive \
+          apt-get -o DPkg::Lock::Timeout=300 install yamllint -y
 
           echo "Checking yaml file..."
           for f in $(egrep '\.ya?ml$' modified_files)
