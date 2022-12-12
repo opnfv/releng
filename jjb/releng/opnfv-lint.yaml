@@ -40,9 +40,13 @@
       - project-parameter:
           project: $GERRIT_PROJECT
           branch: '{branch}'
-      - label:
-          name: slave
-          default: opnfv-build
+      - node:
+          name: SLAVE_NAME
+          description: Slaves to execute yamllint
+          default-slaves:
+            - lf-build6
+          allowed-multiselect: true
+          ignore-offline-nodes: true
 
     scm:
       - git-scm-gerrit
