@@ -15,31 +15,31 @@
           from:
           build_args:
           branch: master
-          slave: lf-virtual1
+          slave: opnfv-build
           dependency: 3.16
       - zed:
           from:
           build_args:
           branch: stable/zed
-          slave: lf-virtual1
+          slave: opnfv-build
           dependency: 3.16
       - yoga:
           from:
           build_args:
           branch: stable/yoga
-          slave: lf-virtual1
+          slave: opnfv-build
           dependency: 3.16
       - xena:
           from:
           build_args:
           branch: stable/xena
-          slave: lf-virtual1
+          slave: opnfv-build
           dependency: 3.14
       - wallaby:
           from:
           build_args:
           branch: stable/wallaby
-          slave: lf-virtual1
+          slave: opnfv-build
           dependency: 3.13
 
 - xtesting-jobs: &xtesting-jobs
@@ -124,7 +124,7 @@
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting/$BUILD_TAG/$JOB_NAME-$BUILD_ID \
-            -v /home/opnfv/xtesting/.boto:/etc/boto.cfg \
+            -v /etc/boto.cfg:/etc/boto.cfg \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e NODE_NAME=$slave \
@@ -289,7 +289,7 @@
             -e S3_ENDPOINT_URL=https://storage.googleapis.com \
             -e S3_DST_URL=s3://artifacts.opnfv.org/xtesting \
             -e HTTP_DST_URL=http://artifacts.opnfv.org/xtesting \
-            -v /home/opnfv/xtesting/.boto:/etc/boto.cfg \
+            -v /etc/boto.cfg:/etc/boto.cfg \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e BUILD_TAG=$BUILD_TAG \
