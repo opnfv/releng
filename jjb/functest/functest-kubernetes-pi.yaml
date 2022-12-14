@@ -12,46 +12,46 @@
     port:
     tag:
       - latest:
-          slave: lf-virtual1-9
+          node: lf-virtual1-9
       - v1.25:
-          slave: lf-virtual1-8
+          node: lf-virtual1-8
       - v1.24:
-          slave: lf-virtual1-7
+          node: lf-virtual1-7
       - v1.23:
-          slave: lf-virtual1-6
+          node: lf-virtual1-6
       - v1.22:
-          slave: lf-virtual1-5
+          node: lf-virtual1-5
       - arm-latest:
-          slave: lf-virtual1-9
+          node: lf-virtual1-9
       - arm-v1.25:
-          slave: lf-virtual1-8
+          node: lf-virtual1-8
       - arm-v1.24:
-          slave: lf-virtual1-7
+          node: lf-virtual1-7
       - arm-v1.23:
-          slave: lf-virtual1-6
+          node: lf-virtual1-6
       - arm-v1.22:
-          slave: lf-virtual1-5
+          node: lf-virtual1-5
       - arm64-latest:
-          slave: lf-virtual1-9
+          node: lf-virtual1-9
       - arm64-v1.25:
-          slave: lf-virtual1-8
+          node: lf-virtual1-8
       - arm64-v1.24:
-          slave: lf-virtual1-7
+          node: lf-virtual1-7
       - arm64-v1.23:
-          slave: lf-virtual1-6
+          node: lf-virtual1-6
       - arm64-v1.22:
-          slave: lf-virtual1-5
+          node: lf-virtual1-5
 
 - functest-kubernetes-pi-jobs: &functest-kubernetes-pi-jobs
     name: 'functest-kubernetes-pi-jobs'
     current-parameters: true
 
 - parameter:
-    name: functest-kubernetes-pi-slave
+    name: functest-kubernetes-pi-node
     parameters:
       - label:
-          name: slave
-          default: '{slave}'
+          name: node
+          default: '{node}'
 
 - parameter:
     name: functest-kubernetes-pi-build_tag
@@ -134,7 +134,7 @@
             -v /home/opnfv/functest-kubernetes/.boto:/etc/boto.cfg \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
-            -e NODE_NAME=$slave \
+            -e NODE_NAME=$node \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             $image run_tests -t {test} -p -r
@@ -156,8 +156,8 @@
 - job-template:
     name: 'functest-kubernetes-pi-{repo}-{container}-{tag}-pull'
     parameters:
-      - functest-kubernetes-pi-slave:
-          slave: '{slave}'
+      - functest-kubernetes-pi-node:
+          node: '{node}'
     builders:
       - functest-kubernetes-pi-pull-containers:
           <<: *functest-kubernetes-pi-containers
@@ -200,8 +200,8 @@
 - job-template:
     name: 'functest-kubernetes-pi-{repo}-{container}-{tag}-rmi'
     parameters:
-      - functest-kubernetes-pi-slave:
-          slave: '{slave}'
+      - functest-kubernetes-pi-node:
+          node: '{node}'
     builders:
       - functest-kubernetes-pi-remove-images:
           <<: *functest-kubernetes-pi-containers
@@ -244,8 +244,8 @@
 - job-template:
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck-{tag}-{test}-run'
     parameters:
-      - functest-kubernetes-pi-slave:
-          slave: '{slave}'
+      - functest-kubernetes-pi-node:
+          node: '{node}'
       - functest-kubernetes-pi-build_tag:
           build_tag: ''
       - functest-kubernetes-pi-DEPLOY_SCENARIO:
@@ -277,8 +277,8 @@
 - job-template:
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-{tag}-{test}-run'
     parameters:
-      - functest-kubernetes-pi-slave:
-          slave: '{slave}'
+      - functest-kubernetes-pi-node:
+          node: '{node}'
       - functest-kubernetes-pi-build_tag:
           build_tag: ''
       - functest-kubernetes-pi-DEPLOY_SCENARIO:
@@ -323,8 +323,8 @@
 - job-template:
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-security-{tag}-{test}-run'
     parameters:
-      - functest-kubernetes-pi-slave:
-          slave: '{slave}'
+      - functest-kubernetes-pi-node:
+          node: '{node}'
       - functest-kubernetes-pi-build_tag:
           build_tag: ''
       - functest-kubernetes-pi-DEPLOY_SCENARIO:
@@ -357,8 +357,8 @@
 - job-template:
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking-{tag}-{test}-run'
     parameters:
-      - functest-kubernetes-pi-slave:
-          slave: '{slave}'
+      - functest-kubernetes-pi-node:
+          node: '{node}'
       - functest-kubernetes-pi-build_tag:
           build_tag: ''
       - functest-kubernetes-pi-DEPLOY_SCENARIO:
@@ -390,8 +390,8 @@
 - job-template:
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-{tag}-{test}-run'
     parameters:
-      - functest-kubernetes-pi-slave:
-          slave: '{slave}'
+      - functest-kubernetes-pi-node:
+          node: '{node}'
       - functest-kubernetes-pi-build_tag:
           build_tag: ''
       - functest-kubernetes-pi-DEPLOY_SCENARIO:
@@ -468,8 +468,8 @@
 - job-template:
     name: 'functest-kubernetes-pi-{tag}-zip'
     parameters:
-      - functest-kubernetes-pi-slave:
-          slave: '{slave}'
+      - functest-kubernetes-pi-node:
+          node: '{node}'
       - functest-kubernetes-pi-build_tag:
           build_tag: ''
       - functest-kubernetes-pi-DEPLOY_SCENARIO:
@@ -504,8 +504,8 @@
     triggers:
       - timed: '@weekly'
     parameters:
-      - functest-kubernetes-pi-slave:
-          slave: '{slave}'
+      - functest-kubernetes-pi-node:
+          node: '{node}'
       - functest-kubernetes-pi-build_tag:
           build_tag: ''
       - functest-kubernetes-pi-DEPLOY_SCENARIO:

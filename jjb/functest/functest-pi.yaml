@@ -12,49 +12,49 @@
     port:
     tag:
       - latest:
-          slave: lf-pod4
+          node: lf-pod4
           DASHBOARD_URL: http://172.30.12.83
       - zed:
-          slave: lf-virtual9
+          node: lf-virtual9
           DASHBOARD_URL: http://172.30.13.94
       - yoga:
-          slave: lf-pod4-3
+          node: lf-pod4-3
           DASHBOARD_URL: http://172.30.12.88
       - xena:
-          slave: laas-xena
+          node: laas-xena
           DASHBOARD_URL: http://10.200.120.76
       - wallaby:
-          slave: lf-virtual6
+          node: lf-virtual6
           DASHBOARD_URL: http://172.30.13.91
       - arm-latest:
-          slave: lf-pod4
+          node: lf-pod4
           DASHBOARD_URL: http://172.30.12.83
       - arm-zed:
-          slave: lf-virtual9
+          node: lf-virtual9
           DASHBOARD_URL: http://172.30.13.94
       - arm-yoga:
-          slave: lf-pod4-3
+          node: lf-pod4-3
           DASHBOARD_URL: http://172.30.12.88
       - xena-latest:
-          slave: laas-xena
+          node: laas-xena
           DASHBOARD_URL: http://10.200.120.76
       - arm-wallaby:
-          slave: lf-virtual6
+          node: lf-virtual6
           DASHBOARD_URL: http://172.30.13.91
       - arm64-latest:
-          slave: lf-pod4
+          node: lf-pod4
           DASHBOARD_URL: http://172.30.12.83
       - arm64-zed:
-          slave: lf-virtual9
+          node: lf-virtual9
           DASHBOARD_URL: http://172.30.13.94
       - arm64-yoga:
-          slave: lf-pod4-3
+          node: lf-pod4-3
           DASHBOARD_URL: http://172.30.12.88
       - arm64-xena:
-          slave: laas-xena
+          node: laas-xena
           DASHBOARD_URL: http://10.200.120.76
       - arm64-wallaby:
-          slave: lf-virtual6
+          node: lf-virtual6
           DASHBOARD_URL: http://172.30.13.91
 
 - functest-pi-jobs: &functest-pi-jobs
@@ -62,11 +62,11 @@
     current-parameters: true
 
 - parameter:
-    name: functest-pi-slave
+    name: functest-pi-node
     parameters:
       - label:
-          name: slave
-          default: '{slave}'
+          name: node
+          default: '{node}'
 
 - parameter:
     name: functest-pi-build_tag
@@ -164,7 +164,7 @@
             -v /home/opnfv/functest/.boto:/etc/boto.cfg \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
-            -e NODE_NAME=$slave \
+            -e NODE_NAME=$node \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             -e DASHBOARD_URL={DASHBOARD_URL} \
@@ -187,8 +187,8 @@
 - job-template:
     name: 'functest-pi-{repo}-{container}-{tag}-pull'
     parameters:
-      - functest-pi-slave:
-          slave: '{slave}'
+      - functest-pi-node:
+          node: '{node}'
     builders:
       - functest-pi-pull-containers:
           <<: *functest-pi-containers
@@ -238,8 +238,8 @@
 - job-template:
     name: 'functest-pi-{repo}-{container}-{tag}-rmi'
     parameters:
-      - functest-pi-slave:
-          slave: '{slave}'
+      - functest-pi-node:
+          node: '{node}'
     builders:
       - functest-pi-remove-images:
           <<: *functest-pi-containers
@@ -289,8 +289,8 @@
 - job-template:
     name: 'functest-pi-ollivier-functest-healthcheck-{tag}-{test}-run'
     parameters:
-      - functest-pi-slave:
-          slave: '{slave}'
+      - functest-pi-node:
+          node: '{node}'
       - functest-pi-build_tag:
           build_tag: ''
       - functest-pi-EXTERNAL_NETWORK:
@@ -339,8 +339,8 @@
 - job-template:
     name: 'functest-pi-ollivier-functest-smoke-{tag}-{test}-run'
     parameters:
-      - functest-pi-slave:
-          slave: '{slave}'
+      - functest-pi-node:
+          node: '{node}'
       - functest-pi-build_tag:
           build_tag: ''
       - functest-pi-EXTERNAL_NETWORK:
@@ -394,8 +394,8 @@
 - job-template:
     name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-{test}-run'
     parameters:
-      - functest-pi-slave:
-          slave: '{slave}'
+      - functest-pi-node:
+          node: '{node}'
       - functest-pi-build_tag:
           build_tag: ''
       - functest-pi-EXTERNAL_NETWORK:
@@ -439,8 +439,8 @@
 - job-template:
     name: 'functest-pi-ollivier-functest-benchmarking-{tag}-{test}-run'
     parameters:
-      - functest-pi-slave:
-          slave: '{slave}'
+      - functest-pi-node:
+          node: '{node}'
       - functest-pi-build_tag:
           build_tag: ''
       - functest-pi-EXTERNAL_NETWORK:
@@ -480,8 +480,8 @@
 - job-template:
     name: 'functest-pi-ollivier-functest-benchmarking-cntt-{tag}-{test}-run'
     parameters:
-      - functest-pi-slave:
-          slave: '{slave}'
+      - functest-pi-node:
+          node: '{node}'
       - functest-pi-build_tag:
           build_tag: ''
       - functest-pi-EXTERNAL_NETWORK:
@@ -519,8 +519,8 @@
 - job-template:
     name: 'functest-pi-ollivier-functest-vnf-{tag}-{test}-run'
     parameters:
-      - functest-pi-slave:
-          slave: '{slave}'
+      - functest-pi-node:
+          node: '{node}'
       - functest-pi-build_tag:
           build_tag: ''
       - functest-pi-EXTERNAL_NETWORK:
@@ -605,8 +605,8 @@
 - job-template:
     name: 'functest-pi-{tag}-zip'
     parameters:
-      - functest-pi-slave:
-          slave: '{slave}'
+      - functest-pi-node:
+          node: '{node}'
       - functest-pi-build_tag:
           build_tag: ''
       - functest-pi-EXTERNAL_NETWORK:
@@ -647,8 +647,8 @@
     triggers:
       - timed: '@weekly'
     parameters:
-      - functest-pi-slave:
-          slave: '{slave}'
+      - functest-pi-node:
+          node: '{node}'
       - functest-pi-build_tag:
           build_tag: ''
       - functest-pi-EXTERNAL_NETWORK:

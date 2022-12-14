@@ -12,46 +12,46 @@
     port:
     tag:
       - latest:
-          slave: opnfv-build
+          node: opnfv-build
       - zed:
-          slave: opnfv-build
+          node: opnfv-build
       - yoga:
-          slave: opnfv-build
+          node: opnfv-build
       - xena:
-          slave: opnfv-build
+          node: opnfv-build
       - wallaby:
-          slave: opnfv-build
+          node: opnfv-build
       - arm-latest:
-          slave: opnfv-build
+          node: opnfv-build
       - arm-zed:
-          slave: opnfv-build
+          node: opnfv-build
       - arm-yoga:
-          slave: opnfv-build
+          node: opnfv-build
       - arm-xena:
-          slave: opnfv-build
+          node: opnfv-build
       - arm-wallaby:
-          slave: opnfv-build
+          node: opnfv-build
       - arm64-latest:
-          slave: opnfv-build
+          node: opnfv-build
       - arm64-zed:
-          slave: opnfv-build
+          node: opnfv-build
       - arm64-yoga:
-          slave: opnfv-build
+          node: opnfv-build
       - arm64-xena:
-          slave: opnfv-build
+          node: opnfv-build
       - arm64-wallaby:
-          slave: opnfv-build
+          node: opnfv-build
 
 - xtesting-pi-jobs: &xtesting-pi-jobs
     name: 'xtesting-pi-jobs'
     current-parameters: true
 
 - parameter:
-    name: xtesting-pi-slave
+    name: xtesting-pi-node
     parameters:
       - label:
-          name: slave
-          default: '{slave}'
+          name: node
+          default: '{node}'
 
 - parameter:
     name: xtesting-pi-build_tag
@@ -127,7 +127,7 @@
             -v /etc/boto.cfg:/etc/boto.cfg \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
-            -e NODE_NAME=$slave \
+            -e NODE_NAME=$node \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             $image run_tests -t {test} -p -r
@@ -149,8 +149,8 @@
 - job-template:
     name: 'xtesting-pi-{repo}-{container}-{tag}-pull'
     parameters:
-      - xtesting-pi-slave:
-          slave: '{slave}'
+      - xtesting-pi-node:
+          node: '{node}'
     builders:
       - xtesting-pi-pull-containers:
           <<: *xtesting-pi-containers
@@ -172,8 +172,8 @@
 - job-template:
     name: 'xtesting-pi-{repo}-{container}-{tag}-rmi'
     parameters:
-      - xtesting-pi-slave:
-          slave: '{slave}'
+      - xtesting-pi-node:
+          node: '{node}'
     builders:
       - xtesting-pi-remove-images:
           <<: *xtesting-pi-containers
@@ -195,8 +195,8 @@
 - job-template:
     name: 'xtesting-pi-ollivier-xtesting-{tag}-{test}-run'
     parameters:
-      - xtesting-pi-slave:
-          slave: '{slave}'
+      - xtesting-pi-node:
+          node: '{node}'
       - xtesting-pi-build_tag:
           build_tag: ''
     builders:
@@ -228,8 +228,8 @@
 - job-template:
     name: 'xtesting-pi-ollivier-xtesting-mts-{tag}-{test}-run'
     parameters:
-      - xtesting-pi-slave:
-          slave: '{slave}'
+      - xtesting-pi-node:
+          node: '{node}'
       - xtesting-pi-build_tag:
           build_tag: ''
     builders:
@@ -299,8 +299,8 @@
 - job-template:
     name: 'xtesting-pi-{tag}-zip'
     parameters:
-      - xtesting-pi-slave:
-          slave: '{slave}'
+      - xtesting-pi-node:
+          node: '{node}'
       - xtesting-pi-build_tag:
           build_tag: ''
     builders:
@@ -330,8 +330,8 @@
     triggers:
       - timed: '@daily'
     parameters:
-      - xtesting-pi-slave:
-          slave: '{slave}'
+      - xtesting-pi-node:
+          node: '{node}'
       - xtesting-pi-build_tag:
           build_tag: ''
     # PyYAML and yamllint differ here

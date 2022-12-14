@@ -15,31 +15,31 @@
           from:
           build_args:
           branch: master
-          slave: lf-virtual1-9
+          node: lf-virtual1-9
           dependency: 3.15
       - v1.25:
           from:
           build_args:
           branch: stable/v1.25
-          slave: lf-virtual1-8
+          node: lf-virtual1-8
           dependency: 3.15
       - v1.24:
           from:
           build_args:
           branch: stable/v1.24
-          slave: lf-virtual1-7
+          node: lf-virtual1-7
           dependency: 3.15
       - v1.23:
           from:
           build_args:
           branch: stable/v1.23
-          slave: lf-virtual1-6
+          node: lf-virtual1-6
           dependency: 3.14
       - v1.22:
           from:
           build_args:
           branch: stable/v1.22
-          slave: lf-virtual1-5
+          node: lf-virtual1-5
           dependency: 3.14
 
 - functest-kubernetes-jobs: &functest-kubernetes-jobs
@@ -47,11 +47,11 @@
     current-parameters: true
 
 - parameter:
-    name: functest-kubernetes-slave
+    name: functest-kubernetes-node
     parameters:
       - label:
-          name: slave
-          default: '{slave}'
+          name: node
+          default: '{node}'
 
 - parameter:
     name: functest-kubernetes-build_tag
@@ -134,7 +134,7 @@
             -v /home/opnfv/functest-kubernetes/.boto:/etc/boto.cfg \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
-            -e NODE_NAME=$slave \
+            -e NODE_NAME=$node \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             $image run_tests -t {test} -p -r
@@ -156,8 +156,8 @@
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-pull'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
     builders:
       - functest-kubernetes-pull-containers:
           <<: *functest-kubernetes-containers
@@ -200,8 +200,8 @@
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-rmi'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
     builders:
       - functest-kubernetes-remove-images:
           <<: *functest-kubernetes-containers
@@ -244,8 +244,8 @@
 - job-template:
     name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-{test}-run'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
       - functest-kubernetes-build_tag:
           build_tag: ''
       - functest-kubernetes-DEPLOY_SCENARIO:
@@ -277,8 +277,8 @@
 - job-template:
     name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-{test}-run'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
       - functest-kubernetes-build_tag:
           build_tag: ''
       - functest-kubernetes-DEPLOY_SCENARIO:
@@ -323,8 +323,8 @@
 - job-template:
     name: 'functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-{test}-run'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
       - functest-kubernetes-build_tag:
           build_tag: ''
       - functest-kubernetes-DEPLOY_SCENARIO:
@@ -357,8 +357,8 @@
 - job-template:
     name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-{test}-run'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
       - functest-kubernetes-build_tag:
           build_tag: ''
       - functest-kubernetes-DEPLOY_SCENARIO:
@@ -390,8 +390,8 @@
 - job-template:
     name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-{test}-run'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
       - functest-kubernetes-build_tag:
           build_tag: ''
       - functest-kubernetes-DEPLOY_SCENARIO:
@@ -468,8 +468,8 @@
 - job-template:
     name: 'functest-kubernetes-{tag}-zip'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
       - functest-kubernetes-build_tag:
           build_tag: ''
       - functest-kubernetes-DEPLOY_SCENARIO:
@@ -504,8 +504,8 @@
     triggers:
       - timed: '@weekly'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
       - functest-kubernetes-build_tag:
           build_tag: ''
       - functest-kubernetes-DEPLOY_SCENARIO:
@@ -724,8 +724,8 @@
 - job-template:
     name: 'functest-kubernetes-{repo}-{tag}-dep-pull'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
     builders:
       - functest-kubernetes-pull-dep-images:
           <<: *functest-kubernetes-dep
@@ -739,8 +739,8 @@
 - job-template:
     name: 'functest-kubernetes-{repo}-{tag}-dep-rmi'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
     builders:
       - functest-kubernetes-remove-dep-images:
           <<: *functest-kubernetes-dep
@@ -783,8 +783,8 @@
       - functest-kubernetes-patchset-created:
           branch: '{branch}'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
     builders:
       - functest-kubernetes-tox:
 
@@ -797,8 +797,8 @@
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-gate'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
     scm:
       - functest-kubernetes-scm:
           ref: $GERRIT_REFSPEC
@@ -886,8 +886,8 @@
       - functest-kubernetes-patchset-created:
           branch: '{branch}'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
       - functest-kubernetes-build_tag:
           build_tag: ''
       - functest-kubernetes-DEPLOY_SCENARIO:
@@ -1074,8 +1074,8 @@
 - job-template:
     name: 'functest-kubernetes-{repo}-{container}-{tag}-build'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
     scm:
       - functest-kubernetes-scm:
           ref: '{branch}'
@@ -1151,8 +1151,8 @@
       - functest-kubernetes-scm:
           ref: '{branch}'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
     # PyYAML and yamllint differ here
     # see https://github.com/yaml/pyyaml/issues/234
     # yamllint disable rule:indentation
@@ -1226,8 +1226,8 @@
     triggers:
       - timed: '@weekly'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
     builders:
       - functest-kubernetes-trivy:
           <<: *functest-kubernetes-containers
@@ -1303,8 +1303,8 @@
     triggers:
       - timed: '@weekly'
     parameters:
-      - functest-kubernetes-slave:
-          slave: '{slave}'
+      - functest-kubernetes-node:
+          node: '{node}'
     builders:
       - functest-kubernetes-grype:
           <<: *functest-kubernetes-containers

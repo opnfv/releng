@@ -15,31 +15,31 @@
           from:
           build_args:
           branch: master
-          slave: opnfv-build
+          node: opnfv-build
           dependency: 3.16
       - zed:
           from:
           build_args:
           branch: stable/zed
-          slave: opnfv-build
+          node: opnfv-build
           dependency: 3.16
       - yoga:
           from:
           build_args:
           branch: stable/yoga
-          slave: opnfv-build
+          node: opnfv-build
           dependency: 3.16
       - xena:
           from:
           build_args:
           branch: stable/xena
-          slave: opnfv-build
+          node: opnfv-build
           dependency: 3.14
       - wallaby:
           from:
           build_args:
           branch: stable/wallaby
-          slave: opnfv-build
+          node: opnfv-build
           dependency: 3.13
 
 - xtesting-jobs: &xtesting-jobs
@@ -47,11 +47,11 @@
     current-parameters: true
 
 - parameter:
-    name: xtesting-slave
+    name: xtesting-node
     parameters:
       - label:
-          name: slave
-          default: '{slave}'
+          name: node
+          default: '{node}'
 
 - parameter:
     name: xtesting-build_tag
@@ -127,7 +127,7 @@
             -v /etc/boto.cfg:/etc/boto.cfg \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
-            -e NODE_NAME=$slave \
+            -e NODE_NAME=$node \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             $image run_tests -t {test} -p -r
@@ -149,8 +149,8 @@
 - job-template:
     name: 'xtesting-{repo}-{container}-{tag}-pull'
     parameters:
-      - xtesting-slave:
-          slave: '{slave}'
+      - xtesting-node:
+          node: '{node}'
     builders:
       - xtesting-pull-containers:
           <<: *xtesting-containers
@@ -172,8 +172,8 @@
 - job-template:
     name: 'xtesting-{repo}-{container}-{tag}-rmi'
     parameters:
-      - xtesting-slave:
-          slave: '{slave}'
+      - xtesting-node:
+          node: '{node}'
     builders:
       - xtesting-remove-images:
           <<: *xtesting-containers
@@ -195,8 +195,8 @@
 - job-template:
     name: 'xtesting-opnfv-xtesting-{tag}-{test}-run'
     parameters:
-      - xtesting-slave:
-          slave: '{slave}'
+      - xtesting-node:
+          node: '{node}'
       - xtesting-build_tag:
           build_tag: ''
     builders:
@@ -228,8 +228,8 @@
 - job-template:
     name: 'xtesting-opnfv-xtesting-mts-{tag}-{test}-run'
     parameters:
-      - xtesting-slave:
-          slave: '{slave}'
+      - xtesting-node:
+          node: '{node}'
       - xtesting-build_tag:
           build_tag: ''
     builders:
@@ -299,8 +299,8 @@
 - job-template:
     name: 'xtesting-{tag}-zip'
     parameters:
-      - xtesting-slave:
-          slave: '{slave}'
+      - xtesting-node:
+          node: '{node}'
       - xtesting-build_tag:
           build_tag: ''
     builders:
@@ -330,8 +330,8 @@
     triggers:
       - timed: '@daily'
     parameters:
-      - xtesting-slave:
-          slave: '{slave}'
+      - xtesting-node:
+          node: '{node}'
       - xtesting-build_tag:
           build_tag: ''
     # PyYAML and yamllint differ here
@@ -492,8 +492,8 @@
 - job-template:
     name: 'xtesting-{repo}-{tag}-dep-pull'
     parameters:
-      - xtesting-slave:
-          slave: '{slave}'
+      - xtesting-node:
+          node: '{node}'
     builders:
       - xtesting-pull-dep-images:
           <<: *xtesting-dep
@@ -507,8 +507,8 @@
 - job-template:
     name: 'xtesting-{repo}-{tag}-dep-rmi'
     parameters:
-      - xtesting-slave:
-          slave: '{slave}'
+      - xtesting-node:
+          node: '{node}'
     builders:
       - xtesting-remove-dep-images:
           <<: *xtesting-dep
@@ -551,8 +551,8 @@
       - xtesting-patchset-created:
           branch: '{branch}'
     parameters:
-      - xtesting-slave:
-          slave: '{slave}'
+      - xtesting-node:
+          node: '{node}'
     builders:
       - xtesting-tox:
 
@@ -565,8 +565,8 @@
 - job-template:
     name: 'xtesting-{repo}-{container}-{tag}-gate'
     parameters:
-      - xtesting-slave:
-          slave: '{slave}'
+      - xtesting-node:
+          node: '{node}'
     scm:
       - xtesting-scm:
           ref: $GERRIT_REFSPEC
@@ -618,8 +618,8 @@
       - xtesting-patchset-created:
           branch: '{branch}'
     parameters:
-      - xtesting-slave:
-          slave: '{slave}'
+      - xtesting-node:
+          node: '{node}'
       - xtesting-build_tag:
           build_tag: ''
     # PyYAML and yamllint differ here
@@ -740,8 +740,8 @@
 - job-template:
     name: 'xtesting-{repo}-{container}-{tag}-build'
     parameters:
-      - xtesting-slave:
-          slave: '{slave}'
+      - xtesting-node:
+          node: '{node}'
     scm:
       - xtesting-scm:
           ref: '{branch}'
@@ -781,8 +781,8 @@
       - xtesting-scm:
           ref: '{branch}'
     parameters:
-      - xtesting-slave:
-          slave: '{slave}'
+      - xtesting-node:
+          node: '{node}'
     # PyYAML and yamllint differ here
     # see https://github.com/yaml/pyyaml/issues/234
     # yamllint disable rule:indentation
@@ -842,8 +842,8 @@
     triggers:
       - timed: '@daily'
     parameters:
-      - xtesting-slave:
-          slave: '{slave}'
+      - xtesting-node:
+          node: '{node}'
     builders:
       - xtesting-trivy:
           <<: *xtesting-containers
@@ -891,8 +891,8 @@
     triggers:
       - timed: '@daily'
     parameters:
-      - xtesting-slave:
-          slave: '{slave}'
+      - xtesting-node:
+          node: '{node}'
     builders:
       - xtesting-grype:
           <<: *xtesting-containers
