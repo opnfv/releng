@@ -66,11 +66,11 @@
           jenkins-jobs update --recursive --delete-old jjb/
 
 - parameter:
-    name: releng-jjb-slave
+    name: releng-jjb-node
     parameters:
       - label:
-          name: slave
-          default: '{slave}'
+          name: node
+          default: '{node}'
 
 - job-template:
     name: releng-jjb-verify
@@ -80,8 +80,8 @@
       - releng-scm:
           ref: $GERRIT_REFSPEC
     parameters:
-      - releng-jjb-slave:
-          slave: opnfv-build
+      - releng-jjb-node:
+          node: opnfv-build
     builders:
       - releng-jjb-verify
 
@@ -98,8 +98,8 @@
       - releng-scm:
           ref: master
     parameters:
-      - releng-jjb-slave:
-          slave: opnfv-build
+      - releng-jjb-node:
+          node: opnfv-build
     builders:
       - releng-jjb-merge
 
@@ -154,11 +154,11 @@
           tox --recreate
 
 - parameter:
-    name: releng-tox-slave
+    name: releng-tox-node
     parameters:
       - label:
-          name: slave
-          default: '{slave}'
+          name: node
+          default: '{node}'
 
 - job-template:
     name: releng-tox
@@ -169,8 +169,8 @@
           ref: $GERRIT_REFSPEC
           project: $GERRIT_PROJECT
     parameters:
-      - releng-tox-slave:
-          slave: opnfv-build
+      - releng-tox-node:
+          node: opnfv-build
     builders:
       - releng-tox
 
