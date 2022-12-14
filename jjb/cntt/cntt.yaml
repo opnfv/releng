@@ -5,6 +5,12 @@
       - shell: |
           set +x
           if [ -d {dir} ] && [ -f {dir}/tox.ini ]; then
+            sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+            sudo DEBIAN_FRONTEND=noninteractive apt-get \
+              -o DPkg::Lock::Timeout=300 dist-upgrade -y
+            sudo DEBIAN_FRONTEND=noninteractive \
+            apt-get -o DPkg::Lock::Timeout=300 install tox texlive \
+              texlive-latex-extra latexmk pandoc -y
             (cd {dir} && tox
             wget -q -N https://dl.min.io/client/mc/release/linux-amd64/mc && chmod a+x mc
             ./mc cp -r -q build/ opnfv/artifacts.opnfv.org/{stream}/$BUILD_TAG
