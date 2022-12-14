@@ -3,6 +3,24 @@
 # All the jobs except verify have been removed!
 # They will only be enabled on request by projects!
 ###################################################
+
+- parameter:
+    name: 'opnfv-build-centos-defaults'
+    parameters:
+      - label:
+          name: SLAVE_LABEL
+          default: 'opnfv-build-centos'
+          all-nodes: false
+          node-eligibility: 'ignore-offline'
+      - string:
+          name: GIT_BASE
+          default: https://gerrit.opnfv.org/gerrit/$PROJECT
+          description: 'Git URL to use on this Jenkins Slave'
+      - string:
+          name: BUILD_DIRECTORY
+          default: $WORKSPACE/build_output
+          description: "Directory where the build artifact will be located upon the completion of the build."
+
 - project:
     name: barometer
 
