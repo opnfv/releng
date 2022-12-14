@@ -20,6 +20,13 @@
           docker-tag: 'stable'
           disabled: false
 
+- parameter:
+    name: nfvbench-parameter
+    parameters:
+      - label:
+          name: node
+          default: 'opnfv-build'
+
 - job-template:
     name: 'nfvbench-build-{stream}'
 
@@ -35,7 +42,7 @@
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
           description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
       # yamllint enable rule:line-length
-      - 'opnfv-build-ubuntu-defaults'
+      - nfvbench-parameter
 
     scm:
       - git-scm-gerrit
