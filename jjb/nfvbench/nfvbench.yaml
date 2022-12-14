@@ -107,6 +107,18 @@
 
     builders:
       - shell: |
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 dist-upgrade -y
+          sudo DEBIAN_FRONTEND=noninteractive \
+          apt-get -o DPkg::Lock::Timeout=300 install software-properties-common gpg -y
+          sudo add-apt-repository -y ppa:deadsnakes/ppa
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 install \
+            libxml2-dev libxslt-dev libffi-dev libjpeg-dev \
+            python3.8 python3.8-dev python3.8-distutils \
+            python3-pip -y
           sudo pip install tox-pip-version
           cd $WORKSPACE && tox
           cd $WORKSPACE/nfvbenchvm/dib
