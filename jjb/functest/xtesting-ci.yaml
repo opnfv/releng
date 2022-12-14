@@ -30,19 +30,19 @@
           ansible-playbook -vvvv ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml
 
 - parameter:
-    name: xtesting-ci-slave
+    name: xtesting-ci-node
     parameters:
       - label:
-          name: slave
-          default: '{slave}'
+          name: node
+          default: '{node}'
 
 - job-template:
     name: 'xtesting-ci-tests-{release}-{playbook}'
     triggers:
       - timed: '@daily'
     parameters:
-      - xtesting-ci-slave:
-          slave: '{slave}'
+      - xtesting-ci-node:
+          node: '{node}'
     properties:
       - build-blocker:
           use-build-blocker: true
@@ -56,7 +56,7 @@
 
 - project:
     name: xtesting-ci-tests
-    slave: lf-virtual1
+    node: lf-virtual1
     playbook:
       - all
       - proxy
