@@ -29,7 +29,6 @@ for release_file in $RELEASE_FILES; do
 
         if [ -n "$branch_actual" ]; then
             echo "$repo refs/heads/$branch already exists at $branch_actual"
-            echo "RUN releng-release-create-venv.sh"
             source jjb/releng/releng-release-tagging.sh
         else
             echo "This is a branching job"
