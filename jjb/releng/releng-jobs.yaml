@@ -204,6 +204,13 @@
       - 'releng-release-{stream}-verify'
       - 'releng-release-{stream}-merge'
 
+- parameter:
+    name: stream-parameter
+    parameters:
+      - string:
+          name: STREAM
+          default: '{stream}'
+
 - job-template:
     name: 'releng-release-{stream}-verify'
     scm:
@@ -212,6 +219,8 @@
     parameters:
       - releng-jjb-node:
           node: opnfv-build
+      - stream-parameter:
+          stream: '{stream}'
     triggers:
       - gerrit:
           server-name: 'gerrit.opnfv.org'
@@ -258,6 +267,8 @@
     parameters:
       - releng-jjb-node:
           node: opnfv-build
+      - stream-parameter:
+          stream: '{stream}'
     triggers:
       - gerrit:
           trigger-on:
