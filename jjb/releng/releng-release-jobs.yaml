@@ -9,9 +9,6 @@
 ---
 - project:
     name: releng-release-jobs
-
-    build-node: 'opnfv-build'
-
     stream:
       - fraser
       - gambia
@@ -31,23 +28,21 @@
       - wallaby
       - yoga
       - zed
-
     jobs:
       - 'releng-release-{stream}-verify'
       - 'releng-release-{stream}-merge'
-
     project: 'releng'
 
 - job-template:
     name: 'releng-release-{stream}-verify'
-
     parameters:
-      - '{build-node}-defaults'
       - stream-parameter:
           stream: '{stream}'
       - project-parameter:
           project: '{project}'
           branch: 'master'
+      - node:
+          default: opnfv-build
 
     scm:
       - git-scm-gerrit
@@ -79,8 +74,14 @@
                   pattern: 'releases/scripts/verify_schema.py'
 
     builders:
+      - shell: |
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 dist-upgrade -y
+          sudo DEBIAN_FRONTEND=noninteractive \
+          apt-get -o DPkg::Lock::Timeout=300 install python3-pygerrit2 \
+            python3-ruamel.yaml  -y
       - shell: !include-raw-escape:
-          - releng-release-create-venv.sh
           - branch-or-tag.sh
 
     publishers:
@@ -91,12 +92,7 @@
 
     parameters:
       - node:
-          name: SLAVE_NAME
-          description: 'Only run merge job on build5 or 6'
-          default-slaves:
-            - lf-build6
-          allowed-multiselect: false
-          ignore-offline-nodes: true
+          default: opnfv-build
       - stream-parameter:
           stream: '{stream}'
       - project-parameter:
@@ -119,8 +115,14 @@
           files: 'releases/{stream}/*'
 
     builders:
+      - shell: |
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 dist-upgrade -y
+          sudo DEBIAN_FRONTEND=noninteractive \
+          apt-get -o DPkg::Lock::Timeout=300 install python3-pygerrit2 \
+            python3-ruamel.yaml  -y
       - shell: !include-raw-escape:
-          - releng-release-create-venv.sh
           - branch-or-tag.sh
 
     publishers:
