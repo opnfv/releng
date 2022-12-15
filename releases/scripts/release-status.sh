@@ -15,7 +15,7 @@ RELEASE="${RELEASE:-fraser}"
 [ -a repos.txt ] && rm repos.txt
 
 for project in releases/$RELEASE/*; do
-    python releases/scripts/repos.py -n -f $project >> repos.txt
+    python3 releases/scripts/repos.py -n -f $project >> repos.txt
 done
 
 while read -r repo

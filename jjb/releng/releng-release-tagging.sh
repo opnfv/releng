@@ -63,5 +63,5 @@ for release_file in $RELEASE_FILES; do
 
       popd &> /dev/null
       echo "--> Done verifing $repo"
-    done < <(python releases/scripts/repos.py -f $release_file)
+    done < <(python3 releases/scripts/repos.py -f $release_file)
 done

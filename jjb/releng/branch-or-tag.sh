@@ -17,7 +17,7 @@ RELEASE_FILES=$(git diff HEAD^1 --name-only -- "releases/$STREAM")
 echo "--> Verifying $RELEASE_FILES."
 for release_file in $RELEASE_FILES; do
     # Verify the release file schema
-    python releases/scripts/verify_schema.py \
+    python3 releases/scripts/verify_schema.py \
     -s releases/schema.yaml \
     -y $release_file
 done
@@ -36,5 +36,5 @@ for release_file in $RELEASE_FILES; do
             source jjb/releng/releng-release-create-branch.sh
         fi
 
-    done  < <(python releases/scripts/repos.py -b -f "$release_file")
+    done  < <(python3 releases/scripts/repos.py -b -f "$release_file")
 done
