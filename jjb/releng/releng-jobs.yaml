@@ -178,3 +178,106 @@
     name: releng-tox
     jobs:
       - releng-tox
+
+- project:
+    name: releng-release-jobs
+    stream:
+      - fraser
+      - gambia
+      - hunter
+      - iruya
+      - jerma
+      - kali
+      - leguer
+      - lakelse
+      - moselle
+      - v1.21
+      - v1.22
+      - v1.23
+      - v1.24
+      - v1.25
+      - xena
+      - wallaby
+      - yoga
+      - zed
+    jobs:
+      - 'releng-release-{stream}-verify'
+      - 'releng-release-{stream}-merge'
+
+- job-template:
+    name: 'releng-release-{stream}-verify'
+    scm:
+      - releng-scm:
+          ref: $GERRIT_REFSPEC
+    parameters:
+      - releng-jjb-node:
+          node: opnfv-build
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: 'false'
+                exclude-trivial-rebase: 'false'
+                exclude-no-code-change: 'false'
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck'
+            - comment-added-contains-event:
+                comment-contains-value: 'reverify'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'releng'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: '**/master'
+              file-paths:
+                - compare-type: ANT
+                  pattern: 'releases/{stream}/**'
+                - compare-type: ANT
+                  pattern: 'releases/schema.yaml'
+                - compare-type: ANT
+                  pattern: 'releases/scripts/verify_schema.py'
+    builders:
+      - shell: |
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 dist-upgrade -y
+          sudo DEBIAN_FRONTEND=noninteractive \
+          apt-get -o DPkg::Lock::Timeout=300 install python3-pygerrit2 \
+            python3-ruamel.yaml  -y
+      - shell: !include-raw-escape:
+          - branch-or-tag.sh
+
+- job-template:
+    name: 'releng-release-{stream}-merge'
+    triggers:
+      - releng-patchset-merged
+    scm:
+      - releng-scm:
+          ref: master
+    parameters:
+      - releng-jjb-node:
+          node: opnfv-build
+    triggers:
+      - gerrit:
+          trigger-on:
+            - change-merged-event
+            - comment-added-contains-event:
+                comment-contains-value: 'remerge'
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'releng'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: 'master'
+              files: 'releases/{stream}/*'
+    builders:
+      - shell: |
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 dist-upgrade -y
+          sudo DEBIAN_FRONTEND=noninteractive \
+          apt-get -o DPkg::Lock::Timeout=300 install python3-pygerrit2 \
+            python3-ruamel.yaml  -y
+      - shell: !include-raw-escape:
+          - branch-or-tag.sh
