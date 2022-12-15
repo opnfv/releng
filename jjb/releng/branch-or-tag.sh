@@ -8,6 +8,7 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 set -e -o pipefail
+set -x
 
 GIT_URL=${GIT_URL:-https://gerrit.opnfv.org/gerrit}
 STREAM=${STREAM:-'nostream'}
