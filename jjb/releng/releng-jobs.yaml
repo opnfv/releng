@@ -296,6 +296,12 @@
       - shell: !include-raw-escape:
           - branch-or-tag.sh
 
+- parameter:
+    name: releng-debug-slave
+    parameters:
+      - label:
+          name: slave
+          default: '{slave}'
 
 - builder:
     name: releng-debug
@@ -308,7 +314,7 @@
 - job-template:
     name: releng-debug
     parameters:
-      - xtesting-debug-slave:
+      - releng-debug-slave:
           slave: lf-build6
     builders:
       - releng-debug
