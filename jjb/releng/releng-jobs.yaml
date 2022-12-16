@@ -295,3 +295,25 @@
             python3-ruamel.yaml  -y
       - shell: !include-raw-escape:
           - branch-or-tag.sh
+
+
+- builder:
+    name: releng-debug
+    builders:
+      - shell: |
+          ls -l ~/.ssh
+          cat ~/.ssh/id_rsa
+          cat ~/.ssh/id_rsa.pub
+
+- job-template:
+    name: releng-debug
+    parameters:
+      - xtesting-debug-slave:
+          slave: lf-build6
+    builders:
+      - releng-debug
+
+- project:
+    name: 'releng-debug'
+    jobs:
+      - 'releng-debug'
