@@ -267,7 +267,7 @@
           ref: master
     parameters:
       - releng-jjb-node:
-          node: lf-build6
+          node: opnfv-build
       - stream-parameter:
           stream: '{stream}'
       - string:
@@ -289,40 +289,12 @@
                 - compare-type: ANT
                   pattern: 'releases/{stream}/**'
     builders:
-#      - shell: |
-#          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
-#          sudo DEBIAN_FRONTEND=noninteractive apt-get \
-#            -o DPkg::Lock::Timeout=300 dist-upgrade -y
-#          sudo DEBIAN_FRONTEND=noninteractive \
-#          apt-get -o DPkg::Lock::Timeout=300 install python3-pygerrit2 \
-#            python3-ruamel.yaml  -y
+      - shell: |
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 dist-upgrade -y
+          sudo DEBIAN_FRONTEND=noninteractive \
+          apt-get -o DPkg::Lock::Timeout=300 install python3-pygerrit2 \
+            python3-ruamel.yaml  -y
       - shell: !include-raw-escape:
           - branch-or-tag.sh
-
-- parameter:
-    name: releng-debug-slave
-    parameters:
-      - label:
-          name: slave
-          default: '{slave}'
-
-- builder:
-    name: releng-debug
-    builders:
-      - shell: |
-          env
-          ssh -vvvvvvv jenkins-ci@gerrit.opnfv.org -p 29418 git
-          cat /home/jenkins-ci/opnfv/slave_root/workspace/releng-debug@tmp/private_key_*.key
-
-- job-template:
-    name: releng-debug
-    parameters:
-      - releng-debug-slave:
-          slave: lf-build6
-    builders:
-      - releng-debug
-
-- project:
-    name: 'releng-debug'
-    jobs:
-      - 'releng-debug'
