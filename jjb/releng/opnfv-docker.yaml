@@ -39,9 +39,6 @@
       receivers: >
           pberberian@iol.unh.edu
           sbergeron@iol.unh.edu
-    storperf-receivers: &storperf-receivers
-      receivers: >
-          mbeierl@vmware.com
     samplevnf-receivers: &samplevnf-receivers
       receivers: >
           luc.provoost@intel.com
@@ -118,26 +115,6 @@
           dockerdir: 'docker/barometer-snmp'
           <<: *master
           <<: *other-receivers
-      - 'dovetail':
-          project: 'dovetail'
-          <<: *master
-          <<: *other-receivers
-      - 'dovetail-webportal-api':
-          project: 'dovetail-webportal'
-          dockerfile: 'Dockerfile.api'
-          <<: *master
-          <<: *other-receivers
-      - 'dovetail-webportal-web':
-          project: 'dovetail-webportal'
-          dockerfile: 'Dockerfile.web'
-          <<: *master
-          <<: *other-receivers
-      - 'dovetail-webportal-web-onap':
-          project: 'dovetail-webportal'
-          dockerfile: 'Dockerfile.web'
-          extra_build_args: 'CONTAINER=onap GUI=onap-ui'
-          <<: *master
-          <<: *other-receivers
       - 'nfvbench':
           project: 'nfvbench'
           <<: *master
@@ -154,42 +131,6 @@
           dockerfile: 'worker/Dockerfile'
           <<: *master
           <<: *laas_receivers
-      - 'storperf-master':
-          project: 'storperf'
-          dockerdir: 'docker/storperf-master'
-          arch_tag: 'x86_64'
-          <<: *master
-          <<: *storperf-receivers
-      - 'storperf-graphite':
-          project: 'storperf'
-          dockerdir: 'docker/storperf-graphite'
-          arch_tag: 'x86_64'
-          <<: *master
-          <<: *storperf-receivers
-      - 'storperf-httpfrontend':
-          project: 'storperf'
-          dockerdir: 'docker/storperf-httpfrontend'
-          arch_tag: 'x86_64'
-          <<: *master
-          <<: *storperf-receivers
-      - 'storperf-reporting':
-          project: 'storperf'
-          dockerdir: 'docker/storperf-reporting'
-          arch_tag: 'x86_64'
-          <<: *master
-          <<: *storperf-receivers
-      - 'storperf-swaggerui':
-          project: 'storperf'
-          dockerdir: 'docker/storperf-swaggerui'
-          arch_tag: 'x86_64'
-          <<: *master
-          <<: *storperf-receivers
-      - 'storperf-workloadagent':
-          project: 'storperf'
-          dockerdir: 'docker/storperf-workloadagent'
-          arch_tag: 'x86_64'
-          <<: *master
-          <<: *storperf-receivers
       - 'rapid':
           project: 'samplevnf'
           dockerdir: 'VNFs/DPPD-PROX/helper-scripts/rapid'
@@ -250,50 +191,6 @@
           dockerdir: 'sdv/docker/sdvurls'
           <<: *master
           <<: *cirv-receivers
-
-      # projects with jobs for hunter
-      - 'dovetail':
-          project: 'dovetail'
-          <<: *hunter
-          <<: *other-receivers
-
-      # projects with jobs for iruya
-      - 'storperf-master':
-          project: 'storperf'
-          dockerdir: 'docker/storperf-master'
-          arch_tag: 'x86_64'
-          <<: *iruya
-          <<: *storperf-receivers
-      - 'storperf-graphite':
-          project: 'storperf'
-          dockerdir: 'docker/storperf-graphite'
-          arch_tag: 'x86_64'
-          <<: *iruya
-          <<: *storperf-receivers
-      - 'storperf-httpfrontend':
-          project: 'storperf'
-          dockerdir: 'docker/storperf-httpfrontend'
-          arch_tag: 'x86_64'
-          <<: *iruya
-          <<: *storperf-receivers
-      - 'storperf-reporting':
-          project: 'storperf'
-          dockerdir: 'docker/storperf-reporting'
-          arch_tag: 'x86_64'
-          <<: *iruya
-          <<: *storperf-receivers
-      - 'storperf-swaggerui':
-          project: 'storperf'
-          dockerdir: 'docker/storperf-swaggerui'
-          arch_tag: 'x86_64'
-          <<: *iruya
-          <<: *storperf-receivers
-      - 'storperf-workloadagent':
-          project: 'storperf'
-          dockerdir: 'docker/storperf-workloadagent'
-          arch_tag: 'x86_64'
-          <<: *iruya
-          <<: *storperf-receivers
 
       # projects with jobs for jerma
       - 'barometer-collectd':
