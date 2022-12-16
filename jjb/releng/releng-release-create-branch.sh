@@ -44,7 +44,7 @@ fi
 run_merge(){
 unset NEW_FILES
 if [[ $REF_EXISTS = true && "$JOB_NAME" =~ "merge" ]]; then
-  ssh -n -f -p 29418 gerrit.opnfv.org gerrit create-branch "$repo" "$branch" "$ref"
+  ssh -o 'PubkeyAcceptedKeyTypes +ssh-rsa' -n -f -p 29418 jenkins-ci@gerrit.opnfv.org gerrit create-branch "$repo" "$branch" "$ref"
   python3 releases/scripts/create_jobs.py -f $release_file
   NEW_FILES=$(git status --porcelain --untracked=no | cut -c4-)
 fi
