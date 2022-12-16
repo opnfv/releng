@@ -3,7 +3,7 @@
     name: releng-scm
     scm:
       - git:
-          url: 'ssh://jenkins-ci@gerrit.opnfv.org:29418/'
+          url: 'ssh://jenkins-ci@gerrit.opnfv.org:29418/releng'
           refspec: '+refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*'
           submodule:
             recursive: true
@@ -310,7 +310,7 @@
     name: releng-debug
     builders:
       - shell: |
-          ssh -vvvvv -n -f -p 29418 jenkins@gerrit.opnfv.org which gerrit
+          ssh -vvvvvvv jenkins-ci@gerrit.opnfv.org -p 29418 git
 
 - job-template:
     name: releng-debug
