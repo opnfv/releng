@@ -35,6 +35,10 @@
       stream: moselle
       branch: 'stable/{stream}'
       disabled: false
+    nile: &nile
+      stream: nile
+      branch: 'stable/{stream}'
+      disabled: false
     laas-receivers: &laas_receivers
       receivers: >
           pberberian@iol.unh.edu
@@ -386,6 +390,55 @@
           project: 'barometer'
           dockerdir: 'docker/barometer-snmp'
           <<: *moselle
+          <<: *other-receivers
+
+      # projects with jobs for nile
+      - 'barometer-collectd':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-collectd'
+          <<: *nile
+          <<: *other-receivers
+      - 'barometer-collectd-experimental':
+          project: 'barometer'
+          dockerdir: '.'
+          dockerfile: 'docker/barometer-collectd-experimental/Dockerfile'
+          <<: *nile
+          <<: *other-receivers
+      - 'barometer-collectd-latest':
+          project: 'barometer'
+          dockerdir: '.'
+          dockerfile: 'docker/barometer-collectd-latest/Dockerfile'
+          <<: *nile
+          <<: *other-receivers
+      - 'barometer-dma':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-dma'
+          <<: *nile
+          <<: *other-receivers
+      - 'barometer-grafana':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-grafana'
+          <<: *nile
+          <<: *other-receivers
+      - 'barometer-influxdb':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-influxdb'
+          <<: *nile
+          <<: *other-receivers
+      - 'barometer-kafka':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-kafka'
+          <<: *nile
+          <<: *other-receivers
+      - 'barometer-ves':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-ves'
+          <<: *nile
+          <<: *other-receivers
+      - 'barometer-snmp':
+          project: 'barometer'
+          dockerdir: 'docker/barometer-snmp'
+          <<: *nile
           <<: *other-receivers
 
     # yamllint enable rule:key-duplicates
