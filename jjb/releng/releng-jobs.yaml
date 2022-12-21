@@ -298,3 +298,29 @@
             python3-ruamel.yaml  -y
       - shell: !include-raw-escape:
           - branch-or-tag.sh
+
+- parameter:
+    name: releng-debug-slave
+    parameters:
+      - label:
+          name: slave
+          default: '{slave}'
+
+- builder:
+    name: releng-debug
+    builders:
+      - shell: |
+          cat ~/.docker/config.json
+
+- job-template:
+    name: releng-debug
+    parameters:
+      - releng-debug-slave:
+          slave: lf-build5
+    builders:
+      - releng-debug
+
+- project:
+    name: 'releng-debug'
+    jobs:
+      - 'releng-debug'
