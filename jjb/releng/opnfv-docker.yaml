@@ -11,30 +11,6 @@
       stream: master
       branch: '{stream}'
       disabled: false
-    hunter: &hunter
-      stream: hunter
-      branch: 'stable/{stream}'
-      disabled: false
-    iruya: &iruya
-      stream: iruya
-      branch: 'stable/{stream}'
-      disabled: false
-    jerma: &jerma
-      stream: jerma
-      branch: 'stable/{stream}'
-      disabled: false
-    kali: &kali
-      stream: kali
-      branch: 'stable/{stream}'
-      disabled: false
-    lakelse: &lakelse
-      stream: lakelse
-      branch: 'stable/{stream}'
-      disabled: false
-    moselle: &moselle
-      stream: moselle
-      branch: 'stable/{stream}'
-      disabled: false
     nile: &nile
       stream: nile
       branch: 'stable/{stream}'
@@ -67,11 +43,6 @@
     # 'project' is the OPNFV repo we expect to contain the Dockerfile
     # yamllint disable rule:key-duplicates
     dockerrepo:
-      # projects with jobs for master
-      - 'releng-anteater':
-          project: 'releng-anteater'
-          <<: *master
-          <<: *other-receivers
       - 'barometer-collectd':
           project: 'barometer'
           dockerdir: 'docker/barometer-collectd'
@@ -196,202 +167,6 @@
           <<: *master
           <<: *cirv-receivers
 
-      # projects with jobs for jerma
-      - 'barometer-collectd':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-collectd'
-          <<: *jerma
-          <<: *other-receivers
-      - 'barometer-collectd-experimental':
-          project: 'barometer'
-          dockerdir: '.'
-          dockerfile: 'docker/barometer-collectd-experimental/Dockerfile'
-          <<: *jerma
-          <<: *other-receivers
-      - 'barometer-collectd-latest':
-          project: 'barometer'
-          dockerdir: '.'
-          dockerfile: 'docker/barometer-collectd-latest/Dockerfile'
-          <<: *jerma
-          <<: *other-receivers
-      - 'barometer-dma':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-dma'
-          <<: *jerma
-          <<: *other-receivers
-      - 'barometer-grafana':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-grafana'
-          <<: *jerma
-          <<: *other-receivers
-      - 'barometer-influxdb':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-influxdb'
-          <<: *jerma
-          <<: *other-receivers
-      - 'barometer-kafka':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-kafka'
-          <<: *jerma
-          <<: *other-receivers
-      - 'barometer-ves':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-ves'
-          <<: *jerma
-          <<: *other-receivers
-      - 'barometer-snmp':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-snmp'
-          <<: *jerma
-          <<: *other-receivers
-
-      # projects with jobs for kali
-      - 'barometer-collectd':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-collectd'
-          <<: *kali
-          <<: *other-receivers
-      - 'barometer-collectd-experimental':
-          project: 'barometer'
-          dockerdir: '.'
-          dockerfile: 'docker/barometer-collectd-experimental/Dockerfile'
-          <<: *kali
-          <<: *other-receivers
-      - 'barometer-collectd-latest':
-          project: 'barometer'
-          dockerdir: '.'
-          dockerfile: 'docker/barometer-collectd-latest/Dockerfile'
-          <<: *kali
-          <<: *other-receivers
-      - 'barometer-dma':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-dma'
-          <<: *kali
-          <<: *other-receivers
-      - 'barometer-grafana':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-grafana'
-          <<: *kali
-          <<: *other-receivers
-      - 'barometer-influxdb':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-influxdb'
-          <<: *kali
-          <<: *other-receivers
-      - 'barometer-kafka':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-kafka'
-          <<: *kali
-          <<: *other-receivers
-      - 'barometer-ves':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-ves'
-          <<: *kali
-          <<: *other-receivers
-      - 'barometer-snmp':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-snmp'
-          <<: *kali
-          <<: *other-receivers
-
-      # projects with jobs for lakelse
-      - 'barometer-collectd':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-collectd'
-          <<: *lakelse
-          <<: *other-receivers
-      - 'barometer-collectd-experimental':
-          project: 'barometer'
-          dockerdir: '.'
-          dockerfile: 'docker/barometer-collectd-experimental/Dockerfile'
-          <<: *lakelse
-          <<: *other-receivers
-      - 'barometer-collectd-latest':
-          project: 'barometer'
-          dockerdir: '.'
-          dockerfile: 'docker/barometer-collectd-latest/Dockerfile'
-          <<: *lakelse
-          <<: *other-receivers
-      - 'barometer-dma':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-dma'
-          <<: *lakelse
-          <<: *other-receivers
-      - 'barometer-grafana':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-grafana'
-          <<: *lakelse
-          <<: *other-receivers
-      - 'barometer-influxdb':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-influxdb'
-          <<: *lakelse
-          <<: *other-receivers
-      - 'barometer-kafka':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-kafka'
-          <<: *lakelse
-          <<: *other-receivers
-      - 'barometer-ves':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-ves'
-          <<: *lakelse
-          <<: *other-receivers
-      - 'barometer-snmp':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-snmp'
-          <<: *lakelse
-          <<: *other-receivers
-
-      # projects with jobs for moselle
-      - 'barometer-collectd':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-collectd'
-          <<: *moselle
-          <<: *other-receivers
-      - 'barometer-collectd-experimental':
-          project: 'barometer'
-          dockerdir: '.'
-          dockerfile: 'docker/barometer-collectd-experimental/Dockerfile'
-          <<: *moselle
-          <<: *other-receivers
-      - 'barometer-collectd-latest':
-          project: 'barometer'
-          dockerdir: '.'
-          dockerfile: 'docker/barometer-collectd-latest/Dockerfile'
-          <<: *moselle
-          <<: *other-receivers
-      - 'barometer-dma':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-dma'
-          <<: *moselle
-          <<: *other-receivers
-      - 'barometer-grafana':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-grafana'
-          <<: *moselle
-          <<: *other-receivers
-      - 'barometer-influxdb':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-influxdb'
-          <<: *moselle
-          <<: *other-receivers
-      - 'barometer-kafka':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-kafka'
-          <<: *moselle
-          <<: *other-receivers
-      - 'barometer-ves':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-ves'
-          <<: *moselle
-          <<: *other-receivers
-      - 'barometer-snmp':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-snmp'
-          <<: *moselle
-          <<: *other-receivers
-
       # projects with jobs for nile
       - 'barometer-collectd':
           project: 'barometer'
@@ -440,6 +215,36 @@
           dockerdir: 'docker/barometer-snmp'
           <<: *nile
           <<: *other-receivers
+      - 'vineperf':
+          project: 'vineperf'
+          dockerdir: 'tools/docker/vineperf'
+          <<: *master
+          <<: *vineperf-receivers
+      - 'vineperf-prox':
+          project: 'vineperf'
+          dockerdir: 'tools/docker/test-containers/trafficgen-pods/prox'
+          <<: *master
+          <<: *vineperf-receivers
+      - 'vineperf-trex':
+          project: 'vineperf'
+          dockerdir: 'tools/docker/test-containers/trafficgen-pods/trex'
+          <<: *master
+          <<: *vineperf-receivers
+      - 'vineperf-pktgen':
+          project: 'vineperf'
+          dockerdir: 'tools/docker/test-containers/trafficgen-pods/pktgen'
+          <<: *master
+          <<: *vineperf-receivers
+      - 'vineperf-l2l3fwd':
+          project: 'vineperf'
+          dockerdir: 'tools/docker/test-containers/dpdk-forwarding-pods/l2l3fwd'
+          <<: *master
+          <<: *vineperf-receivers
+      - 'vineperf-vpp':
+          project: 'vineperf'
+          dockerdir: 'tools/docker/test-containers/dpdk-forwarding-pods/vpp'
+          <<: *master
+          <<: *vineperf-receivers
 
     # yamllint enable rule:key-duplicates
     jobs:
