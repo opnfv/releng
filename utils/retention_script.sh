@@ -15,7 +15,7 @@
 # limitations under the License.
 ##############################################################################
 
-for x in apex armband ovsnfv fuel apex compass4nfv
+for x in airship apex armband compass4nfv fuel ovsnfv
 do
 
   echo "Looking at artifacts for project $x"
