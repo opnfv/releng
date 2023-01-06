@@ -250,8 +250,6 @@
 
 - job-template:
     name: 'releng-release-{stream}-merge'
-    triggers:
-      - releng-patchset-merged
     scm:
       - releng-scm:
           ref: $GERRIT_REFSPEC
@@ -385,12 +383,12 @@
       - lint-report
 
 - project:
-    name: opnfv-lint
-    project: opnfv-lint
+    name: releng-lint
     jobs:
-      - 'opnfv-lint-verify'
+      - 'releng-lint-verify'
+
 - job-template:
-    name: 'opnfv-lint-verify'
+    name: 'releng-lint-verify'
     parameters:
       - releng-jjb-node:
           node: opnfv-build
