@@ -288,3 +288,138 @@
             python3-ruamel.yaml  -y
       - shell: !include-raw-escape:
           - branch-or-tag.sh
+
+- builder:
+    name: lint-init
+    builders:
+      - shell: |
+          #!/bin/bash
+          # Ensure we start with a clean environment
+          rm -f bash-violation.log python-violation.log yaml-violation.log violation.log
+          git --no-pager diff --diff-filter=MCRAT --name-only HEAD^1 > modified_files
+
+- builder:
+    name: lint-report
+    builders:
+      - shell: |
+          #!/bin/bash
+          if [[ -s violation.log ]]; then
+              cat violation.log
+              echo "Reporting lint result...."
+              set -x
+              msg="Found syntax error and/or coding style violation(s) in the files modified by your patchset."
+              sed -i -e "1s#^#${msg}\n\n#" violation.log
+              cmd="gerrit review -p $GERRIT_PROJECT -m \"$(cat violation.log)\" $GERRIT_PATCHSET_REVISION --notify NONE"
+              ssh -o 'PubkeyAcceptedKeyTypes +ssh-rsa' -p 29418 jenkins-ci@gerrit.opnfv.org "$cmd"
+
+              # Make sure the caller job failed
+              exit 1
+          fi
+
+- builder:
+    name: lint-bash-code
+    builders:
+      - shell: |
+          #!/bin/bash
+          echo "Checking bash code..."
+          for f in $(egrep '\.sh$' modified_files)
+          do
+              bash -n "$f" 2>> bash-violation.log
+          done
+          if [[ -s bash-violation.log ]]; then
+              echo -e "Bash syntax error(s)\n---" >> violation.log
+              sed -e 's/^/ /g' bash-violation.log >> violation.log
+          fi
+
+- builder:
+    name: lint-python-code
+    builders:
+      - shell: |
+          #!/bin/bash
+
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 dist-upgrade -y
+          sudo DEBIAN_FRONTEND=noninteractive \
+          apt-get -o DPkg::Lock::Timeout=300 install flake8 -y
+
+          echo "Checking python code..."
+          for f in $(egrep '\.py$' modified_files)
+          do
+              flake8 "$f" >> python-violation.log
+          done
+          if [[ -s python-violation.log ]]; then
+              echo -e "Python violation(s)\n---" >> violation.log
+              sed -e 's/^/ /g' python-violation.log >> violation.log
+          fi
+
+- builder:
+    name: lint-yaml-code
+    builders:
+      - shell: |
+          #!/bin/bash
+
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 dist-upgrade -y
+          sudo DEBIAN_FRONTEND=noninteractive \
+          apt-get -o DPkg::Lock::Timeout=300 install yamllint -y
+
+          echo "Checking yaml file..."
+          for f in $(egrep '\.ya?ml$' modified_files)
+          do
+              yamllint "$f" >> yaml-violation.log
+          done
+          if [[ -s yaml-violation.log ]]; then
+              echo -e "YAML violation(s)\n---" >> violation.log
+              sed -e 's/^/ /g' yaml-violation.log >> violation.log
+          fi
+
+- builder:
+    name: lint-all-code
+    builders:
+      - lint-init
+      - lint-bash-code
+      - lint-python-code
+      - lint-yaml-code
+      - lint-report
+
+- project:
+    name: opnfv-lint
+    project: opnfv-lint
+    jobs:
+      - 'opnfv-lint-verify'
+- job-template:
+    name: 'opnfv-lint-verify'
+    parameters:
+      - releng-jjb-node:
+          node: opnfv-build
+    scm:
+      - releng-scm:
+          ref: $GERRIT_REFSPEC
+    triggers:
+      - gerrit:
+          server-name: 'gerrit.opnfv.org'
+          trigger-on:
+            - patchset-created-event
+            - comment-added-contains-event:
+                comment-contains-value: recheck
+            - comment-added-contains-event:
+                comment-contains-value: reverify
+          projects:
+            - project-compare-type: 'ANT'
+              project-pattern: 'releng'
+              branches:
+                - branch-compare-type: 'ANT'
+                  branch-pattern: 'master'
+              file-paths:
+                - compare-type: ANT
+                  pattern: '**/*.py'
+                - compare-type: ANT
+                  pattern: '**/*.sh'
+                - compare-type: ANT
+                  pattern: '**/*.yml'
+                - compare-type: ANT
+                  pattern: '**/*.yaml'
+    builders:
+      - lint-all-code
