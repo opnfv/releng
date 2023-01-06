@@ -453,3 +453,34 @@
             google-cloud-sdk -y
           cd $WORKSPACE/utils/
           ./artifacts.opnfv.org.sh
+
+- project:
+    name: releng-artifact-cleanup
+    jobs:
+      - releng-artifact-cleanup
+
+- job-template:
+    name: releng-artifact-cleanup
+    scm:
+      - releng-scm:
+          ref: master
+    parameters:
+      - releng-jjb-node:
+          node: opnfv-build
+    triggers:
+      - timed: '@daily'
+    builders:
+      - releng-artifact-cleanup
+
+- builder:
+    name: releng-artifact-cleanup
+    builders:
+      - shell: |
+          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+          echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee \
+            /etc/apt/sources.list.d/google-cloud-sdk.list
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 install \
+            google-cloud-sdk -y
+          $WORKSPACE/utils/retention_script.sh
