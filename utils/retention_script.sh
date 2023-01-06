@@ -15,10 +15,7 @@
 # limitations under the License.
 ##############################################################################
 
-PATH=$PATH:/usr/local/bin/
-
-#These are the only projects that generate artifacts
-for x in armband ovsnfv fuel apex compass4nfv
+for x in apex armband ovsnfv fuel apex compass4nfv
 do
 
   echo "Looking at artifacts for project $x"
