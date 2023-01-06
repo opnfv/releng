@@ -444,5 +444,12 @@
     name: generate-artifact-html
     builders:
       - shell: |
+          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+          echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee \
+            /etc/apt/sources.list.d/google-cloud-sdk.list
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 install \
+            google-cloud-sdk -y
           cd $WORKSPACE/utils/
           ./artifacts.opnfv.org.sh
