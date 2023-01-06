@@ -1,146 +1,14 @@
 ---
 - project:
-
     name: opnfv-utils
-
     jobs:
-      - 'prune-docker-images'
-      - 'check-status-of-slaves'
-      - 'ansible-build-server'
       - 'generate-artifacts-index-pages'
-
-########################
-# job templates
-########################
-- job-template:
-    name: 'prune-docker-images'
-
-    disabled: false
-
-    concurrent: true
-
-    parameters:
-      - node:
-          name: SLAVE_NAME
-          description: Slaves to prune docker images
-          default-slaves:
-            - lf-build6
-          allowed-multiselect: true
-          ignore-offline-nodes: true
-
-    builders:
-      - description-setter:
-          description: "Built on $NODE_NAME"
-      # yamllint disable rule:line-length
-      - shell: |
-          #!/bin/bash
-          sudo systemctl restart docker
-          (docker ps -q; docker ps -aq) | sort | uniq -u | xargs --no-run-if-empty docker rm
-          docker images -f dangling=true -q | xargs --no-run-if-empty docker rmi
-
-
-    # yamllint enable rule:line-length
-    triggers:
-      - timed: '@midnight'
-
-- job-template:
-    name: 'check-status-of-slaves'
-
-    disabled: false
-    concurrent: true
-
-    parameters:
-      - node:
-          name: SLAVE_NAME
-          description: 'script lives on master node'
-          default-slaves:
-            - lf-build6
-          allowed-multiselect: false
-          ignore-offline-nodes: true
-      - project-parameter:
-          project: releng
-          branch: master
-
-    scm:
-      - git-scm
-
-    triggers:
-      - timed: '@midnight'
-
-    builders:
-      - shell: |
-          cd $WORKSPACE/utils/
-          bash slave-monitor-0.1.sh
-
-- job-template:
-    name: 'ansible-build-server'
-
-    project-type: freestyle
-
-    disabled: true
-    concurrent: true
-
-    parameters:
-      - node:
-          name: SLAVE_NAME
-          description: Build Servers
-          default-slaves:
-            - lf-build6
-          allowed-multiselect: true
-          ignore-offline-nodes: true
-      - project-parameter:
-          project: releng
-          branch: master
-
-    scm:
-      - git-scm
-
-    triggers:
-      - timed: '@midnight'
-
-    builders:
-      - description-setter:
-          description: '$NODE_NAME'
-      - install-ansible
-      - run-ansible-build-server-playbook
-
-
-- builder:
-    name: install-ansible
-    builders:
-      - shell: |
-          # Install ansible here
-          if [ -f /etc/centos-release ] \
-          || [ -f /etc/redhat-release ] \
-          || [ -f /etc/system-release ]; then
-          sudo yum -y install ansible
-          fi
-          if [ -f /etc/debian_version ] \
-          || grep -qi ubuntu /etc/lsb-release \
-          || grep -qi ubuntu /etc/os-release; then
-          sudo apt-get -y install ansible
-          fi
-
-
-- builder:
-    name: run-ansible-build-server-playbook
-    builders:
-      - shell: |
-          # run playbook
-          sudo ansible-playbook -i \
-          $WORKSPACE/utils/build-server-ansible/inventory.ini \
-          $WORKSPACE/utils/build-server-ansible/main.yml
-
 
 - job-template:
     name: 'generate-artifacts-index-pages'
-
     project-type: freestyle
-
     disabled: false
-
     concurrent: false
-
     parameters:
       - node:
           name: SLAVE_NAME
@@ -150,16 +18,12 @@
       - project-parameter:
           project: releng
           branch: master
-
     scm:
       - git-scm
-
     triggers:
-      - timed: '@hourly'
-
+      - timed: '@daily'
     builders:
       - generate-artifact-html
-
 
 - builder:
     name: generate-artifact-html
