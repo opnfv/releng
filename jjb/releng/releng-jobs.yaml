@@ -421,3 +421,28 @@
                   pattern: '**/*.yaml'
     builders:
       - lint-all-code
+
+- project:
+    name: releng-generate-artifacts-index-pages
+    jobs:
+      - releng-generate-artifacts-index-pages
+
+- job-template:
+    name: releng-generate-artifacts-index-pages
+    scm:
+      - releng-scm:
+          ref: master
+    parameters:
+      - releng-jjb-node:
+          node: opnfv-build
+    triggers:
+      - timed: '@daily'
+    builders:
+      - generate-artifact-html
+
+- builder:
+    name: generate-artifact-html
+    builders:
+      - shell: |
+          cd $WORKSPACE/utils/
+          ./artifacts.opnfv.org.sh
