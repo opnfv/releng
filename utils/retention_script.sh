@@ -29,7 +29,7 @@ do
 
     if [[ "$daysold" -gt "10" ]]; then
       echo "$daysold Days old deleting: $(basename $artifact)"
-      s4cmd del --endpoint-url https://storage.googleapis.com "$artifact"
+      gsutil rm "$artifact"
     else
       echo "$daysold Days old retaining: $(basename $artifact)"
     fi
