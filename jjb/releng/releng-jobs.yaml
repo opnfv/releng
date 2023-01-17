@@ -484,3 +484,30 @@
             -o DPkg::Lock::Timeout=300 install \
             google-cloud-sdk -y
           $WORKSPACE/utils/retention_script.sh
+
+- parameter:
+    name: releng-debug-slave
+    parameters:
+      - label:
+          name: slave
+          default: '{slave}'
+
+- builder:
+    name: releng-debug
+    builders:
+      - shell: |
+          find ~ -name ".boto"
+          cat ~/.boto
+
+- job-template:
+    name: releng-debug
+    parameters:
+      - releng-debug-slave:
+          slave: lf-build6
+    builders:
+      - releng-debug
+
+- project:
+    name: 'releng-debug'
+    jobs:
+      - 'releng-debug'
