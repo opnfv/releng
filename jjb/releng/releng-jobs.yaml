@@ -476,13 +476,13 @@
     name: releng-artifact-cleanup
     builders:
       - shell: |
-          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-          echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee \
-            /etc/apt/sources.list.d/google-cloud-sdk.list
-          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
-          sudo DEBIAN_FRONTEND=noninteractive apt-get \
-            -o DPkg::Lock::Timeout=300 install \
-            google-cloud-sdk -y
+          #curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+          #echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee \
+          #/etc/apt/sources.list.d/google-cloud-sdk.list
+          #sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          #sudo DEBIAN_FRONTEND=noninteractive apt-get \
+          #  -o DPkg::Lock::Timeout=300 install \
+          #  google-cloud-sdk -y
           $WORKSPACE/utils/retention_script.sh
 
 - parameter:
@@ -498,6 +498,7 @@
       - shell: |
           find ~ -name ".boto"
           cat ~/.boto
+          cat /home/jenkins-ci/.config/gcloud/legacy_credentials/tbramwell@linuxfoundation.org/.boto
 
 - job-template:
     name: releng-debug
