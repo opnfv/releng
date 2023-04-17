@@ -162,13 +162,6 @@
     jobs:
       - 'xtesting-pi-{repo}-{container}-{tag}-pull'
 
-- project:
-    name: 'xtesting-pi-ollivier-xtesting-mts-pull'
-    <<: *xtesting-pi-params
-    container: 'xtesting-mts'
-    jobs:
-      - 'xtesting-pi-{repo}-{container}-{tag}-pull'
-
 - job-template:
     name: 'xtesting-pi-{repo}-{container}-{tag}-rmi'
     parameters:
@@ -182,13 +175,6 @@
     name: 'xtesting-pi-ollivier-xtesting-rmi'
     <<: *xtesting-pi-params
     container: 'xtesting'
-    jobs:
-      - 'xtesting-pi-{repo}-{container}-{tag}-rmi'
-
-- project:
-    name: 'xtesting-pi-ollivier-xtesting-mts-rmi'
-    <<: *xtesting-pi-params
-    container: 'xtesting-mts'
     jobs:
       - 'xtesting-pi-{repo}-{container}-{tag}-rmi'
 
@@ -218,39 +204,18 @@
       - fifth
       - sixth
       - eighth
+      - nineth
     privileged: 'false'
     network: bridge
     uid: 1000
     gid: 1000
+    exclude:
+      - tag: wallaby
+        test: nineth
+      - tag: xena
+        test: nineth
     jobs:
       - 'xtesting-pi-ollivier-xtesting-{tag}-{test}-run'
-
-- job-template:
-    name: 'xtesting-pi-ollivier-xtesting-mts-{tag}-{test}-run'
-    parameters:
-      - xtesting-pi-node:
-          node: '{node}'
-      - xtesting-pi-build_tag:
-          build_tag: ''
-    builders:
-      - xtesting-pi-run-containers:
-          <<: *xtesting-pi-run-containers
-
-- project:
-    name: 'xtesting-pi-ollivier-xtesting-mts'
-    <<: *xtesting-pi-params
-    volumes:
-    env:
-    published_ports:
-    container: 'xtesting-mts'
-    test:
-      - seventh
-    privileged: 'false'
-    network: bridge
-    uid: 1000
-    gid: 1000
-    jobs:
-      - 'xtesting-pi-ollivier-xtesting-mts-{tag}-{test}-run'
 
 - builder:
     name: xtesting-pi-zip
@@ -348,14 +313,10 @@
           projects:
             - name: 'xtesting-pi-ollivier-xtesting-{tag}-rmi'
               <<: *xtesting-pi-jobs
-            - name: 'xtesting-pi-ollivier-xtesting-mts-{tag}-rmi'
-              <<: *xtesting-pi-jobs
       - multijob:
           name: pull containers
           projects:
             - name: 'xtesting-pi-ollivier-xtesting-{tag}-pull'
-              <<: *xtesting-pi-jobs
-            - name: 'xtesting-pi-ollivier-xtesting-mts-{tag}-pull'
               <<: *xtesting-pi-jobs
       - multijob:
           name: ollivier/xtesting:{tag}
@@ -374,10 +335,7 @@
               <<: *xtesting-pi-jobs
             - name: 'xtesting-pi-ollivier-xtesting-{tag}-eighth-run'
               <<: *xtesting-pi-jobs
-      - multijob:
-          name: ollivier/xtesting-mts:{tag}
-          projects:
-            - name: 'xtesting-pi-ollivier-xtesting-mts-{tag}-seventh-run'
+            - name: 'xtesting-pi-ollivier-xtesting-{tag}-nineth-run'
               <<: *xtesting-pi-jobs
       - multijob:
           name: dump all campaign data
