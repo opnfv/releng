@@ -1638,6 +1638,91 @@
     jobs:
       - 'functest-{repo}-{container}-{tag}-grype'
 
+- builder:
+    name: functest-sbom
+    builders:
+      - shell: |
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 install curl -y
+
+          sudo mkdir -p ~/.docker
+          curl -sSfL https://raw.githubusercontent.com/docker/sbom-cli-plugin/main/install.sh | sudo sh -s --
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          sudo docker sbom $image
+
+- job-template:
+    name: 'functest-{repo}-{container}-{tag}-sbom'
+    triggers:
+      - timed: '@weekly'
+    parameters:
+      - functest-node:
+          node: '{node}'
+    builders:
+      - functest-sbom:
+          <<: *functest-containers
+    publishers:
+      - email-ext:
+          failure: false
+          first-failure: true
+          fixed: true
+          recipients: cedric.ollivier@orange.com
+
+- project:
+    name: 'functest-opnfv-functest-core-sbom'
+    <<: *functest-params
+    container: 'functest-core'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-sbom'
+
+- project:
+    name: 'functest-opnfv-functest-healthcheck-sbom'
+    <<: *functest-params
+    container: 'functest-healthcheck'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-sbom'
+
+- project:
+    name: 'functest-opnfv-functest-smoke-sbom'
+    <<: *functest-params
+    container: 'functest-smoke'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-sbom'
+
+- project:
+    name: 'functest-opnfv-functest-benchmarking-sbom'
+    <<: *functest-params
+    container: 'functest-benchmarking'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-sbom'
+
+- project:
+    name: 'functest-opnfv-functest-vnf-sbom'
+    <<: *functest-params
+    container: 'functest-vnf'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-sbom'
+
+- project:
+    name: 'functest-opnfv-functest-smoke-cntt-sbom'
+    <<: *functest-params
+    container: 'functest-smoke-cntt'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-sbom'
+
+- project:
+    name: 'functest-opnfv-functest-benchmarking-cntt-sbom'
+    <<: *functest-params
+    container: 'functest-benchmarking-cntt'
+    jobs:
+      - 'functest-{repo}-{container}-{tag}-sbom'
+
 - project:
     name: 'functest'
     <<: *functest-params
@@ -1679,3 +1764,15 @@
       - last-failure
       - last-duration
     regex: (?!functest-kubernetes)(?!functest-pi)^functest-[a-z-0-9.]+-grype$
+
+- view:
+    name: functest-sbom
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^functest-[a-z0-9.]+-sbom$
