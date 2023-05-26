@@ -773,11 +773,11 @@
           DEBIAN_FRONTEND=noninteractive apt-get \
             -o DPkg::Lock::Timeout=300 install \
             libxml2-dev libxslt-dev libffi-dev libjpeg-dev \
-            python3.10 python3.10-dev python3.10-distutils python3.10-venv \
+            python3.10 python3.10-dev python3.10-distutils \
             python3.9 python3.9-dev python3.9-distutils \
             python3.8 python3.8-dev python3.8-distutils \
-            python3-pip enchant-2 tox -y
-          pip3 install tox-pip-version
+            python3-pip enchant-2 -y
+          pip3 install tox tox-pip-version
 
           tox
 
@@ -1365,6 +1365,84 @@
     jobs:
       - 'functest-kubernetes-{repo}-{container}-{tag}-grype'
 
+- builder:
+    name: functest-kubernetes-sbom
+    builders:
+      - shell: |
+          apt-get -o DPkg::Lock::Timeout=300 update && \
+          DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 install curl -y
+
+          mkdir -p ~/.docker
+          curl -sSfL https://raw.githubusercontent.com/docker/sbom-cli-plugin/main/install.sh | sh -s --
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          docker sbom $image
+
+- job-template:
+    name: 'functest-kubernetes-{repo}-{container}-{tag}-sbom'
+    triggers:
+      - timed: '@weekly'
+    parameters:
+      - functest-kubernetes-node:
+          node: '{node}'
+    builders:
+      - functest-kubernetes-sbom:
+          <<: *functest-kubernetes-containers
+    publishers:
+      - email-ext:
+          failure: false
+          first-failure: true
+          fixed: true
+          recipients: cedric.ollivier@orange.com
+
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-core-sbom'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-core'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-sbom'
+
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-sbom'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-healthcheck'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-sbom'
+
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-sbom'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-cnf'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-sbom'
+
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-security-sbom'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-security'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-sbom'
+
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-sbom'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-smoke'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-sbom'
+
+- project:
+    name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-sbom'
+    <<: *functest-kubernetes-params
+    container: 'functest-kubernetes-benchmarking'
+    jobs:
+      - 'functest-kubernetes-{repo}-{container}-{tag}-sbom'
+
 - project:
     name: 'functest-kubernetes'
     <<: *functest-kubernetes-params
@@ -1406,3 +1484,15 @@
       - last-failure
       - last-duration
     regex: (?!functest-kubernetes-pi)(?!functest-kubernetes-ng)^functest-kubernetes-[a-z-0-9.]+-grype$
+
+- view:
+    name: functest-kubernetes-sbom
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: (?!functest-kubernetes-pi)(?!functest-kubernetes-ng)^functest-kubernetes-[a-z-0-9.]+-sbom$
