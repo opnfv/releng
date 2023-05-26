@@ -834,6 +834,48 @@
     jobs:
       - 'xtesting-{repo}-{container}-{tag}-grype'
 
+- builder:
+    name: xtesting-sbom
+    builders:
+      - shell: |
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 install curl -y
+
+          curl -sSfL https://raw.githubusercontent.com/docker/sbom-cli-plugin/main/install.sh | sudo sh -s --
+          if [ "{repo}" = "_" ]; then
+            image={container}:{tag}
+          elif [ "{port}" = "None" ]; then
+            image={repo}/{container}:{tag}
+          else
+            image={repo}:{port}/{container}:{tag}
+          fi
+          sudo docker sbom $image
+
+- job-template:
+    name: 'xtesting-{repo}-{container}-{tag}-sbom'
+    triggers:
+      - timed: '@daily'
+    parameters:
+      - xtesting-node:
+          node: '{node}'
+    builders:
+      - xtesting-sbom:
+          <<: *xtesting-containers
+    publishers:
+      - email-ext:
+          failure: false
+          first-failure: true
+          fixed: true
+          recipients: cedric.ollivier@orange.com
+
+- project:
+    name: 'xtesting-opnfv-xtesting-sbom'
+    <<: *xtesting-params
+    container: 'xtesting'
+    jobs:
+      - 'xtesting-{repo}-{container}-{tag}-sbom'
+
 - project:
     name: 'xtesting'
     <<: *xtesting-params
@@ -875,3 +917,15 @@
       - last-failure
       - last-duration
     regex: (?!xtesting-pi)^xtesting-[a-z-0-9.]+-grype$
+
+- view:
+    name: xtesting-sbom
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^xtesting-[a-z0-9.]+-sbom$
