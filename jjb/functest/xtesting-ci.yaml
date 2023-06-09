@@ -17,8 +17,8 @@
           sudo rm -f /etc/systemd/system/docker.service.d/http-proxy.conf
           sudo systemctl daemon-reload
           sudo systemctl restart docker
-          sudo rm -rfv /data
-          sudo apt-get install ansible -y
+          sudo rm -rfv /data /tmp/xtesting*
+          sudo apt-get install ansible patch -y
           rm -rf ~/.ansible/roles/collivier.xtesting
           case {release} in
           stable)
@@ -30,6 +30,42 @@
           (cd ~/.ansible/roles/collivier.xtesting; patch -p1 < tests/docker_config_json.patch)
           ansible-galaxy collection install -f -r ~/.ansible/roles/collivier.xtesting/requirements.yml
           ansible-playbook -vvvv ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml
+
+- builder:
+    name: xtesting-ci-tests-remote
+    builders:
+      - shell: |
+          set +x
+          ssh opnfv@10.200.140.224 << EOF
+            sudo apt-get -o DPkg::Lock::Timeout=300 update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get \
+              -o DPkg::Lock::Timeout=300 install python3-pip docker.io -y
+            curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.17.0/kind-linux-amd64
+            chmod +x ./kind
+            sudo mv ./kind /usr/local/bin/kind
+            kind delete clusters xtesting jenkins gitlab || true
+            sudo docker ps -aq |xargs sudo docker stop || true
+            sudo docker ps -aq |xargs sudo docker rm || true
+            sudo docker system prune -f --all || true
+            sudo rm -f /etc/systemd/system/docker.service.d/http-proxy.conf
+            sudo systemctl daemon-reload
+            sudo systemctl restart docker
+            sudo rm -rfv /data /tmp/xtesting*
+          EOF
+          sudo apt-get install ansible patch -y
+          rm -rf ~/.ansible/roles/collivier.xtesting
+          case {release} in
+          stable)
+            ansible-galaxy install -f collivier.xtesting ;;
+          *)
+            ansible-galaxy install -f git+https://github.com/collivier/ansible-role-xtesting.git,{release}
+            mv ~/.ansible/roles/ansible-role-xtesting ~/.ansible/roles/collivier.xtesting ;;
+          esac
+          (cd ~/.ansible/roles/collivier.xtesting; patch -p1 < tests/docker_config_json.patch)
+          ansible-galaxy collection install -f -r ~/.ansible/roles/collivier.xtesting/requirements.yml
+          sed -i "s/127.0.0.1/10.200.140.224/g" ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml
+          echo 10.200.140.224 ansible_host=10.200.140.224 ansible_user=opnfv > /tmp/inventory
+          ansible-playbook -i /tmp/inventory -vvvv ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml
 
 - parameter:
     name: xtesting-ci-node
@@ -56,9 +92,26 @@
           playbook: '{playbook}'
           release: '{release}'
 
-- project:
-    name: xtesting-ci-tests
-    node: xtestingci
+- job-template:
+    name: 'xtesting-ci-tests-remote-{release}-{playbook}'
+    triggers:
+      - timed: '@daily'
+    parameters:
+      - xtesting-ci-node:
+          node: '{node}'
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^xtesting-ci-tests-.*$'
+    builders:
+      - xtesting-ci-tests-remote:
+          playbook: '{playbook}'
+          release: '{release}'
+
+- playbook: &playbook
+    name: 'playbook'
     playbook:
       - all
       - proxy
@@ -90,11 +143,26 @@
       - k8s_gitlab_kind1
       - k8s_gitlab_kind2
       - k8s_gitlab_kind3
+
+- project:
+    name: xtesting-ci-tests
+    <<: *playbook
+    node: xtestingci
     release:
       - stable
       - master
     jobs:
       - 'xtesting-ci-tests-{release}-{playbook}'
+
+- project:
+    name: xtesting-ci-tests-remote
+    <<: *playbook
+    node: xtesting
+    release:
+      - stable
+      - master
+    jobs:
+      - 'xtesting-ci-tests-remote-{release}-{playbook}'
 
 - view:
     name: xtesting-ci
