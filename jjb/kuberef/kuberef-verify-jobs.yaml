@@ -4,42 +4,42 @@
     project: kuberef
     stream:
       - master:
-          branch: '{stream}'
+          branch: "{stream}"
     jobs:
-      - '{project}-verify-lint-{stream}'
+      - "{project}-verify-lint-{stream}"
 
 - job-template:
-    name: '{project}-verify-lint-{stream}'
+    name: "{project}-verify-lint-{stream}"
     scm:
       - git-scm-gerrit
     parameters:
       - label:
           name: SLAVE_LABEL
-          default: 'opnfv-build'
+          default: "opnfv-build"
           all-nodes: false
-          node-eligibility: 'ignore-offline'
+          node-eligibility: "ignore-offline"
       - project-parameter:
           project: $GERRIT_PROJECT
-          branch: '{branch}'
+          branch: "{branch}"
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
-          description: 'Git URL to use on this Jenkins Slave'
+          description: "Git URL to use on this Jenkins Slave"
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
+          server-name: "gerrit.opnfv.org"
           trigger-on:
             - patchset-created-event
             - comment-added-contains-event:
-                comment-contains-value: 'recheck'
+                comment-contains-value: "recheck"
             - comment-added-contains-event:
-                comment-contains-value: 'reverify'
+                comment-contains-value: "reverify"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: 'kuberef'
+            - project-compare-type: "ANT"
+              project-pattern: "kuberef"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "**/{branch}"
           skip-vote:
             successful: false
             failed: false
@@ -51,5 +51,4 @@
 - builder:
     name: kubref-run-linting
     builders:
-      - shell:
-          !include-raw: ./kuberef-run-linting.sh
+      - shell: !include-raw: ./kuberef-run-linting.sh

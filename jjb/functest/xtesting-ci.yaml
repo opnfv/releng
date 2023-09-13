@@ -36,25 +36,25 @@
     parameters:
       - label:
           name: node
-          default: '{node}'
+          default: "{node}"
 
 - job-template:
-    name: 'xtesting-ci-tests-{release}-{playbook}'
+    name: "xtesting-ci-tests-{release}-{playbook}"
     triggers:
-      - timed: '@daily'
+      - timed: "@daily"
     parameters:
       - xtesting-ci-node:
-          node: '{node}'
+          node: "{node}"
     properties:
       - build-blocker:
           use-build-blocker: true
-          blocking-level: 'NODE'
+          blocking-level: "NODE"
           blocking-jobs:
-            - '^xtesting-ci-tests-.*$'
+            - "^xtesting-ci-tests-.*$"
     builders:
       - xtesting-ci-tests:
-          playbook: '{playbook}'
-          release: '{release}'
+          playbook: "{playbook}"
+          release: "{release}"
 
 - project:
     name: xtesting-ci-tests
@@ -94,7 +94,7 @@
       - stable
       - master
     jobs:
-      - 'xtesting-ci-tests-{release}-{playbook}'
+      - "xtesting-ci-tests-{release}-{playbook}"
 
 - view:
     name: xtesting-ci

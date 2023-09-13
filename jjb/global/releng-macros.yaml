@@ -17,7 +17,7 @@
     parameters:
       - string:
           name: PROJECT
-          default: '{project}'
+          default: "{project}"
           description: "JJB configured PROJECT parameter to identify an opnfv Gerrit project"
       - string:
           name: GS_BASE
@@ -29,15 +29,15 @@
           description: "URL to Google Storage proxy"
       - string:
           name: BRANCH
-          default: '{branch}'
+          default: "{branch}"
           description: "JJB configured BRANCH parameter (e.g. master, stable/danube)"
       - string:
           name: GERRIT_BRANCH
-          default: '{branch}'
+          default: "{branch}"
           description: "JJB configured GERRIT_BRANCH parameter (deprecated)"
       - string:
           name: GERRIT_REFSPEC
-          default: 'refs/heads/{branch}'
+          default: "refs/heads/{branch}"
           description: "Default refspec needed for manually triggering."
 
 ##
@@ -73,19 +73,19 @@
     parameters:
       - string:
           name: TESTAPI_URL
-          default: 'http://testresults.opnfv.org/test/api/v1'
+          default: "http://testresults.opnfv.org/test/api/v1"
           description: "Default TestAPI URL, currently using v1"
       - string:
           name: INSTALLER_VERSION
-          default: 'master'
+          default: "master"
           description: "Installer release version"
       - string:
           name: UPSTREAM_JOB_NAME
-          default: ''
+          default: ""
           description: "Parent job name in Jenkins"
       - string:
           name: UPSTREAM_BUILD_ID
-          default: ''
+          default: ""
           description: "Parent job build_id in Jenkins"
 
 - property:
@@ -101,10 +101,10 @@
     name: git-scm
     scm:
       - git: &git-scm-defaults
-          credentials-id: 'd42411ac011ad6f3dd2e1fa34eaa5d87f910eb2e'
-          url: '$GIT_BASE'
+          credentials-id: "d42411ac011ad6f3dd2e1fa34eaa5d87f910eb2e"
+          url: "$GIT_BASE"
           branches:
-            - 'origin/$BRANCH'
+            - "origin/$BRANCH"
           timeout: 15
           per-build-tag: false
           skip-tag: true
@@ -118,16 +118,16 @@
     name: git-scm-gerrit
     scm:
       - git:
-          choosing-strategy: 'gerrit'
-          refspec: '$GERRIT_REFSPEC'
+          choosing-strategy: "gerrit"
+          refspec: "$GERRIT_REFSPEC"
           <<: *git-scm-defaults
 
 - scm:
     name: git-scm-gerrit-with-submodules
     scm:
       - git:
-          choosing-strategy: 'gerrit'
-          refspec: '$GERRIT_REFSPEC'
+          choosing-strategy: "gerrit"
+          refspec: "$GERRIT_REFSPEC"
           submodule:
             recursive: true
             timeout: 20
@@ -136,11 +136,11 @@
     name: git-scm-with-submodules
     scm:
       - git:
-          credentials-id: 'd42411ac011ad6f3dd2e1fa34eaa5d87f910eb2e'
-          url: '$GIT_BASE'
-          refspec: ''
+          credentials-id: "d42411ac011ad6f3dd2e1fa34eaa5d87f910eb2e"
+          url: "$GIT_BASE"
+          refspec: ""
           branches:
-            - 'refs/heads/{branch}'
+            - "refs/heads/{branch}"
           per-build-tag: false
           skip-tag: true
           wipe-workspace: true
@@ -154,45 +154,45 @@
       - git: &git-scm-openstack-defaults
           per-build-tag: false
           skip-tag: true
-          url: '$GIT_BASE'
+          url: "$GIT_BASE"
           branches:
-            - 'origin/$BRANCH'
+            - "origin/$BRANCH"
           timeout: 15
 
 - trigger:
-    name: 'daily-trigger-disabled'
+    name: "daily-trigger-disabled"
     triggers:
-      - timed: ''
+      - timed: ""
 
 - trigger:
-    name: 'weekly-trigger-disabled'
+    name: "weekly-trigger-disabled"
     triggers:
-      - timed: ''
+      - timed: ""
 
 - trigger:
     name: gerrit-trigger-patchset-created
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
+          server-name: "gerrit.opnfv.org"
           trigger-on:
             - patchset-created-event:
-                exclude-drafts: 'false'
-                exclude-trivial-rebase: 'false'
-                exclude-no-code-change: 'false'
+                exclude-drafts: "false"
+                exclude-trivial-rebase: "false"
+                exclude-no-code-change: "false"
             - draft-published-event
             - comment-added-contains-event:
-                comment-contains-value: 'recheck'
+                comment-contains-value: "recheck"
             - comment-added-contains-event:
-                comment-contains-value: 'reverify'
+                comment-contains-value: "reverify"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{project}'
+            - project-compare-type: "ANT"
+              project-pattern: "{project}"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "**/{branch}"
               file-paths:
-                - compare-type: 'ANT'
-                  pattern: '{files}'
+                - compare-type: "ANT"
+                  pattern: "{files}"
           skip-vote:
             successful: false
             failed: false
@@ -203,22 +203,22 @@
     name: gerrit-trigger-patchset-approved
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
+          server-name: "gerrit.opnfv.org"
           trigger-on:
             - comment-added-event:
-                approval-category: 'CRVW'
+                approval-category: "CRVW"
                 approval-value: 2
             - comment-added-contains-event:
-                comment-contains-value: 'gate'
+                comment-contains-value: "gate"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{project}'
+            - project-compare-type: "ANT"
+              project-pattern: "{project}"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "**/{branch}"
               file-paths:
-                - compare-type: 'ANT'
-                  pattern: '{files}'
+                - compare-type: "ANT"
+                  pattern: "{files}"
           skip-vote:
             successful: false
             failed: false
@@ -229,52 +229,52 @@
     name: gerrit-trigger-change-merged
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
+          server-name: "gerrit.opnfv.org"
           trigger-on:
             - change-merged-event
             - comment-added-contains-event:
-                comment-contains-value: 'remerge'
+                comment-contains-value: "remerge"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{project}'
+            - project-compare-type: "ANT"
+              project-pattern: "{project}"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "**/{branch}"
               file-paths:
-                - compare-type: 'ANT'
-                  pattern: '{files}'
+                - compare-type: "ANT"
+                  pattern: "{files}"
 
 - trigger:
     name: gerrit-trigger-tag-created
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
+          server-name: "gerrit.opnfv.org"
           trigger-on:
             - ref-updated-event
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{project}'
+            - project-compare-type: "ANT"
+              project-pattern: "{project}"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: 'refs/tags/**'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "refs/tags/**"
 
 - trigger:
-    name: 'experimental'
+    name: "experimental"
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
+          server-name: "gerrit.opnfv.org"
           trigger-on:
             - comment-added-contains-event:
-                comment-contains-value: 'check-experimental'
+                comment-contains-value: "check-experimental"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{project}'
+            - project-compare-type: "ANT"
+              project-pattern: "{project}"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "**/{branch}"
               file-paths:
-                - compare-type: 'ANT'
-                  pattern: '{files}'
+                - compare-type: "ANT"
+                  pattern: "{files}"
           skip-vote:
             successful: true
             failed: true
@@ -286,14 +286,14 @@
     wrappers:
       - ssh-agent-credentials:
           users:
-            - 'd42411ac011ad6f3dd2e1fa34eaa5d87f910eb2e'
+            - "d42411ac011ad6f3dd2e1fa34eaa5d87f910eb2e"
 
 - wrapper:
     name: build-timeout
     wrappers:
       - timeout:
-          timeout: '{timeout}'
-          timeout-var: 'BUILD_TIMEOUT'
+          timeout: "{timeout}"
+          timeout-var: "BUILD_TIMEOUT"
           fail: true
 
 - wrapper:
@@ -301,8 +301,8 @@
     wrappers:
       - pre-scm-buildstep:
           - shell: |
-             #!/bin/bash
-             sudo chown -R $USER:$USER $WORKSPACE || exit 1
+              #!/bin/bash
+              sudo chown -R $USER:$USER $WORKSPACE || exit 1
 
 - builder:
     name: upload-under-review-docs-to-opnfv-artifacts
@@ -425,7 +425,7 @@
     name: archive-artifacts
     publishers:
       - archive:
-          artifacts: '{artifacts}'
+          artifacts: "{artifacts}"
           allow-empty: true
           fingerprint: true
           latest-only: true

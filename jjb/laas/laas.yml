@@ -1,17 +1,17 @@
 ---
 - parameter:
-    name: 'laas-dashboard-defaults'
+    name: "laas-dashboard-defaults"
     parameters:
       - label:
           name: SLAVE_LABEL
-          default: 'laas-dashboard'
-          description: 'Slave label on Jenkins'
+          default: "laas-dashboard"
+          description: "Slave label on Jenkins"
           all-nodes: false
-          node-eligibility: 'ignore-offline'
+          node-eligibility: "ignore-offline"
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
-          description: 'Git URL to use on this Jenkins Slave'
+          description: "Git URL to use on this Jenkins Slave"
       - string:
           name: BUILD_DIRECTORY
           default: $WORKSPACE/build_output
@@ -20,8 +20,8 @@
 - project:
     name: laas-dashboard-jobs
 
-    project: 'laas'
-    project-name: 'laas'
+    project: "laas"
+    project-name: "laas"
 
     stream:
       - master
@@ -29,44 +29,42 @@
     disabled: false
 
     jobs:
-      - 'laas-dashboard-backup'
-      - 'laas-dashboard-deploy'
+      - "laas-dashboard-backup"
+      - "laas-dashboard-deploy"
 
 - job-template:
-    name: 'laas-dashboard-backup'
+    name: "laas-dashboard-backup"
 
-    disabled: '{obj:disabled}'
+    disabled: "{obj:disabled}"
 
     parameters:
-      - 'laas-dashboard-defaults'
+      - "laas-dashboard-defaults"
 
     triggers:
-      - timed: '@daily'
+      - timed: "@daily"
 
     builders:
-      - shell:
-          !include-raw: shell/backup-dashboard.sh
+      - shell: !include-raw: shell/backup-dashboard.sh
 
 - job-template:
-    name: 'laas-dashboard-deploy'
+    name: "laas-dashboard-deploy"
 
-    disabled: '{obj:disabled}'
+    disabled: "{obj:disabled}"
 
     parameters:
       - project-parameter:
-          project: '{project}'
-          branch: 'master'
-      - 'laas-dashboard-defaults'
+          project: "{project}"
+          branch: "master"
+      - "laas-dashboard-defaults"
 
     scm:
       - git-scm-gerrit
 
     triggers:
       - gerrit-trigger-change-merged:
-          branch: 'master'
-          project: '{project}'
-          files: 'dashboard/docker-compose.yml'
+          branch: "master"
+          project: "{project}"
+          files: "dashboard/docker-compose.yml"
 
     builders:
-      - shell:
-          !include-raw: shell/deploy-dashboard.sh
+      - shell: !include-raw: shell/deploy-dashboard.sh

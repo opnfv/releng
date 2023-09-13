@@ -3,12 +3,12 @@
     name: releng-scm
     scm:
       - git:
-          url: 'ssh://jenkins-ci@gerrit.opnfv.org:29418/releng'
-          refspec: '+refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*'
+          url: "ssh://jenkins-ci@gerrit.opnfv.org:29418/releng"
+          refspec: "+refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*"
           submodule:
             recursive: true
           branches:
-            - '{ref}'
+            - "{ref}"
 
 - trigger:
     name: releng-patchset-created
@@ -17,15 +17,15 @@
           trigger-on:
             - patchset-created-event
             - comment-added-contains-event:
-                comment-contains-value: 'recheck'
+                comment-contains-value: "recheck"
             - comment-added-contains-event:
-                comment-contains-value: 'reverify'
+                comment-contains-value: "reverify"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: 'releng'
+            - project-compare-type: "ANT"
+              project-pattern: "releng"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: 'master'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "master"
 
 - trigger:
     name: releng-patchset-merged
@@ -34,13 +34,13 @@
           trigger-on:
             - change-merged-event
             - comment-added-contains-event:
-                comment-contains-value: 'remerge'
+                comment-contains-value: "remerge"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: 'releng'
+            - project-compare-type: "ANT"
+              project-pattern: "releng"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: 'master'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "master"
 
 - builder:
     name: releng-jjb-verify
@@ -70,7 +70,7 @@
     parameters:
       - label:
           name: node
-          default: '{node}'
+          default: "{node}"
 
 - job-template:
     name: releng-jjb-verify
@@ -112,12 +112,12 @@
     name: opnfv-scm
     scm:
       - git:
-          url: 'https://gerrit.opnfv.org/gerrit/{project}'
-          refspec: '+refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*'
+          url: "https://gerrit.opnfv.org/gerrit/{project}"
+          refspec: "+refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*"
           submodule:
             recursive: true
           branches:
-            - '{ref}'
+            - "{ref}"
 
 - trigger:
     name: releng-tox-patchset-created
@@ -131,14 +131,14 @@
                 comment-contains-value: reverify
           server-name: gerrit.opnfv.org
           projects:
-            - project-compare-type: 'REG_EXP'
-              project-pattern: '^(?!functest).*'
+            - project-compare-type: "REG_EXP"
+              project-pattern: "^(?!functest).*"
               branches:
-                - branch-compare-type: 'ANT'
+                - branch-compare-type: "ANT"
                   branch-pattern: master
-                - branch-compare-type: 'ANT'
+                - branch-compare-type: "ANT"
                   branch-pattern: stable/nile
-                - branch-compare-type: 'ANT'
+                - branch-compare-type: "ANT"
                   branch-pattern: stable/moselle
 
 - builder:
@@ -158,7 +158,7 @@
     parameters:
       - label:
           name: node
-          default: '{node}'
+          default: "{node}"
 
 - job-template:
     name: releng-tox
@@ -192,20 +192,20 @@
       - wallaby
       - yoga
       - zed
-      - '2023.1'
+      - "2023.1"
     jobs:
-      - 'releng-release-{stream}-verify'
-      - 'releng-release-{stream}-merge'
+      - "releng-release-{stream}-verify"
+      - "releng-release-{stream}-merge"
 
 - parameter:
     name: stream-parameter
     parameters:
       - string:
           name: STREAM
-          default: '{stream}'
+          default: "{stream}"
 
 - job-template:
-    name: 'releng-release-{stream}-verify'
+    name: "releng-release-{stream}-verify"
     scm:
       - releng-scm:
           ref: $GERRIT_REFSPEC
@@ -213,32 +213,32 @@
       - releng-jjb-node:
           node: opnfv-build
       - stream-parameter:
-          stream: '{stream}'
+          stream: "{stream}"
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
+          server-name: "gerrit.opnfv.org"
           trigger-on:
             - patchset-created-event:
-                exclude-drafts: 'false'
-                exclude-trivial-rebase: 'false'
-                exclude-no-code-change: 'false'
+                exclude-drafts: "false"
+                exclude-trivial-rebase: "false"
+                exclude-no-code-change: "false"
             - comment-added-contains-event:
-                comment-contains-value: 'recheck'
+                comment-contains-value: "recheck"
             - comment-added-contains-event:
-                comment-contains-value: 'reverify'
+                comment-contains-value: "reverify"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: 'releng'
+            - project-compare-type: "ANT"
+              project-pattern: "releng"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/master'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "**/master"
               file-paths:
                 - compare-type: ANT
-                  pattern: 'releases/{stream}/**'
+                  pattern: "releases/{stream}/**"
                 - compare-type: ANT
-                  pattern: 'releases/schema.yaml'
+                  pattern: "releases/schema.yaml"
                 - compare-type: ANT
-                  pattern: 'releases/scripts/verify_schema.py'
+                  pattern: "releases/scripts/verify_schema.py"
     builders:
       - shell: |
           sudo apt-get -o DPkg::Lock::Timeout=300 update && \
@@ -251,7 +251,7 @@
           - branch-or-tag.sh
 
 - job-template:
-    name: 'releng-release-{stream}-merge'
+    name: "releng-release-{stream}-merge"
     scm:
       - releng-scm:
           ref: $GERRIT_REFSPEC
@@ -259,7 +259,7 @@
       - releng-jjb-node:
           node: opnfv-build
       - stream-parameter:
-          stream: '{stream}'
+          stream: "{stream}"
       - string:
           name: GIT_URL
           default: ssh://jenkins-ci@gerrit.opnfv.org:29418/
@@ -268,16 +268,16 @@
           trigger-on:
             - change-merged-event
             - comment-added-contains-event:
-                comment-contains-value: 'remerge'
+                comment-contains-value: "remerge"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: 'releng'
+            - project-compare-type: "ANT"
+              project-pattern: "releng"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: 'master'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "master"
               file-paths:
                 - compare-type: ANT
-                  pattern: 'releases/{stream}/**'
+                  pattern: "releases/{stream}/**"
     builders:
       - shell: |
           sudo apt-get -o DPkg::Lock::Timeout=300 update && \
@@ -387,10 +387,10 @@
 - project:
     name: releng-lint
     jobs:
-      - 'releng-lint-verify'
+      - "releng-lint-verify"
 
 - job-template:
-    name: 'releng-lint-verify'
+    name: "releng-lint-verify"
     parameters:
       - releng-jjb-node:
           node: opnfv-build
@@ -399,7 +399,7 @@
           ref: $GERRIT_REFSPEC
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
+          server-name: "gerrit.opnfv.org"
           trigger-on:
             - patchset-created-event
             - comment-added-contains-event:
@@ -407,20 +407,20 @@
             - comment-added-contains-event:
                 comment-contains-value: reverify
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: 'releng'
+            - project-compare-type: "ANT"
+              project-pattern: "releng"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: 'master'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "master"
               file-paths:
                 - compare-type: ANT
-                  pattern: '**/*.py'
+                  pattern: "**/*.py"
                 - compare-type: ANT
-                  pattern: '**/*.sh'
+                  pattern: "**/*.sh"
                 - compare-type: ANT
-                  pattern: '**/*.yml'
+                  pattern: "**/*.yml"
                 - compare-type: ANT
-                  pattern: '**/*.yaml'
+                  pattern: "**/*.yaml"
     builders:
       - lint-all-code
 
@@ -438,7 +438,7 @@
       - releng-jjb-node:
           node: opnfv-build
     triggers:
-      - timed: '@daily'
+      - timed: "@daily"
     builders:
       - generate-artifact-html
 
@@ -470,7 +470,7 @@
       - releng-jjb-node:
           node: opnfv-build
     triggers:
-      - timed: '@daily'
+      - timed: "@daily"
     builders:
       - releng-artifact-cleanup
 

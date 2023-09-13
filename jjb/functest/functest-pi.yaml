@@ -1,14 +1,14 @@
 ---
 - functest-pi-containers: &functest-pi-containers
-    name: 'functest-pi-containers'
-    repo: '{repo}'
-    port: '{port}'
-    container: '{container}'
-    tag: '{tag}'
+    name: "functest-pi-containers"
+    repo: "{repo}"
+    port: "{port}"
+    container: "{container}"
+    tag: "{tag}"
 
 - functest-pi-params: &functest-pi-params
-    name: 'functest-pi-params'
-    repo: 'ollivier'
+    name: "functest-pi-params"
+    repo: "ollivier"
     port:
     tag:
       - latest:
@@ -58,7 +58,7 @@
           DASHBOARD_URL: http://172.30.13.91
 
 - functest-pi-jobs: &functest-pi-jobs
-    name: 'functest-pi-jobs'
+    name: "functest-pi-jobs"
     current-parameters: true
 
 - parameter:
@@ -66,7 +66,7 @@
     parameters:
       - label:
           name: node
-          default: '{node}'
+          default: "{node}"
 
 - parameter:
     name: functest-pi-build_tag
@@ -96,17 +96,17 @@
           default: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
 
 - functest-pi-run-containers: &functest-pi-run-containers
-    name: 'functest-pi-run-containers'
+    name: "functest-pi-run-containers"
     <<: *functest-pi-containers
-    test: '{test}'
-    privileged: '{privileged}'
-    volumes: '{volumes}'
-    env: '{env}'
-    network: '{network}'
-    uid: '{uid}'
-    gid: '{gid}'
-    published_ports: '{published_ports}'
-    DASHBOARD_URL: '{DASHBOARD_URL}'
+    test: "{test}"
+    privileged: "{privileged}"
+    volumes: "{volumes}"
+    env: "{env}"
+    network: "{network}"
+    uid: "{uid}"
+    gid: "{gid}"
+    published_ports: "{published_ports}"
+    DASHBOARD_URL: "{DASHBOARD_URL}"
 
 - builder:
     name: functest-pi-pull-containers
@@ -185,114 +185,114 @@
           sudo docker rmi $image || true
 
 - job-template:
-    name: 'functest-pi-{repo}-{container}-{tag}-pull'
+    name: "functest-pi-{repo}-{container}-{tag}-pull"
     parameters:
       - functest-pi-node:
-          node: '{node}'
+          node: "{node}"
     builders:
       - functest-pi-pull-containers:
           <<: *functest-pi-containers
 
 - project:
-    name: 'functest-pi-ollivier-functest-healthcheck-pull'
+    name: "functest-pi-ollivier-functest-healthcheck-pull"
     <<: *functest-pi-params
-    container: 'functest-healthcheck'
+    container: "functest-healthcheck"
     jobs:
-      - 'functest-pi-{repo}-{container}-{tag}-pull'
+      - "functest-pi-{repo}-{container}-{tag}-pull"
 
 - project:
-    name: 'functest-pi-ollivier-functest-smoke-pull'
+    name: "functest-pi-ollivier-functest-smoke-pull"
     <<: *functest-pi-params
-    container: 'functest-smoke'
+    container: "functest-smoke"
     jobs:
-      - 'functest-pi-{repo}-{container}-{tag}-pull'
+      - "functest-pi-{repo}-{container}-{tag}-pull"
 
 - project:
-    name: 'functest-pi-ollivier-functest-smoke-cntt-pull'
+    name: "functest-pi-ollivier-functest-smoke-cntt-pull"
     <<: *functest-pi-params
-    container: 'functest-smoke-cntt'
+    container: "functest-smoke-cntt"
     jobs:
-      - 'functest-pi-{repo}-{container}-{tag}-pull'
+      - "functest-pi-{repo}-{container}-{tag}-pull"
 
 - project:
-    name: 'functest-pi-ollivier-functest-benchmarking-pull'
+    name: "functest-pi-ollivier-functest-benchmarking-pull"
     <<: *functest-pi-params
-    container: 'functest-benchmarking'
+    container: "functest-benchmarking"
     jobs:
-      - 'functest-pi-{repo}-{container}-{tag}-pull'
+      - "functest-pi-{repo}-{container}-{tag}-pull"
 
 - project:
-    name: 'functest-pi-ollivier-functest-benchmarking-cntt-pull'
+    name: "functest-pi-ollivier-functest-benchmarking-cntt-pull"
     <<: *functest-pi-params
-    container: 'functest-benchmarking-cntt'
+    container: "functest-benchmarking-cntt"
     jobs:
-      - 'functest-pi-{repo}-{container}-{tag}-pull'
+      - "functest-pi-{repo}-{container}-{tag}-pull"
 
 - project:
-    name: 'functest-pi-ollivier-functest-vnf-pull'
+    name: "functest-pi-ollivier-functest-vnf-pull"
     <<: *functest-pi-params
-    container: 'functest-vnf'
+    container: "functest-vnf"
     jobs:
-      - 'functest-pi-{repo}-{container}-{tag}-pull'
+      - "functest-pi-{repo}-{container}-{tag}-pull"
 
 - job-template:
-    name: 'functest-pi-{repo}-{container}-{tag}-rmi'
+    name: "functest-pi-{repo}-{container}-{tag}-rmi"
     parameters:
       - functest-pi-node:
-          node: '{node}'
+          node: "{node}"
     builders:
       - functest-pi-remove-images:
           <<: *functest-pi-containers
 
 - project:
-    name: 'functest-pi-ollivier-functest-healthcheck-rmi'
+    name: "functest-pi-ollivier-functest-healthcheck-rmi"
     <<: *functest-pi-params
-    container: 'functest-healthcheck'
+    container: "functest-healthcheck"
     jobs:
-      - 'functest-pi-{repo}-{container}-{tag}-rmi'
+      - "functest-pi-{repo}-{container}-{tag}-rmi"
 
 - project:
-    name: 'functest-pi-ollivier-functest-smoke-rmi'
+    name: "functest-pi-ollivier-functest-smoke-rmi"
     <<: *functest-pi-params
-    container: 'functest-smoke'
+    container: "functest-smoke"
     jobs:
-      - 'functest-pi-{repo}-{container}-{tag}-rmi'
+      - "functest-pi-{repo}-{container}-{tag}-rmi"
 
 - project:
-    name: 'functest-pi-ollivier-functest-smoke-cntt-rmi'
+    name: "functest-pi-ollivier-functest-smoke-cntt-rmi"
     <<: *functest-pi-params
-    container: 'functest-smoke-cntt'
+    container: "functest-smoke-cntt"
     jobs:
-      - 'functest-pi-{repo}-{container}-{tag}-rmi'
+      - "functest-pi-{repo}-{container}-{tag}-rmi"
 
 - project:
-    name: 'functest-pi-ollivier-functest-benchmarking-rmi'
+    name: "functest-pi-ollivier-functest-benchmarking-rmi"
     <<: *functest-pi-params
-    container: 'functest-benchmarking'
+    container: "functest-benchmarking"
     jobs:
-      - 'functest-pi-{repo}-{container}-{tag}-rmi'
+      - "functest-pi-{repo}-{container}-{tag}-rmi"
 
 - project:
-    name: 'functest-pi-ollivier-functest-benchmarking-cntt-rmi'
+    name: "functest-pi-ollivier-functest-benchmarking-cntt-rmi"
     <<: *functest-pi-params
-    container: 'functest-benchmarking-cntt'
+    container: "functest-benchmarking-cntt"
     jobs:
-      - 'functest-pi-{repo}-{container}-{tag}-rmi'
+      - "functest-pi-{repo}-{container}-{tag}-rmi"
 
 - project:
-    name: 'functest-pi-ollivier-functest-vnf-rmi'
+    name: "functest-pi-ollivier-functest-vnf-rmi"
     <<: *functest-pi-params
-    container: 'functest-vnf'
+    container: "functest-vnf"
     jobs:
-      - 'functest-pi-{repo}-{container}-{tag}-rmi'
+      - "functest-pi-{repo}-{container}-{tag}-rmi"
 
 - job-template:
-    name: 'functest-pi-ollivier-functest-healthcheck-{tag}-{test}-run'
+    name: "functest-pi-ollivier-functest-healthcheck-{tag}-{test}-run"
     parameters:
       - functest-pi-node:
-          node: '{node}'
+          node: "{node}"
       - functest-pi-build_tag:
-          build_tag: ''
+          build_tag: ""
       - functest-pi-EXTERNAL_NETWORK:
           EXTERNAL_NETWORK: public
       - functest-pi-VOLUME_DEVICE_NAME:
@@ -304,7 +304,7 @@
           <<: *functest-pi-run-containers
 
 - project:
-    name: 'functest-pi-ollivier-functest-healthcheck'
+    name: "functest-pi-ollivier-functest-healthcheck"
     <<: *functest-pi-params
     volumes:
       - /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file
@@ -314,7 +314,7 @@
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
     published_ports:
-    container: 'functest-healthcheck'
+    container: "functest-healthcheck"
     test:
       - connection_check
       - tenantnetwork1
@@ -329,20 +329,20 @@
       - odl
       - tempest_smoke
       - tempest_horizon
-    privileged: 'false'
+    privileged: "false"
     network: bridge
     uid: 1000
     gid: 1000
     jobs:
-      - 'functest-pi-ollivier-functest-healthcheck-{tag}-{test}-run'
+      - "functest-pi-ollivier-functest-healthcheck-{tag}-{test}-run"
 
 - job-template:
-    name: 'functest-pi-ollivier-functest-smoke-{tag}-{test}-run'
+    name: "functest-pi-ollivier-functest-smoke-{tag}-{test}-run"
     parameters:
       - functest-pi-node:
-          node: '{node}'
+          node: "{node}"
       - functest-pi-build_tag:
-          build_tag: ''
+          build_tag: ""
       - functest-pi-EXTERNAL_NETWORK:
           EXTERNAL_NETWORK: public
       - functest-pi-VOLUME_DEVICE_NAME:
@@ -354,7 +354,7 @@
           <<: *functest-pi-run-containers
 
 - project:
-    name: 'functest-pi-ollivier-functest-smoke'
+    name: "functest-pi-ollivier-functest-smoke"
     <<: *functest-pi-params
     volumes:
       - /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file
@@ -364,7 +364,7 @@
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
     published_ports:
-    container: 'functest-smoke'
+    container: "functest-smoke"
     test:
       - tempest_neutron
       - tempest_cinder
@@ -384,20 +384,20 @@
       - tempest_barbican
       - tempest_octavia
       - tempest_cyborg
-    privileged: 'false'
+    privileged: "false"
     network: bridge
     uid: 1000
     gid: 1000
     jobs:
-      - 'functest-pi-ollivier-functest-smoke-{tag}-{test}-run'
+      - "functest-pi-ollivier-functest-smoke-{tag}-{test}-run"
 
 - job-template:
-    name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-{test}-run'
+    name: "functest-pi-ollivier-functest-smoke-cntt-{tag}-{test}-run"
     parameters:
       - functest-pi-node:
-          node: '{node}'
+          node: "{node}"
       - functest-pi-build_tag:
-          build_tag: ''
+          build_tag: ""
       - functest-pi-EXTERNAL_NETWORK:
           EXTERNAL_NETWORK: public
       - functest-pi-VOLUME_DEVICE_NAME:
@@ -409,7 +409,7 @@
           <<: *functest-pi-run-containers
 
 - project:
-    name: 'functest-pi-ollivier-functest-smoke-cntt'
+    name: "functest-pi-ollivier-functest-smoke-cntt"
     <<: *functest-pi-params
     volumes:
       - /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file
@@ -419,7 +419,7 @@
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
     published_ports:
-    container: 'functest-smoke-cntt'
+    container: "functest-smoke-cntt"
     test:
       - tempest_neutron_cntt
       - tempest_cinder_cntt
@@ -429,20 +429,20 @@
       - tempest_full_cntt
       - tempest_scenario_cntt
       - tempest_slow_cntt
-    privileged: 'false'
+    privileged: "false"
     network: bridge
     uid: 1000
     gid: 1000
     jobs:
-      - 'functest-pi-ollivier-functest-smoke-cntt-{tag}-{test}-run'
+      - "functest-pi-ollivier-functest-smoke-cntt-{tag}-{test}-run"
 
 - job-template:
-    name: 'functest-pi-ollivier-functest-benchmarking-{tag}-{test}-run'
+    name: "functest-pi-ollivier-functest-benchmarking-{tag}-{test}-run"
     parameters:
       - functest-pi-node:
-          node: '{node}'
+          node: "{node}"
       - functest-pi-build_tag:
-          build_tag: ''
+          build_tag: ""
       - functest-pi-EXTERNAL_NETWORK:
           EXTERNAL_NETWORK: public
       - functest-pi-VOLUME_DEVICE_NAME:
@@ -454,7 +454,7 @@
           <<: *functest-pi-run-containers
 
 - project:
-    name: 'functest-pi-ollivier-functest-benchmarking'
+    name: "functest-pi-ollivier-functest-benchmarking"
     <<: *functest-pi-params
     volumes:
       - /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file
@@ -464,26 +464,26 @@
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
     published_ports:
-    container: 'functest-benchmarking'
+    container: "functest-benchmarking"
     test:
       - rally_full
       - rally_jobs
       - vmtp
       - shaker
-    privileged: 'false'
+    privileged: "false"
     network: bridge
     uid: 1000
     gid: 1000
     jobs:
-      - 'functest-pi-ollivier-functest-benchmarking-{tag}-{test}-run'
+      - "functest-pi-ollivier-functest-benchmarking-{tag}-{test}-run"
 
 - job-template:
-    name: 'functest-pi-ollivier-functest-benchmarking-cntt-{tag}-{test}-run'
+    name: "functest-pi-ollivier-functest-benchmarking-cntt-{tag}-{test}-run"
     parameters:
       - functest-pi-node:
-          node: '{node}'
+          node: "{node}"
       - functest-pi-build_tag:
-          build_tag: ''
+          build_tag: ""
       - functest-pi-EXTERNAL_NETWORK:
           EXTERNAL_NETWORK: public
       - functest-pi-VOLUME_DEVICE_NAME:
@@ -495,7 +495,7 @@
           <<: *functest-pi-run-containers
 
 - project:
-    name: 'functest-pi-ollivier-functest-benchmarking-cntt'
+    name: "functest-pi-ollivier-functest-benchmarking-cntt"
     <<: *functest-pi-params
     volumes:
       - /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file
@@ -505,24 +505,24 @@
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
     published_ports:
-    container: 'functest-benchmarking-cntt'
+    container: "functest-benchmarking-cntt"
     test:
       - rally_full_cntt
       - rally_jobs_cntt
-    privileged: 'false'
+    privileged: "false"
     network: bridge
     uid: 1000
     gid: 1000
     jobs:
-      - 'functest-pi-ollivier-functest-benchmarking-cntt-{tag}-{test}-run'
+      - "functest-pi-ollivier-functest-benchmarking-cntt-{tag}-{test}-run"
 
 - job-template:
-    name: 'functest-pi-ollivier-functest-vnf-{tag}-{test}-run'
+    name: "functest-pi-ollivier-functest-vnf-{tag}-{test}-run"
     parameters:
       - functest-pi-node:
-          node: '{node}'
+          node: "{node}"
       - functest-pi-build_tag:
-          build_tag: ''
+          build_tag: ""
       - functest-pi-EXTERNAL_NETWORK:
           EXTERNAL_NETWORK: public
       - functest-pi-VOLUME_DEVICE_NAME:
@@ -534,7 +534,7 @@
           <<: *functest-pi-run-containers
 
 - project:
-    name: 'functest-pi-ollivier-functest-vnf'
+    name: "functest-pi-ollivier-functest-vnf"
     <<: *functest-pi-params
     volumes:
       - /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file
@@ -544,19 +544,19 @@
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
     published_ports:
-    container: 'functest-vnf'
+    container: "functest-vnf"
     test:
       - cloudify
       - cloudify_ims
       - heat_ims
       - vyos_vrouter
       - juju_epc
-    privileged: 'false'
+    privileged: "false"
     network: bridge
     uid: 1000
     gid: 1000
     jobs:
-      - 'functest-pi-ollivier-functest-vnf-{tag}-{test}-run'
+      - "functest-pi-ollivier-functest-vnf-{tag}-{test}-run"
 
 - builder:
     name: functest-pi-zip
@@ -603,12 +603,12 @@
             $image zip_campaign
 
 - job-template:
-    name: 'functest-pi-{tag}-zip'
+    name: "functest-pi-{tag}-zip"
     parameters:
       - functest-pi-node:
-          node: '{node}'
+          node: "{node}"
       - functest-pi-build_tag:
-          build_tag: ''
+          build_tag: ""
       - functest-pi-EXTERNAL_NETWORK:
           EXTERNAL_NETWORK: public
       - functest-pi-VOLUME_DEVICE_NAME:
@@ -618,14 +618,14 @@
     builders:
       - functest-pi-zip:
           <<: *functest-pi-containers
-          volumes: '{volumes}'
-          env: '{env}'
-          uid: '{uid}'
-          gid: '{gid}'
-          published_ports: '{published_ports}'
+          volumes: "{volumes}"
+          env: "{env}"
+          uid: "{uid}"
+          gid: "{gid}"
+          published_ports: "{published_ports}"
 
 - project:
-    name: 'functest-pi-{tag}-zip'
+    name: "functest-pi-{tag}-zip"
     <<: *functest-pi-params
     volumes:
       - /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file
@@ -635,22 +635,22 @@
       - VOLUME_DEVICE_NAME=$VOLUME_DEVICE_NAME
       - IMAGE_PROPERTIES=$IMAGE_PROPERTIES
     published_ports:
-    container: 'functest-healthcheck'
+    container: "functest-healthcheck"
     uid: 1000
     gid: 1000
     jobs:
-      - 'functest-pi-{tag}-zip'
+      - "functest-pi-{tag}-zip"
 
 - job-template:
-    name: 'functest-pi-{tag}-daily'
+    name: "functest-pi-{tag}-daily"
     project-type: multijob
     triggers:
-      - timed: '@weekly'
+      - timed: "@weekly"
     parameters:
       - functest-pi-node:
-          node: '{node}'
+          node: "{node}"
       - functest-pi-build_tag:
-          build_tag: ''
+          build_tag: ""
       - functest-pi-EXTERNAL_NETWORK:
           EXTERNAL_NETWORK: public
       - functest-pi-VOLUME_DEVICE_NAME:
@@ -663,161 +663,161 @@
     properties:
       - build-blocker:
           blocking-jobs:
-          - ^functest-(pi-)*{tag}-(daily|docker|review)$
+            - ^functest-(pi-)*{tag}-(daily|docker|review)$
     # yamllint enable rule:indentation
     builders:
       - multijob:
           name: remove former images
           projects:
-            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-rmi'
+            - name: "functest-pi-ollivier-functest-healthcheck-{tag}-rmi"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-rmi'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-rmi"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-rmi'
+            - name: "functest-pi-ollivier-functest-smoke-cntt-{tag}-rmi"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-benchmarking-{tag}-rmi'
+            - name: "functest-pi-ollivier-functest-benchmarking-{tag}-rmi"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-benchmarking-cntt-{tag}-rmi'
+            - name: "functest-pi-ollivier-functest-benchmarking-cntt-{tag}-rmi"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-vnf-{tag}-rmi'
+            - name: "functest-pi-ollivier-functest-vnf-{tag}-rmi"
               <<: *functest-pi-jobs
       - multijob:
           name: pull containers
           projects:
-            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-pull'
+            - name: "functest-pi-ollivier-functest-healthcheck-{tag}-pull"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-pull'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-pull"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-pull'
+            - name: "functest-pi-ollivier-functest-smoke-cntt-{tag}-pull"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-benchmarking-{tag}-pull'
+            - name: "functest-pi-ollivier-functest-benchmarking-{tag}-pull"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-benchmarking-cntt-{tag}-pull'
+            - name: "functest-pi-ollivier-functest-benchmarking-cntt-{tag}-pull"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-vnf-{tag}-pull'
+            - name: "functest-pi-ollivier-functest-vnf-{tag}-pull"
               <<: *functest-pi-jobs
       - multijob:
           name: ollivier/functest-healthcheck:{tag}
           projects:
-            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-connection_check-run'
+            - name: "functest-pi-ollivier-functest-healthcheck-{tag}-connection_check-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-tenantnetwork1-run'
+            - name: "functest-pi-ollivier-functest-healthcheck-{tag}-tenantnetwork1-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-tenantnetwork2-run'
+            - name: "functest-pi-ollivier-functest-healthcheck-{tag}-tenantnetwork2-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-vmready1-run'
+            - name: "functest-pi-ollivier-functest-healthcheck-{tag}-vmready1-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-vmready2-run'
+            - name: "functest-pi-ollivier-functest-healthcheck-{tag}-vmready2-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-singlevm1-run'
+            - name: "functest-pi-ollivier-functest-healthcheck-{tag}-singlevm1-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-singlevm2-run'
+            - name: "functest-pi-ollivier-functest-healthcheck-{tag}-singlevm2-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-vping_ssh-run'
+            - name: "functest-pi-ollivier-functest-healthcheck-{tag}-vping_ssh-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-vping_userdata-run'
+            - name: "functest-pi-ollivier-functest-healthcheck-{tag}-vping_userdata-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-cinder_test-run'
+            - name: "functest-pi-ollivier-functest-healthcheck-{tag}-cinder_test-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-odl-run'
+            - name: "functest-pi-ollivier-functest-healthcheck-{tag}-odl-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-tempest_smoke-run'
+            - name: "functest-pi-ollivier-functest-healthcheck-{tag}-tempest_smoke-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-healthcheck-{tag}-tempest_horizon-run'
+            - name: "functest-pi-ollivier-functest-healthcheck-{tag}-tempest_horizon-run"
               <<: *functest-pi-jobs
       - multijob:
           name: ollivier/functest-smoke:{tag}
           projects:
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_neutron-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-tempest_neutron-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_cinder-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-tempest_cinder-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_keystone-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-tempest_keystone-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_heat-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-tempest_heat-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_telemetry-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-tempest_telemetry-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-rally_sanity-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-rally_sanity-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-refstack_compute-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-refstack_compute-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-refstack_object-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-refstack_object-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-refstack_platform-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-refstack_platform-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_full-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-tempest_full-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_scenario-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-tempest_scenario-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_slow-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-tempest_slow-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-patrole_admin-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-patrole_admin-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-patrole_member-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-patrole_member-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-patrole_reader-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-patrole_reader-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_barbican-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-tempest_barbican-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_octavia-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-tempest_octavia-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-{tag}-tempest_cyborg-run'
+            - name: "functest-pi-ollivier-functest-smoke-{tag}-tempest_cyborg-run"
               <<: *functest-pi-jobs
       - multijob:
           name: ollivier/functest-smoke-cntt:{tag}
           projects:
-            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_neutron_cntt-run'
+            - name: "functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_neutron_cntt-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_cinder_cntt-run'
+            - name: "functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_cinder_cntt-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_keystone_cntt-run'
+            - name: "functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_keystone_cntt-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_heat_cntt-run'
+            - name: "functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_heat_cntt-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-rally_sanity_cntt-run'
+            - name: "functest-pi-ollivier-functest-smoke-cntt-{tag}-rally_sanity_cntt-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_full_cntt-run'
+            - name: "functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_full_cntt-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_scenario_cntt-run'
+            - name: "functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_scenario_cntt-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_slow_cntt-run'
+            - name: "functest-pi-ollivier-functest-smoke-cntt-{tag}-tempest_slow_cntt-run"
               <<: *functest-pi-jobs
       - multijob:
           name: ollivier/functest-benchmarking:{tag}
           projects:
-            - name: 'functest-pi-ollivier-functest-benchmarking-{tag}-rally_full-run'
+            - name: "functest-pi-ollivier-functest-benchmarking-{tag}-rally_full-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-benchmarking-{tag}-rally_jobs-run'
+            - name: "functest-pi-ollivier-functest-benchmarking-{tag}-rally_jobs-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-benchmarking-{tag}-vmtp-run'
+            - name: "functest-pi-ollivier-functest-benchmarking-{tag}-vmtp-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-benchmarking-{tag}-shaker-run'
+            - name: "functest-pi-ollivier-functest-benchmarking-{tag}-shaker-run"
               <<: *functest-pi-jobs
       - multijob:
           name: ollivier/functest-benchmarking-cntt:{tag}
           projects:
-            - name: 'functest-pi-ollivier-functest-benchmarking-cntt-{tag}-rally_full_cntt-run'
+            - name: "functest-pi-ollivier-functest-benchmarking-cntt-{tag}-rally_full_cntt-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-benchmarking-cntt-{tag}-rally_jobs_cntt-run'
+            - name: "functest-pi-ollivier-functest-benchmarking-cntt-{tag}-rally_jobs_cntt-run"
               <<: *functest-pi-jobs
       - multijob:
           name: ollivier/functest-vnf:{tag}
           projects:
-            - name: 'functest-pi-ollivier-functest-vnf-{tag}-cloudify-run'
+            - name: "functest-pi-ollivier-functest-vnf-{tag}-cloudify-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-vnf-{tag}-cloudify_ims-run'
+            - name: "functest-pi-ollivier-functest-vnf-{tag}-cloudify_ims-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-vnf-{tag}-heat_ims-run'
+            - name: "functest-pi-ollivier-functest-vnf-{tag}-heat_ims-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-vnf-{tag}-vyos_vrouter-run'
+            - name: "functest-pi-ollivier-functest-vnf-{tag}-vyos_vrouter-run"
               <<: *functest-pi-jobs
-            - name: 'functest-pi-ollivier-functest-vnf-{tag}-juju_epc-run'
+            - name: "functest-pi-ollivier-functest-vnf-{tag}-juju_epc-run"
               <<: *functest-pi-jobs
       - multijob:
           name: dump all campaign data
           projects:
-            - name: 'functest-pi-{tag}-zip'
+            - name: "functest-pi-{tag}-zip"
               <<: *functest-pi-jobs
     publishers:
       - email-ext:
@@ -827,10 +827,10 @@
           recipients: cedric.ollivier@orange.com
 
 - project:
-    name: 'functest-pi-daily'
+    name: "functest-pi-daily"
     <<: *functest-pi-params
     jobs:
-      - 'functest-pi-{tag}-daily'
+      - "functest-pi-{tag}-daily"
 
 - view:
     name: functest-pi

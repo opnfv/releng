@@ -2,17 +2,17 @@
 - project:
     name: nfvbench
 
-    project: '{name}'
+    project: "{name}"
 
     jobs:
-      - 'nfvbench-build-{stream}'
-      - 'nfvbench-verify-{stream}'
+      - "nfvbench-build-{stream}"
+      - "nfvbench-verify-{stream}"
 
     stream:
       - master:
-          branch: '{stream}'
-          gs-pathname: ''
-          docker-tag: 'latest'
+          branch: "{stream}"
+          gs-pathname: ""
+          docker-tag: "latest"
           disabled: false
 
 - parameter:
@@ -20,17 +20,17 @@
     parameters:
       - label:
           name: node
-          default: 'opnfv-build'
+          default: "opnfv-build"
 
 - job-template:
-    name: 'nfvbench-build-{stream}'
+    name: "nfvbench-build-{stream}"
 
-    disabled: '{obj:disabled}'
+    disabled: "{obj:disabled}"
 
     parameters:
       - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
+          project: "{project}"
+          branch: "{branch}"
       # yamllint disable rule:line-length
       - string:
           name: GIT_BASE
@@ -44,17 +44,17 @@
 
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
+          server-name: "gerrit.opnfv.org"
           trigger-on:
             - change-merged-event
             - comment-added-contains-event:
-                comment-contains-value: 'remerge'
+                comment-contains-value: "remerge"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{project}'
+            - project-compare-type: "ANT"
+              project-pattern: "{project}"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "**/{branch}"
 
     builders:
       - shell: |
@@ -62,14 +62,14 @@
           bash build-image.sh
 
 - job-template:
-    name: 'nfvbench-verify-{stream}'
+    name: "nfvbench-verify-{stream}"
 
-    disabled: '{obj:disabled}'
+    disabled: "{obj:disabled}"
 
     parameters:
       - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
+          project: "{project}"
+          branch: "{branch}"
       # yamllint disable rule:line-length
       - string:
           name: GIT_BASE
@@ -83,22 +83,22 @@
 
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
+          server-name: "gerrit.opnfv.org"
           trigger-on:
             - patchset-created-event:
-                exclude-drafts: 'false'
-                exclude-trivial-rebase: 'false'
-                exclude-no-code-change: 'false'
+                exclude-drafts: "false"
+                exclude-trivial-rebase: "false"
+                exclude-no-code-change: "false"
             - comment-added-contains-event:
-                comment-contains-value: 'recheck'
+                comment-contains-value: "recheck"
             - comment-added-contains-event:
-                comment-contains-value: 'reverify'
+                comment-contains-value: "reverify"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{project}'
+            - project-compare-type: "ANT"
+              project-pattern: "{project}"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "**/{branch}"
 
     builders:
       - shell: |

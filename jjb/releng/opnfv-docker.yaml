@@ -4,34 +4,33 @@
 ##############################################
 
 - project:
-
     name: opnfv-docker
 
     master: &master
       stream: master
-      branch: '{stream}'
+      branch: "{stream}"
       disabled: false
     nile: &nile
       stream: nile
-      branch: 'stable/{stream}'
+      branch: "stable/{stream}"
       disabled: false
     laas-receivers: &laas_receivers
       receivers: >
-          pberberian@iol.unh.edu
-          sbergeron@iol.unh.edu
+        pberberian@iol.unh.edu
+        sbergeron@iol.unh.edu
     samplevnf-receivers: &samplevnf-receivers
       receivers: >
-          luc.provoost@intel.com
-          yury.kylulin@intel.com
+        luc.provoost@intel.com
+        yury.kylulin@intel.com
     vineperf-receivers: &vineperf-receivers
       receivers: >
-          sridhar.rao@spirent.com
+        sridhar.rao@spirent.com
     cirv-receivers: &cirv-receivers
       receivers: >
-          sridhar.rao@spirent.com
-          parthyadav3105@gmail.com
+        sridhar.rao@spirent.com
+        parthyadav3105@gmail.com
     other-receivers: &other-receivers
-      receivers: ''
+      receivers: ""
 
     dockerfile: "Dockerfile"
     dockerdir: "docker"
@@ -43,206 +42,206 @@
     # 'project' is the OPNFV repo we expect to contain the Dockerfile
     # yamllint disable rule:key-duplicates
     dockerrepo:
-      - 'barometer-collectd':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-collectd'
+      - "barometer-collectd":
+          project: "barometer"
+          dockerdir: "docker/barometer-collectd"
           <<: *master
           <<: *other-receivers
-      - 'barometer-collectd-experimental':
-          project: 'barometer'
-          dockerdir: '.'
-          dockerfile: 'docker/barometer-collectd-experimental/Dockerfile'
+      - "barometer-collectd-experimental":
+          project: "barometer"
+          dockerdir: "."
+          dockerfile: "docker/barometer-collectd-experimental/Dockerfile"
           <<: *master
           <<: *other-receivers
-      - 'barometer-collectd-latest':
-          project: 'barometer'
-          dockerdir: '.'
-          dockerfile: 'docker/barometer-collectd-latest/Dockerfile'
+      - "barometer-collectd-latest":
+          project: "barometer"
+          dockerdir: "."
+          dockerfile: "docker/barometer-collectd-latest/Dockerfile"
           <<: *master
           <<: *other-receivers
-      - 'barometer-dma':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-dma'
+      - "barometer-dma":
+          project: "barometer"
+          dockerdir: "docker/barometer-dma"
           <<: *master
           <<: *other-receivers
-      - 'barometer-grafana':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-grafana'
+      - "barometer-grafana":
+          project: "barometer"
+          dockerdir: "docker/barometer-grafana"
           <<: *master
           <<: *other-receivers
-      - 'barometer-influxdb':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-influxdb'
+      - "barometer-influxdb":
+          project: "barometer"
+          dockerdir: "docker/barometer-influxdb"
           <<: *master
           <<: *other-receivers
-      - 'barometer-kafka':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-kafka'
+      - "barometer-kafka":
+          project: "barometer"
+          dockerdir: "docker/barometer-kafka"
           <<: *master
           <<: *other-receivers
-      - 'barometer-ves':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-ves'
+      - "barometer-ves":
+          project: "barometer"
+          dockerdir: "docker/barometer-ves"
           <<: *master
           <<: *other-receivers
-      - 'barometer-snmp':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-snmp'
+      - "barometer-snmp":
+          project: "barometer"
+          dockerdir: "docker/barometer-snmp"
           <<: *master
           <<: *other-receivers
-      - 'nfvbench':
-          project: 'nfvbench'
+      - "nfvbench":
+          project: "nfvbench"
           <<: *master
           <<: *other-receivers
-      - 'laas-dashboard':
-          project: 'laas'
-          dockerdir: '.'
-          dockerfile: 'web/Dockerfile'
+      - "laas-dashboard":
+          project: "laas"
+          dockerdir: "."
+          dockerfile: "web/Dockerfile"
           <<: *master
           <<: *laas_receivers
-      - 'laas-celery':
-          project: 'laas'
-          dockerdir: '.'
-          dockerfile: 'worker/Dockerfile'
+      - "laas-celery":
+          project: "laas"
+          dockerdir: "."
+          dockerfile: "worker/Dockerfile"
           <<: *master
           <<: *laas_receivers
-      - 'rapid':
-          project: 'samplevnf'
-          dockerdir: 'VNFs/DPPD-PROX/helper-scripts/rapid'
+      - "rapid":
+          project: "samplevnf"
+          dockerdir: "VNFs/DPPD-PROX/helper-scripts/rapid"
           <<: *master
           <<: *samplevnf-receivers
-      - 'vineperf':
-          project: 'vineperf'
-          dockerdir: 'tools/docker/vineperf'
+      - "vineperf":
+          project: "vineperf"
+          dockerdir: "tools/docker/vineperf"
           <<: *master
           <<: *vineperf-receivers
-      - 'vineperf-prox':
-          project: 'vineperf'
-          dockerdir: 'tools/docker/test-containers/trafficgen-pods/prox'
+      - "vineperf-prox":
+          project: "vineperf"
+          dockerdir: "tools/docker/test-containers/trafficgen-pods/prox"
           <<: *master
           <<: *vineperf-receivers
-      - 'vineperf-trex':
-          project: 'vineperf'
-          dockerdir: 'tools/docker/test-containers/trafficgen-pods/trex'
+      - "vineperf-trex":
+          project: "vineperf"
+          dockerdir: "tools/docker/test-containers/trafficgen-pods/trex"
           <<: *master
           <<: *vineperf-receivers
-      - 'vineperf-pktgen':
-          project: 'vineperf'
-          dockerdir: 'tools/docker/test-containers/trafficgen-pods/pktgen'
+      - "vineperf-pktgen":
+          project: "vineperf"
+          dockerdir: "tools/docker/test-containers/trafficgen-pods/pktgen"
           <<: *master
           <<: *vineperf-receivers
-      - 'vineperf-l2l3fwd':
-          project: 'vineperf'
-          dockerdir: 'tools/docker/test-containers/dpdk-forwarding-pods/l2l3fwd'
+      - "vineperf-l2l3fwd":
+          project: "vineperf"
+          dockerdir: "tools/docker/test-containers/dpdk-forwarding-pods/l2l3fwd"
           <<: *master
           <<: *vineperf-receivers
-      - 'vineperf-vpp':
-          project: 'vineperf'
-          dockerdir: 'tools/docker/test-containers/dpdk-forwarding-pods/vpp'
+      - "vineperf-vpp":
+          project: "vineperf"
+          dockerdir: "tools/docker/test-containers/dpdk-forwarding-pods/vpp"
           <<: *master
           <<: *vineperf-receivers
-      - 'sdvconfig':
-          project: 'cirv-sdv'
-          dockerdir: 'sdv/docker/sdvconfig'
+      - "sdvconfig":
+          project: "cirv-sdv"
+          dockerdir: "sdv/docker/sdvconfig"
           <<: *master
           <<: *cirv-receivers
-      - 'sdvmodel':
-          project: 'cirv-sdv'
-          dockerdir: 'sdv/docker/sdvmodel'
+      - "sdvmodel":
+          project: "cirv-sdv"
+          dockerdir: "sdv/docker/sdvmodel"
           <<: *master
           <<: *cirv-receivers
-      - 'sdvsecurity':
-          project: 'cirv-sdv'
-          dockerdir: 'sdv/docker/sdvsecurity'
+      - "sdvsecurity":
+          project: "cirv-sdv"
+          dockerdir: "sdv/docker/sdvsecurity"
           <<: *master
           <<: *cirv-receivers
-      - 'sdvstate':
-          project: 'cirv-sdv'
-          dockerdir: 'sdv/docker/sdvstate'
+      - "sdvstate":
+          project: "cirv-sdv"
+          dockerdir: "sdv/docker/sdvstate"
           <<: *master
           <<: *cirv-receivers
-      - 'sdvurls':
-          project: 'cirv-sdv'
-          dockerdir: 'sdv/docker/sdvurls'
+      - "sdvurls":
+          project: "cirv-sdv"
+          dockerdir: "sdv/docker/sdvurls"
           <<: *master
           <<: *cirv-receivers
 
       # projects with jobs for nile
-      - 'barometer-collectd':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-collectd'
+      - "barometer-collectd":
+          project: "barometer"
+          dockerdir: "docker/barometer-collectd"
           <<: *nile
           <<: *other-receivers
-      - 'barometer-collectd-experimental':
-          project: 'barometer'
-          dockerdir: '.'
-          dockerfile: 'docker/barometer-collectd-experimental/Dockerfile'
+      - "barometer-collectd-experimental":
+          project: "barometer"
+          dockerdir: "."
+          dockerfile: "docker/barometer-collectd-experimental/Dockerfile"
           <<: *nile
           <<: *other-receivers
-      - 'barometer-collectd-latest':
-          project: 'barometer'
-          dockerdir: '.'
-          dockerfile: 'docker/barometer-collectd-latest/Dockerfile'
+      - "barometer-collectd-latest":
+          project: "barometer"
+          dockerdir: "."
+          dockerfile: "docker/barometer-collectd-latest/Dockerfile"
           <<: *nile
           <<: *other-receivers
-      - 'barometer-dma':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-dma'
+      - "barometer-dma":
+          project: "barometer"
+          dockerdir: "docker/barometer-dma"
           <<: *nile
           <<: *other-receivers
-      - 'barometer-grafana':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-grafana'
+      - "barometer-grafana":
+          project: "barometer"
+          dockerdir: "docker/barometer-grafana"
           <<: *nile
           <<: *other-receivers
-      - 'barometer-influxdb':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-influxdb'
+      - "barometer-influxdb":
+          project: "barometer"
+          dockerdir: "docker/barometer-influxdb"
           <<: *nile
           <<: *other-receivers
-      - 'barometer-kafka':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-kafka'
+      - "barometer-kafka":
+          project: "barometer"
+          dockerdir: "docker/barometer-kafka"
           <<: *nile
           <<: *other-receivers
-      - 'barometer-ves':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-ves'
+      - "barometer-ves":
+          project: "barometer"
+          dockerdir: "docker/barometer-ves"
           <<: *nile
           <<: *other-receivers
-      - 'barometer-snmp':
-          project: 'barometer'
-          dockerdir: 'docker/barometer-snmp'
+      - "barometer-snmp":
+          project: "barometer"
+          dockerdir: "docker/barometer-snmp"
           <<: *nile
           <<: *other-receivers
-      - 'vineperf':
-          project: 'vineperf'
-          dockerdir: 'tools/docker/vineperf'
+      - "vineperf":
+          project: "vineperf"
+          dockerdir: "tools/docker/vineperf"
           <<: *nile
           <<: *vineperf-receivers
-      - 'vineperf-prox':
-          project: 'vineperf'
-          dockerdir: 'tools/docker/test-containers/trafficgen-pods/prox'
+      - "vineperf-prox":
+          project: "vineperf"
+          dockerdir: "tools/docker/test-containers/trafficgen-pods/prox"
           <<: *nile
           <<: *vineperf-receivers
-      - 'vineperf-trex':
-          project: 'vineperf'
-          dockerdir: 'tools/docker/test-containers/trafficgen-pods/trex'
+      - "vineperf-trex":
+          project: "vineperf"
+          dockerdir: "tools/docker/test-containers/trafficgen-pods/trex"
           <<: *nile
           <<: *vineperf-receivers
-      - 'vineperf-pktgen':
-          project: 'vineperf'
-          dockerdir: 'tools/docker/test-containers/trafficgen-pods/pktgen'
+      - "vineperf-pktgen":
+          project: "vineperf"
+          dockerdir: "tools/docker/test-containers/trafficgen-pods/pktgen"
           <<: *nile
           <<: *vineperf-receivers
-      - 'vineperf-l2l3fwd':
-          project: 'vineperf'
-          dockerdir: 'tools/docker/test-containers/dpdk-forwarding-pods/l2l3fwd'
+      - "vineperf-l2l3fwd":
+          project: "vineperf"
+          dockerdir: "tools/docker/test-containers/dpdk-forwarding-pods/l2l3fwd"
           <<: *nile
           <<: *vineperf-receivers
-      - 'vineperf-vpp':
-          project: 'vineperf'
-          dockerdir: 'tools/docker/test-containers/dpdk-forwarding-pods/vpp'
+      - "vineperf-vpp":
+          project: "vineperf"
+          dockerdir: "tools/docker/test-containers/dpdk-forwarding-pods/vpp"
           <<: *nile
           <<: *vineperf-receivers
 
@@ -254,15 +253,15 @@
 # job templates
 ########################
 - job-template:
-    name: '{dockerrepo}-docker-build-push-{stream}'
+    name: "{dockerrepo}-docker-build-push-{stream}"
 
-    disabled: '{obj:disabled}'
+    disabled: "{obj:disabled}"
 
     parameters: &parameters
       - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - 'opnfv-build-ubuntu-defaults'
+          project: "{project}"
+          branch: "{branch}"
+      - "opnfv-build-ubuntu-defaults"
       - string:
           name: PUSH_IMAGE
           default: "true"
@@ -299,22 +298,21 @@
     properties:
       - throttle:
           max-per-node: 1
-          option: 'project'
+          option: "project"
 
     scm:
       - git-scm
 
     builders: &builders
-      - shell:
-          !include-raw-escape: ./opnfv-docker.sh
+      - shell: !include-raw-escape: ./opnfv-docker.sh
 
     triggers:
       - pollscm:
           cron: "*/30 * * * *"
       - gerrit-trigger-tag-created:
-          project: '{project}'
+          project: "{project}"
 
     publishers:
       - email:
-          recipients: '{receivers}'
+          recipients: "{receivers}"
       - email-jenkins-admins-on-failure

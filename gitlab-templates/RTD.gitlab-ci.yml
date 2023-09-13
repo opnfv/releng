@@ -51,7 +51,7 @@ docs-build:
   before_script:
     - *docs-before-script
   script: |
-     sphinx-build -T -b html -D language=en $DOCS_DIRECTORY _build/html
+    sphinx-build -T -b html -D language=en $DOCS_DIRECTORY _build/html
   cache: *docs-cache
   artifacts:
     paths:
@@ -73,7 +73,7 @@ docs-link-check:
   before_script:
     - *docs-before-script
   script: |
-      sphinx-build -T -b linkcheck $DOCS_DIRECTORY _build/linkcheck
+    sphinx-build -T -b linkcheck $DOCS_DIRECTORY _build/linkcheck
   cache: *docs-cache
   artifacts:
     paths:
@@ -91,8 +91,8 @@ pages:
   stage: deploy
   image: python:3
   script: |
-      mkdir public
-      mv _build/html/* public/
+    mkdir public
+    mv _build/html/* public/
   artifacts:
     paths:
       - public

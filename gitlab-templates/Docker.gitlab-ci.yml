@@ -38,12 +38,12 @@ variables:
     # the image will already exist on the runner.
     - docker pull "$DOCKER_IMAGE:${CI_COMMIT_REF_SLUG}" || true
     - >
-        docker build
-        --pull
-        --cache-from "$DOCKER_IMAGE:${CI_COMMIT_REF_SLUG}"
-        --file "$DOCKER_FILEPATH"
-        --tag "$DOCKER_IMAGE:${CI_COMMIT_REF_SLUG}"
-        $DOCKER_BUILDCONTEXT
+      docker build
+      --pull
+      --cache-from "$DOCKER_IMAGE:${CI_COMMIT_REF_SLUG}"
+      --file "$DOCKER_FILEPATH"
+      --tag "$DOCKER_IMAGE:${CI_COMMIT_REF_SLUG}"
+      $DOCKER_BUILDCONTEXT
     - |
       if [[ "$CI_COMMIT_BRANCH" == "$DOCKER_LATEST_BRANCH" && "$DOCKER_LATEST_TAG" == "true" ]]; then
         docker tag "$DOCKER_IMAGE:${CI_COMMIT_REF_SLUG}" "$DOCKER_IMAGE"
@@ -65,6 +65,6 @@ variables:
     # should be picked up by the schedule run.
     - if: $CI_PIPELINE_SOURCE == "schedule" && $DOCKER_SCHEDULE != "true"
       when: never
-    - if: '$CI_COMMIT_BRANCH == $DOCKER_LATEST_BRANCH'
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: "$CI_COMMIT_BRANCH == $DOCKER_LATEST_BRANCH"
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
     - if: $CI_COMMIT_TAG

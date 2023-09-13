@@ -3,10 +3,10 @@
     name: opnfvdocs-scm
     scm:
       - git:
-          url: 'https://gerrit.opnfv.org/gerrit/opnfvdocs'
-          refspec: '+refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*'
+          url: "https://gerrit.opnfv.org/gerrit/opnfvdocs"
+          refspec: "+refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*"
           branches:
-            - '{ref}'
+            - "{ref}"
 
 - builder:
     name: opnfvdocs-lint-bash-code
@@ -30,16 +30,16 @@
           trigger-on:
             - patchset-created-event
             - comment-added-contains-event:
-                comment-contains-value: 'recheck'
+                comment-contains-value: "recheck"
             - comment-added-contains-event:
-                comment-contains-value: 'reverify'
+                comment-contains-value: "reverify"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: 'opnfvdocs'
+            - project-compare-type: "ANT"
+              project-pattern: "opnfvdocs"
               branches:
-                - branch-compare-type: 'ANT'
+                - branch-compare-type: "ANT"
                   branch-pattern: master
-                - branch-compare-type: 'ANT'
+                - branch-compare-type: "ANT"
                   branch-pattern: stable/nile
 
 - job-template:

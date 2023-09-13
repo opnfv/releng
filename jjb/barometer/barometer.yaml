@@ -5,17 +5,17 @@
 ###################################################
 
 - parameter:
-    name: 'opnfv-build-centos-defaults'
+    name: "opnfv-build-centos-defaults"
     parameters:
       - label:
           name: SLAVE_LABEL
-          default: 'opnfv-build-centos'
+          default: "opnfv-build-centos"
           all-nodes: false
-          node-eligibility: 'ignore-offline'
+          node-eligibility: "ignore-offline"
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
-          description: 'Git URL to use on this Jenkins Slave'
+          description: "Git URL to use on this Jenkins Slave"
       - string:
           name: BUILD_DIRECTORY
           default: $WORKSPACE/build_output
@@ -24,61 +24,61 @@
 - project:
     name: barometer
 
-    project: '{name}'
+    project: "{name}"
 
     jobs:
-      - 'barometer-verify-{stream}'
-      - 'barometer-merge-{stream}'
-      - 'barometer-daily-{stream}'
-      - 'barometer-plugins-tests'
+      - "barometer-verify-{stream}"
+      - "barometer-merge-{stream}"
+      - "barometer-daily-{stream}"
+      - "barometer-plugins-tests"
 
     stream:
       - master:
-          branch: '{stream}'
-          gs-pathname: ''
+          branch: "{stream}"
+          gs-pathname: ""
           disabled: false
       - nile:
-          branch: 'stable/{stream}'
-          gs-pathname: '/{stream}'
+          branch: "stable/{stream}"
+          gs-pathname: "/{stream}"
           disabled: false
 
 - job-template:
-    name: 'barometer-verify-{stream}'
+    name: "barometer-verify-{stream}"
 
-    disabled: '{obj:disabled}'
+    disabled: "{obj:disabled}"
 
     parameters:
       - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - 'opnfv-build-centos-defaults'
+          project: "{project}"
+          branch: "{branch}"
+      - "opnfv-build-centos-defaults"
 
     scm:
       - git-scm-gerrit
 
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
+          server-name: "gerrit.opnfv.org"
           trigger-on:
             - patchset-created-event:
-                exclude-drafts: 'false'
-                exclude-trivial-rebase: 'false'
-                exclude-no-code-change: 'false'
+                exclude-drafts: "false"
+                exclude-trivial-rebase: "false"
+                exclude-no-code-change: "false"
             - draft-published-event
             - comment-added-contains-event:
-                comment-contains-value: 'recheck'
+                comment-contains-value: "recheck"
             - comment-added-contains-event:
-                comment-contains-value: 'reverify'
+                comment-contains-value: "reverify"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{project}'
+            - project-compare-type: "ANT"
+              project-pattern: "{project}"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
-              disable-strict-forbidden-file-verification: 'true'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "**/{branch}"
+              disable-strict-forbidden-file-verification: "true"
               forbidden-file-paths:
                 - compare-type: ANT
-                  pattern: 'docs/**|.gitignore'
+                  pattern: "docs/**|.gitignore"
 
     builders:
       - shell: |
@@ -88,11 +88,11 @@
           make
 
 - job-template:
-    name: 'barometer-merge-{stream}'
+    name: "barometer-merge-{stream}"
 
     project-type: freestyle
 
-    disabled: '{obj:disabled}'
+    disabled: "{obj:disabled}"
 
     concurrent: true
 
@@ -102,34 +102,34 @@
           enabled: true
           max-total: 3
           max-per-node: 2
-          option: 'project'
+          option: "project"
 
     parameters:
       - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - 'opnfv-build-centos-defaults'
+          project: "{project}"
+          branch: "{branch}"
+      - "opnfv-build-centos-defaults"
 
     scm:
       - git-scm
 
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
+          server-name: "gerrit.opnfv.org"
           trigger-on:
             - change-merged-event
             - comment-added-contains-event:
-                comment-contains-value: 'remerge'
+                comment-contains-value: "remerge"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{project}'
+            - project-compare-type: "ANT"
+              project-pattern: "{project}"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
-              disable-strict-forbidden-file-verification: 'true'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "**/{branch}"
+              disable-strict-forbidden-file-verification: "true"
               forbidden-file-paths:
                 - compare-type: ANT
-                  pattern: 'docs/**'
+                  pattern: "docs/**"
 
     builders:
       - shell: |
@@ -139,11 +139,11 @@
           make
 
 - job-template:
-    name: 'barometer-daily-{stream}'
+    name: "barometer-daily-{stream}"
 
     project-type: freestyle
 
-    disabled: '{obj:disabled}'
+    disabled: "{obj:disabled}"
 
     concurrent: false
 
@@ -152,54 +152,54 @@
 
     parameters:
       - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
+          project: "{project}"
+          branch: "{branch}"
       - barometer-project-parameter:
-          gs-pathname: '{gs-pathname}'
-      - 'opnfv-build-centos-defaults'
+          gs-pathname: "{gs-pathname}"
+      - "opnfv-build-centos-defaults"
 
     scm:
       - git-scm
 
     triggers:
-      - timed: '@midnight'
+      - timed: "@midnight"
 
     builders:
       - shell: !include-raw-escape: ./barometer-build.sh
       - shell: !include-raw-escape: ./barometer-upload-artifact.sh
 
 - job-template:
-    name: 'barometer-plugins-tests'
+    name: "barometer-plugins-tests"
 
     branch: master
 
-    disabled: '{obj:disabled}'
+    disabled: "{obj:disabled}"
 
     parameters:
       - string:
           name: BRANCH
-          default: '{branch}'
+          default: "{branch}"
       - opnfv-build-centos-defaults
 
     triggers:
-      - timed: '@midnight'
+      - timed: "@midnight"
 
     builders:
       - shell: |
-         rm -rf barometer
-         git clone "https://gerrit.opnfv.org/gerrit/barometer"
-         cd barometer
-         sudo docker build -t opnfv/barometer-collectd-tests-base --network=host \
-            -f docker/barometer-collectd-plugin-tests/Dockerfile.base .
-         docker build -t opnfv/barometer-collectd-tests --network=host \
-            -f docker/barometer-collectd-plugin-tests/Dockerfile .
-         docker run -t --net=host
-            -v `pwd`/src/collectd/collectd_sample_configs-master:/opt/collectd/etc/collectd.conf.d \
-            -v /var/run:/var/run -v /tmp:/tmp -v  `pwd`/plugin_test:/tests \
-            --privileged opnfv/barometer-collectd-tests:latest
-         docker container rm $(sudo docker container ls -aq)
-         docker rmi opnfv/barometer-collectd-tests:latest
-         docker rmi opnfv/barometer-collectd-tests-base:latest
+          rm -rf barometer
+          git clone "https://gerrit.opnfv.org/gerrit/barometer"
+          cd barometer
+          sudo docker build -t opnfv/barometer-collectd-tests-base --network=host \
+             -f docker/barometer-collectd-plugin-tests/Dockerfile.base .
+          docker build -t opnfv/barometer-collectd-tests --network=host \
+             -f docker/barometer-collectd-plugin-tests/Dockerfile .
+          docker run -t --net=host
+             -v `pwd`/src/collectd/collectd_sample_configs-master:/opt/collectd/etc/collectd.conf.d \
+             -v /var/run:/var/run -v /tmp:/tmp -v  `pwd`/plugin_test:/tests \
+             --privileged opnfv/barometer-collectd-tests:latest
+          docker container rm $(sudo docker container ls -aq)
+          docker rmi opnfv/barometer-collectd-tests:latest
+          docker rmi opnfv/barometer-collectd-tests-base:latest
 
 ########################
 # parameter macros
@@ -209,5 +209,5 @@
     parameters:
       - string:
           name: GS_URL
-          default: '$GS_BASE{gs-pathname}'
+          default: "$GS_BASE{gs-pathname}"
           description: "URL to Google Storage."

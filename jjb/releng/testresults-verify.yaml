@@ -3,37 +3,37 @@
     name: testresults-verify
     stream:
       - master:
-          branch: '{stream}'
+          branch: "{stream}"
 
     module:
-      - 'testapi'
-      - 'reporting'
+      - "testapi"
+      - "reporting"
 
     jobs:
-      - '{module}-verify-{stream}'
-      - '{module}-client-verify-{stream}'
-      - '{module}-ui-verify-{stream}'
+      - "{module}-verify-{stream}"
+      - "{module}-client-verify-{stream}"
+      - "{module}-ui-verify-{stream}"
 
-    project: 'releng-testresults'
+    project: "releng-testresults"
 
 - job-template:
-    name: '{module}-verify-{stream}'
+    name: "{module}-verify-{stream}"
 
     parameters:
       - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - 'opnfv-build-ubuntu-defaults'
+          project: "{project}"
+          branch: "{branch}"
+      - "opnfv-build-ubuntu-defaults"
 
     scm:
       - git-scm-gerrit
 
     triggers:
       - gerrit-trigger-patchset-created:
-          server: 'gerrit.opnfv.org'
-          project: '{project}'
-          branch: '{branch}'
-          files: '{module}/**'
+          server: "gerrit.opnfv.org"
+          project: "{project}"
+          branch: "{branch}"
+          files: "{module}/**"
 
     builders:
       - shell: |
@@ -48,23 +48,23 @@
       - email-jenkins-admins-on-failure
 
 - job-template:
-    name: '{module}-client-verify-{stream}'
+    name: "{module}-client-verify-{stream}"
 
     parameters:
       - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - 'opnfv-build-ubuntu-defaults'
+          project: "{project}"
+          branch: "{branch}"
+      - "opnfv-build-ubuntu-defaults"
 
     scm:
       - git-scm-gerrit
 
     triggers:
       - gerrit-trigger-patchset-created:
-          server: 'gerrit.opnfv.org'
-          project: '{project}'
-          branch: '{branch}'
-          files: '{module}/{module}-client/**'
+          server: "gerrit.opnfv.org"
+          project: "{project}"
+          branch: "{branch}"
+          files: "{module}/{module}-client/**"
 
     builders:
       - shell: |
@@ -79,13 +79,13 @@
       - email-jenkins-admins-on-failure
 
 - job-template:
-    name: '{module}-ui-verify-{stream}'
+    name: "{module}-ui-verify-{stream}"
 
     parameters:
       - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - 'opnfv-build-ubuntu-defaults'
+          project: "{project}"
+          branch: "{branch}"
+      - "opnfv-build-ubuntu-defaults"
 
     scm:
       - git-scm-gerrit
@@ -96,10 +96,10 @@
 
     triggers:
       - gerrit-trigger-patchset-created:
-          server: 'gerrit.opnfv.org'
-          project: '{project}'
-          branch: '{branch}'
-          files: '{module}/opnfv_testapi/ui/**'
+          server: "gerrit.opnfv.org"
+          project: "{project}"
+          branch: "{branch}"
+          files: "{module}/opnfv_testapi/ui/**"
 
     builders:
       - shell: |
@@ -129,7 +129,7 @@
       - email-jenkins-admins-on-failure
 
 - publisher:
-    name: 'text-finder-failures'
+    name: "text-finder-failures"
     publishers:
       - text-finder:
           regexp: " 0 failures"

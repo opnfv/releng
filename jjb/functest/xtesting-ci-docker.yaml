@@ -48,14 +48,14 @@
     triggers:
       - pollscm:
           cron: "H/30 * * * *"
-      - timed: '@daily'
+      - timed: "@daily"
 
 - parameter:
     name: xtesting-ci-docker-parameter
     parameters:
       - label:
           name: node
-          default: 'xtesting'
+          default: "xtesting"
 
 - job-template:
     name: xtesting-ci-docker-{stream}
@@ -67,8 +67,8 @@
       - xtesting-ci-docker-trigger
     builders:
       - xtesting-ci-docker-builder:
-          image: '{image}'
-          dir: '{dir}'
+          image: "{image}"
+          dir: "{dir}"
 
 - job-template:
     name: xtesting-ci-docker-multitarch-{stream}
@@ -80,12 +80,12 @@
       - xtesting-ci-docker-trigger
     builders:
       - xtesting-ci-docker-multiarch-builder:
-          image: '{image}'
-          dir: '{dir}'
-          tag: '{tag}'
-          from_amd64: '{from_amd64}'
-          to_arm64: '{to_arm64}'
-          to_arm: '{to_arm}'
+          image: "{image}"
+          dir: "{dir}"
+          tag: "{tag}"
+          from_amd64: "{from_amd64}"
+          to_arm64: "{to_arm64}"
+          to_arm: "{to_arm}"
 
 - project:
     name: xtesting-ci-docker
@@ -139,27 +139,27 @@
 - trigger:
     name: xtesting-ci-docker-trivy-trigger
     triggers:
-      - timed: '@daily'
+      - timed: "@daily"
 
 - parameter:
     name: xtesting-ci-docker-trivy-parameter
     parameters:
       - label:
           name: node
-          default: 'xtesting'
+          default: "xtesting"
 
 - job-template:
-    name: 'xtesting-ci-docker-trivy-{stream}'
+    name: "xtesting-ci-docker-trivy-{stream}"
     triggers:
       - xtesting-ci-docker-trivy-trigger
     parameters:
       - xtesting-ci-docker-trivy-parameter
     builders:
       - xtesting-ci-docker-trivy-builder:
-          image: '{image}'
+          image: "{image}"
 
 - project:
-    name: 'xtesting-ci-docker-trivy'
+    name: "xtesting-ci-docker-trivy"
     stream:
       - jenkins-lts-slim:
           image: opnfv/xtesting-jenkins:lts-slim
@@ -174,7 +174,7 @@
       - xtesting-jenkins-agent-auto-4.9-bullseye:
           image: opnfv/xtesting-jenkins-agent-auto:4.9-bullseye
     jobs:
-      - 'xtesting-ci-docker-trivy-{stream}'
+      - "xtesting-ci-docker-trivy-{stream}"
 
 - view:
     name: xtesting-ci-docker

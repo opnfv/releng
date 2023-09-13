@@ -3,46 +3,46 @@
     name: testresults-automate
     stream:
       - master:
-          branch: '{stream}'
+          branch: "{stream}"
 
     module:
-      - 'testapi'
-      - 'reporting'
+      - "testapi"
+      - "reporting"
 
     phase:
-      - 'docker-deploy':
-          slave-label: 'testresults'
-      - 'generate-doc'
+      - "docker-deploy":
+          slave-label: "testresults"
+      - "generate-doc"
 
     jobs:
-      - '{module}-automate-{stream}'
-      - '{module}-automate-{phase}-{stream}'
+      - "{module}-automate-{stream}"
+      - "{module}-automate-{phase}-{stream}"
 
-    project: 'releng-testresults'
+    project: "releng-testresults"
 
 - job:
-    name: 'testapi-mongodb-backup'
+    name: "testapi-mongodb-backup"
 
     parameters:
       - label:
           name: SLAVE_LABEL
-          default: 'testresults'
-          description: 'Slave label on Jenkins'
+          default: "testresults"
+          description: "Slave label on Jenkins"
           all-nodes: false
-          node-eligibility: 'ignore-offline'
+          node-eligibility: "ignore-offline"
       - project-parameter:
-          project: 'releng-testresults'
-          branch: 'master'
+          project: "releng-testresults"
+          branch: "master"
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/releng-testresults
-          description: 'Git URL to use on this Jenkins Slave'
+          description: "Git URL to use on this Jenkins Slave"
 
     scm:
       - git-scm
 
     triggers:
-      - timed: '@weekly'
+      - timed: "@weekly"
 
     builders:
       - mongodb-backup
@@ -54,7 +54,7 @@
           send-to-individuals: true
 
 - job-template:
-    name: '{module}-automate-{stream}'
+    name: "{module}-automate-{stream}"
 
     project-type: multijob
 
@@ -63,21 +63,21 @@
           enabled: true
           max-total: 1
           max-per-node: 1
-          option: 'project'
+          option: "project"
 
     parameters:
       - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
+          project: "{project}"
+          branch: "{branch}"
       - string:
           name: DOCKER_TAG
-          default: 'latest'
-          description: 'Tag name for {module} docker image'
+          default: "latest"
+          description: "Tag name for {module} docker image"
       - string:
           name: MODULE_NAME
-          default: '{module}'
+          default: "{module}"
           description: "Name of the module"
-      - 'opnfv-build-defaults'
+      - "opnfv-build-defaults"
 
     scm:
       - git-scm
@@ -90,9 +90,9 @@
 
     triggers:
       - gerrit-trigger-change-merged:
-          project: '**'
-          branch: '{branch}'
-          files: '{module}/**'
+          project: "**"
+          branch: "{branch}"
+          files: "{module}/**"
 
     builders:
       - description-setter:
@@ -102,7 +102,7 @@
           name: docker-deploy
           condition: SUCCESSFUL
           projects:
-            - name: '{module}-automate-docker-deploy-{stream}'
+            - name: "{module}-automate-docker-deploy-{stream}"
               current-parameters: false
               predefined-parameters: |
                 GIT_BASE=$GIT_BASE
@@ -114,28 +114,28 @@
           name: generate-doc
           condition: SUCCESSFUL
           projects:
-            - name: '{module}-automate-generate-doc-{stream}'
+            - name: "{module}-automate-generate-doc-{stream}"
               current-parameters: true
               kill-phase-on: FAILURE
               abort-all-job: true
 
     publishers:
-      - 'email-publisher'
+      - "email-publisher"
       - email-jenkins-admins-on-failure
 
 - job-template:
-    name: '{module}-automate-{phase}-{stream}'
+    name: "{module}-automate-{phase}-{stream}"
 
     properties:
       - throttle:
           enabled: true
           max-per-node: 1
-          option: 'project'
+          option: "project"
 
     parameters:
       - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
+          project: "{project}"
+          branch: "{branch}"
 
     wrappers:
       - ssh-agent-wrapper
@@ -149,42 +149,42 @@
     builders:
       - description-setter:
           description: "Built on $NODE_NAME"
-      - '{module}-automate-{phase}-macro'
+      - "{module}-automate-{phase}-macro"
 
 ################################
 # job builders
 ################################
 - builder:
-    name: 'docker-update'
+    name: "docker-update"
     builders:
       - shell: |
           bash ./ci/docker-update.sh
 
 - builder:
-    name: 'testapi-automate-generate-doc-macro'
+    name: "testapi-automate-generate-doc-macro"
     builders:
-      - 'testapi-doc-build'
-      - 'upload-doc-artifact'
+      - "testapi-doc-build"
+      - "upload-doc-artifact"
 
 - builder:
-    name: 'testapi-doc-build'
+    name: "testapi-doc-build"
     builders:
       - shell: |
           bash ./ci/htmlize/doc-build.sh
 
 - builder:
-    name: 'upload-doc-artifact'
+    name: "upload-doc-artifact"
     builders:
       - shell: |
-           bash ./ci/htmlize/push-doc-artifacts.sh
+          bash ./ci/htmlize/push-doc-artifacts.sh
 
 - builder:
-    name: 'reporting-automate-generate-doc-macro'
+    name: "reporting-automate-generate-doc-macro"
     builders:
       - shell: echo "To Be Done"
 
 - builder:
-    name: 'testapi-automate-docker-deploy-macro'
+    name: "testapi-automate-docker-deploy-macro"
     builders:
       - shell: |
           sudo bash ./ci/docker-deploy.sh "sudo docker run -dti --name testapi -p 8082:8000
@@ -193,7 +193,7 @@
           "http://testresults.opnfv.org/test/" "testapi"
 
 - builder:
-    name: 'reporting-automate-docker-deploy-macro'
+    name: "reporting-automate-docker-deploy-macro"
     builders:
       - shell: |
           sudo bash ./ci/docker-deploy.sh \
@@ -203,15 +203,14 @@
 - builder:
     name: mongodb-backup
     builders:
-      - shell:
-          bash ./ci/testapi-backup-mongodb.sh
+      - shell: bash ./ci/testapi-backup-mongodb.sh
 
 ################################
 # job publishers
 ################################
 
 - publisher:
-    name: 'email-publisher'
+    name: "email-publisher"
     publishers:
       - email:
           recipients: rohitsakala@gmail.com feng.xiaowei@zte.com.cn morgan.richomme@orange.com

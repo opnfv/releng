@@ -1,53 +1,51 @@
 ---
 - project:
-
     name: vineperf
 
-    project: '{name}'
+    project: "{name}"
 
     jobs:
-      - 'vineperf-verify-{stream}'
-      - 'vineperf-merge-{stream}'
-      - 'vineperf-daily-{stream}'
+      - "vineperf-verify-{stream}"
+      - "vineperf-merge-{stream}"
+      - "vineperf-daily-{stream}"
 
     stream:
       - master:
-          branch: '{stream}'
-          gs-pathname: ''
+          branch: "{stream}"
+          gs-pathname: ""
           disabled: false
       - nile:
-          branch: 'stable/{stream}'
-          gs-pathname: '/{stream}'
+          branch: "stable/{stream}"
+          gs-pathname: "/{stream}"
           disabled: false
 
 - job-template:
+    name: "vineperf-daily-{stream}"
 
-    name: 'vineperf-daily-{stream}'
-
-    disabled: '{obj:disabled}'
+    disabled: "{obj:disabled}"
 
     properties:
       - logrotate-default
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
-            - 'vineperf-verify-.*'
-            - 'vineperf-merge-.*'
-            - 'vineperf-daily-.*'
-          blocking-level: 'NODE'
+            - "vineperf-verify-.*"
+            - "vineperf-merge-.*"
+            - "vineperf-daily-.*"
+          blocking-level: "NODE"
 
     parameters:
       - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
-      - 'intel-pod12-defaults'
+          project: "{project}"
+          branch: "{branch}"
+      - "intel-pod12-defaults"
 
     scm:
       - git-scm
 
     triggers:
       - pollscm:
-          cron: '@midnight'
+          cron: "@midnight"
 
     builders:
       - shell: |
@@ -59,9 +57,9 @@
           scl enable rh-python34 "source ~/vsperfenv/bin/activate ; ./build-vsperf.sh daily"
 
 - job-template:
-    name: 'vineperf-verify-{stream}'
+    name: "vineperf-verify-{stream}"
 
-    disabled: '{obj:disabled}'
+    disabled: "{obj:disabled}"
 
     project-type: freestyle
 
@@ -72,22 +70,22 @@
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
-            - 'vineperf-verify-.*'
-            - 'vineperf-merge-.*'
-            - 'vineperf-daily-.*'
-          blocking-level: 'NODE'
+            - "vineperf-verify-.*"
+            - "vineperf-merge-.*"
+            - "vineperf-daily-.*"
+          blocking-level: "NODE"
 
     parameters:
       - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
+          project: "{project}"
+          branch: "{branch}"
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
-          description: 'Git URL to use on this Jenkins Slave'
+          description: "Git URL to use on this Jenkins Slave"
       - node:
           name: SLAVE_NAME
-          description: 'Slave name on Jenkins'
+          description: "Slave name on Jenkins"
           allowed-slaves:
             - intel-pod12
           default-slaves:
@@ -98,27 +96,27 @@
 
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
+          server-name: "gerrit.opnfv.org"
           trigger-on:
             - patchset-created-event:
-                exclude-drafts: 'false'
-                exclude-trivial-rebase: 'false'
-                exclude-no-code-change: 'false'
+                exclude-drafts: "false"
+                exclude-trivial-rebase: "false"
+                exclude-no-code-change: "false"
             - draft-published-event
             - comment-added-contains-event:
-                comment-contains-value: 'recheck'
+                comment-contains-value: "recheck"
             - comment-added-contains-event:
-                comment-contains-value: 'reverify'
+                comment-contains-value: "reverify"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{project}'
+            - project-compare-type: "ANT"
+              project-pattern: "{project}"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
-              disable-strict-forbidden-file-verification: 'true'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "**/{branch}"
+              disable-strict-forbidden-file-verification: "true"
               forbidden-file-paths:
                 - compare-type: ANT
-                  pattern: 'docs/**'
+                  pattern: "docs/**"
 
     builders:
       - shell: |
@@ -130,9 +128,9 @@
           ./build-vsperf.sh verify
 
 - job-template:
-    name: 'vineperf-merge-{stream}'
+    name: "vineperf-merge-{stream}"
 
-    disabled: '{obj:disabled}'
+    disabled: "{obj:disabled}"
 
     project-type: freestyle
 
@@ -143,22 +141,22 @@
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
-            - 'vineperf-verify-.*'
-            - 'vineperf-merge-.*'
-            - 'vineperf-daily-.*'
-          blocking-level: 'NODE'
+            - "vineperf-verify-.*"
+            - "vineperf-merge-.*"
+            - "vineperf-daily-.*"
+          blocking-level: "NODE"
 
     parameters:
       - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
+          project: "{project}"
+          branch: "{branch}"
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
-          description: 'Git URL to use on this Jenkins Slave'
+          description: "Git URL to use on this Jenkins Slave"
       - node:
           name: SLAVE_NAME
-          description: 'Slave name on Jenkins'
+          description: "Slave name on Jenkins"
           allowed-slaves:
             - intel-pod12
           default-slaves:
@@ -169,21 +167,21 @@
 
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
+          server-name: "gerrit.opnfv.org"
           trigger-on:
             - change-merged-event
             - comment-added-contains-event:
-                comment-contains-value: 'remerge'
+                comment-contains-value: "remerge"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{project}'
+            - project-compare-type: "ANT"
+              project-pattern: "{project}"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
-              disable-strict-forbidden-file-verification: 'true'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "**/{branch}"
+              disable-strict-forbidden-file-verification: "true"
               forbidden-file-paths:
                 - compare-type: ANT
-                  pattern: 'docs/**'
+                  pattern: "docs/**"
 
     builders:
       - shell: |

@@ -1,14 +1,14 @@
 ---
 - xtesting-pi-containers: &xtesting-pi-containers
-    name: 'xtesting-pi-containers'
-    repo: '{repo}'
-    port: '{port}'
-    container: '{container}'
-    tag: '{tag}'
+    name: "xtesting-pi-containers"
+    repo: "{repo}"
+    port: "{port}"
+    container: "{container}"
+    tag: "{tag}"
 
 - xtesting-pi-params: &xtesting-pi-params
-    name: 'xtesting-pi-params'
-    repo: 'ollivier'
+    name: "xtesting-pi-params"
+    repo: "ollivier"
     port:
     tag:
       - latest:
@@ -49,7 +49,7 @@
           node: xtesting
 
 - xtesting-pi-jobs: &xtesting-pi-jobs
-    name: 'xtesting-pi-jobs'
+    name: "xtesting-pi-jobs"
     current-parameters: true
 
 - parameter:
@@ -57,7 +57,7 @@
     parameters:
       - label:
           name: node
-          default: '{node}'
+          default: "{node}"
 
 - parameter:
     name: xtesting-pi-build_tag
@@ -66,16 +66,16 @@
           name: build_tag
 
 - xtesting-pi-run-containers: &xtesting-pi-run-containers
-    name: 'xtesting-pi-run-containers'
+    name: "xtesting-pi-run-containers"
     <<: *xtesting-pi-containers
-    test: '{test}'
-    privileged: '{privileged}'
-    volumes: '{volumes}'
-    env: '{env}'
-    network: '{network}'
-    uid: '{uid}'
-    gid: '{gid}'
-    published_ports: '{published_ports}'
+    test: "{test}"
+    privileged: "{privileged}"
+    volumes: "{volumes}"
+    env: "{env}"
+    network: "{network}"
+    uid: "{uid}"
+    gid: "{gid}"
+    published_ports: "{published_ports}"
 
 - builder:
     name: xtesting-pi-pull-containers
@@ -153,55 +153,55 @@
           sudo docker rmi $image || true
 
 - job-template:
-    name: 'xtesting-pi-{repo}-{container}-{tag}-pull'
+    name: "xtesting-pi-{repo}-{container}-{tag}-pull"
     parameters:
       - xtesting-pi-node:
-          node: '{node}'
+          node: "{node}"
     builders:
       - xtesting-pi-pull-containers:
           <<: *xtesting-pi-containers
 
 - project:
-    name: 'xtesting-pi-ollivier-xtesting-pull'
+    name: "xtesting-pi-ollivier-xtesting-pull"
     <<: *xtesting-pi-params
-    container: 'xtesting'
+    container: "xtesting"
     jobs:
-      - 'xtesting-pi-{repo}-{container}-{tag}-pull'
+      - "xtesting-pi-{repo}-{container}-{tag}-pull"
 
 - job-template:
-    name: 'xtesting-pi-{repo}-{container}-{tag}-rmi'
+    name: "xtesting-pi-{repo}-{container}-{tag}-rmi"
     parameters:
       - xtesting-pi-node:
-          node: '{node}'
+          node: "{node}"
     builders:
       - xtesting-pi-remove-images:
           <<: *xtesting-pi-containers
 
 - project:
-    name: 'xtesting-pi-ollivier-xtesting-rmi'
+    name: "xtesting-pi-ollivier-xtesting-rmi"
     <<: *xtesting-pi-params
-    container: 'xtesting'
+    container: "xtesting"
     jobs:
-      - 'xtesting-pi-{repo}-{container}-{tag}-rmi'
+      - "xtesting-pi-{repo}-{container}-{tag}-rmi"
 
 - job-template:
-    name: 'xtesting-pi-ollivier-xtesting-{tag}-{test}-run'
+    name: "xtesting-pi-ollivier-xtesting-{tag}-{test}-run"
     parameters:
       - xtesting-pi-node:
-          node: '{node}'
+          node: "{node}"
       - xtesting-pi-build_tag:
-          build_tag: ''
+          build_tag: ""
     builders:
       - xtesting-pi-run-containers:
           <<: *xtesting-pi-run-containers
 
 - project:
-    name: 'xtesting-pi-ollivier-xtesting'
+    name: "xtesting-pi-ollivier-xtesting"
     <<: *xtesting-pi-params
     volumes:
     env:
     published_ports:
-    container: 'xtesting'
+    container: "xtesting"
     test:
       - first
       - second
@@ -211,7 +211,7 @@
       - sixth
       - eighth
       - nineth
-    privileged: 'false'
+    privileged: "false"
     network: bridge
     uid: 1000
     gid: 1000
@@ -221,7 +221,7 @@
       - tag: xena
         test: nineth
     jobs:
-      - 'xtesting-pi-ollivier-xtesting-{tag}-{test}-run'
+      - "xtesting-pi-ollivier-xtesting-{tag}-{test}-run"
 
 - builder:
     name: xtesting-pi-zip
@@ -268,85 +268,85 @@
             $image zip_campaign
 
 - job-template:
-    name: 'xtesting-pi-{tag}-zip'
+    name: "xtesting-pi-{tag}-zip"
     parameters:
       - xtesting-pi-node:
-          node: '{node}'
+          node: "{node}"
       - xtesting-pi-build_tag:
-          build_tag: ''
+          build_tag: ""
     builders:
       - xtesting-pi-zip:
           <<: *xtesting-pi-containers
-          volumes: '{volumes}'
-          env: '{env}'
-          uid: '{uid}'
-          gid: '{gid}'
-          published_ports: '{published_ports}'
+          volumes: "{volumes}"
+          env: "{env}"
+          uid: "{uid}"
+          gid: "{gid}"
+          published_ports: "{published_ports}"
 
 - project:
-    name: 'xtesting-pi-{tag}-zip'
+    name: "xtesting-pi-{tag}-zip"
     <<: *xtesting-pi-params
     volumes:
     env:
     published_ports:
-    container: 'xtesting'
+    container: "xtesting"
     uid: 1000
     gid: 1000
     jobs:
-      - 'xtesting-pi-{tag}-zip'
+      - "xtesting-pi-{tag}-zip"
 
 - job-template:
-    name: 'xtesting-pi-{tag}-daily'
+    name: "xtesting-pi-{tag}-daily"
     project-type: multijob
     triggers:
-      - timed: '@daily'
+      - timed: "@daily"
     parameters:
       - xtesting-pi-node:
-          node: '{node}'
+          node: "{node}"
       - xtesting-pi-build_tag:
-          build_tag: ''
+          build_tag: ""
     # PyYAML and yamllint differ here
     # see https://github.com/yaml/pyyaml/issues/234
     # yamllint disable rule:indentation
     properties:
       - build-blocker:
           blocking-jobs:
-          - ^xtesting-(pi-)*{tag}-(daily|docker|review)$
+            - ^xtesting-(pi-)*{tag}-(daily|docker|review)$
     # yamllint enable rule:indentation
     builders:
       - multijob:
           name: remove former images
           projects:
-            - name: 'xtesting-pi-ollivier-xtesting-{tag}-rmi'
+            - name: "xtesting-pi-ollivier-xtesting-{tag}-rmi"
               <<: *xtesting-pi-jobs
       - multijob:
           name: pull containers
           projects:
-            - name: 'xtesting-pi-ollivier-xtesting-{tag}-pull'
+            - name: "xtesting-pi-ollivier-xtesting-{tag}-pull"
               <<: *xtesting-pi-jobs
       - multijob:
           name: ollivier/xtesting:{tag}
           projects:
-            - name: 'xtesting-pi-ollivier-xtesting-{tag}-first-run'
+            - name: "xtesting-pi-ollivier-xtesting-{tag}-first-run"
               <<: *xtesting-pi-jobs
-            - name: 'xtesting-pi-ollivier-xtesting-{tag}-second-run'
+            - name: "xtesting-pi-ollivier-xtesting-{tag}-second-run"
               <<: *xtesting-pi-jobs
-            - name: 'xtesting-pi-ollivier-xtesting-{tag}-third-run'
+            - name: "xtesting-pi-ollivier-xtesting-{tag}-third-run"
               <<: *xtesting-pi-jobs
-            - name: 'xtesting-pi-ollivier-xtesting-{tag}-fourth-run'
+            - name: "xtesting-pi-ollivier-xtesting-{tag}-fourth-run"
               <<: *xtesting-pi-jobs
-            - name: 'xtesting-pi-ollivier-xtesting-{tag}-fifth-run'
+            - name: "xtesting-pi-ollivier-xtesting-{tag}-fifth-run"
               <<: *xtesting-pi-jobs
-            - name: 'xtesting-pi-ollivier-xtesting-{tag}-sixth-run'
+            - name: "xtesting-pi-ollivier-xtesting-{tag}-sixth-run"
               <<: *xtesting-pi-jobs
-            - name: 'xtesting-pi-ollivier-xtesting-{tag}-eighth-run'
+            - name: "xtesting-pi-ollivier-xtesting-{tag}-eighth-run"
               <<: *xtesting-pi-jobs
-            - name: 'xtesting-pi-ollivier-xtesting-{tag}-nineth-run'
+            - name: "xtesting-pi-ollivier-xtesting-{tag}-nineth-run"
               <<: *xtesting-pi-jobs
       - multijob:
           name: dump all campaign data
           projects:
-            - name: 'xtesting-pi-{tag}-zip'
+            - name: "xtesting-pi-{tag}-zip"
               <<: *xtesting-pi-jobs
     publishers:
       - email-ext:
@@ -356,10 +356,10 @@
           recipients: cedric.ollivier@orange.com
 
 - project:
-    name: 'xtesting-pi-daily'
+    name: "xtesting-pi-daily"
     <<: *xtesting-pi-params
     jobs:
-      - 'xtesting-pi-{tag}-daily'
+      - "xtesting-pi-{tag}-daily"
 
 - view:
     name: xtesting-pi

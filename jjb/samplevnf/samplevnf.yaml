@@ -2,28 +2,28 @@
 - project:
     name: samplevnf
 
-    project: '{name}'
+    project: "{name}"
 
     jobs:
-      - 'rapid-prox-build-{stream}'
-      - 'rapid-prox-verify-{stream}'
+      - "rapid-prox-build-{stream}"
+      - "rapid-prox-verify-{stream}"
 
     stream:
       - master:
-          branch: '{stream}'
-          gs-pathname: 'artifacts.opnfv.org/samplevnf/images'
-          tag: 'latest'
+          branch: "{stream}"
+          gs-pathname: "artifacts.opnfv.org/samplevnf/images"
+          tag: "latest"
           disabled: false
       - jerma:
-          branch: 'stable/{stream}'
-          gs-pathname: 'artifacts.opnfv.org/samplevnf/images'
-          tag: '{stream}'
+          branch: "stable/{stream}"
+          gs-pathname: "artifacts.opnfv.org/samplevnf/images"
+          tag: "{stream}"
           disabled: false
 
 - job-template:
-    name: 'rapid-prox-build-{stream}'
+    name: "rapid-prox-build-{stream}"
 
-    disabled: '{obj:disabled}'
+    disabled: "{obj:disabled}"
 
     wrappers:
       - ssh-agent-wrapper
@@ -31,30 +31,30 @@
 
     parameters:
       - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
+          project: "{project}"
+          branch: "{branch}"
       # yamllint disable rule:line-length
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
           description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
       # yamllint enable rule:line-length
-      - 'opnfv-build-ubuntu-defaults'
+      - "opnfv-build-ubuntu-defaults"
 
     scm:
       - git-scm-gerrit
 
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
+          server-name: "gerrit.opnfv.org"
           trigger-on:
             - change-merged-event
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{project}'
+            - project-compare-type: "ANT"
+              project-pattern: "{project}"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "**/{branch}"
 
     builders:
       - shell: |
@@ -62,9 +62,9 @@
           bash build-image.sh -g {gs-pathname} -i {tag} -w $WORKSPACE
 
 - job-template:
-    name: 'rapid-prox-verify-{stream}'
+    name: "rapid-prox-verify-{stream}"
 
-    disabled: '{obj:disabled}'
+    disabled: "{obj:disabled}"
 
     wrappers:
       - ssh-agent-wrapper
@@ -72,37 +72,37 @@
 
     parameters:
       - project-parameter:
-          project: '{project}'
-          branch: '{branch}'
+          project: "{project}"
+          branch: "{branch}"
       # yamllint disable rule:line-length
       - string:
           name: GIT_BASE
           default: https://gerrit.opnfv.org/gerrit/$PROJECT
           description: "Used for overriding the GIT URL coming from Global Jenkins configuration in case if the stuff is done on none-LF HW."
       # yamllint enable rule:line-length
-      - 'opnfv-build-ubuntu-defaults'
+      - "opnfv-build-ubuntu-defaults"
 
     scm:
       - git-scm-gerrit
 
     triggers:
       - gerrit:
-          server-name: 'gerrit.opnfv.org'
+          server-name: "gerrit.opnfv.org"
           trigger-on:
             - patchset-created-event:
-                exclude-drafts: 'false'
-                exclude-trivial-rebase: 'false'
-                exclude-no-code-change: 'false'
+                exclude-drafts: "false"
+                exclude-trivial-rebase: "false"
+                exclude-no-code-change: "false"
             - comment-added-contains-event:
-                comment-contains-value: 'recheck'
+                comment-contains-value: "recheck"
             - comment-added-contains-event:
-                comment-contains-value: 'reverify'
+                comment-contains-value: "reverify"
           projects:
-            - project-compare-type: 'ANT'
-              project-pattern: '{project}'
+            - project-compare-type: "ANT"
+              project-pattern: "{project}"
               branches:
-                - branch-compare-type: 'ANT'
-                  branch-pattern: '**/{branch}'
+                - branch-compare-type: "ANT"
+                  branch-pattern: "**/{branch}"
 
     builders:
       - shell: |
