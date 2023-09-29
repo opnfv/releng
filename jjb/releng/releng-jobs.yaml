@@ -3,7 +3,7 @@
     name: releng-scm
     scm:
       - git:
-          url: 'ssh://jenkins-ci@gerrit.opnfv.org:29418/releng'
+          url: 'ssh://fbot@gerrit.opnfv.org:29418/releng'
           refspec: '+refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*'
           submodule:
             recursive: true
@@ -51,7 +51,7 @@
             -o DPkg::Lock::Timeout=300 dist-upgrade -y
           sudo DEBIAN_FRONTEND=noninteractive \
           apt-get -o DPkg::Lock::Timeout=300 install jenkins-job-builder -y
-          jenkins-jobs test --recursive -o tmp jjb/
+          jenkins-jobs test --recursive -o tmp jjb
           rm -rf tmp
 
 - builder:
@@ -63,7 +63,7 @@
             -o DPkg::Lock::Timeout=300 dist-upgrade -y
           sudo DEBIAN_FRONTEND=noninteractive \
           apt-get -o DPkg::Lock::Timeout=300 install jenkins-job-builder -y
-          jenkins-jobs update --recursive --delete-old jjb/
+          jenkins-jobs update --recursive --delete-old jjb/releng
 
 - parameter:
     name: releng-jjb-node
@@ -183,6 +183,7 @@
     name: releng-release-jobs
     stream:
       - nile
+      - orinoco
       - v1.22
       - v1.23
       - v1.24
@@ -214,6 +215,9 @@
           node: opnfv-build
       - stream-parameter:
           stream: '{stream}'
+      - string:
+          name: GIT_URL
+          default: ssh://fbot@gerrit.opnfv.org:29418/
     triggers:
       - gerrit:
           server-name: 'gerrit.opnfv.org'
@@ -262,7 +266,7 @@
           stream: '{stream}'
       - string:
           name: GIT_URL
-          default: ssh://jenkins-ci@gerrit.opnfv.org:29418/
+          default: ssh://fbot@gerrit.opnfv.org:29418/
     triggers:
       - gerrit:
           trigger-on:
@@ -310,7 +314,7 @@
               msg="Found syntax error and/or coding style violation(s) in the files modified by your patchset."
               sed -i -e "1s#^#${msg}\n\n#" violation.log
               cmd="gerrit review -p $GERRIT_PROJECT -m \"$(cat violation.log)\" $GERRIT_PATCHSET_REVISION --notify NONE"
-              ssh -o 'PubkeyAcceptedKeyTypes +ssh-rsa' -p 29418 jenkins-ci@gerrit.opnfv.org "$cmd"
+              ssh -o 'PubkeyAcceptedKeyTypes +ssh-rsa' -p 29418 fbot@gerrit.opnfv.org "$cmd"
 
               # Make sure the caller job failed
               exit 1
