@@ -49,7 +49,7 @@ for release_file in $RELEASE_FILES; do
               # If the tag doesn't exist and we're in a merge job,
               # everything has been verified up to this point and we
               # are ready to create the tag.
-              git config --global user.name "jenkins-ci"
+              git config --global user.name "fbot"
               git config --global user.email "jenkins-opnfv-ci@opnfv.org"
               echo "--> Creating $tag tag for $repo at $ref"
               git tag -am "$tag" $tag $ref

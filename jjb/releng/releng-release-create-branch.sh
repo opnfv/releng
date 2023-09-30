@@ -14,7 +14,7 @@ STREAM=${STREAM:-'nostream'}
 RELEASE_FILES=$(git diff HEAD^1 --name-only -- "releases/$STREAM")
 
 # Configure the git user/email as we'll be pushing up changes
-git config --global user.name "jenkins-ci"
+git config --global user.name "fbot"
 git config --global user.email "jenkins-opnfv-ci@opnfv.org"
 
 # Ensure we are able to generate Commit-IDs for new patchsets
