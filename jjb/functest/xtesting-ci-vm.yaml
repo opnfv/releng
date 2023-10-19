@@ -63,7 +63,7 @@
           DEBIAN_FRONTEND=noninteractive sudo apt-get \
             -o DPkg::Lock::Timeout=300 install python3-diskimage-builder -y
           git clone https://github.com/collivier/ansible-role-xtesting.git
-          export ELEMENTS_PATH=$(pwd)/elements
+          export ELEMENTS_PATH=$(pwd)/elements:$(pwd)/ansible-role-xtesting/elements
           export DIB_DEBIAN_COMPONENTS=main,contrib,non-free
           export DIB_DEV_USER_SHELL=/bin/bash
           export DIB_OPENSSH_SERVER_HARDENING=0
@@ -86,7 +86,7 @@
           DEBIAN_FRONTEND=noninteractive sudo apt-get \
             -o DPkg::Lock::Timeout=300 install python3-diskimage-builder -y
           git clone https://github.com/collivier/ansible-role-xtesting.git
-          export ELEMENTS_PATH=$(pwd)/elements
+          export ELEMENTS_PATH=$(pwd)/elements:$(pwd)/ansible-role-xtesting/elements
           export DIB_DEBIAN_COMPONENTS=main,contrib,non-free
           export DIB_DEV_USER_SHELL=/bin/bash
           export DIB_OPENSSH_SERVER_HARDENING=0
@@ -118,6 +118,12 @@
       - xtesting-ci-vm-trigger
     parameters:
       - xtesting-ci-vm-parameter
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^.*-vm$'
     builders:
       - xtesting-ci-vm-builder
 
