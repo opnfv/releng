@@ -7,10 +7,19 @@
           git-config-name:
           git-config-email:
 
+- scm:
+    name: xtesting-vm-scm
+    scm:
+      - git:
+          url: https://git.opnfv.org/functest-xtesting.git
+          git-config-name:
+          git-config-email:
+
 - builder:
     name: xtesting-ci-vm-builder
     builders:
       - shell: |
+          find
           curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
           echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee \
             /etc/apt/sources.list.d/google-cloud-sdk.list
@@ -45,6 +54,7 @@
     name: 'xtesting-ci-vm'
     scm:
       - xtesting-ci-vm-scm
+      - xtesting-vm-scm
     triggers:
       - xtesting-ci-vm-trigger
     parameters:
