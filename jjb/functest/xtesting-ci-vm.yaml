@@ -11,6 +11,10 @@
     name: xtesting-ci-vm-builder
     builders:
       - shell: |
+          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+          echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee \
+            /etc/apt/sources.list.d/google-cloud-sdk.list
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
           DEBIAN_FRONTEND=noninteractive sudo apt-get \
             -o DPkg::Lock::Timeout=300 install python3-diskimage-builder -y
           export ELEMENTS_PATH=$(pwd)/elements
@@ -22,7 +26,8 @@
           export DIB_CLOUD_INIT_ALLOW_SSH_PWAUTH=Yes
           export DIB_RELEASE=bookworm
           export DIB_DEV_USER_USERNAME=xtesting
-          disk-image-create --image-size 20 -o xtesting.qcow2 debian vm devuser openssh-server xtestingci
+          disk-image-create --image-size 20 -o xtestingci-4.1.0.qcow2 debian vm devuser openssh-server xtestingci
+          gsutil cp xtestingci-4.1.0.qcow2 gs://artifacts.opnfv.org/xtestingci/xtestingci-4.1.0.qcow2
 
 - trigger:
     name: xtesting-ci-vm-trigger
