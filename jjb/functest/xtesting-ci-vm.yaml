@@ -15,6 +15,14 @@
           git-config-name:
           git-config-email:
 
+- scm:
+    name: functest-vm-scm
+    scm:
+      - git:
+          url: https://git.opnfv.org/functest.git
+          git-config-name:
+          git-config-email:
+
 - builder:
     name: xtesting-ci-vm-builder
     builders:
@@ -61,6 +69,29 @@
           disk-image-create --image-size 20 -o xtesting-latest.qcow2 debian vm devuser openssh-server xtesting
           gsutil cp xtesting-latest.qcow2 gs://artifacts.opnfv.org/xtesting/xtesting-latest.qcow2
 
+- builder:
+    name: xtesting-vm-builder
+    builders:
+      - shell: |
+          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+          echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee \
+            /etc/apt/sources.list.d/google-cloud-sdk.list
+          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
+          DEBIAN_FRONTEND=noninteractive sudo apt-get \
+            -o DPkg::Lock::Timeout=300 install python3-diskimage-builder -y
+          git clone https://github.com/collivier/ansible-role-xtesting.git
+          export ELEMENTS_PATH=$(pwd)/elements
+          export DIB_DEBIAN_COMPONENTS=main,contrib,non-free
+          export DIB_DEV_USER_SHELL=/bin/bash
+          export DIB_OPENSSH_SERVER_HARDENING=0
+          export DIB_DEV_USER_PASSWORD=xtesting
+          export DIB_DEV_USER_PWDLESS_SUDO=yes
+          export DIB_CLOUD_INIT_ALLOW_SSH_PWAUTH=Yes
+          export DIB_RELEASE=bookworm
+          export DIB_DEV_USER_USERNAME=xtesting
+          disk-image-create --image-size 20 -o functest-latest.qcow2 debian vm devuser openssh-server functest
+          gsutil cp functest-latest.qcow2 gs://artifacts.opnfv.org/functest/functest-latest.qcow2
+
 - trigger:
     name: xtesting-ci-vm-trigger
     triggers:
@@ -95,12 +126,23 @@
     builders:
       - xtesting-vm-builder
 
+- job-template:
+    name: 'functest-vm'
+    scm:
+      - functest-vm-scm
+    triggers:
+      - xtesting-ci-vm-trigger
+    parameters:
+      - xtesting-ci-vm-parameter
+    builders:
+      - functest-vm-builder
 
 - project:
     name: 'xtesting-ci-vm'
     jobs:
       - 'xtesting-ci-vm'
       - 'xtesting-vm'
+      - 'functest-vm'
 
 - view:
     name: xtesting-ci-vm
@@ -112,4 +154,4 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^xtesting.*-vm.*$
+    regex: ^.*-vm.*$
