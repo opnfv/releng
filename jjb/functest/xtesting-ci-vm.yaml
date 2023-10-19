@@ -1,0 +1,65 @@
+---
+- scm:
+    name: xtesting-ci-vm-scm
+    scm:
+      - git:
+          url: https://github.com/collivier/ansible-role-xtesting.git
+          git-config-name:
+          git-config-email:
+
+- builder:
+    name: xtesting-ci-vm-builder
+    builders:
+      - shell: |
+          DEBIAN_FRONTEND=noninteractive apt-get \
+            -o DPkg::Lock::Timeout=300 install install python3-diskimage-builder
+          export ELEMENTS_PATH=$(pwd)/ansible-role-xtesting/elements
+          export DIB_DEBIAN_COMPONENTS=main,contrib,non-free
+          export DIB_DEV_USER_SHELL=/bin/bash
+          export DIB_OPENSSH_SERVER_HARDENING=0
+          export DIB_DEV_USER_PASSWORD=xtesting
+          export DIB_DEV_USER_PWDLESS_SUDO=yes
+          export DIB_CLOUD_INIT_ALLOW_SSH_PWAUTH=Yes
+          export DIB_RELEASE=bookworm
+          export DIB_DEV_USER_USERNAME=xtesting
+          disk-image-create --image-size 20 -o xtesting.qcow2 debian vm devuser openssh-server xtestingci
+
+- trigger:
+    name: xtesting-ci-vm-trigger
+    triggers:
+      - timed: '@daily'
+
+- parameter:
+    name: xtesting-ci-vm-parameter
+    parameters:
+      - label:
+          name: node
+          default: 'xtesting'
+
+- job-template:
+    name: 'xtesting-ci-vm'
+    scm:
+      - xtesting-ci-vm-scm
+    triggers:
+      - xtesting-ci-vm-trigger
+    parameters:
+      - xtesting-ci-vm-parameter
+    builders:
+      - xtesting-ci-vm-builder
+
+- project:
+    name: 'xtesting-ci-vm'
+    jobs:
+      - 'xtesting-ci-vm'
+
+- view:
+    name: xtesting-ci-vm
+    view-type: list
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+    regex: ^xtesting-ci-vm.*$
