@@ -50,57 +50,8 @@
           DEBIAN_FRONTEND=noninteractive sudo apt-get \
             -o DPkg::Lock::Timeout=300 install python3-diskimage-builder -y
           export ELEMENTS_PATH=$(pwd)/elements
-          disk-image-create --image-size 20 -o xtestingci-4.1.0.qcow2 debian vm xtestingci
-          gsutil cp xtestingci-4.1.0.qcow2 gs://artifacts.opnfv.org/xtestingci/xtestingci-4.1.0.qcow2
-
-
-- builder:
-    name: xtesting-vm-builder
-    builders:
-      - shell: |
-          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-          echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee \
-            /etc/apt/sources.list.d/google-cloud-sdk.list
-          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
-          DEBIAN_FRONTEND=noninteractive sudo apt-get \
-            -o DPkg::Lock::Timeout=300 install python3-diskimage-builder -y
-          git clone https://github.com/collivier/ansible-role-xtesting.git
-          export ELEMENTS_PATH=$(pwd)/elements:$(pwd)/ansible-role-xtesting/elements
-          disk-image-create --image-size 20 -o xtesting-latest.qcow2 debian vm xtesting
-          gsutil cp xtesting-latest.qcow2 gs://artifacts.opnfv.org/xtesting/xtesting-latest.qcow2
-
-- builder:
-    name: functest-vm-builder
-    builders:
-      - shell: |
-          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-          echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee \
-            /etc/apt/sources.list.d/google-cloud-sdk.list
-          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
-          DEBIAN_FRONTEND=noninteractive sudo apt-get \
-            -o DPkg::Lock::Timeout=300 install python3-diskimage-builder -y
-          git clone https://github.com/collivier/ansible-role-xtesting.git
-          export ELEMENTS_PATH=$(pwd)/elements:$(pwd)/ansible-role-xtesting/elements
-          disk-image-create --image-size 20 -o functest-latest.qcow2 debian vm functest
-          gsutil cp functest-latest.qcow2 gs://artifacts.opnfv.org/functest/functest-latest.qcow2
-
-- builder:
-    name: functest-kubernetes-vm-builder
-    builders:
-      - shell: |
-          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-          echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee \
-            /etc/apt/sources.list.d/google-cloud-sdk.list
-          sudo apt-get -o DPkg::Lock::Timeout=300 update && \
-          DEBIAN_FRONTEND=noninteractive sudo apt-get \
-            -o DPkg::Lock::Timeout=300 install python3-diskimage-builder -y
-          git clone https://github.com/collivier/ansible-role-xtesting.git
-          export ELEMENTS_PATH=$(pwd)/elements:$(pwd)/ansible-role-xtesting/elements
-          export DIB_APT_MINIMAL_CREATE_INTERFACES=0
-          disk-image-create --image-size 20 -o functest-kubernetes-latest.qcow2 \
-            debian vm functest-kubernetes
-          gsutil cp functest-kubernetes-latest.qcow2 \
-            gs://artifacts.opnfv.org/functest-kubernetes/functest-kubernetes-latest.qcow2
+          disk-image-create --image-size 20 -o {project}-{version}.qcow2 debian vm {project}
+          gsutil cp xtestingci-{version}.qcow2 gs://artifacts.opnfv.org/{project}/{project}-{version}.qcow2
 
 - trigger:
     name: xtesting-ci-vm-trigger
@@ -129,7 +80,9 @@
           blocking-jobs:
             - '^.*-vm$'
     builders:
-      - xtesting-ci-vm-builder
+      - xtesting-ci-vm-builder:
+          project: xtestingci
+          version: 4.1.0
 
 - job-template:
     name: 'xtesting-vm'
@@ -140,7 +93,9 @@
     parameters:
       - xtesting-ci-vm-parameter
     builders:
-      - xtesting-vm-builder
+      - xtesting-ci-vm-builder:
+          project: xtesting
+          version: latest
 
 - job-template:
     name: 'functest-vm'
@@ -151,7 +106,9 @@
     parameters:
       - xtesting-ci-vm-parameter
     builders:
-      - functest-vm-builder
+      - xtesting-ci-vm-builder:
+          project: functest
+          version: latest
 
 - job-template:
     name: 'functest-kubernetes-vm'
@@ -162,7 +119,9 @@
     parameters:
       - xtesting-ci-vm-parameter
     builders:
-      - functest-kubernetes-vm-builder
+      - xtesting-ci-vm-builder:
+          project: functest-kubernetes
+          version: latest
 
 - project:
     name: 'xtesting-ci-vm'
