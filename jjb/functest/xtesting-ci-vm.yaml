@@ -49,9 +49,14 @@
           sudo apt-get -o DPkg::Lock::Timeout=300 update && \
           DEBIAN_FRONTEND=noninteractive sudo apt-get \
             -o DPkg::Lock::Timeout=300 install python3-diskimage-builder -y
-          export ELEMENTS_PATH=$(pwd)/elements
+          if [ "{project}"" == "xtestingci" ]; then
+            export ELEMENTS_PATH=$(pwd)/elements
+          else
+            git clone https://github.com/collivier/ansible-role-xtesting.git
+-           export ELEMENTS_PATH=$(pwd)/elements:$(pwd)/ansible-role-xtesting/elements
+          fi
           disk-image-create --image-size 20 -o {project}-{version}.qcow2 debian vm {project}
-          gsutil cp xtestingci-{version}.qcow2 gs://artifacts.opnfv.org/{project}/{project}-{version}.qcow2
+          gsutil cp {project}-{version}.qcow2 gs://artifacts.opnfv.org/{project}/{project}-{version}.qcow2
 
 - trigger:
     name: xtesting-ci-vm-trigger
