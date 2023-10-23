@@ -3,41 +3,9 @@
     name: xtesting-ci-vm-scm
     scm:
       - git:
-          url: https://github.com/collivier/ansible-role-xtesting.git
+          url: '{url}'
           branches:
-            - master
-          git-config-name:
-          git-config-email:
-
-- scm:
-    name: xtesting-vm-scm
-    scm:
-      - git:
-          url: https://git.opnfv.org/functest-xtesting.git
-          branches:
-            - master
-          git-config-name:
-          git-config-email:
-
-- scm:
-    name: functest-vm-scm
-    scm:
-      - git:
-          url: https://git.opnfv.org/functest.git
-          branches:
-            - master
-          git-config-name:
-          git-config-email:
-
-- scm:
-    name: functest-kubernetes-vm-scm
-    scm:
-      - git:
-          url: https://git.opnfv.org/functest-kubernetes.git
-          branches:
-            - master
-          git-config-name:
-          git-config-email:
+            - '{ref}'
 
 - builder:
     name: xtesting-ci-vm-builder
@@ -73,7 +41,9 @@
 - job-template:
     name: 'xtesting-ci-vm'
     scm:
-      - xtesting-ci-vm-scm
+      - xtesting-ci-vm-scm:
+          url: https://github.com/collivier/ansible-role-xtesting.git
+          ref: master
     triggers:
       - xtesting-ci-vm-trigger
     parameters:
@@ -92,7 +62,9 @@
 - job-template:
     name: 'xtesting-vm'
     scm:
-      - xtesting-vm-scm
+      - xtesting-ci-vm-scm:
+          url: https://git.opnfv.org/functest-xtesting.git
+          ref: master
     triggers:
       - xtesting-ci-vm-trigger
     parameters:
@@ -105,7 +77,9 @@
 - job-template:
     name: 'functest-vm'
     scm:
-      - functest-vm-scm
+      - xtesting-ci-vm-scm:
+          url: https://git.opnfv.org/functest.git
+          ref: master
     triggers:
       - xtesting-ci-vm-trigger
     parameters:
@@ -118,7 +92,9 @@
 - job-template:
     name: 'functest-kubernetes-vm'
     scm:
-      - functest-kubernetes-vm-scm
+      - xtesting-ci-vm-scm:
+          url: https://git.opnfv.org/functest-kubernetes.git
+          ref: master
     triggers:
       - xtesting-ci-vm-trigger
     parameters:
