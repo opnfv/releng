@@ -26,6 +26,7 @@
               git checkout FETCH_HEAD)
             export ELEMENTS_PATH=$(pwd)/elements:$(pwd)/ansible-role-xtesting/elements
           fi
+          export DIB_XTESTINGCI_VERSION={role-version}
           disk-image-create --image-size 20 -o {project}-{version}.qcow2 debian vm {project}
           gsutil cp {project}-{version}.qcow2 gs://artifacts.opnfv.org/{project}/{project}-{version}.qcow2
 
