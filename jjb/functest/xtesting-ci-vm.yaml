@@ -3,41 +3,9 @@
     name: xtesting-ci-vm-scm
     scm:
       - git:
-          url: https://github.com/collivier/ansible-role-xtesting.git
+          url: '{url}'
           branches:
-            - master
-          git-config-name:
-          git-config-email:
-
-- scm:
-    name: xtesting-vm-scm
-    scm:
-      - git:
-          url: https://git.opnfv.org/functest-xtesting.git
-          branches:
-            - master
-          git-config-name:
-          git-config-email:
-
-- scm:
-    name: functest-vm-scm
-    scm:
-      - git:
-          url: https://git.opnfv.org/functest.git
-          branches:
-            - master
-          git-config-name:
-          git-config-email:
-
-- scm:
-    name: functest-kubernetes-vm-scm
-    scm:
-      - git:
-          url: https://git.opnfv.org/functest-kubernetes.git
-          branches:
-            - master
-          git-config-name:
-          git-config-email:
+            - '{ref}'
 
 - builder:
     name: xtesting-ci-vm-builder
@@ -52,7 +20,10 @@
           if [ "{project}" == "xtestingci" ]; then
             export ELEMENTS_PATH=$(pwd)/elements
           else
-            git clone https://github.com/collivier/ansible-role-xtesting.git
+            git init ansible-role-xtesting
+            (cd ansible-role-xtesting &&
+              git fetch --tags https://github.com/collivier/ansible-role-xtesting.git {role-version} &&
+              git checkout FETCH_HEAD)
             export ELEMENTS_PATH=$(pwd)/elements:$(pwd)/ansible-role-xtesting/elements
           fi
           disk-image-create --image-size 20 -o {project}-{version}.qcow2 debian vm {project}
@@ -71,9 +42,11 @@
           default: 'opnfv-build'
 
 - job-template:
-    name: 'xtesting-ci-vm'
+    name: 'xtesting-ci-vm-{project}-{version}'
     scm:
-      - xtesting-ci-vm-scm
+      - xtesting-ci-vm-scm:
+          url: '{url}'
+          ref: '{ref}'
     triggers:
       - xtesting-ci-vm-trigger
     parameters:
@@ -86,55 +59,27 @@
             - '^.*-vm$'
     builders:
       - xtesting-ci-vm-builder:
-          project: xtestingci
-          version: 4.1.0
-
-- job-template:
-    name: 'xtesting-vm'
-    scm:
-      - xtesting-vm-scm
-    triggers:
-      - xtesting-ci-vm-trigger
-    parameters:
-      - xtesting-ci-vm-parameter
-    builders:
-      - xtesting-ci-vm-builder:
-          project: xtesting
-          version: latest
-
-- job-template:
-    name: 'functest-vm'
-    scm:
-      - functest-vm-scm
-    triggers:
-      - xtesting-ci-vm-trigger
-    parameters:
-      - xtesting-ci-vm-parameter
-    builders:
-      - xtesting-ci-vm-builder:
-          project: functest
-          version: latest
-
-- job-template:
-    name: 'functest-kubernetes-vm'
-    scm:
-      - functest-kubernetes-vm-scm
-    triggers:
-      - xtesting-ci-vm-trigger
-    parameters:
-      - xtesting-ci-vm-parameter
-    builders:
-      - xtesting-ci-vm-builder:
-          project: functest-kubernetes
-          version: latest
+          project: '{project}'
+          version: '{version}'
+          role-version: '{role-version}'
 
 - project:
     name: 'xtesting-ci-vm'
+    project:
+      - xtestingci:
+          url: https://github.com/collivier/ansible-role-xtesting.git
+      - xtesting:
+          url: https://git.opnfv.org/functest-xtesting.git
+      - functest:
+          url: https://git.opnfv.org/functest.git
+      - functest-kubernetes:
+          url: https://git.opnfv.org/functest-kubernetes.git
+    version:
+      - latest:
+          ref: master
+          role-version: master
     jobs:
-      - 'xtesting-ci-vm'
-      - 'xtesting-vm'
-      - 'functest-vm'
-      - 'functest-kubernetes-vm'
+      - 'xtesting-ci-vm-{project}-{version}'
 
 - view:
     name: xtesting-ci-vm
