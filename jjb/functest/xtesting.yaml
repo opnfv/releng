@@ -8,7 +8,48 @@
 
 - xtesting-params: &xtesting-params
     name: 'xtesting-params'
+    tag:
+      - latest:
+          from:
+          build_args:
+          branch: master
+          node: opnfv-build
+          dependency: 3.17
+      - 2023.1:
+          from:
+          build_args:
+          branch: stable/2023.1
+          node: opnfv-build
+          dependency: 3.17
+      - zed:
+          from:
+          build_args:
+          branch: stable/zed
+          node: opnfv-build
+          dependency: 3.16
+      - yoga:
+          from:
+          build_args:
+          branch: stable/yoga
+          node: opnfv-build
+          dependency: 3.16
+      - xena:
+          from:
+          build_args:
+          branch: stable/xena
+          node: opnfv-build
+          dependency: 3.14
+      - wallaby:
+          from:
+          build_args:
+          branch: stable/wallaby
+          node: opnfv-build
+          dependency: 3.13
+
+- xtesting-opnfv-xtesting-params: &xtesting-opnfv-xtesting-params
+    name: 'xtesting-opnfv-xtesting-params'
     repo: 'opnfv'
+    container: 'xtesting'
     port:
     tag:
       - latest:
@@ -68,7 +109,6 @@
 - xtesting-run-containers: &xtesting-run-containers
     name: 'xtesting-run-containers'
     <<: *xtesting-containers
-    test: '{test}'
     privileged: '{privileged}'
     volumes: '{volumes}'
     env: '{env}'
@@ -153,7 +193,7 @@
           sudo docker rmi $image || true
 
 - job-template:
-    name: 'xtesting-{repo}-{container}-{tag}-pull'
+    name: 'xtesting-opnfv-xtesting-{tag}-pull'
     parameters:
       - xtesting-node:
           node: '{node}'
@@ -163,13 +203,12 @@
 
 - project:
     name: 'xtesting-opnfv-xtesting-pull'
-    <<: *xtesting-params
-    container: 'xtesting'
+    <<: *xtesting-opnfv-xtesting-params
     jobs:
-      - 'xtesting-{repo}-{container}-{tag}-pull'
+      - 'xtesting-opnfv-xtesting-{tag}-pull'
 
 - job-template:
-    name: 'xtesting-{repo}-{container}-{tag}-rmi'
+    name: 'xtesting-opnfv-xtesting-{tag}-rmi'
     parameters:
       - xtesting-node:
           node: '{node}'
@@ -179,10 +218,9 @@
 
 - project:
     name: 'xtesting-opnfv-xtesting-rmi'
-    <<: *xtesting-params
-    container: 'xtesting'
+    <<: *xtesting-opnfv-xtesting-params
     jobs:
-      - 'xtesting-{repo}-{container}-{tag}-rmi'
+      - 'xtesting-opnfv-xtesting-{tag}-rmi'
 
 - job-template:
     name: 'xtesting-opnfv-xtesting-{tag}-{test}-run'
@@ -194,10 +232,11 @@
     builders:
       - xtesting-run-containers:
           <<: *xtesting-run-containers
+          test: '{test}'
 
 - project:
     name: 'xtesting-opnfv-xtesting'
-    <<: *xtesting-params
+    <<: *xtesting-opnfv-xtesting-params
     volumes:
     env:
     published_ports:
@@ -254,6 +293,8 @@
           sudo mkdir -p $WORKSPACE/results
           sudo chown {uid}:{gid} $WORKSPACE/results
           sudo docker run --rm \
+            --privileged={privileged} \
+            --network={network} \
             $volumes \
             $env \
             $published_ports \
@@ -263,6 +304,7 @@
             -v /home/opnfv/xtesting/.boto:/etc/boto.cfg \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e NODE_NAME=$node \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             $image zip_campaign
@@ -276,20 +318,17 @@
           build_tag: ''
     builders:
       - xtesting-zip:
-          <<: *xtesting-containers
-          volumes: '{volumes}'
-          env: '{env}'
-          uid: '{uid}'
-          gid: '{gid}'
-          published_ports: '{published_ports}'
+          <<: *xtesting-run-containers
 
 - project:
     name: 'xtesting-{tag}-zip'
-    <<: *xtesting-params
+    <<: *xtesting-opnfv-xtesting-params
     volumes:
     env:
     published_ports:
     container: 'xtesting'
+    privileged: 'false'
+    network: bridge
     uid: 1000
     gid: 1000
     jobs:
@@ -371,7 +410,7 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^xtesting-[a-z0-9.]+-daily$
+    regex: ^xtesting-[a-z0-9.-]+-daily$
 
 - xtesting-build-containers: &xtesting-build-containers
     name: 'xtesting-build-containers'
@@ -421,67 +460,58 @@
 - xtesting-dep: &xtesting-dep
     name: 'xtesting-containers'
     repo: '{repo}'
+    container: '{container}'
     port: '{port}'
-    tag: '{tag}'
-    dependency: '{dependency}'
-
-- builder:
-    name: xtesting-pull-dep-images
-    builders:
-      - shell: |
-          set +x
-          if [ "_" = "_" ]; then
-            image=alpine:{dependency}
-          elif [ "" = "None" ]; then
-            image=_/alpine:{dependency}
-          else
-            image=_:/alpine:{dependency}
-          fi
-          sudo docker pull $image || true
-
-- builder:
-    name: xtesting-remove-dep-images
-    builders:
-      - shell: |
-          set +x
-          if [ "_" = "_" ]; then
-            image=alpine:{dependency}
-          elif [ "" = "None" ]; then
-            image=_/alpine:{dependency}
-          else
-            image=_:/alpine:{dependency}
-          fi
-          sudo docker rmi $image || true
+    tag: '{dependency}'
 
 - job-template:
-    name: 'xtesting-{repo}-{tag}-dep-pull'
+    name: 'xtesting-{tag}-dep-pull'
     parameters:
       - xtesting-node:
           node: '{node}'
     builders:
-      - xtesting-pull-dep-images:
+      - xtesting-pull-containers:
           <<: *xtesting-dep
 
+- xtesting-dep-params: &xtesting-dep-params
+    name: 'xtesting-dep-params'
+    repo: '_'
+    container: 'alpine'
+    port:
+    tag:
+      - latest:
+          dependency: 3.17
+      - 2023.1:
+          dependency: 3.17
+      - zed:
+          dependency: 3.16
+      - yoga:
+          dependency: 3.16
+      - xena:
+          dependency: 3.14
+      - wallaby:
+          dependency: 3.13
+
 - project:
-    name: 'xtesting-{repo}-{tag}-dep-pull'
-    <<: *xtesting-params
+    name: 'xtesting-{tag}-dep-pull'
+    <<: *xtesting-dep-params
     jobs:
-      - 'xtesting-{repo}-{tag}-dep-pull'
+      - 'xtesting-{tag}-dep-pull'
 
 - job-template:
-    name: 'xtesting-{repo}-{tag}-dep-rmi'
+    name: 'xtesting-{tag}-dep-rmi'
     parameters:
       - xtesting-node:
           node: '{node}'
     builders:
-      - xtesting-remove-dep-images:
+      - xtesting-remove-images:
           <<: *xtesting-dep
 
 - project:
-    name: 'xtesting-{repo}-{tag}-dep-rmi'
-    <<: *xtesting-params
+    name: 'xtesting-{tag}-dep-rmi'
+    <<: *xtesting-dep-params
     jobs:
-      - 'xtesting-{repo}-{tag}-dep-rmi'
+      - 'xtesting-{tag}-dep-rmi'
 
 - builder:
     name: xtesting-tox
@@ -502,7 +532,7 @@
             python3.9 python3.9-dev python3.9-distutils \
             python3.8 python3.8-dev python3.8-distutils \
             python3-pip enchant-2 -y
-          sudo pip3 install tox
+          sudo pip3 install tox tox-pip-version
 
           tox
 
@@ -527,7 +557,7 @@
       - 'xtesting-{tag}-tox'
 
 - job-template:
-    name: 'xtesting-{repo}-{container}-{tag}-gate'
+    name: 'xtesting-opnfv-xtesting-{tag}-gate'
     parameters:
       - xtesting-node:
           node: '{node}'
@@ -543,11 +573,13 @@
 - project:
     name: xtesting-opnfv-xtesting-{tag}-gate
     <<: *xtesting-params
+    repo: opnfv
+    port:
     container: xtesting
     ref_arg: BRANCH
     path: docker/core
     jobs:
-      - 'xtesting-{repo}-{container}-{tag}-gate'
+      - 'xtesting-opnfv-xtesting-{tag}-gate'
 
 - trigger:
     name: xtesting-patchset-created
@@ -594,12 +626,12 @@
       - multijob:
           name: remove dependency
           projects:
-            - name: 'xtesting-{repo}-{tag}-dep-rmi'
+            - name: 'xtesting-{tag}-dep-rmi'
               <<: *xtesting-jobs
       - multijob:
           name: pull dependency
           projects:
-            - name: 'xtesting-{repo}-{tag}-dep-pull'
+            - name: 'xtesting-{tag}-dep-pull'
               <<: *xtesting-jobs
       - multijob:
           name: opnfv/xtesting
@@ -648,7 +680,7 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^xtesting-[a-z0-9.]+-review$
+    regex: ^xtesting-[a-z0-9.-]+-review$
 
 - view:
     name: xtesting-tox
@@ -660,7 +692,7 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^xtesting-[a-z0-9.]+-tox$
+    regex: ^xtesting-[a-z0-9.-]+-tox$
 
 - builder:
     name: xtesting-push-containers
@@ -683,7 +715,7 @@
           cron: "*/30 * * * *"
 
 - job-template:
-    name: 'xtesting-{repo}-{container}-{tag}-build'
+    name: 'xtesting-opnfv-xtesting-{tag}-build'
     parameters:
       - xtesting-node:
           node: '{node}'
@@ -702,11 +734,13 @@
 - project:
     name: xtesting-opnfv-xtesting-{tag}-build
     <<: *xtesting-params
+    repo: opnfv
     container: xtesting
+    port:
     ref_arg: BRANCH
     path: docker/core
     jobs:
-      - 'xtesting-{repo}-{container}-{tag}-build'
+      - 'xtesting-opnfv-xtesting-{tag}-build'
 
 - job-template:
     name: 'xtesting-{tag}-docker'
@@ -731,12 +765,12 @@
       - multijob:
           name: remove dependency
           projects:
-            - name: 'xtesting-{repo}-{tag}-dep-rmi'
+            - name: 'xtesting-{tag}-dep-rmi'
               <<: *xtesting-jobs
       - multijob:
           name: pull dependency
           projects:
-            - name: 'xtesting-{repo}-{tag}-dep-pull'
+            - name: 'xtesting-{tag}-dep-pull'
               <<: *xtesting-jobs
       - multijob:
           name: opnfv/xtesting
@@ -769,7 +803,7 @@
           ./trivy image --exit-code 1 $image
 
 - job-template:
-    name: 'xtesting-{repo}-{container}-{tag}-trivy'
+    name: 'xtesting-opnfv-xtesting-{tag}-trivy'
     triggers:
       - timed: '@daily'
     parameters:
@@ -788,9 +822,11 @@
 - project:
     name: 'xtesting-opnfv-xtesting-trivy'
     <<: *xtesting-params
+    repo: 'opnfv'
     container: 'xtesting'
+    port:
     jobs:
-      - 'xtesting-{repo}-{container}-{tag}-trivy'
+      - 'xtesting-opnfv-xtesting-{tag}-trivy'
 
 - builder:
     name: xtesting-grype
@@ -811,7 +847,7 @@
           ./grype -q $image
 
 - job-template:
-    name: 'xtesting-{repo}-{container}-{tag}-grype'
+    name: 'xtesting-opnfv-xtesting-{tag}-grype'
     triggers:
       - timed: '@daily'
     parameters:
@@ -830,9 +866,11 @@
 - project:
     name: 'xtesting-opnfv-xtesting-grype'
     <<: *xtesting-params
+    repo: 'opnfv'
     container: 'xtesting'
+    port:
     jobs:
-      - 'xtesting-{repo}-{container}-{tag}-grype'
+      - 'xtesting-opnfv-xtesting-{tag}-grype'
 
 - builder:
     name: xtesting-sbom
@@ -854,7 +892,7 @@
           sudo docker sbom $image
 
 - job-template:
-    name: 'xtesting-{repo}-{container}-{tag}-sbom'
+    name: 'xtesting-opnfv-xtesting-{tag}-sbom'
     triggers:
       - timed: '@daily'
     parameters:
@@ -873,9 +911,12 @@
 - project:
     name: 'xtesting-opnfv-xtesting-sbom'
     <<: *xtesting-params
+    repo: 'opnfv'
+    container: 'xtesting'
+    port:
     container: 'xtesting'
     jobs:
-      - 'xtesting-{repo}-{container}-{tag}-sbom'
+      - 'xtesting-opnfv-xtesting-{tag}-sbom'
 
 - project:
     name: 'xtesting'
@@ -893,7 +934,7 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^xtesting-[a-z0-9.]+-docker$
+    regex: ^xtesting-[a-z0-9.-]+-docker$
 
 - view:
     name: xtesting-trivy
