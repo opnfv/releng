@@ -8,45 +8,86 @@
 
 - xtesting-pi-params: &xtesting-pi-params
     name: 'xtesting-pi-params'
+    tag:
+      - latest:
+          node: opnfv-build
+      - 2023.1:
+          node: opnfv-build
+      - zed:
+          node: opnfv-build
+      - yoga:
+          node: opnfv-build
+      - xena:
+          node: opnfv-build
+      - wallaby:
+          node: opnfv-build
+      - arm-latest:
+          node: opnfv-build
+      - arm-2.23.1:
+          node: opnfv-build
+      - arm-zed:
+          node: opnfv-build
+      - arm-yoga:
+          node: opnfv-build
+      - arm-xena:
+          node: opnfv-build
+      - arm-wallaby:
+          node: opnfv-build
+      - arm64-latest:
+          node: opnfv-build
+      - arm64-2023.1:
+          node: opnfv-build
+      - arm64-zed:
+          node: opnfv-build
+      - arm64-yoga:
+          node: opnfv-build
+      - arm64-xena:
+          node: opnfv-build
+      - arm64-wallaby:
+          node: opnfv-build
+
+- xtesting-pi-ollivier-xtesting-params: &xtesting-pi-ollivier-xtesting-params
+    name: 'xtesting-pi-ollivier-xtesting-params'
     repo: 'ollivier'
+    container: 'xtesting'
     port:
     tag:
       - latest:
-          node: xtesting
+          node: opnfv-build
       - 2023.1:
-          node: xtesting
+          node: opnfv-build
       - zed:
-          node: xtesting
+          node: opnfv-build
       - yoga:
-          node: xtesting
+          node: opnfv-build
       - xena:
-          node: xtesting
+          node: opnfv-build
       - wallaby:
-          node: xtesting
+          node: opnfv-build
       - arm-latest:
-          node: xtesting
+          node: opnfv-build
       - arm-2.23.1:
-          node: xtesting
+          node: opnfv-build
       - arm-zed:
-          node: xtesting
+          node: opnfv-build
       - arm-yoga:
-          node: xtesting
+          node: opnfv-build
       - arm-xena:
-          node: xtesting
+          node: opnfv-build
       - arm-wallaby:
-          node: xtesting
+          node: opnfv-build
       - arm64-latest:
-          node: xtesting
+          node: opnfv-build
       - arm64-2023.1:
-          node: xtesting
+          node: opnfv-build
       - arm64-zed:
-          node: xtesting
+          node: opnfv-build
       - arm64-yoga:
-          node: xtesting
+          node: opnfv-build
       - arm64-xena:
-          node: xtesting
+          node: opnfv-build
       - arm64-wallaby:
-          node: xtesting
+          node: opnfv-build
 
 - xtesting-pi-jobs: &xtesting-pi-jobs
     name: 'xtesting-pi-jobs'
@@ -68,7 +109,6 @@
 - xtesting-pi-run-containers: &xtesting-pi-run-containers
     name: 'xtesting-pi-run-containers'
     <<: *xtesting-pi-containers
-    test: '{test}'
     privileged: '{privileged}'
     volumes: '{volumes}'
     env: '{env}'
@@ -153,7 +193,7 @@
           sudo docker rmi $image || true
 
 - job-template:
-    name: 'xtesting-pi-{repo}-{container}-{tag}-pull'
+    name: 'xtesting-pi-ollivier-xtesting-{tag}-pull'
     parameters:
       - xtesting-pi-node:
           node: '{node}'
@@ -163,13 +203,12 @@
 
 - project:
     name: 'xtesting-pi-ollivier-xtesting-pull'
-    <<: *xtesting-pi-params
-    container: 'xtesting'
+    <<: *xtesting-pi-ollivier-xtesting-params
     jobs:
-      - 'xtesting-pi-{repo}-{container}-{tag}-pull'
+      - 'xtesting-pi-ollivier-xtesting-{tag}-pull'
 
 - job-template:
-    name: 'xtesting-pi-{repo}-{container}-{tag}-rmi'
+    name: 'xtesting-pi-ollivier-xtesting-{tag}-rmi'
     parameters:
       - xtesting-pi-node:
           node: '{node}'
@@ -179,10 +218,9 @@
 
 - project:
     name: 'xtesting-pi-ollivier-xtesting-rmi'
-    <<: *xtesting-pi-params
-    container: 'xtesting'
+    <<: *xtesting-pi-ollivier-xtesting-params
     jobs:
-      - 'xtesting-pi-{repo}-{container}-{tag}-rmi'
+      - 'xtesting-pi-ollivier-xtesting-{tag}-rmi'
 
 - job-template:
     name: 'xtesting-pi-ollivier-xtesting-{tag}-{test}-run'
@@ -194,10 +232,11 @@
     builders:
       - xtesting-pi-run-containers:
           <<: *xtesting-pi-run-containers
+          test: '{test}'
 
 - project:
     name: 'xtesting-pi-ollivier-xtesting'
-    <<: *xtesting-pi-params
+    <<: *xtesting-pi-ollivier-xtesting-params
     volumes:
     env:
     published_ports:
@@ -254,6 +293,8 @@
           sudo mkdir -p $WORKSPACE/results
           sudo chown {uid}:{gid} $WORKSPACE/results
           sudo docker run --rm \
+            --privileged={privileged} \
+            --network={network} \
             $volumes \
             $env \
             $published_ports \
@@ -263,6 +304,7 @@
             -v /home/opnfv/xtesting/.boto:/etc/boto.cfg \
             -e TEST_DB_URL=http://testresults.opnfv.org/test/api/v1/results \
             -e TEST_DB_EXT_URL=http://testresults.opnfv.org/test/api/v1/results \
+            -e NODE_NAME=$node \
             -e BUILD_TAG=$BUILD_TAG \
             -v $WORKSPACE/../$JOB_NAME/results:/var/lib/xtesting/results \
             $image zip_campaign
@@ -276,20 +318,17 @@
           build_tag: ''
     builders:
       - xtesting-pi-zip:
-          <<: *xtesting-pi-containers
-          volumes: '{volumes}'
-          env: '{env}'
-          uid: '{uid}'
-          gid: '{gid}'
-          published_ports: '{published_ports}'
+          <<: *xtesting-pi-run-containers
 
 - project:
     name: 'xtesting-pi-{tag}-zip'
-    <<: *xtesting-pi-params
+    <<: *xtesting-pi-ollivier-xtesting-params
     volumes:
     env:
     published_ports:
     container: 'xtesting'
+    privileged: 'false'
+    network: bridge
     uid: 1000
     gid: 1000
     jobs:
