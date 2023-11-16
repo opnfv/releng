@@ -767,7 +767,7 @@
           <<: *functest-kubernetes-run-containers
 
 - project:
-    name: 'functest-kubernetes-{tag}-zip'
+    name: 'functest-kubernetes-zip'
     <<: *functest-kubernetes-opnfv-functest-kubernetes-healthcheck-params
     volumes:
       - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
@@ -1007,7 +1007,7 @@
           dependency: 3.14
 
 - project:
-    name: 'functest-kubernetes-{tag}-dep-pull'
+    name: 'functest-kubernetes-dep-pull'
     <<: *functest-kubernetes-dep-params
     jobs:
       - 'functest-kubernetes-{tag}-dep-pull'
@@ -1022,7 +1022,7 @@
           <<: *functest-kubernetes-dep
 
 - project:
-    name: 'functest-kubernetes-{tag}-dep-rmi'
+    name: 'functest-kubernetes-dep-rmi'
     <<: *functest-kubernetes-dep-params
     jobs:
       - 'functest-kubernetes-{tag}-dep-rmi'
@@ -1085,7 +1085,7 @@
           build_args: '{build_args}'
 
 - project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-core-{tag}-gate
+    name: functest-kubernetes-opnfv-functest-kubernetes-core-gate
     <<: *functest-kubernetes-params
     repo: opnfv
     port:
@@ -1110,7 +1110,7 @@
           build_args: '{build_args}'
 
 - project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-gate
+    name: functest-kubernetes-opnfv-functest-kubernetes-healthcheck-gate
     <<: *functest-kubernetes-params
     repo: opnfv
     port:
@@ -1135,7 +1135,7 @@
           build_args: '{build_args}'
 
 - project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-gate
+    name: functest-kubernetes-opnfv-functest-kubernetes-cnf-gate
     <<: *functest-kubernetes-params
     repo: opnfv
     port:
@@ -1160,7 +1160,7 @@
           build_args: '{build_args}'
 
 - project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-gate
+    name: functest-kubernetes-opnfv-functest-kubernetes-security-gate
     <<: *functest-kubernetes-params
     repo: opnfv
     port:
@@ -1185,7 +1185,7 @@
           build_args: '{build_args}'
 
 - project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-gate
+    name: functest-kubernetes-opnfv-functest-kubernetes-smoke-gate
     <<: *functest-kubernetes-params
     repo: opnfv
     port:
@@ -1210,7 +1210,7 @@
           build_args: '{build_args}'
 
 - project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-gate
+    name: functest-kubernetes-opnfv-functest-kubernetes-benchmarking-gate
     <<: *functest-kubernetes-params
     repo: opnfv
     port:
@@ -1447,7 +1447,7 @@
           ref: '{branch}'
 
 - project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-core-{tag}-build
+    name: functest-kubernetes-opnfv-functest-kubernetes-core-build
     <<: *functest-kubernetes-params
     repo: opnfv
     container: functest-kubernetes-core
@@ -1475,7 +1475,7 @@
           ref: '{branch}'
 
 - project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-build
+    name: functest-kubernetes-opnfv-functest-kubernetes-healthcheck-build
     <<: *functest-kubernetes-params
     repo: opnfv
     container: functest-kubernetes-healthcheck
@@ -1503,7 +1503,7 @@
           ref: '{branch}'
 
 - project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-build
+    name: functest-kubernetes-opnfv-functest-kubernetes-cnf-build
     <<: *functest-kubernetes-params
     repo: opnfv
     container: functest-kubernetes-cnf
@@ -1531,7 +1531,7 @@
           ref: '{branch}'
 
 - project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-security-{tag}-build
+    name: functest-kubernetes-opnfv-functest-kubernetes-security-build
     <<: *functest-kubernetes-params
     repo: opnfv
     container: functest-kubernetes-security
@@ -1559,7 +1559,7 @@
           ref: '{branch}'
 
 - project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-build
+    name: functest-kubernetes-opnfv-functest-kubernetes-smoke-build
     <<: *functest-kubernetes-params
     repo: opnfv
     container: functest-kubernetes-smoke
@@ -1587,7 +1587,7 @@
           ref: '{branch}'
 
 - project:
-    name: functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-build
+    name: functest-kubernetes-opnfv-functest-kubernetes-benchmarking-build
     <<: *functest-kubernetes-params
     repo: opnfv
     container: functest-kubernetes-benchmarking
@@ -1657,6 +1657,12 @@
           first-failure: true
           fixed: true
           recipients: cedric.ollivier@orange.com
+
+- project:
+    name: 'functest-kubernetes-docker'
+    <<: *functest-kubernetes-params
+    jobs:
+      - 'functest-kubernetes-{tag}-docker'
 
 - builder:
     name: functest-kubernetes-trivy
@@ -2180,12 +2186,6 @@
     port:
     jobs:
       - 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-sbom'
-
-- project:
-    name: 'functest-kubernetes'
-    <<: *functest-kubernetes-params
-    jobs:
-      - 'functest-kubernetes-{tag}-docker'
 
 - view:
     name: functest-kubernetes-docker

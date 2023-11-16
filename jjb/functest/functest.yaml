@@ -947,7 +947,7 @@
           <<: *functest-run-containers
 
 - project:
-    name: 'functest-{tag}-zip'
+    name: 'functest-zip'
     <<: *functest-opnfv-functest-healthcheck-params
     volumes:
       - /home/opnfv/functest/openstack.creds:/home/opnfv/functest/conf/env_file
@@ -1247,7 +1247,7 @@
           dependency: 3.13
 
 - project:
-    name: 'functest-{tag}-dep-pull'
+    name: 'functest-dep-pull'
     <<: *functest-dep-params
     jobs:
       - 'functest-{tag}-dep-pull'
@@ -1262,7 +1262,7 @@
           <<: *functest-dep
 
 - project:
-    name: 'functest-{tag}-dep-rmi'
+    name: 'functest-dep-rmi'
     <<: *functest-dep-params
     jobs:
       - 'functest-{tag}-dep-rmi'
@@ -1325,7 +1325,7 @@
           build_args: '{build_args}'
 
 - project:
-    name: functest-opnfv-functest-core-{tag}-gate
+    name: functest-opnfv-functest-core-gate
     <<: *functest-params
     repo: opnfv
     port:
@@ -1350,7 +1350,7 @@
           build_args: '{build_args}'
 
 - project:
-    name: functest-opnfv-functest-healthcheck-{tag}-gate
+    name: functest-opnfv-functest-healthcheck-gate
     <<: *functest-params
     repo: opnfv
     port:
@@ -1375,7 +1375,7 @@
           build_args: '{build_args}'
 
 - project:
-    name: functest-opnfv-functest-smoke-{tag}-gate
+    name: functest-opnfv-functest-smoke-gate
     <<: *functest-params
     repo: opnfv
     port:
@@ -1400,7 +1400,7 @@
           build_args: '{build_args}'
 
 - project:
-    name: functest-opnfv-functest-benchmarking-{tag}-gate
+    name: functest-opnfv-functest-benchmarking-gate
     <<: *functest-params
     repo: opnfv
     port:
@@ -1425,7 +1425,7 @@
           build_args: '{build_args}'
 
 - project:
-    name: functest-opnfv-functest-vnf-{tag}-gate
+    name: functest-opnfv-functest-vnf-gate
     <<: *functest-params
     repo: opnfv
     port:
@@ -1450,7 +1450,7 @@
           build_args: '{build_args}'
 
 - project:
-    name: functest-opnfv-functest-smoke-cntt-{tag}-gate
+    name: functest-opnfv-functest-smoke-cntt-gate
     <<: *functest-params
     repo: opnfv
     port:
@@ -1475,7 +1475,7 @@
           build_args: '{build_args}'
 
 - project:
-    name: functest-opnfv-functest-benchmarking-cntt-{tag}-gate
+    name: functest-opnfv-functest-benchmarking-cntt-gate
     <<: *functest-params
     repo: opnfv
     port:
@@ -1769,7 +1769,7 @@
           ref: '{branch}'
 
 - project:
-    name: functest-opnfv-functest-core-{tag}-build
+    name: functest-opnfv-functest-core-build
     <<: *functest-params
     repo: opnfv
     container: functest-core
@@ -1797,7 +1797,7 @@
           ref: '{branch}'
 
 - project:
-    name: functest-opnfv-functest-healthcheck-{tag}-build
+    name: functest-opnfv-functest-healthcheck-build
     <<: *functest-params
     repo: opnfv
     container: functest-healthcheck
@@ -1825,7 +1825,7 @@
           ref: '{branch}'
 
 - project:
-    name: functest-opnfv-functest-smoke-{tag}-build
+    name: functest-opnfv-functest-smoke-build
     <<: *functest-params
     repo: opnfv
     container: functest-smoke
@@ -1853,7 +1853,7 @@
           ref: '{branch}'
 
 - project:
-    name: functest-opnfv-functest-benchmarking-{tag}-build
+    name: functest-opnfv-functest-benchmarking-build
     <<: *functest-params
     repo: opnfv
     container: functest-benchmarking
@@ -1881,7 +1881,7 @@
           ref: '{branch}'
 
 - project:
-    name: functest-opnfv-functest-vnf-{tag}-build
+    name: functest-opnfv-functest-vnf-build
     <<: *functest-params
     repo: opnfv
     container: functest-vnf
@@ -1909,7 +1909,7 @@
           ref: '{branch}'
 
 - project:
-    name: functest-opnfv-functest-smoke-cntt-{tag}-build
+    name: functest-opnfv-functest-smoke-cntt-build
     <<: *functest-params
     repo: opnfv
     container: functest-smoke-cntt
@@ -1937,7 +1937,7 @@
           ref: '{branch}'
 
 - project:
-    name: functest-opnfv-functest-benchmarking-cntt-{tag}-build
+    name: functest-opnfv-functest-benchmarking-cntt-build
     <<: *functest-params
     repo: opnfv
     container: functest-benchmarking-cntt
@@ -2006,6 +2006,12 @@
           first-failure: true
           fixed: true
           recipients: cedric.ollivier@orange.com
+
+- project:
+    name: 'functest-docker'
+    <<: *functest-params
+    jobs:
+      - 'functest-{tag}-docker'
 
 - builder:
     name: functest-trivy
@@ -2607,12 +2613,6 @@
     port:
     jobs:
       - 'functest-opnfv-functest-benchmarking-cntt-{tag}-sbom'
-
-- project:
-    name: 'functest'
-    <<: *functest-params
-    jobs:
-      - 'functest-{tag}-docker'
 
 - view:
     name: functest-docker

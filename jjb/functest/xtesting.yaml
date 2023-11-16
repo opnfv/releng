@@ -321,7 +321,7 @@
           <<: *xtesting-run-containers
 
 - project:
-    name: 'xtesting-{tag}-zip'
+    name: 'xtesting-zip'
     <<: *xtesting-opnfv-xtesting-params
     volumes:
     env:
@@ -493,7 +493,7 @@
           dependency: 3.13
 
 - project:
-    name: 'xtesting-{tag}-dep-pull'
+    name: 'xtesting-dep-pull'
     <<: *xtesting-dep-params
     jobs:
       - 'xtesting-{tag}-dep-pull'
@@ -508,7 +508,7 @@
           <<: *xtesting-dep
 
 - project:
-    name: 'xtesting-{tag}-dep-rmi'
+    name: 'xtesting-dep-rmi'
     <<: *xtesting-dep-params
     jobs:
       - 'xtesting-{tag}-dep-rmi'
@@ -571,7 +571,7 @@
           build_args: '{build_args}'
 
 - project:
-    name: xtesting-opnfv-xtesting-{tag}-gate
+    name: xtesting-opnfv-xtesting-gate
     <<: *xtesting-params
     repo: opnfv
     port:
@@ -732,7 +732,7 @@
           ref: '{branch}'
 
 - project:
-    name: xtesting-opnfv-xtesting-{tag}-build
+    name: xtesting-opnfv-xtesting-build
     <<: *xtesting-params
     repo: opnfv
     container: xtesting
@@ -783,6 +783,12 @@
           first-failure: true
           fixed: true
           recipients: cedric.ollivier@orange.com
+
+- project:
+    name: 'xtesting-docker'
+    <<: *xtesting-params
+    jobs:
+      - 'xtesting-{tag}-docker'
 
 - builder:
     name: xtesting-trivy
@@ -916,12 +922,6 @@
     port:
     jobs:
       - 'xtesting-opnfv-xtesting-{tag}-sbom'
-
-- project:
-    name: 'xtesting'
-    <<: *xtesting-params
-    jobs:
-      - 'xtesting-{tag}-docker'
 
 - view:
     name: xtesting-docker
