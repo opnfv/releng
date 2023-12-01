@@ -412,8 +412,9 @@
           fi
           mkdir -p $WORKSPACE/results
           chown {uid}:{gid} $WORKSPACE/results
-          echo $WORKSPACE/../$JOB_NAME/results
-          ls -l $WORKSPACE/../$JOB_NAME/results
+          echo 1 $WORKSPACE/results && ls -l $WORKSPACE
+          echo 2 $WORKSPACE/../$JOB_NAME/results && ls -l $WORKSPACE/../$JOB_NAME
+          ls -l /home/ /home/jenkins /home/jenkins/agent/ /home/jenkins/agent/workspace /home/jenkins/agent/workspace/functest-kubernetes-opnfv-functest-kubernetes-healthcheck-v1.28-k8s_quick-run/
           docker run --rm \
             --privileged={privileged} \
             --network={network} \
