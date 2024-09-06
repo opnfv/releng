@@ -1,12 +1,12 @@
 ---
-- functest-kubernetes-pi-containers: &functest-kubernetes-pi-containers
+- _functest-kubernetes-pi-containers: &functest-kubernetes-pi-containers
     name: 'functest-kubernetes-pi-containers'
     repo: '{repo}'
     port: '{port}'
     container: '{container}'
     tag: '{tag}'
 
-- functest-kubernetes-pi-params: &functest-kubernetes-pi-params
+- _functest-kubernetes-pi-params: &functest-kubernetes-pi-params
     name: 'functest-kubernetes-pi-params'
     tag:
       - latest:
@@ -40,7 +40,7 @@
       - arm64-v1.26:
           node: v1.26
 
-- functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck-params: &functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck-params
+- _functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck-params: &functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck-params
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-healthcheck-params'
     repo: 'ollivier'
     container: 'functest-kubernetes-healthcheck'
@@ -77,7 +77,7 @@
       - arm64-v1.26:
           node: v1.26
 
-- functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-params: &functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-params
+- _functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-params: &functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-params
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-smoke-params'
     repo: 'ollivier'
     container: 'functest-kubernetes-smoke'
@@ -114,7 +114,7 @@
       - arm64-v1.26:
           node: v1.26
 
-- functest-kubernetes-pi-ollivier-functest-kubernetes-security-params: &functest-kubernetes-pi-ollivier-functest-kubernetes-security-params
+- _functest-kubernetes-pi-ollivier-functest-kubernetes-security-params: &functest-kubernetes-pi-ollivier-functest-kubernetes-security-params
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-security-params'
     repo: 'ollivier'
     container: 'functest-kubernetes-security'
@@ -151,7 +151,7 @@
       - arm64-v1.26:
           node: v1.26
 
-- functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking-params: &functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking-params
+- _functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking-params: &functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking-params
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-benchmarking-params'
     repo: 'ollivier'
     container: 'functest-kubernetes-benchmarking'
@@ -188,7 +188,7 @@
       - arm64-v1.26:
           node: v1.26
 
-- functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-params: &functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-params
+- _functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-params: &functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-params
     name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-params'
     repo: 'ollivier'
     container: 'functest-kubernetes-cnf'
@@ -225,7 +225,7 @@
       - arm64-v1.26:
           node: v1.26
 
-- functest-kubernetes-pi-jobs: &functest-kubernetes-pi-jobs
+- _functest-kubernetes-pi-jobs: &functest-kubernetes-pi-jobs
     name: 'functest-kubernetes-pi-jobs'
     current-parameters: true
 
@@ -249,7 +249,7 @@
           name: DEPLOY_SCENARIO
           default: k8-nosdn-nofeature-noha
 
-- functest-kubernetes-pi-run-containers: &functest-kubernetes-pi-run-containers
+- _functest-kubernetes-pi-run-containers: &functest-kubernetes-pi-run-containers
     name: 'functest-kubernetes-pi-run-containers'
     <<: *functest-kubernetes-pi-containers
     privileged: '{privileged}'
@@ -853,6 +853,7 @@
               <<: *functest-kubernetes-pi-jobs
       - multijob:
           name: ollivier/functest-kubernetes-cnf:{tag}
+          execution-type: SEQUENTIALLY
           projects:
             - name: 'functest-kubernetes-pi-ollivier-functest-kubernetes-cnf-{tag}-k8s_vims-run'
               <<: *functest-kubernetes-pi-jobs

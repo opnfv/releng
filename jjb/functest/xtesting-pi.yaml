@@ -1,15 +1,17 @@
 ---
-- xtesting-pi-containers: &xtesting-pi-containers
+- _xtesting-pi-containers: &xtesting-pi-containers
     name: 'xtesting-pi-containers'
     repo: '{repo}'
     port: '{port}'
     container: '{container}'
     tag: '{tag}'
 
-- xtesting-pi-params: &xtesting-pi-params
+- _xtesting-pi-params: &xtesting-pi-params
     name: 'xtesting-pi-params'
     tag:
       - latest:
+          node: opnfv-build
+      - 2024.1:
           node: opnfv-build
       - 2023.2:
           node: opnfv-build
@@ -52,7 +54,7 @@
       - arm64-wallaby:
           node: opnfv-build
 
-- xtesting-pi-ollivier-xtesting-params: &xtesting-pi-ollivier-xtesting-params
+- _xtesting-pi-ollivier-xtesting-params: &xtesting-pi-ollivier-xtesting-params
     name: 'xtesting-pi-ollivier-xtesting-params'
     repo: 'ollivier'
     container: 'xtesting'
@@ -60,6 +62,8 @@
     tag:
       - latest:
           node: opnfv-build
+      - 2024.1:
+          node: opnfv-build
       - 2023.2:
           node: opnfv-build
       - 2023.1:
@@ -101,7 +105,7 @@
       - arm64-wallaby:
           node: opnfv-build
 
-- xtesting-pi-jobs: &xtesting-pi-jobs
+- _xtesting-pi-jobs: &xtesting-pi-jobs
     name: 'xtesting-pi-jobs'
     current-parameters: true
 
@@ -118,7 +122,7 @@
       - random-string:
           name: build_tag
 
-- xtesting-pi-run-containers: &xtesting-pi-run-containers
+- _xtesting-pi-run-containers: &xtesting-pi-run-containers
     name: 'xtesting-pi-run-containers'
     <<: *xtesting-pi-containers
     privileged: '{privileged}'

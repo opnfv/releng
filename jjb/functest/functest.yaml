@@ -1,12 +1,12 @@
 ---
-- functest-containers: &functest-containers
+- _functest-containers: &functest-containers
     name: 'functest-containers'
     repo: '{repo}'
     port: '{port}'
     container: '{container}'
     tag: '{tag}'
 
-- functest-params: &functest-params
+- _functest-params: &functest-params
     name: 'functest-params'
     tag:
       - latest:
@@ -45,7 +45,7 @@
           DASHBOARD_URL: http://172.30.13.91
           dependency: 3.13
 
-- functest-opnfv-functest-healthcheck-params: &functest-opnfv-functest-healthcheck-params
+- _functest-opnfv-functest-healthcheck-params: &functest-opnfv-functest-healthcheck-params
     name: 'functest-opnfv-functest-healthcheck-params'
     repo: 'opnfv'
     container: 'functest-healthcheck'
@@ -87,7 +87,7 @@
           DASHBOARD_URL: http://172.30.13.91
           dependency: 3.13
 
-- functest-opnfv-functest-smoke-params: &functest-opnfv-functest-smoke-params
+- _functest-opnfv-functest-smoke-params: &functest-opnfv-functest-smoke-params
     name: 'functest-opnfv-functest-smoke-params'
     repo: 'opnfv'
     container: 'functest-smoke'
@@ -129,7 +129,7 @@
           DASHBOARD_URL: http://172.30.13.91
           dependency: 3.13
 
-- functest-opnfv-functest-smoke-cntt-params: &functest-opnfv-functest-smoke-cntt-params
+- _functest-opnfv-functest-smoke-cntt-params: &functest-opnfv-functest-smoke-cntt-params
     name: 'functest-opnfv-functest-smoke-cntt-params'
     repo: 'opnfv'
     container: 'functest-smoke-cntt'
@@ -171,7 +171,7 @@
           DASHBOARD_URL: http://172.30.13.91
           dependency: 3.13
 
-- functest-opnfv-functest-benchmarking-params: &functest-opnfv-functest-benchmarking-params
+- _functest-opnfv-functest-benchmarking-params: &functest-opnfv-functest-benchmarking-params
     name: 'functest-opnfv-functest-benchmarking-params'
     repo: 'opnfv'
     container: 'functest-benchmarking'
@@ -213,7 +213,7 @@
           DASHBOARD_URL: http://172.30.13.91
           dependency: 3.13
 
-- functest-opnfv-functest-benchmarking-cntt-params: &functest-opnfv-functest-benchmarking-cntt-params
+- _functest-opnfv-functest-benchmarking-cntt-params: &functest-opnfv-functest-benchmarking-cntt-params
     name: 'functest-opnfv-functest-benchmarking-cntt-params'
     repo: 'opnfv'
     container: 'functest-benchmarking-cntt'
@@ -255,7 +255,7 @@
           DASHBOARD_URL: http://172.30.13.91
           dependency: 3.13
 
-- functest-opnfv-functest-vnf-params: &functest-opnfv-functest-vnf-params
+- _functest-opnfv-functest-vnf-params: &functest-opnfv-functest-vnf-params
     name: 'functest-opnfv-functest-vnf-params'
     repo: 'opnfv'
     container: 'functest-vnf'
@@ -297,7 +297,7 @@
           DASHBOARD_URL: http://172.30.13.91
           dependency: 3.13
 
-- functest-jobs: &functest-jobs
+- _functest-jobs: &functest-jobs
     name: 'functest-jobs'
     current-parameters: true
 
@@ -335,7 +335,7 @@
           name: IMAGE_PROPERTIES
           default: hw_scsi_model:virtio-scsi,hw_disk_bus:scsi
 
-- functest-run-containers: &functest-run-containers
+- _functest-run-containers: &functest-run-containers
     name: 'functest-run-containers'
     <<: *functest-containers
     privileged: '{privileged}'
@@ -1166,9 +1166,9 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^functest-[a-z0-9.-]+-daily$
+    regex: ^functest-[a-z0-9.]+-daily$
 
-- functest-build-containers: &functest-build-containers
+- _functest-build-containers: &functest-build-containers
     name: 'functest-build-containers'
     <<: *functest-containers
     ref_arg: '{ref_arg}'
@@ -1213,7 +1213,7 @@
           branches:
             - '{ref}'
 
-- functest-dep: &functest-dep
+- _functest-dep: &functest-dep
     name: 'functest-containers'
     repo: '{repo}'
     container: '{container}'
@@ -1229,7 +1229,7 @@
       - functest-pull-containers:
           <<: *functest-dep
 
-- functest-dep-params: &functest-dep-params
+- _functest-dep-params: &functest-dep-params
     name: 'functest-dep-params'
     repo: '_'
     container: 'alpine'
@@ -1282,6 +1282,8 @@
           sudo DEBIAN_FRONTEND=noninteractive apt-get \
             -o DPkg::Lock::Timeout=300 install \
             libxml2-dev libxslt-dev libffi-dev libjpeg-dev \
+            python3.12 python3.12-dev python3.12-distutils \
+            python3.11 python3.11-dev python3.11-distutils \
             python3.10 python3.10-dev python3.10-distutils \
             python3.9 python3.9-dev python3.9-distutils \
             python3.8 python3.8-dev python3.8-distutils \
@@ -1717,7 +1719,7 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^functest-[a-z0-9.-]+-review$
+    regex: ^functest-[a-z0-9.]+-review$
 
 - view:
     name: functest-tox
@@ -1729,7 +1731,7 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^functest-[a-z0-9.-]+-tox$
+    regex: ^functest-[a-z0-9.]+-tox$
 
 - builder:
     name: functest-push-containers
@@ -2624,7 +2626,7 @@
       - last-success
       - last-failure
       - last-duration
-    regex: ^functest-[a-z0-9.-]+-docker$
+    regex: ^functest-[a-z0-9.]+-docker$
 
 - view:
     name: functest-trivy
