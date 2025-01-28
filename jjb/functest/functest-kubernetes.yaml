@@ -663,6 +663,7 @@
       - k8s_vims
       - helm_vims
       - cnf_testsuite
+      - cnf_testsuite_workload
     privileged: 'false'
     network: bridge
     uid: 1000
@@ -858,6 +859,8 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-helm_vims-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-cnf_testsuite-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-cnf_testsuite_workload-run'
               <<: *functest-kubernetes-jobs
       - multijob:
           name: dump all campaign data
@@ -1333,6 +1336,8 @@
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-helm_vims-run'
               <<: *functest-kubernetes-jobs
             - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-cnf_testsuite-run'
+              <<: *functest-kubernetes-jobs
+            - name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-{tag}-cnf_testsuite_workload-run'
               <<: *functest-kubernetes-jobs
     publishers:
       - email-ext:
