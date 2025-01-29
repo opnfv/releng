@@ -22,12 +22,12 @@
           (cd {dir} && \
             git checkout Dockerfile
             sed -i -e "s|{from_amd64}|{to_arm64}|g" Dockerfile
-            sudo docker build --pull -t {image}:arm64-{tag} . && \
+            sudo docker build --platform arm64 --pull -t {image}:arm64-{tag} . && \
             sudo docker push {image}:arm64-{tag})
           (cd {dir} && \
             git checkout Dockerfile
             sed -i -e "s|{from_amd64}|{to_arm}|g" Dockerfile
-            sudo docker build --pull -t {image}:arm-{tag} . && \
+            sudo docker build --platform arm --pull -t {image}:arm-{tag} . && \
             sudo docker push {image}:arm-{tag})
           sudo manifest-tool push from-args \
             --platforms linux/amd64,linux/arm,linux/arm64 \
