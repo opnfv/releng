@@ -38,7 +38,7 @@
     builders:
       - shell: |
           set +x
-          ssh opnfv@10.200.140.224 << EOF
+          ssh -T opnfv@172.30.13.92 << EOF
             sudo apt-get -o DPkg::Lock::Timeout=300 update
             sudo DEBIAN_FRONTEND=noninteractive apt-get \
               -o DPkg::Lock::Timeout=300 install python3-pip docker.io podman -y
@@ -154,7 +154,7 @@
 - project:
     name: xtesting-ci-tests
     <<: *playbook
-    node: xtestingci
+    node: xtesting
     release:
       - stable
       - master
@@ -164,7 +164,7 @@
 - project:
     name: xtesting-ci-tests-remote
     <<: *playbook
-    node: xtesting
+    node: opnfv
     release:
       - stable
       - master
