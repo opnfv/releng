@@ -67,8 +67,8 @@
           esac
           (cd ~/.ansible/roles/collivier.xtesting; patch -p1 < tests/docker_config_json.patch)
           ansible-galaxy collection install -f -r ~/.ansible/roles/collivier.xtesting/requirements.yml
-          sed -i "s/127.0.0.1/10.200.140.224/g" ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml
-          echo 10.200.140.224 ansible_host=10.200.140.224 ansible_user=opnfv > /tmp/inventory
+          sed -i "s/127.0.0.1/172.30.13.92/g" ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml
+          echo 172.30.13.92 ansible_host=172.30.13.92 ansible_user=opnfv > /tmp/inventory
           ansible-playbook -i /tmp/inventory -vvvv ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml
 
 - parameter:
@@ -164,7 +164,7 @@
 - project:
     name: xtesting-ci-tests-remote
     <<: *playbook
-    node: opnfv
+    node: opnfv-build
     release:
       - stable
       - master
