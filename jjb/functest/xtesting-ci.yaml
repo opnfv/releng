@@ -24,7 +24,12 @@
             sudo podman ps -aq |xargs sudo podman rm || true
           fi
           sudo rm -rfv /data /tmp/xtesting*
-          sudo apt-get install ansible patch -y
+          if [ $(lsb_release -r -s |cut -d\. -f1) -ge "22" ]; then
+            sudo apt-get install ansible patch -y
+          else
+            sudo apt-get install patch -y
+            sudo pip3 install ansible
+          fi
           rm -rf ~/.ansible/roles/collivier.xtesting
           case {release} in
           stable)
@@ -64,7 +69,12 @@
             fi
             sudo rm -rfv /data /tmp/xtesting*
           EOF
-          sudo apt-get install ansible patch -y
+          if [ $(lsb_release -r -s |cut -d\. -f1) -ge "22" ]; then
+            sudo apt-get install ansible patch -y
+          else
+            sudo apt-get install patch -y
+            sudo pip3 install ansible
+          fi
           rm -rf ~/.ansible/roles/collivier.xtesting
           case {release} in
           stable)
