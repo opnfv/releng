@@ -24,7 +24,7 @@
             sudo podman ps -aq |xargs sudo podman rm || true
           fi
           sudo rm -rfv /data /tmp/xtesting*
-          if [ $(lsb_release -r -s |cut -d\. -f1) -ge "22" ]; then
+          if [ $(lsb_release -r -s |cut -d\. -f1) -ge "24" ]; then
             sudo DEBIAN_FRONTEND=noninteractive apt-get \
               -o DPkg::Lock::Timeout=300 install ansible patch -y
           else
@@ -71,7 +71,7 @@
             fi
             sudo rm -rfv /data /tmp/xtesting*
           EOF
-          if [ $(lsb_release -r -s |cut -d\. -f1) -ge "22" ]; then
+          if [ $(lsb_release -r -s |cut -d\. -f1) -ge "24" ]; then
             sudo DEBIAN_FRONTEND=noninteractive apt-get \
               -o DPkg::Lock::Timeout=300 install ansible patch -y
           else
