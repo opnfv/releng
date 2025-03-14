@@ -449,11 +449,12 @@
           set +x
           sudo docker run -v /home/opnfv/.docker/config.json:/root/.docker/config.json \
             -v /home/opnfv/.docker/config.json:/home/opnfv/.config/helm/registry/config.json \
-            -v /data:/data -v /var/run/docker.sock:/var/run/docker.sock --network host rockylinux:{rockylinux} bash -c "\
+            -v /data:/data -v /var/run/docker.sock:/var/run/docker.sock --network host \
+            rockylinux:{rockylinux} bash -c "\
           yum install epel-release -y
           case {rockylinux} in \
           *) \
-            [ -z "$VIRTUAL_ENV" ] && yum install ansible git -y ;; \
+            [ -z "$VIRTUAL_ENV" ] && yum install ansible git iproute -y ;; \
           esac && \
           rm -rf ~/.ansible/roles/collivier.xtesting && \
           case {release} in \
