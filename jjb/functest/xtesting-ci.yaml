@@ -253,8 +253,7 @@
             ansible-galaxy install -f git+https://github.com/collivier/ansible-role-xtesting.git,{release} && \
             mv ~/.ansible/roles/ansible-role-xtesting ~/.ansible/roles/collivier.xtesting ;; \
           esac && \
-          ansible-galaxy collection install ansible.posix community.general community.grafana \
-            community.kubernetes community.docker community.postgresql community.crypto && \
+          ansible-galaxy collection install community.kubernetes && \
           ansible-playbook -vvvv ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml"
 
 - job-template:
@@ -305,9 +304,6 @@
           apt update && DEBIAN_FRONTEND=noninteractive apt \
             -o DPkg::Lock::Timeout=300 install docker.io vim iproute2 git sudo -y && \
           case {ubuntu} in \
-          bionic) \
-            [ -z "$VIRTUAL_ENV" ] && sudo DEBIAN_FRONTEND=noninteractive apt \
-              -o DPkg::Lock::Timeout=300 install python3-pip -y && sudo LC_CTYPE=C.UTF-8 pip3 install ansible ;; \
           focal) \
             [ -z "$VIRTUAL_ENV" ] && sudo DEBIAN_FRONTEND=noninteractive apt \
               -o DPkg::Lock::Timeout=300 install python3-pip -y && sudo pip3 install ansible ;; \
@@ -326,8 +322,7 @@
             ansible-galaxy install -f git+https://github.com/collivier/ansible-role-xtesting.git,{release} && \
             mv ~/.ansible/roles/ansible-role-xtesting ~/.ansible/roles/collivier.xtesting ;; \
           esac && \
-          ansible-galaxy collection install ansible.posix community.general community.grafana \
-            community.kubernetes community.docker community.postgresql community.crypto && \
+          ansible-galaxy collection install community.kubernetes && \
           case {ubuntu} in \
           oracular) \
             ansible-galaxy collection install -f community.docker ;; \
@@ -394,8 +389,7 @@
             ansible-galaxy install -f git+https://github.com/collivier/ansible-role-xtesting.git,{release} && \
             mv ~/.ansible/roles/ansible-role-xtesting ~/.ansible/roles/collivier.xtesting ;; \
           esac && \
-          ansible-galaxy collection install ansible.posix community.general community.grafana \
-            community.kubernetes community.docker community.postgresql community.crypto && \
+          ansible-galaxy collection install community.kubernetes && \
           case {alpine} in \
           "3.18") \
             [ -z "$VIRTUAL_ENV" ] && apk add ansible git ;; \
