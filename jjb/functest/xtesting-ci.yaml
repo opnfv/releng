@@ -441,3 +441,62 @@
       - edge
     jobs:
       - 'xtesting-ci-tests-{alpine}-{release}-{playbook}'
+
+- builder:
+    name: xtesting-ci-tests-rockylinux-docker
+    builders:
+      - shell: |
+          set +x
+          sudo docker run -v /home/opnfv/.docker/config.json:/root/.docker/config.json \
+            -v /home/opnfv/.docker/config.json:/home/opnfv/.config/helm/registry/config.json \
+            -v /data:/data -v /var/run/docker.sock:/var/run/docker.sock --network host rockylinux:{rockylinux} bash -c "\
+          yum install epel-release -y
+          case {rockylinux} in \
+          *) \
+            [ -z "$VIRTUAL_ENV" ] && yum install ansible git -y ;; \
+          esac && \
+          rm -rf ~/.ansible/roles/collivier.xtesting && \
+          case {release} in \
+          stable) \
+            ansible-galaxy install -f collivier.xtesting ;; \
+          *) \
+            ansible-galaxy install -f git+https://github.com/collivier/ansible-role-xtesting.git,{release} && \
+            mv ~/.ansible/roles/ansible-role-xtesting ~/.ansible/roles/collivier.xtesting ;; \
+          esac && \
+          ansible-galaxy collection install community.kubernetes && \
+          ansible-playbook -vvvv ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml"
+
+- job-template:
+    name: 'xtesting-ci-tests-{rockylinux}-{release}-{playbook}'
+    triggers:
+      - timed: '@daily'
+    parameters:
+      - xtesting-ci-node:
+          node: '{node}'
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-level: 'NODE'
+          blocking-jobs:
+            - '^xtesting-ci-tests-.*$'
+    builders:
+      - xtesting-ci-clean-docker
+      - xtesting-ci-tests-rockylinux-docker:
+          playbook: '{playbook}'
+          release: '{release}'
+          rockylinux: '{rockylinux}'
+
+- project:
+    name: xtesting-ci-tests-rockylinux
+    playbook:
+      - all
+      - kubernetes0
+    node: xtesting
+    release:
+      - stable
+      - master
+    rockylinux:
+      - 8
+      - 9
+    jobs:
+      - 'xtesting-ci-tests-{rockylinux}-{release}-{playbook}'
