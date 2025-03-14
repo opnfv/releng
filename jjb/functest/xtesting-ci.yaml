@@ -233,7 +233,7 @@
             -v /home/opnfv/.docker/config.json:/home/opnfv/.config/helm/registry/config.json \
             -v /data:/data -v /var/run/docker.sock:/var/run/docker.sock --network host debian:{debian} bash -c "\
           apt update && DEBIAN_FRONTEND=noninteractive apt \
-            -o DPkg::Lock::Timeout=300 install docker.io vim iproute2 sudo git lsb-release -y && \
+            -o DPkg::Lock::Timeout=300 install docker.io sudo git -y && \
           case {debian} in \
           buster) \
             [ -z "$VIRTUAL_ENV" ] && sudo DEBIAN_FRONTEND=noninteractive apt \
@@ -302,7 +302,7 @@
             -v /home/opnfv/.docker/config.json:/home/opnfv/.config/helm/registry/config.json \
             -v /data:/data -v /var/run/docker.sock:/var/run/docker.sock --network host ubuntu:{ubuntu} bash -c "\
           apt update && DEBIAN_FRONTEND=noninteractive apt \
-            -o DPkg::Lock::Timeout=300 install docker.io vim iproute2 git sudo -y && \
+            -o DPkg::Lock::Timeout=300 install docker.io git sudo -y && \
           case {ubuntu} in \
           focal) \
             [ -z "$VIRTUAL_ENV" ] && sudo DEBIAN_FRONTEND=noninteractive apt \
@@ -454,7 +454,7 @@
           yum install epel-release -y
           case {rockylinux} in \
           *) \
-            [ -z "$VIRTUAL_ENV" ] && yum install ansible git iproute -y ;; \
+            [ -z "$VIRTUAL_ENV" ] && yum install ansible git docker -y ;; \
           esac && \
           rm -rf ~/.ansible/roles/collivier.xtesting && \
           case {release} in \
