@@ -233,16 +233,16 @@
             -v /home/opnfv/.docker/config.json:/home/opnfv/.config/helm/registry/config.json \
             -v /data:/data -v /var/run/docker.sock:/var/run/docker.sock --network host debian:{debian} bash -c "\
           apt update && DEBIAN_FRONTEND=noninteractive apt \
-            -o DPkg::Lock::Timeout=300 install docker.io sudo git -y && \
+            -o DPkg::Lock::Timeout=300 install git -y && \
           case {debian} in \
           buster) \
-            [ -z "$VIRTUAL_ENV" ] && sudo DEBIAN_FRONTEND=noninteractive apt \
-              -o DPkg::Lock::Timeout=300 install python3-pip -y && sudo pip3 install ansible ;; \
+            [ -z "$VIRTUAL_ENV" ] && DEBIAN_FRONTEND=noninteractive apt \
+              -o DPkg::Lock::Timeout=300 install python3-pip -y && pip3 install ansible ;; \
           bullseye) \
-            [ -z "$VIRTUAL_ENV" ] && sudo DEBIAN_FRONTEND=noninteractive apt \
-              -o DPkg::Lock::Timeout=300 install python3-pip -y && sudo pip3 install ansible ;; \
+            [ -z "$VIRTUAL_ENV" ] && DEBIAN_FRONTEND=noninteractive apt \
+              -o DPkg::Lock::Timeout=300 install python3-pip -y && pip3 install ansible ;; \
           *) \
-            [ -z "$VIRTUAL_ENV" ] && sudo DEBIAN_FRONTEND=noninteractive apt \
+            [ -z "$VIRTUAL_ENV" ] && DEBIAN_FRONTEND=noninteractive apt \
               -o DPkg::Lock::Timeout=300 install ansible -y ;; \
           esac && \
           rm -rf ~/.ansible/roles/collivier.xtesting && \
@@ -302,16 +302,16 @@
             -v /home/opnfv/.docker/config.json:/home/opnfv/.config/helm/registry/config.json \
             -v /data:/data -v /var/run/docker.sock:/var/run/docker.sock --network host ubuntu:{ubuntu} bash -c "\
           apt update && DEBIAN_FRONTEND=noninteractive apt \
-            -o DPkg::Lock::Timeout=300 install docker.io git sudo -y && \
+            -o DPkg::Lock::Timeout=300 install git -y && \
           case {ubuntu} in \
           focal) \
-            [ -z "$VIRTUAL_ENV" ] && sudo DEBIAN_FRONTEND=noninteractive apt \
-              -o DPkg::Lock::Timeout=300 install python3-pip -y && sudo pip3 install ansible ;; \
+            [ -z "$VIRTUAL_ENV" ] && DEBIAN_FRONTEND=noninteractive apt \
+              -o DPkg::Lock::Timeout=300 install python3-pip -y && pip3 install ansible ;; \
           jammy) \
-            [ -z "$VIRTUAL_ENV" ] && sudo DEBIAN_FRONTEND=noninteractive apt \
-              -o DPkg::Lock::Timeout=300 install python3-pip -y && sudo pip3 install ansible ;; \
+            [ -z "$VIRTUAL_ENV" ] && DEBIAN_FRONTEND=noninteractive apt \
+              -o DPkg::Lock::Timeout=300 install python3-pip -y && pip3 install ansible ;; \
           *) \
-            [ -z "$VIRTUAL_ENV" ] && sudo DEBIAN_FRONTEND=noninteractive apt \
+            [ -z "$VIRTUAL_ENV" ] && DEBIAN_FRONTEND=noninteractive apt \
               -o DPkg::Lock::Timeout=300 install ansible -y ;; \
           esac && \
           rm -rf ~/.ansible/roles/collivier.xtesting && \
@@ -454,7 +454,7 @@
           yum install epel-release -y
           case {rockylinux} in \
           *) \
-            [ -z "$VIRTUAL_ENV" ] && yum install ansible git docker -y ;; \
+            [ -z "$VIRTUAL_ENV" ] && yum install ansible git -y ;; \
           esac && \
           rm -rf ~/.ansible/roles/collivier.xtesting && \
           case {release} in \
