@@ -234,7 +234,8 @@
             -v /home/opnfv/.docker/config.json:/home/opnfv/.config/helm/registry/config.json \
             -v /data:/data -v /var/run/docker.sock:/var/run/docker.sock --network host debian:{debian} bash -c "\
           apt update && DEBIAN_FRONTEND=noninteractive apt \
-            -o DPkg::Lock::Timeout=300 install git -y && \
+            -o DPkg::Lock::Timeout=300 install git podman ca-certificates -y && \
+          sed -i "s/^\#.*cgroups\ =.*$/cgroups = no-conmon/"  /usr/share/containers/containers.conf && \
           case {debian} in \
           bullseye) \
             [ -z "$VIRTUAL_ENV" ] && DEBIAN_FRONTEND=noninteractive apt \
@@ -279,6 +280,7 @@
     playbook:
       - all
       - kubernetes0
+      - podman
     node: xtesting
     release:
       - stable
