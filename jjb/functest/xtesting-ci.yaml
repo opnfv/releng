@@ -52,7 +52,7 @@
           ssh -T opnfv@172.30.12.84 << EOF
             sudo apt -o DPkg::Lock::Timeout=300 update
             sudo DEBIAN_FRONTEND=noninteractive apt \
-              -o DPkg::Lock::Timeout=300 install python3-pip docker.io -y
+              -o DPkg::Lock::Timeout=300 install python3-pip docker.io podman -y
             curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.17.0/kind-linux-amd64
             chmod +x ./kind
             sudo mv ./kind /usr/local/bin/kind
@@ -140,7 +140,7 @@
     name: 'playbook'
     playbook:
       - all
-      # - podman
+      - podman
       - proxy
       - proxy2
       - radosgw
