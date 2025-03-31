@@ -224,6 +224,14 @@
           sudo rm -f /etc/systemd/system/docker.service.d/http-proxy.conf
           sudo systemctl daemon-reload
           sudo systemctl restart docker
+          if [ $(lsb_release -r -s |cut -d\. -f1) -ge "22" ]; then
+            sudo DEBIAN_FRONTEND=noninteractive apt \
+              -o DPkg::Lock::Timeout=300 install podman -y
+            sudo podman ps -aq |xargs sudo podman stop || true
+            sudo podman ps -aq |xargs sudo podman rm || true
+          fi
+          sudo rm -rfv /data /tmp/xtesting*
+
 
 - builder:
     name: xtesting-ci-tests-debian-docker
