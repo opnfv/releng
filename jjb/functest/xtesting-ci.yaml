@@ -238,7 +238,7 @@
     builders:
       - shell: |
           set +x
-          sudo docker run -v /home/opnfv/.docker/config.json:/root/.docker/config.json \
+          sudo docker run --privileged -v /home/opnfv/.docker/config.json:/root/.docker/config.json \
             -v /home/opnfv/.docker/config.json:/home/opnfv/.config/helm/registry/config.json \
             -v /data:/data -v /var/run/docker.sock:/var/run/docker.sock --network host debian:{debian} bash -c "\
           apt update && DEBIAN_FRONTEND=noninteractive apt \
@@ -304,7 +304,7 @@
     builders:
       - shell: |
           set +x
-          sudo docker run -v /home/opnfv/.docker/config.json:/root/.docker/config.json \
+          sudo docker run --privileged -v /home/opnfv/.docker/config.json:/root/.docker/config.json \
             -v /home/opnfv/.docker/config.json:/home/opnfv/.config/helm/registry/config.json \
             -v /data:/data -v /var/run/docker.sock:/var/run/docker.sock --network host ubuntu:{ubuntu} bash -c "\
           apt update && DEBIAN_FRONTEND=noninteractive apt \
@@ -379,7 +379,7 @@
     builders:
       - shell: |
           set +x
-          sudo docker run -v /home/opnfv/.docker/config.json:/root/.docker/config.json \
+          sudo docker run --privileged -v /home/opnfv/.docker/config.json:/root/.docker/config.json \
             -v /home/opnfv/.docker/config.json:/home/opnfv/.config/helm/registry/config.json \
             -v /data:/data -v /var/run/docker.sock:/var/run/docker.sock --network host alpine:{alpine} ash -c "\
           case {alpine} in \
@@ -453,7 +453,7 @@
     builders:
       - shell: |
           set +x
-          sudo docker run -v /home/opnfv/.docker/config.json:/root/.docker/config.json \
+          sudo docker run --privileged -v /home/opnfv/.docker/config.json:/root/.docker/config.json \
             -v /home/opnfv/.docker/config.json:/home/opnfv/.config/helm/registry/config.json \
             -v /data:/data -v /var/run/docker.sock:/var/run/docker.sock --network host \
             rockylinux:{rockylinux} bash -c "\
