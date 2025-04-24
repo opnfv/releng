@@ -69,6 +69,7 @@
                 -o DPkg::Lock::Timeout=300 install podman -y
               sudo podman ps -aq |xargs sudo podman stop || true
               sudo podman ps -aq |xargs sudo podman rm || true
+              sudo podman system prune --all --force || true
             fi
             sudo rm -rfv /data /tmp/xtesting*
           EOF
@@ -142,6 +143,7 @@
     playbook:
       - all
       - podman
+      - podman2
       - proxy
       - proxy2
       - radosgw
@@ -230,6 +232,7 @@
               -o DPkg::Lock::Timeout=300 install podman -y
             sudo podman ps -aq |xargs sudo podman stop || true
             sudo podman ps -aq |xargs sudo podman rm || true
+            sudo podman system prune --all --force || true
           fi
           sudo rm -rfv /data /tmp/xtesting*
 
