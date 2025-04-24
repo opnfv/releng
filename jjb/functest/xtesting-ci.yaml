@@ -15,8 +15,6 @@
           sudo docker ps -aq |xargs sudo docker rm || true
           sudo docker system prune -f --all || true
           sudo rm -f /etc/systemd/system/docker.service.d/http-proxy.conf
-          sudo systemctl daemon-reload
-          sudo systemctl restart docker
           if [ $(lsb_release -r -s |cut -d\. -f1) -ge "22" ]; then
             sudo DEBIAN_FRONTEND=noninteractive apt \
               -o DPkg::Lock::Timeout=300 install podman -y
@@ -25,6 +23,16 @@
             sudo podman system prune --all --force || true
           fi
           sudo rm -rfv /data /tmp/xtesting*
+          sudo iptables -P INPUT ACCEPT
+          sudo iptables -P FORWARD ACCEPT
+          sudo iptables -P OUTPUT ACCEPT
+          sudo iptables -t nat -F
+          sudo iptables -t mangle -F
+          sudo iptables -F
+          sudo iptables -X
+          sudo systemctl daemon-reload
+          sudo systemctl restart docker
+          sudo systemctl restart podman
           if [ $(lsb_release -r -s |cut -d\. -f1) -ge "24" ]; then
             sudo DEBIAN_FRONTEND=noninteractive apt \
               -o DPkg::Lock::Timeout=300 install ansible patch -y
@@ -62,8 +70,6 @@
             sudo docker ps -aq |xargs sudo docker rm || true
             sudo docker system prune -f --all || true
             sudo rm -f /etc/systemd/system/docker.service.d/http-proxy.conf
-            sudo systemctl daemon-reload
-            sudo systemctl restart docker
             if [ $(lsb_release -r -s |cut -d\. -f1) -ge "22" ]; then
               sudo DEBIAN_FRONTEND=noninteractive apt \
                 -o DPkg::Lock::Timeout=300 install podman -y
@@ -72,6 +78,16 @@
               sudo podman system prune --all --force || true
             fi
             sudo rm -rfv /data /tmp/xtesting*
+            sudo iptables -P INPUT ACCEPT
+            sudo iptables -P FORWARD ACCEPT
+            sudo iptables -P OUTPUT ACCEPT
+            sudo iptables -t nat -F
+            sudo iptables -t mangle -F
+            sudo iptables -F
+            sudo iptables -X
+            sudo systemctl daemon-reload
+            sudo systemctl restart docker
+            sudo systemctl restart podman
           EOF
           if [ $(lsb_release -r -s |cut -d\. -f1) -ge "24" ]; then
             sudo DEBIAN_FRONTEND=noninteractive apt \
@@ -225,8 +241,6 @@
           sudo docker ps -aq |xargs sudo docker rm || true
           sudo docker system prune -f --all || true
           sudo rm -f /etc/systemd/system/docker.service.d/http-proxy.conf
-          sudo systemctl daemon-reload
-          sudo systemctl restart docker
           if [ $(lsb_release -r -s |cut -d\. -f1) -ge "22" ]; then
             sudo DEBIAN_FRONTEND=noninteractive apt \
               -o DPkg::Lock::Timeout=300 install podman -y
@@ -235,7 +249,16 @@
             sudo podman system prune --all --force || true
           fi
           sudo rm -rfv /data /tmp/xtesting*
-
+          sudo iptables -P INPUT ACCEPT
+          sudo iptables -P FORWARD ACCEPT
+          sudo iptables -P OUTPUT ACCEPT
+          sudo iptables -t nat -F
+          sudo iptables -t mangle -F
+          sudo iptables -F
+          sudo iptables -X
+          sudo systemctl daemon-reload
+          sudo systemctl restart docker
+          sudo systemctl restart podman
 
 - builder:
     name: xtesting-ci-tests-debian-docker
