@@ -185,6 +185,7 @@
           set +x
           sudo docker run --privileged -v /home/opnfv/.docker/config.json:/root/.docker/config.json \
             -v /home/opnfv/.docker/config.json:/home/opnfv/.config/helm/registry/config.json \
+            -v /home/opnfv/functest-kubernetes:/home/opnfv/functest-kubernetes \
             -v /data:/data -v /run:/run --network host debian:{debian} bash -c "\
           apt update && DEBIAN_FRONTEND=noninteractive apt \
             -o DPkg::Lock::Timeout=300 install git -y && \
@@ -263,6 +264,7 @@
           set +x
           sudo docker run --privileged -v /home/opnfv/.docker/config.json:/root/.docker/config.json \
             -v /home/opnfv/.docker/config.json:/home/opnfv/.config/helm/registry/config.json \
+            -v /home/opnfv/functest-kubernetes:/home/opnfv/functest-kubernetes \
             -v /data:/data -v /run:/run --network host ubuntu:{ubuntu} bash -c "\
           apt update && DEBIAN_FRONTEND=noninteractive apt \
             -o DPkg::Lock::Timeout=300 install git -y && \
@@ -353,6 +355,7 @@
           set +x
           sudo docker run --privileged -v /home/opnfv/.docker/config.json:/root/.docker/config.json \
             -v /home/opnfv/.docker/config.json:/home/opnfv/.config/helm/registry/config.json \
+            -v /home/opnfv/functest-kubernetes:/home/opnfv/functest-kubernetes \
             -v /data:/data -v /run:/run --network host alpine:{alpine} ash -c "\
           case {alpine} in \
           *) \
@@ -446,6 +449,7 @@
           set +x
           sudo docker run --privileged -v /home/opnfv/.docker/config.json:/root/.docker/config.json \
             -v /home/opnfv/.docker/config.json:/home/opnfv/.config/helm/registry/config.json \
+            -v /home/opnfv/functest-kubernetes:/home/opnfv/functest-kubernetes \
             -v /data:/data -v /run:/run --network host \
             rockylinux:{rockylinux} bash -c "\
           yum install epel-release -y
