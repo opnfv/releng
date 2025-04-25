@@ -1,59 +1,5 @@
 ---
 - builder:
-    name: xtesting-ci-tests
-    builders:
-      - shell: |
-          set +x
-          sudo apt -o DPkg::Lock::Timeout=300 update
-          sudo DEBIAN_FRONTEND=noninteractive apt \
-            -o DPkg::Lock::Timeout=300 install python3-pip docker.io -y
-          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.17.0/kind-linux-amd64
-          chmod +x ./kind
-          sudo mv ./kind /usr/local/bin/kind
-          kind delete clusters xtesting jenkins gitlab || true
-          sudo docker ps -aq |xargs sudo docker stop || true
-          sudo docker ps -aq |xargs sudo docker rm || true
-          sudo docker system prune -f --all || true
-          sudo rm -f /etc/systemd/system/docker.service.d/http-proxy.conf
-          if [ $(lsb_release -r -s |cut -d\. -f1) -ge "22" ]; then
-            sudo DEBIAN_FRONTEND=noninteractive apt \
-              -o DPkg::Lock::Timeout=300 install podman -y
-            sudo podman ps -aq |xargs sudo podman stop || true
-            sudo podman ps -aq |xargs sudo podman rm || true
-            sudo podman system prune --all --force || true
-          fi
-          sudo rm -rfv /data /tmp/xtesting*
-          sudo iptables -P INPUT ACCEPT
-          sudo iptables -P FORWARD ACCEPT
-          sudo iptables -P OUTPUT ACCEPT
-          sudo iptables -t nat -F
-          sudo iptables -t mangle -F
-          sudo iptables -F
-          sudo iptables -X
-          sudo systemctl daemon-reload
-          sudo systemctl restart docker
-          sudo systemctl restart podman
-          if [ $(lsb_release -r -s |cut -d\. -f1) -ge "24" ]; then
-            sudo DEBIAN_FRONTEND=noninteractive apt \
-              -o DPkg::Lock::Timeout=300 install ansible patch -y
-          else
-            sudo DEBIAN_FRONTEND=noninteractive apt \
-              -o DPkg::Lock::Timeout=300 install patch -y
-            sudo pip3 install ansible
-          fi
-          rm -rf ~/.ansible/roles/collivier.xtesting
-          case {release} in
-          stable)
-            ansible-galaxy install -f collivier.xtesting ;;
-          *)
-            ansible-galaxy install -f git+https://github.com/collivier/ansible-role-xtesting.git,{release}
-            mv ~/.ansible/roles/ansible-role-xtesting ~/.ansible/roles/collivier.xtesting ;;
-          esac
-          (cd ~/.ansible/roles/collivier.xtesting; patch -p1 < tests/docker_config_json.patch)
-          ansible-galaxy collection install -f -r ~/.ansible/roles/collivier.xtesting/requirements.yml
-          ansible-playbook -vvvv ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml
-
-- builder:
     name: xtesting-ci-tests-remote
     builders:
       - shell: |
@@ -119,24 +65,6 @@
           default: '{node}'
 
 - job-template:
-    name: 'xtesting-ci-tests-{release}-{playbook}'
-    triggers:
-      - timed: '@weekly'
-    parameters:
-      - xtesting-ci-node:
-          node: '{node}'
-    properties:
-      - build-blocker:
-          use-build-blocker: true
-          blocking-level: 'NODE'
-          blocking-jobs:
-            - '^xtesting-ci-tests-.*$'
-    builders:
-      - xtesting-ci-tests:
-          playbook: '{playbook}'
-          release: '{release}'
-
-- job-template:
     name: 'xtesting-ci-tests-remote-{release}-{playbook}'
     triggers:
       - timed: '@weekly'
@@ -192,16 +120,6 @@
       - k8s_gitlab_kind1
       - k8s_gitlab_kind2
       - k8s_gitlab_kind3
-
-- project:
-    name: xtesting-ci-tests
-    <<: *playbook
-    node: xtesting
-    release:
-      - stable
-      - master
-    jobs:
-      - 'xtesting-ci-tests-{release}-{playbook}'
 
 - project:
     name: xtesting-ci-tests-remote
@@ -311,9 +229,7 @@
 
 - project:
     name: xtesting-ci-tests-debian
-    playbook:
-      - all
-      - kubernetes0
+    <<: *playbook
     node: xtesting
     release:
       - stable
@@ -323,6 +239,20 @@
       - bookworm
       - trixie
       - sid
+    exclude:
+      - playbook: podman
+        debian: bookworm
+      - playbook: podman
+        debian: trixie
+      - playbook: podman
+        debian: sid
+      - playbook: podman2
+        debian: bookworm
+      - playbook: podman2
+        debian: trixie
+      - playbook: podman2
+        debian: sid
+
     jobs:
       - 'xtesting-ci-tests-{debian}-{release}-{playbook}'
 
@@ -385,9 +315,7 @@
 
 - project:
     name: xtesting-ci-tests-ubuntu
-    playbook:
-      - all
-      - kubernetes0
+    <<: *playbook
     node: xtesting
     release:
       - stable
@@ -398,6 +326,23 @@
       - noble
       - oracular
       - plucky
+    exclude:
+      - playbook: podman
+        ubuntu: focal
+      - playbook: podman
+        ubuntu: noble
+      - playbook: podman
+        ubuntu: oracular
+      - playbook: podman
+        ubuntu: plucky
+      - playbook: podman2
+        ubuntu: focal
+      - playbook: podman2
+        ubuntu: noble
+      - playbook: podman2
+        ubuntu: oracular
+      - playbook: podman2
+        ubuntu: plucky
     jobs:
       - 'xtesting-ci-tests-{ubuntu}-{release}-{playbook}'
 
@@ -459,9 +404,7 @@
 
 - project:
     name: xtesting-ci-tests-alpine
-    playbook:
-      - all
-      - kubernetes0
+    <<: *playbook
     node: xtesting
     release:
       - stable
@@ -472,6 +415,27 @@
       - '3.20'
       - 3.21
       - edge
+    exclude:
+      - playbook: podman
+        alpine: 3.18
+      - playbook: podman
+        alpine: 3.19
+      - playbook: podman
+        alpine: '3.20'
+      - playbook: podman
+        alpine: 3.21
+      - playbook: podman
+        alpine: edge
+      - playbook: podman2
+        alpine: 3.18
+      - playbook: podman2
+        alpine: 3.19
+      - playbook: podman2
+        alpine: '3.20'
+      - playbook: podman2
+        alpine: 3.21
+      - playbook: podman2
+        alpine: edge
     jobs:
       - 'xtesting-ci-tests-{alpine}-{release}-{playbook}'
 
@@ -522,9 +486,7 @@
 
 - project:
     name: xtesting-ci-tests-rockylinux
-    playbook:
-      - all
-      - kubernetes0
+    <<: *playbook
     node: xtesting
     release:
       - stable
