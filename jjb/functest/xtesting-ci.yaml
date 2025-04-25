@@ -7,7 +7,7 @@
           ssh -T opnfv@172.30.12.84 << EOF
             sudo apt -o DPkg::Lock::Timeout=300 update
             sudo DEBIAN_FRONTEND=noninteractive apt \
-              -o DPkg::Lock::Timeout=300 install python3-pip docker.io podman -y
+              -o DPkg::Lock::Timeout=300 install python3-pip docker.io podman curl -y
             curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.17.0/kind-linux-amd64
             chmod +x ./kind
             sudo mv ./kind /usr/local/bin/kind
@@ -150,7 +150,7 @@
           set +x
           sudo apt -o DPkg::Lock::Timeout=300 update
           sudo DEBIAN_FRONTEND=noninteractive apt \
-            -o DPkg::Lock::Timeout=300 install docker.io -y
+            -o DPkg::Lock::Timeout=300 install docker.io curl -y
           curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.17.0/kind-linux-amd64
           chmod +x ./kind
           sudo mv ./kind /usr/local/bin/kind
@@ -188,7 +188,7 @@
             -v /home/opnfv/functest-kubernetes:/home/opnfv/functest-kubernetes \
             -v /data:/data -v /run:/run --network host debian:{debian} bash -c "\
           apt update && DEBIAN_FRONTEND=noninteractive apt \
-            -o DPkg::Lock::Timeout=300 install git -y && \
+            -o DPkg::Lock::Timeout=300 install git curl -y && \
           case {debian} in \
           bullseye) \
             [ -z "$VIRTUAL_ENV" ] && DEBIAN_FRONTEND=noninteractive apt \
@@ -267,7 +267,7 @@
             -v /home/opnfv/functest-kubernetes:/home/opnfv/functest-kubernetes \
             -v /data:/data -v /run:/run --network host ubuntu:{ubuntu} bash -c "\
           apt update && DEBIAN_FRONTEND=noninteractive apt \
-            -o DPkg::Lock::Timeout=300 install git -y && \
+            -o DPkg::Lock::Timeout=300 install git curl -y && \
           case {ubuntu} in \
           focal) \
             [ -z "$VIRTUAL_ENV" ] && DEBIAN_FRONTEND=noninteractive apt \
@@ -359,7 +359,7 @@
             -v /data:/data -v /run:/run --network host alpine:{alpine} ash -c "\
           case {alpine} in \
           *) \
-            [ -z "$VIRTUAL_ENV" ] && apk add ansible git ;; \
+            [ -z "$VIRTUAL_ENV" ] && apk add ansible git curl ;; \
           esac && \
           rm -rf ~/.ansible/roles/collivier.xtesting && \
           case {release} in \
@@ -455,7 +455,7 @@
           yum install epel-release -y
           case {rockylinux} in \
           *) \
-            [ -z "$VIRTUAL_ENV" ] && yum install ansible git -y ;; \
+            [ -z "$VIRTUAL_ENV" ] && yum install ansible git curl -y ;; \
           esac && \
           rm -rf ~/.ansible/roles/collivier.xtesting && \
           case {release} in \
