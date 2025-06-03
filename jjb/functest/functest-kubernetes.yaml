@@ -15,6 +15,12 @@
           branch: master
           node: latest
           dependency: 3.20
+      - v1.33:
+          from:
+          build_args:
+          branch: stable/v1.33
+          node: v1.33
+          dependency: 3.20
       - v1.32:
           from:
           build_args:
@@ -33,12 +39,6 @@
           branch: stable/v1.30
           node: v1.30
           dependency: 3.20
-      - v1.29:
-          from:
-          build_args:
-          branch: stable/v1.29
-          node: v1.29
-          dependency: 3.16
 
 - _functest-kubernetes-opnfv-functest-kubernetes-healthcheck-params: &functest-kubernetes-opnfv-functest-kubernetes-healthcheck-params
     name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-params'
@@ -52,6 +52,12 @@
           branch: master
           node: latest
           dependency: 3.20
+      - v1.33:
+          from:
+          build_args:
+          branch: stable/v1.33
+          node: v1.33
+          dependency: 3.20
       - v1.32:
           from:
           build_args:
@@ -70,12 +76,6 @@
           branch: stable/v1.30
           node: v1.30
           dependency: 3.20
-      - v1.29:
-          from:
-          build_args:
-          branch: stable/v1.29
-          node: v1.29
-          dependency: 3.16
 
 - _functest-kubernetes-opnfv-functest-kubernetes-smoke-params: &functest-kubernetes-opnfv-functest-kubernetes-smoke-params
     name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke-params'
@@ -89,6 +89,12 @@
           branch: master
           node: latest
           dependency: 3.20
+      - v1.33:
+          from:
+          build_args:
+          branch: stable/v1.33
+          node: v1.33
+          dependency: 3.20
       - v1.32:
           from:
           build_args:
@@ -107,12 +113,6 @@
           branch: stable/v1.30
           node: v1.30
           dependency: 3.20
-      - v1.29:
-          from:
-          build_args:
-          branch: stable/v1.29
-          node: v1.29
-          dependency: 3.16
 
 - _functest-kubernetes-opnfv-functest-kubernetes-security-params: &functest-kubernetes-opnfv-functest-kubernetes-security-params
     name: 'functest-kubernetes-opnfv-functest-kubernetes-security-params'
@@ -126,6 +126,12 @@
           branch: master
           node: latest
           dependency: 3.20
+      - v1.33:
+          from:
+          build_args:
+          branch: stable/v1.33
+          node: v1.33
+          dependency: 3.20
       - v1.32:
           from:
           build_args:
@@ -144,12 +150,6 @@
           branch: stable/v1.30
           node: v1.30
           dependency: 3.20
-      - v1.29:
-          from:
-          build_args:
-          branch: stable/v1.29
-          node: v1.29
-          dependency: 3.16
 
 - _functest-kubernetes-opnfv-functest-kubernetes-benchmarking-params: &functest-kubernetes-opnfv-functest-kubernetes-benchmarking-params
     name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-params'
@@ -163,6 +163,12 @@
           branch: master
           node: latest
           dependency: 3.20
+      - v1.33:
+          from:
+          build_args:
+          branch: stable/v1.33
+          node: v1.33
+          dependency: 3.20
       - v1.32:
           from:
           build_args:
@@ -181,12 +187,6 @@
           branch: stable/v1.30
           node: v1.30
           dependency: 3.20
-      - v1.29:
-          from:
-          build_args:
-          branch: stable/v1.29
-          node: v1.29
-          dependency: 3.16
 
 - _functest-kubernetes-opnfv-functest-kubernetes-cnf-params: &functest-kubernetes-opnfv-functest-kubernetes-cnf-params
     name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf-params'
@@ -200,6 +200,12 @@
           branch: master
           node: latest
           dependency: 3.20
+      - v1.33:
+          from:
+          build_args:
+          branch: stable/v1.33
+          node: v1.33
+          dependency: 3.20
       - v1.32:
           from:
           build_args:
@@ -218,12 +224,6 @@
           branch: stable/v1.30
           node: v1.30
           dependency: 3.20
-      - v1.29:
-          from:
-          build_args:
-          branch: stable/v1.29
-          node: v1.29
-          dependency: 3.16
 
 - _functest-kubernetes-jobs: &functest-kubernetes-jobs
     name: 'functest-kubernetes-jobs'
@@ -504,7 +504,6 @@
     name: 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck'
     <<: *functest-kubernetes-opnfv-functest-kubernetes-healthcheck-params
     volumes:
-      - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
       - /home/opnfv/functest-kubernetes/config.{tag}:/home/xtesting/.kube/config
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
@@ -538,7 +537,6 @@
     name: 'functest-kubernetes-opnfv-functest-kubernetes-smoke'
     <<: *functest-kubernetes-opnfv-functest-kubernetes-smoke-params
     volumes:
-      - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
       - /home/opnfv/functest-kubernetes/config.{tag}:/home/xtesting/.kube/config
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
@@ -585,7 +583,6 @@
     name: 'functest-kubernetes-opnfv-functest-kubernetes-security'
     <<: *functest-kubernetes-opnfv-functest-kubernetes-security-params
     volumes:
-      - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
       - /home/opnfv/functest-kubernetes/config.{tag}:/home/xtesting/.kube/config
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
@@ -620,7 +617,6 @@
     name: 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking'
     <<: *functest-kubernetes-opnfv-functest-kubernetes-benchmarking-params
     volumes:
-      - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
       - /home/opnfv/functest-kubernetes/config.{tag}:/home/xtesting/.kube/config
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
@@ -654,7 +650,6 @@
     name: 'functest-kubernetes-opnfv-functest-kubernetes-cnf'
     <<: *functest-kubernetes-opnfv-functest-kubernetes-cnf-params
     volumes:
-      - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
       - /home/opnfv/functest-kubernetes/config.{tag}:/home/xtesting/.kube/config
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
@@ -737,7 +732,6 @@
     name: 'functest-kubernetes-zip'
     <<: *functest-kubernetes-opnfv-functest-kubernetes-healthcheck-params
     volumes:
-      - /home/opnfv/functest-kubernetes/config.{tag}:/root/.kube/config
       - /home/opnfv/functest-kubernetes/config.{tag}:/home/xtesting/.kube/config
     env:
       - DEPLOY_SCENARIO=$DEPLOY_SCENARIO
@@ -965,14 +959,14 @@
     tag:
       - latest:
           dependency: 3.20
+      - v1.33:
+          dependency: 3.20
       - v1.32:
           dependency: 3.20
       - v1.31:
           dependency: 3.20
       - v1.30:
           dependency: 3.20
-      - v1.29:
-          dependency: 3.16
 
 - project:
     name: 'functest-kubernetes-dep-pull'
@@ -1085,7 +1079,7 @@
     repo: opnfv
     port:
     container: functest-kubernetes-healthcheck
-    ref_arg:
+    ref_arg: BRANCH
     path: docker/healthcheck
     jobs:
       - 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-gate'
@@ -1160,7 +1154,7 @@
     repo: opnfv
     port:
     container: functest-kubernetes-smoke
-    ref_arg:
+    ref_arg: BRANCH
     path: docker/smoke
     jobs:
       - 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-gate'
@@ -1185,7 +1179,7 @@
     repo: opnfv
     port:
     container: functest-kubernetes-benchmarking
-    ref_arg:
+    ref_arg: BRANCH
     path: docker/benchmarking
     jobs:
       - 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-gate'
@@ -1453,7 +1447,7 @@
     repo: opnfv
     container: functest-kubernetes-healthcheck
     port:
-    ref_arg:
+    ref_arg: BRANCH
     path: docker/healthcheck
     jobs:
       - 'functest-kubernetes-opnfv-functest-kubernetes-healthcheck-{tag}-build'
@@ -1537,7 +1531,7 @@
     repo: opnfv
     container: functest-kubernetes-smoke
     port:
-    ref_arg:
+    ref_arg: BRANCH
     path: docker/smoke
     jobs:
       - 'functest-kubernetes-opnfv-functest-kubernetes-smoke-{tag}-build'
@@ -1565,7 +1559,7 @@
     repo: opnfv
     container: functest-kubernetes-benchmarking
     port:
-    ref_arg:
+    ref_arg: BRANCH
     path: docker/benchmarking
     jobs:
       - 'functest-kubernetes-opnfv-functest-kubernetes-benchmarking-{tag}-build'
