@@ -468,6 +468,11 @@
             mv ~/.ansible/roles/ansible-role-xtesting ~/.ansible/roles/collivier.xtesting ;; \
           esac && \
           ansible-galaxy collection install community.kubernetes && \
+          case {rockylinux} in \
+          "9") \
+            ansible-galaxy collection install -f community.docker ;; \
+          *) ;; \
+          esac && \
           ansible-playbook -vvvv ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml"
 
 - job-template:
