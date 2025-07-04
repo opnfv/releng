@@ -645,7 +645,6 @@
       - vping_ssh
       - vping_userdata
       - cinder_test
-      - odl
       - tempest_smoke
       - tempest_horizon
     privileged: 'false'
@@ -874,7 +873,6 @@
       - cloudify_ims
       - heat_ims
       - vyos_vrouter
-      - juju_epc
     privileged: 'false'
     network: bridge
     uid: 1000
@@ -1045,8 +1043,6 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-healthcheck-{tag}-cinder_test-run'
               <<: *functest-jobs
-            - name: 'functest-opnfv-functest-healthcheck-{tag}-odl-run'
-              <<: *functest-jobs
             - name: 'functest-opnfv-functest-healthcheck-{tag}-tempest_smoke-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-healthcheck-{tag}-tempest_horizon-run'
@@ -1137,8 +1133,6 @@
             - name: 'functest-opnfv-functest-vnf-{tag}-heat_ims-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-vyos_vrouter-run'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-vnf-{tag}-juju_epc-run'
               <<: *functest-jobs
       - multijob:
           name: dump all campaign data
@@ -1603,8 +1597,6 @@
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-healthcheck-{tag}-cinder_test-run'
               <<: *functest-jobs
-            - name: 'functest-opnfv-functest-healthcheck-{tag}-odl-run'
-              <<: *functest-jobs
             - name: 'functest-opnfv-functest-healthcheck-{tag}-tempest_smoke-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-healthcheck-{tag}-tempest_horizon-run'
@@ -1695,8 +1687,6 @@
             - name: 'functest-opnfv-functest-vnf-{tag}-heat_ims-run'
               <<: *functest-jobs
             - name: 'functest-opnfv-functest-vnf-{tag}-vyos_vrouter-run'
-              <<: *functest-jobs
-            - name: 'functest-opnfv-functest-vnf-{tag}-juju_epc-run'
               <<: *functest-jobs
     publishers:
       - email-ext:
