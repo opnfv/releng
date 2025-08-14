@@ -57,18 +57,6 @@
           branch: stable/yoga
           node: opnfv-build
           dependency: 3.16
-      - xena:
-          from:
-          build_args:
-          branch: stable/xena
-          node: opnfv-build
-          dependency: 3.14
-      - wallaby:
-          from:
-          build_args:
-          branch: stable/wallaby
-          node: opnfv-build
-          dependency: 3.13
 
 - _xtesting-opnfv-xtesting-params: &xtesting-opnfv-xtesting-params
     name: 'xtesting-opnfv-xtesting-params'
@@ -124,18 +112,6 @@
           branch: stable/yoga
           node: opnfv-build
           dependency: 3.16
-      - xena:
-          from:
-          build_args:
-          branch: stable/xena
-          node: opnfv-build
-          dependency: 3.14
-      - wallaby:
-          from:
-          build_args:
-          branch: stable/wallaby
-          node: opnfv-build
-          dependency: 3.13
 
 - _xtesting-jobs: &xtesting-jobs
     name: 'xtesting-jobs'
@@ -303,11 +279,6 @@
     network: bridge
     uid: 1000
     gid: 1000
-    exclude:
-      - tag: wallaby
-        test: nineth
-      - tag: xena
-        test: nineth
     jobs:
       - 'xtesting-opnfv-xtesting-{tag}-{test}-run'
 
@@ -545,10 +516,6 @@
           dependency: 3.16
       - yoga:
           dependency: 3.16
-      - xena:
-          dependency: 3.14
-      - wallaby:
-          dependency: 3.13
 
 - project:
     name: 'xtesting-dep-pull'
