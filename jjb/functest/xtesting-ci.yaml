@@ -471,6 +471,10 @@
             rockylinux/rockylinux:{rockylinux} bash -c "\
           yum install epel-release -y
           case {rockylinux} in \
+          "10") \
+            [ -z "$VIRTUAL_ENV" ] && yum install --allowerasing ansible-core git curl-full -y \
+              ansible-collection-community-general ansible-collection-ansible-posix \
+              ansible-collection-containers-podman;; \
           *) \
             [ -z "$VIRTUAL_ENV" ] && yum install --allowerasing ansible git curl-full -y ;; \
           esac && \
@@ -486,6 +490,9 @@
           case {rockylinux} in \
           "9") \
             ansible-galaxy collection install -f community.docker ;; \
+          "10") \
+            ansible-galaxy collection install community.crypto community.docker \
+              community.grafana community.kubernetes community.postgresql ;; \
           *) ;; \
           esac && \
           ansible-playbook -vvvv ~/.ansible/roles/collivier.xtesting/tests/{playbook}.yml"
